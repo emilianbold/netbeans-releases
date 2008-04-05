@@ -335,7 +335,9 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     
                     for (String incl : signature.split(";")){
-                        includes.add(incl);
+                        if (incl.length() > 0) {
+                            includes.add(incl);
+                        }
                     }
                 }
             }
@@ -350,7 +352,7 @@ public class PHPIndex {
 
     private Collection<String>getAllIncludes(String fileURL, Collection<String> alreadyProcessed){
         Collection<String> includes = new TreeSet<String>();
-        includes.add(fileURL);
+        includes.add(fileURL.substring("file:".length())); //NOI18N
         includes.addAll(alreadyProcessed);
         Collection<String> directIncludes = getDirectIncludes(fileURL);
         
@@ -380,6 +382,8 @@ public class PHPIndex {
                 PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
                 if (phpSourcePath != null) {
                     File file = new File(new URI(url));
+                    assert file.exists() : "PHP Index is refering to a non-existing file " + url;
+                    
                     FileObject fileObject = FileUtil.toFileObject(file);
                     PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
                     if (fileType == PhpSourcePath.FileType.INTERNAL

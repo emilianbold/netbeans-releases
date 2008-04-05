@@ -63,15 +63,15 @@ class LocalCommandProvider extends AbstractCommandProvider {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.rt.spi.providers.CommandProvider#getCommands()
      */
-    public Command[] getCommands(Project project) {
+    public Command[] getEnabledCommands(Project project) {
         if (isInvokedForProject() || isInvokedForSrcRoot()){
             return getProjectCommands(project);
         } else {
             return getObjectCommands(project);
-        }
+        }	
     }
 
-    private Command[] getProjectCommands( Project project ) {
+    protected Command[] getProjectCommands( Project project ) {
         return new Command[]{
                 new RunCommand( project , myProvider ) , 
                 new DebugCommandImpl( project , myProvider )
@@ -79,7 +79,7 @@ class LocalCommandProvider extends AbstractCommandProvider {
     }
 
 
-    private Command[] getObjectCommands(Project project) {
+    protected Command[] getObjectCommands(Project project) {
         return new Command[]{
                 new RunSingleCommand( project , myProvider ),
                 new DebugSingleCommand( project , myProvider )

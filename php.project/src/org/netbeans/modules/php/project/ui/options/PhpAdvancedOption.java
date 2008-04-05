@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.php.project.ui.options;
 
-package org.netbeans.modules.defaults;
-
-import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
- * 
- * @author S.Aubrecht
+ * PHP panel in IDE properties (Miscellaneous category).
+ * @author Tomas Mysik
  */
-public class ShortcutsBuilder {
+public class PhpAdvancedOption extends AdvancedOption {
 
-    private static final boolean isMac = Utilities.isMac();
-    
-    public static String buildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
-        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(PhpAdvancedOption.class, "CTL_Actions_DisplayName");
     }
-    
-    public static String rebuildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
-        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+
+    @Override
+    public String getTooltip() {
+        return NbBundle.getMessage(PhpAdvancedOption.class, "CTL_Actions_ToolTip");
     }
-    
-    public static String compileSingle( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
-        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+
+    @Override
+    public OptionsPanelController create() {
+        return new PhpOptionsPanelController();
     }
-    
-    
 }

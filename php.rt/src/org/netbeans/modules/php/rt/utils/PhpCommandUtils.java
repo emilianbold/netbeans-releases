@@ -78,7 +78,7 @@ public class PhpCommandUtils {
     
     public static boolean isInvokedForProject(){
          Node[] nodes = getActionNodes();
-        if (nodes == null) {
+        if (nodes == null || nodes.length == 0) {
             return false;
         }
              

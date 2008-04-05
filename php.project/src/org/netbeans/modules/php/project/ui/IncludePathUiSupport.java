@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.customizer;
+package org.netbeans.modules.php.project.ui;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -63,7 +63,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.classpath.ClassPathSupport;
+import org.netbeans.modules.php.project.classpath.BaseIncludePathSupport;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -78,12 +79,12 @@ import org.openide.util.Utilities;
 /**
  * @author Petr Hrebejk, Tomas Mysik
  */
-public final class ClassPathUiSupport {
+public final class IncludePathUiSupport {
 
-    private ClassPathUiSupport() {
+    private IncludePathUiSupport() {
     }
 
-    public static DefaultListModel createListModel(Iterator<ClassPathSupport.Item> it) {
+    public static DefaultListModel createListModel(Iterator<BaseIncludePathSupport.Item> it) {
         DefaultListModel model = new DefaultListModel();
         while (it.hasNext()) {
             model.addElement(it.next());
@@ -91,14 +92,14 @@ public final class ClassPathUiSupport {
         return model;
     }
 
-    public static Iterator<ClassPathSupport.Item> getIterator(DefaultListModel model) {
+    public static Iterator<BaseIncludePathSupport.Item> getIterator(DefaultListModel model) {
         // XXX Better performing impl. would be nice
         return getList(model).iterator();
     }
 
-    public static List<ClassPathSupport.Item> getList(DefaultListModel model) {
+    public static List<BaseIncludePathSupport.Item> getList(DefaultListModel model) {
         return Collections.list(NbCollections.checkedEnumerationByFilter(model.elements(),
-                ClassPathSupport.Item.class, true));
+                BaseIncludePathSupport.Item.class, true));
     }
 
     /** Moves items up in the list. The indices array will contain
@@ -188,7 +189,7 @@ public final class ClassPathUiSupport {
         int[] indexes = new int[files.length];
         for (int i = 0, delta = 0; i + delta < files.length;) {
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create(files[i + delta], null);
+            BaseIncludePathSupport.Item item = BaseIncludePathSupport.Item.create(files[i + delta], null);
             if (!listModel.contains(item)) {
                 listModel.add(current, item);
                 indexes[delta + i] = current;
@@ -221,13 +222,16 @@ public final class ClassPathUiSupport {
         static {
             // XXX will be replaced with the ide include path
             WELL_KNOWN_PATHS_NAMES.put(PhpProjectProperties.GLOBAL_INCLUDE_PATH,
-                    NbBundle.getMessage(ClassPathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));
+                    NbBundle.getMessage(IncludePathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));
         };
+
+        // used for global include path (no evaluator, no project folder)
+        public ClassPathListCellRenderer() {
+            this(null, null);
+        }
 
         public ClassPathListCellRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
             super();
-            assert evaluator != null;
-            assert projectFolder != null;
 
             this.evaluator = evaluator;
             this.projectFolder = projectFolder;
@@ -236,7 +240,7 @@ public final class ClassPathUiSupport {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item) value;
+            BaseIncludePathSupport.Item item = (BaseIncludePathSupport.Item) value;
 
             super.getListCellRendererComponent(list, getDisplayName(item), index, isSelected, cellHasFocus);
             setIcon(getIcon(item));
@@ -244,22 +248,22 @@ public final class ClassPathUiSupport {
             return this;
         }
 
-        private String getDisplayName(ClassPathSupport.Item item) {
+        private String getDisplayName(BaseIncludePathSupport.Item item) {
             switch (item.getType()) {
                 case CLASSPATH:
-                    String name = WELL_KNOWN_PATHS_NAMES.get(ClassPathSupport.getAntPropertyName(item.getReference()));
+                    String name = WELL_KNOWN_PATHS_NAMES.get(BaseIncludePathSupport.getAntPropertyName(item.getReference()));
                     return name == null ? item.getReference() : name;
                     //break;
                 default:
                     if (item.isBroken()) {
-                        return NbBundle.getMessage(ClassPathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
+                        return NbBundle.getMessage(IncludePathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
                     }
                     return item.getFilePath();
                     //break;
             }
         }
 
-        private static Icon getIcon(ClassPathSupport.Item item) {
+        private static Icon getIcon(BaseIncludePathSupport.Item item) {
             switch (item.getType()) {
                 case CLASSPATH:
                     return ICON_CLASSPATH;
@@ -277,15 +281,19 @@ public final class ClassPathUiSupport {
             }
         }
 
-        private String getToolTipText(ClassPathSupport.Item item) {
+        private String getToolTipText(BaseIncludePathSupport.Item item) {
             switch (item.getType()) {
                 case FOLDER:
                     if (item.isBroken()) {
-                        return evaluator.evaluate(item.getReference());
+                        if (evaluator != null) {
+                            return evaluator.evaluate(item.getReference());
+                        }
+                        return item.getReference();
                     }
                     String path = item.getFilePath();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
+                        assert projectFolder != null : "project folder cannot be null because not absolute path given [" + f + "]";
                         f = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), path);
                         return f.getAbsolutePath();
                     }
@@ -303,7 +311,7 @@ public final class ClassPathUiSupport {
             return ICON_FOLDER;
         }
 
-        private String getFileRefName(ClassPathSupport.Item item) {
+        private String getFileRefName(BaseIncludePathSupport.Item item) {
             switch (item.getType()) {
                 case FOLDER:
                     return item.getFilePath();
@@ -326,7 +334,12 @@ public final class ClassPathUiSupport {
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
 
-        private EditMediator(PhpProject project, JList list, DefaultListModel listModel, ButtonModel addFolder,
+        private EditMediator(JList list, ButtonModel addFolder,
+                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
+            this(null, list, addFolder, remove, moveUp, moveDown);
+        }
+
+        private EditMediator(PhpProject project, JList list, ButtonModel addFolder,
                 ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
 
             this.list = list;
@@ -345,10 +358,27 @@ public final class ClassPathUiSupport {
             this.project = project;
         }
 
-        public static void register(PhpProject project, JList list, DefaultListModel listModel, ButtonModel addFolder,
+        public static void register(PhpProject project, JList list, ButtonModel addFolder,
                 ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
 
-            EditMediator em = new EditMediator(project, list, listModel, addFolder, remove, moveUp, moveDown);
+            EditMediator em = new EditMediator(project, list, addFolder, remove, moveUp, moveDown);
+
+            // Register the listener on all buttons
+            addFolder.addActionListener(em);
+            remove.addActionListener(em);
+            moveUp.addActionListener(em);
+            moveDown.addActionListener(em);
+            // On list selection
+            em.selectionModel.addListSelectionListener(em);
+            // Set the initial state of the buttons
+            em.valueChanged(null);
+        }
+
+        // for global include path (no project available)
+        public static void register(JList list, ButtonModel addFolder,
+                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
+
+            EditMediator em = new EditMediator(list, addFolder, remove, moveUp, moveDown);
 
             // Register the listener on all buttons
             addFolder.addActionListener(em);
@@ -367,40 +397,15 @@ public final class ClassPathUiSupport {
 
             Object source = e.getSource();
             if (source == addFolder) {
-                // Let user search for the Jar file
-                FileChooser chooser = new FileChooser(project.getHelper(), true);
-                FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                chooser.setMultiSelectionEnabled(true);
-                chooser.setDialogTitle(NbBundle.getMessage(ClassPathUiSupport.class, "LBL_AddFolders_DialogTitle"));
-                // XXX get last folder
-//                File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
-//                chooser.setCurrentDirectory (curDir);
-                int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(list));
-                if (option == JFileChooser.APPROVE_OPTION) {
-                    String[] files;
-                    try {
-                        files = chooser.getSelectedPaths();
-                    } catch (IOException ex) {
-                        // TODO add localized message
-                        Exceptions.printStackTrace(ex);
-                        return;
-                    }
-
-                    int[] newSelection = ClassPathUiSupport.addFolders(listModel, list.getSelectedIndices(), files);
-                    list.setSelectedIndices(newSelection);
-                    // remember last folder
-//                    curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-//                    FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
-                }
+                addFolders();
             } else if (source == remove) {
-                int[] newSelection = ClassPathUiSupport.remove(listModel, list.getSelectedIndices());
+                int[] newSelection = IncludePathUiSupport.remove(listModel, list.getSelectedIndices());
                 list.setSelectedIndices(newSelection);
             } else if (source == moveUp) {
-                int[] newSelection = ClassPathUiSupport.moveUp(listModel, list.getSelectedIndices());
+                int[] newSelection = IncludePathUiSupport.moveUp(listModel, list.getSelectedIndices());
                 list.setSelectedIndices(newSelection);
             } else if (source == moveDown) {
-                int[] newSelection = ClassPathUiSupport.moveDown(listModel, list.getSelectedIndices());
+                int[] newSelection = IncludePathUiSupport.moveDown(listModel, list.getSelectedIndices());
                 list.setSelectedIndices(newSelection);
             }
         }
@@ -410,8 +415,51 @@ public final class ClassPathUiSupport {
         public void valueChanged( ListSelectionEvent e ) {
             // addFolder allways enabled
             remove.setEnabled(selectionModel.getMinSelectionIndex() != -1);
-            moveUp.setEnabled(ClassPathUiSupport.canMoveUp(selectionModel));
-            moveDown.setEnabled(ClassPathUiSupport.canMoveDown(selectionModel, listModel.getSize()));
+            moveUp.setEnabled(IncludePathUiSupport.canMoveUp(selectionModel));
+            moveDown.setEnabled(IncludePathUiSupport.canMoveDown(selectionModel, listModel.getSize()));
+        }
+
+        private void addFolders() {
+            JFileChooser chooser = null;
+            if (project != null) {
+                chooser = new FileChooser(project.getHelper(), true);
+            } else {
+                // XXX maybe select fs root
+                chooser = new JFileChooser();
+            }
+            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setMultiSelectionEnabled(true);
+            chooser.setDialogTitle(NbBundle.getMessage(IncludePathUiSupport.class, "LBL_AddFolders_DialogTitle"));
+            // XXX get last folder
+//                File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
+//                chooser.setCurrentDirectory (curDir);
+            int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(list));
+            if (option == JFileChooser.APPROVE_OPTION) {
+                String[] files;
+                try {
+                    if (chooser instanceof FileChooser) {
+                        files = ((FileChooser) chooser).getSelectedPaths();
+                    } else {
+                        File[] selectedFiles = chooser.getSelectedFiles();
+                        files = new String[selectedFiles.length];
+
+                        for (int i = 0; i < selectedFiles.length; i++) {
+                            files[i] = selectedFiles[i].getAbsolutePath();
+                        }
+                    }
+                } catch (IOException ex) {
+                    // TODO add localized message
+                    Exceptions.printStackTrace(ex);
+                    return;
+                }
+
+                int[] newSelection = IncludePathUiSupport.addFolders(listModel, list.getSelectedIndices(), files);
+                list.setSelectedIndices(newSelection);
+                // remember last folder
+//                    curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+//                    FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
+            }
         }
     }
 }
