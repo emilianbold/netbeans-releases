@@ -92,6 +92,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -460,7 +461,7 @@ public abstract class ModelSet implements FileChangeListener {
                 FileObject ejbClientsSubDir = projectLibDir.getFileObject(EJB_DATA_SUB_DIR);
                 hasEjbClients = (ejbClientsSubDir != null && hasJarFiles(ejbClientsSubDir));
             } catch (IOException e) {
-                // not found - ignore
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
             //"classpath/packaged" gives us all the jars excluding app server jars in case of maven project
@@ -487,14 +488,18 @@ public abstract class ModelSet implements FileChangeListener {
                             if (file.isFile() && file.getName().endsWith(".jar")) {
                                 try {
                                     JarFile jarFile = new JarFile(file);
-                                    // Found one of the ejb20 classes - use this jar file
-                                    if (jarFile.getEntry("javax/ejb/CreateException.class") != null) {
-                                        // We need to keep this jar in designtime classpath
-                                        continue;                                            
+                                    try {
+                                        // Found one of the ejb20 classes - use this jar file
+                                        if (jarFile.getEntry("javax/ejb/CreateException.class") != null) {
+                                            // We need to keep this jar in designtime classpath
+                                            continue;                                            
+                                        }
+                                    } finally {
+                                        jarFile.close();
                                     }
                                 } catch (IOException e) {
-                                    // corrupt .jar file
-                                }
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                } 
                             }
                         }
                         // Is this a URL from J2ee Classpath

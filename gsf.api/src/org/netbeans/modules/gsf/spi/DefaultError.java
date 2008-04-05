@@ -101,6 +101,7 @@ public class DefaultError implements Error {
         return end;
     }
 
+    @Override
     public String toString() {
         return "DefaultError[" + displayName + ", " + description + ", " + severity + "]";
     }

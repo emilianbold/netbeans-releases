@@ -512,6 +512,7 @@ public class JsParser implements Parser {
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
+            runtimeException = re;
         }            
         if (root != null) {
             setParentRefs(root, null);

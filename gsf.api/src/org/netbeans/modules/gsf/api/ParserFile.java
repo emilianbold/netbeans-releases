@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
 public interface ParserFile {
 
     /** Return the file object corresponding to the file */
-    @NonNull
+    @CheckForNull
     public FileObject getFileObject();
 
     /** Return the relative path of the file (relative to its root, such as
@@ -64,10 +64,13 @@ public interface ParserFile {
     @CheckForNull
     public String getRelativePath();
     
+    @NonNull
     public String getNameExt();
     
+    @CheckForNull
     public String getExtension();
     
+    @NonNull
     public File getFile();
     
     /**

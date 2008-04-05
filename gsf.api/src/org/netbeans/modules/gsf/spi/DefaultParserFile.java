@@ -43,6 +43,8 @@ package org.netbeans.modules.gsf.spi;
 
 import java.io.File;
 import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -55,7 +57,7 @@ public class DefaultParserFile implements ParserFile {
     private String relative;
     private boolean platform;
     
-    public DefaultParserFile(FileObject fo, String relative, boolean platform) {
+    public DefaultParserFile(@NonNull FileObject fo, @CheckForNull String relative, boolean platform) {
         this.fileObject = fo;
         this.relative = relative;
         this.platform = platform;
@@ -66,6 +68,7 @@ public class DefaultParserFile implements ParserFile {
 //        this.relative = relative;
 //    }
 
+    @NonNull
     public FileObject getFileObject() {
 //        if (fileObject == null) {
 //            assert path != null;
