@@ -440,8 +440,9 @@ public class PHPCodeCompletion implements Completable {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
             
-            builder.append(String.format("<h1>%s</h1><p><font size=\"-1\">%s</font></p><br><br>", //NOI18N
-                    indexedElement.getName(), indexedElement.getFilenameUrl()));
+            builder.append(String.format("<font size=-1>%s</font>" +
+                    "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
+                    indexedElement.getFilenameUrl(), indexedElement.getName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             
@@ -467,10 +468,10 @@ public class PHPCodeCompletion implements Completable {
                                 
                                 // list PHPDoc tags
                                 // TODO a better support for PHPDoc tags
-                                phpDoc.append("<br><br><table>\n"); //NOI18N
+                                phpDoc.append("<br><br><br><table>\n"); //NOI18N
                                 
                                 for (PHPDocTag tag : pHPDocBlock.getTags()){
-                                    phpDoc.append(String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
+                                    phpDoc.append(String.format("<tr><td>%s</td><td>%s</td></tr>\n", //NOI18N
                                             tag.getKind().toString(), tag.getValue()));
                                 }
                                 
