@@ -40,15 +40,24 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -118,12 +127,90 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                                 "Unable to create/locate J2EE InstanceProperties for " + url);
                     }
                 }
+                
+                final String installRoot = commonModule.getInstanceProperties().get(
+                        GlassfishModule.HOME_FOLDER_ATTR);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        ensureEclipseLinkSupport(installRoot);
+                    }
+                });
             } catch(InstanceCreationException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex);
             }
         }
 
         return (ip != null) ? new JavaEEServerModule(instanceLookup, ip) : null;
+    }
+    
+    private static final String CLASS_LIBRARY_TYPE = "j2se"; // NOI18N
+    private static final String CLASSPATH_VOLUME = "classpath"; // NOI18N
+    private static final String SOURCE_VOLUME = "src"; // NOI18N
+    private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
+    
+    private static final String ECLIPSE_LINK_LIB = "EclipseLink-Glassfish-V3"; // NOI18N
+    private static final String EL_CORE_LIB = "eclipselink.core-1.0-SNAPSHOT.jar"; // NOI18N
+    private static final String EL_EXT_ORACLE_LIB = "eclipselink.extension.oracle-1.0-SNAPSHOT.jar"; // NOI18N
+    private static final String EL_JPA_LIB = "eclipselink.jpa-1.0-SNAPSHOT.jar"; // NOI18N
+    private static final String PERSISTENCE_API_LIB = "persistence-api-1.0b.jar"; // NOI18N
+    private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
+    
+    public boolean ensureEclipseLinkSupport(String installRoot) {
+        LibraryManager lmgr = LibraryManager.getDefault();
+        Library eclipseLinkLib = lmgr.getLibrary(ECLIPSE_LINK_LIB);
+        
+        // Verify that existing library is still valid.
+        if(eclipseLinkLib != null) {
+            List<URL> libraryList = eclipseLinkLib.getContent(CLASSPATH_VOLUME);
+            for(URL libUrl: libraryList) {
+                String libPath = libUrl.getFile();
+                if(!new File(libPath).exists()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, 
+                            "libPath does not exists.  Updating " + ECLIPSE_LINK_LIB);
+                    try {
+                        lmgr.removeLibrary(eclipseLinkLib);
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        // Already removed somehow, ignore.
+                    }
+                    eclipseLinkLib = null;
+                    break;
+                }
+            }
+        }
+        
+        if(eclipseLinkLib == null) {
+            try {
+                // classpath, src, javadoc -- library volumes
+                List<URL> libraryList = new ArrayList<URL>();
+                libraryList.add(new File(installRoot + "/modules/" + EL_CORE_LIB).toURL());
+                libraryList.add(new File(installRoot + "/modules/" + EL_EXT_ORACLE_LIB).toURL());
+                libraryList.add(new File(installRoot + "/modules/" + EL_JPA_LIB).toURL());
+                libraryList.add(new File(installRoot + "/modules/" + PERSISTENCE_API_LIB).toURL());
+
+                File j2eeDoc = InstalledFileLocator.getDefault().locate(
+                        "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
+                List<URL> docList = new ArrayList<URL>();
+                docList.add(j2eeDoc.toURL());
+
+                Map<String, List<URL>> contents = new HashMap<String, List<URL>>();
+                contents.put(CLASSPATH_VOLUME, libraryList);
+                contents.put(JAVADOC_VOLUME, docList);
+                
+                eclipseLinkLib = lmgr.createLibrary(CLASS_LIBRARY_TYPE, ECLIPSE_LINK_LIB, contents);
+                Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library " + ECLIPSE_LINK_LIB);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            } catch (IllegalArgumentException ex) {
+                // Someone must have created the library in a parallel thread, try again otherwise fail.
+                eclipseLinkLib = lmgr.getLibrary(ECLIPSE_LINK_LIB);
+                if(eclipseLinkLib == null) {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                }
+            }
+        }
+        return eclipseLinkLib != null;
     }
 
 }
