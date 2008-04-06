@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.glassfish.common.ui;
 
+import java.util.Map;
 import org.netbeans.spi.glassfish.GlassfishModule;
 
 /**
@@ -57,9 +58,14 @@ public class InstanceCustomizer extends javax.swing.JPanel {
     }
 
     private void initFields() {
-//        boolean cometEnabled = Boolean.parseBoolean(
-//                commonSupport.getInstanceProperties().get(GlassfishModule.COMET_FLAG));
-        String cometFlag = commonSupport.getInstanceProperties().get(GlassfishModule.COMET_FLAG);
+        Map<String, String> ip = commonSupport.getInstanceProperties();
+        textLocation.setText(ip.get(GlassfishModule.HOSTNAME_ATTR) + ":" + 
+                ip.get(GlassfishModule.HTTPPORT_ATTR));
+        textDomainsFolder.setText(ip.get(GlassfishModule.HOME_FOLDER_ATTR) + "/domains"); // NOI18N
+        textDomainName.setText("domain1"); // NOI18N
+        
+//        boolean cometEnabled = Boolean.parseBoolean(ip.get(GlassfishModule.COMET_FLAG));
+        String cometFlag = ip.get(GlassfishModule.COMET_FLAG);
         if(cometFlag == null) {
             cometFlag = System.getProperty(GlassfishModule.COMET_FLAG);
         }
@@ -95,9 +101,27 @@ public class InstanceCustomizer extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        labelLocation = new javax.swing.JLabel();
+        textLocation = new javax.swing.JTextField();
+        labelDomainsFolder = new javax.swing.JLabel();
+        textDomainsFolder = new javax.swing.JTextField();
+        labelDomainName = new javax.swing.JLabel();
+        textDomainName = new javax.swing.JTextField();
         cometCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLocation, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Location")); // NOI18N
+
+        textLocation.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelDomainsFolder, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_DomainsFolder")); // NOI18N
+
+        textDomainsFolder.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelDomainName, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_DomainName")); // NOI18N
+
+        textDomainName.setEditable(false);
 
         cometCheckBox.setText(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_EnableCometSupport")); // NOI18N
         cometCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -112,13 +136,36 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(cometCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cometCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(labelLocation)
+                            .add(labelDomainsFolder)
+                            .add(labelDomainName))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(textLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                            .add(textDomainsFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                            .add(textDomainName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelLocation)
+                    .add(textLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelDomainsFolder)
+                    .add(textDomainsFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelDomainName)
+                    .add(textDomainName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cometCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -131,6 +178,12 @@ private void cometCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cometCheckBox;
+    private javax.swing.JLabel labelDomainName;
+    private javax.swing.JLabel labelDomainsFolder;
+    private javax.swing.JLabel labelLocation;
+    private javax.swing.JTextField textDomainName;
+    private javax.swing.JTextField textDomainsFolder;
+    private javax.swing.JTextField textLocation;
     // End of variables declaration//GEN-END:variables
 
 }
