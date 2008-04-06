@@ -281,6 +281,8 @@ if [ $ML_BUILD == 1 ]; then
     fi
  
     cd $NB_ALL/nbbuild
+    cp -r $NB_ALL/nbbuild/netbeans/* $NB_ALL/nbbuild/netbeans-ml/
+
     #Remove the build helper files
     rm -f netbeans-ml/nb.cluster.*
 #    rm -f netbeans-ml/build_info
