@@ -50,6 +50,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.actions.DebugAction;
+import org.netbeans.modules.glassfish.common.actions.PropertiesAction;
 import org.netbeans.modules.glassfish.common.actions.RemoveServerAction;
 import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
@@ -144,33 +145,23 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     @Override
     public Action[] getActions(boolean context) {
+        // !PW Commented actions are place holders for when those features are available.
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
+//            SystemAction.get(ProfileAction.class),
             SystemAction.get(RestartAction.class),
             SystemAction.get(StopServerAction.class),
             SystemAction.get(RefreshModulesAction.class),
             null,
             SystemAction.get(RemoveServerAction.class),
             null,
-            SystemAction.get(ViewAdminConsoleAction.class)
+            SystemAction.get(ViewAdminConsoleAction.class),
+//            SystemAction.get(ViewServerLogAction.class),
+//            SystemAction.get(ViewUpdateCenterAction.class),
+            null,
+            SystemAction.get(PropertiesAction.class)
         };
-        
-        // Instance node candidate actions (borrowed list from j2eeserver module
-//        SystemAction.get(StartAction.class),
-//        SystemAction.get(DebugAction.class)
-//        SystemAction.get(ProfileAction.class)
-//        SystemAction.get(RestartAction.class),
-//        SystemAction.get(StopAction.class),
-//        SystemAction.get(RefreshAction.class),
-//        null,
-//        SystemAction.get(RemoveInstanceAction.class)
-        // Target node candidat actions (again from j2eeserver module)
-        // ... TBD ...
-        // Properties action
-//        SystemAction.get(CustomizerAction.class)
-        
-        
     }
 
     @Override

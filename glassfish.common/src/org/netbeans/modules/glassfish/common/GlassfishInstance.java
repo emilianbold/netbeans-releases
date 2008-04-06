@@ -59,6 +59,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
 import org.netbeans.spi.glassfish.CustomizerCookie;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
@@ -225,10 +226,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     }
     
     public JComponent getCustomizer() {
-        // !PW FIXME use real customizer
-        JPanel commonCustomizer = new JPanel();
-        commonCustomizer.setName("Common");
-        commonCustomizer.add(new javax.swing.JLabel("TODO V3 Server Common Properties"));
+        JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
         
         Collection<JPanel> pages = new LinkedList<JPanel>();
         Collection<? extends CustomizerCookie> lookupAll = lookup.lookupAll(CustomizerCookie.class);

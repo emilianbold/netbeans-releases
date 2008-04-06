@@ -215,14 +215,27 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private StringBuilder appendSystemVars(StringBuilder argumentBuf) {
-         String jrubyHome = ip.get(GlassfishModule.JRUBY_HOME);
-         if(jrubyHome != null) {
+        String jrubyHome = ip.get(GlassfishModule.JRUBY_HOME);
+        if(jrubyHome != null) {
             argumentBuf.append(" -D");
             argumentBuf.append(GlassfishModule.JRUBY_HOME);
             argumentBuf.append("=\"");
             argumentBuf.append(jrubyHome);
             argumentBuf.append("\"");
         }
+
+        String cometEnabled = ip.get(GlassfishModule.COMET_FLAG);
+        // !PW FIXME remove when persistence for flags is enabled.
+        if(cometEnabled == null) {
+            cometEnabled = System.getProperty(GlassfishModule.COMET_FLAG);
+        }
+        if(cometEnabled != null && cometEnabled.length() > 0) {
+            argumentBuf.append(" -D");
+            argumentBuf.append(GlassfishModule.COMET_FLAG);
+            argumentBuf.append("=");
+            argumentBuf.append(cometEnabled);
+        }
+         
         return argumentBuf;
     }    
     
