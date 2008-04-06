@@ -422,7 +422,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         if (compilerSet == null)
             return vec;
-        //BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
