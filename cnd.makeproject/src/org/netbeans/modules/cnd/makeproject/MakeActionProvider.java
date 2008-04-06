@@ -856,6 +856,7 @@ public class MakeActionProvider implements ActionProvider {
             model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
             if (bt.initBuildTools(model, errs)) {
                 String name = model.getSelectedCompilerSetName();
+                CppSettings.getDefault().setCompilerSetName(name);
                 conf.getCRequired().setValue(model.isCRequired());
                 conf.getCppRequired().setValue(model.isCppRequired());
                 conf.getFortranRequired().setValue(model.isFortranRequired());
