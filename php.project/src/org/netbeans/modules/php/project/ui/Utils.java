@@ -254,6 +254,30 @@ public final class Utils {
         return null;
     }
 
+    /**
+     * Validate that the project sources directory and directory for copying files are "independent". It means
+     * that the sources isn't underneath the target directory and vice versa. Both paths have to be normalized.
+     * @param sources project sources.
+     * @param copyTarget directory for copying files.
+     * @return <code>true</code> if the directories are "independent".
+     */
+    public static String validateSourcesAndCopyTarget(String sources, String copyTarget) {
+        assert sources != null;
+        assert copyTarget != null;
+        // handle "/myDir" and "/myDirectory"
+        if (!sources.endsWith(File.separator)) {
+            sources = sources + File.separator;
+        }
+        if (!copyTarget.endsWith(File.separator)) {
+            copyTarget = copyTarget + File.separator;
+        }
+        if (sources.startsWith(copyTarget)
+                || copyTarget.startsWith(sources)) {
+            return NbBundle.getMessage(Utils.class, "MSG_SourcesEqualCopyTarget");
+        }
+        return null;
+    }
+
     public static class EncodingModel extends DefaultComboBoxModel {
         private static final long serialVersionUID = -3139920099217726436L;
 
