@@ -311,6 +311,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateSources() {
+        String err = null;
         LocalServer localServer = locationPanelVisual.getSourcesLocation();
         if (!isProjectFolder(localServer)) {
             String sourcesLocation = localServer.getSrcRoot();
@@ -321,7 +322,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            String err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
+            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
             if (err != null) {
                 return err;
             }
@@ -334,6 +335,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesNotEmpty");
                 descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
             }
+        }
+        err = validateSourcesAndCopyTarget();
+        if (err != null) {
+            return err;
         }
 
         String url = locationPanelVisual.getUrl();
@@ -360,6 +365,24 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             }
         }
         return null;
+    }
+
+    // #131023
+    private String validateSourcesAndCopyTarget() {
+        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        if (copyTarget == null) {
+            return null;
+        }
+        LocalServer sources = locationPanelVisual.getSourcesLocation();
+        String sourcesSrcRoot = sources.getSrcRoot();
+        if (isProjectFolder(sources)) {
+            File project = new File(locationPanelVisual.getProjectLocation(), locationPanelVisual.getProjectName());
+            File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCE_FOLDER));
+            sourcesSrcRoot = src.getAbsolutePath();
+        }
+        File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
+        String cpTarget = normalized.getAbsolutePath();
+        return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
     }
 
     public void stateChanged(ChangeEvent e) {
