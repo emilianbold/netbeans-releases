@@ -216,12 +216,12 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     }
 
     public Node getFullNode() {
-        Logger.getLogger("glassfish").log(Level.FINER, "Creating GF Instance node [FULL]");
+        Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]");
         return new Hk2InstanceNode(this, true);
     }
 
     public Node getBasicNode() {
-        Logger.getLogger("glassfish").log(Level.FINER, "Creating GF Instance node [BASIC]");
+        Logger.getLogger("glassfish").finer("Creating GF Instance node [BASIC]");
         return new Hk2InstanceNode(this, false);
     }
     
