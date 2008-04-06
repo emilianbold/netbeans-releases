@@ -119,25 +119,17 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = bean.filterParametersByAuth(
                             bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-                    if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
-                        JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
-                                codegen.getSubresourceLocatorUriTemplate(),
-                                bean.getQualifiedClassName(), 
-                                allParams,
-                                codegen.canShowResourceInfo(), showParams);
-
+                    if(!allParams.isEmpty()) {
+                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
+                 
                         DialogDescriptor desc = new DialogDescriptor(panel, 
                                 NbBundle.getMessage(JaxRsEditorDrop.class,
                                 "LBL_CustomizeSaasService", displayName));
                         Object response = DialogDisplayer.getDefault().notify(desc);
 
-                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                            codegen.setSubresourceLocatorName(panel.getMethodName());
-                        } else {
+                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
                             // cancel
                             return;
                         }

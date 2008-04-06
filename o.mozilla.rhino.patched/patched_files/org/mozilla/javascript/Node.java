@@ -1117,6 +1117,14 @@ public class Node
           case Token.SETELEM_OP:
           case Token.LOCAL_BLOCK:
           case Token.SET_REF_OP:
+          // <netbeans>
+          // In NetBeans we've modified the AST such that FUNCTION nodes appear
+          // inline. However, a function declaration as part of a statement should
+          // not be interpreted as having no side effect - the side effect is that
+          // the function is available for later calls!
+          case Token.FUNCTION:
+          // </netbeans>
+              
             return true;
 
           default:

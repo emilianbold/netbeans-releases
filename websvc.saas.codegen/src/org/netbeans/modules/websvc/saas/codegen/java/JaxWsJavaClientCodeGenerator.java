@@ -135,13 +135,4 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
         }
     }
     
-    @Override
-    public boolean canShowResourceInfo() {
-        return false;
-    }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
 }

@@ -159,4 +159,8 @@ public class ServicesComponentFactoryImpl implements ServicesComponentFactory {
     public MessageReceiver createMessageReceiver() {
         return new MessageReceiverImpl(model);
     }
+
+    public Operation createOperation() {
+        return new OperationImpl(model);
+    }
 }

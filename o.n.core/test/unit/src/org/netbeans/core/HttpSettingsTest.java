@@ -354,6 +354,9 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testAutoDetectSillySetProxy () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         sillySetUp ();
         synchronized (sync) {
             if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
