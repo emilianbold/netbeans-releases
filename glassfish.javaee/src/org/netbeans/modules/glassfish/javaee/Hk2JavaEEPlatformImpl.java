@@ -75,13 +75,33 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         this.properties = dm.getProperties();
         initLibraries();
     }
+    
+    // Persistence provider strings
+    private static final String PERSISTENCE_PROV_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider"; //NOI18N
+       
     /**
      * 
      * @param toolName 
      * @return 
      */
     public boolean isToolSupported(String toolName) {
-        return false;
+        // Persistence Providers
+        if(PERSISTENCE_PROV_ECLIPSELINK.equals(toolName)) {
+            return true;
+        }
+
+        if("org.hibernate.ejb.HibernatePersistence".equals(toolName) || //NOI18N
+                "oracle.toplink.essentials.PersistenceProvider".equals(toolName) || // NOI18N
+                "kodo.persistence.PersistenceProviderImpl".equals(toolName) || // NOI18N
+                "org.apache.openjpa.persistence.PersistenceProviderImpl".equals(toolName)) { //NOI18N
+            return true;
+        }
+        
+        if("defaultPersistenceProviderJavaEE5".equals(toolName)) {
+            return true;
+        }
+        
+        return false;     
     }
     
     /**
