@@ -64,10 +64,10 @@ import org.openide.util.actions.NodeAction;
  */
 public class RestartAction extends NodeAction {
     
-    public static final int RESTART_DELAY = 3000;
+    public static final int RESTART_DELAY = 5000;
     
     public String getName() {
-        return NbBundle.getMessage(RestartAction.class, "LBL_Restart");
+        return NbBundle.getMessage(RestartAction.class, "CTL_RestartAction");
     }
     
     protected void performAction(Node[] activatedNodes) {
@@ -88,6 +88,7 @@ public class RestartAction extends NodeAction {
                 try {
                     OperationState stopResult = stopTask.get();
                     if(stopResult == OperationState.COMPLETED) {
+                        Thread.sleep(RESTART_DELAY);
                         commonSupport.startServer(null);
                     }
                 } catch(InterruptedException ex) {

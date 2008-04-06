@@ -124,7 +124,7 @@ public class DebugAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(DebugAction.class, "LBL_Debug");
+        return NbBundle.getMessage(DebugAction.class, "CTL_DebugAction");
     }
     
     public HelpCtx getHelpCtx() {

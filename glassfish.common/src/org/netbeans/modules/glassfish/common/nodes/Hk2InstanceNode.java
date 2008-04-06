@@ -49,7 +49,9 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.actions.DebugAction;
 import org.netbeans.modules.glassfish.common.actions.RemoveServerAction;
+import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.common.actions.ViewAdminConsoleAction;
@@ -144,6 +146,8 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(StartServerAction.class),
+            SystemAction.get(DebugAction.class),
+            SystemAction.get(RestartAction.class),
             SystemAction.get(StopServerAction.class),
             SystemAction.get(RefreshModulesAction.class),
             null,
