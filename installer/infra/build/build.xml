@@ -608,7 +608,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
                 <!-- glassfish -->
                 <include name="**/glassfish*"/>
-                <exclude name="**/glassfish*${glassfish.milestone.number}*"/>
+                <exclude name="**/glassfish*2.0.2.${glassfish.milestone.number}.*"/>
                 
                 <!-- openesb -->
 		<include name="**/openesb*"/>
