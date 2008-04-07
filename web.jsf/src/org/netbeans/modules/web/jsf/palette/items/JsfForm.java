@@ -430,10 +430,10 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer) {
-        createForm(controller, bean, formType, variable, stringBuffer, "", null);
+        createForm(controller, bean, formType, variable, stringBuffer, "", null, "");
     }
     
-    public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, String entityClass, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport) {
+    public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, String entityClass, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass) {
         ExecutableElement methods [] = getEntityMethods(bean);
         boolean fieldAccess = isFieldAccess(bean);
         for (ExecutableElement method : methods) {
@@ -462,19 +462,19 @@ public final class JsfForm implements ActiveEditorDrop {
                     }
                 }
                 if (pkMethods == null) {
-                    createFormInternal(method, isId, isGenerated, fieldAccess, controller, formType, variable, stringBuffer, entityClass);
+                    createFormInternal(method, isId, isGenerated, fieldAccess, controller, formType, variable, stringBuffer, entityClass, controllerClass);
                 }
                 else {
                     for (ExecutableElement pkMethod : pkMethods) {
                         String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
-                        createFormInternal(pkMethod, isId, isGenerated, fieldAccess, controller, formType, variable + "." + propName, stringBuffer, entityClass);
+                        createFormInternal(pkMethod, isId, isGenerated, fieldAccess, controller, formType, variable + "." + propName, stringBuffer, entityClass, controllerClass);
                     }
                 }
             }
         }
     }
     
-    private static void createFormInternal(ExecutableElement method, boolean isId, boolean isGenerated, boolean fieldAccess, CompilationController controller, int formType, String variable, StringBuffer stringBuffer, String entityClass) {
+    private static void createFormInternal(ExecutableElement method, boolean isId, boolean isGenerated, boolean fieldAccess, CompilationController controller, int formType, String variable, StringBuffer stringBuffer, String entityClass, String controllerClass) {
         String simpleEntityName = JSFClientGenerator.simpleClassName(entityClass);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
         String methodName = method.getSimpleName().toString();
@@ -506,26 +506,26 @@ public final class JsfForm implements ActiveEditorDrop {
                 "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}\"/>\n" +
                 "</h:commandLink>\n" +
                 "<h:outputText value=\" \"/>\n" +
                 "<h:commandLink value=\"Edit\" action=\"#'{'{4}.editSetup'}'\">\n" +
                 "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}\"/>\n" +
                 "</h:commandLink>\n" +
                 "<h:outputText value=\" \"/>\n" +
                 "<h:commandLink value=\"Destroy\" action=\"#'{'{4}.destroy'}'\">\n" +
                 "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}\"/>\n" +
                 "</h:commandLink>\n" +
                 "<h:outputText value=\" )\"/>\n" +
                 "</h:panelGroup>\n" +
                 "</h:panelGroup>\n";
-            Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), entityClass};
+            Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), controllerClass};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == REL_NONE) || 
                 ( formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method)) && isRelationship != REL_TO_MANY ) || 
@@ -623,7 +623,7 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 
-            String idProperty, boolean isInjection, StringBuffer stringBuffer, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport) {
+            String idProperty, boolean isInjection, StringBuffer stringBuffer, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass) {
         ExecutableElement methods [] = getEntityMethods(bean);
         String entityClass = bean.getQualifiedName().toString();
         String simpleClass = bean.getSimpleName().toString();
@@ -657,21 +657,21 @@ public final class JsfForm implements ActiveEditorDrop {
                                     + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
-                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + entityClass + "Controller\" />\n"
+                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "<h:outputText value=\" \"/>\n"
                                     + "<h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
                                     + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
-                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + entityClass + "Controller\" />\n"
+                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "<h:outputText value=\" \"/>\n"
                                     + "<h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroy'}'\">\n" 
                                     + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
-                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + entityClass + "Controller\" />\n"
+                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "</h:column>\n";
                             
