@@ -276,6 +276,7 @@ implements FileChangeListener, DataObject.Container {
             Task t;
             synchronized (this) {
                 t = comparatorTask;
+                err.log(Level.FINE, "Waiting for comparator {0}", t);
             }
             if (t != null) {
                 t.waitFinished ();
@@ -285,6 +286,7 @@ implements FileChangeListener, DataObject.Container {
             Task t;
             synchronized (this) {
                 t = refreshTask;
+                err.log(Level.FINE, "Waiting for refresh {0}", t); 
             }
             if (t != null) {
                 t.waitFinished ();
