@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 
 /**
@@ -120,7 +124,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
-    public void DISABLEtestFindDeclarationInOtherFile1() throws Exception {
+    public void testFindDeclarationInOtherFile1() throws Exception {
         performTestSimpleFindDeclaration(1,
                                          "<?php\n" +
                                          "include \"testa.php\";\n" +
@@ -131,7 +135,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
-    public void DISABLEtestFindDeclarationInOtherFile2() throws Exception {
+    public void testFindDeclarationInOtherFile2() throws Exception {
         performTestSimpleFindDeclaration(2,
                                          "<?php\n" +
                                          "include \"testa.php\";\n" +
@@ -173,29 +177,53 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testResolveUseBeforeDeclaration() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "fo|o();\n" +
+                                         "^function foo() {}\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+    
+    public void testShowAllDeclarationsWhenUnknown() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "fo|o();\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "^function foo() {}\n" +
+                                         "?>",
+                                          "<?php\n" +
+                                         "^function foo() {}\n" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         
-        int declOffset = -1;
+        Set<Golden> golden = new HashSet<Golden>();
         
         for (int cntr = 0; cntr < code.length; cntr++) {
             int i = code[cntr].replaceAll("\\|", "").indexOf('^');
             
             if (i != (-1)) {
-                declOffset = i;
+                golden.add(new Golden(cntr, i));
+                
                 code[cntr] = code[cntr].replaceAll("\\^", "");
-                break;
             }
         }
         
-        int caretOffset = code[0].replaceAll("\\^", "").indexOf('|');
+        int caretOffset = code[0].indexOf('|');
         
         code[0] = code[0].replaceAll("\\|", "");
         
         assertTrue(caretOffset != (-1));
-        assertTrue(declOffset != (-1));
+        assertFalse(golden.isEmpty());
         
-        performTestSimpleFindDeclaration(code, caretOffset, declarationFile, declOffset);
+        performTestSimpleFindDeclaration(code, caretOffset, golden);
     }
     
     private void performTestSimpleFindDeclaration(String code) throws Exception {
@@ -213,16 +241,73 @@ public class DeclarationFinderImplTest extends TestBase {
     }
     
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final int declarationFile, final int declarationOffset) throws Exception {
+        performTestSimpleFindDeclaration(code, caretOffset, Collections.singleton(new Golden(declarationFile, declarationOffset)));
+    }
+    
+    private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final Set<Golden> golden) throws Exception {
         performTest(code, new CancellableTask<CompilationInfo>() {
             public void cancel() {}
             public void run(CompilationInfo parameter) throws Exception {
                 DeclarationLocation found = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
 
                 assertNotNull(found.getFileObject());
-                assertEquals(computeFileName(declarationFile - 1), found.getFileObject().getNameExt());
-                assertEquals(declarationOffset, found.getOffset());
+                Set<Golden> result = new HashSet<Golden>();
+                
+                result.add(new Golden(found.getFileObject().getNameExt(), found.getOffset()));
+                
+                for (AlternativeLocation l : found.getAlternativeLocations()) {
+                    result.add(new Golden(l.getLocation().getFileObject().getNameExt(), l.getLocation().getOffset()));
+                }
+                
+                assertEquals(golden, result);
             }
         });
     }
 
+    private static final class Golden {
+        private String declarationFile;
+        private int declarationOffset;
+
+        public Golden(int declarationFile, int declarationOffset) {
+            this(computeFileName(declarationFile - 1), declarationOffset);
+        }
+        
+        public Golden(String declarationFile, int declarationOffset) {
+            this.declarationFile = declarationFile;
+            this.declarationOffset = declarationOffset;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Golden other = (Golden) obj;
+            if (this.declarationFile != other.declarationFile && (this.declarationFile == null || !this.declarationFile.equals(other.declarationFile))) {
+                return false;
+            }
+            if (this.declarationOffset != other.declarationOffset) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + (this.declarationFile != null ? this.declarationFile.hashCode() : 0);
+            hash = 29 * hash + this.declarationOffset;
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "[Golden: " + declarationFile + ":" + declarationOffset + "]";
+        }
+
+    }
+    
 }

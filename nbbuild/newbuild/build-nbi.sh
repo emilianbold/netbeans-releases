@@ -16,6 +16,12 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer
    cd $NB_ALL
    gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
+
+   if [ 1 -eq $ML_BUILD ] ; then
+       cd $NB_ALL/l10n
+       gtar c */other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
+       cd $NB_ALL
+   fi
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/*
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
