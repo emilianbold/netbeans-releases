@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.JTree;
+import javax.swing.Renderer;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.openide.explorer.view.BeanTreeView;
 
@@ -52,12 +56,19 @@ import org.openide.explorer.view.BeanTreeView;
  *
  * @author Dan
  */
-public class DebugTreeView extends BeanTreeView {
+public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
 
+    private TreeCellRenderer origCellRenderer;
+    
     DebugTreeView() {
         super();
-        tree.setPreferredSize(new Dimension(0, 0));
+        tree.setPreferredSize(new Dimension(5, 5));
         tree.setMinimumSize(new Dimension(5, 5));
+        setPreferredSize(new Dimension(5, 5));
+        setMinimumSize(new Dimension(5, 5));
+        
+        origCellRenderer = tree.getCellRenderer();
+        // tree.setCellRenderer(this);
     }
     
     public JTree getTree() {
@@ -96,6 +107,16 @@ public class DebugTreeView extends BeanTreeView {
                 collectVisiblePaths(result, path);
             }
         }
+    }
+
+    public Component getTreeCellRendererComponent(JTree tree, Object value,
+            boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        Component comp = origCellRenderer.getTreeCellRendererComponent(
+                tree, value, selected, expanded, leaf, row, hasFocus);
+        if (row % 2 == 0 && comp instanceof Renderer) {
+            comp.setBackground(Color.LIGHT_GRAY);
+        }
+        return comp;
     }
     
 }
