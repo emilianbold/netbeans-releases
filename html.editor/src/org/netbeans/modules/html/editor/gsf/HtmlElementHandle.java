@@ -102,13 +102,7 @@ public class HtmlElementHandle implements ElementHandle {
         AstPath fnPath = foreignNode.path();
         AstPath path = node.path();
         
-        return path.equals(fnPath, new AstPath.AstElementComparator() {
-            public boolean equals(AstNode node1, AstNode node2) {
-                return node1.name().equals(node2.name())
-                        && node1.type() == node2.type();
-            }
-        });
-        
+        return path.equals(fnPath);
     }
 
     public AstNode node() {

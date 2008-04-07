@@ -336,6 +336,10 @@ public class MakeActionProvider implements ActionProvider {
                 if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) // NOI18N
                     return;
             } else if (targetName.equals("run") || targetName.equals("debug") || targetName.equals("debug-stepinto") || targetName.equals("debug-load-only")) { // NOI18N
+                if (!validateBuildSystem(pd, conf, validated)) {
+                    return;
+                }
+                validated = true;
                 if (conf.isMakefileConfiguration()) {
                     String path;
                     if (targetName.equals("run")) { // NOI18N
