@@ -109,7 +109,7 @@ public abstract class MultiFileLoader extends DataLoader {
             if (willLog) {
                 ERR.fine("checking correctness: primary is different than provided file: " + primary + " fo: " + fo); // NOI18N
             }
-            Enumeration en = DataLoaderPool.getDefault().allLoaders();
+            Enumeration en = DataLoaderPool.getDefault().allLoaders(primary);
             for (;;) {
                 DataLoader l = (DataLoader)en.nextElement();
                 if (l == this) {
@@ -162,7 +162,7 @@ public abstract class MultiFileLoader extends DataLoader {
                     if (loaderPrimary != null && dataObject.getPrimaryFile() != loaderPrimary) {
                         ERR.log(Level.FINE, "Which is different than primary of found: {0}", dataObject); // NOI18N
 
-                        Enumeration before = DataLoaderPool.getDefault().allLoaders();
+                        Enumeration before = DataLoaderPool.getDefault().allLoaders(fo);
                         while (before.hasMoreElements()) {
                             Object o = before.nextElement();
                             if (o == mfl) {

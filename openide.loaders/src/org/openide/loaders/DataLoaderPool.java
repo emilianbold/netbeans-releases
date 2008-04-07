@@ -51,6 +51,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /** Pool of data loaders.
  * Provides access to set of registered
@@ -285,6 +286,37 @@ implements java.io.Serializable {
         return Collections.enumeration(all);
     }
     
+    final Enumeration<DataLoader> allLoaders(final FileObject fo) {
+        class MimeEnum implements Enumeration<DataLoader> {
+            Enumeration<? extends DataLoader> delegate;
+            
+            private Enumeration<? extends DataLoader> delegate() {
+                if (delegate == null) {
+                    delegate = Collections.enumeration(Lookups.forPath("Loaders/" + fo.getMIMEType()).lookupAll(DataLoader.class));
+                }
+                return delegate;
+            }
+            
+            public boolean hasMoreElements() {
+                return delegate().hasMoreElements();
+            }
+
+            public DataLoader nextElement() {
+                return delegate().nextElement();
+            }
+        }
+        Enumeration<DataLoader> mimeLoaders = new MimeEnum();
+        try {
+            if (!fo.getFileSystem().isDefault()) {
+                return Enumerations.concat(mimeLoaders, allLoaders());
+            }
+        } catch (FileStateInvalidException ex) {
+            // OK
+        }
+        
+        return Enumerations.concat(allLoaders(), mimeLoaders);
+    }
+    
     /** Get an array of loaders that are currently registered.
      * Does not include special system loaders, etc.
      * @return array of loaders
@@ -408,7 +440,7 @@ implements java.io.Serializable {
         }
         
         // scan through loaders
-        java.util.Enumeration en = allLoaders ();
+        java.util.Enumeration en = allLoaders (fo);
         while (en.hasMoreElements ()) {
             DataLoader l = (DataLoader)en.nextElement ();
     
