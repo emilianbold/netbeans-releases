@@ -50,7 +50,6 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
@@ -69,6 +68,7 @@ import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DbMetaDataListenerSupport;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.util.ChangeSupport;
 
 public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         implements Node.Cookie, Comparable {
@@ -121,8 +121,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     private boolean connected = false;
         
     // Thread-safe, no synchronization
-    private final CopyOnWriteArrayList<ChangeListener> listeners =
-            new CopyOnWriteArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public synchronized static Map getGlobalNodeInfo() {
         if (gtab == null)
@@ -880,17 +879,15 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
     
     public void addChangeListener(ChangeListener listener) {
-        listeners.add(listener);
+        changeSupport.addChangeListener(listener);
     }
     
     public void removeChangeListener(ChangeListener listener) {
-        listeners.remove(listener);
+        changeSupport.removeChangeListener(listener);
     }
     
     protected void notifyChange() {
-        for ( ChangeListener listener : listeners ) {
-            listener.stateChanged(new ChangeEvent(this));
-        }
+        changeSupport.fireChange();
     }
     
     protected static ResourceBundle bundle() {
