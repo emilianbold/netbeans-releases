@@ -67,6 +67,7 @@ implements DataLoader.RecognizedFiles {
     private FileObject f0;
     private FileObject f1;
     private FileObject f2;
+    private FileObject root;
     
     public FightWithWrongOrderOfLoadersTest(String testName) {
         super(testName);
@@ -77,11 +78,11 @@ implements DataLoader.RecognizedFiles {
 
         registerIntoLookup(new Pool());
 
-        FileObject fo = FileUtil.createFolder(FileUtil.createMemoryFileSystem().getRoot(), "test");
+        root = FileUtil.createFolder(FileUtil.createMemoryFileSystem().getRoot(), "test");
 
-        f0 = FileUtil.createData(fo, "j1.java");
-        f1 = FileUtil.createData(fo, "f.formKit");
-        f2 = FileUtil.createData(fo, "f.java");
+        f0 = FileUtil.createData(root, "j1.java");
+        f1 = FileUtil.createData(root, "f.formKit");
+        f2 = FileUtil.createData(root, "f.java");
     }
 
     protected Level logLevel() {
@@ -117,6 +118,17 @@ implements DataLoader.RecognizedFiles {
         }
 
         assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
+    }
+    
+    public void testGetFolderChildren() throws Exception {
+        DataFolder folder = DataFolder.findFolder(root);
+        DataObject[] arr = folder.getChildren();
+        assertEquals("Two object returned", 3, arr.length);
+        
+        assertEquals("1st", f2, arr[0].getPrimaryFile());
+        assertEquals("2nd", f1, arr[1].getPrimaryFile());
+        assertEquals("3rd", f0, arr[2].getPrimaryFile());
+        
     }
 
 
