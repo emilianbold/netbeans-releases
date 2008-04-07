@@ -154,7 +154,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setText(title);
         titleButton.setToolTipText(titleButton.getText());
-        titleButton.setFont(new Font(getFont().getFontName(), Font.BOLD, getFont().getSize() + 2));
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 if (!SectionPanel.this.isActive()) {
@@ -371,6 +370,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
         titlePanel.setLayout(new java.awt.BorderLayout());
 
+        titleButton.setFont(titleButton.getFont().deriveFont(titleButton.getFont().getStyle() | java.awt.Font.BOLD, titleButton.getFont().getSize()+2));
         titleButton.setBorderPainted(false);
         titleButton.setContentAreaFilled(false);
         titleButton.setFocusPainted(false);

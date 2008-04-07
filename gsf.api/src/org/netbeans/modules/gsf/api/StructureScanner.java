@@ -60,11 +60,11 @@ public interface StructureScanner {
      * {@link HtmlFormatter} can be used to format the HTML strings required for
      * StructureItems.
      */
-    List<? extends StructureItem> scan(@NonNull CompilationInfo info, HtmlFormatter formatter);
+    @NonNull List<? extends StructureItem> scan(@NonNull CompilationInfo info, @NonNull HtmlFormatter formatter);
     
     /**
      * @todo Do this in the same pass as the structure scan?
      * Compute a list of foldable regions, named "codeblocks", "comments", "imports", "initial-comment", ...
      */
-    Map<String,List<OffsetRange>> folds(@NonNull CompilationInfo info);
+    @NonNull Map<String,List<OffsetRange>> folds(@NonNull CompilationInfo info);
 }

@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.ImageIcon;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**
@@ -55,22 +57,31 @@ public interface CompletionProposal {
     /** The offset at which the completion item substitution should begin */
     int getAnchorOffset();
 
+    @CheckForNull
     ElementHandle getElement();
 
+    @NonNull
     String getName();
 
+    @NonNull
     String getInsertPrefix();
 
+    @CheckForNull
     String getSortText();
 
+    @NonNull
     String getLhsHtml();
 
+    @CheckForNull
     String getRhsHtml();
 
+    @NonNull
     ElementKind getKind();
 
+    @CheckForNull
     ImageIcon getIcon();
 
+    @NonNull
     Set<Modifier> getModifiers();
     
     /**
@@ -88,6 +99,7 @@ public interface CompletionProposal {
      *   where the insert prefix, the insert params and param list delimiters
      *   are used instead.
      */
+    @CheckForNull
     String getCustomInsertTemplate();
 
     /**
@@ -95,10 +107,12 @@ public interface CompletionProposal {
      * if getCustomInsertTemplate() returns non null.
      * @return
      */
+    @CheckForNull
     List<String> getInsertParams();
 
     /** The strings to be inserted to start and end a parameter list. Should be a String of length 2.
      * In Java we would expect {(,)}, and in Ruby it's either {(,)} or { ,}.
      */
+    @NonNull
     String[] getParamListDelimiters();
 }

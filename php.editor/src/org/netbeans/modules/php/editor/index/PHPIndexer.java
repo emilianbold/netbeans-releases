@@ -122,7 +122,17 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_CONST = "const"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        // Cannot call file.getFileObject().getMIMEType() here for several reasons:
+        // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
+        //   may return "content/unknown", and in some cases, file.getFileObject() returns null
+        // (2) file.getFileObject() can be expensive during startup indexing when we're
+        //   rapidly scanning through lots of directories to determine which files are
+        //   indexable. This is done using the java.io.File API rather than the more heavyweight
+        //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
+        // Since the mime resolver for PHP is simple -- it's just based on the file extension,
+        // we perform the same check here:
+        //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        if (PHPLanguage.PHP_FILE_EXTENSION.equals(file.getExtension())) { // NOI18N
 
             // Skip Gem versions; Rails copies these files into the project anyway! Don't want
             // duplicate entries.
@@ -477,8 +487,19 @@ public class PHPIndexer implements Indexer {
     public FileObject getPreindexedDb() {
         return null;
     }
-
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * As the above documentation states, this is a temporary solution / hack
+     * for 6.1 only.
+     */
     public boolean acceptQueryPath(String url) {
-        return true;
+        // Filter out JavaScript stuff
+        return url.indexOf("jsstubs") == -1 && // NOI18N
+                // Filter out Ruby stuff
+                url.indexOf("/ruby2/") == -1 &&  // NOI18N
+                url.indexOf("/gems/") == -1 &&  // NOI18N
+                url.indexOf("lib/ruby/") == -1; // NOI18N
     }
 }

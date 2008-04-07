@@ -40,21 +40,20 @@
  */
 package org.netbeans.modules.gsf.api;
 
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * Based on the javac one
  *
- * Provides details about work that has been done by the Sun Java Compiler, javac.
+ * Provides details about work that has been done by the parser.
  *
  * @author Jonathan Gibbons
- * @since 1.6
  */
 public final class ParseEvent
 {
     /**
      * Kind of task event.
-     * @since 1.6
      */
     public enum Kind {
         /**
@@ -83,55 +82,32 @@ public final class ParseEvent
         ANNOTATION_PROCESSING_ROUND
     }
     
-//    public TaskEvent(Kind kind) {
-//	this(kind, null, null, null);
-//    }
-//
-//    public TaskEvent(Kind kind, JavaFileObject sourceFile) {
-//	this(kind, sourceFile, null, null);
-//    }
-//
-//    public TaskEvent(Kind kind, CompilationUnitTree unit) {
-//	this(kind, unit.getSourceFile(), unit, null);
-//    }
-//
-//    public TaskEvent(Kind kind, CompilationUnitTree unit, TypeElement clazz) {
-//	this(kind, unit.getSourceFile(), unit, clazz);
-//    }
-//
-    public ParseEvent(Kind kind, ParserFile file, ParserResult result) {
+    public ParseEvent(@NonNull Kind kind, @NonNull ParserFile file, @CheckForNull ParserResult result) {
 	this.kind = kind;
 	this.file = file;
         this.result = result;
     }
 
+    @NonNull
     public Kind getKind() {
 	return kind;
     }
 
+    @NonNull
     public ParserFile getSourceFile() {
 	return file;
     }
 
-//    public CompilationUnitTree getCompilationUnit() {
-//	return unit;
-//    }
-    
+    @CheckForNull
     public ParserResult getResult() {
         return result;
     }
     
-//
-//    public TypeElement getTypeElement() {
-//	return clazz;
-//    }
-    
+    @Override
     public String toString() {
 	return "TaskEvent[" 
 	    + kind + "," 
 	    + file + ","
-	    // the compilation unit is identified by the file
-//	    + clazz + "]"
             ;
     }
 

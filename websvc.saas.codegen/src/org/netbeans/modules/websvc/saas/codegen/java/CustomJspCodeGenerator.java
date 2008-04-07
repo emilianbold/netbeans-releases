@@ -65,7 +65,6 @@ public class CustomJspCodeGenerator extends CustomServletCodeGenerator {
     public CustomJspCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, CustomSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
-        setSubresourceLocatorUriTemplate(findSubresourceLocatorUriTemplate());
         jspSpecialNamesMap.put("page", "page1");
     }
     

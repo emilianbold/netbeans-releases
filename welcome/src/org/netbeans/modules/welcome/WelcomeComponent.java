@@ -68,6 +68,7 @@ public class WelcomeComponent extends TopComponent {
         content = null;
         initialized = false;
         putClientProperty( "activateAtStartup", Boolean.TRUE ); //NOI18N
+        putClientProperty( "KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE ); //NOI18N
     }
     
     @Override protected String preferredID(){
