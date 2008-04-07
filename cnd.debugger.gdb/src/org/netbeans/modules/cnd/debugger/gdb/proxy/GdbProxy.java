@@ -94,7 +94,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param workingDirectory The directory to start the debugger from
      * @throws IOException Pass this on to the caller
      */
-    public GdbProxy(GdbDebugger debugger, String debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
+    public GdbProxy(GdbDebugger debugger, String debuggerCommand, String[] debuggerEnvironment,
+            String workingDirectory, String termpath, String cspath) throws IOException {
         this.debugger = debugger;
 
         log.setLevel(Level.FINE);
@@ -105,7 +106,7 @@ public class GdbProxy implements GdbMiDefinitions {
         dc.add("--silent"); // NOI18N
         dc.add("--interpreter=mi"); // NOI18N
         gdbLogger = new GdbLogger(debugger, this);
-        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath);
+        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath, cspath);
     }
 
     protected GdbProxyEngine getProxyEngine() {

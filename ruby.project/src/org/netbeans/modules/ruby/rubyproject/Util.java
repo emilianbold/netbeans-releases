@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -282,5 +282,15 @@ public final class Util {
         if (selectedPlatform != null) {
             org.netbeans.modules.ruby.platform.Util.getPreferences().put(LAST_PLATFORM_ID, selectedPlatform.getID());
         }
+    }
+    
+    /**
+     * Strips extension from the given filename and return the result. Returns
+     * given filename if there is no extension.
+     */
+    public static String stripExtension(final String fileName, final String ext) {
+        int extIndex = fileName.lastIndexOf('.');
+        String extension = extIndex == -1 ? "" : fileName.substring(extIndex);
+        return ext.equals(extension) ? fileName.substring(0, extIndex) : fileName;
     }
 }

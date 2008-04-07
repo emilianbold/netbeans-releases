@@ -154,5 +154,5 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
             bounds = new PositionBounds(start, end);
         }
         return new DiffElement(diff, bounds, fileObject, modification);
-    }    
+    }       
 }

@@ -62,7 +62,7 @@
                 <artifact id="GoogleMapService" type="template" requires="profile.properties"
                     url="Templates/SaaSServices/GoogleMapResource.java"/>
                 <artifact id="googlemapservice" type="template"
-                    url="SaaSServices/Google/profile.properties"/>
+                    url="Templates/SaaSServices/apikey.properties"/>
             </artifacts>
         </code-gen>
         <!-- http-basic, api-key, custom -->
