@@ -39,17 +39,79 @@
 
 package org.netbeans.modules.glassfish.jruby.ui;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.ComboBoxModel;
+import javax.swing.event.ListDataListener;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.spi.glassfish.GlassfishModule;
+
 /**
  *
  * @author Peter Williams
  */
 public class JRubyServerCustomizer extends javax.swing.JPanel {
 
-    /** Creates new form JRubyServerCustomizer */
-    public JRubyServerCustomizer() {
+    public static final String DEFAULT_RUBY_PLATFORM_ID = "ruby.platform.id"; // NOI18N
+    
+    private GlassfishModule commonSupport;
+    
+    public JRubyServerCustomizer(GlassfishModule commonSupport) {
+        this.commonSupport = commonSupport;
+        
         initComponents();
     }
 
+    private void initFields() {
+        setFilterModel(comboJRubyPlatform.getModel());
+        Map<String, String> ip = commonSupport.getInstanceProperties();
+        RubyPlatform defaultPlatform = getDefaultPlatform(ip.get(DEFAULT_RUBY_PLATFORM_ID));
+        comboJRubyPlatform.setSelectedItem(defaultPlatform);
+    }
+    
+    private RubyPlatform getDefaultPlatform(String savedPlatformId) {
+        RubyPlatform result = RubyPlatformManager.getPlatformByID(savedPlatformId);
+        if(result == null || !result.isJRuby()) {
+            result = RubyPlatformManager.getDefaultPlatform();
+            if(!result.isJRuby()) {
+                result = null;
+                Iterator<RubyPlatform> iter = RubyPlatformManager.platformIterator();
+                while(iter.hasNext()) {
+                    RubyPlatform p = iter.next();
+                    if(p.isJRuby()) {
+                        result = p;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    private void persistFields() {
+        Object o = comboJRubyPlatform.getSelectedItem();
+        if(o instanceof RubyPlatform) {
+            RubyPlatform p = (RubyPlatform) o;
+            commonSupport.setEnvironmentProperty(DEFAULT_RUBY_PLATFORM_ID, p.getID(), true);
+            commonSupport.setEnvironmentProperty(GlassfishModule.JRUBY_HOME, p.getHome().getAbsolutePath(), true);
+        }
+    }
+    
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        initFields();
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        persistFields();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -60,11 +122,17 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
     private void initComponents() {
 
         labelJRubyPlatform = new javax.swing.JLabel();
-        comboJRubyPlatform = new javax.swing.JComboBox();
+        comboJRubyPlatform = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
 
         setName(org.openide.util.NbBundle.getMessage(JRubyServerCustomizer.class, "JRubyServerCustomizer.name")); // NOI18N
 
         labelJRubyPlatform.setText(org.openide.util.NbBundle.getMessage(JRubyServerCustomizer.class, "JRubyServerCustomizer.labelJRubyPlatform.text")); // NOI18N
+
+        comboJRubyPlatform.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                comboJRubyPlatformPropertyChange(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -74,7 +142,7 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(labelJRubyPlatform)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(comboJRubyPlatform, 0, 67, Short.MAX_VALUE)
+                .add(comboJRubyPlatform, 0, 62, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -84,14 +152,100 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelJRubyPlatform)
                     .add(comboJRubyPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+    
+    private AtomicBoolean modelChanging = new AtomicBoolean(false);
+    
+private void comboJRubyPlatformPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_comboJRubyPlatformPropertyChange
+    if("model".equals(evt.getPropertyName())) {
+        if(!modelChanging.getAndSet(true)) {
+            try {
+                ComboBoxModel model = (ComboBoxModel) evt.getNewValue();
+                setFilterModel(model);
+            } finally {
+                modelChanging.set(false);
+            }
+        }
+    }
+}//GEN-LAST:event_comboJRubyPlatformPropertyChange
 
+    private void setFilterModel(ComboBoxModel model) {
+        if(model != null &&
+                (model.getSize() == 0 || model.getElementAt(0) instanceof RubyPlatform)) {
+            model = new FilterModel(model);
+            comboJRubyPlatform.setModel(model);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comboJRubyPlatform;
     private javax.swing.JLabel labelJRubyPlatform;
     // End of variables declaration//GEN-END:variables
 
+    private static class FilterModel implements ComboBoxModel {
+
+        private ComboBoxModel delegate;
+        private Map<RubyPlatform, Integer> data;
+        
+        FilterModel(ComboBoxModel delegate) {
+            this.delegate = delegate;
+            updateModel();
+        }
+        
+        private synchronized void updateModel() {
+            data = new HashMap<RubyPlatform, Integer>();
+            int size = delegate.getSize();
+            for(int i = 0; i < size; i++) {
+                Object o = delegate.getElementAt(i);
+                if(o instanceof RubyPlatform) {
+                    RubyPlatform p = (RubyPlatform) o;
+                    if(p.isJRuby()) {
+                        data.put(p, Integer.valueOf(i));
+                    }
+                }
+            }
+        }
+        
+        public synchronized void setSelectedItem(Object anItem) {
+            Integer mappedIndex = data.get(anItem);
+            if(mappedIndex != null) {
+                delegate.setSelectedItem(anItem);
+            }
+        }
+
+        public synchronized Object getSelectedItem() {
+            Object o = delegate.getSelectedItem();
+            if(o instanceof RubyPlatform) {
+                RubyPlatform p = (RubyPlatform) o;
+                if(p.isJRuby()) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        public synchronized int getSize() {
+            return data.size();
+        }
+
+        public synchronized Object getElementAt(int index) {
+            Iterator<RubyPlatform> iter = data.keySet().iterator();
+            while(index-- > 0 && iter.hasNext()) {
+                iter.next();
+            }
+            return iter.hasNext() ? iter.next() : null;
+        }
+
+        public void addListDataListener(ListDataListener l) {
+            delegate.addListDataListener(l);
+        }
+
+        public void removeListDataListener(ListDataListener l) {
+            delegate.removeListDataListener(l);
+        }
+
+    }
+    
 }

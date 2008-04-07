@@ -24,7 +24,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="labelJRubyPlatform" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="comboJRubyPlatform" pref="67" max="32767" attributes="0"/>
+              <Component id="comboJRubyPlatform" pref="62" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -37,7 +37,7 @@
                   <Component id="labelJRubyPlatform" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="comboJRubyPlatform" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="47" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,6 +56,12 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="comboJRubyPlatformPropertyChange"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox()"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

@@ -400,7 +400,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     // ------------------------------------------------------------------------
     public Collection<JPanel> getCustomizerPages() {
         Collection<JPanel> result = new LinkedList<JPanel>();
-        result.add(new JRubyServerCustomizer());
+        result.add(new JRubyServerCustomizer(lookup.lookup(GlassfishModule.class)));
         return result;
     }
 
