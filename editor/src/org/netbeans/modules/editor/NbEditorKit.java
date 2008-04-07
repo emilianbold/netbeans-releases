@@ -78,6 +78,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -553,10 +554,15 @@ public class NbEditorKit extends ExtKit implements Callable {
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to system undo action
-            UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
-            if (ua != null && ua.isEnabled()) {
-                ua.actionPerformed(evt);
+            Document doc = target.getDocument();
+            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null) { // Basic way of undo
+                super.actionPerformed(evt, target);
+            } else { // Deleagte to system undo action
+                // Delegate to system undo action
+                UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
+                if (ua != null && ua.isEnabled()) {
+                    ua.actionPerformed(evt);
+                }
             }
         }
 
@@ -565,10 +571,15 @@ public class NbEditorKit extends ExtKit implements Callable {
     public static class NbRedoAction extends ActionFactory.RedoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to system redo action
-            RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
-            if (ra != null && ra.isEnabled()) {
-                ra.actionPerformed(evt);
+            Document doc = target.getDocument();
+            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null) { // Basic way of undo
+                super.actionPerformed(evt, target);
+            } else { // Deleagte to system undo action
+                // Delegate to system redo action
+                RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
+                if (ra != null && ra.isEnabled()) {
+                    ra.actionPerformed(evt);
+                }
             }
         }
 

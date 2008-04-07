@@ -9,7 +9,7 @@
 
 package Templates.Classes;
 
-iimport java.awt.Dimension;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,7 +63,7 @@ public class __NAME__ extends Authenticator {
         
     private static boolean isValidUsernamePassword() {
         return (username != null && username.length() > 0 &&
-                password != null || password.length() > 0);
+                password != null && password.length() > 0);
     }
 
     private __NAME__() {

@@ -52,6 +52,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     
     private final MercurialOptionsPanelController controller;
     private final DocumentListener listener;
+    private String initialUserName;
     
     MercurialPanel(MercurialOptionsPanelController controller) {
         this.controller = controller;
@@ -248,7 +249,8 @@ final class MercurialPanel extends javax.swing.JPanel {
         // someCheckBox.setSelected(NbPreferences.forModule(MercurialPanel.class).getBoolean("someFlag", false)); // NOI18N
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
-        userNameTextField.setText(HgModuleConfig.getDefault().getUserName());
+        initialUserName = HgModuleConfig.getDefault().getSysUserName();
+        userNameTextField.setText(initialUserName);
         executablePathTextField.setText(HgModuleConfig.getDefault().getExecutableBinaryPath());
         exportFilenameTextField.setText(HgModuleConfig.getDefault().getExportFilename());
         annotationTextField.setText(HgModuleConfig.getDefault().getAnnotationFormat());
@@ -263,7 +265,8 @@ final class MercurialPanel extends javax.swing.JPanel {
         // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
-        HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+        if(!initialUserName.equals(userNameTextField.getText()))
+            HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
         HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
         HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
         HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());

@@ -504,14 +504,14 @@ public class CCFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
-        TokenItem t = findStatementStart(token, true);
+        TokenItem t = findStatementStart(token, false);
         // preprocessor tokens are not important (bug#22570)
         while (t != null && isPreprocessorLine(t)) {
             TokenItem current = t.getPrevious();
             if (current == null) {
                 return null;
             }
-            t = findStatementStart(current, true);
+            t = findStatementStart(current, false);
         }
         return t;
     }
@@ -740,8 +740,17 @@ public class CCFormatSupport extends ExtFormatSupport {
                             case CCTokenContext.IF_ID:
                             case CCTokenContext.WHILE_ID:
                             case CCTokenContext.ELSE_ID:
+                            case CCTokenContext.TRY_ID:
+                            case CCTokenContext.ASM_ID:
+                            case CCTokenContext.CATCH_ID:
                                 indent = getTokenIndent(stmt);
                                 if (isHalfIndentNewlineBeforeBrace()){
+                                    indent += getShiftWidth()/2;
+                                }
+                                break;
+                            case CCTokenContext.SWITCH_ID:
+                                indent = getTokenIndent(stmt);
+                                if (isHalfIndentNewlineBeforeBraceSwitch()){
                                     indent += getShiftWidth()/2;
                                 }
                                 break;
@@ -950,6 +959,11 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     // Indent one level
                                     indent = getTokenIndent(rpmt) + getRightIndent();
                                     break;
+                                case CCTokenContext.IDENTIFIER_ID:
+                                    if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                                        indent = getTokenIndent(t);
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -958,13 +972,21 @@ public class CCFormatSupport extends ExtFormatSupport {
                         }
                         break;
 
+                    case CCTokenContext.IDENTIFIER_ID:
+                        if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                            indent = getTokenIndent(t);
+                            break;
+                        }
+                        indent = computeStatementIndent(t);
+                        break;
+                        
                     case CCTokenContext.COMMA_ID:
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
                             break;
                         }
-                        // else continue to default
-                        //nobreak
+                        indent = computeStatementIndent(t);
+                        break;
                     default:
                         indent = computeStatementIndent(t);
                         break;
@@ -1405,11 +1427,15 @@ public class CCFormatSupport extends ExtFormatSupport {
             }
             token = itm;
         }
-        if (token != null && tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath)) {
+        if (token != null && 
+            (tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath) ||
+             tokenEquals(token, CCTokenContext.DOT, tokenContextPath))) {
             TokenItem itm = findImportantToken(token, null, true, true);
             if (itm != null && tokenEquals(itm, CCTokenContext.LBRACE, tokenContextPath)) {
                 TokenItem startItem = findStatementStart(itm);
                 if (startItem != null && findToken(startItem, itm, CCTokenContext.ENUM, tokenContextPath, null, false) != null)
+                    return true;
+                if (startItem != null && findToken(startItem, itm, CCTokenContext.EQ, tokenContextPath, null, false) != null)
                     return true;
             }
         }

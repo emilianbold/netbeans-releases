@@ -74,6 +74,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -1851,7 +1852,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     clean = true;
                 }
                 
-                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
+                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath,null,true,false)), true);
 
                 if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                     if (ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true)) {
@@ -2171,6 +2172,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
                         JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
                         JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
+                        }
                         jt.setTaskListener(listener);
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         Iterable<? extends TypeElement> classes = jt.enter();
@@ -2262,32 +2266,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final String offset = FileObjects.getRelativePath (rootFile,fileFile);
             assert offset != null && offset.length() > 0 : String.format("File %s not under root %s ", fileFile.getAbsolutePath(), rootFile.getAbsolutePath());  // NOI18N                        
             final File classCache = Index.getClassFolder (rootFile);
-            File[] affectedFiles = null;
-            if (folder) {
-                final File container = new File (classCache, offset);
-                affectedFiles = container.listFiles();
-            }
-            else {
-                int slashIndex = offset.lastIndexOf (File.separatorChar);
-                int dotIndex = offset.lastIndexOf('.');     //NOI18N
-                final File container = slashIndex == -1 ? classCache : new File (classCache,offset.substring(0,slashIndex));
-                final String name = offset.substring(slashIndex+1, dotIndex);
-                final String[] patterns = new String[] {
-                  name + '.',
-                  name + '$'
-                };
-                final File[] content  = container.listFiles();
-                if (content != null) {
-                    final List<File> result = new ArrayList<File>(content.length);
-                    for (File f : content) {
-                        final String fname = f.getName();
-                        if (fname.startsWith(patterns[0]) || fname.startsWith(patterns[1])) {
-                            result.add(f);
-                        }
-                    }
-                    affectedFiles = result.toArray(new File[result.size()]);
-                }
-            }
+            final File[] affectedFiles = getAffectedCacheFiles(offset, classCache, folder);            
             if (affectedFiles != null && affectedFiles.length > 0) {
                 Set<ElementHandle<TypeElement>> removed = new HashSet<ElementHandle<TypeElement>>();
                 final ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
@@ -2812,7 +2791,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         if (jt == null) {
                             jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
                             jt.setTaskListener(listener);
-                            LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
+                            }
                         }
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         if (listener.lowMemory.getAndSet(false)) {
@@ -2930,7 +2911,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         URI u = active.toUri();
                         for (Iterator<Diagnostic> it = listener.errors.iterator(); it.hasNext(); ) {
                             Diagnostic d = it.next();
-                            
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(d.toString());
+                            }
                             if (active.equals(d.getSource())) {
                                 diag.add(d);
                                 it.remove();
@@ -2939,7 +2922,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         
                         for (Iterator<Diagnostic> it = listener.warnings.iterator(); it.hasNext(); ) {
                             Diagnostic d = it.next();
-                            
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(d.toString());
+                            }
                             if (active.equals(d.getSource())) {
                                 diag.add(d);
                                 it.remove();
@@ -3174,6 +3159,75 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         getAllClassFilesImpl (folder, root,len,result, recursive);
         return result;
+    }
+    
+    public static Set<File> getAffectedCacheFiles (final FileObject file, final FileObject root) {
+        assert file != null;
+        assert root != null;
+        File[] res = null;
+        File classCache = null;
+        try {
+            classCache = Index.getClassFolder (root.getURL());
+            if (classCache != null) {
+                String offset = FileUtil.getRelativePath(root, file);
+                if (offset != null) {
+                    res = getAffectedCacheFiles(offset.replace('/', File.separatorChar), classCache, false);    //NOI18N
+                }
+            }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+        //never return null unlike getAffectedCacheFiles(Str,File,bool) which has null as a special ret type
+        final Set<File> af = new HashSet<File>();
+        if (res != null) {
+            for (File f : res) {
+                try {                                        
+                    if (f.getName().endsWith(FileObjects.RS)) {
+                        List<File> rsFiles = new LinkedList<File>();
+                        readRSFile(f, classCache, rsFiles);                        
+                        for (File rsf : rsFiles) {
+                            af.add(rsf);
+                        }
+                    }
+                    else {                                        
+                        af.add(f);                
+                    }
+                } catch (IOException e) {                    
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        }   
+        return af;
+    }
+    
+    private static File[] getAffectedCacheFiles (final String offset, final File classCache, final boolean folder) {        
+        File[] affectedFiles = null;
+        if (folder) {
+            final File container = new File (classCache, offset);
+            affectedFiles = container.listFiles();
+        }
+        else {
+            int slashIndex = offset.lastIndexOf (File.separatorChar);
+            int dotIndex = offset.lastIndexOf('.');     //NOI18N
+            final File container = slashIndex == -1 ? classCache : new File (classCache,offset.substring(0,slashIndex));
+            final String name = offset.substring(slashIndex+1, dotIndex);
+            final String[] patterns = new String[] {
+              name + '.',
+              name + '$'
+            };
+            final File[] content  = container.listFiles();
+            if (content != null) {
+                final List<File> result = new ArrayList<File>(content.length);
+                for (File f : content) {
+                    final String fname = f.getName();
+                    if (fname.startsWith(patterns[0]) || fname.startsWith(patterns[1])) {
+                        result.add(f);
+                    }
+                }
+                affectedFiles = result.toArray(new File[result.size()]);
+            }
+        }
+        return affectedFiles;
     }
         
     private static void gatherResources(final File root, final File f, final int oi, final Map<String,List<File>> result) {

@@ -87,8 +87,30 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     }
 
     private void checkSemantic(String relFilePath) throws Exception {
+        checkSemantic(relFilePath, null);
+    }
+    
+    private void checkSemantic(String relFilePath, String caretLine) throws Exception {
         JsSemanticAnalyzer analyzer = new JsSemanticAnalyzer();
         CompilationInfo info = getInfo(relFilePath);
+        
+        String text = info.getText();
+        assertNotNull(text);
+
+        int caretOffset = -1;
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue(lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
+            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
+        }
+
+        assertNotNull(AstUtilities.getParseResult(info));
+        
         analyzer.run(info);
         Map<OffsetRange, ColoringAttributes> highlights = analyzer.getHighlights();
 
@@ -123,5 +145,29 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
 
     public void testSemantic7() throws Exception {
         checkSemantic("testfiles/semantic7.js");
+    }
+
+    public void testSemantic8() throws Exception {
+        checkSemantic("testfiles/semantic8.js", "new^");
+    }
+
+    public void testSemanticE4x() throws Exception {
+        checkSemantic("testfiles/e4x.js", "order^");
+    }
+
+    public void testSemanticE4x2() throws Exception {
+        checkSemantic("testfiles/e4x2.js", "order^");
+    }
+
+    public void testSemanticTryCatch() throws Exception {
+        checkSemantic("testfiles/tryblocks.js");
+    }
+
+    public void testSemanticPrototype() throws Exception {
+        checkSemantic("testfiles/prototype.js");
+    }
+
+    public void testSemanticPrototypeNew() throws Exception {
+        checkSemantic("testfiles/prototype-new.js");
     }
 }

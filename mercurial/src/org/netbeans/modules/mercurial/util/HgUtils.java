@@ -192,22 +192,33 @@ public class HgUtils {
      * @return boolean true - on PATH, false - not on PATH
      */
     public static boolean isInUserPath(String name) {
+        String path = findInUserPath(name);
+        return (path == null || path.equals(""))? false: true;
+    }
+
+        /**
+     * findInUserPath - check if passed in name is on the Users PATH environment setting and return the path
+     *
+     * @param name to check
+     * @return String full path to name
+     */
+    public static String findInUserPath(String name) {
         String pathEnv = System.getenv().get("PATH");// NOI18N
         // Work around issues on Windows fetching PATH
         if(pathEnv == null) pathEnv = System.getenv().get("Path");// NOI18N
         if(pathEnv == null) pathEnv = System.getenv().get("path");// NOI18N
         String pathSeparator = System.getProperty("path.separator");// NOI18N
-        if (pathEnv == null || pathSeparator == null) return false;
+        if (pathEnv == null || pathSeparator == null) return "";
 
         String[] paths = pathEnv.split(pathSeparator);
         for (String path : paths) {
             File f = new File(path, name);
             // On Windows isFile will fail on hgk.cmd use !isDirectory
             if (f.exists() && !f.isDirectory()) {
-                return true;
+                return path;
             }
         }
-        return false;
+        return "";
     }
 
     /**
@@ -255,6 +266,58 @@ public class HgUtils {
         }
         return path;
     }
+    
+    
+    /**
+     * fixIniFilePathsOnWindows - converts '\' to '\\' in paths in IniFile on Windows
+     *
+     * @param File iniFile to process
+     * @return File processed tmpFile 
+     */
+    public static File fixPathsInIniFileOnWindows(File iniFile) {
+        if(!Utilities.isWindows()) return null;
+        
+        File tmpFile = null;
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            if (iniFile == null || !iniFile.isFile() || !iniFile.canWrite()) {
+                return null;
+            }
+            
+            tmpFile = File.createTempFile(HgCommand.HG_COMMAND + "-", "tmp"); //NOI18N 
+
+            if (tmpFile == null) {
+                return null;
+            }
+            br = new BufferedReader(new FileReader(iniFile));
+            pw = new PrintWriter(new FileWriter(tmpFile));
+
+            String line = null;
+            String stripLine = null;
+            while ((line = br.readLine()) != null) {
+                stripLine = line.replace("\\\\", "\\");
+                pw.println(stripLine.replace("\\", "\\\\"));
+                pw.flush();
+            }
+        } catch (IOException ex) {
+            // Ignore
+        } finally {
+            try {
+                if (pw != null) {
+                    pw.close();
+                }
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException ex) {
+                // Ignore
+            }
+        }
+        return tmpFile;
+    }
+
     /**
      * isLocallyAdded - checks to see if this file has been Locally Added to Hg
      *

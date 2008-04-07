@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -44,7 +44,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,13 +70,28 @@ final class Wrapper extends JPanel {
 
   Wrapper(JTree tree) {
     myTree = tree;
-    KeyListener[] listeners = myTree.getListeners(KeyListener.class);
+    myTree.addKeyListener(new KeyAdapter() {
+      public void keyTyped(KeyEvent event) {
+        int modifiers = event.getModifiers();
+        char c = event.getKeyChar();
 
-    for (int i=0; i < listeners.length; i++) {
-      myTree.removeKeyListener(listeners[i]);
-    }
-    myTree.addKeyListener(new MyKeyAdapter());
-
+        if (c == KeyEvent.VK_ESCAPE) {
+          return;
+        }
+        if (c == KeyEvent.VK_DELETE) {
+          return;
+        }
+        if (isCtrl(modifiers)) {
+          return;
+        }
+        if (isAlt(modifiers)) {
+          return;
+        }
+        event.consume();
+        myTextField.setText(String.valueOf(c));
+        showPanel();
+      }
+    });
     JLabel label = new JLabel(" " + i18n(Wrapper.class, "LBL_Quick_Search")); // NOI18N
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     add(label);
@@ -230,29 +244,7 @@ final class Wrapper extends JPanel {
     private List<TreePath> myResults;
   }
 
-  // --------------------------------------------
-  private class MyKeyAdapter extends KeyAdapter {
-    public void keyTyped(KeyEvent event) {
-      char c = event.getKeyChar();
-      int modifiers = event.getModifiers();
-
-      if (c == KeyEvent.VK_ESCAPE) {
-        return;
-      }
-      if (isCtrl(modifiers)) {
-        return;
-      }
-      if (isAlt(modifiers)) {
-        return;
-      }
-      myTextField.setText(String.valueOf(c));
-      showPanel();
-      event.consume();
-    }
-  }
-
   private JTree myTree;
   private JTextField myTextField;
-
   private static final int TEXT_WIDTH = 60;
 }

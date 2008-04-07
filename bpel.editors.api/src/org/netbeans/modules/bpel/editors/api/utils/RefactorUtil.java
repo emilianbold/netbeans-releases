@@ -58,7 +58,6 @@ import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNod
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -66,8 +65,7 @@ public class RefactorUtil {
     public static final int MAX_SIMPLE_NAME_LENGTH = 50;
     public static final String ENTITY_SEPARATOR = "."; // NOI18N
     
-    private RefactorUtil() {
-    }
+    private RefactorUtil() {}
     
     public static String getName(Component component) {
         String name = null;
@@ -95,7 +93,6 @@ public class RefactorUtil {
         if (name == null && component instanceof DocumentComponent) {
             name = Util.getTagName((DocumentComponent)component);
         }
-        
         return name == null ? "" : name;
     }
     

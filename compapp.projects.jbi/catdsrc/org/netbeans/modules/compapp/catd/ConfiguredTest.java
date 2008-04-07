@@ -3013,29 +3013,28 @@ public class ConfiguredTest extends TestCase {
 
     /*
      * filters or removes diffs that are ns attr "xmlns:prefix='some url'"
-     */
-    /*
+     *
     private void filterNSAttrDiffs(final List diffs) {
-    List removeDiffs = new ArrayList();
-    Iterator itr = diffs.iterator();
-    while (itr.hasNext()) {
-    Difference dif = (Difference) itr.next();
-    if(dif instanceof Change) {
-    Change c = (Change)dif;
-    //filter namespace attibute changes only
-    if(c.isAttributeChanged() && !c.isPositionChanged() &&
-    !c.isTokenChanged() && (removeNSAttrDiffs(c) ||
-    removeSchemaLocationAttrDiffs(c))) {
-    removeDiffs.add(dif);
-    }
-    }
-    }
-    Iterator removeItr = removeDiffs.iterator();
-    while (removeItr.hasNext()) {
-    diffs.remove((Difference) removeItr.next());
-    }
-    }
-     */
+        List removeDiffs = new ArrayList();
+        Iterator itr = diffs.iterator();
+        while (itr.hasNext()) {
+            Difference dif = (Difference) itr.next();
+            if (dif instanceof Change) {
+                Change c = (Change) dif;
+                //filter namespace attibute changes only
+                if (c.isAttributeChanged() && !c.isPositionChanged() &&
+                        !c.isTokenChanged() && (removeNSAttrDiffs(c) ||
+                        removeSchemaLocationAttrDiffs(c))) {
+                    removeDiffs.add(dif);
+                }
+            }
+        }
+        Iterator removeItr = removeDiffs.iterator();
+        while (removeItr.hasNext()) {
+            diffs.remove((Difference) removeItr.next());
+        }
+    }*/
+    
     /**
      * Filters out namespace definition differences on
      * {http://schemas.xmlsoap.org/soap/envelope/}Envelope.

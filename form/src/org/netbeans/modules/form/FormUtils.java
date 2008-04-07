@@ -928,29 +928,33 @@ public class FormUtils
     }
 
     public static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
-        // don't use global undo/redo actions, register basic ones
-        KeyStroke[] undoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
-                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130) };
-        KeyStroke[] redoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
-                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130) };
-        Keymap keymap = editor.getKeymap();
-        Action undoAction = new ActionFactory.UndoAction();
-        for (KeyStroke k : undoKeys) {
-            keymap.removeKeyStrokeBinding(k);
-            keymap.addActionForKeyStroke(k, undoAction);
-        }
-        Action redoAction = new ActionFactory.RedoAction();
-        for (KeyStroke k : redoKeys) {
-            keymap.removeKeyStrokeBinding(k);
-            keymap.addActionForKeyStroke(k, redoAction);
-        }
-        Object currentUM = editor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
-        if (currentUM instanceof UndoManager) {
-            editor.getDocument().removeUndoableEditListener((UndoManager)currentUM);
-        }
-        UndoManager um = new UndoManager();
-        editor.getDocument().addUndoableEditListener(um);
-        editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
+        // #118038
+        // The following code was disabled because there was no corresponding restoring
+        // of the undo/redo actions that this code overrides.
+        // The editor was extended to have default handling of undo/redo for standalone editor panes.
+//         don't use global undo/redo actions, register basic ones
+//        KeyStroke[] undoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
+//                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130) };
+//        KeyStroke[] redoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
+//                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130) };
+//        Keymap keymap = editor.getKeymap();
+//        Action undoAction = new ActionFactory.UndoAction();
+//        for (KeyStroke k : undoKeys) {
+//            keymap.removeKeyStrokeBinding(k);
+//            keymap.addActionForKeyStroke(k, undoAction);
+//        }
+//        Action redoAction = new ActionFactory.RedoAction();
+//        for (KeyStroke k : redoKeys) {
+//            keymap.removeKeyStrokeBinding(k);
+//            keymap.addActionForKeyStroke(k, redoAction);
+//        }
+//        Object currentUM = editor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+//        if (currentUM instanceof UndoManager) {
+//            editor.getDocument().removeUndoableEditListener((UndoManager)currentUM);
+//        }
+//        UndoManager um = new UndoManager();
+//        editor.getDocument().addUndoableEditListener(um);
+//        editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
     }
 
     // ---------

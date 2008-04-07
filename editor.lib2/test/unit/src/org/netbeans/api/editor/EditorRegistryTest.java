@@ -44,6 +44,7 @@ package org.netbeans.api.editor;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -187,11 +188,11 @@ public class EditorRegistryTest extends NbTestCase {
         // Partial GC: c3
         frame.getContentPane().remove(c3);
         frame.pack();
+        WeakReference<JTextComponent> c3ref = new WeakReference<JTextComponent>(c3);
         c3 = null;
         jtcList = null;
         EditorRegistryListener.INSTANCE.reset();
-        System.gc();
-        System.gc();
+        assertGC("Can't GC c3", c3ref);
         assertSame(2, EditorRegistry.componentList().size());
         
         // Test full GC
@@ -199,15 +200,15 @@ public class EditorRegistryTest extends NbTestCase {
         frame.getContentPane().remove(c1);
         frame.getContentPane().remove(c2);
         frame.pack();
+        WeakReference<JTextComponent> c1ref = new WeakReference<JTextComponent>(c1);
         c1 = null;
+        WeakReference<JTextComponent> c2ref = new WeakReference<JTextComponent>(c2);
         c2 = null;
         jtcList = null;
         EditorRegistryListener.INSTANCE.reset();
-        System.gc();
-        System.gc();
+        assertGC("Can't GC c1", c1ref);
+        assertGC("Can't GC c2", c2ref);
         assertSame(0, EditorRegistry.componentList().size());
-
-        
     }
     
     private static final class EditorRegistryListener implements PropertyChangeListener {

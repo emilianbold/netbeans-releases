@@ -117,6 +117,17 @@ public class CCFormatter extends ExtFormatter {
             } catch (BadLocationException e) {
             }
         }
+        if (ret == null && typedText != null &&
+            typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, typedText+"\n") || 
+                    dotPos == doc.getLength() && checkCase(doc, fnw, typedText)) { // NOI18N
+                    ret = new int[]{fnw, fnw + 1};
+                }
+            } catch (BadLocationException e) {
+            }
+        }
         return ret;
     }
 

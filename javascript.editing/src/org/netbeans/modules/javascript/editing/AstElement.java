@@ -63,6 +63,8 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 public class AstElement extends JsElement {
     public static final Set<Modifier> NONE = EnumSet.noneOf(Modifier.class);
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
+    public static final Set<Modifier> PRIVATE = EnumSet.of(Modifier.PRIVATE);
+    public static final Set<Modifier> STATIC_PRIVATE = EnumSet.of(Modifier.PRIVATE,Modifier.STATIC);
 
     protected List<AstElement> children;
     protected Node node;
@@ -186,6 +188,9 @@ public class AstElement extends JsElement {
     public Set<Modifier> getModifiers() {
         if (modifiers == null) {
             boolean deprecated = false, priv = false, constructor = false;
+            if (getName().startsWith("_")) {
+                priv = true;
+            }
             if (docProps != null) {
                 if (docProps.containsKey("@deprecated")) { // NOI18N
                     deprecated = true;
@@ -213,6 +218,8 @@ public class AstElement extends JsElement {
                 } else {
                     modifiers = NONE;
                 }
+            } else if (priv) {
+                modifiers = PRIVATE;
             } else {
                 modifiers = NONE;
             }
@@ -229,10 +236,6 @@ public class AstElement extends JsElement {
             modifiers = EnumSet.copyOf(modifiers);
             modifiers.add(Modifier.STATIC);
         }
-    }
-    
-    void setModifiers(Set<Modifier> modifiers) {
-        this.modifiers = modifiers;
     }
     
     private void initDocProps(CompilationInfo info) {

@@ -336,13 +336,21 @@
         <!-- is it exists, run the 'clean' target on the netbeans project's 
              build script -->
         <if property="nbproject.exists" value="true">
+            <condition property="nb.jdk.home"
+                       value="${nb.platform.home}"
+                       else="${nb.platform.home.macos}">
+                    <not>
+                        <equals arg1="Apple Inc." arg2="${java.vendor}"/>
+                    </not>
+            </condition>
+
             <exec executable="${ant.executable}" 
                   dir="${cvs.dir}/${nbproject.path}" 
                   failonerror="false"
                   failifexecutionfails="false">
                 <arg value="${nb.target.clean}"/>
                 
-                <arg value="${nb.platform.home}"/>
+                <arg value="${nb.jdk.home}"/>
                 <arg value="${nb.ignore.native}"/>
                 <arg value="${nb.no.dependencies}"/>
                 <arg value="${nb.dont.build.custom.tasks}"/>
@@ -688,6 +696,14 @@
       This target is not intended to be called directly.
     -->
     <target name=".build-nbproject" if="do.build.nbproject">
+        <condition property="nb.jdk.home"
+                   value="${nb.platform.home}"
+                   else="${nb.platform.home.macos}">
+                <not>
+                    <equals arg1="Apple Inc." arg2="${java.vendor}"/>
+                </not>
+        </condition>
+
         <exec executable="${ant.executable}" 
               dir="${cvs.dir}/${nbproject.path}" 
               failonerror="true"
@@ -696,7 +712,7 @@
             <arg value="clean"/>
             <arg value="compile"/>
             
-            <arg value="${nb.platform.home}"/>
+            <arg value="${nb.jdk.home}"/>
             <arg value="${nb.ignore.native}"/>
             <arg value="${nb.no.dependencies}"/>
             <arg value="${nb.dont.build.custom.tasks}"/>

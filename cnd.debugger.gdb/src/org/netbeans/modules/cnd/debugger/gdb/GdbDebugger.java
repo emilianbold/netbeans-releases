@@ -65,6 +65,9 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -80,6 +83,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -254,8 +258,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
                 mingw = true;
             }
+            String cspath = getCompilerSetPath(pae);
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
-                    runDirectory, termpath);
+                    runDirectory, termpath, cspath);
             gdb.gdb_version();
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
@@ -385,6 +390,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setExited();
             finish(false);
         }
+    }
+    
+    private String getCompilerSetPath(ProjectActionEvent pae) {
+        CompilerSet2Configuration cs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet();
+        String csname = cs.getOption();
+        String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
+        
+        if (cs.getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+            String msysBase = CppUtils.getMSysBase();
+            if (msysBase != null && msysBase.length() > 0) {
+                csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N;
+            }
+        }
+        
+        return csdirs;
     }
     
     private String getGdbHelper() {
@@ -1229,10 +1249,32 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /**
+     * Step one instruction
      */
     public void stepI() {
         setState(STATE_RUNNING);
         gdb.exec_instruction();
+    }
+    
+    /**
+     * Step over function inside dis
+     */
+    public void stepOverInstr() {
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis == null) {
+            return;
+        }
+        CallStackFrame sf = getCurrentCallStackFrame();
+        if (sf == null) {
+            return;
+        }
+        String newAddress = dis.getNextAddress(getCurrentCallStackFrame().getAddr());
+        if (newAddress.length() == 0) {
+            stepI();
+        } else {
+            gdb.break_insert(GDB_TMP_BREAKPOINT, "*" + newAddress); // NOI18N
+            resume();
+        }
     }
     
     /**
@@ -1787,6 +1829,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public String evaluate(String expression) {
+        // IZ:131315 (gdb may not be initialized yet)
+        if (gdb == null) {
+            return null;
+        }
         CommandBuffer cb = new CommandBuffer(gdb);
         
         if (expression.indexOf('(') != -1) {

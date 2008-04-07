@@ -80,6 +80,7 @@ public class ServicePanel extends SaveableSectionInnerPanel {
         this.service = service;
         this.model = this.service.getModel();
         initComponents();
+        disableEnterKey();
         sync();
         
         itemListener = new DefaultItemListener();

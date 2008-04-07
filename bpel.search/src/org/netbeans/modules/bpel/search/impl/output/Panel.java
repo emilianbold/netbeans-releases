@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -104,7 +104,7 @@ final class Panel extends JPanel {
     toolBar.setFloatable(false);
     JButton button;
 
-    // collapse/expand
+    // collapse / expand
     button = createButton(
       new ButtonAction(
         icon(Util.class, "expose"), // NOI18N
@@ -116,11 +116,11 @@ final class Panel extends JPanel {
     );
     toolBar.add(button);
 
-    // collapse/expand
+    // view
     button = createButton(
       new ButtonAction(
         icon(Util.class, "view"), // NOI18N
-        i18n(Panel.class, "TLT_View")) { // NOI18N
+        i18n(Panel.class, "TLT_Change_View")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           changeView();
         }
@@ -152,6 +152,10 @@ final class Panel extends JPanel {
     );
     toolBar.add(button);
 
+    // vlv: print
+    button = createButton(PrintManager.getDefault().getPrintPreviewAction());
+    toolBar.add(button);
+
     // export
     button = createButton(
       new ButtonAction(
@@ -162,10 +166,6 @@ final class Panel extends JPanel {
         }
       }
     );
-    toolBar.add(button);
-
-    // vlv: print
-    button = createButton(PrintManager.getDefault().getPrintPreviewAction());
     toolBar.add(button);
 
     return toolBar;

@@ -671,7 +671,11 @@ template_explicit_specialization
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 	|
 	// Template explicit specialisation ctor definition 
-		(ctor_declarator[true] LCURLY)=>
+		(ctor_declarator[true] 
+		  (COLON        // DEFINITION :ctor_initializer
+		   |LCURLY       // DEFINITION (compound Statement) ?
+	 	  )
+                )=>
 		{if(statementTrace >= 1)
 			printf("template_explicit_specialization_0b[%d]: template " +
 				"explicit-specialisation ctor definition\n", LT(1).getLine());
@@ -1048,18 +1052,6 @@ member_declaration_template
 			}                           
 			declaration
 			{ #member_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #member_declaration_template); }
-		|         
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("member_declaration_12a[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
 		|  
 			// Templated FUNCTIONS and CONSTRUCTORS matched here.
 			// DW 27/06/03 Copied here from external_declaration since templates
@@ -1090,6 +1082,10 @@ member_declaration_template
 			// restriction is added that ctor cannot be virtual
 			(ctor_decl_spec
 			 {qualifiedItemIsOneOf(qiCtor)}?
+			 ctor_declarator[true]
+			 ( COLON        // DEFINITION :ctor_initializer
+			  |LCURLY       // DEFINITION (compound Statement) ?
+			 )
 			)=>
 			{if (statementTrace>=1) 
 				printf("member_declaration_13a[%d]: Template constructor " +
@@ -1124,6 +1120,19 @@ member_declaration_template
 			definition = conversion_function_decl_or_def
 			{ if( definition ) #member_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration_template);
 			    else	   #member_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration_template); }
+		|         
+                        // this rule must be after handling functions 
+			// templated forward class decl, init/decl of static member in template
+			(declaration_specifiers
+				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+			//{beginTemplateDeclaration();}
+			{ if (statementTrace>=1) 
+				printf("member_declaration_12a[%d]: Class template declaration\n",
+					LT(1).getLine());
+			}
+			declaration_specifiers
+				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
 		)
 		{endTemplateDefinition();}
 
@@ -1468,7 +1477,8 @@ declaration_specifiers
                         {if (statementTrace>=1) 
                                 printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());
                         }                        
-                        LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 		
+                        LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
+		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
                 |      { LT(1).getText().equals(LITERAL___global_ext) == true}? ID 
@@ -1486,7 +1496,7 @@ declaration_specifiers
 
 
                         (options {greedy=true;} :type_attribute_specification)?
-		|	LITERAL_typename	{td=true;}	direct_declarator 
+//		|	LITERAL_typename	{td=true;}	direct_declarator 
                 |       literal_typeof LPAREN typeof_param RPAREN
                                  
 		)                
@@ -2090,6 +2100,7 @@ dtor_declarator[boolean definition]
 	//({definition}? dtor_scope_override)
         dtor_scope_override
 	TILDE ID
+       (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN

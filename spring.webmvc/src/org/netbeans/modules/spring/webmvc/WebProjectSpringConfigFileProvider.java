@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
+import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -58,7 +59,7 @@ import org.openide.util.NbCollections;
  *
  * @author Andrei Badea
  */
-public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvider {
+public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvider, SpringConfigFileLocationProvider {
 
     private final Project project;
 
@@ -67,19 +68,12 @@ public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvi
     }
 
     public Set<File> getConfigFiles() {
-        WebModuleProvider provider = project.getLookup().lookup(WebModuleProvider.class);
-        if (provider == null) {
-            return Collections.emptySet();
-        }
-        WebModule webModule = provider.findWebModule(project.getProjectDirectory());
-        if (webModule == null) {
+        FileObject webInf = getWebInf();
+        if (webInf == null) {
             return Collections.emptySet();
         }
         Set<File> result = new HashSet<File>();
-        FileObject webInf = webModule.getWebInf();
-        if (webInf != null) {
-            addFilesInWebInf(webInf, result);
-        }
+        addFilesInWebInf(webInf, result);
         return Collections.unmodifiableSet(result);
     }
 
@@ -97,5 +91,21 @@ public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvi
             }
             result.add(file);
         }
+    }
+
+    public FileObject getLocation() {
+        return getWebInf();
+    }
+
+    private FileObject getWebInf() {
+        WebModuleProvider provider = project.getLookup().lookup(WebModuleProvider.class);
+        if (provider == null) {
+            return null;
+        }
+        WebModule webModule = provider.findWebModule(project.getProjectDirectory());
+        if (webModule == null) {
+            return null;
+        }
+        return webModule.getWebInf();
     }
 }

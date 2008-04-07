@@ -84,7 +84,10 @@ public class JsRenameHandler implements InstantRenamer {
             case Token.NAME:
             case Token.PARAMETER:
             case Token.BINDNAME:
+            case Token.FUNCNAME:
                 return true;
+            case Token.OBJLITNAME:
+                return AstUtilities.isLabelledFunction(closest);
             // TODO - block renaming of GLOBALS! I should already know
             // what's local and global based on JsSemantic...
         }
@@ -112,6 +115,9 @@ public class JsRenameHandler implements InstantRenamer {
 
         AstPath path = new AstPath(root, astOffset);
         Node leaf = path.leaf();
+        if (!(leaf instanceof Node.StringNode)) {
+            return Collections.emptySet();
+        }
         Map<String,List<Node>> localVars = v.getLocalVars(leaf);
 
         String name = leaf.getString();

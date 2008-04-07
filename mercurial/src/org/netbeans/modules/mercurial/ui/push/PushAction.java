@@ -149,16 +149,26 @@ public class PushAction extends ContextAction {
     }
     static void performPush(File root, String pushPath, String fromPrjName, String toPrjName, OutputLogger logger) {
         try {
+            File pushFile = new File(pushPath);
+            boolean bLocalPush = (FileUtil.toFileObject(FileUtil.normalizeFile(pushFile)) != null);
+
             logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
+            if (toPrjName == null) {
+                logger.outputInRed(
+                        NbBundle.getMessage(PushAction.class,
+                        "MSG_PUSHING_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
+            } else {
+                logger.outputInRed(
+                        NbBundle.getMessage(PushAction.class,
+                        "MSG_PUSHING_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
+            }
 
             List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath, logger);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
 
-            File pushFile = new File(pushPath);
-            boolean bLocalPush = (FileUtil.toFileObject(FileUtil.normalizeFile(pushFile)) != null);
             boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1));
 
             if (bLocalPush) {
@@ -170,7 +180,7 @@ public class PushAction extends ContextAction {
                     return;
                 }
             }
-
+            
             List<String> list;
             if (bNoChanges) {
                 list = listOutgoing;
@@ -223,7 +233,10 @@ public class PushAction extends ContextAction {
                             "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
                 }
 
-                boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
+                boolean bMergeNeeded = false;
+                if (bLocalPush) {
+                    bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
+                }
                 boolean bConfirmMerge = false;
                 // Push does not do an Update of the target Working Dir
                 if (!bMergeNeeded) {

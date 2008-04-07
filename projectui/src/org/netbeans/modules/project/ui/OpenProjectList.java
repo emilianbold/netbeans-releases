@@ -212,6 +212,20 @@ public final class OpenProjectList {
         return LOAD;
     }
 
+    final Project unwrapProject(Project wrap) {
+        Project[] now = getOpenProjects();
+
+        if (wrap instanceof LazyProject) {
+            LazyProject lp = (LazyProject)wrap;
+            for (Project p : now) {
+                if (lp.getProjectDirectory().equals(p.getProjectDirectory())) {
+                    return p;
+                }
+            }
+        }
+        return wrap;
+    }
+
     /** Modifications to the recentTemplates variables shall be done only 
      * when hodling a lock.
      * @return the list
@@ -284,7 +298,10 @@ public final class OpenProjectList {
             LOGGER.log(Level.FINER, "updateGlobalState"); // NOI18N
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = lazilyOpenedProjects;
-                INSTANCE.mainProject = lazyMainProject;
+                if (lazyMainProject != null) {
+                    INSTANCE.mainProject = lazyMainProject;
+                }
+                INSTANCE.mainProject = unwrapProject(INSTANCE.mainProject);
                 INSTANCE.getRecentTemplates().addAll(recentTemplates);
                 LOGGER.log(Level.FINER, "updateGlobalState, applied"); // NOI18N
             }
@@ -626,18 +643,8 @@ public final class OpenProjectList {
         LOAD.waitFinished();
         
         Project[] projects = new Project[someProjects.length];
-        Project[] now = getOpenProjects();
         for (int i = 0; i < someProjects.length; i++) {
-            projects[i] = someProjects[i];
-            if (someProjects[i] instanceof LazyProject) {
-                LazyProject lp = (LazyProject)someProjects[i];
-                for (Project p : now) {
-                    if (lp.getProjectDirectory().equals(p.getProjectDirectory())) {
-                        projects[i] = p;
-                        break;
-                    }
-                }
-            }
+            projects[i] = unwrapProject(someProjects[i]);
         }
         
         
@@ -763,16 +770,34 @@ public final class OpenProjectList {
         pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
     }
     
-    public synchronized List<Project> getRecentProjects() {
-        return recentProjects.getProjects();
+    public List<Project> getRecentProjects() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
+            public List run() {
+                synchronized (OpenProjectList.class) {
+                    return recentProjects.getProjects();
+                }
+            }
+        });
     }
     
-    public synchronized boolean isRecentProjectsEmpty() {
-        return recentProjects.isEmpty();
+    public boolean isRecentProjectsEmpty() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
+                synchronized (OpenProjectList.class) {
+                    return recentProjects.isEmpty();
+                }
+            }
+        });         
     }
     
-    public synchronized List<UnloadedProjectInformation> getRecentProjectsInformation() {
-        return recentProjects.getRecentProjectsInfo();
+    public List<UnloadedProjectInformation> getRecentProjectsInformation() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
+            public List run() {
+                synchronized (OpenProjectList.class) {
+                    return recentProjects.getRecentProjectsInfo();
+                }
+            }
+        });
     }
     
     /** As this class is singletnon, which is not GCed it is good idea to 

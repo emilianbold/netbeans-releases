@@ -961,6 +961,10 @@ public class StructureAnalyzer implements StructureScanner {
                 if (!arity.equals(darity)) {
                     return false;
                 }
+                
+                if (!getModifiers().equals(d.getModifiers())) {
+                    return false;
+                }
 
                 // consider parameters names and thus their arity (issue 101508)
                 List<String> parameters = ((AstMethodElement) node).getParameters();
@@ -1006,7 +1010,7 @@ public class StructureAnalyzer implements StructureScanner {
 
         @Override
         public String toString() {
-            return getName();
+            return getName() + " (kind: " + kind + ')';
         }
 
         public ImageIcon getCustomIcon() {

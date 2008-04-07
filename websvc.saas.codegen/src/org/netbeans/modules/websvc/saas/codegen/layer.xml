@@ -8,15 +8,6 @@
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestConnection.template">
                 <attr name="position" intvalue="10"/>
             </file>
-            <file name="GenericResource.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/GenericResource.template">
-                <attr name="position" intvalue="20"/>
-            </file>
-            <file name="WrapperResource.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/WrapperResource.template">
-                <attr name="position" intvalue="30"/>
-            </file>
-            <file name="RefConverter.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RefConverter.template">
-                <attr name="position" intvalue="40"/>
-            </file>
             <file name="SaasService.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SaasService.template">
                 <attr name="position" intvalue="50"/>
             </file>
@@ -26,14 +17,20 @@
             <file name="apikey.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/apikey.properties">
                 <attr name="position" intvalue="70"/>
             </file>
-            <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/HttpBasicAuthenticator.template">
+            <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/web/HttpBasicAuthenticator.template">
                 <attr name="position" intvalue="80"/>
+            </file>
+            <file name="HttpBasicLogin.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/web/HttpBasicLogin.template">
+                <attr name="position" intvalue="82"/>
+            </file>
+            <file name="HttpBasicCallback.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/web/HttpBasicCalback.template">
+                <attr name="position" intvalue="84"/>
+            </file>
+            <file name="HttpBasicAuthenticatorDesktop.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/desktop/HttpBasicAuthenticator.template">
+                <attr name="position" intvalue="86"/>
             </file>
             <file name="httpbasic.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/httpbasic.properties">
                 <attr name="position" intvalue="90"/>
-            </file>
-            <file name="AuthorizationFrame.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/AuthorizationFrame.template">
-                <attr name="position" intvalue="100"/>
             </file>
             <file name="SessionKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SessionKeyAuthenticator.template">
                 <attr name="position" intvalue="110"/>
@@ -55,9 +52,6 @@
             </file>
             <file name="RestResponse.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestResponse.template">
                 <attr name="position" intvalue="170"/>
-            </file>
-            <file name="RestResponsejdk5.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestResponsejdk5.template">
-                <attr name="position" intvalue="180"/>
             </file>
         </folder>
     </folder>

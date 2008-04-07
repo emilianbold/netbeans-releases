@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Disabling or Enabling Endpoint Deployment in a JBI Module</title>
+</head>
+<body>
+<h2><b>Disabling or Enabling Endpoint Deployment in a JBI Module</b></h2>
+<p>The available endpoints for a JBI module can be disabled or enabled from the 
+  JBI Modules node in a composite application. The Deployment Settings window 
+  displays the module's available endpoints, and provides a check box for each 
+  which specifies whether that endpoint is activated for that module upon deployment. 
+  This will not disable the endpoint for other composite applications or JBI modules</p>
+<p><b>To disable an endpoint:</b></p>
+  
+<ol>
+  <li>From the Projects window, expand the composite application's JBI Modules 
+    node. Right-click a Java EE module, and select the Deployment Settings option 
+    from the pop-up menu. The Deployment Settings window appears.<br>
+  </li>
+  <li>The Deployment Settings window displays the available consumer and provider 
+    endpoints for the JBI module. Each endpoint has an associated check box. By 
+    default, each check box is selected (checked), indicating that the endpoint 
+    is activated upon deployment. To disable an endpoint for the selected JBI 
+    module, clear the check box.<br>
+    <br>
+    There is an additional check box for &quot;Deploy with Composite Application.&quot; 
+    When this option is unchecked, the Java EE module will not be deployed with 
+    the composite application, but the listed endpoints can still be accessed 
+    by other JBI components. It is the users responsibility to deploy the Java 
+    EE module.<br>
+    <br>
+    If no endpoints are found for the module, the Deployment Settings window prompts 
+    you to build the composite application. Build the composite application, then 
+    open the Deployment Settings window again.<br>
+  </li>
+  <li>Click OK to close the window. Changes will take effect the next time that 
+    the build action is performed.</li>
+  <p>&nbsp;</p>
+</ol>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="javaee-module-options.html" title="Java EE Module Options">Java 
+    EE Module Options</a></dd>
+  <dd><a href="verify-server-resources.html" title="Verifying Server Resources for Java EE Modules">Verifying
+   Server Resources for Java EE Modules</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

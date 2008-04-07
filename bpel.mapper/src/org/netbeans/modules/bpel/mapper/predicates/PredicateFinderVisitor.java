@@ -21,7 +21,8 @@ package org.netbeans.modules.bpel.mapper.predicates;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.mapper.cast.TypeCast;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -37,8 +38,10 @@ import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
+import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 
@@ -52,6 +55,7 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
 
     private PredicateManager mPredManager;
     private SpecialStepManager mSStepManager;
+    private XPathVariableReference mXPathVarReference;
     private XPathBpelVariable mXPathVariable;
 
     public PredicateFinderVisitor(PredicateManager predManager,
@@ -80,12 +84,23 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
 
     @Override
     public void visit(XPathVariableReference vReference) {
-        XPathVariable xPathVar = vReference.getVariable();
-        if (xPathVar != null && xPathVar instanceof XPathBpelVariable) {
-            mXPathVariable = (XPathBpelVariable) xPathVar;
-        }
+        mXPathVarReference = vReference;
     }
 
+    public XPathBpelVariable getVariable () {
+        if (mXPathVariable == null) {
+            if (mXPathVarReference == null) {
+                return null;
+            }
+            //
+            XPathVariable xPathVar = mXPathVarReference.getVariable();
+            if (xPathVar != null && xPathVar instanceof XPathBpelVariable) {
+                mXPathVariable = (XPathBpelVariable) xPathVar;
+            }
+        }
+        return mXPathVariable;
+    }
+    
     //---------------------------------------------------
     @Override
     public void visit(XPathCoreOperation expr) {
@@ -133,13 +148,42 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                 return;
             
             // Put the variable or part to the locaton path first
-            if (mXPathVariable != null) {
-                VariableDeclaration varDecl = mXPathVariable.getVarDecl();
-                objLocationPath.addFirst(varDecl);
+            if (mXPathVarReference != null) {
+                XPathSchemaContext sContext = mXPathVarReference.getSchemaContext();
                 //
-                Part part = mXPathVariable.getPart();
-                if (part != null) {
-                    objLocationPath.addFirst(part);
+                if (sContext instanceof VariableSchemaContext) {
+                    XPathBpelVariable xPathVar = getVariable();
+                    AbstractVariableDeclaration varDecl = xPathVar.getVarDecl();
+                    objLocationPath.addFirst(varDecl);
+                    //
+                    Part part = xPathVar.getPart();
+                    if (part != null) {
+                        objLocationPath.addFirst(part);
+                    }
+                } else if (sContext instanceof CastSchemaContext) {
+                    CastSchemaContext castContext = (CastSchemaContext)sContext;
+                    //
+                    XPathBpelVariable xPathVar = getVariable();
+                    AbstractVariableDeclaration varDecl = xPathVar.getVarDecl();
+                    Part part = xPathVar.getPart();
+                    //
+                    XPathCast xPathCast = castContext.getTypeCast();
+                    TypeCast typeCast = new TypeCast(xPathCast);
+                    //
+                    if (part == null) {
+                        assert typeCast.getCastedObject() == varDecl;
+                        objLocationPath.addFirst(typeCast);
+                    } else {
+                        objLocationPath.addFirst(varDecl);
+                        //
+                        if (part != null) {
+                            assert typeCast.getCastedObject() == part;
+                            objLocationPath.addFirst(typeCast);
+                        }
+                    }
+                } else {
+                    assert false : "Incorrect schema contex!";
+                    return;
                 }
             }
             
@@ -181,6 +225,15 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
             XPathSchemaContext xPathContext = step.getSchemaContext();
             if (xPathContext == null) {
                 processingAborted = true;
+                return;
+            }
+            //
+            if (xPathContext instanceof CastSchemaContext) {
+                CastSchemaContext castContext = (CastSchemaContext)xPathContext;
+                TypeCast typeCast = new TypeCast(castContext.getTypeCast());
+                objLocationPath.addFirst(typeCast);
+                //
+                // step processed!
                 return;
             }
             //
