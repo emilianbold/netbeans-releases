@@ -320,7 +320,7 @@ class ActionFilterNode extends FilterNode {
                         List wmLibs = cs.itemsList(props.getProperty(property),  null);
                         set.addAll(wmLibs);
                     }
-                    ProjectProperties.storeLibrariesLocations(set.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
+                    ProjectProperties.storeLibrariesLocations(helper.getAntProjectHelper(), set.iterator(), props);
                 }
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);

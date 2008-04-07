@@ -268,8 +268,9 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);    
-        assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName.toString());
+        CharSequence qn = getQualifiedName();
+        assert qn != null;
+        output.writeUTF(qn.toString());
         PersistentUtils.writeStrings(this.classOrNspNames, output);
         
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);

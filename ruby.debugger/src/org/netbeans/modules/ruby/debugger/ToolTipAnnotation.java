@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -142,7 +142,7 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
             identStart--;
         }
         int identEnd = col;
-        while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
+        while (identEnd < text.length() && isRubyIdentifier(text.charAt(identEnd))) {
             identEnd++;
         }
         if (identStart == identEnd) {
@@ -152,7 +152,7 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
     }
     
     static boolean isRubyIdentifier(char ch) {
-        return ch == '@' || Character.isJavaIdentifierPart(ch);
+        return ch == '@' || ch == '?' || Character.isJavaIdentifierPart(ch);
     }
 
     /** Returns current editor component instance. */

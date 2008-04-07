@@ -75,6 +75,7 @@ import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 
 /**
  * Implementation of the MapperModelFactory for the BPEL mapper.
@@ -121,10 +122,22 @@ public class BpelMapperModelFactory implements MapperModelFactory {
   
     protected EditorExtensionProcessor editorExtProcessor;
     
+    protected CachingSchemaSearchVisitor mCachingSchemaSearchVisitor;
+    
     public BpelMapperModelFactory() {
     }
     
     public MapperModel constructModel(
+            MapperTcContext mapperTcContext, BpelDesignContext context) {
+        mCachingSchemaSearchVisitor = new CachingSchemaSearchVisitor();
+        try {
+            return constructModelImpl(mapperTcContext, context);
+        } finally {
+            mCachingSchemaSearchVisitor = null;
+        }
+    }
+    
+    public MapperModel constructModelImpl (
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
         Mapper mapper = mapperTcContext.getMapper();
@@ -285,6 +298,10 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         return null;
     }
 
+    public CachingSchemaSearchVisitor getCachingSchemaSearchVisitor() {
+        return mCachingSchemaSearchVisitor;
+    }
+    
     private void addCopyGraph(Copy copy, BpelMapperModel newMapperModel, 
             BpelEntityCasts castList) {
         //
@@ -295,7 +312,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         //
         Graph newGraph = new Graph(newMapperModel, copy);
         //
-        CopyFromProcessor fromProcessor = new CopyFromProcessor(this, copy);
+        FromProcessor fromProcessor = new FromProcessor(this, copy);
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
         newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel, castList);
         if (newGraph == null) {
@@ -308,7 +325,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         XPathExpression toExpr = null;
         if (form == CopyToForm.EXPRESSION) {
             toExpr = CopyToProcessor.constructExpression(
-                    copy, copyTo, castList.getToCasts());
+                    copy, copyTo, castList.getToCasts(), this);
             //
             // Populate predicate manager  
             if (toExpr != null) {
@@ -317,7 +334,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
         ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.
                 constructFindersList(form, copy, copyTo, toExpr, 
-                castList.getToCasts());
+                castList.getToCasts(), this);
         //
         PreprocessedGraphLocation graphLocation = 
                 new PreprocessedGraphLocation(newGraph, toNodeFinderList);
@@ -436,6 +453,11 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         try {
             XPathModel newXPathModel = 
                     BpelXPathModelFactory.create(contextEntity, castList);
+            //
+            // Specify the Caching visitor for optimization!
+            newXPathModel.setCachingSchemaSearchVisitor(
+                    mCachingSchemaSearchVisitor);
+            //
             // NOT NEED to specify schema context because of an 
             // expression with variable is implied here. 
             //
@@ -539,6 +561,5 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
         
     }
-    
     
 }

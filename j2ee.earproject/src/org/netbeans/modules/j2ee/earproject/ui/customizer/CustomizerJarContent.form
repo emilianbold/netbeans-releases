@@ -24,11 +24,11 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane2" pref="329" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jButtonAddProject" min="-2" pref="119" max="-2" attributes="0"/>
-                                  <Component id="jButtonAddLib" min="-2" pref="119" max="-2" attributes="0"/>
-                                  <Component id="jButtonAddJar" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jButtonRemove" min="-2" pref="119" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="jButtonAddProject" alignment="1" max="32767" attributes="1"/>
+                                  <Component id="jButtonAddLib" alignment="1" max="32767" attributes="1"/>
+                                  <Component id="jButtonAddJar" alignment="1" min="0" max="32767" attributes="1"/>
+                                  <Component id="jButtonRemove" alignment="1" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -38,9 +38,9 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jTextFieldFileName" alignment="0" pref="352" max="32767" attributes="0"/>
+                                  <Component id="jTextFieldFileName" alignment="0" pref="354" max="32767" attributes="0"/>
                                   <Component id="jLabelExContent1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jTextFieldExContent" alignment="0" pref="352" max="32767" attributes="0"/>
+                                  <Component id="jTextFieldExContent" alignment="0" pref="354" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -79,7 +79,7 @@
                       <Component id="jButtonAddJar" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jButtonRemove" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="33" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane2" pref="148" max="32767" attributes="0"/>
               </Group>

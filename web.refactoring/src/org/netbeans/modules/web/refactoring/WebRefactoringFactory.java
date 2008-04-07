@@ -112,7 +112,7 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         
         // if we have a java file, the class name should be resolvable
         // unless it is an empty java file - see #130933
-        if (!(javaFile && clazz == null)) {
+        if (javaFile && clazz == null) {
             LOGGER.fine("Could not resolve the class for: " + sourceFO + ", possibly an empty Java file");
             return null;
         }

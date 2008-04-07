@@ -147,7 +147,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     ret = invokeMethod(method, args);    
                 }
             }            
-            Subversion.getInstance().getStatusCache().refreshDirtyFileSystems();
             return ret;
         } catch (Exception e) {
             try {

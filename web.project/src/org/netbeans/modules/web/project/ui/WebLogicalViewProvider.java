@@ -192,8 +192,14 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             relPath = relPath.substring(0, idx);
         StringTokenizer st = new StringTokenizer(relPath, "/"); //NOI18N
         Node result = NodeOp.findChild(root,rootfo.getName());
+        if (result == null) {
+            return null;
+        }
         while (st.hasMoreTokens()) {
             result = NodeOp.findChild(result, st.nextToken());
+            if (result == null) {
+                return null;
+            }
         }
         
         return result;

@@ -298,6 +298,10 @@ public class JsIndexerTest extends JsTestBase {
         checkIndexer("testfiles/prototype.js");
     }
 
+    public void testIndexPrototypeNew() throws Exception {
+        checkIndexer("testfiles/prototype-new.js");
+    }
+    
     public void testIndex1() throws Exception {
         checkIndexer("testfiles/SpryEffects.js");
     }
@@ -482,5 +486,9 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testDojoExtend() throws Exception {
         checkIndexer("testfiles/dnd.js");
+    }
+
+    public void testClassProps() throws Exception {
+        checkIndexer("testfiles/classprops.js");
     }
 }

@@ -226,7 +226,15 @@ public class PullAction extends ContextAction {
         try {
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
-            
+
+            if (fromPrjName != null) {
+                logger.outputInRed(NbBundle.getMessage(
+                        PullAction.class, "MSG_PULLING_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+            } else {
+                logger.outputInRed(NbBundle.getMessage(
+                        PullAction.class, "MSG_PULLING_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+            }
+
             List<String> listIncoming;
             if(type == PullType.LOCAL){
                 listIncoming = HgCommand.doIncoming(root, logger);

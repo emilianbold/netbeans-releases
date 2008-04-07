@@ -136,6 +136,10 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         mUsedSchemaCompSet = compSet;
     }
 
+    public String toStringWithoutParent() {
+        return "";
+    }
+    
     @Override
     public boolean equals(Object obj)  {
         if (obj instanceof XPathSchemaContext) {

@@ -312,7 +312,7 @@ public abstract class CsmResultItem
                 CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
                 if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                     String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
-                    if (include.length() != 0 && !isForwardDeclaration(component)) {
+                    if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
                         insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
                     }
                 }
@@ -324,6 +324,37 @@ public abstract class CsmResultItem
             return false;
         }
 
+    }
+    
+    // Checks that include directive have not been already included
+    // It needs in case if some files have not been parsed yet
+    private boolean isAlreadyIncluded(JTextComponent component, String include) {
+        TokenSequence<CppTokenId> ts;
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts.moveStart();
+        while (ts.moveNext()) {
+            if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                if(isIncludesEqual(include, ts.token().text().toString())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    // Compares include directives dy file names
+    private boolean isIncludesEqual(String inc1, String inc2) {
+        normalizeInclude(inc1);
+        normalizeInclude(inc2);
+        return (inc1.equals(inc2));
+    }
+    
+    // Normailizes include directive string
+    private void normalizeInclude(String inc) {
+        inc.toLowerCase();
+        inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
+        inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
+        inc = inc.trim();
     }
 
     // Says is it forward declarartion or not

@@ -41,12 +41,14 @@
 package org.netbeans.modules.bpel.model.api.support;
 
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.openide.ErrorManager;
 
 /**
@@ -69,13 +71,38 @@ public class XPathCastImpl implements XPathCast {
         return xPathExpr;
     }
 
-    public XPathCastImpl(Cast cast) {
-        mCast = cast;
-        mCastTo = getType(cast);
-        myPathText = cast.getPath();
+    public static XPathCastImpl convert(Cast cast) {
+        SchemaReference<GlobalType> ref = cast.getType();
+        if (ref == null) {
+            return null;
+        }
+        GlobalType castTo = ref.get();
+        String pathText = cast.getPath();
+        //
+        if (cast == null || pathText == null || pathText.length() == 0) {
+            return null;
+        }
+        XPathCastImpl result = new XPathCastImpl();
+        result.mCast = cast;
+        result.myPathText = pathText;
+        result.mCastTo = castTo;
+        //
+        return result;
     }
 
+    private XPathCastImpl() {
+    }
+    
+    public XPathCastImpl(XPathExpression castWhat, GlobalType castTo) {
+        mXPathExpression = castWhat;
+        mCastTo = castTo;
+    }
+    
     public String getPathText() {
+        if (myPathText == null) {
+            assert mXPathExpression != null;
+            myPathText = mXPathExpression.getExpressionString();
+        }
         return myPathText;
     }
 
@@ -83,23 +110,11 @@ public class XPathCastImpl implements XPathCast {
         return mCastTo;
     }
 
-    public XPathExpression getPath() {
+    public XPathExpression getPathExpression() {
         if (mXPathExpression == null) {
             mXPathExpression = getExpression(mCast);
         }
         return mXPathExpression;
-    }
-
-    private GlobalType getType(Cast cast) {
-        SchemaReference<GlobalType> ref = cast.getType();
-//System.out.println();
-//System.out.println("---: " + ref);
-
-        if (ref == null) {
-            return null;
-        }
-//System.out.println("   : " + ref.get());
-        return ref.get();
     }
 
     @Override
@@ -111,4 +126,19 @@ public class XPathCastImpl implements XPathCast {
     private String myPathText;
     private GlobalType mCastTo;
     private XPathExpression mXPathExpression;
+
+    public XPathSchemaContext getSchemaContext() {
+        XPathExpression expr = getPathExpression();
+        if (expr != null && expr instanceof XPathSchemaContextHolder) {
+            XPathSchemaContext sContext = 
+                    ((XPathSchemaContextHolder)expr).getSchemaContext();
+            return sContext;
+        }
+        //
+        return null;
+    }
+
+    public void setSchemaContext(XPathSchemaContext newContext) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
