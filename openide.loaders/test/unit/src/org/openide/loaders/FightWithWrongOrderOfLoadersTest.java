@@ -83,6 +83,8 @@ implements DataLoader.RecognizedFiles {
         f0 = FileUtil.createData(root, "j1.java");
         f1 = FileUtil.createData(root, "f.formKit");
         f2 = FileUtil.createData(root, "f.java");
+
+        FormKitDataLoader.cnt = 0;
     }
 
     protected Level logLevel() {
@@ -101,6 +103,9 @@ implements DataLoader.RecognizedFiles {
         if (obj1 == obj2) {
             fail("They should be different: " + obj1);
         }
+        if (FormKitDataLoader.cnt == 0) {
+            fail("Form loader shall be consulted");
+        }
 
         assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
     }
@@ -116,6 +121,9 @@ implements DataLoader.RecognizedFiles {
         if (obj1 == obj2) {
             fail("They should be different: " + obj1);
         }
+        if (FormKitDataLoader.cnt == 0) {
+            fail("Form loader shall be consulted");
+        }
 
         assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
     }
@@ -129,6 +137,9 @@ implements DataLoader.RecognizedFiles {
         assertEquals("2nd", f1, arr[1].getPrimaryFile());
         assertEquals("3rd", f0, arr[2].getPrimaryFile());
         
+        if (FormKitDataLoader.cnt == 0) {
+            fail("Form loader shall be consulted");
+        }
     }
 
 
@@ -196,6 +207,7 @@ implements DataLoader.RecognizedFiles {
         public static final String FORM_EXTENSION = "formKit"; // NOI18N
 
         private static final long serialVersionUID = 1L;
+        static int cnt;
 
         public FormKitDataLoader()
         {
@@ -215,6 +227,7 @@ implements DataLoader.RecognizedFiles {
         protected FileObject findPrimaryFile(FileObject fo)
         {
             LOG.info("FormKitDataLoader.findPrimaryFile(): " + fo.getNameExt());
+            cnt++;
 
             String ext = fo.getExt();
             if (ext.equals(FORM_EXTENSION))
