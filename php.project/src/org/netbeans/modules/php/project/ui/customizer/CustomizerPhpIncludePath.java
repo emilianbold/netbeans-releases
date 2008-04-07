@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 
@@ -57,9 +58,8 @@ public class CustomizerPhpIncludePath extends JPanel {
 
         includePathList.setModel(uiProps.getIncludePathListModel());
         includePathList.setCellRenderer(uiProps.getIncludePathListRenderer());
-        ClassPathUiSupport.EditMediator.register(uiProps.getProject(),
+        IncludePathUiSupport.EditMediator.register(uiProps.getProject(),
                                                includePathList,
-                                               uiProps.getIncludePathListModel(),
                                                addFolderButton.getModel(),
                                                removeButton.getModel(),
                                                moveUpButton.getModel(),

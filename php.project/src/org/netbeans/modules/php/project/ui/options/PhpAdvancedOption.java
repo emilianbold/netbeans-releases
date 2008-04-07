@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,25 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.indent;
+package org.netbeans.modules.php.project.ui.options;
 
-import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author tomslot
+ * PHP panel in IDE properties (Miscellaneous category).
+ * @author Tomas Mysik
  */
-public class PHPIndentTaskFactory implements IndentTask.Factory {
-    
-    public IndentTask createTask(Context context) {
-        return new PHPIndentTask(context);
+public class PhpAdvancedOption extends AdvancedOption {
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(PhpAdvancedOption.class, "CTL_Actions_DisplayName");
     }
-    
+
+    @Override
+    public String getTooltip() {
+        return NbBundle.getMessage(PhpAdvancedOption.class, "CTL_Actions_ToolTip");
+    }
+
+    @Override
+    public OptionsPanelController create() {
+        return new PhpOptionsPanelController();
+    }
 }
