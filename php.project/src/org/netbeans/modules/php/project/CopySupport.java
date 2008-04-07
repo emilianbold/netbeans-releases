@@ -95,10 +95,8 @@ abstract class CopySupport {
 		SourceTargetPair<FileObject, File> nextPair = allPairs.poll();
 		Map<File, SourceTargetPair<FileObject, File>> m = new HashMap<File, SourceTargetPair<FileObject, File>>();
 		while (nextPair != null) {
-		    if (nextPair != null) {
-			m.put(nextPair.getTarget(), nextPair);
-			nextPair = allPairs.poll();
-		    }
+                    m.put(nextPair.getTarget(), nextPair);
+                    nextPair = allPairs.poll();
 		}
 		for (SourceTargetPair<FileObject, File> pair : m.values()) {
 		    if (pair.isCopyModifier()) {
@@ -182,7 +180,7 @@ abstract class CopySupport {
 	}
 
 	public void fileRenamed(FileRenameEvent fe) {
-	    //TODO: not implemented yet
+            prepareForRename(fe);	    
 	}
 
 	public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -272,6 +270,33 @@ abstract class CopySupport {
 	    }
 	}
 
+	private void prepareForRename(FileRenameEvent fe) {
+	    SourceTargetPair<FileObject, FileObject> config = getConfig();
+	    if (config != null && !config.isInvalidModifier() && config.isCopyModifier()) {
+                FileObject sourceFo = fe.getFile();                            
+                if (isProjectFileObject(sourceFo)) {
+                    if (sourceFo.isFolder()) {
+                        FileObject[] children = sourceFo.getChildren();
+                        for (FileObject fileObject : children) {
+                            prepareForCopy(fileObject);
+                        }
+                    } else {
+                        prepareForCopy(sourceFo);
+                    }
+                    
+                    File target = targetForSource(sourceFo);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(fe.getName());
+                    String ext = fe.getExt();                    
+                    if ( ext != null && ext.trim().length() > 0) {
+                        sb.append('.').append(ext);//NOI18N
+                    }
+                    File toDelete = new File(target.getParent(),sb.toString());                     
+                    prepareOperation(SourceTargetPair.forDelete(sourceFo, toDelete));
+                }
+            }
+	}
+        
 	private synchronized void prepareInitCopy() {	    
 	    final FileObject targetRoot = getTargetRoot();
 	    File target = FileUtil.toFile(targetRoot);
@@ -289,18 +314,20 @@ abstract class CopySupport {
 	}
 
 	private void prepareOperation(FileObject source, boolean delete) {
-	    String relativePath = relativePathForSource(source);
-	    File targetRoot = FileUtil.toFile(getConfig().getTarget());
-	    assert targetRoot != null;
-	    File target = new File(targetRoot, relativePath);
+	    File target = targetForSource(source);
 	    if (delete) {
-		allPairs.offer(SourceTargetPair.forDelete(source, target));
+		prepareOperation(SourceTargetPair.forDelete(source, target));
 	    } else {
-		allPairs.offer(SourceTargetPair.forCopy(source, target));
+		prepareOperation(SourceTargetPair.forCopy(source, target));
 	    }
 	    task.schedule(300);
 	}
 
+	private void prepareOperation(SourceTargetPair<FileObject, File> srcTargetPair) {
+            allPairs.offer(srcTargetPair);
+            task.schedule(300);
+        }   
+        
 	synchronized private void start() {
 	    stop();
 	    final SourceTargetPair<FileObject, FileObject> config = getConfig();
@@ -331,6 +358,14 @@ abstract class CopySupport {
 	    assert FileUtil.isParentOf(sourceRoot, fo);
 	    return FileUtil.getRelativePath(sourceRoot, fo);
 	}
+
+        private File targetForSource(FileObject source) {
+            String relativePath = relativePathForSource(source);
+            File targetRoot = FileUtil.toFile(getConfig().getTarget());
+            assert targetRoot != null;
+            File target = new File(targetRoot, relativePath);
+            return target;
+        }
     }
 
     private static class ConfigurationFactory {
