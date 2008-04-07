@@ -87,6 +87,10 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         remoteMethods.add("unlock"); // NOI18N        
     }       
     
+    protected static final String GET_SINGLE_STATUS = "getSingleStatus"; // NOI18N
+    protected static final String GET_STATUS = "getStatus"; // NOI18N
+    protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
+    
     private static Object semaphor = new Object();        
 
     private final ISVNClientAdapter adapter;
@@ -184,8 +188,15 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }
     }
     
-    protected boolean parallelizable(Method method, Object[] args) {
-        return  SwingUtilities.isEventDispatchThread();
+    private boolean parallelizable(Method method, Object[] args) {
+        return isLocalReadCommand(method, args);
+    }
+    
+    protected boolean isLocalReadCommand(Method method, Object[] args) {
+        String methodName = method.getName();
+        return methodName.equals(GET_SINGLE_STATUS) || 
+               methodName.equals(GET_INFO_FROM_WORKING_COPY) ||  
+               (method.getName().equals(GET_STATUS) && method.getParameterTypes().length == 3);
     }
     
     protected Object invokeMethod(Method proxyMethod, Object[] args)
