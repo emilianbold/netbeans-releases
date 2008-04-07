@@ -17,21 +17,18 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.spi;
-
-import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
+package org.netbeans.modules.bpel.model.xam.spi;
 
 /**
+ * This interface will be implemented by services that search
+ * avaliable models.
  *
+ * This interface is a marker only. It is applied that the services, 
+ * which implement it, will retrive models not imported to a BPEL file. 
+ * It is helpful for XPath exrensions inside of BPEL.
+ * 
  * @author nk160297
  */
-public interface MapperModelFactory {
+public interface NotImportedModelRetriever extends ExternalModelRetriever {
 
-    MapperModel constructModel(MapperTcContext mapperTcContext, 
-            BpelDesignContext context);
-    
-    CachingSchemaSearchVisitor getCachingSchemaSearchVisitor();
-    
 }

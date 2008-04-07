@@ -70,7 +70,7 @@ class PhpActionProvider implements ActionProvider {
         myProject = project;
 
         myCommands = new ArrayList<Command>(2);
-        myCommands.add(new ImportCommand(project));
+        //myCommands.add(new ImportCommand(project));
         myCommands.add(new RunLocalCommand(project));
 
         // store standard comands into separate list.

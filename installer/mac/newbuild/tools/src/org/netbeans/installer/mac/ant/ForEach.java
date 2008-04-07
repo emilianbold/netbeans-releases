@@ -47,8 +47,9 @@ import org.apache.tools.ant.TaskContainer;
  * arbitrary tasks container, which is capable of executing its childrne ina loop.
  *
  * <p>
- * Two types of loops are supported. First, iterating of over a list of values; in
- * this case the <code>list</code> and <code>separator</code> (optional) attributes
+ * Two types of loops are supported. First, iterating of over a list of values 
+ * (one argument is allowed in brackets, arg property is specified with <code>propertyArg</code> attribute); 
+ * in this case the <code>list</code> and <code>separator</code> (optional) attributes
  * should be set and the property speficied with <code>property</code> attribute
  * will be set to each of the value speficied in the the list.
  *
@@ -69,7 +70,8 @@ public class ForEach extends Task implements TaskContainer {
     /**
      * The list of values over which the iteration process should go.
      */
-    private String list;
+    private String list;   
+        
     
     /**
      * Separator token which should be used to split the list string into individual
@@ -96,6 +98,11 @@ public class ForEach extends Task implements TaskContainer {
      * Name of the property which has to be set for each iteration.
      */
     private String property;
+    
+    /**
+     * Name of the propertyArg which may be set for each iteration.
+     */
+    private String propertyArg;    
     
     /**
      * List of child tasks which should be executed at each iteration.
@@ -149,6 +156,15 @@ public class ForEach extends Task implements TaskContainer {
     public void setProperty(final String property) {
         this.property = property;
     }
+    
+    /**
+     * Setter for the 'propertyArg' property.
+     * 
+     * @param propertyArg The new value for the 'propertyArg' property.
+     */
+    public void setpropertyArg(final String propertyArg) {
+        this.propertyArg = propertyArg;
+    }    
     
     /**
      * Setter for the 'from' property.
@@ -218,10 +234,19 @@ public class ForEach extends Task implements TaskContainer {
         }
         
         if (list != null) {
-            final String[] items = list.split(separator);
-            
-            for (String value: items) {
-                executeChildren(value);
+            final String[] items = list.split(separator);      
+            for (String item: items) {
+                item = item.trim();
+                String value = item;
+                String arg = "";                    
+                final int index = item.lastIndexOf('(');
+                if(index >= 0) {     // arg is set           
+                  value=item.substring(0, index);                        
+                  arg=item.substring(index+1, item.lastIndexOf(')'));                                                                         
+                  executeChildren(value, arg);
+                } else{
+                  executeChildren(value); 
+                }                
             }
             return;
         } else {
@@ -231,17 +256,21 @@ public class ForEach extends Task implements TaskContainer {
         }
     }
     
-    // private //////////////////////////////////////////////////////////////////////
+    // private //////////////////////////////////////////////////////////////////////    
+    private void executeChildren(String value, String arg) throws BuildException {        
+        getProject().setProperty(this.propertyArg, arg);
+        executeChildren(value);
+    }
     /**
      * Sets the specified property to the given value and executes the children.
      */
     private void executeChildren(String value) throws BuildException {
-        getProject().setProperty(this.property, value);
+        getProject().setProperty(this.property, value);    
         
         for (Task task: this.children) {
             task.perform();
         }
-    }
+    }    
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants

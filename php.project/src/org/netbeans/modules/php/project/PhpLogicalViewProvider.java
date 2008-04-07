@@ -639,14 +639,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         }
         
         private Action[] getSrcActions(){
-            ImportCommand importComm = new ImportCommand(getProject());
+            //ImportCommand importComm = new ImportCommand(getProject());
             RunLocalCommand runLocalComm = new RunLocalCommand(getProject());
 
             Action[] actions = new Action[]{
-                ProjectSensitiveActions.projectCommandAction(
-                        importComm.getId(), importComm.getLabel(), null),
-                ProjectSensitiveActions.projectCommandAction(
-                        runLocalComm.getId(), runLocalComm.getLabel(), null)
+                //ProjectSensitiveActions.projectCommandAction(importComm.getId(), importComm.getLabel(), null),
+                ProjectSensitiveActions.projectCommandAction(runLocalComm.getId(), runLocalComm.getLabel(), null)
             };
             return actions;
         }

@@ -221,13 +221,19 @@ public final class Utils {
         assert projectPath != null;
         assert type != null;
 
+        File project = new File(projectPath);
+        // #131753
+        if (!project.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_" + type + "NotAbsolute");
+        }
+
         // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(new File(projectPath));
+        File cfl = Utils.getCanonicalFile(project);
         if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
         }
 
-        final File destFolder = new File(projectPath).getAbsoluteFile();
+        final File destFolder = project.getAbsoluteFile();
         if (Utils.getCanonicalFile(destFolder) == null) {
             return NbBundle.getMessage(Utils.class, "MSG_Illegal" + type + "Location");
         }
@@ -250,6 +256,30 @@ public final class Utils {
                 // Folder exists and is not empty
                 return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderExists");
             }
+        }
+        return null;
+    }
+
+    /**
+     * Validate that the project sources directory and directory for copying files are "independent". It means
+     * that the sources isn't underneath the target directory and vice versa. Both paths have to be normalized.
+     * @param sources project sources.
+     * @param copyTarget directory for copying files.
+     * @return <code>true</code> if the directories are "independent".
+     */
+    public static String validateSourcesAndCopyTarget(String sources, String copyTarget) {
+        assert sources != null;
+        assert copyTarget != null;
+        // handle "/myDir" and "/myDirectory"
+        if (!sources.endsWith(File.separator)) {
+            sources = sources + File.separator;
+        }
+        if (!copyTarget.endsWith(File.separator)) {
+            copyTarget = copyTarget + File.separator;
+        }
+        if (sources.startsWith(copyTarget)
+                || copyTarget.startsWith(sources)) {
+            return NbBundle.getMessage(Utils.class, "MSG_SourcesEqualCopyTarget");
         }
         return null;
     }
