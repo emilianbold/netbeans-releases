@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ${WORKSPACE}
-rm -rf installer nbi nbextracted zipdist
+rm -rf installer nbi nbextracted dist
 hg up
 
 cd $LAST_BITS
