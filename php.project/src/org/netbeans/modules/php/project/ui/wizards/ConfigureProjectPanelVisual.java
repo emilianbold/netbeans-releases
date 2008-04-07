@@ -49,14 +49,11 @@ class ConfigureProjectPanelVisual extends JPanel {
 
     private static final long serialVersionUID = 5104232236340989L;
 
-    private final ConfigureProjectPanel wizardPanel;
     private LocationPanelVisual locationPanelVisual;
     private OptionsPanelVisual optionsPanelVisual;
 
 
-    ConfigureProjectPanelVisual(final ConfigureProjectPanel wizardPanel) {
-        this.wizardPanel = wizardPanel;
-
+    ConfigureProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectTitleName"));
         putClientProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
@@ -66,7 +63,7 @@ class ConfigureProjectPanelVisual extends JPanel {
         initComponents();
 
         // location
-        locationPanelVisual = new LocationPanelVisual(wizardPanel);
+        locationPanelVisual = new LocationPanelVisual();
         locationContainer.add(BorderLayout.NORTH, locationPanelVisual);
 
         // options

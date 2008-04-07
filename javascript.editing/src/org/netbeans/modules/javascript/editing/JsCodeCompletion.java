@@ -469,9 +469,8 @@ public class JsCodeCompletion implements Completable {
                 request.node = closest;
             }
 
-            completeKeywords(proposals, request);
-
             if (root == null) {
+                completeKeywords(proposals, request);
                 return proposals;
             }
 
@@ -484,6 +483,8 @@ public class JsCodeCompletion implements Completable {
                 completeObjectMethod(proposals, request);
                 return proposals;
             }
+
+            completeKeywords(proposals, request);
 
             addLocals(proposals, request);
             
@@ -1185,6 +1186,21 @@ public class JsCodeCompletion implements Completable {
         String fqn = request.fqn;
         JsParseResult result = request.result;
         
+        boolean includeNonFqn = true;
+        
+        // Add in inherited properties, if any...
+        // DEMO HACK, NOT YET FULLY IMPLEMENTED
+        if (request.fileObject.getName().equals("test") && request.path.contains(org.mozilla.javascript.Token.OBJECTLIT)) {
+//            String type = "YAHOO.widget.Editor";
+//            // Demo HACK
+//            Set<IndexedElement> inherited = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
+//            if (inherited.size() > 0) {
+//                matches.addAll(inherited);
+//            }
+            fqn = "YAHOO.widget.Editor";
+            includeNonFqn = false;
+        }
+        
         Set<IndexedElement> matches;
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
@@ -1198,9 +1214,11 @@ public class JsCodeCompletion implements Completable {
 //            }
         }
         // Also add in non-fqn-prefixed elements
-        Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
-        if (top.size() > 0) {
-            matches.addAll(top);
+        if (includeNonFqn) {
+            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            if (top.size() > 0) {
+                matches.addAll(top);
+            }
         }
 
         for (IndexedElement element : matches) {
@@ -1490,7 +1508,7 @@ public class JsCodeCompletion implements Completable {
                 }
 
                 // If we're not in the identifier we need to be in the whitespace after "def"
-                if (id != JsTokenId.WHITESPACE) {
+                if (id != JsTokenId.WHITESPACE && id != JsTokenId.EOL) {
                     // Do something about http://www.netbeans.org/issues/show_bug.cgi?id=100452 here
                     // In addition to checking for whitespace I should look for "Foo." here
                     return false;

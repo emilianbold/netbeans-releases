@@ -123,4 +123,17 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     public boolean isDeprecated() {
         return false;
     }
+
+    @Override
+    public int getOffset() {
+        int argIndex = getAttributeSection(OFFSET_INDEX);
+        int endIndex = attributes.indexOf(';', argIndex);
+        
+        if (endIndex > argIndex){
+            String offsetStr = attributes.substring(argIndex, endIndex);
+            return Integer.parseInt(offsetStr);
+        }
+        
+        return super.getOffset();
+    }
 }

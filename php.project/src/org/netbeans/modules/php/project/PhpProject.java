@@ -312,14 +312,16 @@ public class PhpProject implements Project, AntProjectListener {
     }
     
     private final class PhpOpenedHook extends ProjectOpenedHook {
-        
+	private CopySupport copySupport = CopySupport.forProject();
         protected void projectOpened() {
             ClassPathProviderImpl cpProvider = myLookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+	    copySupport.projectOpened(PhpProject.this);
         }
         
         protected void projectClosed() {
+	    copySupport.projectClosed(PhpProject.this);
             try {
                 ProjectManager.getDefault().saveProject( PhpProject.this);
             } catch (IOException e) {

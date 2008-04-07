@@ -295,7 +295,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         //
         Graph newGraph = new Graph(newMapperModel, copy);
         //
-        CopyFromProcessor fromProcessor = new CopyFromProcessor(this, copy);
+        FromProcessor fromProcessor = new FromProcessor(this, copy);
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
         newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel, castList);
         if (newGraph == null) {

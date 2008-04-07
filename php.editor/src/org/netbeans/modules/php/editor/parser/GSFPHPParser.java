@@ -92,6 +92,9 @@ public class GSFPHPParser implements Parser {
                     }
                     result = new PHPParseResult(this, file, program);
                 }
+                else {
+                    result = new PHPParseResult(this, file, null);
+                }
                 
             } catch (Exception exception) {
                 listener.exception(exception);

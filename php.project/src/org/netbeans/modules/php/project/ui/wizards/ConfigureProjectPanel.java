@@ -58,8 +58,8 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
-        WebFolderNameProvider, ChangeListener {
+public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>,
+        WizardDescriptor.FinishablePanel<WizardDescriptor>, WebFolderNameProvider, ChangeListener {
 
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
@@ -105,9 +105,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return new HelpCtx(ConfigureProjectPanel.class.getName());
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         getComponent();
-        descriptor = (WizardDescriptor) settings;
+        descriptor = settings;
 
         unregisterListeners();
 
@@ -144,27 +144,26 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         fireChangeEvent();
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-
+    public void storeSettings(WizardDescriptor settings) {
         // project
-        d.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(locationPanelVisual.getProjectLocation())));
-        d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
+        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(locationPanelVisual.getProjectLocation())));
+        settings.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
 
         // sources
-        d.putProperty(WWW_FOLDER, locationPanelVisual.getSourcesLocation());
-        d.putProperty(LOCAL_SERVERS, locationPanelVisual.getLocalServerModel());
-        d.putProperty(URL, locationPanelVisual.getUrl());
+        settings.putProperty(WWW_FOLDER, locationPanelVisual.getSourcesLocation());
+        settings.putProperty(LOCAL_SERVERS, locationPanelVisual.getLocalServerModel());
+        settings.putProperty(URL, locationPanelVisual.getUrl());
 
         // options
-        d.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
-        d.putProperty(INDEX_FILE, optionsPanelVisual.getIndexName());
-        d.putProperty(ENCODING, optionsPanelVisual.getEncoding());
-        d.putProperty(SET_AS_MAIN, optionsPanelVisual.isSetAsMain());
+        settings.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
+        settings.putProperty(INDEX_FILE, optionsPanelVisual.getIndexName());
+        settings.putProperty(ENCODING, optionsPanelVisual.getEncoding());
+        settings.putProperty(SET_AS_MAIN, optionsPanelVisual.isSetAsMain());
     }
 
     public boolean isValid() {
         getComponent();
+        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
         String error = validateProject();
         if (error != null) {
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
@@ -180,7 +179,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             return false;
         }
-        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
         return true;
     }
 
@@ -313,6 +311,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     private String validateSources() {
+        String err = null;
         LocalServer localServer = locationPanelVisual.getSourcesLocation();
         if (!isProjectFolder(localServer)) {
             String sourcesLocation = localServer.getSrcRoot();
@@ -323,10 +322,23 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            String err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
+            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
             if (err != null) {
                 return err;
             }
+
+            // warn if the folder is not empty
+            File destFolder = new File(sourcesLocation);
+            File[] kids = destFolder.listFiles();
+            if (destFolder.exists() && kids != null && kids.length > 0) {
+                // folder exists and is not empty - but just warning
+                String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesNotEmpty");
+                descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+            }
+        }
+        err = validateSourcesAndCopyTarget();
+        if (err != null) {
+            return err;
         }
 
         String url = locationPanelVisual.getUrl();
@@ -343,8 +355,34 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             if (!Utils.isValidFileName(indexName)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalIndexName");
             }
+            // check whether the index file already exists
+            LocalServer localServer = locationPanelVisual.getSourcesLocation();
+            if (!isProjectFolder(localServer)) {
+                File indexFile = new File(localServer.getSrcRoot(), indexName);
+                if (indexFile.exists()) {
+                    return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IndexNameExists");
+                }
+            }
         }
         return null;
+    }
+
+    // #131023
+    private String validateSourcesAndCopyTarget() {
+        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        if (copyTarget == null) {
+            return null;
+        }
+        LocalServer sources = locationPanelVisual.getSourcesLocation();
+        String sourcesSrcRoot = sources.getSrcRoot();
+        if (isProjectFolder(sources)) {
+            File project = new File(locationPanelVisual.getProjectLocation(), locationPanelVisual.getProjectName());
+            File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCE_FOLDER));
+            sourcesSrcRoot = src.getAbsolutePath();
+        }
+        File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
+        String cpTarget = normalized.getAbsolutePath();
+        return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
     }
 
     public void stateChanged(ChangeEvent e) {

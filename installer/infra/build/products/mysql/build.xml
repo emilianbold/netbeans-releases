@@ -72,12 +72,14 @@
         <antcall target="clean-platform">
             <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
+	<!--
         <antcall target="clean-platform">
             <param name="product.platforms" value="macosx-x86"/>
         </antcall>
         <antcall target="clean-platform">
             <param name="product.platforms" value="macosx-ppc"/>
         </antcall>
+	-->
     </target>
     
     <!--
@@ -99,13 +101,14 @@
         <antcall target="build-platform">
             <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
+	<!--
         <antcall target="build-platform">
             <param name="product.platforms" value="macosx-x86"/>
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="macosx-ppc"/>
         </antcall>
-
+        -->
     </target>
     
     <!--
@@ -127,13 +130,14 @@
         <antcall target="release-platform">
             <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
+	<!--
         <antcall target="release-platform">
             <param name="product.platforms" value="macosx-x86"/>
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="macosx-ppc"/>
         </antcall>
-
+        -->
     </target>
     
     <!--

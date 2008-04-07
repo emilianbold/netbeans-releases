@@ -87,6 +87,19 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
+        wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
+        wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
+        //wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null); // "setAsMain" has to remain!
+        wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        wizard.putProperty(ConfigureProjectPanel.URL, null);
+        wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
+        wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
+        wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
+        wizard.putProperty(ConfigureServerPanel.COPY_FILES, null);
+        wizard.putProperty(ConfigureServerPanel.COPY_TARGET, null);
+        wizard.putProperty(ConfigureServerPanel.COPY_TARGETS, null);
+
         panels = null;
         descriptor = null;
     }
@@ -200,6 +213,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         configureSources(helper, properties);
         configureEncoding(properties);
         configureCopyFiles(properties);
+        configureIncludePath(properties);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -249,6 +263,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, copyFilesString);
         properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyTargetString);
+    }
+
+    private void configureIncludePath(EditableProperties properties) {
+        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
     private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {

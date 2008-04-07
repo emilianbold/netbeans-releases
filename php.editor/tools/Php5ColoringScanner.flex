@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.editor.lexer;
 
 import org.netbeans.modules.php.editor.PHPVersion;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 %%
 
 %public
@@ -49,9 +51,6 @@ import org.netbeans.modules.php.editor.PHPVersion;
 %unicode
 %caseless
 %char
-
-
-
 
 %state ST_PHP_IN_SCRIPTING
 %state ST_PHP_DOUBLE_QUOTES
@@ -67,6 +66,16 @@ import org.netbeans.modules.php.editor.PHPVersion;
 %state ST_PHP_LINE_COMMENT
 %state ST_PHP_HIGHLIGHTING_ERROR
 
+%eofval{
+       if(input.readLength() > 0) {
+            // backup eof
+            input.backup(1);
+            //and return the text as error token
+            return PHPTokenId.UNKNOWN_TOKEN;
+        } else {
+            return null;
+        }
+%eofval}
 
 %{
 
@@ -77,6 +86,7 @@ import org.netbeans.modules.php.editor.PHPVersion;
 
     private boolean short_tags_allowed = true;
 
+    private LexerInput input;
     
     /*public PhpLexer5(int state){
         initialize(state);
@@ -107,13 +117,19 @@ import org.netbeans.modules.php.editor.PHPVersion;
     	initialize(parameters[6]);
     }
     */
-        public PHP5ColoringLexer(java.io.Reader  reader, boolean asp_tags) {
-            this(reader);
+        public PHP5ColoringLexer(LexerRestartInfo info, boolean asp_tags) {
+            this.input = info.input();
             this.asp_tags = asp_tags;
-        }
-
-        public void reset(java.io.Reader  reader) {
-            yyreset(reader);
+            
+            if(info.state() != null) {
+                //reset state
+                setState((LexerState)info.state());
+            } else {
+                //initial state
+                zzState = zzLexicalState = YYINITIAL;
+                stack.clear();
+            }
+            
         }
 
         public class LexerState  {
@@ -154,29 +170,17 @@ import org.netbeans.modules.php.editor.PHPVersion;
             }
         }
         
-        public PHPScannerState getState() {
+        public LexerState getState() {
             return new LexerState();
         }
         
-        public void setState(PHPScannerState state) {
-            LexerState lstate = (LexerState)state;
-            this.stack.copyFrom(lstate.saveStack);
-            yybegin(lstate.saveState);
+        public void setState(LexerState state) {
+            this.stack.copyFrom(state.stack);
+            this.zzState = state.zzState;
+            this.zzLexicalState = state.zzLexicalState;
         }
 
-        public PHPVersion getPHPVersion () {
-            return PHPVersion.PHP_5;
-        }
-
-        public int getTokenLength() {
-            return yylength();
-        }
-
-    public int getOffset() {
-        return yychar;
-    }
-
-    protected boolean isHeredocState(int state){
+     protected boolean isHeredocState(int state){
     	    	return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC;
     }
     
@@ -225,6 +229,7 @@ import org.netbeans.modules.php.editor.PHPVersion;
  // End user code
 
 %}
+
 LNUM=[0-9]+
 DNUM=([0-9]*[\.][0-9]+)|([0-9]+[\.][0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
@@ -246,7 +251,6 @@ HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{
 DOUBLE_QUOTES_CHARS=("{"*([^$\"\\{]|("\\"{ANY_CHAR}))|{DOUBLE_QUOTES_LITERAL_DOLLAR})
 BACKQUOTE_CHARS=("{"*([^$`\\{]|("\\"{ANY_CHAR}))|{BACKQUOTE_LITERAL_DOLLAR})
 HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDOC_NEWLINE}+({HEREDOC_NON_LABEL}|{HEREDOC_LABEL_NO_NEWLINE})))
-
 PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"OR"|"AND"|"XOR"|"<<"|">>"
 
 

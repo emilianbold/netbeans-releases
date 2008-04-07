@@ -2259,11 +2259,16 @@ public class PHP5ColoringLexer  {
           { return PHPTokenId.PHP_EMPTY;
           }
         case 252: break;
-        default: 
-          //if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
-            if(zzInput == YYEOF) {
-//            zzAtEOF = true;
-            return null;
+        default:  
+          if(zzInput == YYEOF) {
+                if(input.readLength() > 0) {
+                    // backup eof
+                    input.backup(1);
+                    //and return the text as error token
+                    return PHPTokenId.UNKNOWN_TOKEN;
+                } else {
+                    return null;
+                }
           } 
           else {
             zzScanError(ZZ_NO_MATCH);

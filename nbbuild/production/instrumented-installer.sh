@@ -1,11 +1,11 @@
 #!/bin/bash
 cd ${WORKSPACE}
-rm -rf installer nbi nbextracted zipdist
+rm -rf installer nbi nbextracted dist
 hg up
 
 cd $LAST_BITS
 
-BUILD_NUMBER=`ls | grep netbeans | cut -f 4 -d "-" | uniq`
+BUILD_NUMBER=`ls | grep netbeans | cut -f 3 -d "-" | uniq`
 
 cd ${WORKSPACE}
 ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
@@ -52,9 +52,9 @@ rm -rf ${EXTRACTED_DIR}
 ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
 scp -q -v ${DIST}/*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
 scp -q -v ${BASE_DIR}/../build-private.sh $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild
-ssh $NATIVE_MAC_MACHINE sh $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip/moduleclusters ${BUILD_DESC} $BUILD_NUMBER 0
+ssh $NATIVE_MAC_MACHINE sh $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH ${BUILD_DESC} $BUILD_NUMBER 0
 
 cd ${BASE_DIR}/installer/infra/build
 bash build.sh
 
-scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* ${WORKSPACE}/dist/installers/bundles
+scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* ${WORKSPACE}/dist/installers/bundles

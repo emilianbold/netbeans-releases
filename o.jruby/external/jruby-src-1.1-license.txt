@@ -1,12 +1,12 @@
 Name: JRuby
-Version: 1.1RC3
+Version: 1.1
 Description: The Java-based implementation of Ruby
 License: LGPL-2.1
 OSR: 6419
 Origin: http://jruby.codehaus.org/
 Source: http://jruby.codehaus.org/
 
-Use of JRuby version 1.1RC3 is governed by the terms of the license below:
+Use of JRuby version 1.1 is governed by the terms of the license below:
 
 		  GNU LESSER GENERAL PUBLIC LICENSE
 		       Version 2.1, February 1999

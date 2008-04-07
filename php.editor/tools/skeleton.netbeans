@@ -205,7 +205,7 @@
       zzScanError(ZZ_PUSHBACK_2BIG);
 
     input.backup(number);
-    zzMarkedPos -= number;
+    //zzMarkedPos -= number;
   }
 
 
@@ -261,10 +261,10 @@
 
 --- actions
         default: 
-          if (zzInput == YYEOF) {
-            zzAtEOF = true;
+          if (zzInput == YYEOF) 
+            //zzAtEOF = true;
 --- eofvalue
-          } 
+          
           else {
 --- no match
           }

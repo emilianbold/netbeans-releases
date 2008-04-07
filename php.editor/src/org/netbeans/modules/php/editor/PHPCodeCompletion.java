@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.modules.gsf.api.CompletionProposal;
@@ -64,17 +65,23 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceModel;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -82,10 +89,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -93,10 +104,11 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
-    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING};
+    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
+        CLASS_MEMBER, STATIC_CLASS_MEMBER, UNKNOWN};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
-        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
         "eval()", "exit()", "for", "foreach", "function", "global", "if",
         "include()", "include_once()", "isset()", "list()", "new",
         "print()", "require()", "require_once()", "return()", "static",
@@ -106,6 +118,8 @@ public class PHPCodeCompletion implements Completable {
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
     
+    private static ImageIcon keywordIcon = null;
+    
     private boolean caseSensitive;
     
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
@@ -113,7 +127,9 @@ public class PHPCodeCompletion implements Completable {
             TokenHierarchy th = TokenHierarchy.get(info.getDocument());
             TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
             tokenSequence.move(caretOffset);
-            tokenSequence.moveNext();
+            if (!tokenSequence.moveNext()){
+                return CompletionContext.UNKNOWN;
+            }
             
             switch (tokenSequence.token().id()){
                 case T_INLINE_HTML:
@@ -136,6 +152,20 @@ public class PHPCodeCompletion implements Completable {
 
                     if (tokenId == PHPTokenId.PHP_NEW || tokenId == PHPTokenId.PHP_EXTENDS) {
                         return CompletionContext.CLASS_NAME;
+                    } else if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                        return CompletionContext.CLASS_MEMBER;
+                    } else if (tokenId == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
+                        return CompletionContext.STATIC_CLASS_MEMBER;
+                    } else if (tokenId == PHPTokenId.PHP_STRING) {
+                        if (tokenSequence.movePrevious()) {
+                            tokenId = tokenSequence.token().id();
+                            
+                            if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                                return CompletionContext.CLASS_MEMBER;
+                            } else if (tokenId == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM){
+                                return CompletionContext.STATIC_CLASS_MEMBER;
+                            }
+                        }
                     }
                 }
             }
@@ -178,6 +208,11 @@ public class PHPCodeCompletion implements Completable {
                 // LOCAL VARIABLES
                 proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
                 break;
+            case CLASS_MEMBER:
+                autoCompleteClassMembers(proposals, request);
+                break;
+            case STATIC_CLASS_MEMBER:
+                break;
         }
         
         return proposals;
@@ -186,6 +221,50 @@ public class PHPCodeCompletion implements Completable {
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
         for (IndexedConstant clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new ClassItem(clazz, request));
+        }
+    }
+    
+    private void autoCompleteClassMembers(List<CompletionProposal> proposals, CompletionRequest request) {
+        try {
+            TokenHierarchy th = TokenHierarchy.get(request.info.getDocument());
+            TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+            tokenSequence.move(request.anchor);
+            if (tokenSequence.movePrevious())
+            {
+                boolean moreTokens = true;
+                
+                if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+                    moreTokens = tokenSequence.movePrevious();
+                }
+                
+                moreTokens = tokenSequence.movePrevious();
+                
+                String varName = tokenSequence.token().text().toString();
+                
+                Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+                
+                
+                if (localVars != null && localVars.size() == 1){
+                    IndexedConstant var = localVars.toArray(new IndexedConstant[1])[0];
+                    String typeName = var.getTypeName();
+                    
+                    Collection<IndexedFunction> methods = request.index.getMethods(
+                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                    
+                    for (IndexedFunction method : methods){
+                        proposals.add(new FunctionItem(method, request));
+                    }
+                    
+                    Collection<IndexedConstant> properties = request.index.getProperties(
+                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                    
+                    for (IndexedConstant prop : properties){
+                        proposals.add(new VariableItem(prop, request));
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -219,8 +298,6 @@ public class PHPCodeCompletion implements Completable {
     
     private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        
-        String prefix = request.prefix;
         String url = null;
         try {
             url = request.result.getFile().getFile().toURL().toExternalForm();
@@ -228,45 +305,57 @@ public class PHPCodeCompletion implements Completable {
             Exceptions.printStackTrace(ex);
         }
         
+        Collection<IndexedConstant> localVars = getLocalVariables(statementList, request.prefix, request.anchor, url);
+        
+        for (IndexedConstant localVar : localVars){
+            CompletionProposal proposal = new VariableItem(localVar, request);
+            proposals.add(proposal);
+        }
+        
+        return proposals;
+    }
+    
+    private Collection<IndexedConstant> getLocalVariables(Collection<Statement> statementList, String namePrefix, int position, String localFileURL){
+        Collection<IndexedConstant> localVars = new ArrayList<IndexedConstant>();
+        
         for (Statement statement : statementList){
-            if (statement.getStartOffset() > request.anchor){
+            if (statement.getStartOffset() > position){
                 break; // no need to analyze statements after caret offset
             }
             
             if (statement instanceof ExpressionStatement){
                 String varName = extractVariableNameFromExpression(statement);
                 
-                if (varName != null && varName.startsWith(prefix)) {
+                if (varName != null && varName.startsWith(namePrefix)) {
                     IndexedConstant ic = new IndexedConstant(varName, null,
-                            null, url, null, 0);
+                            null, localFileURL, null, 0, -1);
 
                     String varType = extractVariableTypeFromExpression(statement);
                     ic.setTypeName(varType);
-                    CompletionProposal proposal = new VariableItem(ic, request);
-                    proposals.add(proposal);
+                    localVars.add(ic);
                 }
-            } else if (!offsetWithinStatement(request.anchor, statement)){
+            } else if (!offsetWithinStatement(position, statement)){
                 continue;
             }
                 
             if (statement instanceof Block) {
                 Block block = (Block) statement;
-                proposals.addAll(getLocalVariableProposals(block.getStatements(), request));
+                localVars.addAll(getLocalVariables(block.getStatements(), namePrefix, position, localFileURL));
             } else if (statement instanceof IfStatement){
                 IfStatement ifStmt = (IfStatement)statement;
                 
-                if (offsetWithinStatement(request.anchor, ifStmt.getTrueStatement())) {
-                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request));
+                if (offsetWithinStatement(position, ifStmt.getTrueStatement())) {
+                    localVars.addAll(getLocalVariables(Collections.singleton(ifStmt.getTrueStatement()), namePrefix, position, localFileURL));
                 } else if (ifStmt.getFalseStatement() != null // false statement ('else') is optional
-                        && offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
-                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request));
+                        && offsetWithinStatement(position, ifStmt.getFalseStatement())) {
+                    localVars.addAll(getLocalVariables(Collections.singleton(ifStmt.getFalseStatement()), namePrefix, position, localFileURL));
                 }
             } else if (statement instanceof WhileStatement) {
                 WhileStatement whileStatement = (WhileStatement) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton(whileStatement.getBody()), request));
+                localVars.addAll(getLocalVariables(Collections.singleton(whileStatement.getBody()), namePrefix, position, localFileURL));
             }  else if (statement instanceof DoStatement) {
                 DoStatement doStatement = (DoStatement) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton(doStatement.getBody()), request));
+                localVars.addAll(getLocalVariables(Collections.singleton(doStatement.getBody()), namePrefix, position, localFileURL));
             }
             else if (statement instanceof FunctionDeclaration) {
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
@@ -275,26 +364,25 @@ public class PHPCodeCompletion implements Completable {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, url, null, 0);
+                                null, localFileURL, null, 0, -1);
                         
                         if (param.getParameterType() != null) {
                             ic.setTypeName(param.getParameterType().getName());
                         }
 
-                        CompletionProposal proposal = new VariableItem(ic, request);
-                        proposals.add(proposal);
+                        localVars.add(ic);
                     }
                 }
                 
-                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)functionDeclaration.getBody()), request));
+                localVars.addAll(getLocalVariables(Collections.singleton((Statement)functionDeclaration.getBody()), namePrefix, position, localFileURL));
             } else if (statement instanceof ClassDeclaration) {
                 ClassDeclaration classDeclaration = (ClassDeclaration) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)classDeclaration.getBody()), request));
+                localVars.addAll(getLocalVariables(Collections.singleton((Statement)classDeclaration.getBody()), namePrefix, position, localFileURL));
             }
             
         }
         
-        return proposals;
+        return localVars;
     }
     
     private static boolean offsetWithinStatement(int offset, Statement statement){
@@ -349,8 +437,62 @@ public class PHPCodeCompletion implements Completable {
         
     public String document(CompilationInfo info, ElementHandle element) {
         if (element instanceof IndexedElement) {
-            IndexedElement indexedElement = (IndexedElement) element;
-            return String.format("<h1>%s</h1>%s", indexedElement.getName(), indexedElement.getFilenameUrl());
+            final IndexedElement indexedElement = (IndexedElement) element;
+            StringBuilder builder = new StringBuilder();
+            
+            builder.append(String.format("<h1>%s</h1><p><font size=\"-1\">%s</font></p><br><br>", //NOI18N
+                    indexedElement.getName(), indexedElement.getFilenameUrl()));
+            
+            final StringBuilder phpDoc = new StringBuilder();
+            
+            if (indexedElement.getOffset() > -1) {
+                FileObject fo = element.getFileObject();
+                SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+                try {
+
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationInfo ci) throws Exception {
+                            ParserResult presult = ci.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE).iterator().next();
+                            Program program = Utils.getRoot(presult.getInfo());
+                            ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                            Comment comment = Utils.getCommentForNode(program, node);
+                            
+                            if (comment instanceof PHPDocBlock) {
+                                PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
+                                phpDoc.append(pHPDocBlock.getDescription());
+                                
+                                // list PHPDoc tags
+                                // TODO a better support for PHPDoc tags
+                                phpDoc.append("<br><br><table>\n"); //NOI18N
+                                
+                                for (PHPDocTag tag : pHPDocBlock.getTags()){
+                                    phpDoc.append(String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
+                                            tag.getKind().toString(), tag.getValue()));
+                                }
+                                
+                                phpDoc.append("</table>\n"); //NOI18N
+                            }
+
+                        }
+                    }, true);
+
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            if (phpDoc.length() > 0){
+                builder.append(phpDoc);
+            } else {
+                //TODO localize me
+                builder.append("PHPDoc not found");
+            }
+
+            return builder.toString();
         }
 
         return null;
@@ -493,7 +635,9 @@ public class PHPCodeCompletion implements Completable {
     private class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
-
+        private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
+        
+        
         KeywordItem(String keyword, CompletionRequest request) {
             super(null, request);
             this.keyword = keyword;
@@ -502,6 +646,16 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public String getName() {
             return keyword;
+        }
+        
+        @Override public String getLhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            
+            return formatter.getText();
         }
 
         @Override
@@ -512,10 +666,23 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public String getRhsHtml() {
             if (description != null) {
-                return description;
+                HtmlFormatter formatter = request.formatter;
+                formatter.reset();
+                formatter.appendHtml(description);
+                return formatter.getText();
+                
             } else {
                 return null;
             }
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            if (keywordIcon == null) {
+                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
+            }
+
+            return keywordIcon;
         }
     }
     

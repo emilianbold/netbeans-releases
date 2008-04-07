@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,25 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.indent;
+package org.netbeans.modules.web.debug;
 
-import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.editor.indent.spi.IndentTask;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomslot
+ * @author Petr Hejl
  */
-public class PHPIndentTaskFactory implements IndentTask.Factory {
-    
-    public IndentTask createTask(Context context) {
-        return new PHPIndentTask(context);
+public class EngineContextProviderImplTest extends NbTestCase {
+
+    public EngineContextProviderImplTest(String name) {
+        super(name);
+    }
+
+    public void testGetUrl() throws MalformedURLException, URISyntaxException {
+        EngineContextProviderImpl provider = new EngineContextProviderImpl();
+        assertNull(provider.getURL(null, false));
+        assertNull(provider.getURL(null, true));
+
+        assertNull(provider.getURL("SomeClass.java", false));
+        assertNull(provider.getURL("SomeClass.java", true));
+
+        assertUrl(provider.getURL("org", false));
+        assertNull(provider.getURL("org/SomeClass.java", false));
+        assertUrl(provider.getURL("org/apache", false));
+        assertNull(provider.getURL("org/apache/SomeClass.java", false));
+        assertUrl(provider.getURL("org/apache/jsp", false));
+        assertNull(provider.getURL("org/apache/jsp/SomeClass.java", false));
     }
     
+    private static void assertUrl(String urlString) throws MalformedURLException, URISyntaxException {
+        assertNotNull(urlString);
+        URL url = new URL(urlString);
+        if ("file".equals(url.getProtocol())) {
+            File file = new File(url.toURI());
+            assertFalse(file.exists());
+        }
+    }
 }

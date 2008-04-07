@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,47 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.php.project.classpath.support;
 
+import java.io.File;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-package org.netbeans.modules.defaults;
-
-import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
-
+// copied from java.project
 /**
- * 
- * @author S.Aubrecht
+ * ProjectClassPathSupport is a support class for creating classpath based
+ * on the list of ant properties.
+ * @author Tomas Zezula
  */
-public class ShortcutsBuilder {
+public final class ProjectClassPathSupport {
 
-    private static final boolean isMac = Utilities.isMac();
-    
-    public static String buildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
-        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+    /** Creates a new instance of NewClass */
+    private ProjectClassPathSupport() {
     }
-    
-    public static String rebuildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
-        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+
+
+    /**
+     * Creates new classpath based on the ant property. The returned classpath
+     * listens on changes of property value.
+     * @param projectFolder {@link File} the project folder used to resolve relative paths
+     * @param evaluator {@link PropertyEvaluator} used for obtaining the value of
+     * given property and listening on value changes.
+     * @param propertyNames the names of ant properties the classpath will be build on,
+     * can't be or contain null. It can contain duplicates, in this case the duplicated property
+     * is used multiple times. The values of given properties are concatenated into a single path.
+     * @return an {@link ClassPathImplementation} based on the given ant properties.
+     */
+    public static ClassPathImplementation createPropertyBasedClassPathImplementation(File projectFolder,
+            PropertyEvaluator evaluator, String[] propertyNames) {
+        return new ProjectClassPathImplementation(projectFolder, propertyNames, evaluator);
     }
-    
-    public static String compileSingle( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
-        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
-    }
-    
-    
 }
