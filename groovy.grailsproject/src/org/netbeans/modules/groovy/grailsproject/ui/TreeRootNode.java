@@ -78,10 +78,7 @@ import java.io.File;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.Project;
-import org.openide.util.Lookup;
 
 
 /**
@@ -144,55 +141,17 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
     private TreeRootNode(Node originalNode, SourceGroup g) {
         super(originalNode, new PackageFilterChildren(originalNode),
-//                new ProxyLookup(
-//                originalNode.getLookup(),
+                new ProxyLookup(
+                originalNode.getLookup(),
                 Lookups.fixed(  new PathFinder(g),  // no need for explicit search info
                                 // Adding TemplatesImpl to Node's lookup to narrow-down
                                 // number of displayed templates with the NewFile action.
                                 // see # 122942
                                 new TemplatesImpl(g)
                                 ) 
-                );
+                ));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
-    }
-
-    public DataObject[] getTemplates() {
-        
-        if ( templates == null ) {
-            
-            ArrayList<DataObject> tList = new ArrayList<DataObject>( 2 );
-            DataObject template;
-            
-            template = findTemplate( "Templates/Other/file" );
-            if ( template != null ) {
-                tList.add( template );
-            }
-                        
-            template = findTemplate( "Templates/Other/Folder" ); 
-            if ( template != null ) {
-                tList.add( template );
-            }
-        
-            templates = new DataObject[tList.size()]; 
-            tList.toArray( templates );
-        }
-        return templates;
-    }
-    
-    private  DataObject findTemplate( String name ) {
-        LOG.log(Level.WARNING, "findTemplate: " + name);
-        FileObject tFo = Repository.getDefault().getDefaultFileSystem().findResource( name );
-        if ( tFo == null ) {
-            return null;
-        }
-        try {
-            return DataObject.find( tFo );
-        }
-        catch ( DataObjectNotFoundException e ) {
-            return null;
-        }
-        
     }
 
     @Override
@@ -220,11 +179,6 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(new NewArtifactAction(project, SourceCategory.DOMAIN, "Create new Domain Class"));
                 break;
             case MESSAGES:
-                // result.add(new NewMessageAction());
-                // result.add(new org.openide.actions.NewTemplateAction());
-                
-                // getTemplates();
-              
                 result.add(org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction());
                 break;
             case SERVICES:
@@ -250,19 +204,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         return result.toArray(new Action[result.size()]);
     }
 
-    //        public NewType[] getNewTypes() {
-//        return new NewType[] { new NewType() {
-//            public String getName() {
-//                return "create somethin new...";
-//            }
-//            public HelpCtx getHelpCtx() {
-//                return new HelpCtx("help me");
-//            }
-//            public void create() {
-//                return;
-//            }
-//            } };
-//        }
+
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);

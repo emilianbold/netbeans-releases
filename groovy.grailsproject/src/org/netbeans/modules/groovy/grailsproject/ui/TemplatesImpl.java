@@ -61,7 +61,6 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
     }
     
     private static final String[] PRIVILEGED_NAMES = new String[] {
-        "Templates/Other/Properties File",
         "Templates/Other/properties.properties"
     };
 
@@ -70,28 +69,12 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
         return PRIVILEGED_NAMES;
     }
     
-    // List of primarily supported templates categories
-    private static final String[] ALL_TYPES = new String[] { 
-        "java-classes",         
-        "java-main-class",      
-        "java-forms",           
-        "gui-java-application", 
-        "java-beans",           
-        "oasis-XML-catalogs",   
-        "XML",                  
-        "ant-script",           
-        "ant-task",             
-        "junit",                
-        "simple-files"          
-    };
-    
-    
     private static final String[] TYPES = new String[] { 
         "simple-files"
         };
     
     public String[] getRecommendedTypes() {
-        return ALL_TYPES;
+        return TYPES;
     }
     
     
