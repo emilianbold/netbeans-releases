@@ -121,7 +121,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = // XXX What about PHPTokenId.PHP_STRING_BEGIN or QUOTED_STRING_BEGIN?
         {
-            PHPTokenId.PHP_STRING
+            PHPTokenId.PHP_STRING,
+            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING
         };
 
 //    /** Tokens which indicate that we're within a regexp string */
