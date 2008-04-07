@@ -44,6 +44,9 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="php"/>
+        <ext name="php3"/>
+        <ext name="php4"/>
+        <ext name="php5"/>		
 	<ext name="phtml"/>
 	<ext name="inc"/>
         <resolver mime="text/x-php5"/>
