@@ -255,7 +255,6 @@ public class FileObjects {
         Parameters.notNull("pkg", pkg);
         Parameters.notNull("name", name);
         Parameters.notNull("content", content);
-        Parameters.notEmpty("name", name);
         final String pkgStr  = (pkg instanceof String) ? (String) pkg : pkg.toString();
         final String nameStr = (name instanceof String) ? (String) name : name.toString();        
         int length = content.length();        
