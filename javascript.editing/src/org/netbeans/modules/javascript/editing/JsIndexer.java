@@ -184,7 +184,17 @@ public class JsIndexer implements Indexer {
                 // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
                 // too, not just the same directory since there's a good likelihood (with the library manager) you
                 // have these in different dirs.
-                FileObject parent = file.getFileObject().getParent();
+                FileObject fo = file.getFileObject();
+                if (fo == null) {
+                    // The file has been deleted
+                    // I still need to return yes here such that the file is deleted from the index.
+                    return true;
+                }
+                FileObject parent = fo.getParent();
+                if (parent == null) {
+                    // Unlikely but let's play it safe
+                    return true;
+                }
                 if (!name.endsWith(".uncompressed.js")) { // NOI18N
                     String base = name.substring(0, name.length()-3);
                     if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
