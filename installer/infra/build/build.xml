@@ -280,7 +280,7 @@
 
 
 	<set property="nb.full.version"
-             value="6.1.0.${nb.build.type.number}.${build.number}"/>
+             value="6.5.0.${nb.build.type.number}.${build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -2488,7 +2488,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<export-registry 
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
-            codebase="http://bits.netbeans.org/download/6.1/nightly/${build.number}/registry"/>
+            codebase="http://bits.netbeans.org/download/6.5/nightly/${build.number}/registry"/>
     </target>
 
     <target name="prepare-web-page" if="do.build.netbeans">
