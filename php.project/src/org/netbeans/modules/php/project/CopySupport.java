@@ -116,11 +116,15 @@ abstract class CopySupport {
 		    File target = nextPair.getTarget();
 		    File targetParent = target.getParentFile();
 		    FileObject source = nextPair.getSource();
-		    doDelete(target);		    
                     if (source.isData()) {
+			doDelete(target);
                         FileObject parent = FileUtil.createFolder(targetParent);
                         FileUtil.copyFile(nextPair.getSource(), parent, source.getName(), source.getExt());
                     } else {
+			String[] childs = target.list();
+			if (childs == null || childs.length == 0) {
+			    doDelete(target);
+			}			
                         FileUtil.createFolder(target);
                     }
 		} catch (IOException ex) {
