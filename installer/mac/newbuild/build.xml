@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml.suffix}.zip"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}.zip"/>
         </exec>      
     </target>
     
@@ -305,7 +305,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml.suffix}'.dmg '${appname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-macosx.dmg '${appname}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
     </target>             
