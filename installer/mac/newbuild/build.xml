@@ -85,11 +85,11 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml.suffix}.zip"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}.zip"/>
         </exec>      
     </target>
     
-    <target name="size-pack-module" depends="instrument-module" description="Count up size of the module, pack200">           
+    <target name="size-pack-module" description="Count up size of the module, pack200">           
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
             <arg value="cd ${basedir}/netBeans/${module.name}; du -sk build | sed 's/[\t]*build//'"/>
@@ -100,41 +100,8 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
         </exec>           
     </target>
-
-    <target name="init-instrumentation">
-	<condition property="do.instrumentation">
-	    <and>
-	        <isset property="instrument.jars"/>
-	        <equals arg1="${instrument.jars}" arg2="true"/> 
-	    </and>
-        </condition>
-    </target>
-
-    <target name="add-instrumentation-option" if="do.instrumentation">
-        <echo message="Adding instrumentation option to etc/netbeans.conf"/>
-	<property name="baseide.dir" value="${basedir}/netBeans/baseide/build/netbeans"/>
-	<mkdir dir="${baseide.dir}/emma-lib"/>
-        <copy file="${emma.jar.file}" todir="${baseide.dir}/emma-lib"/>
-        <chmod dir="${baseide.dir}/emma-lib" perm="a+w"/>
-
-        <replace 
-              file="${baseide.dir}/etc/netbeans.conf" 
-              token="netbeans_default_options=&quot;"
-              value="netbeans_default_options=&quot;--cp:p &quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/emma.jar&quot;\&quot;&quot; -J-Demma.coverage.file=&quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/netbeans_coverage.ec&quot;\&quot;&quot; -J-Dnetbeans.security.nocheck=true "/>
-    </target>
-
-    <target name="instrument-module" if="do.instrumentation">
-	<echo message="Instrumenting module ${module.name}..."/>
-	<exec executable="${bash.executable}" failonerror="true" dir="${basedir}/netBeans/${module.name}/build/netbeans">
-                <arg value="${emma.sh.file}"/>
-                <arg value="."/>
-                <arg value="${emma.txt.file}"/>
-                <arg value="${emma.jar.file}"/>
-                <arg value="${emma.out.file}"/>
-        </exec>
-    </target>    
     
-    <target name="build-pkg" depends="unzip-nb,init-instrumentation,add-instrumentation-option" description="Builds NB and packs packages" >                  
+    <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>            
         </ant>            
