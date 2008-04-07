@@ -109,6 +109,18 @@ public class MySQLOptions {
     }
     
     private MySQLOptions() {
+        if ( Utils.isEmpty(getAdminUser() )) {
+            setAdminUser(getDefaultAdminUser());
+        }
+        if ( Utils.isEmpty(getAdminPassword())) {
+            setAdminPassword(getDefaultAdminPassword());
+        }
+        if ( Utils.isEmpty(getHost())) {
+            setHost(getDefaultHost());
+        }
+        if ( Utils.isEmpty(getPort())) {
+            setPort(getDefaultPort());
+        }
         if ( Utils.isEmpty(getConnectTimeout()) ) {
             setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         }
