@@ -62,12 +62,13 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
     public BpelExternalModelResolver(BpelModel bpelModel) {
         mBpelModel = bpelModel;
     }
-    
+
+    /**
+     * Looks for not only imported models! 
+     * @param modelNsUri
+     * @return
+     */
     public Collection<SchemaModel> getModels(String modelNsUri) {
-        //
-        // TODO: It seems only imported schema models can be processed here.
-        // Maybe it worth to use the list of visible models instead.
-        //
         return SchemaReferenceBuilder.getSchemaModels(mBpelModel, modelNsUri, true);
     }
 

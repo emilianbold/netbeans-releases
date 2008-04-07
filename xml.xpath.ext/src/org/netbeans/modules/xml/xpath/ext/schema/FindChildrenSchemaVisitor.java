@@ -75,6 +75,12 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     @Override
     public void visit(ElementReference er) {
         if (!isAttribute) {
+            //
+            // # 105159, #130053
+            if (!isXdmDomUsed(er)) {
+                checkComponent(er);
+            }
+            //
             String name = fastGetRefName(er.getRef());
             if (!mySoughtName.equals(name)) {
                 return;
@@ -86,6 +92,12 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     @Override
     public void visit(AttributeReference ar) {
         if (isAttribute) {
+            //
+            // # 105159, #130053
+            if (!isXdmDomUsed(ar)) {
+                checkComponent(ar);
+            }
+            //
             String name = fastGetRefName(ar.getRef());
             if (!mySoughtName.equals(name)) {
                 return;
