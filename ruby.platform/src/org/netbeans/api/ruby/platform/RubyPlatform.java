@@ -714,6 +714,11 @@ public final class RubyPlatform {
     public void setGemHome(File gemHome) {
         assert hasRubyGemsInstalled() : "has RubyGems installed";
         info.setGemHome(gemHome.getAbsolutePath());
+        try {
+            RubyPlatformManager.storePlatform(this);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+        }
         gemManager.reset();
     }
 

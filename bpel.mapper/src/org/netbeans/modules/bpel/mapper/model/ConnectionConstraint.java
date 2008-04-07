@@ -22,6 +22,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.MapperTreeNode;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
+import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.support.Roles;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -52,6 +53,10 @@ public interface ConnectionConstraint {
 
         public static ConnectionConstraint getPlConstraint() {
             return new PlConstraint();
+        }
+
+        public static ConnectionConstraint getMVarConstraint() {
+            return new MVarConstraint();
         }
     }
 
@@ -170,6 +175,37 @@ public interface ConnectionConstraint {
                 }
             }
             return true;
+        }
+    }
+
+    class MVarConstraint implements ConnectionConstraint {
+
+        public boolean canConnect(TreePath treePath, SourcePin source,
+                                  TargetPin target, TreePath oldTreePath,
+                                  Link oldLink) 
+        {
+            if (target instanceof VertexItem) {
+                if (source instanceof TreeSourcePin) {
+                    TreePath tPath = ((TreeSourcePin)source).getTreePath();
+                    Object node = tPath.getLastPathComponent();
+                    if (node instanceof MapperTreeNode) {
+                        Object dataObj = ((MapperTreeNode)node).getDataObject();
+                        System.out.println("::::::::::::::::: dataObj: "+dataObj);
+                        if (isMessageVariable(dataObj)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        
+        private boolean isMessageVariable(Object obj) {
+            if (! (obj instanceof Variable)) {
+                return false;
+            }
+            Variable var = (Variable)obj;
+            return var.getMessageType() != null;
         }
     }
 }

@@ -680,6 +680,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
+            clearFakeRegistrations();
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1071,6 +1072,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void onFakeRegisration(FunctionImplEx decl) {
         CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
         fakeRegistrationUIDs.add(uidDecl);
+    }
+    
+    private void clearFakeRegistrations() {
+        fakeRegistrationUIDs.clear();
     }
     
     public void fixFakeRegistrations() {
