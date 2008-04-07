@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,13 +51,23 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
+import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
@@ -119,9 +130,45 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         
         if (n.hasFirst()) {
             if (n.first() == null) {
-                //no declaration, currently unhandled
-                return DeclarationLocation.NONE;
+                //cannot resolve, offer all possibilities:
+                Index i = info.getIndex(PHPLanguage.PHP_MIME_TYPE);
+                PHPIndex index = PHPIndex.get(i);
+                Collection<? extends IndexedElement> fromIndex;
+
+                switch (el.getKind()) {
+                    case FUNC:
+                        fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
+                        break;
+                    case CLASS:
+                        fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
+                        break;
+                    default:
+                        fromIndex = Collections.emptyList();
+                }
+                
+                List<AlternativeLocation> locations = new LinkedList<AlternativeLocation>();
+                
+                for (IndexedElement e : fromIndex) {
+                    if (el.getName().equals(e.getName())) {
+                        DeclarationLocation l = new DeclarationLocation(e.getFileObject(), e.getOffset());
+                        locations.add(new AlternativeLocationImpl(e, el.getKind(), l));
+                    }
+                }
+                
+                if (locations.isEmpty()) {
+                    //nothing found:
+                    return DeclarationLocation.NONE;
+                }
+                
+                DeclarationLocation result = locations.get(0).getLocation();
+                
+                for (AlternativeLocation l : locations) {
+                    result.addAlternative(l);
+                }
+                
+                return result;
             }
+            
             return new DeclarationLocation(info.getFileObject(), n.first().getStartOffset());
         } else {
             final IndexedElement indexed = n.second();
@@ -154,5 +201,58 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         }
     }
     
+    private static final class AlternativeLocationImpl implements AlternativeLocation {
 
+        private final IndexedElement el;
+        private final Kind k;
+        private final DeclarationLocation l;
+
+        public AlternativeLocationImpl(IndexedElement el, Kind k, DeclarationLocation l) {
+            this.el = el;
+            this.k = k;
+            this.l = l;
+        }
+        
+        public ElementHandle getElement() {
+            return el;
+        }
+
+        public String getDisplayHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            ElementKind ek = null;
+            switch (k) {
+                case FUNC:
+                    ek = ElementKind.METHOD;
+                    break;
+                case CLASS:
+                    ek = ElementKind.CLASS;
+            }
+            
+            if (ek != null) {
+                formatter.name(ek, true);
+                formatter.appendText(el.getName());
+                formatter.name(ek, false);
+            } else {
+                formatter.appendText(el.getName());
+            }
+            
+            if (l.getFileObject() != null) {
+                formatter.appendText(" in ");
+                formatter.appendText(FileUtil.getFileDisplayName(l.getFileObject()));
+            }
+            
+            return formatter.getText();
+        }
+
+        public DeclarationLocation getLocation() {
+            return l;
+        }
+
+        public int compareTo(AlternativeLocation o) {
+            AlternativeLocationImpl i = (AlternativeLocationImpl) o;
+            
+            return this.el.getName().compareTo(i.el.getName());
+        }
+        
+    }
 }
