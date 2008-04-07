@@ -431,13 +431,11 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
     }
 
     private boolean isPrintToOutput(){
-        return ProjectActionsPreferences.getInstance()
-                .getCommandLineRunPrintToOutput();
+        return PhpOptions.getInstance().isOpenResultInOutputWindow();
     }
     
     private boolean isOpenInBrowser(){
-        return ProjectActionsPreferences.getInstance()
-                .getCommandLineRunOpenInBrowser();
+        return PhpOptions.getInstance().isOpenResultInBrowser();
     }
     
     private File getTmpFile(String script) throws IOException {
