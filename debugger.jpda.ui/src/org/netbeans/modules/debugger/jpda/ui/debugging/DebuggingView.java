@@ -135,7 +135,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // End of variables declaration//GEN-END:variables
 
     public void setRootContext(Node root) {
-        //manager.setRootContext(root);
+        manager.setRootContext(root);
     }
     
     public ExplorerManager getExplorerManager() {
