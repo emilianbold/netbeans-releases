@@ -22,6 +22,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
        gtar c */other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
        cd $NB_ALL
    fi
+
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/*
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -50,7 +51,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
 #       ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip-ml/moduleclusters $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &  
 #       mv $MAC_PATH/installer/mac/newbuild/dist/* $MAC_PATH/dist_ml 
 #   fi
-   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &
+   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD $LOCALES > $MAC_LOG_NEW 2>&1 &
 
 fi
 
