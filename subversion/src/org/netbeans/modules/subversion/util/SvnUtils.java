@@ -71,7 +71,6 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  * Subversion-specific utilities.
- * TODO: PETR Move generic methods to versioncontrol module
  *
  * @author Maros Sandor
  */
@@ -161,13 +160,6 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                //if (f != null) { XXX fallback if experimntal should not work
-//                    File probe = new File (f, ".svn");
-//                    File probe2 = new File (f, "_svn");
-//                    if (probe.isDirectory() || probe2.isDirectory()) {
-//                        return true;
-//                    }
-//                }
                 if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true; // XXX experimental
             }
         }
@@ -436,7 +428,6 @@ public class SvnUtils {
                 }
             }
             
-            // path.add(0, file.getName());
             file = file.getParentFile();
             
         }
@@ -795,29 +786,6 @@ public class SvnUtils {
         if (folder == null) return;
         refreshParents(folder.getParentFile());
         Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
-
-    /**
-     * Refreshes the status for the given file and all its children
-     * 
-     * @param file
-     */
-    public static void refreshRecursively(File file) {    
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        File[] files = file.listFiles();
-        if(files != null) {        
-            for (int i = 0; i < files.length; i++) {
-                if(!(SvnUtils.isPartOfSubversionMetadata(files[i]) || 
-                     Subversion.getInstance().isAdministrative(files[i]))) 
-                {
-                    cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    if(files[i].isDirectory()) {                
-                        refreshRecursively(files[i]);                
-                    }                    
-                }
-            }        
-        }        
     }
     
     /**
