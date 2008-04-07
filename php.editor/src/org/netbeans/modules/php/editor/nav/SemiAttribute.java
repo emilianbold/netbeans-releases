@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -138,6 +139,19 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     @Override
+    public void visit(Program program) {
+        //functions defined on top-level of the current file are visible before declared:
+        for (Statement s : program.getStatements()) {
+            if (s instanceof FunctionDeclaration) {
+                String name = ((FunctionDeclaration) s).getFunctionName().getName();
+
+                node2Element.put(s, global.enterWrite(name, Kind.FUNC, s));
+            }
+        }
+        super.visit(program);
+    }
+
+    @Override
     public void visit(Assignment node) {
         VariableBase vb = node.getLeftHandSide();
         
@@ -173,17 +187,19 @@ public class SemiAttribute extends DefaultVisitor {
     
     @Override
     public void visit(FunctionDeclaration node) {
-        String name = node.getFunctionName().getName();
-        DefinitionScope top = scopes.peek();
-        AttributedElement func;
-        
-        if (top.classScope) {
-            func = top.enterWrite(name, Kind.FUNC, node);
-        } else {
-            func = global.enterWrite(name, Kind.FUNC, node);
-        }
+        if (!node2Element.containsKey(node)) {
+            String name = node.getFunctionName().getName();
+            DefinitionScope top = scopes.peek();
+            AttributedElement func;
 
-        node2Element.put(node, func);
+            if (top.classScope) {
+                func = top.enterWrite(name, Kind.FUNC, node);
+            } else {
+                func = global.enterWrite(name, Kind.FUNC, node);
+            }
+
+            node2Element.put(node, func);
+        }
         
         scopes.push(new DefinitionScope());
         
@@ -416,7 +432,7 @@ public class SemiAttribute extends DefaultVisitor {
         if (name2FunctionCache == null) {
             Index i = info.getIndex(PHPLanguage.PHP_MIME_TYPE);
             PHPIndex index = PHPIndex.get(i);
-            name2FunctionCache = index.getFunctions(xxx(info), "", NameKind.PREFIX);
+            name2FunctionCache = index.getFunctions(null, "", NameKind.PREFIX);
         }
         
         Set<FileObject> files = new HashSet<FileObject>();
@@ -502,17 +518,19 @@ public class SemiAttribute extends DefaultVisitor {
     public static class AttributedElement {
         private List<Union2<ASTNode, IndexedElement>> writes; //aka declarations
         private List<AttributedType> writesTypes;
+        private String name;
         private Kind k;
 
-        public AttributedElement(Union2<ASTNode, IndexedElement> n, Kind k) {
-            this(n, k, null);
+        public AttributedElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+            this(n, name, k, null);
         }
         
-        public AttributedElement(Union2<ASTNode, IndexedElement> n, Kind k, AttributedType type) {
+        public AttributedElement(Union2<ASTNode, IndexedElement> n, String name, Kind k, AttributedType type) {
             this.writes = new LinkedList<Union2<ASTNode, IndexedElement>>();
             this.writesTypes = new LinkedList<AttributedType>();
             this.writes.add(n);
             this.writesTypes.add(type);
+            this.name = name;
             this.k = k;
         }
 
@@ -522,6 +540,10 @@ public class SemiAttribute extends DefaultVisitor {
 
         public Kind getKind() {
             return k;
+        }
+
+        public String getName() {
+            return name;
         }
         
         void addWrite(Union2<ASTNode, IndexedElement> node, AttributedType type) {
@@ -539,8 +561,8 @@ public class SemiAttribute extends DefaultVisitor {
         private final DefinitionScope enclosedElements = new DefinitionScope(true);
         private ClassElement superClass;
         
-        public ClassElement(Union2<ASTNode, IndexedElement> n, Kind k) {
-            super(n, k);
+        public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+            super(n, name, k);
         }
     }
     
@@ -581,9 +603,9 @@ public class SemiAttribute extends DefaultVisitor {
             
             if (el == null) {
                 if (k == Kind.CLASS) {
-                    el = new ClassElement(node, k);
+                    el = new ClassElement(node, name, k);
                 } else {
-                    el = new AttributedElement(node, k, type);
+                    el = new AttributedElement(node, name, k, type);
                 }
                 
                 name2El.put(name, el);
