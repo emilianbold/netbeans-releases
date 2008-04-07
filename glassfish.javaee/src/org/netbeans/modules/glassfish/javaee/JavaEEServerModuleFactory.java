@@ -133,6 +133,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         ensureEclipseLinkSupport(installRoot);
+                        ensureCometSupport(installRoot);
                     }
                 });
             } catch(InstanceCreationException ex) {
@@ -148,7 +149,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String SOURCE_VOLUME = "src"; // NOI18N
     private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
     
-    private static final String ECLIPSE_LINK_LIB = "EclipseLink-Glassfish-V3"; // NOI18N
+    private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-V3"; // NOI18N
     private static final String EL_CORE_LIB = "eclipselink.core-1.0-SNAPSHOT.jar"; // NOI18N
     private static final String EL_EXT_ORACLE_LIB = "eclipselink.extension.oracle-1.0-SNAPSHOT.jar"; // NOI18N
     private static final String EL_JPA_LIB = "eclipselink.jpa-1.0-SNAPSHOT.jar"; // NOI18N
@@ -211,6 +212,71 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
         return eclipseLinkLib != null;
+    }
+ 
+    private static final String COMET_LIB = "Comet-GlassFish-V3"; // NOI18N
+    private static final String COMET_JAR_LIB = "grizzly-comet-1.7.2.jar"; // NOI18N
+    private static final String COMET_JAR_LIB_SECOND = "grizzly-comet-1.7-SNAPSHOT.jar"; // NOI18N
+    
+    public boolean ensureCometSupport(String installRoot) {
+        LibraryManager lmgr = LibraryManager.getDefault();
+        Library cometLib = lmgr.getLibrary(COMET_LIB);
+        
+        // Verify that existing library is still valid.
+        if(cometLib != null) {
+            List<URL> libraryList = cometLib.getContent(CLASSPATH_VOLUME);
+            for(URL libUrl: libraryList) {
+                String libPath = libUrl.getFile();
+                if(!new File(libPath).exists()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, 
+                            "libPath does not exists.  Updating " + COMET_LIB);
+                    try {
+                        lmgr.removeLibrary(cometLib);
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        // Already removed somehow, ignore.
+                    }
+                    cometLib = null;
+                    break;
+                }
+            }
+        }
+        
+        if(cometLib == null) {
+            try {
+                // classpath, src,  -- library volumes
+                List<URL> libraryList = new ArrayList<URL>();
+                File f= new File(installRoot + "/modules/" + COMET_JAR_LIB);
+                if (!f.exists()){//try another possible name
+                     f= new File(installRoot + "/modules/" + COMET_JAR_LIB_SECOND);
+                   
+                }
+                libraryList.add(f.toURL());
+
+
+//                File j2eeDoc = InstalledFileLocator.getDefault().locate(
+//                        "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
+//                List<URL> docList = new ArrayList<URL>();
+//                docList.add(j2eeDoc.toURL());
+
+                Map<String, List<URL>> contents = new HashMap<String, List<URL>>();
+                contents.put(CLASSPATH_VOLUME, libraryList);
+//                contents.put(JAVADOC_VOLUME, docList);
+                
+                cometLib = lmgr.createLibrary(CLASS_LIBRARY_TYPE, COMET_LIB, contents);
+                Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library " + COMET_LIB);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            } catch (IllegalArgumentException ex) {
+                // Someone must have created the library in a parallel thread, try again otherwise fail.
+                cometLib = lmgr.getLibrary(COMET_LIB);
+                if(cometLib == null) {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                }
+            }
+        }
+        return cometLib != null;
     }
 
 }
