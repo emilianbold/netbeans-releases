@@ -93,6 +93,23 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testNameWithUnderscore() throws Exception {
         performTest("main.c", 12, 6, "main.c", 11, 1); // method_name_with_underscore();
     }
+    
+    public void testSameNameDiffScope() throws Exception {
+        // IZ#131560: Hyperlink does not distinguish variables with the same names within function body
+        // function parameter
+        performTest("main.c", 22, 30, "main.c", 22, 24); // name in void sameNameDiffScope(int name) {
+        performTest("main.c", 23, 10, "main.c", 22, 24); // name in if (name++) {
+        performTest("main.c", 26, 17, "main.c", 22, 24); // name in } else if (name++) {
+        performTest("main.c", 26, 17, "main.c", 22, 24); // name in name--;
+        
+        // local variable
+        performTest("main.c", 24, 17, "main.c", 24, 9); // name in name--;
+        performTest("main.c", 25, 10, "main.c", 24, 9); // name in name--;        
+        
+        // second local variable
+        performTest("main.c", 27, 17, "main.c", 27, 9); // name in name--;
+        performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;        
+    }
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 

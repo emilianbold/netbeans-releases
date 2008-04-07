@@ -64,6 +64,11 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testDeclSpec() throws Exception {
+        // IZ#132136: code completion for C++ and Qt does not work under Windows
+        performTest("declspec.cc");
+    }
+    
     public void testTemplateFunctionInTemplateClass() throws Exception {
         // IZ#
         performTest("template_fun_in_template_class.cc");

@@ -49,6 +49,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
@@ -91,6 +92,7 @@ public class SortByNameActionTest extends JellyTestCase {
             int oldDispatching = JemmyProperties.getCurrentDispatchingModel();
             JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
             try {
+                new QueueTool().waitEmpty(2000);
                 new PropertiesAction().perform(node);
             } finally {
                 JemmyProperties.setCurrentDispatchingModel(oldDispatching);

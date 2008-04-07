@@ -1481,6 +1481,7 @@ declaration_specifiers
 		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
+                |       declspec
                 |      { LT(1).getText().equals(LITERAL___global_ext) == true}? ID 
 		)*
 		(	ts = type_specifier[ds] 
@@ -1548,7 +1549,6 @@ simple_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
 			|	LITERAL_float		{ts |= tsFLOAT;}
 			|	LITERAL_double	{ts |= tsDOUBLE;}
 			|	LITERAL_void		{ts |= tsVOID;}
-			|	literal_declspec LPAREN ID RPAREN 
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
@@ -1580,7 +1580,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 		|LITERAL_struct	{ts = tsSTRUCT;}
 		|LITERAL_union	{ts = tsUNION;}
 		)
-                (options {greedy=true;} : type_attribute_specification)?
+                (options {greedy=true;} : type_attribute_specification | declspec)?
 		(	id = qualified_id
 			(options{generateAmbigWarnings = false;}:
 				{
@@ -1699,7 +1699,7 @@ class_head
 	|	LITERAL_union 
 	|	LITERAL_class 
 	)
-        (options {greedy=true;} : type_attribute_specification)?
+        (options {greedy=true;} : type_attribute_specification | declspec)?
 	(
      
             s = scope_override  
@@ -2232,6 +2232,12 @@ protected
 variable_attribute_specification!
         :
             attribute_specification_list
+        ;
+
+protected
+declspec!
+        : 
+            literal_declspec balanceParens
         ;
 
 protected
