@@ -221,13 +221,19 @@ public final class Utils {
         assert projectPath != null;
         assert type != null;
 
+        File project = new File(projectPath);
+        // #131753
+        if (!project.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_" + type + "NotAbsolute");
+        }
+
         // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(new File(projectPath));
+        File cfl = Utils.getCanonicalFile(project);
         if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
         }
 
-        final File destFolder = new File(projectPath).getAbsoluteFile();
+        final File destFolder = project.getAbsoluteFile();
         if (Utils.getCanonicalFile(destFolder) == null) {
             return NbBundle.getMessage(Utils.class, "MSG_Illegal" + type + "Location");
         }
