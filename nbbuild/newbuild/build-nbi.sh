@@ -16,6 +16,12 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer
    cd $NB_ALL
    gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
+
+   if [ 1 -eq $ML_BUILD ] ; then
+       cd $NB_ALL/l10n
+       gtar c */other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
+       cd $NB_ALL
+   fi
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/*
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -26,7 +32,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
    ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
    if [ 1 -eq $ML_BUILD ] ; then
-        ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml
+        ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml/moduleclusters
 	scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
         ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
    fi

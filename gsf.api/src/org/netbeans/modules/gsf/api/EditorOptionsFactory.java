@@ -27,11 +27,14 @@
  */
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+
 /**
  * The IDE implements this interface to feed options
  *
  * @author Tor Norbye
  */
 public interface EditorOptionsFactory {
+    @CheckForNull
     EditorOptions get(String mimeType);
 }

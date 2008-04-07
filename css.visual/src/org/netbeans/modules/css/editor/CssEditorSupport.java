@@ -373,12 +373,12 @@ public class CssEditorSupport {
     }
 
     private synchronized void updateSelectedRule(int dotPos) {
-        d("update selected rule " + current.getName() + " to position " + dotPos);
-        if (document == null || model == null) {
+        if (document == null || model == null || current == null) {
             //document unloaded, just return
-            d("document == null or model == null, exiting");
+            d("document = " + document + "; model = " + model + "; current TC = " + current + " => exiting");
             return;
         }
+        d("update selected rule " + current.getName() + " to position " + dotPos);
 
         LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
         if (model.rules() == null) {

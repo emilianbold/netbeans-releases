@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.tree.TreeNode;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
@@ -62,31 +63,33 @@ public abstract class ParserResult {
     protected final ParserFile file;
     private List<Error> errors;
     private Parser parser;
-//    protected EmbeddingModel model;
     protected TranslatedSource translatedSource;
     private String mimeType;
     private CompilationInfo info;
     
     /** Creates a new instance of ParserResult */
-    public ParserResult(Parser parser, ParserFile file, String mimeType) {
+    public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType) {
         this.parser = parser;
         this.file = file;
         this.mimeType = mimeType;
     }
 
+    @NonNull
     public String getMimeType() {
         return mimeType;
     }
 
+    @NonNull
     public Parser getParser() {
         return parser;
     }
 
     // TODO - don't expose this
-    public void setTranslatedSource(TranslatedSource translatedSource) {
+    public void setTranslatedSource(@NonNull TranslatedSource translatedSource) {
         this.translatedSource = translatedSource;
     }
 
+    @CheckForNull
     public TranslatedSource getTranslatedSource() {
         return translatedSource;
     }
@@ -95,8 +98,10 @@ public abstract class ParserResult {
      * Returns the errors in the file represented by the {@link Source}.
      *
      *
+     * @todo Rename to getErrors()
      * @return an list of {@link Error}
      */
+    @NonNull
     public List<Error> getDiagnostics() {
         if (errors == null) {
             return Collections.emptyList();
@@ -135,6 +140,7 @@ public abstract class ParserResult {
     }
 
     /** AST tree - optional; for debugging only */
+    @CheckForNull
     public abstract AstTreeNode getAst();
 
     // XXX Make top level, and document debugging purpose.
@@ -145,15 +151,17 @@ public abstract class ParserResult {
         public int getEndOffset();
     }
     
+    @NonNull
     public ParserFile getFile() {
         return file;
     }
 
+    @NonNull
     public CompilationInfo getInfo() {
         return info;
     }
 
-    public void setInfo(CompilationInfo info) {
+    public void setInfo(@NonNull CompilationInfo info) {
         this.info = info;
     }
 }
