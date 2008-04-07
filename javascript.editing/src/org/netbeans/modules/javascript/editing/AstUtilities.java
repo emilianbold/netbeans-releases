@@ -411,6 +411,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             if (child != null) {
                 if (child.getType() == Token.GETELEM) {
                     child = child.getNext();
+                    if (child == null) {
+                        // Unexpected - but see http://statistics.netbeans.org/analytics/detail.do?id=43998
+                        return "";
+                    }
                 }
                 if (child.getType() == Token.NAME) {
                     return child.getString();

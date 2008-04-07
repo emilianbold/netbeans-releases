@@ -290,7 +290,24 @@ final class GemRunner {
             argList.add(arg);
         }
         
+        if (!platform.getGemManager().isGemHomeWritable()) {
+            // run through gksu
+            String gksu = Util.findOnPath("gksu"); // NOI18N
+            assert gksu != null : "gksu cannot be found; be sure you've checked it before using GemRunner";
+            StringBuilder asString = new StringBuilder();
+            for (String arg : argList) {
+                asString.append(arg).append(' ');
+            }
+            argList = new ArrayList<String>();
+            argList.add(gksu);
+            argList.add("--preserve-env"); // NOI18N
+            argList.add("--description"); // NOI18N
+            argList.add(NbBundle.getMessage(GemRunner.class, "GemRunner.message.for.sudo"));
+            argList.add(asString.toString().trim()); // trim the last space from loop above
+        }
+        
         String[] args = argList.toArray(new String[argList.size()]);
+        
         ProcessBuilder pb = new ProcessBuilder(args);
         GemManager.adjustEnvironment(platform, pb.environment());
         pb.directory(cmd.getParentFile());

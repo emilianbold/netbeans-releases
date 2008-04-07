@@ -83,9 +83,9 @@ public class TabSwitchSpeedTest extends NbTestCase {
 
     public static Test suite() {
         NbTestSuite s = new NbTestSuite();
-    //    s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, null, ".*"));
-    //    s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, "ide[0-9]*|java[0-9]*", ".*"));
         s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, null, ".*"));
+//        s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, "ide[0-9]*|java[0-9]*", ".*"));
         return s;
     }
 
