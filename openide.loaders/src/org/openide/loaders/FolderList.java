@@ -393,6 +393,7 @@ implements FileChangeListener, DataObject.Container {
         if (REFRESH_TIME < 0) {
             REFRESH_TIME = 10;
         }
+        err.fine("getRefreshTime: " + REFRESH_TIME);
         return REFRESH_TIME;
     }
     
