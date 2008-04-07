@@ -138,12 +138,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             final int zzState;
             /** the current lexical state */
             final int zzLexicalState;
+            /** remember the heredoc */
+            final String heredoc;
+            /** and the lenght of */
+            final int heredoc_len;
             
             LexerState () {
                 stack = PHP5ColoringLexer.this.stack.createClone();
                 zzState =  PHP5ColoringLexer.this.zzState;
                 zzLexicalState = PHP5ColoringLexer.this.zzLexicalState;
-                
+                heredoc = PHP5ColoringLexer.this.heredoc;
+                heredoc_len = PHP5ColoringLexer.this.heredoc_len;
             }
             
             @Override
@@ -157,7 +162,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 		}
                 
                 LexerState state = (LexerState) obj;
-                return (this.stack.equals(state.stack) && (this.zzState == state.zzState) && (this.zzLexicalState == state.zzLexicalState));
+                return (this.stack.equals(state.stack) 
+                    && (this.zzState == state.zzState) 
+                    && (this.zzLexicalState == state.zzLexicalState)
+                    && (this.heredoc_len == state.heredoc_len)
+                    && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
             }
          
             @Override
@@ -166,6 +175,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 hash = 31 * hash + this.zzState;
                 hash = 31 * hash + this.zzLexicalState;
                 hash = 31 * hash + this.stack.hashCode();
+                hash = 31 * hash + this.heredoc_len;
+                hash = 31 * hash + this.heredoc.hashCode();
                 return hash;
             }
         }
@@ -178,6 +189,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             this.stack.copyFrom(state.stack);
             this.zzState = state.zzState;
             this.zzLexicalState = state.zzLexicalState;
+            this.heredoc = state.heredoc;
+            this.heredoc_len = state.heredoc_len;
         }
 
      protected boolean isHeredocState(int state){
@@ -790,53 +803,20 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHPDOC_COMMENT_END;
 }
 
-
-
-<ST_PHP_DOC_COMMENT> {
-//    "@access"        {return PHPTokenId.PHPDOC_ACCESS;}
-//    "@abstract"      {return PHPTokenId.PHPDOC_ABSTRACT;}
-//    "@author"        {return PHPTokenId.PHPDOC_AUTHOR;}
-//    "@category"      {return PHPTokenId.PHPDOC_CATEGORY;}
-//    "@copyright"     {return PHPTokenId.PHPDOC_COPYRIGHT;}
-//    "@deprecated"    {return PHPTokenId.PHPDOC_DEPRECATED;}
-//    "@desc"          {return PHPTokenId.PHPDOC_DESC;}
-//    "@example"       {return PHPTokenId.PHPDOC_EXAMPLE;}
-//    "@exception"     {return PHPTokenId.PHPDOC_EXCEPTION;}
-//    "@final"         {return PHPTokenId.PHPDOC_FINAL;}
-//    "@filesource"    {return PHPTokenId.PHPDOC_FILESOURCE;}
-//    "@global"        {return PHPTokenId.PHPDOC_GLOBAL;}
-//    "@ignore"        {return PHPTokenId.PHPDOC_IGNORE;}
-//    "@internal"      {return PHPTokenId.PHPDOC_INTERNAL;}
-//    "@license"       {return PHPTokenId.PHPDOC_LICENSE;}
-//    "@link"          {return PHPTokenId.PHPDOC_LINK;}
-//    "@magic"         {return PHPTokenId.PHPDOC_MAGIC;}
-//    "@method"        {return PHPTokenId.PHPDOC_METHOD;}    
-//    "@name"          {return PHPTokenId.PHPDOC_NAME;}
-//    "@package"       {return PHPTokenId.PHPDOC_PACKAGE;}
-//    "@param"         {return PHPTokenId.PHPDOC_PARAM;}
-//    "@property"      {return PHPTokenId.PHPDOC_PROPERTY;}
-//    "@return"        {return PHPTokenId.PHPDOC_RETURN;}
-//    "@see"           {return PHPTokenId.PHPDOC_SEE;}
-//    "@since"         {return PHPTokenId.PHPDOC_SINCE;}
-//    "@static"        {return PHPTokenId.PHPDOC_STATIC;}
-//    "@staticvar"     {return PHPTokenId.PHPDOC_STATICVAR;}
-//    "@subpackage"    {return PHPTokenId.PHPDOC_SUBPACKAGE;}
-//    "@throws"        {return PHPTokenId.PHPDOC_THROWS;}
-//    "@todo"          {return PHPTokenId.PHPDOC_TODO;}
-//    "@tutorial"      {return PHPTokenId.PHPDOC_TUTORIAL;}
-//    "@uses"          {return PHPTokenId.PHPDOC_USES;}
-//    "@var"           {return PHPTokenId.PHPDOC_VAR;}
-//    "@version"       {return PHPTokenId.PHPDOC_VERSION;}
-    
-    ([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
-    int len = yylength();
-        if (len > 1 && (yycharat(len-1) == '*')) {
-            yypushback(1); // go back to mark end of comment in the next token
-        }
+<ST_PHP_DOC_COMMENT>~"*/" {
+        yypushback(2); // go back to mark end of comment in the next token
         return PHPTokenId.PHPDOC_COMMENT;
-    }
 }
 
+<ST_PHP_DOC_COMMENT> <<EOF>> {
+              if (input.readLength() > 0) {
+                    input.backup(1);  // backup eof
+                    return PHPTokenId.PHPDOC_COMMENT;
+                }
+                else {
+                    return null;
+                }
+}
 
 <ST_PHP_IN_SCRIPTING>"/*" {
     pushState(ST_PHP_COMMENT);
@@ -848,15 +828,19 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_COMMENT_END;
 }
 
-<ST_PHP_COMMENT>([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
-    int len = yylength();
-    
-    // if there are two '*' as last two characters, it means that the last
-    // '*' belongs to "*/"
-    if (len > 1 && (yycharat(len-2) == '*') && (yycharat(len-1) == '*')) {
-        yypushback(1);
-    }
+<ST_PHP_COMMENT>~"*/" {
+    yypushback(2);
     return PHPTokenId.PHP_COMMENT;
+}
+
+<ST_PHP_COMMENT> <<EOF>> {
+              if (input.readLength() > 0) {
+                input.backup(1);  // backup eof
+                return PHPTokenId.PHP_COMMENT;
+              }
+              else {
+                  return null;
+              }
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
@@ -956,13 +940,13 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     	   yypushback(1);
         yybegin(ST_PHP_END_HEREDOC);
     }
-        return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
 <ST_PHP_END_HEREDOC>{ANY_CHAR} {
     heredoc=null;
     heredoc_len=0;
-    (ST_PHP_IN_SCRIPTING);
+    yybegin(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
@@ -1042,7 +1026,7 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<ST_PHP_IN_SCRIPTING,ST_PHP_DOUBLE_QUOTES,ST_PHP_VAR_OFFSET,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_START_HEREDOC,ST_PHP_END_HEREDOC,ST_PHP_COMMENT>. {
+<ST_PHP_IN_SCRIPTING,ST_PHP_DOUBLE_QUOTES,ST_PHP_VAR_OFFSET,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_START_HEREDOC,ST_PHP_END_HEREDOC>. {
     yypushback(1);
     pushState(ST_PHP_HIGHLIGHTING_ERROR);
 }
