@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.mapper.tree.spi;
 
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 
 /**
  *
@@ -30,4 +31,7 @@ public interface MapperModelFactory {
 
     MapperModel constructModel(MapperTcContext mapperTcContext, 
             BpelDesignContext context);
+    
+    CachingSchemaSearchVisitor getCachingSchemaSearchVisitor();
+    
 }
