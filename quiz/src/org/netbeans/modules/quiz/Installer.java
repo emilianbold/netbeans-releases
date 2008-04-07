@@ -66,7 +66,12 @@ public class Installer extends ModuleInstall implements Runnable{
     
     @Override
     public void restored() {
-        RequestProcessor.getDefault().post(this, 5000, Thread.MIN_PRIORITY);
+        Long announcement = prefs().getLong(LATEST_ANNOUNCEMENT, 0);
+        Long now = new Date().getTime();
+        if ((now - announcement) > 8 * 24 * 3600 * 1000){ // 8 days
+            RequestProcessor.getDefault().post(this, 5000, Thread.MIN_PRIORITY);
+            prefs().putLong(LATEST_ANNOUNCEMENT, now);
+        }
     }
 
     public void run() {
@@ -93,18 +98,13 @@ public class Installer extends ModuleInstall implements Runnable{
             }
         } catch (IOException ex) {
             Logger.getLogger(Installer.class.getName()).log(Level.INFO, "Network unreachable", ex);
-            Long announcement = prefs().getLong(LATEST_ANNOUNCEMENT, 0);
-            Long now = new Date().getTime();
-            if ((now - announcement) > 8 * 24 * 3600 * 1000){ // 8 days
-                EventQueue.invokeLater(new Runnable() {
+            EventQueue.invokeLater(new Runnable() {
 
-                    public void run() {
-                        String message = NbBundle.getMessage(QuizAction.class, "MaybeNewMessage");
-                        showNotification(message);
-                    }
-                });
-                prefs().putLong(LATEST_ANNOUNCEMENT, now);
-            }
+                public void run() {
+                    String message = NbBundle.getMessage(QuizAction.class, "MaybeNewMessage");
+                    showNotification(message);
+                }
+            });
         }
     }
     

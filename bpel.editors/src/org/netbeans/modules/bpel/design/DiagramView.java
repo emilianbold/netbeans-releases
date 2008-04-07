@@ -127,6 +127,12 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
     protected void printComponent(Graphics g) {
         paintContent(g, getDesignView().getCorrectedZoom(), true);
     }
+
+    @Override
+    protected void printChildren(Graphics g) {
+    //    super.printChildren(g);
+    }
+    
     
     private void paintContent(Graphics g, double zoom, boolean printMode) {
 

@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsfret.source.usages;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,11 @@ public class SourceAnalyser implements IndexDocumentFactory {
             for (ParserResult result : data) {
                 String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
                 List<IndexDocument> documents = indexer.index(result, this);
+                // Null means delete this document from the index which is different than
+                // a document with no indexable information
+                if (documents == null) {
+                    documents = Collections.emptyList();
+                }
                 index.store(fileUrl, documents);
             }
         }
@@ -106,6 +112,11 @@ public class SourceAnalyser implements IndexDocumentFactory {
     void analyseUnitAndStore (Indexer indexer, ParserResult result) throws IOException {
         String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
         List<IndexDocument> documents = indexer.index(result, this);
+        if (documents == null) {
+            // Null means delete this document from the index which is different than
+            // a document with no indexable information
+            documents = Collections.emptyList();
+        }
         index.store(fileUrl, documents);
     }
     
