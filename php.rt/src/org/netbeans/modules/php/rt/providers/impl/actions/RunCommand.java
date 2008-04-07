@@ -138,13 +138,18 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
         return true;
     }
 
+    @Override
+    public boolean isSaveRequired() {
+	return true;
+    }
+
+    
     /* (non-Javadoc)
      * @see java.lang.Runnable#run()
      */
     public void run() {
         refresh();
         
-        saveProject();
         Host host = getHost();
         if (!checkHost(host)) {
             return;
