@@ -48,13 +48,13 @@ import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.javascript.editing.JsPretty.Diff;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
@@ -112,8 +112,32 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-        reindent(document, startOffset, endOffset, info, false);
+        
+        if (info == null || !JsUtils.isJsDocument(document)) {
+            reindent(document, startOffset, endOffset, null, false);
+            return;
+        }
+        
+        BaseDocument doc = (BaseDocument) document;
+        
+        JsPretty jsPretty = new JsPretty(info, doc, startOffset, endOffset, codeStyle);
+        jsPretty.format();
+        
+        try {
+            doc.atomicLock();
+
+            for (Diff diff : jsPretty.getDiffs()) {
+                doc.remove(diff.start, diff.end - diff.start);
+                doc.insertString(diff.start, diff.text, null);
+            }
+
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            doc.atomicUnlock();
+        }
     }
+    
     public void reindent(Document document, int startOffset, int endOffset) {
         reindent(document, startOffset, endOffset, null, true);
     }
@@ -320,22 +344,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     @SuppressWarnings("unchecked")
-    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
+    private int getTokenBalance(TokenSequence<? extends JsTokenId> ts, BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 
-        TokenSequence<? extends JsTokenId> ts = null;
-
-        if (embeddedJavaScript) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            for (TokenSequence<?> embeddedTS : th.embeddedTokenSequences(begin, false)) {
-                if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(embeddedTS.language().mimeType())) {
-                    ts = (TokenSequence<? extends JsTokenId>) embeddedTS;
-                }
-            }
-        } else {
-            ts = LexUtilities.getJsTokenSequence(doc, begin);
-        }
-        
         if (ts == null) {
             try {
                 // remember indent of previous html tag
@@ -814,8 +825,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, indentOnly);
-                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false, indentOnly);
+                    balance += getTokenBalance(ts, doc, lineBegin, endOfLine, true, indentOnly);
+                    int bracketDelta = getTokenBalance(ts, doc, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
                     continued = isLineContinued(doc, offset, bracketBalance);
                 }
