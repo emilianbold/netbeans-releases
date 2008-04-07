@@ -166,7 +166,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         if (copyTarget == null || copyTarget.length() == 0) {
             return new LocalServer(""); // NOI18N
         }
-        File resolvedFile = new File(copyTarget);
+        File resolvedFile = FileUtil.normalizeFile(new File(copyTarget));
         FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
         if (resolvedFO == null) {
             // target directory doesn't exist?!
@@ -196,9 +196,18 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         }
 
         // copy files
+        File srcDir = getSrcDir();
+        File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
             err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true); // NOI18N
+            if (err != null) {
+                category.setErrorMessage(err);
+                category.setValid(false);
+                return;
+            }
+            // #131023
+            err = Utils.validateSourcesAndCopyTarget(srcDir.getAbsolutePath(), copyTargetDir.getAbsolutePath());
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -217,7 +226,6 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         // everything ok
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
-        File srcDir = getSrcDir();
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
         if (srcPath.startsWith("../")) { // NOI18N
             // relative path, change to absolute
@@ -225,12 +233,17 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         }
         properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
-        properties.setCopySrcTarget(copyFilesVisual.getLocalServer().getSrcRoot());
+        properties.setCopySrcTarget(copyTargetDir.getAbsolutePath());
         properties.setUrl(url);
     }
 
     private File getSrcDir() {
         LocalServer localServer = localServerController.getLocalServer();
+        return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+    }
+
+    private File getCopyTargetDir() {
+        LocalServer localServer = copyFilesVisual.getLocalServer();
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 

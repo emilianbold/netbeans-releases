@@ -241,7 +241,7 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_BASE, name, kind, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
 
                 if (signatures == null) {
@@ -268,7 +268,7 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_CONST);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
 
                 if (signatures == null) {
@@ -296,7 +296,7 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_CLASS, name, kind, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
 
                 if (signatures == null) {
