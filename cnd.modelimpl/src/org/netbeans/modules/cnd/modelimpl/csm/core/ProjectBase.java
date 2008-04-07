@@ -1418,6 +1418,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     file.fixFakeRegistrations();
                 }
             }
+        } 
+        catch( Exception e ) {
+           DiagnosticExceptoins.register(e); 
         } finally {
             disposeLock.readLock().unlock();
             ProjectComponent.setStable(declarationsSorageKey);
