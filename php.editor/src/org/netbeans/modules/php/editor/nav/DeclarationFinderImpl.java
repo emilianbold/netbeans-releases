@@ -160,6 +160,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     return DeclarationLocation.NONE;
                 }
                 
+                if (locations.size() == 1) {
+                    return locations.get(0).getLocation();
+                }
+                
                 DeclarationLocation result = locations.get(0).getLocation();
                 
                 for (AlternativeLocation l : locations) {
