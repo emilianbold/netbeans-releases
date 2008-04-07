@@ -210,9 +210,10 @@ public class PHPCodeCompletion implements Completable {
                 proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
                 break;
             case CLASS_MEMBER:
-                autoCompleteClassMembers(proposals, request);
+                autoCompleteClassMembers(proposals, request, false);
                 break;
             case STATIC_CLASS_MEMBER:
+                autoCompleteClassMembers(proposals, request, true);
                 break;
         }
         
@@ -225,7 +226,8 @@ public class PHPCodeCompletion implements Completable {
         }
     }
     
-    private void autoCompleteClassMembers(List<CompletionProposal> proposals, CompletionRequest request) {
+    private void autoCompleteClassMembers(List<CompletionProposal> proposals,
+            CompletionRequest request, boolean staticContext) {
         try {
             TokenHierarchy th = TokenHierarchy.get(request.info.getDocument());
             TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
@@ -253,14 +255,20 @@ public class PHPCodeCompletion implements Completable {
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
                     for (IndexedFunction method : methods){
-                        proposals.add(new FunctionItem(method, request));
+                        if (staticContext && method.isStatic() 
+                                || !staticContext && !method.isStatic()){
+                            proposals.add(new FunctionItem(method, request));
+                        }
                     }
                     
                     Collection<IndexedConstant> properties = request.index.getProperties(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
                     for (IndexedConstant prop : properties){
-                        proposals.add(new VariableItem(prop, request));
+                        if (staticContext && prop.isStatic() 
+                                || !staticContext && !prop.isStatic()){
+                            proposals.add(new VariableItem(prop, request));
+                        }
                     }
                 }
             }
