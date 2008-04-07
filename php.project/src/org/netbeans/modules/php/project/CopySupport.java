@@ -67,15 +67,15 @@ import org.openide.util.WeakListeners;
  *
  * @author Radek Matous
  */
-abstract class CopySupport {
+public abstract class CopySupport {
 
-    static CopySupport forProject() {
+    static CopySupport getInstance() {
 	return new CopyImpl();
     }
 
-    abstract protected void projectOpened(PhpProject project);
-
-    abstract protected void projectClosed(PhpProject project);
+    abstract void projectOpened(PhpProject project);
+    abstract void projectClosed(PhpProject project);
+    abstract void waitFinished();
 
     private static final class CopyImpl extends CopySupport implements PropertyChangeListener, FileChangeListener {
 
@@ -89,7 +89,7 @@ abstract class CopySupport {
 	private boolean isProjectOpened;
 	private static final Queue<SourceTargetPair<FileObject, File>> allPairs =
 		new ConcurrentLinkedQueue<SourceTargetPair<FileObject, File>>();
-	private static RequestProcessor.Task task = RP.create(new Runnable() {
+	private static final RequestProcessor.Task task = RP.create(new Runnable() {
 
 	    public void run() {
 		SourceTargetPair<FileObject, File> nextPair = allPairs.poll();
@@ -365,6 +365,12 @@ abstract class CopySupport {
             assert targetRoot != null;
             File target = new File(targetRoot, relativePath);
             return target;
+        }
+
+        @Override
+        void waitFinished() {
+            task.schedule(0);
+            task.waitFinished();
         }
     }
 
