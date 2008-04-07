@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -287,8 +285,8 @@ public class RailsInstallationPanel extends JPanel {
         if (railsInfo.getVersion() == null) {
             gemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
         } else {
-            // Already installed: update
-            gemManager().update(gems, this, false, false, true, asyncCompletionTask);
+            // Already installed: update (with dependencies)
+            gemManager().update(gems, this, false, false, true, true, asyncCompletionTask);
         }
     }//GEN-LAST:event_railsButtonActionPerformed
 

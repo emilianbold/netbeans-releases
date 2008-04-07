@@ -89,6 +89,8 @@ public class CompletionContextTest extends TestCase {
         assertContext(ctx, CompletionType.NONE, "", "bean");
         ctx = new CompletionContext(doc, config.indexOf(" />"));
         assertContext(ctx, CompletionType.NONE, "", "bean");
+        ctx = new CompletionContext(doc, config.indexOf("name"));
+        assertContext(ctx, CompletionType.ATTRIBUTE, "p:", "bean");
         
         config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore'/>");

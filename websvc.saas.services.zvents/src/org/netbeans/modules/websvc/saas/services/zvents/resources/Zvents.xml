@@ -61,16 +61,11 @@
         <group name="Zvents">
         </group>
 
-        <authentication profile="SaaSServices/Zvents/profile.properties">
+        <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="searchGet" href="#zvents.searchGet"/>
-    </methods>
-    -->
-    
+    <methods/>
 </saas-services>

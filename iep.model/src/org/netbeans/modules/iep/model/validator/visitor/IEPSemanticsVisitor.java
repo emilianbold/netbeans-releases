@@ -1,6 +1,8 @@
 package org.netbeans.modules.iep.model.validator.visitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -13,6 +15,7 @@ import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.OperatorComponent;
@@ -174,8 +177,16 @@ public class IEPSemanticsVisitor implements IEPVisitor {
         }
 
         //outputs
+        //check for atleast one output if there are no InvokeStream operators.
+        
+        List<InvokeStreamOperatorComponent> invokeOps = Collections.EMPTY_LIST;
+        if(opContainer != null) {
+            invokeOps = opContainer.getInvokeStreamOperatorComponent();
+        }
+        
+        
         List<OutputOperatorComponent> outputs = model.getOutputList();
-        if (outputs.size() == 0) {
+        if (outputs.size() == 0 && invokeOps.size() == 0) {
             String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
             ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
             mResultItems.add(item);

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+
 /**
  * An IndexDocumentFactory allows you to create a IndexDocument that you pass
  * for storage in the GSF index.
@@ -46,11 +48,13 @@ package org.netbeans.modules.gsf.api;
  * @author Tor Norbye
  */
 public interface IndexDocumentFactory {
+    @NonNull 
     IndexDocument createDocument(int initialPairs);
     /** Create a document corresponding to a specific URL. You usually don't want
      * to use this. This is for advanced usage, such as sdoc mapping in JavaScript
      * where we want to trigger indexing of related .sdoc files when a source document
      * is indexed.
      */
-    IndexDocument createDocument(int initialPairs, String urlOverride);
+    @NonNull
+    IndexDocument createDocument(int initialPairs, @NonNull String urlOverride);
 }
