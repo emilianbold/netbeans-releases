@@ -39,16 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.junit;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.TestResult;
+
 
 /**
- * A position in a source buffer
- *
- * @author Tor Norbye
+ * @author Jaroslav Tulach
  */
-public interface Position {
-    /**
-     * Return the offset (0-based) within this buffer for this position
-     */
-    int getOffset();
+public class LogAndTimeOutTest extends NbTestCase {
+    public LogAndTimeOutTest(String name) {
+        super(name);
+    }
+    
+    
+    public void testLoggingAndTimeOut() throws Exception {
+        TestResult result = new TestResult();
+        
+        T t = new T("testLoadFromSubdirTheSFS");
+        t.run(result);
+        
+        assertEquals("No error", 0, result.errorCount());
+        assertEquals("One failure", 1, result.failureCount());
+        
+        Object o = result.failures().nextElement();
+        
+        String output = o.toString();
+        if (output.indexOf("LogAndTimeOutTest$T") == -1) {
+            fail("There should be a stacktrace:\n" + output);
+        }
+        if (output.indexOf("Adding 5") == -1) {
+            fail("There should be a 'Adding 5' message:\n" + output);
+        }
+    }
+    
+    
+    public static class T extends NbTestCase {
+        
+        
+        public T(String name) {
+            super(name);
+        }
+
+        @Override
+        protected Level logLevel() {
+            return Level.FINE;
+        }
+
+        @Override
+        protected int timeOut() {
+            return 1000;
+        }
+
+        public void testLoadFromSubdirTheSFS() throws Exception {
+            Logger log = Logger.getLogger(T.class.getName());
+            for (int i = 0; i < 100; i++) {
+                log.fine("Adding " + i);
+                Thread.sleep(100);
+            }
+        }
+    } // end of T
+    
 }
