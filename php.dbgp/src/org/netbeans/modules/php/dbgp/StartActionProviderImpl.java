@@ -41,7 +41,6 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -69,7 +68,6 @@ import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -83,8 +81,6 @@ public class StartActionProviderImpl  implements StartActionProvider
 
     private static final String LOCALHOST   = "localhost";          // NOI18N
 
-    private static final int DEFAULT_PORT   = 9000; 
-    
     private static final int PORT_RANGE     = 100;
     
     private static final int TIMEOUT        = 60000;
@@ -109,7 +105,7 @@ public class StartActionProviderImpl  implements StartActionProvider
              *  TODO : port may be red from options, found free port via 
              *  #findFreePort(), suggest to user via option about free port.
              */
-            int port = DEFAULT_PORT;
+            int port = DebuggerOptions.getPort();
             myThread = new ServerThread( port );
             RequestProcessor.getDefault().post( myThread );
         }
@@ -243,7 +239,8 @@ public class StartActionProviderImpl  implements StartActionProvider
     }
     
     private int findFreePort() {
-        for (int port = DEFAULT_PORT ; port < DEFAULT_PORT + PORT_RANGE; port++) {
+        int dbgPort = DebuggerOptions.getPort();
+        for (int port = dbgPort ; port < dbgPort + PORT_RANGE; port++) {
             Socket testClient = null;
             
             try {
