@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.StringReader;
 import java_cup.runtime.Symbol;
 import org.netbeans.junit.NbTestCase;
@@ -76,7 +78,7 @@ public class ASTPHP5ParserTest extends NbTestCase {
 //        System.out.println("-----------------end: ------------------\n\n\n");
 //    }
     
-    public void testPHPError1() throws Exception {
+    public void xtestPHPError1() throws Exception {
         String source = "<?php\npublic class User {\n  \n}\n?>";
         System.out.println("-----------------start: ------------------");
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
@@ -88,6 +90,22 @@ public class ASTPHP5ParserTest extends NbTestCase {
             System.out.println((new PrintASTVisitor()).printTree(result));
         }
         System.out.println("-----------------end: ------------------\n\n\n");
+    }
+    
+    public void testParser01 () throws Exception {
+        File testFile = new File(getDataDir(), "testfiles/TextSearchQuery.php");
+        assertTrue(testFile.exists());
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Symbol root = parser.parse();
+    }
+    
+    public void testParserUnfinishedPHPDoc () throws Exception {
+        File testFile = new File(getDataDir(), "testfiles/test01.php");
+        assertTrue(testFile.exists());
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Symbol root = parser.parse();
     }
     
 }

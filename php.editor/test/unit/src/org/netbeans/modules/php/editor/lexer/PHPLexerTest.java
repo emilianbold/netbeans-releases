@@ -61,26 +61,26 @@ public class PHPLexerTest extends TestCase {
         super.tearDown();
     }
 
-    public void testNoPHPg() {
+    public void testNoPHPg() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<html>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.T_INLINE_HTML, "<html>");
     }
 
-    public void testOpenTag() {
+    public void testOpenTag() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?php ?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?php");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testOpenTag2() {
+    public void testOpenTag2() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?php \t ?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?php");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " \t ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testLineComment1() {
+    public void testLineComment1() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<? // comment\n$a?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
@@ -90,7 +90,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testLineComment2() {
+    public void testLineComment2() throws Exception{
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<? # comment\n$a?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
@@ -100,7 +100,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testLineComment3() {
+    public void testLineComment3() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<? // comment", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
@@ -108,7 +108,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_LINE_COMMENT, " comment");
     }
 
-    public void testPHPCommnet1() {
+    public void testPHPCommnet1() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/*$a*/$b?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
@@ -118,7 +118,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testPHPCommnet2() {
+    public void testPHPCommnet2() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/***\n**$a***\n****/$b?>", PHPTokenId.language());
        // printTokenSequence(ts, "testPHPComment2"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -129,7 +129,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testPHPCommnet3() {
+    public void testPHPCommnet3() throws Exception {
         // test unfinished comment at the end of file
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/*a**\n**$a***\n***hello\nword", PHPTokenId.language());
         //printTokenSequence(ts, "testPHPComment3"); ts.moveStart();
@@ -138,7 +138,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT, "a**\n**$a***\n***hello\nword");
     }
 
-    public void testPHPCommnet4() {
+    public void testPHPCommnet4() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/*comment1*/echo/*comment2*/?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
@@ -151,7 +151,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testPHPCommnet5() {
+    public void testPHPCommnet5() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?\n/*\nRevision 1.6  2007/01/07 18:41:01\n*/echo?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
@@ -161,8 +161,19 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_ECHO, "echo");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
+    
+    public void testPHPCommnet6() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("<?\n/*\nRevision 1.6  2007/01/07 18:41:01 it can be * /\n another text\n*/echo?>", PHPTokenId.language());
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
+        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT, "\nRevision 1.6  2007/01/07 18:41:01 it can be * /\n another text\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT_END, "*/");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_ECHO, "echo");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
+    }
 
-    public void testPHPDocumentor1() {
+    public void testPHPDocumentor1() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n * Enter description here...\n * @access private\n * @var string $name\n */\nvar $name = \"ahoj\"\n?>", PHPTokenId.language());
         //PHPLexerUtils.printTokenSequence(ts, "testPHPDocumentor1"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -181,7 +192,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testPHPDocumentor2() {
+    public void testPHPDocumentor2() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n * Enter description here...\n * @ppp private\n * @var string $name\n */\nvar $name = \"ahoj\"\n?>", PHPTokenId.language());
         //printTokenSequence(ts, "testPHPDocumentor2"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -200,7 +211,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testPHPDocumentor3() {
+    public void testPHPDocumentor3() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n * Comment 1\n */\nvar $name = \"ahoj\"\n /**\n * Comment 2\n */\nvar $age = 10?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
@@ -229,7 +240,7 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
     
-    public void testPHPDocumentor4() {
+    public void testPHPDocumentor4() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n This File is free software; you can redistribute it and/or modify\n */?>", PHPTokenId.language());
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
@@ -238,7 +249,30 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
     
-    public void testShortOpenTag() {
+    public void testPHPDocumentor5() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n This File is free software; \n*   <dd> \"/^word.* /\" => REGEX(^word.*)\n */?>", PHPTokenId.language());
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
+        PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
+        PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; \n*   <dd> \"/^word.* /\" => REGEX(^word.*)\n ");
+        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; \n*   <dd> \"/^word.*");
+        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, " /\" => REGEX(^word.*)\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
+    }
+    
+    // not termitnated doc
+    public void testPHPDocumentor6() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n This File is free software;", PHPTokenId.language());
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
+        PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
+        PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software;");
+        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; \n*   <dd> \"/^word.*");
+        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, " /\" => REGEX(^word.*)\n");
+        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
+        //PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
+    }
+    
+    public void testShortOpenTag() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<? echo \"ahoj\" ?>", PHPTokenId.language());
 
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
@@ -250,11 +284,41 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
     
-    public void testInlineHtml() {
+    public void testInlineHtml() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<html>\n    <head>\n        <title></title>\n    </head>\n    <body>\n        <?php\n          \n        ?>\n    </body>\n</html>", PHPTokenId.language());
         PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
-        
     }
+    
+    public void testHeroDoc() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("<?\n$name=\"Petr\";\n$age=10;\necho <<<HEREDOC\nName: $name<br>\nMy age is: $age<br>\nHEREDOC;\n$name=\"Honza\";?>", PHPTokenId.language());
+        PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
+        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"Petr\"");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_SEMICOLON, ";");
+        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$age");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_NUMBER, "10");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_SEMICOLON, ";");
+        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_ECHO, "echo");
+        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_HEREDOC_TAG, "<<<HEREDOC\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, "Name: ");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, "<br>\nMy age is: ");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$age");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "<br>\nHEREDOC;");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\n");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"Honza\"");
+    }
+    
+    
 
        
     

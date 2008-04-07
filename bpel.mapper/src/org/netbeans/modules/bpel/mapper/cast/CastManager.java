@@ -140,8 +140,11 @@ public class CastManager {
                     PathConverter.constructObjectLocationtList(
                     typeCast.getXPathExpression());
             //
-            return addTypeCastImpl(castedCompPath, typeCast);
+            if (castedCompPath != null) {
+                return addTypeCastImpl(castedCompPath, typeCast);
+            }
         }
+        //
         return false;
     }
     
@@ -399,7 +402,7 @@ public class CastManager {
             }
             //
             TypeCast tCast = TypeCast.convert(cast);
-            if (castToUnreg.equals(tCast)) {
+            if (tCast != null && castToUnreg.equals(tCast)) {
                 // The required cast found!
                 casts.removeCast(index);
             }
