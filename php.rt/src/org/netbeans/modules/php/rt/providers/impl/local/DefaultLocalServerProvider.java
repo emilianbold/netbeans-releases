@@ -104,7 +104,7 @@ public class DefaultLocalServerProvider extends AbstractProvider<LocalHostImpl> 
                         };
             }
         };
-        LocalHostImpl impl = new LocalHostImpl("defaultHost", domain, null, baseDir, this);//NOI18N
+        LocalHostImpl impl = new LocalHostImpl("defaultHost", domain, port, baseDir, this);//NOI18N
 
         impl.setProperty(LocalHostImpl.DOCUMENT_PATH, docRoot);
         impl.setProperty(LocalHostImpl.WEB_CONFIG_FILE, "");
