@@ -408,10 +408,11 @@ public class PHPIndex {
         return classes;
     }
     
-    public Collection<String>getDirectIncludes(String fileURL){
+    public Collection<String>getDirectIncludes(String filePath){
+        assert !filePath.startsWith("file:");
         ArrayList includes = new ArrayList();
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        search("filename", fileURL, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
+        search("filename", "file:" + filePath, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
         
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null) {
@@ -435,15 +436,17 @@ public class PHPIndex {
         return includes;
     }
     
-    public Collection<String>getAllIncludes(String fileURL){
-        return getAllIncludes(fileURL, (Collection<String>)Collections.EMPTY_LIST);
+    public Collection<String>getAllIncludes(String filePath){
+        TreeSet<String> allIncludes = getAllIncludes(filePath, (Collection<String>)Collections.EMPTY_LIST);
+        allIncludes.remove(filePath);
+        return allIncludes;
     }
 
-    private Collection<String>getAllIncludes(String fileURL, Collection<String> alreadyProcessed){
-        Collection<String> includes = new TreeSet<String>();
-        includes.add(fileURL.substring("file:".length())); //NOI18N
+    private TreeSet<String>getAllIncludes(String filePath, Collection<String> alreadyProcessed){
+        TreeSet<String> includes = new TreeSet<String>();
+        includes.add(filePath);
         includes.addAll(alreadyProcessed);
-        Collection<String> directIncludes = getDirectIncludes(fileURL);
+        Collection<String> directIncludes = getDirectIncludes(filePath);
         
         for (String directInclude : directIncludes){
             if (!includes.contains(directInclude)){
@@ -519,16 +522,19 @@ public class PHPIndex {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<String> includeList = getAllIncludes(url);
+        Collection<String> includeList = getAllIncludes(fileURLToAbsPath(processedFileURL));
         
-        for (String includeURL : includeList){
-            if (url.equals("file:" + includeURL)){ //NOI18N
-                return true;
-            }
+        if (includeList.contains(fileURLToAbsPath(url))){
+            return true;
         }
 
         lastIsReachableReturnValue = false;
         return false;
+    }
+    
+    private static String fileURLToAbsPath(String url){
+        assert url.startsWith("file:") : url + " doesn't start with 'file:'"; //NOI18N
+        return url.substring("file:".length()); //NOI18N
     }
     
     static String dequote(String string){
