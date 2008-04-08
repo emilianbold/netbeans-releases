@@ -119,7 +119,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (t.isSuspended () && (t.getStackDepth () > 0)) {
             try { 
                 CallStackFrame sf = t.getCallStack (0, 1) [0];
-                frame = CallStackNodeModel.getCSFName (null, sf, true);
+                frame = CallStackNodeModel.getCSFName (null, sf, false);
             } catch (AbsentInformationException e) {
             }
         }
@@ -128,6 +128,16 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (breakpoint != null) {
             return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_Breakpoint", name, breakpoint.toString());
         }
+        if (t.isSuspended()) {
+            if (frame != null) {
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Suspended_At", name, frame);
+            } else {
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Suspended", name);
+            }
+        } else {
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Running", name);
+        }
+        /*
         int i = t.getState ();
         switch (i) {
             case JPDAThread.STATE_UNKNOWN:
@@ -164,6 +174,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 Exceptions.printStackTrace(new IllegalStateException("Unexpected thread state: "+i+" of "+t));
                 return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Unknown", name);
         }
+         */
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {
