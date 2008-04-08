@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.bpel.mapper.model;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextControllerImpl2;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
@@ -57,6 +60,7 @@ import org.netbeans.modules.xml.xpath.ext.metadata.StubExtFunction;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
+import org.openide.util.NbBundle;
 
 /**
  * Populates the Graph object with a complex content by an XPath expression.
@@ -73,11 +77,14 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
 
     protected Stack<VertexBuilderData> mVertexStack = new Stack<VertexBuilderData>();
     
+    protected BpelDesignContext currentBpelDesignContext;   
+    
     public GraphBuilderVisitor(Graph graph, MapperSwingTreeModel leftTreeModel, 
-            boolean connectToTargetTree) {
+            boolean connectToTargetTree, BpelDesignContext context) {
         mGraph = graph;
         mLeftTreeModel = leftTreeModel;
         mConnectToTargetTree = connectToTargetTree;
+        currentBpelDesignContext = context;
     }
 
     @Override
@@ -247,18 +254,33 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     }
 
     protected void connectToLeftTree(XPathExpressionPath path) {
-        connectToLeftTree(FinderListBuilder.build(path));
+        if ((! connectToLeftTree(FinderListBuilder.build(path))) && 
+            (currentBpelDesignContext != null)) {
+            StringBuffer errMsgBuffer = currentBpelDesignContext.getValidationErrMsgBuffer();
+            if (errMsgBuffer == null) return;
+            
+            String 
+                errMsgPattern = NbBundle.getMessage(DesignContextControllerImpl2.class, 
+                "LBL_Bpel_Mapper_Err_Msg_Wrong_XPathExpr_Data"),
+                errMsg = MessageFormat.format(errMsgPattern, new Object[] {"from",
+                    path.getExpressionString()});                
+ 
+                errMsgBuffer.append((errMsgBuffer.length() > 0) ? 
+                    " " + errMsg : errMsg);                
+                errMsgBuffer.append(",\n");
+        }
     }
 
-    protected void connectToLeftTree(List<TreeItemFinder> finderList) {
+    protected boolean connectToLeftTree(List<TreeItemFinder> finderList) {
         TreeFinderProcessor fProcessor = new TreeFinderProcessor(mLeftTreeModel);
         TreePath sourceTreePath = fProcessor.findFirstNode(finderList);
         // TreePath sourceTreePath = mLeftTreeModel.findFirstNode(finderList);
         if (sourceTreePath != null) {
             TreeSourcePin sourcePin = new TreeSourcePin(sourceTreePath);
-            //
             linkToParent(sourcePin);
+            return true;
         }
+        return false;
     }
 
     /**
