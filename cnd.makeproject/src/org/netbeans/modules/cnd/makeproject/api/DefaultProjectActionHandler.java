@@ -436,6 +436,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                 } catch (java.io.IOException ioe) {
                 }
             } else if (pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
+                progressHandle.finish();
+                progressHandle = createPogressHandleNoCancel();
+                progressHandle.start();
+                customActionHandler.addExecutionListener(this);
                 customActionHandler.execute(pae, getTab());
             } else if (pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
