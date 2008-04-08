@@ -87,10 +87,15 @@ public class CppLexer extends CndLexer {
                     skipLiteral(false);
                     break;
                 case '/':
-                    if (read(true) == '*') { // block or doxygen comment
-                        skipComment();
-                    } else {
-                        backup(1);
+                    switch (read(true)) {
+                        case '*': // block or doxygen comment
+                            skipComment();
+                        case '\r':
+                            consumeNewline();
+                        // nobreak
+                        case '\n':
+                        case EOF:
+                            return token(CppTokenId.PREPROCESSOR_DIRECTIVE);
                     }
                     break;
                 case '\r': 
