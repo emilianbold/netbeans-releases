@@ -359,7 +359,7 @@ public abstract class InstanceProperties {
      * Add <code>PropertyChangeListener</code> which will be notified of 
      * <code>InstanceProperties</code> changes.
      * 
-     * @param <code>PropertyChangeListener</code> which will be notified of 
+     * @param listener <code>PropertyChangeListener</code> which will be notified of 
      *        <code>InstanceProperties</code> changes.
      *
      */

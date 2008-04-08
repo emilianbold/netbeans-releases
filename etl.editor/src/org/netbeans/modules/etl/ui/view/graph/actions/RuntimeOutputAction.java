@@ -79,10 +79,9 @@ public class RuntimeOutputAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeOutputImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND032: Add/Edit Runtime Outputs (Shift-U)");
+        String nbBundle2 = mLoc.t("BUND032: Add/Edit Runtime Outputs");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-        // Acceleratot Shift-U
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('U', InputEvent.SHIFT_DOWN_MASK));
+
     }
 
     /**

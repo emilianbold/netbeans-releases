@@ -261,7 +261,7 @@ public abstract class J2eeModuleProvider {
      * Configuration support to allow development module code to access well-known 
      * configuration propeties, such as web context root, cmp mapping info...
      * The setters and getters work with server specific data on the server returned by
-     * {@link getServerID} method.
+     * {@link #getServerID} method.
      */
     public static interface ConfigSupport {
         /**
@@ -438,7 +438,7 @@ public abstract class J2eeModuleProvider {
          * Finds data source with the given JNDI name.
          * 
          * @param jndiName JNDI name of a data source
-         * @param return data source if it exists, null otherwise
+         * @return data source if it exists, null otherwise
          *
          * @throws NullPointerException if JNDI name is null
          * @throws ConfigurationException if there is some problem with data source configuration
@@ -526,7 +526,7 @@ public abstract class J2eeModuleProvider {
          * Finds message destination with the given name.
          * 
          * @param name message destination name
-         * @param return message destination if it exists, null otherwise
+         * @return message destination if it exists, null otherwise
          *
          * @throws NullPointerException if name is null
          * @throws ConfigurationException if there is some problem with message destination configuration
@@ -664,7 +664,7 @@ public abstract class J2eeModuleProvider {
     /** Id of server isntance for deployment. The default implementation returns
      * the default server instance selected in Server Registry. 
      * The return value may not be null.
-     * If modules override this method they also need to override {@link useDefaultServer}.
+     * If modules override this method they also need to override {@link #useDefaultServer}.
      */
     public String getServerInstanceID () {
         return ServerRegistry.getInstance ().getDefaultInstance ().getUrl ();
@@ -678,7 +678,7 @@ public abstract class J2eeModuleProvider {
     }
 
     /** This method is used to determin type of target server.
-     * The return value must correspond to value returned from {@link getServerInstanceID}.
+     * The return value must correspond to value returned from {@link #getServerInstanceID}.
      */
     public String getServerID () {
         return ServerRegistry.getInstance ().getDefaultInstance ().getServer ().getShortName ();
@@ -709,7 +709,6 @@ public abstract class J2eeModuleProvider {
      * Invoke verifier from current platform on the provided target file.
      * @param target File to run verifier against.
      * @param logger output stream to write verification resutl to.
-     * @return true
      */
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
         VerifierSupport verifier = ServerRegistry.getInstance().getServer(getServerID()).getVerifierSupport();
@@ -817,7 +816,7 @@ public abstract class J2eeModuleProvider {
     /**
      * Register an instance listener that will listen to server instances changes.
      *
-     * @l listener which should be added.
+     * @param l listener which should be added.
      *
      * @since 1.6
      */
@@ -828,7 +827,7 @@ public abstract class J2eeModuleProvider {
     /**
      * Remove an instance listener which has been registered previously.
      *
-     * @l listener which should be removed.
+     * @param l listener which should be removed.
      *
      * @since 1.6
      */

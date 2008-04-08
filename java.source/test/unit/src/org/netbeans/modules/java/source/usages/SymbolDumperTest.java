@@ -911,7 +911,7 @@ public class SymbolDumperTest extends NbTestCase {
                     pack.complete();
                     
                     for (Map.Entry<String, String> entry : signatures.entrySet()) {
-                        reader.includeClassFile(pack, FileObjects.memoryFileObject(entry.getValue(), entry.getKey() + ".sig"), entry.getKey());
+                        reader.includeClassFile(pack, FileObjects.memoryFileObject("", entry.getKey() + ".sig", entry.getValue()), entry.getKey());
                     }
                     
                     ClassSymbol cs = reader.enterClass(className, pack);
@@ -1135,7 +1135,7 @@ public class SymbolDumperTest extends NbTestCase {
                     pack.complete();
                     
                     for (Map.Entry<String, String> entry : signatures.entrySet()) {
-                        reader.includeClassFile(pack, FileObjects.memoryFileObject(entry.getValue(), entry.getKey() + ".sig"), entry.getKey());
+                        reader.includeClassFile(pack, FileObjects.memoryFileObject("", entry.getKey() + ".sig",entry.getValue()), entry.getKey());
                     }
                     
                     if (firstToComplete != null) {
@@ -1202,7 +1202,7 @@ public class SymbolDumperTest extends NbTestCase {
                     
                     pack.complete();
                     
-                    reader.includeClassFile(pack, FileObjects.memoryFileObject(againstSignature, "test.sig"), againstSignature);
+                    reader.includeClassFile(pack, FileObjects.memoryFileObject("","test.sig",againstSignature), againstSignature);
                     
                     ClassSymbol cs = reader.enterClass(className, pack);
                     
@@ -1320,7 +1320,7 @@ public class SymbolDumperTest extends NbTestCase {
                     pack.complete();
                     
                     for (Map.Entry<String, String> entry : signatures.entrySet()) {
-                        reader.includeClassFile(pack, FileObjects.memoryFileObject(entry.getValue(), entry.getKey() + ".sig"), entry.getKey());
+                        reader.includeClassFile(pack, FileObjects.memoryFileObject("",entry.getKey() + ".sig", entry.getValue()), entry.getKey());
                     }
                     
                     parameter.toPhase(Phase.RESOLVED);
@@ -1496,7 +1496,7 @@ public class SymbolDumperTest extends NbTestCase {
                 pack.complete();
                 
                 for (Map.Entry<String, String> entry : signatures.entrySet()) {
-                    reader.includeClassFile(pack, FileObjects.memoryFileObject(entry.getValue(), entry.getKey() + ".sig"), entry.getKey());
+                    reader.includeClassFile(pack, FileObjects.memoryFileObject("",entry.getKey() + ".sig",entry.getValue()), entry.getKey());
                 }
                 
                 parameter.toPhase(Phase.RESOLVED);
