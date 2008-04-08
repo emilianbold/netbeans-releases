@@ -90,7 +90,8 @@ public final class Utils {
             }
         }
         String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);        
-        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot) : null;
+        String indexFile = evaluator.getProperty(PhpProjectProperties.INDEX_FILE);
+        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot, indexFile) : null;
     }
     
     

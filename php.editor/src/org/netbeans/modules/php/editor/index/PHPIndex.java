@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,12 +49,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -159,80 +165,160 @@ public class PHPIndex {
         return clusterUrl;
     }
     
-    public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind) {
-        final Set<SearchResult> classSearchResult = new HashSet<SearchResult>();
-        Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(PHPIndexer.FIELD_CLASS, className, NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
-
-        for (SearchResult classMap : classSearchResult) {
-            String[] signatures = classMap.getValues(PHPIndexer.FIELD_METHOD);
-
-            if (signatures == null) {
-                continue;
-            }
-
-            for (String signature : signatures) {
-                int firstSemicolon = signature.indexOf(";");
-                String funcName = signature.substring(0, firstSemicolon);
-                
-                if (funcName.toLowerCase().startsWith(name.toLowerCase())) {
-                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            classMap.getPersistentUrl(), funcName, className, 0, this, false);
-
-                    functions.add(func);
-                }
+    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind) {
+        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
+        
+        if (inheritanceLine != null){
+            for (IndexedClass clazz : inheritanceLine){
+                methods.addAll(getMethods(context, clazz.getName(), "", NameKind.PREFIX)); //NOI18N
             }
         }
-        return functions;
+        
+        return methods;
     }
     
-    public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind) {
-        final Set<SearchResult> classSearchResult = new HashSet<SearchResult>();
+    public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String className, String name, NameKind kind) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CLASS, className, NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
-
-        for (SearchResult classMap : classSearchResult) {
-            String[] signatures = classMap.getValues(PHPIndexer.FIELD_FIELD);
-
-            if (signatures == null) {
-                continue;
-            }
-
-            for (String signature : signatures) {
-                int firstSemicolon = signature.indexOf(";");
-                String propName = signature.substring(0, firstSemicolon);
-                
-                if (propName.toLowerCase().startsWith(name.toLowerCase())) {
-                    int offset = extractOffsetFromIndexSignature(signature, 1);
-                    
-                    IndexedConstant prop = new IndexedConstant(propName, className,
-                            this, classMap.getPersistentUrl(), null, 0, offset);
-
-                    properties.add(prop);
-                }
+        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
+        
+        if (inheritanceLine != null){
+            for (IndexedClass clazz : inheritanceLine){
+                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX)); //NOI18N
             }
         }
+        
         return properties;
     }
     
-    static int extractOffsetFromIndexSignature(String signature, int offsetSection) {
-        assert offsetSection != 0; // Obtain directly, and logic below (+1) is wrong
-        int startIndex = 0;
+    public List<IndexedClass>getClassInheritanceLine(PHPParseResult context, String className){
+        List<IndexedClass>classLine = new LinkedList<IndexedClass>();
+        Collection<String> processedClasses = new TreeSet<String>();
         
-        for (int i = 0; i < offsetSection; i++) {
-            startIndex = signature.indexOf(';', startIndex + 1);
+        while (className != null){
+            if (processedClasses.contains(className)){
+                break; //TODO: circular reference, warn the user
+            }
+            
+            processedClasses.add(className);
+            
+            Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
+            
+            if (classes == null || classes.size() == 0){
+                break;
+            }
+            
+            //TODO: handle name conflicts
+            IndexedClass clazz = classes.toArray(new IndexedClass[classes.size()])[0];
+            classLine.add(clazz);
+            className = clazz.getSuperClass();
+        }
+        
+        return classLine;
+    }
+    
+    public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind) {
+        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_METHOD, name, kind);
+        
+        for (String signature : signaturesMap.keySet()) {
+            String funcName = extractStringValueFromIndexSignature(signature, 0);
+            int modifiers = extractIntValueFromIndexSignature(signature, 3);
+
+            IndexedFunction func = new IndexedFunction(funcName, className,
+                    this, signaturesMap.get(signature), signature, modifiers, ElementKind.METHOD);
+
+            methods.add(func);
+
+        }
+    
+        return methods;
+    }
+    
+    public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind) { 
+        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_FIELD, name, kind);
+        
+        for (String signature : signaturesMap.keySet()) {
+            String propName = extractStringValueFromIndexSignature(signature, 0);
+            int offset = extractIntValueFromIndexSignature(signature, 1);
+            int modifiers = extractIntValueFromIndexSignature(signature, 2);
+
+            IndexedConstant prop = new IndexedConstant(propName, className,
+                    this, signaturesMap.get(signature), null, modifiers, offset);
+
+            properties.add(prop);
+
         }
 
-        assert startIndex != -1;
-        startIndex ++;
-        int endIndex = signature.indexOf(';', startIndex);
+        return properties;
+    }
+    
+    private Map<String, String> getClassSpecificSignatures(PHPParseResult context, String className, String fieldName, String name, NameKind kind) {
+        final Set<SearchResult> classSearchResult = new HashSet<SearchResult>();
+        Map<String, String> signatures = new HashMap<String, String>();
+        search(PHPIndexer.FIELD_CLASS, className, NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult classMap : classSearchResult) {
+            String[] classSignatures = classMap.getValues(PHPIndexer.FIELD_CLASS);
+            String[] rawSignatures = classMap.getValues(fieldName);
+
+            if (classSignatures == null  || rawSignatures == null) {
+                continue;
+            }
+            
+            assert classSignatures.length == 1; 
+            String foundClassName = extractStringValueFromIndexSignature(classSignatures[0], 0);
+            String persistentURL = classMap.getPersistentUrl();
+            
+            if (!className.equals(foundClassName) || !isReachable(context, persistentURL)) {
+                continue;
+            }
+
+            for (String signature : rawSignatures) {
+                String elemName = extractStringValueFromIndexSignature(signature, 0);
+                
+                // TODO: now doing IC prefix search only, handle other search types 
+                // according to 'kind'
+                if (elemName.toLowerCase().startsWith(name.toLowerCase())) {
+                    signatures.put(signature, persistentURL);
+                }
+            }
+        }
         
-        if (endIndex > startIndex){
-            String offsetStr = signature.substring(startIndex, endIndex);
-            return Integer.parseInt(offsetStr);
+        return signatures;
+    }
+    
+    static int extractIntValueFromIndexSignature(String signature, int offsetSection) {
+        String stringValue = extractStringValueFromIndexSignature(signature, offsetSection);
+        
+        if (stringValue != null){
+            return Integer.parseInt(stringValue);
         }
         
         return -1;
+    }
+    
+    static String extractStringValueFromIndexSignature(String signature, int offsetSection) {
+        int startIndex = 0;
+        
+        if (offsetSection > 0) {
+            for (int i = 0; i < offsetSection; i++) {
+                startIndex = signature.indexOf(';', startIndex + 1);
+            }
+            
+            assert startIndex != -1;
+            startIndex++;
+        }
+
+        int endIndex = signature.indexOf(';', startIndex);
+        
+        if (endIndex >= startIndex){
+            String offsetStr = signature.substring(startIndex, endIndex);
+            return offsetStr;
+        }
+        
+        return null;
     }
     
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
@@ -241,7 +327,7 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_BASE, name, kind, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
 
                 if (signatures == null) {
@@ -252,8 +338,8 @@ public class PHPIndex {
                     int firstSemicolon = signature.indexOf(";");
                     String funcName = signature.substring(0, firstSemicolon);
 
-                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            map.getPersistentUrl(), funcName, null, 0, this, false);
+                    IndexedFunction func = new IndexedFunction(funcName, null,
+                            this, map.getPersistentUrl(), signature, 0, ElementKind.METHOD);
 
                     functions.add(func);
                 }
@@ -268,16 +354,16 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_CONST);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
-
+                
                 if (signatures == null) {
                     continue;
                 }
 
                 for (String signature : signatures) {
                     String constName = signature.substring(0, signature.indexOf(';'));
-                    int offset = extractOffsetFromIndexSignature(signature, 1);
+                    int offset = extractIntValueFromIndexSignature(signature, 1);
 
                     IndexedConstant constant = new IndexedConstant(constName, null,
                             this, map.getPersistentUrl(), null, 0, offset);
@@ -290,13 +376,13 @@ public class PHPIndex {
         return constants;
     }
     
-    public Collection<IndexedConstant> getClasses(PHPParseResult context, String name, NameKind kind) {
+    public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CLASS, name, kind, result, ALL_SCOPE, TERMS_BASE);
-
+        Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
+        search(PHPIndexer.FIELD_CLASS, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+       
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
 
                 if (signatures == null) {
@@ -306,23 +392,27 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     int firstSemicolon = signature.indexOf(";");
                     String className = signature.substring(0, firstSemicolon);
-                    int offset = extractOffsetFromIndexSignature(signature, 1);
+                    
+                    //TODO: handle search kind
+                    
+                    int offset = extractIntValueFromIndexSignature(signature, 1);
 
-                    IndexedConstant constant = new IndexedConstant(className, null,
-                            this, map.getPersistentUrl(), null, 0, offset);
+                    IndexedClass clazz = new IndexedClass(className, null,
+                            this, map.getPersistentUrl(), signature, 0, offset);
 
-                    constants.add(constant);
+                    classes.add(clazz);
                 }
             }
         }
         
-        return constants;
+        return classes;
     }
     
-    public Collection<String>getDirectIncludes(String fileURL){
+    public Collection<String>getDirectIncludes(String filePath){
+        assert !filePath.startsWith("file:");
         ArrayList includes = new ArrayList();
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        search("filename", fileURL, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
+        search("filename", "file:" + filePath, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
         
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null) {
@@ -335,7 +425,9 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     
                     for (String incl : signature.split(";")){
-                        includes.add(incl);
+                        if (incl.length() > 0) {
+                            includes.add(incl);
+                        }
                     }
                 }
             }
@@ -344,15 +436,17 @@ public class PHPIndex {
         return includes;
     }
     
-    public Collection<String>getAllIncludes(String fileURL){
-        return getAllIncludes(fileURL, (Collection<String>)Collections.EMPTY_LIST);
+    public Collection<String>getAllIncludes(String filePath){
+        TreeSet<String> allIncludes = getAllIncludes(filePath, (Collection<String>)Collections.EMPTY_LIST);
+        allIncludes.remove(filePath);
+        return allIncludes;
     }
 
-    private Collection<String>getAllIncludes(String fileURL, Collection<String> alreadyProcessed){
-        Collection<String> includes = new TreeSet<String>();
-        includes.add(fileURL);
+    private TreeSet<String>getAllIncludes(String filePath, Collection<String> alreadyProcessed){
+        TreeSet<String> includes = new TreeSet<String>();
+        includes.add(filePath);
         includes.addAll(alreadyProcessed);
-        Collection<String> directIncludes = getDirectIncludes(fileURL);
+        Collection<String> directIncludes = getDirectIncludes(filePath);
         
         for (String directInclude : directIncludes){
             if (!includes.contains(directInclude)){
@@ -363,6 +457,10 @@ public class PHPIndex {
         return includes;
     }
     
+    private String lastIsReachableURL = null;
+    private WeakReference<PHPParseResult> lastIsReachableResultArg;
+    private boolean lastIsReachableReturnValue;
+    
     /** 
      * Decide whether the given url is included from the current compilation
      * context.
@@ -370,7 +468,21 @@ public class PHPIndex {
      * all source level files unless that file is reachable through include-mechanisms
      * from the current file.
      */
-    public boolean isReachable(PHPParseResult result, String url) {
+    public boolean isReachable(PHPParseResult result, String url) {        
+        // performance optimization: 
+        // this function may be called thousands of times in a row with the same url
+        // there is a loss of result accuracy but it is negligible
+        if (lastIsReachableResultArg != null 
+                && lastIsReachableResultArg.get() == result 
+                && url.equals(lastIsReachableURL)){
+            
+            return lastIsReachableReturnValue;
+        }
+        
+        lastIsReachableResultArg = new WeakReference<PHPParseResult>(result);
+        lastIsReachableURL = url;
+        lastIsReachableReturnValue = true;
+        
         Project project = FileOwnerQuery.getOwner(result.getFile().getFileObject());
         
         if (project != null){
@@ -380,6 +492,12 @@ public class PHPIndex {
                 PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
                 if (phpSourcePath != null) {
                     File file = new File(new URI(url));
+                    
+                    if (!file.exists()){
+                        lastIsReachableReturnValue = false;
+                        return false; // a workaround for #131906
+                    }
+                    
                     FileObject fileObject = FileUtil.toFileObject(file);
                     PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
                     if (fileType == PhpSourcePath.FileType.INTERNAL
@@ -404,15 +522,19 @@ public class PHPIndex {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<String> includeList = getAllIncludes(url);
+        Collection<String> includeList = getAllIncludes(fileURLToAbsPath(processedFileURL));
         
-        for (String includeURL : includeList){
-            if (url.equals("file:" + includeURL)){ //NOI18N
-                return true;
-            }
+        if (includeList.contains(fileURLToAbsPath(url))){
+            return true;
         }
 
+        lastIsReachableReturnValue = false;
         return false;
+    }
+    
+    private static String fileURLToAbsPath(String url){
+        assert url.startsWith("file:") : url + " doesn't start with 'file:'"; //NOI18N
+        return url.substring("file:".length()); //NOI18N
     }
     
     static String dequote(String string){

@@ -211,8 +211,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
         configureSources(helper, properties);
+        configureIndexFile(properties);
         configureEncoding(properties);
         configureCopyFiles(properties);
+        configureIncludePath(properties);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -240,8 +242,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             srcPath = srcDir.getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-
         properties.setProperty(PhpProjectProperties.URL, (String) descriptor.getProperty(ConfigureProjectPanel.URL));
+    }
+
+    private void configureIndexFile(EditableProperties properties) {
+        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
     private void configureEncoding(EditableProperties properties) {
@@ -262,6 +268,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, copyFilesString);
         properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyTargetString);
+    }
+
+    private void configureIncludePath(EditableProperties properties) {
+        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
     private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {

@@ -52,7 +52,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
@@ -254,9 +253,10 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             }
 
             // get our project actions
-            for (Action action : getProjectActions()){
+            /* removed run.script from project root node
+             for (Action action : getProjectActions()){
                 list.add(action);
-            }
+            }*/
                 
             // get standard project actions
             for (Action action : getStandardProjectActions()){
@@ -275,6 +275,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                     }
                 }
             }
+            list.add(null);
+            list.add(CommonProjectActions.customizeProjectAction());            
             return list.toArray(new Action[list.size()]);
         }
 
@@ -305,9 +307,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                         CommonProjectActions.renameProjectAction(), 
                         CommonProjectActions.moveProjectAction(), 
                         CommonProjectActions.copyProjectAction(), 
-                        CommonProjectActions.deleteProjectAction(), 
-                        null, 
-                        CommonProjectActions.customizeProjectAction()
+                        CommonProjectActions.deleteProjectAction()
             };
             
         }
@@ -623,13 +623,15 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             list.add(0, CommonProjectActions.newFileAction());
 
             // the same provider actions as for project
-            for (Action action : getProviderActions()){
+            /* removed run, debug actions from src node
+             for (Action action : getProviderActions()){
                 list.add(action);
             }
 
+            //removed  run.script from src node
             for (Action action : getSrcActions()){
                 list.add(action);
-            }
+            }*/
 
             for (Action action : getStandardSrcActions()){
                 list.add(action);
@@ -639,14 +641,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         }
         
         private Action[] getSrcActions(){
-            ImportCommand importComm = new ImportCommand(getProject());
+            //ImportCommand importComm = new ImportCommand(getProject());
             RunLocalCommand runLocalComm = new RunLocalCommand(getProject());
 
             Action[] actions = new Action[]{
-                ProjectSensitiveActions.projectCommandAction(
-                        importComm.getId(), importComm.getLabel(), null),
-                ProjectSensitiveActions.projectCommandAction(
-                        runLocalComm.getId(), runLocalComm.getLabel(), null)
+                //ProjectSensitiveActions.projectCommandAction(importComm.getId(), importComm.getLabel(), null),
+                ProjectSensitiveActions.projectCommandAction(runLocalComm.getId(), runLocalComm.getLabel(), null)
             };
             return actions;
         }
@@ -716,7 +716,9 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             // use fixed index not to search for 'NewFile' 
             // in seper actions each time (this wuill need to create 
             // CommonProjectActions.newFileAction() and check equals() )
-            int pos = 2;
+            
+	    /* no run, debug, run.script actions on any node representing folder anymore
+	     int pos = 2;
             for (Action action : getProviderActions()) {
                 actions.add(pos++, action);
             }
@@ -724,6 +726,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             for (Action action : getFolderActions()) {
                 actions.add(pos++, action);
             }
+	     */ 
 
             return actions.toArray(new Action[]{});
         }
@@ -888,7 +891,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         if (provider != null) {
             CommandProvider commandProvider = provider.getCommandProvider();
             
-            commands = commandProvider.getCommands(getProject());
+            commands = commandProvider.getEnabledCommands(getProject());
         }
         if (commands == null){
             commands = new Command[]{};

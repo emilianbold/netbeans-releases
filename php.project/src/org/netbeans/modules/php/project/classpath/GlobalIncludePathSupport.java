@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
+package org.netbeans.modules.php.project.classpath;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
- *
- * @author Tor Norbye
+ * @author Petr Hrebejk, Tomas Mysik
  */
-public class IndexedProperty extends IndexedElement {
-    
-    IndexedProperty(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
-    }
-    
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
+public class GlobalIncludePathSupport extends BaseIncludePathSupport {
+    private static final GlobalIncludePathSupport INSTANCE = new GlobalIncludePathSupport();
+
+    private GlobalIncludePathSupport() {
     }
 
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
+    public static GlobalIncludePathSupport getInstance() {
+        return INSTANCE;
+    }
+
+    public Iterator<Item> itemsIterator() {
+        // XXX more performance friendly impl. would return a lazzy iterator
+        return itemsList().iterator();
+    }
+
+    public List<Item> itemsList() {
+        String[] pe = PropertyUtils.tokenizePath(PhpOptions.getInstance().getPhpGlobalIncludePath());
+        List<Item> items = new ArrayList<Item>(pe.length);
+        for (String p : pe) {
+            Item item = null;
+            File f = new File(p);
+            if (!f.exists()) {
+                item = Item.createBroken(p, p);
+            } else {
+                item = Item.create(p, p);
             }
-            sb.append(name);
-            signature = sb.toString();
+            items.add(item);
+        }
+        return items;
+    }
+
+    /** Converts list of classpath items into array of Strings.
+     * !! This method creates references in the project !!
+     */
+    public String[] encodeToStrings(Iterator<Item> classpath) {
+        List<String> result = new ArrayList<String>();
+        while (classpath.hasNext()) {
+            Item item = classpath.next();
+            result.add(item.getFilePath());
         }
 
-        return signature;
+        String[] items = new String[result.size()];
+        for (int i = 0; i < result.size(); i++) {
+            if (i < result.size() - 1) {
+                items[i] = result.get(i) + ":"; // NOI18N
+            } else  {
+                items[i] = result.get(i);
+            }
+        }
+        return items;
     }
 }

@@ -58,6 +58,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -81,6 +82,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -138,6 +140,19 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     @Override
+    public void visit(Program program) {
+        //functions defined on top-level of the current file are visible before declared:
+        for (Statement s : program.getStatements()) {
+            if (s instanceof FunctionDeclaration) {
+                String name = ((FunctionDeclaration) s).getFunctionName().getName();
+
+                node2Element.put(s, global.enterWrite(name, Kind.FUNC, s));
+            }
+        }
+        super.visit(program);
+    }
+
+    @Override
     public void visit(Assignment node) {
         VariableBase vb = node.getLeftHandSide();
         
@@ -173,17 +188,19 @@ public class SemiAttribute extends DefaultVisitor {
     
     @Override
     public void visit(FunctionDeclaration node) {
-        String name = node.getFunctionName().getName();
-        DefinitionScope top = scopes.peek();
-        AttributedElement func;
-        
-        if (top.classScope) {
-            func = top.enterWrite(name, Kind.FUNC, node);
-        } else {
-            func = global.enterWrite(name, Kind.FUNC, node);
-        }
+        if (!node2Element.containsKey(node)) {
+            String name = node.getFunctionName().getName();
+            DefinitionScope top = scopes.peek();
+            AttributedElement func;
 
-        node2Element.put(node, func);
+            if (top.classScope) {
+                func = top.enterWrite(name, Kind.FUNC, node);
+            } else {
+                func = global.enterWrite(name, Kind.FUNC, node);
+            }
+
+            node2Element.put(node, func);
+        }
         
         scopes.push(new DefinitionScope());
         
@@ -228,8 +245,12 @@ public class SemiAttribute extends DefaultVisitor {
         }
         
         if (exp instanceof Variable) {
-            //XXX, XXX:
-            name = ((Identifier) ((Variable) exp).getName()).getName();
+            //XXX:
+            Expression n = ((Variable) exp).getName();
+            
+            if (n instanceof Identifier) {
+                name = ((Identifier) n).getName();
+            }
         }
 
         if (name != null) {
@@ -259,6 +280,18 @@ public class SemiAttribute extends DefaultVisitor {
             }
 
             node2Element.put(node, thisEl);
+            
+            if ("define".equals(name) && node.getParameters().size() == 2) {
+                Expression d = node.getParameters().get(0);
+                
+                if (d instanceof Scalar && ((Scalar) d).getScalarType() == Type.STRING) {
+                    String value = ((Scalar) d).getStringValue();
+                    
+                    if (NavUtils.isQuoted(value)) {
+                        node2Element.put(d, global.enterWrite(NavUtils.dequote(value), Kind.CONST, d));
+                    }
+                }
+            }
         }
         
         if (node2Element.containsKey(node)) {
@@ -314,10 +347,7 @@ public class SemiAttribute extends DefaultVisitor {
                 fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
                 FileObject toInclude = info.getFileObject().getParent().getFileObject(fileName);
                 
-                for (IndexedFunction f : listFunctions(toInclude)) {
-                    System.err.println("entering: " + f.getName());
-                    global.enterWrite(f.getName(), Kind.FUNC, f);
-                }
+                enterInclude(toInclude);
             }
         }
         
@@ -334,6 +364,17 @@ public class SemiAttribute extends DefaultVisitor {
             }
         }
         super.visit(node);
+    }
+
+    @Override
+    public void visit(Scalar scalar) {
+        if (scalar.getScalarType() == Type.STRING && !NavUtils.isQuoted(scalar.getStringValue())) {
+            AttributedElement def = global.lookup(scalar.getStringValue(), Kind.CONST);
+            
+            node2Element.put(scalar, def);
+        }
+        
+        super.visit(scalar);
     }
 
     private AttributedElement enterGlobalVariable(String name) {
@@ -359,10 +400,8 @@ public class SemiAttribute extends DefaultVisitor {
                 
                 if (v.getScalarType() == Type.STRING) {
                     String value = v.getStringValue();
-                    if (value.length() >= 2 &&
-                            (value.startsWith("\"") || value.startsWith("'")) &&
-                            (value.endsWith("\"") || value.endsWith("'"))) {
-                        node2Element.put(node, enterGlobalVariable(value.substring(1, value.length() - 1)));
+                    if (NavUtils.isQuoted(value)) {
+                        node2Element.put(node, enterGlobalVariable(NavUtils.dequote(value)));
                     }
                 }
             }
@@ -402,21 +441,23 @@ public class SemiAttribute extends DefaultVisitor {
         return node2Element.get(n);
     }
     
-    private Collection<IndexedFunction> name2FunctionCache;
+    private Collection<IndexedElement> name2ElementCache;
     
     public static PHPParseResult xxx(CompilationInfo info) {
         return (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
     }
     
-    public List<IndexedFunction> listFunctions(FileObject file) {
+    public void enterInclude(FileObject file) {
         if (file == null) {
-            return Collections.emptyList();
+            return ;
         }
         
-        if (name2FunctionCache == null) {
+        if (name2ElementCache == null) {
             Index i = info.getIndex(PHPLanguage.PHP_MIME_TYPE);
             PHPIndex index = PHPIndex.get(i);
-            name2FunctionCache = index.getFunctions(xxx(info), "", NameKind.PREFIX);
+            name2ElementCache = new LinkedList<IndexedElement>();
+            name2ElementCache.addAll(index.getFunctions(null, "", NameKind.PREFIX));
+            name2ElementCache.addAll(index.getConstants(null, "", NameKind.PREFIX));
         }
         
         Set<FileObject> files = new HashSet<FileObject>();
@@ -427,7 +468,7 @@ public class SemiAttribute extends DefaultVisitor {
         PHPIndex index = PHPIndex.get(i);
         
         try {
-            for (String s : index.getAllIncludes(file.getURL().toExternalForm())) {
+            for (String s : index.getAllIncludes(file.getURL().getPath())) {//XXX: getPath?
                 files.add(FileUtil.toFileObject(FileUtil.normalizeFile(new File(s))));//TODO: normalization will slow down things - try to do better
             }
         } catch (IOException e) {
@@ -438,13 +479,23 @@ public class SemiAttribute extends DefaultVisitor {
         
         List<IndexedFunction> result = new LinkedList<IndexedFunction>();
         
-        for (IndexedFunction f : name2FunctionCache) {
+        for (IndexedElement f : name2ElementCache) {
             if (files.contains(f.getFileObject())) {
-                result.add(f);
+                Kind k = null;
+                
+                if (f instanceof IndexedFunction) {
+                    k = Kind.FUNC;
+                }
+                
+                if (f instanceof IndexedConstant) {
+                    k = Kind.CONST;
+                }
+                
+                if (k != null) {
+                    global.enterWrite(f.getName(), k, f);
+                }
             }
         }
-        
-        return result;
     }
     
     private static Map<CompilationInfo, SemiAttribute> info2Attr = new WeakHashMap<CompilationInfo, SemiAttribute>();
@@ -502,17 +553,19 @@ public class SemiAttribute extends DefaultVisitor {
     public static class AttributedElement {
         private List<Union2<ASTNode, IndexedElement>> writes; //aka declarations
         private List<AttributedType> writesTypes;
+        private String name;
         private Kind k;
 
-        public AttributedElement(Union2<ASTNode, IndexedElement> n, Kind k) {
-            this(n, k, null);
+        public AttributedElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+            this(n, name, k, null);
         }
         
-        public AttributedElement(Union2<ASTNode, IndexedElement> n, Kind k, AttributedType type) {
+        public AttributedElement(Union2<ASTNode, IndexedElement> n, String name, Kind k, AttributedType type) {
             this.writes = new LinkedList<Union2<ASTNode, IndexedElement>>();
             this.writesTypes = new LinkedList<AttributedType>();
             this.writes.add(n);
             this.writesTypes.add(type);
+            this.name = name;
             this.k = k;
         }
 
@@ -523,6 +576,10 @@ public class SemiAttribute extends DefaultVisitor {
         public Kind getKind() {
             return k;
         }
+
+        public String getName() {
+            return name;
+        }
         
         void addWrite(Union2<ASTNode, IndexedElement> node, AttributedType type) {
             writes.add(node);
@@ -530,7 +587,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
         
         public enum Kind {
-            VARIABLE, FUNC, CLASS;
+            VARIABLE, FUNC, CLASS, CONST;
         }
     }
     
@@ -539,8 +596,8 @@ public class SemiAttribute extends DefaultVisitor {
         private final DefinitionScope enclosedElements = new DefinitionScope(true);
         private ClassElement superClass;
         
-        public ClassElement(Union2<ASTNode, IndexedElement> n, Kind k) {
-            super(n, k);
+        public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+            super(n, name, k);
         }
     }
     
@@ -581,9 +638,9 @@ public class SemiAttribute extends DefaultVisitor {
             
             if (el == null) {
                 if (k == Kind.CLASS) {
-                    el = new ClassElement(node, k);
+                    el = new ClassElement(node, name, k);
                 } else {
-                    el = new AttributedElement(node, k, type);
+                    el = new AttributedElement(node, name, k, type);
                 }
                 
                 name2El.put(name, el);

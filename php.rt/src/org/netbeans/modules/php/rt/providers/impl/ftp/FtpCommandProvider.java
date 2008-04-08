@@ -49,7 +49,7 @@ public class FtpCommandProvider extends AbstractCommandProvider {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.rt.spi.providers.CommandProvider#getCommands()
      */
-    public Command[] getCommands(Project project) {
+    public Command[] getEnabledCommands(Project project) {
         if (isInvokedForProject() || isInvokedForSrcRoot()){
             return getProjectCommands(project);
         } else {

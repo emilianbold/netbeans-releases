@@ -243,7 +243,15 @@
 
       zzForAction: {
         while (true) {
-    
+            zzInput = input.read();
+            
+            if(zzInput == LexerInput.EOF) {
+                //end of input reached
+                zzInput = YYEOF;
+                break zzForAction;
+                //notice: currently LexerInput.EOF == YYEOF
+            }
+
 --- line, col, char count, next transition, isFinal action
             zzAction = zzState;
             tokenLength = input.readLength();

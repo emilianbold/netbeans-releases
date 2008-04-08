@@ -43,7 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Indexer;
@@ -52,7 +52,6 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -119,8 +118,17 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_INCLUDE = "include"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (file != null && file.getFileObject() != null 
-                && PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        // Cannot call file.getFileObject().getMIMEType() here for several reasons:
+        // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
+        //   may return "content/unknown", and in some cases, file.getFileObject() returns null
+        // (2) file.getFileObject() can be expensive during startup indexing when we're
+        //   rapidly scanning through lots of directories to determine which files are
+        //   indexable. This is done using the java.io.File API rather than the more heavyweight
+        //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
+        // Since the mime resolver for PHP is simple -- it's just based on the file extension,
+        // we perform the same check here:
+        //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        if ("php".equals(file.getExtension())) { // NOI18N
             return true;
         }
         
@@ -143,6 +151,10 @@ public class PHPIndexer implements Indexer {
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         PHPParseResult r = (PHPParseResult)result;
         
+        if (r.getProgram() == null){
+            return Collections.<IndexDocument>emptyList();
+        }
+        
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
         
@@ -150,7 +162,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.3"; // NOI18N
+        return "0.2.8"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -213,7 +225,7 @@ public class PHPIndexer implements Indexer {
             
             for (Statement statement : program.getStatements()){
                 if (statement instanceof FunctionDeclaration){
-                    indexFunction(FIELD_BASE, (FunctionDeclaration)statement, document);
+                    indexFunction((FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
                     if (expressionStatement.getExpression() instanceof Include) {
@@ -235,22 +247,28 @@ public class PHPIndexer implements Indexer {
                 }
             }
             
-            document.addPair(FIELD_INCLUDE, includes.toString(), true);
+            document.addPair(FIELD_INCLUDE, includes.toString(), false);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
             StringBuilder classSignature = new StringBuilder();
             classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
-            document.addPair(FIELD_CLASS, classSignature.toString(), true);
-            // index 
             
-            classDeclaration.getSuperClass();
+            String superClass = ""; //NOI18N
+            
+            if (classDeclaration.getSuperClass() instanceof Identifier) {
+                Identifier identifier = (Identifier) classDeclaration.getSuperClass();
+                superClass = identifier.getName();
+            }
+            
+            classSignature.append(superClass + ";"); //NOI18N
+            document.addPair(FIELD_CLASS, classSignature.toString(), true);
             
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-                    indexFunction(FIELD_METHOD, methodDeclaration.getFunction(), document);
+                    indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
                 }
                 
                 if (statement instanceof FieldsDeclaration) {
@@ -259,8 +277,12 @@ public class PHPIndexer implements Indexer {
                     for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
                         if (field.getName().getName() instanceof Identifier) {
                             Identifier identifier = (Identifier) field.getName().getName();
-                            String fieldSignature = identifier.getName() + ";" + field.getStartOffset() + ";";
-                            document.addPair(FIELD_FIELD, fieldSignature, true);
+                            StringBuilder fieldSignature = new StringBuilder();
+                            fieldSignature.append(identifier.getName() + ";"); //NOI18N
+                            fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
+                            fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
+                                     
+                            document.addPair(FIELD_FIELD, fieldSignature.toString(), true);
                         }
                     }
                 }
@@ -300,7 +322,20 @@ public class PHPIndexer implements Indexer {
             }
         }
 
-        private void indexFunction(String field, FunctionDeclaration functionDeclaration, IndexDocument document) {
+        private void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document) {
+            String signature = getBaseSignatureForFunctionDeclaration(functionDeclaration);
+            document.addPair(FIELD_BASE, signature, true);
+        }
+        
+        private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
+            StringBuilder signature = new StringBuilder();
+            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
+            signature.append(modifiers + ";"); //NOI18N
+
+            document.addPair(FIELD_METHOD, signature.toString(), false);
+        }
+        
+        private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
 
@@ -322,10 +357,10 @@ public class PHPIndexer implements Indexer {
                     signature.append(",");
                 }
             }
+            
             signature.append(";");
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
-
-            document.addPair(field, signature.toString(), true);
+            return signature.toString();
         }
     }
     
@@ -343,8 +378,19 @@ public class PHPIndexer implements Indexer {
     public FileObject getPreindexedDb() {
         return null;
     }
-
-    public boolean acceptQueryPath(String url) {
-        return true;
-    }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * As the above documentation states, this is a temporary solution / hack
+     * for 6.1 only.
+     */
+     public boolean acceptQueryPath(String url) {
+        // Filter out JavaScript stuff
+        return url.indexOf("jsstubs") == -1 && // NOI18N
+                // Filter out Ruby stuff
+                url.indexOf("/ruby2/") == -1 &&  // NOI18N
+                url.indexOf("/gems/") == -1 &&  // NOI18N
+                url.indexOf("lib/ruby/") == -1; // NOI18N
+     }
 }

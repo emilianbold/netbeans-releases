@@ -171,4 +171,27 @@ public class MigrateActionTest extends RailsProjectTestBase {
         
         checkMenu(this, name, p);
     }
+
+    public void testMigrateUTC() throws Exception {
+        String name = "testfiles/migrate-utc.txt";
+        RailsProject p = constructRailsProject(name);
+        assertNotNull(p);
+        
+        checkMenu(this, name, p);
+    }
+
+    public void testMigrateUTCMixed() throws Exception {
+        String name = "testfiles/migrate-utc-mixed.txt";
+        RailsProject p = constructRailsProject(name);
+        assertNotNull(p);
+        
+        checkMenu(this, name, p);
+    }
+    public void testMigrateUTCMany() throws Exception {
+        String name = "testfiles/migrate-utc-many.txt";
+        RailsProject p = constructRailsProject(name);
+        assertNotNull(p);
+        
+        checkMenu(this, name, p);
+    }
 }

@@ -309,8 +309,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 map.put(JDIC_STUB_LIB_TOKEN,
                         new File(directory, JDIC_STUB_LIB_SOLARIS));
             }
-
+            
             FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
+            //ping UC on Tuesdays
+            map.put("never", "TUE");//NOI18N
             FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
 
 

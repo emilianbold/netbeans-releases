@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.LifecycleManager;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -69,7 +71,7 @@ class PhpActionProvider implements ActionProvider {
         myProject = project;
 
         myCommands = new ArrayList<Command>(2);
-        myCommands.add(new ImportCommand(project));
+        //myCommands.add(new ImportCommand(project));
         myCommands.add(new RunLocalCommand(project));
 
         // store standard comands into separate list.
@@ -106,7 +108,6 @@ class PhpActionProvider implements ActionProvider {
      * @see org.netbeans.spi.project.ActionProvider#invokeAction(java.lang.String, org.openide.util.Lookup)
      */
     public void invokeAction(String command, Lookup lookup) throws IllegalArgumentException {
-
         if (invokeProviderAction(command)){
             return;
         }
@@ -123,6 +124,19 @@ class PhpActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup lookup) 
             throws IllegalArgumentException 
     {
+	if (ActionProvider.COMMAND_DEBUG_SINGLE.equals(command) ||
+		ActionProvider.COMMAND_RUN_SINGLE.equals(command)) {
+	    WebServerProvider pr = Utils.getProvider(getProject());
+	    if (pr != null) {
+		Command[] commands = pr.getCommandProvider().getEnabledCommands(getProject());
+		for (Command cmd : commands) {
+		    if (cmd.getId().equals(command)) {
+			return true;
+		    }		    
+		}		
+	    }
+	    return false;
+	}
         return true;
     }
 
@@ -141,16 +155,25 @@ class PhpActionProvider implements ActionProvider {
     private boolean invokeProviderAction(String command){
         WebServerProvider provider = Utils.getProvider(getProject());
         if (provider != null) {
-            CommandProvider commProvider = provider.getCommandProvider();
-            
-            Command[] commands = commProvider.getCommands(getProject());
-            if (doInvokeAction(command, commands)){
-                return true;
-            }
+            CommandProvider commProvider = provider.getCommandProvider();            
+            Command[] commands = commProvider.getAllSupportedCommands(getProject());
+	    final Command cmdToRun = getCommand(commands, command);
+	    return doInvokeAction(cmdToRun);
 
         }
         return false;
     }
+    
+    private Command getCommand(Command[] commands, String commandToRun) {
+	for (Command com : commands) {
+	    String id = com.getId();
+	    if (commandToRun.equals(id)) {
+		return com;
+	    }
+	}
+	return null;
+    }
+    
     
     /**
      * Finds command with specified id in project's commands and runs it.
@@ -174,23 +197,25 @@ class PhpActionProvider implements ActionProvider {
             Collection<Command> commands)
     {
         Command[] commandsArray = commands.toArray(new Command[]{});
-        return doInvokeAction(commandToRun, commandsArray);
+        return doInvokeAction(getCommand(commandsArray, commandToRun));
     }
     
     /**
      * runs specified commandToRun from commands array if there is command with the same id.
      * @returns true if command was run. false otherwise
      */
-    private boolean doInvokeAction(String commandToRun, Command[] commands)
-    {
-        for (Command com : commands) {
-            String id = com.getId();
-            if (commandToRun.equals(id)) {
-                PhpCommandRunner.runCommand(com);
-                return true;
-            }
-        }
-        return false;
+    private boolean doInvokeAction(Command command) {
+	if (command != null) {
+	    if (command.isSaveRequired()) {
+		LifecycleManager.getDefault().saveAll();
+		final CopySupport copySupport = getProject().getCopySupport();
+		if (copySupport != null) {
+		    copySupport.waitFinished();		
+		}
+	    }
+	    PhpCommandRunner.runCommand(command);
+	}
+	return command != null;
     }
 
     private List<String> getSupportedProjectActions(){
@@ -216,7 +241,7 @@ class PhpActionProvider implements ActionProvider {
         if (provider != null) {
                 CommandProvider commProvider = provider.getCommandProvider();
                 
-                Command[] commands = commProvider.getCommands(getProject());
+                Command[] commands = commProvider.getAllSupportedCommands(getProject());
                 for (Command command : commands) {
                     if (command != null && command.isEnabled()) {
                         list.add(command.getId());
