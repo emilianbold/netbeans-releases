@@ -135,6 +135,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (indexName != null) {
             optionsPanelVisual.setIndexName(indexName);
         }
+        setUrlPreview(false);
         Boolean setAsMain = isSetAsMain();
         if (setAsMain != null) {
             optionsPanelVisual.setSetAsMain(setAsMain);
@@ -179,6 +180,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             return false;
         }
+        setUrlPreview(false);
         return true;
     }
 
@@ -243,6 +245,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private String getIndexName() {
         return (String) descriptor.getProperty(INDEX_FILE);
     }
+    
+    private void setUrlPreview(boolean error) {
+        optionsPanelVisual.setUrlPreview(locationPanelVisual.getUrl() + optionsPanelVisual.getIndexName(), error);
+    }
 
     private LocalServer getLocalServer() {
         return (LocalServer) descriptor.getProperty(WWW_FOLDER);
@@ -255,7 +261,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private String getUrl() {
         String url = (String) descriptor.getProperty(URL);
         if (url == null) {
-            url = "http://localhost/" + getProjectName(); // NOI18N
+            url = "http://localhost/" + getProjectName() + "/"; // NOI18N
         }
         return url;
     }
@@ -343,18 +349,23 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         String url = locationPanelVisual.getUrl();
         if (!Utils.isValidUrl(url)) {
+            setUrlPreview(true);
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");
+        } else if (!url.endsWith("/")) { // NOI18N
+            setUrlPreview(true);
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_UrlNotTrailingSlash");
         }
 
         return null;
     }
 
     private String validateOptions() {
+        String indexName = optionsPanelVisual.getIndexName();
+        if (!Utils.isValidFileName(indexName)) {
+            setUrlPreview(true);
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalIndexName");
+        }
         if (optionsPanelVisual.isCreateIndex()) {
-            String indexName = optionsPanelVisual.getIndexName();
-            if (!Utils.isValidFileName(indexName)) {
-                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalIndexName");
-            }
             // check whether the index file already exists
             LocalServer localServer = locationPanelVisual.getSourcesLocation();
             if (!isProjectFolder(localServer)) {
