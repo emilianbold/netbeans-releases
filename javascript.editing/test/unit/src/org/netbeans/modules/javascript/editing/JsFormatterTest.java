@@ -812,6 +812,13 @@ public class JsFormatterTest extends JsTestBase {
                 "}\n", null
                 );
     }
+
+    public void testCompressed() throws Exception {
+        format(
+                "if(true&&(/alpha/i).test()){}",
+                "if(true&&(/alpha/i).test()){}", null
+                );
+    }
     
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 

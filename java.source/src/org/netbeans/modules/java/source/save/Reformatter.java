@@ -106,7 +106,7 @@ public class Reformatter implements ReformatTask {
             JavacTaskImpl javacTask = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
-            CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(text, "")).iterator().next(); //NOI18N
+            CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
             SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
             TokenSequence<JavaTokenId> tokens = TokenHierarchy.create(text, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
             for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style)) {
