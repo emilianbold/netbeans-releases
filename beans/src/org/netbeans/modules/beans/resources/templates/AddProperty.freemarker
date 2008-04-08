@@ -38,7 +38,7 @@
 </#if>
     public <#if static >static </#if>void set${capitalizedName}(${type}<#if indexed >[]</#if> ${name})<#if vetoable> throws java.beans.PropertyVetoException</#if> {
 <#if bound >
-        ${type}<#if indexed >[]</#if> old${capitalizedName} = ${name};
+        ${type}<#if indexed >[]</#if> old${capitalizedName} = this.${name};
 <#if vetoable> 
         ${vetoableChangeSupport}.fireVetoableChange(${PROP_NAME}, old${capitalizedName}, ${name});
 </#if>
@@ -79,7 +79,7 @@
 </#if>
     public <#if static >static </#if>void set${capitalizedName}(int index, ${type} new${capitalizedName})<#if vetoable> throws java.beans.PropertyVetoException</#if> {
 <#if bound >
-        ${type} old${capitalizedName} = ${name}[index];
+        ${type} old${capitalizedName} = this.${name}[index];
 <#if vetoable> 
         ${vetoableChangeSupport}.fireVetoableChange(${PROP_NAME}, old${capitalizedName}, new${capitalizedName});
 </#if>

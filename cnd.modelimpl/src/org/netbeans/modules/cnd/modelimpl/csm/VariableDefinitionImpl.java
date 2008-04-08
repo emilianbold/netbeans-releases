@@ -268,9 +268,9 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);    
-        CharSequence qn = getQualifiedName();
-        assert qn != null;
-        output.writeUTF(qn.toString());
+        
+        PersistentUtils.writeUTF(this.qualifiedName, output);
+        
         PersistentUtils.writeStrings(this.classOrNspNames, output);
         
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
@@ -278,8 +278,13 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
-        assert this.qualifiedName != null;
+        
+        this.qualifiedName = PersistentUtils.readUTF(input);
+        
+        if(this.qualifiedName != null) {    
+            this.qualifiedName = QualifiedNameCache.getManager().getString(this.qualifiedName);
+        }
+
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
         
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
