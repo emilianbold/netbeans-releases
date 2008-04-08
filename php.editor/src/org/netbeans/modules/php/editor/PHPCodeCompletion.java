@@ -68,6 +68,7 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -221,7 +222,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedConstant clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
@@ -251,7 +252,7 @@ public class PHPCodeCompletion implements Completable {
                     IndexedConstant var = localVars.toArray(new IndexedConstant[1])[0];
                     String typeName = var.getTypeName();
                     
-                    Collection<IndexedFunction> methods = request.index.getMethods(
+                    Collection<IndexedFunction> methods = request.index.getAllMethods(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
                     for (IndexedFunction method : methods){
@@ -261,7 +262,7 @@ public class PHPCodeCompletion implements Completable {
                         }
                     }
                     
-                    Collection<IndexedConstant> properties = request.index.getProperties(
+                    Collection<IndexedConstant> properties = request.index.getAllProperties(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
                     for (IndexedConstant prop : properties){
@@ -710,11 +711,8 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private class ClassItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
-
-        ClassItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            this.constant = constant;
+        ClassItem(IndexedClass clazz, CompletionRequest request) {
+            super(clazz, request);
         }
 
         @Override

@@ -158,7 +158,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.7"; // NOI18N
+        return "0.2.8"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -250,11 +250,16 @@ public class PHPIndexer implements Indexer {
             StringBuilder classSignature = new StringBuilder();
             classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
-            classSignature.append(classDeclaration.getModifier() + ";"); //NOI18N
-            document.addPair(FIELD_CLASS, classSignature.toString(), true);
-            // index 
             
-            classDeclaration.getSuperClass();
+            String superClass = ""; //NOI18N
+            
+            if (classDeclaration.getSuperClass() instanceof Identifier) {
+                Identifier identifier = (Identifier) classDeclaration.getSuperClass();
+                superClass = identifier.getName();
+            }
+            
+            classSignature.append(superClass + ";"); //NOI18N
+            document.addPair(FIELD_CLASS, classSignature.toString(), true);
             
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {

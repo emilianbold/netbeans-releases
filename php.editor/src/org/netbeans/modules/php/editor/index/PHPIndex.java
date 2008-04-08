@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -162,6 +164,58 @@ public class PHPIndex {
         return clusterUrl;
     }
     
+    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind) {
+        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
+        
+        if (inheritanceLine != null){
+            for (IndexedClass clazz : inheritanceLine){
+                methods.addAll(getMethods(context, clazz.getName(), "", NameKind.PREFIX)); //NOI18N
+            }
+        }
+        
+        return methods;
+    }
+    
+    public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String className, String name, NameKind kind) { 
+        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
+        
+        if (inheritanceLine != null){
+            for (IndexedClass clazz : inheritanceLine){
+                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX)); //NOI18N
+            }
+        }
+        
+        return properties;
+    }
+    
+    public List<IndexedClass>getClassInheritanceLine(PHPParseResult context, String className){
+        List<IndexedClass>classLine = new LinkedList<IndexedClass>();
+        Collection<String> processedClasses = new TreeSet<String>();
+        
+        while (className != null){
+            if (processedClasses.contains(className)){
+                break; //TODO: circular reference, warn the user
+            }
+            
+            processedClasses.add(className);
+            
+            Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
+            
+            if (classes == null || classes.size() == 0){
+                break;
+            }
+            
+            //TODO: handle name conflicts
+            IndexedClass clazz = classes.toArray(new IndexedClass[classes.size()])[0];
+            classLine.add(clazz);
+            className = clazz.getSuperClass();
+        }
+        
+        return classLine;
+    }
+    
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_METHOD, name, kind);
@@ -258,7 +312,7 @@ public class PHPIndex {
 
         int endIndex = signature.indexOf(';', startIndex);
         
-        if (endIndex > startIndex){
+        if (endIndex >= startIndex){
             String offsetStr = signature.substring(startIndex, endIndex);
             return offsetStr;
         }
@@ -321,11 +375,11 @@ public class PHPIndex {
         return constants;
     }
     
-    public Collection<IndexedConstant> getClasses(PHPParseResult context, String name, NameKind kind) {
+    public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CLASS, name, kind, result, ALL_SCOPE, TERMS_BASE);
-
+        Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
+        search(PHPIndexer.FIELD_CLASS, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+       
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
@@ -337,17 +391,20 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     int firstSemicolon = signature.indexOf(";");
                     String className = signature.substring(0, firstSemicolon);
+                    
+                    //TODO: handle search kind
+                    
                     int offset = extractIntValueFromIndexSignature(signature, 1);
 
-                    IndexedConstant constant = new IndexedConstant(className, null,
-                            this, map.getPersistentUrl(), null, 0, offset);
+                    IndexedClass clazz = new IndexedClass(className, null,
+                            this, map.getPersistentUrl(), signature, 0, offset);
 
-                    constants.add(constant);
+                    classes.add(clazz);
                 }
             }
         }
         
-        return constants;
+        return classes;
     }
     
     public Collection<String>getDirectIncludes(String fileURL){
