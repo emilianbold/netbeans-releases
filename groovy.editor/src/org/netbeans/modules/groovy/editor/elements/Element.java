@@ -38,30 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.groovy.editor.elements;
 
+import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
- * Element describing a Groovy keyword
  *
  * @author Tor Norbye
- * @author Gopala Krishnan S
  */
-public class KeywordElement extends GroovyElement {
-    private final String name;
-
-    /** Creates a new instance of DefaultComKeyword */
-    public KeywordElement(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ElementKind getKind() {
-        return ElementKind.KEYWORD;
-    }
-
+public interface Element extends ElementHandle {
+    String getName();
+    String getIn();
+    ElementKind getKind();
+    Set<Modifier> getModifiers();
 }

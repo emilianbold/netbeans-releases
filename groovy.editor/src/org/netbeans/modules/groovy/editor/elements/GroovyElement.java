@@ -40,7 +40,12 @@
  */
 package org.netbeans.modules.groovy.editor.elements;
 
-import org.netbeans.modules.gsf.api.Element;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.openide.filesystems.FileObject;
 
 /**
  * A logical program element, such as a Class, Method, Attribute, etc.
@@ -49,4 +54,29 @@ import org.netbeans.modules.gsf.api.Element;
  * @author Tor Norbye
  */
 public abstract class GroovyElement implements Element {
+
+    public abstract String getName();
+    public abstract ElementKind getKind();
+
+    public String getMimeType() {
+        return "text/x-groovy"; // NOI18N
+    }
+
+    public boolean signatureEquals(ElementHandle handle) {
+        // XXX TODO
+        return false;
+    }
+
+    public FileObject getFileObject() {
+        return null;
+    }
+    
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    public String getIn() {
+        return null;
+    }
+
 }

@@ -62,7 +62,6 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.modules.gsf.api.Completable.QueryType;
 import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
@@ -83,6 +82,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.util.Utilities;
 
@@ -440,12 +440,12 @@ public class CodeCompleter implements Completable {
 
     private abstract class GroovyCompletionItem implements CompletionProposal {
         protected CompletionRequest request;
-        protected Element element;
+        protected GroovyElement element;
         protected int anchorOffset;
         protected boolean symbol;
         protected boolean smart;
 
-        private GroovyCompletionItem(Element element, int anchorOffset, CompletionRequest request) {
+        private GroovyCompletionItem(GroovyElement element, int anchorOffset, CompletionRequest request) {
             this.element = element;
             this.anchorOffset = anchorOffset;
             this.request = request;

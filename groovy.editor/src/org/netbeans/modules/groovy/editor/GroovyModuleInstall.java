@@ -58,6 +58,7 @@ public class GroovyModuleInstall extends ModuleInstall {
      * Hack to enable this module as friend to NB 6.0 modules
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void validate() throws IllegalStateException {
         try {
             java.lang.Class main = java.lang.Class.forName("org.netbeans.core.startup.Main", false, //NOI18N

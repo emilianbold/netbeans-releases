@@ -48,13 +48,9 @@ package org.netbeans.modules.groovy.editor.elements;
  * @author Gopala Krishnan S
  */
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
 
-public class CommentElement implements Element {
+public class CommentElement extends GroovyElement {
 
     private final String text;
 
@@ -71,11 +67,4 @@ public class CommentElement implements Element {
         return ElementKind.KEYWORD;
     }
 
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    public String getIn() {
-        return null;
-    }
 }

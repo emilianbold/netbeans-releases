@@ -66,7 +66,6 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -87,6 +86,7 @@ import org.netbeans.modules.groovy.editor.GroovyUtils;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.groovy.editor.elements.CommentElement;
+import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.gsf.spi.DefaultError;
@@ -391,7 +391,7 @@ public class GroovyParser implements Parser {
         }
     }
 
-    public static ElementHandle createHandle(CompilationInfo info, final Element object) {
+    public static ElementHandle createHandle(CompilationInfo info, final GroovyElement object) {
         if (object instanceof KeywordElement || object instanceof CommentElement) {
             // Not tied to an AST - just pass it around
             return new GroovyElementHandle(null, object, info.getFileObject());
@@ -434,7 +434,7 @@ public class GroovyParser implements Parser {
         return new GroovyElementHandle(root, object, result.getFile().getFileObject());
     }
     
-    public static Element resolveHandle(CompilationInfo info, ElementHandle handle) {
+    public static GroovyElement resolveHandle(CompilationInfo info, ElementHandle handle) {
         GroovyElementHandle h = (GroovyElementHandle)handle;
         ASTNode oldRoot = h.root;
         ASTNode oldNode;
@@ -459,7 +459,7 @@ public class GroovyParser implements Parser {
         ASTNode newNode = find(oldRoot, oldNode, newRoot);
 
         if (newNode != null) {
-            Element co = AstElement.create(newNode);
+            GroovyElement co = AstElement.create(newNode);
 
             return co;
         }
@@ -696,10 +696,10 @@ public class GroovyParser implements Parser {
 
     private static class GroovyElementHandle implements ElementHandle {
         private final ASTNode root;
-        private final Element object;
+        private final GroovyElement object;
         private final FileObject fileObject;
 
-        private GroovyElementHandle(ASTNode root, Element object, FileObject fileObject) {
+        private GroovyElementHandle(ASTNode root, GroovyElement object, FileObject fileObject) {
             this.root = root;
             this.object = object;
             this.fileObject = fileObject;

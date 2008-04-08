@@ -130,11 +130,8 @@ public class StructureAnalyzerTest extends GroovyTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                // TODO escaped
-                sb.append("ESCAPED{");
-                sb.append(text);
-                sb.append("}");
+            public void appendText(String text, int fromInclusive, int toExclusive) {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
 
             @Override

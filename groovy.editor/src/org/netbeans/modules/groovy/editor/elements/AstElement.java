@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -57,7 +56,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Adamek
  */
-public abstract class AstElement implements Element, ElementHandle {
+public abstract class AstElement extends GroovyElement {
 
     protected final ASTNode node;
     protected List<AstElement> children;
