@@ -59,6 +59,7 @@ public class LocalHostImpl extends HostImpl {
     public static final String DOCUMENT_PATH   = "document-path";      // NOI18N
     public static final String WEB_CONFIG_FILE   = "web-config-file";      // NOI18N
     public static final String PHP_CONFIG_FILE   = "php-config-file";      // NOI18N
+    public static final String INDEX_FILE   = "index-file";      // NOI18N
     
     private static final String MSG_NOT_CONFIGURED_FILE = "MSG_NotConfiguredFile"; // NOI18N
 
@@ -92,6 +93,10 @@ public class LocalHostImpl extends HostImpl {
         else if ( PHP_CONFIG_FILE.equals( key ) ) {
             return myPhpConfig;
         }
+        else if ( INDEX_FILE.equals( key ) ) {
+            return indexFile;
+        }
+        
         return null;
     }
 
@@ -109,7 +114,11 @@ public class LocalHostImpl extends HostImpl {
         }
         else if ( PHP_CONFIG_FILE.equals( key )) {
             myPhpConfig = toStringValue(value);
+        } 
+        else if ( INDEX_FILE.equals( key )) {
+            indexFile = toStringValue(value);
         }
+        
     }
     
     /* (non-Javadoc)
@@ -153,6 +162,8 @@ public class LocalHostImpl extends HostImpl {
     private String myWebServerConfig;
     
     private String myPhpConfig;
+
+    private String indexFile;    
     
     /**
      * contains FtpHost helper methods
