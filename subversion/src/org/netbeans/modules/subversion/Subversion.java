@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.subversion;
 
-import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
@@ -57,7 +56,6 @@ import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 
@@ -159,31 +157,6 @@ public class Subversion {
     public void shutdown() {
         fileStatusProvider.shutdown();
         // TODO: refresh all annotations        
-    }
-
-    public SvnFileNode [] getNodes(Context context, int includeStatus) {
-        File [] files = fileStatusCache.listFiles(context, includeStatus);
-        SvnFileNode [] nodes = new SvnFileNode[files.length];
-        for (int i = 0; i < files.length; i++) {
-            nodes[i] = new SvnFileNode(files[i]);
-        }
-        return nodes;
-    }
-
-    /**
-     * XXX move to svnutils
-     * Tests <tt>.svn</tt> directory itself.  
-     */
-    public boolean isAdministrative(File file) {
-        String name = file.getName();
-        boolean administrative = isAdministrative(name);
-        return ( administrative && !file.exists() ) || 
-               ( administrative && file.exists() && file.isDirectory() ); // lets suppose it's administrative if file doesnt exist
-    }  
-
-    // XXX move to svnutils
-    public boolean isAdministrative(String fileName) {        
-        return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
     }
     
     public FileStatusCache getStatusCache() {
@@ -300,18 +273,6 @@ public class Subversion {
         return filesystemHandler;
     }
 
-    /**
-     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
-     * All files and folders that have a parent with either .svn/entries or _svn/entries file are 
-     * considered versioned.
-     * 
-     * @param file a file or directory
-     * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
-     */ 
-    public boolean isManaged(File file) {
-        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
-    }
-
     public void versionedFilesChanged() {
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
@@ -331,7 +292,7 @@ public class Subversion {
         }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             for (;file != null; file = file.getParentFile()) {
-                if (isAdministrative(file)) {
+                if (SvnUtils.isAdministrative(file)) {
                     file = file.getParentFile();
                     break;
                 }

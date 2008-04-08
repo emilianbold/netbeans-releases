@@ -42,7 +42,6 @@
 package org.netbeans.modules.subversion.util;
 
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
@@ -59,11 +58,14 @@ import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.modules.subversion.SubversionVCS;
+import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.*;
@@ -80,7 +82,7 @@ public class SvnUtils {
     
     private static final FileFilter svnFileFilter = new FileFilter() {
         public boolean accept(File pathname) {
-            if (Subversion.getInstance().isAdministrative(pathname)) return false;
+            if (isAdministrative(pathname)) return false;
             return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
         }
     };
@@ -187,7 +189,7 @@ public class SvnUtils {
             Set<File> projectFiles = new HashSet<File>(rootChildren.length);
             for (int i = 0; i < rootChildren.length; i++) {
                 FileObject rootChildFo = rootChildren[i];
-                if (Subversion.getInstance().isAdministrative(rootChildFo.getNameExt())) continue;
+                if (isAdministrative(rootChildFo.getNameExt())) continue;
                 File child = FileUtil.toFile(rootChildFo);
                 if (sourceGroup.contains(rootChildFo)) {
                     // TODO: #60516 deep scan is required here but not performed due to performace reasons
@@ -248,6 +250,39 @@ public class SvnUtils {
     }
     
     /**
+     * Evaluates if the given file is a svn administrative folder - [.svn|_svn]
+     * @param file
+     * @return true if the given file is a svn administrative folder, otherwise false
+     */
+    public static boolean isAdministrative(File file) {
+        String name = file.getName();
+        boolean administrative = isAdministrative(name);
+        return ( administrative && !file.exists() ) || 
+               ( administrative && file.exists() && file.isDirectory() ); // lets suppose it's administrative if file doesnt exist
+    }  
+
+    /**
+     * Evaluates if the given fileName is a svn administrative folder name - [.svn|_svn]
+     * @param fileName
+     * @return true if the given fileName is a svn administrative folder name, otherwise false
+     */
+    public static boolean isAdministrative(String fileName) {        
+        return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
+    }
+    
+    /**
+     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
+     * All files and folders that have a parent with either .svn/entries or _svn/entries file are 
+     * considered versioned.
+     * 
+     * @param file a file or directory
+     * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
+     */ 
+    public static boolean isManaged(File file) {
+        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
+    }
+    
+    /**
      * Computes previous revision or <code>null</code>
      * for initial.
      *
@@ -272,7 +307,7 @@ public class SvnUtils {
         List<String> path = new ArrayList<String>();
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
-        while (Subversion.getInstance().isManaged(file)) {
+        while (isManaged(file)) {
             fileIsManaged = true;
                     
             ISVNInfo info = null;
@@ -344,7 +379,7 @@ public class SvnUtils {
         
         List<String> path = new ArrayList<String>();
         boolean fileIsManaged = false;
-        while (Subversion.getInstance().isManaged(file)) {
+        while (isManaged(file)) {
             fileIsManaged = true;
             
             ISVNStatus status = null;
@@ -410,7 +445,7 @@ public class SvnUtils {
         
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
-        while (Subversion.getInstance().isManaged(file)) {
+        while (isManaged(file)) {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {                
@@ -461,7 +496,7 @@ public class SvnUtils {
             return null;
         }
         boolean fileIsManaged = false;
-        while (Subversion.getInstance().isManaged(file)) {
+        while (isManaged(file)) {
             fileIsManaged = true;
             
             try {
@@ -932,7 +967,7 @@ public class SvnUtils {
         File[] files = root.listFiles();
         if(files != null) {        
             for (File file : files) {                
-                if(!(isPartOfSubversionMetadata(file) || Subversion.getInstance().isAdministrative(file))) {                    
+                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file))) {                    
                     if(file.isDirectory()) {                
                         ret.addAll(listRecursively(file));                
                     } else {
@@ -944,4 +979,12 @@ public class SvnUtils {
         return ret;
     }    
     
+    public static SvnFileNode [] getNodes(Context context, int includeStatus) {
+        File [] files = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
+        SvnFileNode [] nodes = new SvnFileNode[files.length];
+        for (int i = 0; i < files.length; i++) {
+            nodes[i] = new SvnFileNode(files[i]);
+        }
+        return nodes;
+    }
 }

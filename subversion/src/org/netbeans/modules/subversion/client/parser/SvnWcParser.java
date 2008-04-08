@@ -94,9 +94,7 @@ public class SvnWcParser {
         File[] children = path.listFiles();
         if(children != null && children.length > 0) {        
             for (int i = 0; i < children.length; i++) {
-                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && 
-                   !Subversion.getInstance().isAdministrative(path)) 
-                {
+                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {
                     ret.add(getSingleStatus(children[i]));            
                     if(descend && children[i].isDirectory()) {                
                         ret.addAll(getStatus(children[i], descend));                

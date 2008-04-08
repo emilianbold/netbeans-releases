@@ -133,7 +133,7 @@ class FilesystemHandler extends VCSInterceptor {
             // a direct cache call could, because of the synchrone beforeMove handling, 
             // trigger an reentrant call on FS => we have to check manually            
             if (isVersioned(from)) {
-                return Subversion.getInstance().isManaged(to);
+                return SvnUtils.isManaged(to);
             }
             // else XXX handle file with saved administative
             // right now they have old status in cache but is it guaranteed?
@@ -335,7 +335,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
 
                 if (parent != null) {
-                    assert Subversion.getInstance().isManaged(parent);  // see implsMove above                                        
+                    assert SvnUtils.isManaged(parent);  // see implsMove above                                        
                     // a direct cache call could, because of the synchrone svnMoveImplementation handling, 
                     // trigger an reentrant call on FS => we have to check manually            
                     if (!hasMetadata(parent)) {
@@ -431,7 +431,7 @@ class FilesystemHandler extends VCSInterceptor {
     private void addDirectories(final File dir) throws SVNClientException  {
         File parent = dir.getParentFile();
         if (parent != null) {            
-            if (Subversion.getInstance().isManaged(parent) && !hasMetadata(parent)) {
+            if (SvnUtils.isManaged(parent) && !hasMetadata(parent)) {
                 addDirectories(parent);  // RECURSION
             }
             SvnClient client = Subversion.getInstance().getClient(false);

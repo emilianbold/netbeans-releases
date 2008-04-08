@@ -256,7 +256,7 @@ public class FileStatusCache {
      * @see FileInformation
      */ 
     public FileInformation getStatus(File file) {
-        if (svn.isAdministrative(file)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        if (SvnUtils.isAdministrative(file)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -555,11 +555,11 @@ public class FileStatusCache {
 
         // there are 2nd level nested admin dirs (.svn/tmp, .svn/prop-base, ...)
 
-        if (svn.isAdministrative(dir)) {
+        if (SvnUtils.isAdministrative(dir)) {
             return NOT_MANAGED_MAP;
         }
         File parent = dir.getParentFile();
-        if (parent != null && svn.isAdministrative(parent)) {
+        if (parent != null && SvnUtils.isAdministrative(parent)) {
             return NOT_MANAGED_MAP;
         }
 
@@ -602,7 +602,7 @@ public class FileStatusCache {
 
         ISVNStatus [] entries = null;
         try {            
-            if (Subversion.getInstance().isManaged(dir)) {
+            if (SvnUtils.isManaged(dir)) {
                 SvnClient client = Subversion.getInstance().getClient(true); 
                 entries = client.getStatus(dir, false, false); 
             }
@@ -615,7 +615,7 @@ public class FileStatusCache {
         if (entries == null) {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (svn.isAdministrative(file)) continue;
+                if (SvnUtils.isAdministrative(file)) continue;
                 FileInformation fi = createFileInformation(file, null, REPOSITORY_STATUS_UNKNOWN);
                 if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                     folderFiles.put(file, fi);
@@ -630,7 +630,7 @@ public class FileStatusCache {
                     continue;
                 }
                 localFiles.remove(file);
-                if (svn.isAdministrative(file)) {
+                if (SvnUtils.isAdministrative(file)) {
                     continue;
                 }
                 FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
@@ -660,7 +660,7 @@ public class FileStatusCache {
      */ 
     private FileInformation createFileInformation(File file, ISVNStatus status, ISVNStatus repositoryStatus) {
         if (status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-            if (!svn.isManaged(file)) {
+            if (!SvnUtils.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
             }
             return createMissingEntryFileInformation(file, repositoryStatus);
@@ -837,6 +837,7 @@ public class FileStatusCache {
         }
     }
 
+    
     private boolean exists(File file) {
         if (!file.exists()) return false;
         return file.getAbsolutePath().equals(FileUtil.normalizeFile(file).getAbsolutePath());
