@@ -184,7 +184,10 @@ public class PHPCodeCompletion implements Completable {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
-        result.getProgram();
+        
+        if (result.getProgram() == null){
+            return Collections.<CompletionProposal>emptyList();
+        }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
         
@@ -469,23 +472,27 @@ public class PHPCodeCompletion implements Completable {
                         public void run(CompilationInfo ci) throws Exception {
                             ParserResult presult = ci.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE).iterator().next();
                             Program program = Utils.getRoot(presult.getInfo());
-                            ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
-                            Comment comment = Utils.getCommentForNode(program, node);
                             
-                            if (comment instanceof PHPDocBlock) {
-                                PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
-                                phpDoc.append(pHPDocBlock.getDescription());
-                                
-                                // list PHPDoc tags
-                                // TODO a better support for PHPDoc tags
-                                phpDoc.append("<br><br><br><table>\n"); //NOI18N
-                                
-                                for (PHPDocTag tag : pHPDocBlock.getTags()){
-                                    phpDoc.append(String.format("<tr><td>%s</td><td>%s</td></tr>\n", //NOI18N
-                                            tag.getKind().toString(), tag.getValue()));
+                            if (program != null) {
+                                ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                                Comment comment = Utils.getCommentForNode(program, node);
+
+                                if (comment instanceof PHPDocBlock) {
+                                    PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
+                                    phpDoc.append(pHPDocBlock.getDescription());
+
+                                    // list PHPDoc tags
+                                    // TODO a better support for PHPDoc tags
+                                    phpDoc.append("<br><br><br><table>\n"); //NOI18N
+
+                                    for (PHPDocTag tag : pHPDocBlock.getTags()) {
+                                        phpDoc.append(String.format("<tr><td>%s</td><td>%s</td></tr>\n", //NOI18N
+                                                tag.getKind().toString(), tag.getValue()));
+                                    }
+
+                                    phpDoc.append("</table>\n"); //NOI18N
+
                                 }
-                                
-                                phpDoc.append("</table>\n"); //NOI18N
                             }
 
                         }
