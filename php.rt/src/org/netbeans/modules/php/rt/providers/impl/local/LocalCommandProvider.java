@@ -48,6 +48,7 @@ import org.netbeans.modules.php.rt.providers.impl.actions.DebugSingleCommand;
 import org.netbeans.modules.php.rt.providers.impl.actions.RunCommand;
 import org.netbeans.modules.php.rt.providers.impl.actions.RunSingleCommand;
 import org.netbeans.modules.php.rt.spi.providers.Command;
+import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 
 
 /**
@@ -64,8 +65,10 @@ class LocalCommandProvider extends AbstractCommandProvider {
      * @see org.netbeans.modules.php.rt.spi.providers.CommandProvider#getCommands()
      */
     public Command[] getEnabledCommands(Project project) {
-        if (isInvokedForProject() || isInvokedForSrcRoot()){
+        if (isInvokedForProject()) {
             return getProjectCommands(project);
+        } else if (PhpCommandUtils.isInvokedForFolder()) {
+            return new Command[0];
         } else {
             return getObjectCommands(project);
         }	

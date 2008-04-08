@@ -245,8 +245,12 @@ public class SemiAttribute extends DefaultVisitor {
         }
         
         if (exp instanceof Variable) {
-            //XXX, XXX:
-            name = ((Identifier) ((Variable) exp).getName()).getName();
+            //XXX:
+            Expression n = ((Variable) exp).getName();
+            
+            if (n instanceof Identifier) {
+                name = ((Identifier) n).getName();
+            }
         }
 
         if (name != null) {

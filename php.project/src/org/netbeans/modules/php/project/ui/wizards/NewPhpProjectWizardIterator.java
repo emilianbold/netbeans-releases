@@ -211,6 +211,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
         configureSources(helper, properties);
+        configureIndexFile(properties);
         configureEncoding(properties);
         configureCopyFiles(properties);
         configureIncludePath(properties);
@@ -241,8 +242,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             srcPath = srcDir.getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-
         properties.setProperty(PhpProjectProperties.URL, (String) descriptor.getProperty(ConfigureProjectPanel.URL));
+    }
+
+    private void configureIndexFile(EditableProperties properties) {
+        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
     private void configureEncoding(EditableProperties properties) {

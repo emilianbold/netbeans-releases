@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -407,10 +408,11 @@ public class PHPIndex {
         return classes;
     }
     
-    public Collection<String>getDirectIncludes(String fileURL){
+    public Collection<String>getDirectIncludes(String filePath){
+        assert !filePath.startsWith("file:");
         ArrayList includes = new ArrayList();
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        search("filename", fileURL, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
+        search("filename", "file:" + filePath, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
         
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null) {
@@ -434,15 +436,17 @@ public class PHPIndex {
         return includes;
     }
     
-    public Collection<String>getAllIncludes(String fileURL){
-        return getAllIncludes(fileURL, (Collection<String>)Collections.EMPTY_LIST);
+    public Collection<String>getAllIncludes(String filePath){
+        TreeSet<String> allIncludes = getAllIncludes(filePath, (Collection<String>)Collections.EMPTY_LIST);
+        allIncludes.remove(filePath);
+        return allIncludes;
     }
 
-    private Collection<String>getAllIncludes(String fileURL, Collection<String> alreadyProcessed){
-        Collection<String> includes = new TreeSet<String>();
-        includes.add(fileURL.substring("file:".length())); //NOI18N
+    private TreeSet<String>getAllIncludes(String filePath, Collection<String> alreadyProcessed){
+        TreeSet<String> includes = new TreeSet<String>();
+        includes.add(filePath);
         includes.addAll(alreadyProcessed);
-        Collection<String> directIncludes = getDirectIncludes(fileURL);
+        Collection<String> directIncludes = getDirectIncludes(filePath);
         
         for (String directInclude : directIncludes){
             if (!includes.contains(directInclude)){
@@ -453,6 +457,10 @@ public class PHPIndex {
         return includes;
     }
     
+    private String lastIsReachableURL = null;
+    private WeakReference<PHPParseResult> lastIsReachableResultArg;
+    private boolean lastIsReachableReturnValue;
+    
     /** 
      * Decide whether the given url is included from the current compilation
      * context.
@@ -460,7 +468,21 @@ public class PHPIndex {
      * all source level files unless that file is reachable through include-mechanisms
      * from the current file.
      */
-    public boolean isReachable(PHPParseResult result, String url) {
+    public boolean isReachable(PHPParseResult result, String url) {        
+        // performance optimization: 
+        // this function may be called thousands of times in a row with the same url
+        // there is a loss of result accuracy but it is negligible
+        if (lastIsReachableResultArg != null 
+                && lastIsReachableResultArg.get() == result 
+                && url.equals(lastIsReachableURL)){
+            
+            return lastIsReachableReturnValue;
+        }
+        
+        lastIsReachableResultArg = new WeakReference<PHPParseResult>(result);
+        lastIsReachableURL = url;
+        lastIsReachableReturnValue = true;
+        
         Project project = FileOwnerQuery.getOwner(result.getFile().getFileObject());
         
         if (project != null){
@@ -470,7 +492,11 @@ public class PHPIndex {
                 PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
                 if (phpSourcePath != null) {
                     File file = new File(new URI(url));
-                    assert file.exists() : "PHP Index is refering to a non-existing file " + url;
+                    
+                    if (!file.exists()){
+                        lastIsReachableReturnValue = false;
+                        return false; // a workaround for #131906
+                    }
                     
                     FileObject fileObject = FileUtil.toFileObject(file);
                     PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
@@ -496,15 +522,19 @@ public class PHPIndex {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<String> includeList = getAllIncludes(url);
+        Collection<String> includeList = getAllIncludes(fileURLToAbsPath(processedFileURL));
         
-        for (String includeURL : includeList){
-            if (url.equals("file:" + includeURL)){ //NOI18N
-                return true;
-            }
+        if (includeList.contains(fileURLToAbsPath(url))){
+            return true;
         }
 
+        lastIsReachableReturnValue = false;
         return false;
+    }
+    
+    private static String fileURLToAbsPath(String url){
+        assert url.startsWith("file:") : url + " doesn't start with 'file:'"; //NOI18N
+        return url.substring("file:".length()); //NOI18N
     }
     
     static String dequote(String string){
