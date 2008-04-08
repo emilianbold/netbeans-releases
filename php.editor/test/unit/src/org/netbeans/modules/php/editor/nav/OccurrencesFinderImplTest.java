@@ -104,6 +104,15 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "?>");
     }
     
+    public void test132230() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "function a() {\n" +
+                               "    global ^$f^;\n" +
+                               "    ^$|f^['s']();\n" +
+                               "}\n" +
+                               "?>");
+    }
+    
     private void performTestOccurrences(String code) throws Exception {
         int caretOffset = code.replaceAll("\\^", "").indexOf('|');
         String[] split = code.replaceAll("\\|", "").split("\\^");
