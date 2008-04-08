@@ -11,6 +11,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
@@ -21,6 +23,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -52,6 +55,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     private DebugTreeView treeView;
     private JPanel treePanel;
+    private TapPanel tapPanel;
+    private InfoPanel infoPanel;
     
     /**
      * instance/singleton of this class
@@ -79,6 +84,18 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treePanel.setLayout(new BorderLayout());
         treePanel.add(treeView, BorderLayout.CENTER);
         
+        tapPanel = new TapPanel();
+        tapPanel.setOrientation(TapPanel.DOWN);
+        // tooltip
+        KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
+            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        String keyText = Utilities.keyToString(toggleKey);
+        tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
+        mainPanel.add(tapPanel, BorderLayout.SOUTH);
+        
+        infoPanel = new InfoPanel();
+        tapPanel.add(infoPanel);
+        
         manager.addPropertyChangeListener(this);
         treeView.addTreeExpansionListener(this);
         
@@ -86,10 +103,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         col1.add(new ElemNode("subnode 1", 4));
         col1.add(new ElemNode("subnode 2", 6));
         ElemNode rootNode = new ElemNode("root node", new ElemNodeChildren2(col1));
-        
+
+        sessionComboBox.removeAllItems();
+        sessionComboBox.addItem(rootNode.getDisplayName());
         manager.setRootContext(rootNode);
     }
-
+ 
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -103,6 +122,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         mainPanel = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
+        sessionComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -111,15 +131,18 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
         mainPanel.setLayout(new java.awt.BorderLayout());
 
-        leftPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.highlight"));
+        leftPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         leftPanel.setPreferredSize(new java.awt.Dimension(24, 0));
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         mainPanel.add(leftPanel, java.awt.BorderLayout.WEST);
 
-        rightPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.highlight"));
+        rightPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         rightPanel.setPreferredSize(new java.awt.Dimension(24, 0));
         rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         mainPanel.add(rightPanel, java.awt.BorderLayout.EAST);
+
+        sessionComboBox.setMaximumRowCount(1);
+        mainPanel.add(sessionComboBox, java.awt.BorderLayout.NORTH);
 
         mainScrollPane.setViewportView(mainPanel);
 
@@ -132,10 +155,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane mainScrollPane;
     private javax.swing.JPanel rightPanel;
+    private javax.swing.JComboBox sessionComboBox;
     // End of variables declaration//GEN-END:variables
 
     public void setRootContext(Node root) {
         manager.setRootContext(root);
+        sessionComboBox.removeAllItems();
+        sessionComboBox.addItem(root.getDisplayName());
     }
     
     public ExplorerManager getExplorerManager() {

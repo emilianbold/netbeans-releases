@@ -39,14 +39,11 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -55,14 +52,25 @@ import org.openide.util.Utilities;
  */
 public class ClickableIcon extends JPanel implements MouseListener {
 
+    private static final int STATE_NORMAL = 0;
+    private static final int STATE_FOCUSED = 1;
+    private static final int STATE_PRESSED = 2;
+    
     private JLabel label = new JLabel();
     
     private ImageIcon normalIcon;
     private ImageIcon focusedIcon;
+    private ImageIcon pressedIcon;
     
-    ClickableIcon(ImageIcon normal, ImageIcon focused) {
+    private int state;
+    
+    ClickableIcon(ImageIcon normal, ImageIcon focused, ImageIcon pressed) {
         this.normalIcon = normal;
         this.focusedIcon = focused;
+        this.pressedIcon = pressed;
+        
+        state = STATE_NORMAL;
+        
         label.setIcon(normal); // [TODO] compute the initial state
         add(label);
         addMouseListener(this);
@@ -72,36 +80,11 @@ public class ClickableIcon extends JPanel implements MouseListener {
         this(new ImageIcon(Utilities.loadImage(
             "org/netbeans/modules/debugger/jpda/resources/package.gif")),
             new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/debugger/jpda/resources/packageOpen.gif"))
+            "org/netbeans/modules/debugger/jpda/resources/packageOpen.gif")),
+            new ImageIcon(Utilities.loadImage(
+            "org/netbeans/modules/debugger/jpda/resources/ExprArguments.gif"))
         );
     }
-    
-//    @Override
-//    protected void processMouseMotionEvent(MouseEvent e) {
-//        super.processMouseMotionEvent(e);
-//        final MouseEvent evt = e;
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                int id = evt.getID();
-//                switch(id) {
-//                    case MouseEvent.MOUSE_ENTERED:
-//                        setIcon(focused);
-//                    break;
-//                    case MouseEvent.MOUSE_EXITED:
-//                        setIcon(normal);
-//                    break;
-//                    case MouseEvent.MOUSE_MOVED:
-//                        Rectangle rect = getBounds();
-//                        int sx = evt.getX();
-//                        int sy = evt.getY();
-//                        boolean isInside = sx > 0 && sx < rect.getWidth() && sy > 0 && sy < rect.getHeight();
-//                        setIcon(isInside ? focused : normal);
-//                    break;
-//                }
-//            }
-//        });
-//    }
-
     
     // **************************************************************************
     // MouseListener
@@ -111,17 +94,30 @@ public class ClickableIcon extends JPanel implements MouseListener {
     }
 
     public void mousePressed(MouseEvent e) {
+        label.setIcon(pressedIcon);
+        state = STATE_PRESSED;
     }
 
     public void mouseReleased(MouseEvent e) {
+        if (state == STATE_PRESSED) {
+            label.setIcon(focusedIcon);
+            state = STATE_FOCUSED;
+        }
     }
 
     public void mouseEntered(MouseEvent e) {
-        label.setIcon(focusedIcon);
+        if ((e.getModifiers() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
+            label.setIcon(pressedIcon);
+            state = STATE_PRESSED;
+        } else {
+            label.setIcon(focusedIcon);
+            state = STATE_FOCUSED;
+        }
     }
 
     public void mouseExited(MouseEvent e) {
         label.setIcon(normalIcon);
+        state = STATE_NORMAL;
     }
 
 }
