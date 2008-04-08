@@ -85,7 +85,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
         // calling cache results in SOE, we must check manually
         return !file.isFile() && hasMetadata(file); // XXX files should be also removed by svn !!!
-    }
+    }       
 
     /**
      * This interceptor ensures that subversion metadata is NOT deleted. 
@@ -104,7 +104,7 @@ class FilesystemHandler extends VCSInterceptor {
             } catch (SVNClientException e) {                
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
                 return;
-            } 
+            }                    
         }
     }
 

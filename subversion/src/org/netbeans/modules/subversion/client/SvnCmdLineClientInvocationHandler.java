@@ -62,6 +62,7 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
         super(adapter, desc, support, handledExceptions);
     }
    
+    @Override
     protected Object invokeMethod(Method proxyMethod, Object[] args)
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
@@ -101,19 +102,6 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
             );
         }
         return returnValue;
-    }
-
-    /**
-     * @return false for methods that perform calls over network
-     */
-    protected boolean noRemoteCallinAWT(String methodName, Object[] args) {
-        boolean ret = super.noRemoteCallinAWT(methodName, args);
-        if(!ret) {
-            if ("getStatus".equals(methodName)) { // NOI18N
-                ret = args.length != 4 || (Boolean.TRUE.equals(args[3]) == false);
-            }
-        }                
-        return ret;
     }
     
 }
