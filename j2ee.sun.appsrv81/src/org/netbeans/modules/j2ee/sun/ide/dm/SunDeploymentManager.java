@@ -1220,6 +1220,19 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         } catch (IllegalAccessException ex) {
             goodUserNamePassword =false;
         } catch (IOException e){
+            // If the server at the "other end" doesn't speak the admin protocol
+            // we need to ignore it.  If the server on the other end speaks remotejmx
+            // we will probably end up with some other error here.  I have no test
+            // for that.
+            //
+            // most common problem: a v3 instance and a v2 instance are installed
+            // on one machine and share the admin port... so only one can execute
+            // at a time
+            if (e.getMessage().contains("remotejmx")) {
+                goodUserNamePassword = false;
+                return;
+            }
+            
             if(!e.getMessage().contains("500")){//not an internal error, so user/password error!!!
                 maybeRunningButWrongUserName =true ;
             }
