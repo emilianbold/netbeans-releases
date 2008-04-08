@@ -71,7 +71,6 @@ public class OutputFileManager extends CachingFileManager {
     private static boolean debug = Boolean.getBoolean("org.netbeans.modules.java.source.parsing.OutputFileManager.debug");      //NOI18N
 
     private ClassPath scp;
-    private boolean   outputClassFiles;
     
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(CachingArchiveProvider provider, final ClassPath outputClassPath, final ClassPath sourcePath) {
@@ -108,7 +107,7 @@ public class OutputFileManager extends CachingFileManager {
             assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
             File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
-            String nameStr = baseName + (outputClassFiles ? JavaFileObject.Kind.CLASS.extension : '.' + FileObjects.SIG);
+            String nameStr = baseName + '.' + FileObjects.CLASS;
             int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);            
             if (nameComponentIndex != -1) {
                 String pathComponent = nameStr.substring(0, nameComponentIndex);
@@ -221,20 +220,4 @@ public class OutputFileManager extends CachingFileManager {
         }
         return true;
     }
-
-    @Override
-    public boolean handleOption(String head, Iterator<String> tail) {
-        if ("output-classfiles".equals(head)) {
-            if (!tail.hasNext()) {
-                throw new IllegalArgumentException();
-            }
-            
-            outputClassFiles = Boolean.parseBoolean(tail.next());
-            
-            return true;
-        }
-        
-        return super.handleOption(head, tail);
-    }
-    
 }

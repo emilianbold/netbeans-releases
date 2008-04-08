@@ -2210,12 +2210,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                             JavaTaskProvider.refresh(fo);
                         }
-                        try {
-                            fileManager.handleOption("output-classfiles", Arrays.asList("true").iterator());
-                            jt.generate();
-                        } finally {
-                            fileManager.handleOption("output-classfiles", Arrays.asList("false").iterator());
-                        }
+                        jt.generate();
                         Log.instance(jt.getContext()).nerrors = 0;
                         listener.cleanDiagnostics();
                     } else {
@@ -2935,12 +2930,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
                             toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURI().toURL(), cpInfo, members));
                         }
-                        try {
-                            fileManager.handleOption("output-classfiles", Arrays.asList("true").iterator());
-                            jt.generate(types);
-                        } finally {
-                            fileManager.handleOption("output-classfiles", Arrays.asList("false").iterator());
-                        }
+                        jt.generate(types);
                         active = null;
                         activeFile = null;
                         activePair = null;
