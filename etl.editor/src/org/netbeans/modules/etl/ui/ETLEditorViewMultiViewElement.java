@@ -288,7 +288,6 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
     @Override
     public void componentShowing() {
-
         super.componentShowing();
         ETLEditorSupport editor = dataObject.getETLEditorSupport();
         UndoRedo.Manager undoRedo = editor.getUndoManager();
