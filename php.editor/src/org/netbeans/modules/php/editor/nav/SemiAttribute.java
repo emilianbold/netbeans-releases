@@ -245,8 +245,12 @@ public class SemiAttribute extends DefaultVisitor {
         }
         
         if (exp instanceof Variable) {
-            //XXX, XXX:
-            name = ((Identifier) ((Variable) exp).getName()).getName();
+            //XXX:
+            Expression n = ((Variable) exp).getName();
+            
+            if (n instanceof Identifier) {
+                name = ((Identifier) n).getName();
+            }
         }
 
         if (name != null) {
@@ -464,7 +468,7 @@ public class SemiAttribute extends DefaultVisitor {
         PHPIndex index = PHPIndex.get(i);
         
         try {
-            for (String s : index.getAllIncludes(file.getURL().toExternalForm())) {
+            for (String s : index.getAllIncludes(file.getURL().getPath())) {//XXX: getPath?
                 files.add(FileUtil.toFileObject(FileUtil.normalizeFile(new File(s))));//TODO: normalization will slow down things - try to do better
             }
         } catch (IOException e) {
