@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -164,7 +165,14 @@ public class GroovyErrorOutputSupport {
         
         File file = FileUtil.normalizeFile(new File(fileName));
         if (!file.exists()) {
-            FileObject currentDir = FileOwnerQuery.getOwner(fileObject).getProjectDirectory();
+           /* we are going to support running standalone Groovy scripts.
+              see: # 131771 : Running groovy script not being part of any project fails */
+            Project prj = FileOwnerQuery.getOwner(fileObject);
+            
+            if(prj == null)
+                return null;
+            
+            FileObject currentDir = prj.getProjectDirectory();
             FileObject executedFile = currentDir.getFileObject(fileName);
             if (executedFile != null) {
                 file = FileUtil.normalizeFile(FileUtil.toFile(executedFile));
