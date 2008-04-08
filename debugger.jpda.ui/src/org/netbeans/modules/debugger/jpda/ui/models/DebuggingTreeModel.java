@@ -40,30 +40,47 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author martin
  */
-public class DebuggingTreeModel implements TreeModel {
+public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     private JPDADebugger debugger;
+    private Listener            listener;
+    private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
 
-    public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
+    @Override
+    protected Object[] computeChildren(Object parent) throws UnknownTypeException {
         if (parent == ROOT) {
             return debugger.getAllThreads().toArray();
         }
@@ -110,13 +127,143 @@ public class DebuggingTreeModel implements TreeModel {
     }
 
     public void addModelListener(ModelListener l) {
-        
+        synchronized (listeners) {
+            listeners.add (l);
+            if (listener == null) {
+                listener = new Listener (this, debugger);
+            }
+        }
     }
 
-    public void removeModelListener(ModelListener l) {
-        
+    public void removeModelListener (ModelListener l) {
+        synchronized (listeners) {
+            listeners.remove (l);
+            if (listeners.size () == 0) {
+                listener.destroy ();
+                listener = null;
+            }
+        }
     }
 
+    public void fireNodeChanged (Object node) {
+        try {
+            recomputeChildren();
+        } catch (UnknownTypeException ex) {
+            Exceptions.printStackTrace(ex);
+            return ;
+        }
+        ModelListener[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray(new ModelListener[0]);
+        }
+        ModelEvent ev = new ModelEvent.NodeChanged(this, node);
+        for (int i = 0; i < ls.length; i++) {
+            ls[i].modelChanged (ev);
+        }
+    }
+
+
+    /**
+     * Listens on JPDADebugger state property and updates all threads hierarchy.
+     */
+    private static class Listener implements PropertyChangeListener {
+        
+        private JPDADebugger debugger;
+        //private ThreadsCache tc;
+        private WeakReference<DebuggingTreeModel> model;
+        // currently waiting / running refresh task
+        // there is at most one
+        private RequestProcessor.Task task;
+        private Set<Object> nodesToRefresh;
+        
+        public Listener (
+            DebuggingTreeModel tm,
+            JPDADebugger debugger
+        ) {
+            this.debugger = debugger;
+            //this.tc = debugger.getThreadsCache();
+            model = new WeakReference<DebuggingTreeModel>(tm);
+            debugger.addPropertyChangeListener(this);
+            //tc.addPropertyChangeListener(this);
+        }
+        
+        private DebuggingTreeModel getModel () {
+            DebuggingTreeModel tm = model.get ();
+            if (tm == null) {
+                destroy ();
+            }
+            return tm;
+        }
+        
+        void destroy () {
+            debugger.removePropertyChangeListener (this);
+            synchronized (this) {
+                if (task != null) {
+                    // cancel old task
+                    task.cancel ();
+                    task = null;
+                }
+            }
+        }
+        
+        private RequestProcessor.Task createTask() {
+            RequestProcessor.Task task =
+                new RequestProcessor("Debugging Threads Refresh", 1).create(
+                                new RefreshTree());
+            return task;
+        }
+        
+        public void propertyChange (PropertyChangeEvent e) {
+            //System.err.println("ThreadsTreeModel.propertyChange("+e+")");
+            //System.err.println("    "+e.getPropertyName()+", "+e.getOldValue()+" => "+e.getNewValue());
+            JPDAThreadGroup tg;
+            if (e.getPropertyName() == JPDADebugger.PROP_THREAD_STARTED) {
+                JPDAThread t = (JPDAThread) e.getNewValue();
+                tg = t.getParentThreadGroup();
+            } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_DIED) {
+                JPDAThread t = (JPDAThread) e.getOldValue();
+                tg = t.getParentThreadGroup();
+            } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_GROUP_ADDED) {
+                tg = (JPDAThreadGroup) e.getNewValue();
+                tg = tg.getParentThreadGroup();
+            } else {
+                return ;
+            }
+            Object node;
+            if (tg == null || !false) { // TODO: !DebuggingView.getInstance().isThreadGroupsVisible()) {
+                node = ROOT;
+            } else {
+                node = tg;
+            }
+            synchronized (this) {
+                if (task == null) {
+                    task = createTask();
+                }
+                if (nodesToRefresh == null) {
+                    nodesToRefresh = new LinkedHashSet<Object>();
+                }
+                nodesToRefresh.add(node);
+                task.schedule(100);
+            }
+        }
+        
+        private class RefreshTree implements Runnable {
+            public RefreshTree () {}
+            
+            public void run() {
+                DebuggingTreeModel tm = getModel ();
+                if (tm == null) return;
+                List nodes;
+                synchronized (Listener.this) {
+                    nodes = new ArrayList(nodesToRefresh);
+                    nodesToRefresh.clear();
+                }
+                for (Object node : nodes) {
+                    tm.fireNodeChanged(node);
+                }
+            }
+        }
+    }
 
     
     /**
@@ -229,5 +376,5 @@ public class DebuggingTreeModel implements TreeModel {
             return true;
         }
     }
-    
+
 }

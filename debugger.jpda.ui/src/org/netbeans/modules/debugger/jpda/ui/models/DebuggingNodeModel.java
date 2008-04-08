@@ -41,8 +41,17 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
 import java.awt.datatransfer.Transferable;
+import java.beans.Customizer;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -51,11 +60,13 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -77,6 +88,10 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
 
     private JPDADebugger debugger;
     
+    private List<ModelListener> listeners = new ArrayList<ModelListener>();
+    
+    private Map<JPDAThread, ThreadStateUpdater> threadStateUpdaters = new WeakHashMap<JPDAThread, ThreadStateUpdater>();
+    
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
@@ -87,13 +102,18 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) node;
-            return t.getName();
+            watch(t);
+            return getDisplayName(t);
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame f = (CallStackFrame) node;
             return CallStackNodeModel.getCSFName(null, f, false);
         }
         throw new UnknownTypeException(node.toString());
+    }
+    
+    private String getDisplayName(JPDAThread t) throws UnknownTypeException {
+        return "'" + t.getName() + "' " + getShortDescription(t);
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {
@@ -194,9 +214,15 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     public void addModelListener(ModelListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
     public void removeModelListener(ModelListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
 
     public boolean canCopy(Object node) throws UnknownTypeException {
@@ -227,4 +253,43 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         return null;
     }
 
+    private void fireNodeChanged (Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+                ModelEvent.NodeChanged.ICON_MASK |
+                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK);
+        for (ModelListener ml : ls) {
+            ml.modelChanged (event);
+        }
+    }
+    
+    private void watch(JPDAThread t) {
+        synchronized (threadStateUpdaters) {
+            if (!threadStateUpdaters.containsKey(t)) {
+                threadStateUpdaters.put(t, new ThreadStateUpdater(t));
+            }
+        }
+    }
+    
+    private class ThreadStateUpdater implements PropertyChangeListener {
+        
+        private Reference<JPDAThread> tr;
+        
+        public ThreadStateUpdater(JPDAThread t) {
+            this.tr = new WeakReference(t);
+            ((Customizer) t).addPropertyChangeListener(WeakListeners.propertyChange(this, t));
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            JPDAThread t = tr.get();
+            if (t != null) {
+                fireNodeChanged(t);
+            }
+        }
+    }
+    
 }

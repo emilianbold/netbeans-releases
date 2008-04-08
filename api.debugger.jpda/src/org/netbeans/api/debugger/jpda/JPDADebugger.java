@@ -88,6 +88,13 @@ public abstract class JPDADebugger {
     /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
 
+    /** Property name constant. */
+    public static final String          PROP_THREAD_STARTED = "threadStarted";   // NOI18N
+    /** Property name constant. */
+    public static final String          PROP_THREAD_DIED = "threadDied";         // NOI18N
+    /** Property name constant. */
+    public static final String          PROP_THREAD_GROUP_ADDED = "threadGroupAdded";  // NOI18N
+    
     /** Suspend property value constant. */
     public static final int             SUSPEND_ALL = EventRequest.SUSPEND_ALL;
     /** Suspend property value constant. */

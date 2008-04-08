@@ -1269,6 +1269,21 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public synchronized ThreadsCache getThreadsCache() {
         if (threadsCache == null) {
             threadsCache = new ThreadsCache(this);
+            threadsCache.addPropertyChangeListener(new PropertyChangeListener() {
+                //  Re-fire the changes
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propertyName = evt.getPropertyName();
+                    if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
+                        firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
+                    }
+                    if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
+                        firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
+                    }
+                    if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
+                        firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
+                    }
+                }
+            });
         }
         return threadsCache;
     }
