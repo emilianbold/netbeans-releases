@@ -271,7 +271,7 @@ Object.extend(String.prototype, {
     : parts[0];
 
     for (var i = 1; i < len; i++)
-    camelized += parts[i].charAt(0).toUpperCase() + parts[i].substring(1);
+      camelized += parts[i].charAt(0).toUpperCase() + parts[i].substring(1);
 
     return camelized;
   },
@@ -536,7 +536,7 @@ var $A = Array.from = function(iterable) {
   } else {
     var results = [];
     for (var i = 0, length = iterable.length; i < length; i++)
-    results.push(iterable[i]);
+      results.push(iterable[i]);
     return results;
   }
 }
@@ -549,7 +549,7 @@ if (!Array.prototype._reverse)
 Object.extend(Array.prototype, {
   _each: function(iterator) {
     for (var i = 0, length = this.length; i < length; i++)
-    iterator(this[i]);
+      iterator(this[i]);
   },
 
   clear: function() {
@@ -587,7 +587,7 @@ Object.extend(Array.prototype, {
 
   indexOf: function(object) {
     for (var i = 0, length = this.length; i < length; i++)
-    if (this[i] == object) return i;
+      if (this[i] == object) return i;
     return -1;
   },
 
@@ -632,7 +632,7 @@ if(window.opera){
     for(var i = 0, length = arguments.length; i < length; i++) {
       if(arguments[i].constructor == Array) {
         for(var j = 0, arrayLength = arguments[i].length; j < arrayLength; j++)
-        array.push(arguments[i][j]);
+          array.push(arguments[i][j]);
       } else {
         array.push(arguments[i]);
       }
@@ -926,7 +926,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
 
       if (typeof extras.push == 'function')
         for (var i = 0, length = extras.length; i < length; i += 2)
-        headers[extras[i]] = extras[i+1];
+          headers[extras[i]] = extras[i+1];
       else
         $H(extras).each(function(pair) { 
           headers[pair.key] = pair.value 
@@ -1091,7 +1091,7 @@ Ajax.PeriodicalUpdater.prototype = Object.extend(new Ajax.Base(), {
 function $(element) {
   if (arguments.length > 1) {
     for (var i = 0, elements = [], length = arguments.length; i < length; i++)
-    elements.push($(arguments[i]));
+      elements.push($(arguments[i]));
     return elements;
   }
   if (typeof element == 'string')
@@ -1105,7 +1105,7 @@ if (Prototype.BrowserFeatures.XPath) {
     var query = document.evaluate(expression, $(parentElement) || document,
       null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     for (var i = 0, length = query.snapshotLength; i < length; i++)
-    results.push(query.snapshotItem(i));
+      results.push(query.snapshotItem(i));
     return results;
   };
 }
@@ -1846,7 +1846,7 @@ Selector.prototype = {
       conditions.push('element.tagName.toUpperCase() == ' + clause.inspect());
     if ((clause = params.classNames).length > 0)
       for (var i = 0, length = clause.length; i < length; i++)
-      conditions.push('element.hasClassName(' + clause[i].inspect() + ')');
+        conditions.push('element.hasClassName(' + clause[i].inspect() + ')');
     if (clause = params.attributes) {
       clause.each(function(attribute) {
         var value = 'element.readAttribute(' + attribute.name.inspect() + ')';
@@ -1889,8 +1889,8 @@ Selector.prototype = {
 
     var results = [];
     for (var i = 0, length = scope.length; i < length; i++)
-    if (this.match(element = scope[i]))
-      results.push(Element.extend(element));
+      if (this.match(element = scope[i]))
+        results.push(Element.extend(element));
 
     return results;
   },

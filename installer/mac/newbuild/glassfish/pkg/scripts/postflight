@@ -68,3 +68,6 @@ fi
 if [ -d "/Library/Receipts/glassfish.pkg" ] ; then
     rm -rf "/Library/Receipts/glassfish.pkg"
 fi
+
+#Fix for 132115
+sed -i -e "s/never/TUE/" ./updatecenter/config/config.xml

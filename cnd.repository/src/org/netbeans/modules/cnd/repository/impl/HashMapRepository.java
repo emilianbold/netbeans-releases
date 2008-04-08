@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.api.Repository;
@@ -55,31 +55,75 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  * @author Vladimir Voskresensky
  */
 public class HashMapRepository implements Repository {
-    private Map<Key,Persistent> map = Collections.synchronizedMap(new HashMap<Key,Persistent>());
+
+    /** repersents a single unit */
+    private class Unit {
+        
+        private Map<Key,Persistent> map = new ConcurrentHashMap<Key,Persistent>();
+        private CharSequence name;
+
+        public Unit(CharSequence name) {
+            this.name = name;
+        }
+        
+        public void put(Key key, Persistent obj) {
+            assert key.getUnit().equals(name);
+            map.put(key, obj);
+        }
+        
+        public Persistent get(Key key) {
+            assert key.getUnit().equals(name);
+            return map.get(key);
+        }
+        
+        void remove(Key key) {
+            assert key.getUnit().equals(name);
+            map.remove(key);
+        }
+    }
+    
+    private final Map<CharSequence, Unit> units;
+    private final Object unitsLock = new Object();
     
     /** 
      *  HashMapRepository creates from META-INF/services;
      *  no need for public constructor
      */
     public HashMapRepository() {
+        units = new ConcurrentHashMap<CharSequence, Unit>();
+    }
+
+    /** Never returns null */
+    private Unit getUnit(CharSequence name) {
+        assert name != null;
+        Unit unit = units.get(name);
+        if (unit == null) {
+            synchronized (unitsLock) {
+                unit = units.get(name);
+                if (unit == null) {
+                    unit = new Unit(name);
+                    units.put(name, unit);
+                }
+            }
+        }
+        return unit;
     }
     
     public void put(Key key, Persistent obj) {
-        assert key != null;
         assert obj != null;
-        map.put(key, obj);
+        getUnit(key.getUnit()).put(key, obj);
     }
 
     public Persistent get(Key key) {
-        return map.get(key);
+        return getUnit(key.getUnit()).get(key);
     }
 
     public Persistent tryGet(Key key) {
-	return map.get(key);
+	return get(key);
     }
     
     public void remove(Key key) {
-        map.remove(key);
+        getUnit(key.getUnit()).remove(key);
     }
 
     public void hang(Key key, Persistent obj) {
@@ -91,18 +135,28 @@ public class HashMapRepository implements Repository {
     }
     
     public void shutdown() {
-        map.clear();
+        synchronized( unitsLock ) {
+            units.clear();
+        }
     }
 
-    public void openUnit(String unitName) {
-	// do nothing
+    public synchronized void openUnit(String unitName) {
     }
     
-    public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
-        // do nothing
+    public synchronized void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
+        removeUnit(unitName);
     }
     
-    public void removeUnit(String unitName) {
+    public synchronized void removeUnit(String unitName) {
+        for( Iterator<CharSequence> iter = units.keySet().iterator(); iter.hasNext(); ) {
+            CharSequence key = iter.next();
+            if( key.toString().equals(unitName)) {
+                synchronized( unitsLock ) {
+                    iter.remove();
+                    return;
+                }
+            }
+        }
     }
 
     public void cleanCaches() {

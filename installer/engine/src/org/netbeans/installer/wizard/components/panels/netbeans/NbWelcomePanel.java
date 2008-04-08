@@ -247,7 +247,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             WELCOME_PAGE_TYPE_PROPERTY));
                     boolean stateFileUsed = System.getProperty(
                             Registry.SOURCE_STATE_FILE_PATH_PROPERTY) != null;
-                    if(!stateFileUsed && 
+                    boolean sysPropInstallLocation = System.getProperty(product.getUid() + 
+				StringUtils.DOT + 
+				Product.INSTALLATION_LOCATION_PROPERTY) == null;
+                    if(!stateFileUsed && sysPropInstallLocation &&
                             (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK))) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }

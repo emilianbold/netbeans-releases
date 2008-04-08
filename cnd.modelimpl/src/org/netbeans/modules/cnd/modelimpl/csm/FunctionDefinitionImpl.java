@@ -48,6 +48,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -80,6 +81,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return body;
     }
 
+    @Override
     public CsmFunction getDeclaration() {
         return getDeclaration(null);
     }
@@ -111,17 +113,19 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	if( def == null ) {
 	    CsmObject owner = findOwner(parent);
 	    if( owner instanceof CsmClass ) {
-		def = findByName(((CsmClass) owner).getMembers(), getName());
+		def = findByName(((CsmClass) owner).getMembers().iterator(), getName());
 	    }
 	    else if( owner instanceof CsmNamespace ) {
-		def = findByName(((CsmNamespace) owner).getDeclarations(), getName());
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace) owner),
+                          CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(getName().toString(),true, true, false));
+		def = findByName(it,getName());
 	    }
 	}
         return (CsmFunction) def;
     }
     
-    private static CsmFunction findByName(Collection/*CsmDeclaration*/ declarations, CharSequence name) {
-	for (Iterator it = declarations.iterator(); it.hasNext();) {
+    private static CsmFunction findByName(Iterator declarations, CharSequence name) {
+	for (Iterator it = declarations; it.hasNext();) {
 	    CsmDeclaration decl = (CsmDeclaration) it.next();
 	    if( decl.getName().equals(name) ) {
 		if( decl instanceof  CsmFunction ) { // paranoja

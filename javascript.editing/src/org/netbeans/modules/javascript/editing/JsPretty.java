@@ -119,9 +119,9 @@ public class JsPretty {
                     if (id == JsTokenId.WHILE) {
                         visitWhile(root);
                     } else if (id == JsTokenId.FOR) {
-                        visitFor(root);
+                        visitOtherBlock(root);
                     } else if (child.getType() == Token.VAR) {
-                        visitFor(root);
+                        visitOtherBlock(root);
                     } else {
                         visitDefault(root);
                     }
@@ -321,35 +321,6 @@ public class JsPretty {
         acceptOffset(node.getSourceEnd());
     }
     
-    private void visitFor(Node node) {
-        if (node.hasChildren()) {
-            Node child = node.getFirstChild();
-            boolean isVarBlock = false;
-            if (child.getType() == Token.VAR) {
-                // for (var a in b)
-                isVarBlock = true;
-                walk(child);
-                child = next(child);
-                walk(child);
-            }
-            child = next(child);
-            boolean isWithout = isWithoutBlock(child);
-            if (!isVarBlock && isWithout) {
-                increaseIndent("visitFor");
-                walk(child);
-                decreaseIndent("visitFor");
-                child = next(child);
-            } else if (isVarBlock && !isWithout) {
-                visitBlockWithoutIndenting(child);
-                child = next(child);
-            }
-            while (child != null) {
-                walk(child);
-                child = next(child);
-            }
-        }
-    }
-    
     private void visitWhile(Node node) {
         Node child = node.getFirstChild();
         if (ignoredType(child.getType())) {
@@ -412,6 +383,7 @@ public class JsPretty {
         } else {
             if (node.getType() == Token.REGEXP && node.getSourceEnd() > ts.offset()) {
                 // skip regexp
+                acceptOffset(node.getSourceStart());
                 ts.move(node.getSourceEnd());
                 ts.moveNext();
                 return;
@@ -496,6 +468,9 @@ public class JsPretty {
             case EOL:
                 // note: sometimes EOL includes WSs, e.g. "  \n"
                 int offset = tokenOffset + tokenLength;
+                // if LBRACE is on new line, I don't want to increase indent
+                // pretend there's no EOL to increase() function
+                boolean lbraceOnNewLine = false;
                 // don't add indent if newline is last character in formatted section
                 if (offset < end) {
                     try {
@@ -507,6 +482,7 @@ public class JsPretty {
                             org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNextNonWsNonComment(positionedTs);
                             String indentString = null;
                             if (indent > 0 && next.id() == JsTokenId.LBRACE) {
+                                lbraceOnNewLine = true;
                                 // dirty trick - take indent from previous line if LBRACE is on new line
                                 indentString = diffs.getFirst().text;
                             } else {
@@ -519,7 +495,9 @@ public class JsPretty {
                         Exceptions.printStackTrace(ble);
                     }
                 }
-                newLine("handleToken EOL");
+                if (!lbraceOnNewLine) {
+                    newLine("handleToken EOL");
+                }
                 break;
             case LPAREN:
                 increaseContinuation("handleToken LPAREN");
