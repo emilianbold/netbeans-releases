@@ -246,7 +246,7 @@ is the proper place.
                     method will allow to obtain the EJB JNDI name.
                 </p>
 	    </description>
-	    <class package="org.netbeans.modules.j2ee.deployment.deployment.spi" name="J2eeModuleProvider"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
 	    <issue number="108198"/>
 	</change>
 	<change id="isRunning">
