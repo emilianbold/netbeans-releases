@@ -187,6 +187,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 break;
             case TAGLIB:
                 result.add(new NewArtifactAction(project, SourceCategory.TAGLIB, "Create new Tag Library"));
+                result.add(CommonProjectActions.newFileAction());
                 break;
             case UTIL:          
                 break;

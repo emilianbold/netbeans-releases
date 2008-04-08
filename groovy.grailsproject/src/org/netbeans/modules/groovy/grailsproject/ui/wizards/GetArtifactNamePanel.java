@@ -83,6 +83,10 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
                 subDirName = "views";
                 break;    
+            case TAGLIB:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                subDirName = "taglib";
+                break;    
             }
         
         // populate the panel with some stuff
