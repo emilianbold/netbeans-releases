@@ -72,7 +72,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Creates a RubyProject from scratch according to some initial configuration.
+ * Able to create NetBeans Ruby project either from scratch or from existing
+ * sources.
  */
 public final class RubyProjectGenerator {
     
@@ -80,155 +81,195 @@ public final class RubyProjectGenerator {
     public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir"; // NOI18N
 
     private RubyProjectGenerator() {}
-    
+
     /**
-     * Create a new empty Ruby project.
+     * Create a new empty NetBeans Ruby project.
+     * 
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
-     * @param name the name for the project
+     * @param prjName the name for the project
+     * @param mainClass might be <tt>null</tt> to skip mainclass generation
+     * @param platform project's platform
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(File dir, String name, String mainClass, final RubyPlatform platform) throws IOException {
+    public static RakeProjectHelper createProject(File dir, String prjName, String mainClass, final RubyPlatform platform) throws IOException {
         FileObject dirFO = FileUtil.createFolder(dir);
-        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, platform); //NOI18N
-        Project p = ProjectManager.getDefault().findProject(dirFO);
-        ProjectManager.getDefault().saveProject(p);
+        RakeProjectHelper helper = createBasicProjectMetadata(dirFO, prjName, "lib", "test", mainClass, platform); // NOI18N
+        Project project = ProjectManager.getDefault().findProject(dirFO);
+        ProjectManager.getDefault().saveProject(project);
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
         dirFO.createFolder("test"); // NOI18N
-        if ( mainClass != null ) {
-            createFromTemplate( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
+        if (mainClass != null) {
+            createFromTemplate(mainClass, srcFolder, "Templates/Ruby/main.rb"); // NOI18N
         }
         
         // Rakefile
         final Map<String, String> rakeProps = new HashMap<String, String>();
-        rakeProps.put("PROJECT_NAME", dir.getName());
+        rakeProps.put("PROJECT_NAME", dir.getName()); // NOI18N
         
         createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile", rakeProps); // NOI18N
         
-        createFileWithContent(dirFO, "README", "TXT_README_Content", name); // NOI18N
-        createFileWithContent(dirFO, "LICENSE", "TXT_LICENSE_Content", name); // NOI18N
+        createFileWithContent(dirFO, "README", "TXT_README_Content", prjName); // NOI18N
+        createFileWithContent(dirFO, "LICENSE", "TXT_LICENSE_Content", prjName); // NOI18N
         
         // Run Rake -T silently to determine the available targets and write into private area
-        RakeTargetsAction.refreshTargets(p);
+        RakeTargetsAction.refreshTargets(project);
         
-        return h;
+        return helper;
     }
 
-    public static RakeProjectHelper createProject(final File dir, final String name,
+    /**
+     * Creates a new empty Ruby project with initially set up source and test
+     * folder. Used for creating NetBeans Ruby project from existing sources.
+     * 
+     * @param dir the top-level directory (need not yet exist but if it does it must be empty)
+     * @param prjName the name for the project
+     * @param sourceFolders initial source folders
+     * @param testFolders initial test folders
+     * @param platform project's platform
+     * @return the helper object permitting it to be further customized
+     * @throws IOException in case something went wrong
+     */
+    public static RakeProjectHelper createProject(final File dir, final String prjName,
             final File[] sourceFolders, final File[] testFolders, final RubyPlatform platform) throws IOException {
-        assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
+        assert sourceFolders != null && testFolders != null: "Package roots can't be null"; // NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
-        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, platform);
-        final RubyProject p = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
-        final ReferenceHelper refHelper = p.getReferenceHelper();
+        final RakeProjectHelper helper = createBasicProjectMetadata(dirFO, prjName, null, null, null, platform);
+        final RubyProject project = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
         try {
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws IOException {
-                Element data = h.getPrimaryConfigurationData(true);
-                Document doc = data.getOwnerDocument();
-                NodeList nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
-                assert nl.getLength() == 1;
-                Element sourceRoots = (Element) nl.item(0);
-                nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                assert nl.getLength() == 1;
-                Element testRoots = (Element) nl.item(0);
-                for (int i=0; i<sourceFolders.length; i++) {
-                    String propName;
-                    if (i == 0) {
-                        //Name the first src root src.dir to be compatible with NB 4.0
-                        propName = "src.dir";       //NOI18N
-                    }
-                    else {
-                        String name = sourceFolders[i].getName();
-                        propName = name + ".dir";    //NOI18N
-                    }
-                    
-                    int rootIndex = 1;
-                    EditableProperties props = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-                    while (props.containsKey(propName)) {
-                        rootIndex++;
-                        propName = name + rootIndex + ".dir";   //NOI18N
-                    }
-                    String srcReference = refHelper.createForeignFileReference(sourceFolders[i], RubyProject.SOURCES_TYPE_RUBY);
-                    Element root = doc.createElementNS (RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                    root.setAttribute ("id",propName);   //NOI18N
-                    sourceRoots.appendChild(root);
-                    props = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-                    props.put(propName,srcReference);
-                    h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                }                 
-                for (int i = 0; i < testFolders.length; i++) {
-                    if (!testFolders[i].exists()) {
-                        testFolders[i].mkdirs();
-                    }
-                    String propName;
-                    if (i == 0) {
-                        //Name the first test root test.src.dir to be compatible with NB 4.0
-                        propName = "test.src.dir";  //NOI18N
-                    }
-                    else {
-                        String name = testFolders[i].getName();
-                        propName = "test." + name + ".dir"; // NOI18N
-                    }                    
-                    int rootIndex = 1;
-                    EditableProperties props = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-                    while (props.containsKey(propName)) {
-                        rootIndex++;
-                        propName = "test." + name + rootIndex + ".dir"; // NOI18N
-                    }
-                    String testReference = refHelper.createForeignFileReference(testFolders[i], RubyProject.SOURCES_TYPE_RUBY);
-                    Element root = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
-                    root.setAttribute("id", propName); // NOI18N
-                    testRoots.appendChild(root);
-                    props = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                    props.put(propName, testReference);
-                    h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, props);
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    createProjectMetadata(project, helper, sourceFolders, testFolders, prjName);
+                    return null;
                 }
-                h.putPrimaryConfigurationData(data,true);
-                ProjectManager.getDefault().saveProject (p);
-                return null;
-            }
-        });
-        } catch (MutexException me ) {
-            ErrorManager.getDefault().notify (me);
+            });
+        } catch (MutexException me) {
+            ErrorManager.getDefault().notify(me);
         }
-        return h;
+        return helper;
     }
 
-    private static RakeProjectHelper createProject(FileObject dirFO, String name,
+    /**
+     * Sets up nbproject folder appropriately according to the given data. That
+     * is project.xml. That is project.properties, project.xml, etc.
+     * 
+     * @param project project for which to create metadata
+     * @param helper {@link RakeProjectHelper}
+     * @param sourceFolders initial source folders
+     * @param testFolders initial test folders
+     * @param prjName the name for the project
+     * @throws IOException in case something went wrong
+     */
+    private static void createProjectMetadata(final RubyProject project,
+            final RakeProjectHelper helper, final File[] sourceFolders,
+            final File[] testFolders, final String prjName) throws IOException {
+        ReferenceHelper refHelper = project.getReferenceHelper();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        NodeList nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); // NOI18N
+
+        assert nl.getLength() == 1;
+        Element sourceRoots = (Element) nl.item(0);
+        nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots"); // NOI18N
+
+        assert nl.getLength() == 1;
+        Element testRoots = (Element) nl.item(0);
+        for (int i = 0; i < sourceFolders.length; i++) {
+            String propName;
+            if (i == 0) {
+                propName = "src.dir"; // NOI18N
+            } else {
+                String name = sourceFolders[i].getName();
+                propName = name + ".dir"; // NOI18N
+            }
+
+            int rootIndex = 1;
+            EditableProperties props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
+            while (props.containsKey(propName)) {
+                rootIndex++;
+                propName = prjName + rootIndex + ".dir"; // NOI18N
+            }
+            String srcReference = refHelper.createForeignFileReference(sourceFolders[i], RubyProject.SOURCES_TYPE_RUBY);
+            Element root = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
+
+            root.setAttribute("id", propName); // NOI18N
+
+            sourceRoots.appendChild(root);
+            props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
+            props.put(propName, srcReference);
+            helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+
+        }
+        for (int i = 0; i < testFolders.length; i++) {
+            if (!testFolders[i].exists()) {
+                testFolders[i].mkdirs();
+            }
+            String propName;
+            if (i == 0) {
+                propName = "test.src.dir"; // NOI18N
+
+            } else {
+                String name = testFolders[i].getName();
+                propName = "test." + name + ".dir"; // NOI18N
+            }
+            int rootIndex = 1;
+            EditableProperties props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
+            while (props.containsKey(propName)) {
+                rootIndex++;
+                propName = "test." + prjName + rootIndex + ".dir"; // NOI18N
+            }
+            String testReference = refHelper.createForeignFileReference(testFolders[i], RubyProject.SOURCES_TYPE_RUBY);
+            Element root = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
+
+            root.setAttribute("id", propName); // NOI18N
+
+            testRoots.appendChild(root);
+            props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+
+            props.put(propName, testReference);
+            helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        }
+        helper.putPrimaryConfigurationData(data, true);
+        ProjectManager.getDefault().saveProject(project);
+    }
+
+    /**
+     * Creates very basic project skeleton.
+     */
+    private static RakeProjectHelper createBasicProjectMetadata(FileObject dirFO, String name,
             String srcRoot, String testRoot, String mainClass,
             final RubyPlatform platform) throws IOException {
-        RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
-        Element data = h.getPrimaryConfigurationData(true);
+        RakeProjectHelper helper = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
+        Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-        Element sourceRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+        EditableProperties ep = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
+        Element sourceRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
         if (srcRoot != null) {
-            Element root = doc.createElementNS (RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-            root.setAttribute ("id","src.dir");   //NOI18N
+            Element root = doc.createElementNS (RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root"); // NOI18N
+            root.setAttribute ("id", "src.dir"); // NOI18N
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
         }
         data.appendChild (sourceRoots);
-        Element testRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+        Element testRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots"); // NOI18N
         if (testRoot != null) {
-            Element root = doc.createElementNS (RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-            root.setAttribute ("id","test.src.dir");   //NOI18N
+            Element root = doc.createElementNS (RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root"); // NOI18N
+            root.setAttribute ("id","test.src.dir"); // NOI18N
             testRoots.appendChild (root);
             ep.setProperty("test.src.dir", testRoot); // NOI18N
         }
         data.appendChild (testRoots);
-        h.putPrimaryConfigurationData(data, true);
+        helper.putPrimaryConfigurationData(data, true);
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(RubyProjectProperties.SOURCE_ENCODING, enc.name());
         ep.setProperty(RubyProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
         RubyProjectProperties.storePlatform(ep, platform);
-        h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
-        return h;
+        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+        return helper;
     }
 
     private static DataObject createFromTemplate(String mainClassName, FileObject srcFolder, String templateName) throws IOException {
@@ -263,12 +304,12 @@ public final class RubyProjectGenerator {
         
         FileObject pkgFolder = srcFolder;
         if ( pName != null ) {
-            String fName = pName.replace( '.', '/' ); // NOI18N
+            String fName = pName.replace( '.', '/' );
             pkgFolder = FileUtil.createFolder( srcFolder, fName );        
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );
         
-        mName = Util.stripExtension(mName, ".rb");
+        mName = Util.stripExtension(mName, ".rb"); // NOI18N
         
         if (props != null) {
             return mt.createFromTemplate(pDf, mName, props);

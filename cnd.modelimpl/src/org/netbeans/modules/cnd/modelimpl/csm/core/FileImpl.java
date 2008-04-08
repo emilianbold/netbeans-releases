@@ -681,6 +681,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
+            clearFakeRegistrations();
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1085,22 +1086,28 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fakeRegistrationUIDs.add(uidDecl);
     }
     
+    private void clearFakeRegistrations() {
+        fakeRegistrationUIDs.clear();
+    }
+    
     public void fixFakeRegistrations() {
         if (!isValid()) {
             return;
         }
-        Collection<FunctionImplEx> fakes = Collections.<FunctionImplEx>emptySet();
-        
         if (fakeRegistrationUIDs.size() > 0) {
-            fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeRegistrationUIDs);
+            List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
             fakeRegistrationUIDs.clear();
-        }
-	for (FunctionImplEx curElem: fakes) {
-            // Due to lazy list the client should check value on null.
-            if (curElem != null) {
-                curElem.fixFakeRegistration();
+            for( CsmUID<? extends CsmDeclaration> uid : fakes ) {
+                CsmDeclaration curElem = uid.getObject();
+                if (curElem != null) {
+                    if( curElem instanceof FunctionImplEx ) {
+                        ((FunctionImplEx) curElem).fixFakeRegistration();
+                    } else {
+                        DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                    }
+                }
             }
-	}
+        }
     }
     
     public @Override String toString() {

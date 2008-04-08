@@ -172,36 +172,33 @@ public class AstOffsetTest extends JsTestBase {
         
         for (int i = 0; i < text.length(); i++) {
             if (starts.containsKey(i)) {
-                sb.append("<");
                 List<Node> ns = starts.get(i);
-                boolean first = true;
                 for (Node n : ns) {
-                    if (!first) {
-                        sb.append(",");
-                    }
-                    first = false;
+                    sb.append("<");
                     String desc = descriptions.get(n);
                     assertNotNull(desc);
                     sb.append(desc);
+                    sb.append(">");
                 }
-                sb.append(">");
             }
             if (ends.containsKey(i)) {
-                sb.append("</");
                 List<Node> ns = ends.get(i);
-                boolean first = true;
                 for (Node n : ns) {
-                    if (!first) {
-                        sb.append(",");
-                    }
-                    first = false;
+                    sb.append("</");
                     String desc = descriptions.get(n);
                     assertNotNull(desc);
                     sb.append(desc);
+                    sb.append(">");
                 }
-                sb.append(">");
             }
-            sb.append(text.charAt(i));
+            char c = text.charAt(i);
+            switch (c) {
+            case '&': sb.append("&amp;"); break;
+            case '<': sb.append("&lt;"); break;
+            case '>': sb.append("&gt;"); break;
+            default:
+                sb.append(c);
+            }
         }
 
         return sb.toString();
