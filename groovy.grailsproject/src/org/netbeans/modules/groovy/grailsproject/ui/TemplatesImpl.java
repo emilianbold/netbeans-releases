@@ -63,10 +63,18 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
     private static final String[] PRIVILEGED_NAMES = new String[] {
         "Templates/Other/properties.properties"
     };
+    
+    private static final String[] GROOVY_TEMPLATES = new String[] {
+        "Templates/Groovy/GroovyClass.groovy",
+        "Templates/Other/Folder"
+    };
 
     public String[] getPrivilegedTemplates() {
-        
-        return PRIVILEGED_NAMES;
+        if (dirName.startsWith("conf")) {
+            return GROOVY_TEMPLATES;
+        } else {
+            return PRIVILEGED_NAMES;
+        }
     }
     
     private static final String[] TYPES = new String[] { 
