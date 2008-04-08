@@ -69,6 +69,10 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
         "Templates/Other/Folder"
     };
 
+    private static final String[] FOLDER_ONLY = new String[] {
+        "Templates/Other/Folder"
+    };
+
     private static final String[] GROOVY_FILE = new String[] {
         "Templates/Groovy/GroovyClass.groovy"
     };
@@ -78,6 +82,8 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
             return GROOVY_TEMPLATES;
         } else if (dirName.startsWith("taglib")) {
             return GROOVY_FILE;
+        } else if (dirName.startsWith("test")) {
+            return FOLDER_ONLY;
         } else {
             return PRIVILEGED_NAMES;
         }
