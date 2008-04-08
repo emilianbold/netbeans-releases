@@ -33,8 +33,7 @@ public abstract class DesignViewAction extends AbstractAction {
         DiagramModel model = view == null ? null : view.getModel();
         return super.isEnabled() && 
                view != null && 
-               model != null &&
-               !model.isReadOnly();
+               model != null;
         
     }
     /**

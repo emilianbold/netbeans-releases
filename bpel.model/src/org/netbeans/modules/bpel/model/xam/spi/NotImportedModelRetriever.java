@@ -17,11 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/**
- *
- */
 package org.netbeans.modules.bpel.model.xam.spi;
-
 
 /**
  * This interface will be implemented by services that search

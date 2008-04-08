@@ -413,7 +413,9 @@ public abstract class NbTopManager {
                     // to RequestProcessor to avoid security problems.
                     Task exitTask = new Task(new Runnable() {
                         public void run() {
-                            TopSecurityManager.exit(0);
+                            if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
+                                TopSecurityManager.exit(0);
+                            }
                         }
                     });
                     RequestProcessor.getDefault().post(exitTask);

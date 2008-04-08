@@ -101,7 +101,7 @@ abstract class EncodingComponentBeanInfoBase extends HtmlBeanInfoBase {
         beanDescriptor.setValue(Constants.BeanDescriptor.PROPERTY_CATEGORIES,getCategoryDescriptors());
         beanDescriptor.setValue(Constants.BeanDescriptor.TAG_NAME,"encoding");
         beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_PREFIX,"j");
-        beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_URI,"http://www.sun.com/creator/rave.faces");
+        beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_URI,"http://www.sun.com/creator/jsfcl");
         beanDescriptor.setValue(Constants.BeanDescriptor.TRAY_COMPONENT,Boolean.TRUE);
         return beanDescriptor;
 
@@ -162,8 +162,19 @@ abstract class EncodingComponentBeanInfoBase extends HtmlBeanInfoBase {
             prop_value.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.DATA);
             prop_value.setValue("com.sun.rave.propertyeditors.DOMAIN_CLASS", com.sun.rave.propertyeditors.domains.CharacterSetsDomain.class);
 
+            PropertyDescriptor prop_id = new PropertyDescriptor("id",beanClass,"getId","setId");
+            prop_id.setDisplayName(resources.getString("EncodingComponent_id_DisplayName"));
+            prop_id.setShortDescription(resources.getString("EncodingComponent_id_Description"));
+            prop_id.setExpert(false);
+            prop_id.setHidden(true);
+            prop_id.setPreferred(false);
+            attrib = new AttributeDescriptor("id",false,null,true);
+            prop_id.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
+            prop_id.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.GENERAL);            
+            
             propDescriptors = new PropertyDescriptor[] {
                 prop_value,
+                prop_id
             };
             return propDescriptors;
 
