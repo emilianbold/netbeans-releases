@@ -55,10 +55,7 @@ public class JsfTagSupport {
         try {
             Enumeration<URL> urls = classLoader.getResources("META-INF/faces-config.xml");
             while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                if (!url.getPath().contains("jsfcl.jar")) {
-                    addTaglibFacesConfigMapEntry(url);
-                }
+                addTaglibFacesConfigMapEntry(urls.nextElement());
             }
 
             // Bug Fix 124610 - Unfortunately the JSF RI component informations are not kept
@@ -140,7 +137,7 @@ public class JsfTagSupport {
 
     public String getComponentClass(
             ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        if(tagName.equals("view") || tagName.equals("subview")) {
+        if(tagName.equals("view") || tagName.equals("subview") || tagName.equals("verbatim")) {
             return null;
         }
         UIComponentTagBase componentTag = (UIComponentTagBase) getTagHandler(classLoader, tagName);

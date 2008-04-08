@@ -57,7 +57,7 @@ import java.util.Iterator;
 /**
  * This is an utility class to avoid exposing deployment interface
  * {@link javax.enterprise.deploy.spi.status.ProgressObject} directly in 
- * server management SPI {@link StartServer}.
+ * server management SPI {@link org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer}.
  * <P>
  * Typical usage is for plugin StartServer implementation to create
  * instance of ServerProgress and return it to caller of 

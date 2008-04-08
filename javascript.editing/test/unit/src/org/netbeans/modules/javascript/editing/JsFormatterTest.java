@@ -426,6 +426,17 @@ public class JsFormatterTest extends JsTestBase {
                 );
     }
     
+    public void testFor2() throws Exception {
+        format(
+                "for (var i = 0; i < length; i++)\n" +
+                "foo();\n" +
+                "bar();\n",
+                "for (var i = 0; i < length; i++)\n" +
+                "    foo();\n" +
+                "bar();\n", null
+                );
+    }
+    
     public void testLineContinuationAsgn() throws Exception {
         format("x =\n1",
                "x =\n    1", null);
@@ -799,6 +810,13 @@ public class JsFormatterTest extends JsTestBase {
                 "        return foo();\n" +
                 "    }).pluck('value');\n" +
                 "}\n", null
+                );
+    }
+
+    public void testCompressed() throws Exception {
+        format(
+                "if(true&&(/alpha/i).test()){}",
+                "if(true&&(/alpha/i).test()){}", null
                 );
     }
     

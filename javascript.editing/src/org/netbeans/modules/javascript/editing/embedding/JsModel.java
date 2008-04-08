@@ -756,7 +756,7 @@ public class JsModel {
         return null;
     }
 
-    private class JsAnalyzerState {
+    static class JsAnalyzerState {
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;
         boolean opening_quotation_stripped = false;

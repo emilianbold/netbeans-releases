@@ -69,7 +69,7 @@ public interface AntDeploymentProvider {
      * @param os the output stream the deployment build script should be generated 
      *           to.
      * @param moduleType the module type the build script should handle. Use the
-     *                   constants defined in the {@link J2eeModule}.
+     *                   constants defined in the {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}.
      * @throws IOException if a problem during generating the build script occurs.
      */
     void writeDeploymentScript(OutputStream os, Object moduleType) throws IOException;

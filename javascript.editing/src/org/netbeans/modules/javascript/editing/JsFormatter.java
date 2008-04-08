@@ -113,7 +113,12 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
         
-        if (info == null || !JsUtils.isJsDocument(document)) {
+        JsParseResult jsParseResult = null;
+        if (info != null) {
+            jsParseResult = AstUtilities.getParseResult(info);
+        }
+        
+        if (jsParseResult == null || jsParseResult.getRootNode() == null || !JsUtils.isJsDocument(document)) {
             reindent(document, startOffset, endOffset, null, false);
             return;
         }

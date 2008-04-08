@@ -95,4 +95,12 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
     public void setTargetNamespace(String targetNamespace) {
     	setAttribute(TARGETNAMESPACE_PROPERTY, ATTR_TARGETNAMESPACE, targetNamespace);
     }
+    
+    public void setPackageName(String packageName) {
+    	setAttribute(PACKAGENAME_PROPERTY, ATTR_PACKAGENAME, packageName);
+    }
+    
+    public String getPackageName() {
+    	return getAttribute(ATTR_PACKAGENAME);
+    }
 }
