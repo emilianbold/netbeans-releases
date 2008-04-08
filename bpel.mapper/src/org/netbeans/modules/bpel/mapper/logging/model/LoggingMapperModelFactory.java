@@ -60,20 +60,20 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             return source instanceof ExtensibleElements;
     }
 
-    public LoggingMapperModelFactory() {
-        super();
+    public LoggingMapperModelFactory(MapperTcContext mapperTcContext, 
+        BpelDesignContext context) {
+        super(mapperTcContext, context);
     }
     
     @Override
-    public MapperModel constructModel(
-            MapperTcContext mapperTcContext, BpelDesignContext context) {
+    public MapperModel constructModel() {
         //
-        Mapper mapper = mapperTcContext.getMapper();
+        Mapper mapper = currentMapperTcContext.getMapper();
         BpelChangeProcessor changeProcessor = new BpelChangeProcessor(
-                mapper, new LoggingBpelModelUpdater(mapperTcContext));
+                mapper, new LoggingBpelModelUpdater(currentMapperTcContext));
         //
 //        BpelEntity bpelEntity = context.getBpelEntity();
-        BpelEntity bpelEntity = context.getContextEntity();
+        BpelEntity bpelEntity = currentBpelDesignContext.getContextEntity();
         if (!(bpelEntity instanceof ExtensibleElements)) {
             return null;
         }
@@ -83,16 +83,16 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         EmptyTreeModel sourceModel = new EmptyTreeModel();
 
         VariableTreeModel sourceVariableModel = 
-                new VariableTreeModel(context, true, mapper);
+                new VariableTreeModel(currentBpelDesignContext, true, mapper);
         sourceModel.addExtensionModel(sourceVariableModel);
         PartnerLinkTreeExtModel pLinkExtModel = 
                 new PartnerLinkTreeExtModel(bpelEntity, true);
         sourceModel.addExtensionModel(pLinkExtModel);
         //
         BpelMapperModel newMapperModel = new BpelMapperModel(
-                mapperTcContext, changeProcessor, sourceModel, targetModel);
+                currentMapperTcContext, changeProcessor, sourceModel, targetModel);
         //
-        editorExtProcessor = new EditorExtensionProcessor(newMapperModel, context);
+        editorExtProcessor = new EditorExtensionProcessor(newMapperModel, currentBpelDesignContext);
         editorExtProcessor.processVariables();
         //
         addTraceGraph((ExtensibleElements)bpelEntity, newMapperModel);

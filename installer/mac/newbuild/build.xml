@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}.zip"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml.suffix}.zip"/>
         </exec>      
     </target>
     
@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
     </target> 
        
     <target name="copy-translated-files" if="do.copy.translated.files">         
-        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false">                    
+        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false" failonerror="false">                    
             <fileset dir="${translatedfiles.src}"> 
                 <include name="**/mac/newbuild/**"/>
             </fileset>
@@ -222,7 +222,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${mpkgfile}/Contents/Resources/${locale.dir}.lproj"/>
         <!-- copy Welcome.html and Localizable.strings -->                 
         <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
-              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html"/>               
+              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
@@ -237,7 +237,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-dmg">     
         <echo message="Building dmg for ${dmg.prefix.name}${bundle.type}..."/>             
         <delete dir="dist_dmg"/>        
-        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>               
+        <property name="mpkgfile" value="dist_dmg/${mpkgname}.mpkg"/>               
         <copy file="${basedir}/dmg/Resources/bgimage.tif" 
               tofile="${mpkgfile}/Contents/Resources/background.tif"/>  
         <copy file="${basedir}/dmg/Resources/license.txt" 
@@ -263,16 +263,12 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RPf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
-        </exec>                      
-                  
-        <condition property="ml.suffix" value="-ml" else="">
-            <istrue value="${mlbuild}"/>
-        </condition>  
+            <arg value="cp -RPf ${packages} ./dist_dmg/'${mpkgname}'.mpkg/Contents/Packages"/>
+        </exec>                         
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-macosx.dmg '${appname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-macosx.dmg '${mpkgname}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
     </target>             

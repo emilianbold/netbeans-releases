@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.EventObject;
-import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
@@ -52,11 +51,6 @@ import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.ContentElement;
-import org.netbeans.modules.bpel.model.api.Copy;
-import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.To;
-import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.ui.UserNotification;
@@ -345,15 +339,13 @@ public class DesignContextControllerImpl2
             showUnsupportedEntity(newContext);
             return;
         }
-
-        final BpelEntity validatedContextEntity = newContextEntity;
                 
         if (forceReload || !newContext.equals(mContext)) {
             if (forceReload || !newContextEntity.equals(oldContextEntity)) {
                 myMapperStateManager.storeOldEntityContext(mContext);
                 //
-                MapperModel newMapperModel = new BpelMapperModelFactory().
-                        constructModel(mMapperTcContext, newContext);
+                MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
+                    newContext).constructModel();
 
                 mContext = newContext;
                 setMapperModel(newMapperModel);
@@ -363,7 +355,7 @@ public class DesignContextControllerImpl2
                 public void run() {
                     GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
                     
-                    validateCopyXPathExpressions(validatedContextEntity, true);
+                    displayInvalidXPathExpressions(mContext, true);
                 }
             });
 //            mMapperTcContext.showMapperTcGroup(true);
@@ -406,8 +398,8 @@ public class DesignContextControllerImpl2
 //        }
 //
 //
-        MapperModel newMapperModel = new BpelMapperModelFactory().
-                constructModel(mMapperTcContext, mContext);
+        MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
+            mContext).constructModel();
 
         myMapperStateManager.storeOldEntityContext(mContext);
         setMapperModel(newMapperModel);
@@ -509,73 +501,24 @@ public class DesignContextControllerImpl2
         mBpelModelSynchListener.processDataObject(dataObject);
     }
 
-    private String validateCopyXPathExpressions(BpelEntity bpelEntity, 
+    private String displayInvalidXPathExpressions(BpelDesignContext bpelDesignContext,
         boolean displayErrMessage) {
+        if (bpelDesignContext == null) return null;
+        BpelEntity bpelEntity = bpelDesignContext.getContextEntity();
         if (bpelEntity == null) return null;
         
-        StringBuffer errMsgBuffer = new StringBuffer();
-        List<Copy> copyList = bpelEntity.getChildren(Copy.class);
-        if ((copyList != null) && (! copyList.isEmpty())) {
-            for (Copy objCopy : copyList) {
-                From copyFrom = objCopy.getFrom();
-                if (copyFrom != null) {
-                    checkXPathExpression(copyFrom, errMsgBuffer);
-                }
-                To copyTo = objCopy.getTo();
-                if (copyTo != null) {
-                    checkXPathExpression(copyTo, errMsgBuffer);
-                }
-            }
-            if (errMsgBuffer.length() > 0) {
-                errMsgBuffer.setCharAt(errMsgBuffer.length() - 1, '.');
-            }
-        }
-        String xpathValidationErrMsg = errMsgBuffer.length() == 0 ? null : 
-            errMsgBuffer.toString();
+        StringBuffer errMsgBuffer = bpelDesignContext.getValidationErrMsgBuffer();
+        if ((errMsgBuffer == null) || (errMsgBuffer.length() == 0)) return null;
+        
+        String xpathValidationErrMsg = errMsgBuffer.toString().trim();
+        xpathValidationErrMsg = xpathValidationErrMsg.substring(0, 
+            xpathValidationErrMsg.lastIndexOf(",")) + ".";
         if ((displayErrMessage) && (xpathValidationErrMsg != null)) {
             UserNotification.showMessage(MessageFormat.format(NbBundle.getMessage(
                 this.getClass(), "LBL_Bpel_Mapper_Err_Msg_Wrong_XPathExpr_Title"), 
                 new Object[] {bpelEntity.getElementType().getSimpleName()}) + 
-                " " + xpathValidationErrMsg);
+                " \n" + xpathValidationErrMsg);
         }                    
         return (xpathValidationErrMsg);
-    }
-    
-    private void checkXPathExpression(ContentElement contenElement, StringBuffer errMsgBuffer) {
-        String xpathExpression = contenElement.getContent();
-        if (xpathExpression == null) return;
-        
-        xpathExpression = xpathExpression.trim();
-        if (isCheckingRequired(xpathExpression)) {
-            String errMsg = checkXPathExpression(contenElement, xpathExpression);                
-            if (errMsg != null) {
-                errMsgBuffer.append((errMsgBuffer.length() > 0) ? 
-                    " " + errMsg : errMsg);                
-                errMsgBuffer.append(",");
-            }
-        }
-    }
-    
-    private boolean isCheckingRequired(String xpathExpression) {
-        if ((xpathExpression == null) || (xpathExpression.trim().length() == 0) ||
-            // value of xpathExpression is a literal (for example, 'blah-blah-blah')
-            ((xpathExpression.startsWith("'")) && (xpathExpression.endsWith("'"))) ||
-            // xpathExpression contains a function    
-            ((xpathExpression.contains("(")) && (xpathExpression.contains(")")))) {
-            return false;
-        }
-        return true;
-    }
-    
-    private String checkXPathExpression(ContentElement contenElement, String xpathExpression) {
-        if (Utils.checkXPathExpression(contenElement) == null) {
-            String 
-                errMsgPattern = NbBundle.getMessage(this.getClass(), 
-                "LBL_Bpel_Mapper_Err_Msg_Wrong_XPathExpr_Data"),
-                errMsg = MessageFormat.format(errMsgPattern, new Object[] {
-                    ((BpelEntity) contenElement).getElementType().getSimpleName(), xpathExpression});                
-            return errMsg;
-        }
-        return null; 
     }
 }
