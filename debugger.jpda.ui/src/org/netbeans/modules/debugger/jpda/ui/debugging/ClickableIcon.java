@@ -41,9 +41,11 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.openide.util.Utilities;
 
@@ -51,25 +53,27 @@ import org.openide.util.Utilities;
  *
  * @author Dan
  */
-public class ClickableIcon extends JLabel implements MouseMotionListener {
+public class ClickableIcon extends JPanel implements MouseListener {
 
-    private ImageIcon normal;
-    private ImageIcon focused;
+    private JLabel label = new JLabel();
+    
+    private ImageIcon normalIcon;
+    private ImageIcon focusedIcon;
     
     ClickableIcon(ImageIcon normal, ImageIcon focused) {
-        this.normal = normal;
-        this.focused = focused;
-        setIcon(normal); // [TODO] compute the initial state
-        addMouseMotionListener(this);
+        this.normalIcon = normal;
+        this.focusedIcon = focused;
+        label.setIcon(normal); // [TODO] compute the initial state
+        add(label);
+        addMouseListener(this);
     }
     
     ClickableIcon() {
-        this.normal = new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/debugger/jpda/resources/package.gif"));
-        this.focused = new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/debugger/jpda/resources/packageOpen.gif"));
-        setIcon(normal);
-        addMouseMotionListener(this);
+        this(new ImageIcon(Utilities.loadImage(
+            "org/netbeans/modules/debugger/jpda/resources/package.gif")),
+            new ImageIcon(Utilities.loadImage(
+            "org/netbeans/modules/debugger/jpda/resources/packageOpen.gif"))
+        );
     }
     
 //    @Override
@@ -98,31 +102,26 @@ public class ClickableIcon extends JLabel implements MouseMotionListener {
 //        });
 //    }
 
-    public void mouseDragged(MouseEvent e) {
+    
+    // **************************************************************************
+    // MouseListener
+    // **************************************************************************
+    
+    public void mouseClicked(MouseEvent e) {
     }
 
-    public void mouseMoved(MouseEvent e) {
-        final MouseEvent evt = e;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                int id = evt.getID();
-                switch(id) {
-                    case MouseEvent.MOUSE_ENTERED:
-                        setIcon(focused);
-                    break;
-                    case MouseEvent.MOUSE_EXITED:
-                        setIcon(normal);
-                    break;
-                    case MouseEvent.MOUSE_MOVED:
-                        Rectangle rect = getBounds();
-                        int sx = evt.getX();
-                        int sy = evt.getY();
-                        boolean isInside = sx > 1 && sx < rect.getWidth() - 1 && sy > 1 && sy < rect.getHeight() - 1;
-                        setIcon(isInside ? focused : normal);
-                    break;
-                }
-            }
-        });
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+        label.setIcon(focusedIcon);
+    }
+
+    public void mouseExited(MouseEvent e) {
+        label.setIcon(normalIcon);
     }
 
 }
