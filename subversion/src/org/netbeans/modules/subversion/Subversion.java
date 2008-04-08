@@ -146,7 +146,6 @@ public class Subversion {
                 try {
                     LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp();
-                    // TODO: refresh all annotations        
                 } finally {
                     Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
                 }
@@ -156,7 +155,6 @@ public class Subversion {
     
     public void shutdown() {
         fileStatusProvider.shutdown();
-        // TODO: refresh all annotations        
     }
     
     public FileStatusCache getStatusCache() {
@@ -309,14 +307,13 @@ public class Subversion {
     }
     
     /**
-     * TODO: Backdoor for SvnClientFactory
+     * Backdoor for SvnClientFactory
      */ 
     public void cleanupFilesystem() {
         filesystemHandler.removeInvalidMetadata();
     }
 
-    private void attachListeners(SvnClient client) {
-        // XXX let the cache and logger register by themself (addXXXListener)
+    private void attachListeners(SvnClient client) {        
         client.addNotifyListener(getLogger(client.getSvnUrl())); 
         client.addNotifyListener(refreshHandler);
         

@@ -162,7 +162,7 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true; // XXX experimental
+                if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true; 
             }
         }
         return false;

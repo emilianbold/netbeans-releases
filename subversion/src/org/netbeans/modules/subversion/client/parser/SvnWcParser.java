@@ -75,16 +75,6 @@ public class SvnWcParser {
      */ 
     public ISVNStatus[] getStatus(File path, boolean descend, boolean getAll) throws LocalSubversionException {        
         List<ISVNStatus> l = getStatus(path, descend);
-//        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(l.size());        
-//        for(ISVNStatus status : l) {
-//            if(!getAll) {
-//                    if(!status.getRepositoryTextStatus().equals(SVNStatusKind.NORMAL)) { // XXX does this mean !getAll
-//                       ret.add(status);
-//                    }     
-//            } else {
-//                ret.add(status);
-//            }
-//        }
         return l.toArray(new ISVNStatus[l.size()]);
     }
 

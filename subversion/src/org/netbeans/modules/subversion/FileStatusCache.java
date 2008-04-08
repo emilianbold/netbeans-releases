@@ -496,7 +496,6 @@ public class FileStatusCache {
     }
     
     private boolean needRecursiveRefresh(FileInformation fi, FileInformation current) {
-        // XXX review this part and see also the places where svnutils.refreshrecursively is called.
         //     looks like the same thing is done at diferent places in a different way but the same result.
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED || 
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;
@@ -696,12 +695,10 @@ public class FileStatusCache {
             && repositoryStatus.getRepositoryPropStatus() == null) {
                 // no remote change at all
             } else {
-                // TODO systematically handle all repository statuses
                 // so far above were observed....
-                // XXX
-                System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath()); // NOI18N
-                System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus()); // NOI18N
-                System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus()); // NOI18N
+                Subversion.LOG.warning("SVN.FSC: unhandled repository status: " + file.getAbsolutePath() + "\n" +   // NOI18N
+                                       "\ttext: " + repositoryStatus.getRepositoryTextStatus() + "\n" +             // NOI18N
+                                       "\tprop: " + repositoryStatus.getRepositoryPropStatus());                    // NOI18N
             }
         }
         
@@ -738,8 +735,7 @@ public class FileStatusCache {
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MISSING.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | remoteStatus, status);
-        } else if (SVNStatusKind.REPLACED.equals(kind)) {            
-            // XXX  create new status constant? Is it neccesary to visualize
+        } else if (SVNStatusKind.REPLACED.equals(kind)) {                      
             // this status or better to use this simplyfication?
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
@@ -747,15 +743,12 @@ public class FileStatusCache {
         } else if (SVNStatusKind.CONFLICTED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else if (SVNStatusKind.OBSTRUCTED.equals(kind)) {            
-            // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else if (SVNStatusKind.IGNORED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED | remoteStatus, status);
         } else if (SVNStatusKind.INCOMPLETE.equals(kind)) {            
-            // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else if (SVNStatusKind.EXTERNAL.equals(kind)) {            
-            // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
         } else {        
             throw new IllegalArgumentException("Unknown text status: " + status.getTextStatus()); // NOI18N
@@ -797,16 +790,12 @@ public class FileStatusCache {
         // I source.java.r45
         // I source.java.r57
         //
-        // XXX:svnClientAdapter design:  why is not it returned from getSingleStatus() ?
-        //
         // after-merge conflicts (even svn st does not recognize as ignored)
         // C source.java
         // ? source.java.working
         // ? source.jave.merge-right.r20
         // ? source.java.merge-left.r0
         //
-        // XXX:svn-cli design:  why is not it returned from getSingleStatus() ?
-        
         String name = file.getName();
         Matcher m = auxConflictPattern.matcher(name);
         if (m.matches()) {

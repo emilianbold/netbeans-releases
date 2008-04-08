@@ -114,7 +114,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         setVersioningComponent(syncTable.getComponent());
         reScheduleRefresh(0);
 
-        // XXX click it in form editor, probbaly requires  Mattisse >=v2
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
         jPanel2.setLayout(new ToolbarLayout());
