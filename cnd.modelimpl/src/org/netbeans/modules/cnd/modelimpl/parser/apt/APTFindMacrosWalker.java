@@ -144,7 +144,14 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 if (m.isSystem()) {
                     addSysReference(apttoken, m);
                 } else {
-                    addReference(apttoken, macroRefMap.get(apttoken.getText()));
+                    MacroInfo mi = macroRefMap.get(apttoken.getText());
+                    if (mi != null) {
+                        addReference(apttoken, mi);
+                    } else {
+                        // this is user-defined macro (iz132150)
+                        // XXX: update to API call then iz132308 will be fixed
+                        addSysReference(apttoken, m);
+                    }
                 }
             }
 //            else if (apttoken.getType() == CPPTokenTypes.ID_DEFINED) {
