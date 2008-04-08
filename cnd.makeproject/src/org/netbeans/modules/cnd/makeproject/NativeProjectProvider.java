@@ -358,7 +358,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         // Check compiler collection. Fire if different (IZ 131825)
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())) {
-            fireFilesPropertiesChanged();
+            fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             return;
         }
         

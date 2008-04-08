@@ -151,7 +151,7 @@ public class JsIndexer implements Indexer {
                 return false;
             }
             return true;
-        } else if (extension.equals("rhtml") || extension.equals("jsp")) { // NOI18N
+        } else if (extension.equals("rhtml") || extension.equals("jsp") || extension.equals("php")) { // NOI18N
             return true;
         } else if (extension.equals("js"))  {
             String name = file.getNameExt();
@@ -175,14 +175,6 @@ public class JsIndexer implements Indexer {
                 if (file.getFileObject().getParent().getFileObject(name, "js") != null) { // NOI18N
                     return false;
                 }
-            } else if (name.endsWith("-debug.js")) { // NOI18N
-                // See if we have a corresponding "un-min'ed" version in the same directory;
-                // if so, skip it
-                // Subtrack out the -min part
-                name = name.substring(0, name.length()-9); // NOI18N
-                if (file.getFileObject().getParent().getFileObject(name, "js") != null) { // NOI18N
-                    return false;
-                }
             } else {
                 // PENDING:  http://code.google.com/p/jqueryjs/    -- uses ".min.js" instead of "-min.js"; also has .pack.js
                 
@@ -192,10 +184,26 @@ public class JsIndexer implements Indexer {
                 // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
                 // too, not just the same directory since there's a good likelihood (with the library manager) you
                 // have these in different dirs.
-                FileObject parent = file.getFileObject().getParent();
+                FileObject fo = file.getFileObject();
+                if (fo == null) {
+                    // The file has been deleted
+                    // I still need to return yes here such that the file is deleted from the index.
+                    return true;
+                }
+                FileObject parent = fo.getParent();
+                if (parent == null) {
+                    // Unlikely but let's play it safe
+                    return true;
+                }
                 if (!name.endsWith(".uncompressed.js")) { // NOI18N
                     String base = name.substring(0, name.length()-3);
                     if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
+                        return false;
+                    }
+                }
+                if (!name.endsWith("-debug.js")) { // NOI18N
+                    String base = name.substring(0, name.length()-3);
+                    if (parent.getFileObject(base + "-debug", "js") != null) { // NOI18N
                         return false;
                     }
                 }

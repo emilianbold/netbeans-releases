@@ -721,10 +721,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
             </file>
             <file name="F9.shadow">
-                <attr name="originalFile" methodvalue="org.netbeans.modules.defaults.ShortcutsBuilder.compileSingle"/>
-            </file>
-            <file name="A-F9.shadow">
-                <attr name="originalFile" methodvalue="org.netbeans.modules.defaults.ShortcutsBuilder.compileSingle"/>
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
             </file>
             <file name="D-PAGE_UP.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
@@ -760,10 +757,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
             </file>
             <file name="S-F11.shadow">
-                <attr name="originalFile" methodvalue="org.netbeans.modules.defaults.ShortcutsBuilder.rebuildMainProject"/>
-            </file>
-            <file name="AS-F11.shadow">
-                <attr name="originalFile" methodvalue="org.netbeans.modules.defaults.ShortcutsBuilder.rebuildMainProject"/>
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
             </file>
             <file name="DS-F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
@@ -954,10 +948,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
             </file>
             <file name="F11.shadow">
-                <attr name="originalFile" methodvalue="org.netbeans.modules.defaults.ShortcutsBuilder.buildMainProject"/>
-            </file>
-            <file name="A-F11.shadow">
-                <attr name="originalFile" methodvalue="org.netbeans.modules.defaults.ShortcutsBuilder.buildMainProject"/>
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
             </file>
             <file name="OS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>

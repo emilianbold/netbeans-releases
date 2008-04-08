@@ -39,6 +39,8 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
 	            		 child = new InputOperatorComponentImpl(getModel(), childEl);
 	            	 } else if(type.endsWith("Output")) {
 	            		 child = new OutputOperatorComponentImpl(getModel(), childEl);
+	            	 }  else if(type.endsWith("InvokeStream")) {
+	            		 child = new InvokeStreamOperatorComponentImpl(getModel(), childEl);
 	            	 } else {
 	                    child = new OperatorComponentImpl(getModel(), childEl);
 	            	 }

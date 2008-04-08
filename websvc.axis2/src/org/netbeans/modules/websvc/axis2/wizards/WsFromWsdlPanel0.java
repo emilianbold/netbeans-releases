@@ -88,7 +88,7 @@ public class WsFromWsdlPanel0 implements  WizardDescriptor.FinishablePanel<Wizar
     }
 
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_WSDL_URL, component.getWsdlFile());
+        settings.putProperty(PROP_WSDL_URL, component.getWsdlFile()); 
     }
 
     public boolean isValid() {

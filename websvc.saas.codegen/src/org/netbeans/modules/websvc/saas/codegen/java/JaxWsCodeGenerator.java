@@ -92,10 +92,6 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         super(targetComponent, targetFile, new WsdlSaasBean(m, FileOwnerQuery.getOwner(targetFile)));
     }
 
-    public boolean wrapperResourceExists() {
-        return getWrapperResourceFile() != null;
-    }
-    
     @Override
     protected void preGenerate() throws IOException {
     }
@@ -103,23 +99,6 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
     @Override
     public WsdlSaasBean getBean() {
         return (WsdlSaasBean) bean;
-    }
-
-    @Override
-    public void addSupportingMethods() throws IOException {
-        if (getBean().getHeaderParameters().isEmpty()) {
-            return;
-        }
-        ModificationResult result = getWrapperResourceSource().runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] { QNAME, WS_BINDING_PROVIDER, HEADERS} );
-                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
-                ClassTree tree = addSetHeaderParamsMethod(copy, initial, getBean().lastOperationInfo().getPort().getJavaName());
-                copy.rewrite(initial, tree);
-            }}
-        );
-        result.commit();
     }
 
     protected String getCustomMethodBody() throws IOException {
@@ -234,11 +213,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
 
         return invocationBody;
     }
-    
-    @Override
-    protected void addImportsToWrapperResource() throws IOException {
-    }
-    
+
     public static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")

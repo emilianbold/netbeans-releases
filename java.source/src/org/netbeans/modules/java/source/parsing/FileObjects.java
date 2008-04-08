@@ -462,7 +462,22 @@ public class FileObjects {
     
     // Innerclasses ------------------------------------------------------------
     
-    public static abstract class Base implements JavaFileObject {
+    /**
+     * JavaFileObject which is able to infer itself.
+     * 
+     */
+    public static interface InferableJavaFileObject extends JavaFileObject {
+        
+        /**
+         * Returns binary name of the {@link JavaFileObject}.
+         * @return the binary name or null when {@link JavaFileObject}
+         * is not able to infer.
+         */
+        public String inferBinaryName ();
+        
+    }
+    
+    public static abstract class Base implements InferableJavaFileObject {
 
         protected final JavaFileObject.Kind kind;
         protected final String pkgName;
@@ -517,7 +532,17 @@ public class FileObjects {
         
         public String getExt () {
             return this.ext;
-        }        
+        }    
+        
+        public final String inferBinaryName () {
+            final StringBuilder sb = new StringBuilder ();
+            sb.append (this.pkgName);
+            if (sb.length()>0) {
+                sb.append('.'); //NOI18N
+            }
+            sb.append(this.nameWithoutExt);
+            return sb.toString();   
+        }
         
         private static String[] getNameExtPair (String name) {
             int index = name.lastIndexOf ('.');            
@@ -556,7 +581,7 @@ public class FileObjects {
         
         public File getFile () {
             return this.f;
-        }
+        }                
     }
     
     

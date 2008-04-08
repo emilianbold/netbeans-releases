@@ -71,15 +71,28 @@ public class XPathCastImpl implements XPathCast {
         return xPathExpr;
     }
 
-    public XPathCastImpl(Cast cast) throws Exception {
-        mCast = cast;
-        mCastTo = getType(cast);
-        if (mCastTo != null) {
-            throw new Exception("Unresolved castTo type"); // NOI18N
+    public static XPathCastImpl convert(Cast cast) {
+        SchemaReference<GlobalType> ref = cast.getType();
+        if (ref == null) {
+            return null;
         }
-        myPathText = cast.getPath();
+        GlobalType castTo = ref.get();
+        String pathText = cast.getPath();
+        //
+        if (cast == null || pathText == null || pathText.length() == 0) {
+            return null;
+        }
+        XPathCastImpl result = new XPathCastImpl();
+        result.mCast = cast;
+        result.myPathText = pathText;
+        result.mCastTo = castTo;
+        //
+        return result;
     }
 
+    private XPathCastImpl() {
+    }
+    
     public XPathCastImpl(XPathExpression castWhat, GlobalType castTo) {
         mXPathExpression = castWhat;
         mCastTo = castTo;
@@ -102,18 +115,6 @@ public class XPathCastImpl implements XPathCast {
             mXPathExpression = getExpression(mCast);
         }
         return mXPathExpression;
-    }
-
-    private GlobalType getType(Cast cast) {
-        SchemaReference<GlobalType> ref = cast.getType();
-//System.out.println();
-//System.out.println("---: " + ref);
-
-        if (ref == null) {
-            return null;
-        }
-//System.out.println("   : " + ref.get());
-        return ref.get();
     }
 
     @Override

@@ -44,6 +44,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.sql.Types;
@@ -165,6 +167,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
             mSqlType.add(SQL_TYPE_NAMES[i]);
         
         mComboBoxSqlType = new JComboBox(mSqlType);
+        mComboBoxSqlType.addItemListener(new SQLTypesItemListener());
         mCellEditorSqlType = new DefaultCellEditor(mComboBoxSqlType);
         
         initAttributeMetadataTables();
@@ -1058,6 +1061,46 @@ public class SelectPanel extends JPanel implements SharedConstants {
 				updateWhenExpressionChanges(info);
 				fireDropNotification(info);
 			}
+		}
+    	
+    }
+    
+    class SQLTypesItemListener implements ItemListener {
+
+		public void itemStateChanged(ItemEvent e) {
+				String item = (String) e.getItem();
+				int row = mTable.getEditingRow();
+				if(row == -1) {
+					return;
+				}
+				
+				if(item.equals(SQL_TYPE_VARCHAR)) {
+					if(row != -1) {
+						String size = "";
+						if(mHasExpressionColumn) {
+							size = (String) mTableModel.getValueAt(row, 3);
+						} else {
+							size = (String) mTableModel.getValueAt(row, 2);
+						}
+						
+						if(size == null || size.trim().equals("")) {
+							//by default set varchar data types size to 100
+							if(mHasExpressionColumn) {
+								mTableModel.setValueAt("100", row, 3);
+							} else {
+								mTableModel.setValueAt("100", row, 2);
+							}
+						}
+					}
+				} else {
+					//by default remove size and let user type in if
+					//required.
+					if(mHasExpressionColumn) {
+						mTableModel.setValueAt("", row, 3);
+					} else {
+						mTableModel.setValueAt("", row, 2);
+					}
+				}
 		}
     	
     }

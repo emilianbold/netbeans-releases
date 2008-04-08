@@ -364,7 +364,8 @@ public class RubyIndexer implements Indexer {
            
             String fileName = file.getNameExt();
             // DB migration?
-            if (Character.isDigit(fileName.charAt(0)) && fileName.matches("^\\d\\d\\d_.*")) { // NOI18N
+            if (Character.isDigit(fileName.charAt(0)) && 
+                    (fileName.matches("^\\d\\d\\d_.*") || fileName.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"))) { // NOI18N
                 if (fo != null && fo.getParent() != null && fo.getParent().getName().equals("migrate")) { // NOI18N
                     handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
@@ -602,7 +603,6 @@ public class RubyIndexer implements Indexer {
             
             // Find self.up
             String fileName = file.getFileObject().getName();
-            String migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(4)); // Strip off version prefix
             Node top = null;
             String version;
             if ("schema".equals(fileName)) { // NOI18N
@@ -611,7 +611,15 @@ public class RubyIndexer implements Indexer {
                 // that I can find this when querying
                 version = SCHEMA_INDEX_VERSION; // NOI18N
             } else {
-                version = fileName.substring(0,3);
+                String migrationClass;
+                if (fileName.charAt(3) == '_') {
+                    version = fileName.substring(0,3);
+                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(4)); // Strip off version prefix
+                } else {
+                    // Rails 2.1 stores it in UTC format
+                    version = fileName.substring(0,14);
+                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(15)); // Strip off version prefix
+                }
                 String sig = migrationClass + "#up"; // NOI18N
                 Node def = AstUtilities.findBySignature(root, sig);
 

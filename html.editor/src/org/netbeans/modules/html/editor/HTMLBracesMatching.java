@@ -205,7 +205,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
                             Element element = result.dtd().getElement(origin.name().toUpperCase());
                             if(element != null && element.hasOptionalEnd()) {
-                                return new int[]{searched, searched};
+                                return new int[]{context.getSearchOffset(), context.getSearchOffset()};
                             } else {
                                 return null;
                             }
@@ -219,7 +219,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
                             Element element = result.dtd().getElement(origin.name().toUpperCase());
                             if(element != null && element.hasOptionalStart()) {
-                                return new int[]{searched, searched};
+                                return new int[]{context.getSearchOffset(), context.getSearchOffset()};
                             } else {
                                 return null;
                             }

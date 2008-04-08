@@ -410,6 +410,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 !item.isExcluded();
     }
     
+    protected synchronized void registerProjectListeners() {
+        if( platformProject instanceof NativeProject ) {
+            if( projectListener == null ) {
+                projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject);
+            }
+            ((NativeProject) platformProject).addProjectItemsListener(projectListener);
+        }
+    }
+    
+    protected synchronized void unregisterProjectListeners() {
+        if( projectListener != null ) {
+            if( platformProject instanceof NativeProject ) {
+                ((NativeProject) platformProject).removeProjectItemsListener(projectListener);
+            }
+        }
+    }
+    
     protected synchronized void ensureFilesCreated() {
         if( status ==  Status.Initial || status == Status.Restored ) {
             try {
@@ -423,7 +440,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 ParserQueue.instance().onStartAddingProjectFiles(this);
-		getModel().registerProjectListeners(this, platformProject);
+		registerProjectListeners();
                 NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
                 if( nativeProject != null ) {
                     try {
@@ -1261,6 +1278,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 initializationTask = null;
             }
         }
+        unregisterProjectListeners();
         ParserQueue.instance().removeAll(this);
     }
     
@@ -1400,6 +1418,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     file.fixFakeRegistrations();
                 }
             }
+        } 
+        catch( Exception e ) {
+           DiagnosticExceptoins.register(e); 
         } finally {
             disposeLock.readLock().unlock();
             ProjectComponent.setStable(declarationsSorageKey);
@@ -1908,6 +1929,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private Key graphStorageKey;
     
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
+    
+    private NativeProjectListenerImpl projectListener;
     
     //private NamespaceImpl fakeNamespace;
     
