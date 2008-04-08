@@ -268,7 +268,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         JTextField filed = (JTextField) combo.getEditor().getEditorComponent();
         assertEquals(new Color(255, 0, 0), filed.getForeground());        
         JLabelOperator status = new JLabelOperator(editor,3);        
-        assertEquals("Invalid regular expresion: 'Unclosed group'",status.getText());
+        assertEquals("Invalid regular expression: 'Unclosed group'",status.getText());
         ch2.setSelected(false);
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
