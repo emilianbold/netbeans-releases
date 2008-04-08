@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="Mac Installer Properties" basedir="." >
+   
+    <property name="translatedfiles.src" value="${basedir}/../../../src"/>
         
     <property name="install.dir" value="/Applications/NetBeans"/>
     
@@ -29,5 +31,5 @@
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 </project>

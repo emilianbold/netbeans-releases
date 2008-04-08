@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -126,6 +127,14 @@ public class NavUtils {
             if (leaf instanceof ClassInstanceCreation) {
                 return a.getElement(leaf);
             }
+            
+            if (leaf instanceof Scalar) {
+                AttributedElement e = a.getElement(leaf);
+                
+                if (e != null) {
+                    return e;
+                }
+            }
 
             if (result != null) {
                 return result;
@@ -135,60 +144,16 @@ public class NavUtils {
         return null;
     }
     
-//    public static AttributedElement findElement(CompilationInfo info, final int offset, SemiAttribute[] out) {
-//        List<ASTNode> path = NavUtils.underCaret(info, offset);
-//        
-//        if (path.size() == 0) {
-//            return null;
-//        }
-//        
-//        path = new LinkedList<ASTNode>(path);//very defensive, for case underCaret becomes API
-//        
-//        Collections.reverse(path);
-//        
-//        AttributedElement result = null;
-//        
-//        for (final ASTNode leaf : path) {
-//            if (leaf instanceof Variable) {
-//                SemiAttribute semiAttribute = SemiAttribute.semiAttribute(info, out == null ? offset : -1);
-//                
-//                if (out != null) {
-//                    out[0] = semiAttribute;
-//                }
-//
-//                result = semiAttribute.getElement(leaf);
-//                continue;
-//            }
-//
-//            if (leaf instanceof FunctionInvocation) {
-//                FunctionInvocation i = (FunctionInvocation) leaf;
-//                
-//                if (i.getFunctionName().getStartOffset() <= offset && offset <= i.getFunctionName().getEndOffset()) {
-//                    SemiAttribute semiAttribute = SemiAttribute.semiAttribute(info, out == null ? offset : -1);
-//
-//                    if (out != null) {
-//                        out[0] = semiAttribute;
-//                    }
-//
-//                    return semiAttribute.getElement(leaf);
-//                }
-//            }
-//            
-//            if (leaf instanceof ClassInstanceCreation) {
-//                SemiAttribute semiAttribute = SemiAttribute.semiAttribute(info, out == null ? offset : -1);
-//
-//                if (out != null) {
-//                    out[0] = semiAttribute;
-//                }
-//
-//                return semiAttribute.getElement(leaf);
-//            }
-//            
-//            if (result != null) {
-//                return result;
-//            }
-//        }
-//        
-//        return null;
-//    }
+    public static boolean isQuoted(String value) {
+        return value.length() >= 2 &&
+               (value.startsWith("\"") || value.startsWith("'")) &&
+               (value.endsWith("\"") || value.endsWith("'"));
+    }
+    
+    public static String dequote(String value) {
+        assert isQuoted(value);
+        
+        return value.substring(1, value.length() - 1);
+    }
+    
 }

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.project.ui;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -49,7 +51,7 @@ public class UtilsTest extends NbTestCase {
         super(name);
     }
 
-    public void testvalidUrl() throws Exception {
+    public void testValidUrl() throws Exception {
         final String[] correctUrls = new String[] {
             "http://localhost/phpProject1",
             "http://localhost:8080/phpProject1",
@@ -78,6 +80,32 @@ public class UtilsTest extends NbTestCase {
         }
         for (String url : incorrectUrls) {
             assertFalse("correct url: [" + url + "]", Utils.isValidUrl(url));
+        }
+    }
+
+    // #131023
+    public void testValidateSourcesAndCopyTarget() throws Exception {
+        final Map<String, String> correctDirs = new HashMap<String, String>();
+        correctDirs.put("/home/test/NetBeansProjects/PHPProject", "/home/test/NetBeansProjects/PHPProjectCopy");
+        correctDirs.put("/home/test/NetBeansProjects/a", "/home/test/NetBeansProjects/b");
+        correctDirs.put("/home/test/NetBeansProjects/PHPProject", "/var/www/PHPProject");
+        correctDirs.put("/tmp/PHPProject", "/PHPProject");
+        correctDirs.put("C:\\test", "D:\\test");
+        final Map<String, String> incorrectDirs = new HashMap<String, String>();
+        incorrectDirs.put("/tmp/PHPProject", "/tmp/PHPProject/copy");
+        incorrectDirs.put("/tmp/PHPProject/web", "/tmp/PHPProject");
+
+        for (Map.Entry<String, String> entry : correctDirs.entrySet()) {
+            String sources = entry.getKey();
+            String copyTarget = entry.getValue();
+            assertNull("incorrect entry: [" + sources + ", " + copyTarget + "]",
+                    Utils.validateSourcesAndCopyTarget(sources, copyTarget));
+        }
+        for (Map.Entry<String, String> entry : incorrectDirs.entrySet()) {
+            String sources = entry.getKey();
+            String copyTarget = entry.getValue();
+            assertNotNull("correct entry: [" + sources + ", " + copyTarget + "]",
+                    Utils.validateSourcesAndCopyTarget(sources, copyTarget));
         }
     }
 }

@@ -36,38 +36,28 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.dbgp;
 
-package org.netbeans.modules.php.editor.index;
-
-import org.netbeans.modules.gsf.api.ElementKind;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Tor Norbye
+ * @author Radek Matous
  */
-public class IndexedProperty extends IndexedElement {
+public final class DebuggerOptions  {
+    private static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
+    private static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
     
-    IndexedProperty(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    public static int getPort() {
+        return getPreferences().getInt(PHP_DEBUGGER_PORT, 9000);     
+    } 
+    
+    public static boolean isDebuggerStoppedAtTheFirstLine() {
+        return getPreferences().getBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, false);
     }
     
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
-    }
-
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            signature = sb.toString();
-        }
-
-        return signature;
+    private static Preferences getPreferences() {
+        return NbPreferences.root().node("org/netbeans/modules/php/project");// NOI18N
     }
 }

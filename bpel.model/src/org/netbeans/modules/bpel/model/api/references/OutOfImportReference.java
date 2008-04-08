@@ -37,37 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
-
-import org.netbeans.modules.gsf.api.ElementKind;
+package org.netbeans.modules.bpel.model.api.references;
 
 /**
- *
- * @author Tor Norbye
+ * Marker interface. It indicates which rules should be used to 
+ * resolve external references. By the default behaviour, BPEL model does
+ * not allow refering to not imported external models. A BPEL entity, 
+ * which implements this interface, can refer to not imported models. 
+ * 
+ * See Cast extension.
+ * 
+ * @author nk160297
  */
-public class IndexedPackage extends IndexedElement {
-    
-    IndexedPackage(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
-    }
-    
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
-    }
+public interface OutOfImportReference {
 
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            signature = sb.toString();
-        }
-
-        return signature;
-    }
 }

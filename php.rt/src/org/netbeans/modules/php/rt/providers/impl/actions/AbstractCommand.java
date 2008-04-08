@@ -255,6 +255,11 @@ public abstract class AbstractCommand implements Runnable,
         return PhpProjectUtils.getRelativeSrcPath(getProject(), fileObject);
     }
 
+    public boolean isSaveRequired() {
+	return false;
+    }
+
+    
     protected void refresh() {
         myContext = null;
         myHostId = null;
