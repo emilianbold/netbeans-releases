@@ -186,10 +186,13 @@ public class IEPSemanticsVisitor implements IEPVisitor {
         
         
         List<OutputOperatorComponent> outputs = model.getOutputList();
-        if (outputs.size() == 0 && invokeOps.size() == 0) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
+        if (outputs.size() == 0) {
+        	//if there is no invoke stream then we should have atleat one output
+        	if(invokeOps.size() == 0) {
+	            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
+	            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+	            mResultItems.add(item);
+        	}
         }
 
         visitComponent(component);
