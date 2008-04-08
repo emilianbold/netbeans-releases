@@ -275,6 +275,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                     }
                 }
             }
+            list.add(null);
+            list.add(CommonProjectActions.customizeProjectAction());            
             return list.toArray(new Action[list.size()]);
         }
 
@@ -305,9 +307,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                         CommonProjectActions.renameProjectAction(), 
                         CommonProjectActions.moveProjectAction(), 
                         CommonProjectActions.copyProjectAction(), 
-                        CommonProjectActions.deleteProjectAction(), 
-                        null, 
-                        CommonProjectActions.customizeProjectAction()
+                        CommonProjectActions.deleteProjectAction()
             };
             
         }
