@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -94,6 +95,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private int                 cachedFramesFrom = -1;
     private int                 cachedFramesTo = -1;
     private Object              cachedFramesLock = new Object();
+    private JPDABreakpoint      currentBreakpoint;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -195,6 +197,14 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public synchronized void holdLastOperations(boolean doHold) {
         doKeepLastOperations = doHold;
+    }
+
+    public synchronized JPDABreakpoint getCurrentBreakpoint() {
+        return currentBreakpoint;
+    }
+
+    public synchronized void setCurrentBreakpoint(JPDABreakpoint currentBreakpoint) {
+        this.currentBreakpoint = currentBreakpoint;
     }
 
 
@@ -497,6 +507,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             waitUntilMethodInvokeDone();
             setReturnVariable(null); // Clear the return var on resume
             setCurrentOperation(null);
+            currentBreakpoint = null;
             if (!doKeepLastOperations) {
                 clearLastOperations();
             }
@@ -544,6 +555,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (clearVars) {
                 setCurrentOperation(null);
                 setReturnVariable(null); // Clear the return var on resume
+                currentBreakpoint = null;
                 if (!doKeepLastOperations) {
                     clearLastOperations();
                 }

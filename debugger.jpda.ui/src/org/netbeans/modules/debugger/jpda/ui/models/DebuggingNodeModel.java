@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -65,6 +66,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
@@ -113,7 +115,55 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
     
     private String getDisplayName(JPDAThread t) throws UnknownTypeException {
-        return "'" + t.getName() + "' " + getShortDescription(t);
+        String frame = null;
+        if (t.isSuspended () && (t.getStackDepth () > 0)) {
+            try { 
+                CallStackFrame sf = t.getCallStack (0, 1) [0];
+                frame = CallStackNodeModel.getCSFName (null, sf, true);
+            } catch (AbsentInformationException e) {
+            }
+        }
+        String name = t.getName();
+        JPDABreakpoint breakpoint = t.getCurrentBreakpoint();
+        if (breakpoint != null) {
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_Breakpoint", name, breakpoint.toString());
+        }
+        int i = t.getState ();
+        switch (i) {
+            case JPDAThread.STATE_UNKNOWN:
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Unknown", name);
+            case JPDAThread.STATE_MONITOR:
+                if (frame != null) {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Monitor_At", name, frame);
+                } else {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Monitor", name);
+                }
+            case JPDAThread.STATE_NOT_STARTED:
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_NotStarted", name);
+            case JPDAThread.STATE_RUNNING:
+                if (frame != null) {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Running_At", name, frame);
+                } else {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Running", name);
+                }
+            case JPDAThread.STATE_SLEEPING:
+                if (frame != null) {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Sleeping_At", name, frame);
+                } else {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Sleeping", name);
+                }
+            case JPDAThread.STATE_WAIT:
+                if (frame != null) {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Waiting_At", name, frame);
+                } else {
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Waiting", name);
+                }
+            case JPDAThread.STATE_ZOMBIE:
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Zombie", name);
+            default:
+                Exceptions.printStackTrace(new IllegalStateException("Unexpected thread state: "+i+" of "+t));
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Unknown", name);
+        }
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {

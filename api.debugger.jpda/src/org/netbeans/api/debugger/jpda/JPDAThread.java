@@ -116,6 +116,12 @@ public interface JPDAThread {
     public abstract Operation getCurrentOperation();
     
     /**
+     * Returns the current breakpoint hit by this thread.
+     * @return The current breakpoint, or <CODE>null</CODE>.
+     */
+    public abstract JPDABreakpoint getCurrentBreakpoint();
+    
+    /**
      * Returns the list of the last operations, that were performed on this thread.
      * Typically just operations from the current expression are stored.
      * The thread should be suspended at the moment this method is called.
