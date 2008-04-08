@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.editing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -163,6 +164,17 @@ public abstract class JsTestBase extends NbTestCase {
         TestCompilationInfo info = new TestCompilationInfo(this, fileObject, doc, text);
 
         return info;
+    }
+    
+    public TestCompilationInfo getInfoForText(String text) throws Exception {
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        FileObject testFO = workDir.getFileObject("TestScript.js");
+        if (testFO != null) {
+            testFO.delete();
+        }
+        testFO = workDir.createData("TestScript.js");
+        FileObject fileObject = copyStringToFileObject(testFO, text);
+        return getInfo(fileObject);
     }
     
     protected String readFile(final FileObject fo) {
@@ -502,4 +514,16 @@ TranslatedSource translatedSource = null; // TODO
         ParserResult result = parser.parseBuffer(context, JsParser.Sanitize.NEVER);
         return result;
     }
+
+    private static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
+        }
+    }
+    
 }

@@ -240,18 +240,14 @@ public class ProxyFileManager implements JavaFileManager {
         }
         String result;
         //If instanceof FileObject.Base no need to delegate it
-        if (javaFileObject instanceof FileObjects.Base) {
-            final FileObjects.Base base = (FileObjects.Base) javaFileObject;
-            final StringBuilder sb = new StringBuilder ();
-            sb.append (base.getPackage());
-            if (sb.length()>0) {
-                sb.append('.'); //NOI18N
+        if (javaFileObject instanceof FileObjects.InferableJavaFileObject) {
+            final FileObjects.InferableJavaFileObject ifo = (FileObjects.InferableJavaFileObject) javaFileObject;
+            result = ifo.inferBinaryName();
+            if (result != null) {
+                this.lastInfered = javaFileObject;            
+                this.lastInferedResult = result;
+                return result;
             }
-            sb.append(base.getNameWithoutExtension());
-            result = sb.toString();
-            this.lastInfered = javaFileObject;
-            this.lastInferedResult = result;
-            return result;
         }
         //Ask delegates to infer the binary name
         JavaFileManager[] fms = getFileManager (location);

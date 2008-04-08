@@ -46,12 +46,14 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -202,6 +204,10 @@ public final class Unresolved implements Disposable {
         }
         public List<CsmMacro> getMacros() {
             return Collections.EMPTY_LIST;
+        }
+
+        public Iterator<CsmMacro> getMacros(CsmFilter filter) {
+            return getMacros().iterator();
         }
         
         public CsmUID getUID() {

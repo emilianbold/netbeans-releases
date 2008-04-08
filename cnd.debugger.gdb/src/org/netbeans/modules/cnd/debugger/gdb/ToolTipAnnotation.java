@@ -131,6 +131,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             return;
         }
         
+        if (!GdbDebugger.STATE_STOPPED.equals(debugger.getState())) {
+            return;
+        }
+        
         String toolTipText = debugger.evaluate(expression);
         
         firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
