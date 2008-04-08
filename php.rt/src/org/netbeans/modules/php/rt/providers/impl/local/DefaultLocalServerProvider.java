@@ -70,7 +70,7 @@ public class DefaultLocalServerProvider extends AbstractProvider<LocalHostImpl> 
     private static final String PHP_CONFIG_FILE = "phpConfig";                // NOI18N     
 
 
-    public DefaultLocalServerProvider(String domain, String baseDir, String port, String docRoot) {
+    public DefaultLocalServerProvider(String domain, String baseDir, String port, String docRoot, String indexFile) {
         myCommandProvider = new LocalCommandProvider(this) {
 
 	    @Override
@@ -109,6 +109,9 @@ public class DefaultLocalServerProvider extends AbstractProvider<LocalHostImpl> 
         impl.setProperty(LocalHostImpl.DOCUMENT_PATH, docRoot);
         impl.setProperty(LocalHostImpl.WEB_CONFIG_FILE, "");
         impl.setProperty(LocalHostImpl.PHP_CONFIG_FILE, "");
+        if (indexFile != null && indexFile.trim().length() > 0) {
+            impl.setProperty(LocalHostImpl.INDEX_FILE, indexFile);
+        }
         doGetHosts().add(impl);
     }
 
