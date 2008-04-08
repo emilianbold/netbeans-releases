@@ -355,7 +355,14 @@ public class BuildServiceAssembly extends Task {
                 createBCJar(bcJarMap.get(bcName), genericBCJar,
                         /*isCompAppWSDLNeeded,*/ bcsuDescriptorBuilder, bcName);
             }
-                        
+
+            // )4/03/08, generated OSGi supported manifest.mf (minimum entries)
+            String osgisupport = p.getProperty(JbiProjectProperties.OSGI_SUPPORT);
+            String projName = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+            if ((osgisupport != null) && osgisupport.equalsIgnoreCase("true")) {
+                generateOSGiManifest(buildMetaInfDir, projName);
+            }
+
             // 9/12/07, filter out unconnected JavaEE endpoints
             log("Filtering Java EE Endpoints...");
 
@@ -374,6 +381,36 @@ public class BuildServiceAssembly extends Task {
                 // ignore this..
             }
         }
+    }
+
+    private void generateOSGiManifest(File buildDir, String projName) {
+        if (buildDir == null) {
+            return;
+        }
+
+        if (projName == null) {
+            projName = "UnKnownApp";  // NOI18N
+        }
+        try {
+            String manText = "Bundle-Name: " + projName + "\n" +     // NOI18N
+                             "Bundle-SymbolicName: " + projName + "\n" +    // NOI18N
+                             "Bundle-ManifestVersion: 2\n" +      // NOI18N
+                             "Bundle-Version: 1.0.0";     // NOI18N
+
+            File file = new File(buildDir, "MANIFEST.MF");    // NOI18N
+            boolean success = file.createNewFile();
+            if (success) {
+                BufferedWriter out = new BufferedWriter(new FileWriter(file));
+                out.write(manText);
+                out.close();
+            } else {
+                // File already exists
+            }
+        } catch (IOException ex) {
+            log("Exception: A processing error occurred; " + ex);     // NOI18N
+        }
+
+
     }
 
     private List<String> getJarList(String commaSeparatedList){

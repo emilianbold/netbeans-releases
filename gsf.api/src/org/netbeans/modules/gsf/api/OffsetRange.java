@@ -49,6 +49,8 @@ package org.netbeans.modules.gsf.api;
  * Put yet another way, the starting offset is inclusive, and the ending
  * offset is exclusive.
  *
+ * @todo This class should be final
+ * 
  * @author Tor Norbye
  */
 public class OffsetRange {
@@ -78,6 +80,20 @@ public class OffsetRange {
     /** Get the length of the offset range */
     public int getLength() {
         return getEnd()-getStart();
+    }
+
+    /**
+     * Return true if the given range overlaps with the current range.
+     * Full containment one way or the other is also considered overlapping.
+     */
+    public boolean overlaps(OffsetRange range) {
+        if (range == OffsetRange.NONE) {
+            return false;
+        } else if (this == OffsetRange.NONE) {
+            return false;
+        } else {
+            return end > range.start && start < range.end;
+        }
     }
 
     @Override

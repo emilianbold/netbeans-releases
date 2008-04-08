@@ -1052,7 +1052,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         if (subBean.isItem()) {
             bodyText = "{" +
                     "final $CLASS$ parent = getEntity();" +
-                    "return new $RESOURCE$(null, context) {" +
+                    "return new $RESOURCE$($ID_PARAMS$, context) {" +
                     "@Override protected $SUBCLASS$ getEntity() {" +
                     "$SUBCLASS$ entity = parent.$GETTER$();" +
                     "if (entity == null) {" +
@@ -1065,7 +1065,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
                     replace("$RESOURCE$", resourceName).
                     replace("$SUBCLASS$", getEntityClassName(subBean)).
-                    replace("$ID_PARAMS$", getIdFieldParamList(subBean)).
+                    replace("$ID_PARAMS$", getIdFieldNullValueList(subBean)).
                     replace("$GETTER$", getGetterName(fieldInfo));
         } else {
             bodyText = "{" +
@@ -1936,6 +1936,28 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         }
     }
     
+    private String getIdFieldNullValueList(EntityResourceBean bean) {
+        FieldInfo field = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        if (field.isEmbeddedId()) {
+            Collection<FieldInfo> fieldInfos = field.getFieldInfos();
+            int index = 0;
+            String valueList = "";
+        
+            for (FieldInfo f : fieldInfos) {
+                if (index > 0) {
+                    valueList += ", ";
+                }
+                
+                valueList += getNullValue(f);
+                index++;
+            }
+            return valueList;
+        } else {
+            return getNullValue(field);    
+        }
+    }
+    
     private String getIdFieldToUriStmt(EntityResourceBean bean) {
         return getIdFieldToUriStmt(bean.getEntityClassInfo().getIdFieldInfo());
     }
@@ -2024,7 +2046,22 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     }
     
     private String demodulize(String str) {
+   
         return Inflector.getInstance().demodulize(str);
+    }
+    
+    private String getNullValue(FieldInfo f) {
+        String type = f.getSimpleTypeName();
+        
+        if (type.equals("int") || type.equals("long") || type.equals("float") ||
+                type.equals("double") || type.equals("byte") || type.equals("short") ||
+                type.equals("char")) { 
+            return "(" + f.getSimpleTypeName() + ") 0";
+        } else if (type.equals("boolean")) {
+            return "false";
+        }
+        
+        return "null";
     }
     
     protected int getTotalWorkUnits() {

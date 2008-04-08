@@ -357,6 +357,22 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isWhiteSpace(jdts.token()));
     }
     
+    public void testIsFirstWhiteSpaceAtFirstLine_131826() throws Exception {
+        String code = 
+                "/** * @author\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        String what = "* @author";
+        int offset = code.indexOf(what);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isFirstWhiteSpaceAtFirstLine(jdts.token()));
+    }
+    
     public void testIsInlineTagStart() throws Exception {
         String code = 
                 "package p;\n" +

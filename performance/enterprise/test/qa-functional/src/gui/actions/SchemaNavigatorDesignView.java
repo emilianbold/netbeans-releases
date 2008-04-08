@@ -56,7 +56,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class SchemaNavigatorDesignView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private Node processNode, schemaNode;
+    private Node processNode, schemaNode, tempNode;
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorDesignView(String testName) {
@@ -74,10 +74,14 @@ public class SchemaNavigatorDesignView  extends org.netbeans.performance.test.ut
     
     protected void initialize() {
         log(":: initialize");
+        System.gc();
+        new EventTool().waitNoEvent(3000);
         processNode = EPUtilities.getProcessFilesNode("SOATestProject");
-        processNode.select();
         
         schemaNode = new Node(processNode, "fields.xsd");
+        tempNode = new Node(processNode, "batch.xsd");        
+        
+        tempNode.select();
     }
     
     public void prepare() {
@@ -87,13 +91,13 @@ public class SchemaNavigatorDesignView  extends org.netbeans.performance.test.ut
     public ComponentOperator open() {
         log(":: open");
         schemaNode.select();
-        new TopComponentOperator("Navigator"); // NOI18N
-        return null;
+        return new TopComponentOperator("Navigator"); // NOI18N
     }
     
     @Override
     public void close() {
-        processNode.select();
+        tempNode.select();
+        System.gc();
         new EventTool().waitNoEvent(1000);
     }
     

@@ -63,7 +63,7 @@ public class ZoomInAction extends GraphAction {
 
     public ZoomInAction() {
         //action name
-        String nbBundle = mLoc.t("BUND321: Zoom In...");
+        String nbBundle = mLoc.t("BUND321: Zoom In");
         this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon

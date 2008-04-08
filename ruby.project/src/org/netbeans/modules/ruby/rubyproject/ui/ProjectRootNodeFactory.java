@@ -44,8 +44,8 @@ package org.netbeans.modules.ruby.rubyproject.ui;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -65,7 +65,11 @@ import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -73,6 +77,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 public class ProjectRootNodeFactory implements NodeFactory {
@@ -85,11 +90,15 @@ public class ProjectRootNodeFactory implements NodeFactory {
     
     private static class RootChildren implements NodeList<RootChildNode>, ChangeListener {
         
+        private final FileChangeListener rootFOListener;
         private final RubyProject project;
-        private final List<ChangeListener> listeners;
+        private final List<ChangeListener> changeListeners;
         
         public RootChildren(RubyProject proj) {
-            listeners = new ArrayList<ChangeListener>();
+            rootFOListener = new RootFileChangeListener();
+            FileObject prjRoot = proj.getProjectDirectory();
+            prjRoot.addFileChangeListener(WeakListeners.create(FileChangeListener.class, rootFOListener, prjRoot));
+            changeListeners = new CopyOnWriteArrayList<ChangeListener>();
             project = proj;
         }
         
@@ -129,23 +138,17 @@ public class ProjectRootNodeFactory implements NodeFactory {
             return rootFiles;
         }
         
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            changeListeners.add(l);
         }
         
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+        public void removeChangeListener(ChangeListener l) {
+            changeListeners.remove(l);
         }
         
         private void fireChange() {
-            List<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            Iterator<ChangeListener> it = list.iterator();
-            while (it.hasNext()) {
-                ChangeListener elem = it.next();
-                elem.stateChanged(new ChangeEvent( this ));
+            for (ChangeListener changeListener : changeListeners) {
+                changeListener.stateChanged(new ChangeEvent(this));
             }
         }
 
@@ -186,13 +189,31 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-        
+
+        final class RootFileChangeListener extends FileChangeAdapter {
+
+            public @Override void fileFolderCreated(FileEvent fe) {
+                stateChanged(null);
+            }
+
+            public @Override void fileDataCreated(FileEvent fe) {
+                stateChanged(null);
+            }
+
+            public @Override void fileDeleted(FileEvent fe) {
+                stateChanged(null);
+            }
+
+            public @Override void fileRenamed(FileRenameEvent fe) {
+                stateChanged(null);
+            }
+        }
     }
-    
+
     private static class RootChildNode {
         
-        public final SourceGroup group;
-        public final FileObject fileObject;
+        private final SourceGroup group;
+        private final FileObject fileObject;
         
         RootChildNode(SourceGroup group) {
             this.group = group;
@@ -220,29 +241,11 @@ public class ProjectRootNodeFactory implements NodeFactory {
                         (thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName));
             }
         }
-        
-    }
-    
-    // Copied from inner class in Java Projects' PackageView class:
-    /**
-     * FilterNode which listens on the PackageViewSettings and changes the view
-     * to the package view or tree view.
-     */
-    private static final class RootNode extends FilterNode { // implements PropertyChangeListener {
-        
-        private RootNode(final SourceGroup group) {
-            super(getOriginalNode(group));
+
+        public @Override String toString() {
+            return "ProjectRootNodeFactory[fileObject: " + fileObject + ", group: " + group + "]"; // NOI18N
         }
         
-        private static Node getOriginalNode(final SourceGroup group) {
-            FileObject root = group.getRootFolder();
-            // Guard condition, if the project is (closed) and deleted but not
-            // yet gced and the view is switched, the source group is not valid.
-            if (root == null || !root.isValid()) {
-                return new AbstractNode(Children.LEAF);
-            }
-            return new TreeRootNode(group);
-        }
     }
     
     private static class FolderViewFilterNode extends FilterNode {
@@ -251,17 +254,22 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private final Project project;
         private Action[] actions;
         
-        public FolderViewFilterNode(final SourceGroup sourceGroup, final Project project) {
-            this(new RootNode(sourceGroup), project);
-        }
-        
-        public FolderViewFilterNode(final FilterNode rootNode, final Project project) {
-            super(rootNode);
+        FolderViewFilterNode(final SourceGroup sourceGroup, final Project project) {
+            super(getOriginalNode(sourceGroup));
             this.project = project;
             this.nodeName = "Sources"; // NOI18N
-
         }
-        
+
+        private static Node getOriginalNode(final SourceGroup group) {
+            FileObject root = group.getRootFolder();
+            // Guard condition, if the project is (closed) and deleted but not
+            // yet GCed and the view is switched, the source group is not valid.
+            if (root == null || !root.isValid()) {
+                return new AbstractNode(Children.LEAF);
+            }
+            return new TreeRootNode(group);
+        }
+
         public @Override Action[] getActions(boolean context) {
             if (actions == null) {
                 actions = new Action[] {
@@ -289,11 +297,11 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private final String nodeName;
         private final String panelName;
         
-        public PreselectPropertiesAction(Project project, String nodeName) {
+        PreselectPropertiesAction(Project project, String nodeName) {
             this(project, nodeName, null);
 }
         
-        public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
+        PreselectPropertiesAction(Project project, String nodeName, String panelName) {
             super(NbBundle.getMessage(ProjectRootNodeFactory.class, "LBL_Properties_Action"));
             this.project = project;
             this.nodeName = nodeName;

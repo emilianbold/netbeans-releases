@@ -434,7 +434,7 @@ made subject to such option by the copyright holder.
                 <delete file="${{build.dir}}/BCDeployment.jar"/>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
-                <jar compress="${{jar.compress}}" jarfile="${{dist.jar}}">
+                <jar compress="${{jar.compress}}" jarfile="${{dist.jar}}" filesetmanifest="merge">
                     <fileset dir="${{build.dir}}" excludes="jar/*" />
                 </jar>
             </target>

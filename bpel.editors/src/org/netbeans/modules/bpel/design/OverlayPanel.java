@@ -97,11 +97,11 @@ public class OverlayPanel extends JComponent{
     protected void paintComponent(Graphics g) {
        
    
-        double zoom = designView.getCorrectedZoom();
-        
+//        double zoom = designView.getCorrectedZoom();
+//        
         Graphics2D g2 = GUtils.createGraphics(g);
-        
-        g2.scale(zoom, zoom);
+//        
+//        g2.scale(zoom, zoom);
 
         //fixme - render DND status here
         

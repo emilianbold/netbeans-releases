@@ -386,7 +386,7 @@ public class JsTypeAnalyzer {
                     return null;
                 }
                 String s = AstUtilities.getCallName(node, true);
-                if (s != null) {
+                if (s != null && s.length() > 0) {
                     return FunctionCache.INSTANCE.getType(s, index);
                 }
             }
@@ -531,7 +531,7 @@ public class JsTypeAnalyzer {
                     return null;
                 }
                 String s = AstUtilities.getCallName(node, true);
-                if (s != null) {
+                if (s != null && s.length() > 0) {
                     return s;
                 }
             }
