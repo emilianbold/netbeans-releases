@@ -31,8 +31,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JToolBar;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import junit.textui.TestRunner;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
@@ -40,9 +43,11 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -226,14 +231,45 @@ public class IncrementalSearchTest extends EditorTestCase{
         editor.setCaretPosition(3, 1);
         openSearchBar(editor);        
         ContainerOperator c = new ContainerOperator(searchBar);
-        JTextFieldOperator t = new JTextFieldOperator(c);
+        JTextFieldOperator t = new JTextFieldOperator(c);        
         t.clearText();
         new EventTool().waitNoEvent(100);
+        t.requestFocus();
         t.typeText("XYZ");
-        assertEquals(new Color(178,0,0),t.getForeground());
+        new EventTool().waitNoEvent(300);
+        JComboBox combo = (JComboBox) new JComboBoxOperator(c).getSource();
+        JTextField filed = (JTextField) combo.getEditor().getEditorComponent();
+        assertEquals(new Color(178, 0, 0), filed.getForeground());
         t.pushKey(KeyEvent.VK_ENTER);
         JLabelOperator status = new JLabelOperator(editor,3);        
         assertEquals("'XYZ' not found",status.getText());
+        t.pushKey(KeyEvent.VK_ESCAPE);
+        new EventTool().waitNoEvent(100);
+        assertFalse("ToolBar not closed",searchBar.isVisible());
+        editor.closeDiscard();
+    }
+    
+    public void testInvalidRegexp() {
+        openDefaultProject();
+        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        EditorOperator editor = new EditorOperator("match.txt");
+        editor.setCaretPosition(3, 1);
+        openSearchBar(editor);        
+        ContainerOperator c = new ContainerOperator(searchBar);
+        JTextFieldOperator t = new JTextFieldOperator(c);
+        JCheckBoxOperator ch2 = new JCheckBoxOperator(c,2);
+        ch2.setSelected(true);
+        t.clearText();
+        new EventTool().waitNoEvent(100);
+        t.requestFocus();
+        t.typeText("(");
+        new EventTool().waitNoEvent(300);
+        JComboBox combo = (JComboBox) new JComboBoxOperator(c).getSource();
+        JTextField filed = (JTextField) combo.getEditor().getEditorComponent();
+        assertEquals(new Color(255, 0, 0), filed.getForeground());        
+        JLabelOperator status = new JLabelOperator(editor,3);        
+        assertEquals("Invalid regular expresion: 'Unclosed group'",status.getText());
+        ch2.setSelected(false);
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
         assertFalse("ToolBar not closed",searchBar.isVisible());
@@ -365,6 +401,10 @@ public class IncrementalSearchTest extends EditorTestCase{
     }
     
     public static void main(String[] args) {
+        
+        //testNotFound
+        //TestRunner.run(new IncrementalSearchTest("testNotFound"));
+        
         TestRunner.run(IncrementalSearchTest.class);        
     }
 
@@ -372,7 +412,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         editor.pressKey(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK);
         new EventTool().waitNoEvent(250);
         getSearchBar((Container)editor.getSource());        
-        assertTrue("ToolBar not opened",searchBar.isVisible());
+        assertTrue("ToolBar not opened",searchBar.isVisible());        
     }
     
 }
