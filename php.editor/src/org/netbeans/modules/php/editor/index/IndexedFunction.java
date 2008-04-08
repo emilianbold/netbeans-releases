@@ -52,13 +52,13 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String[] args;
     private List<String> parameters;
     
-    IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+    public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
         super(name, in, index, fileUrl, attributes, flags, kind);
     }
     
     @Override
     public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
+        return getSignature() + ":" + getFilenameUrl();
     }
 
     @Override

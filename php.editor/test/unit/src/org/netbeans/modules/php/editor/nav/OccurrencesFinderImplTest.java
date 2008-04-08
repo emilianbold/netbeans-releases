@@ -95,6 +95,15 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "?>");
     }
     
+    public void testOccurrencesDefines() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "echo \"fff\".test.\"dddd\";\n" +
+                               "define('^test^', 'testttttt');\n" +
+                               "echo \"fff\".^te|st^.\"dddd\";\n" +
+                               "echo \"fff\".^test^.\"dddd\";\n" +
+                               "?>");
+    }
+    
     private void performTestOccurrences(String code) throws Exception {
         int caretOffset = code.replaceAll("\\^", "").indexOf('|');
         String[] split = code.replaceAll("\\|", "").split("\\^");

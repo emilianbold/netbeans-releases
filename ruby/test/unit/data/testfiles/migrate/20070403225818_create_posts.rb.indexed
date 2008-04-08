@@ -1,0 +1,32 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/20070403225818_create_posts.rb
+
+
+
+Document 1
+Indexed:
+  class : CreatePosts
+  class-ig : createposts
+  extends : ActiveRecord::Migration
+  fqn : CreatePosts
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |CLASS|
+
+
+Document 2
+Indexed:
+  dbtable : posts
+
+Not Indexed:
+  dbcolumn : created_at;datetime
+  dbcolumn : importance;integer
+  dbcolumn : removedlater;string
+  dbcolumn : subtitle;string
+  dbcolumn : title;text
+  dbcolumn : updated_at;datetime
+  dbversion : 20070403225818

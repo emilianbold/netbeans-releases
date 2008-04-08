@@ -62,13 +62,13 @@ public class PHPDocCommentLexerTest extends NbTestCase {
         super.tearDown();
     }
 
-    public void testSimpleComment() {
+    public void testSimpleComment() throws Exception{
         TokenSequence<?> ts = PHPLexerUtils.seqForText("comment 1", PHPDocCommentTokenId.language());
         PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1");
     }
     
-    public void testCommentTags() {
+    public void testCommentTags() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("comment 1\n * @link\n * @name\n * @desc", PHPDocCommentTokenId.language());
         //PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1\n * ");
@@ -78,6 +78,11 @@ public class PHPDocCommentLexerTest extends NbTestCase {
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "\n * ");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_DESC, "@desc");
 
+    }
+    
+    public void testNotMatchInput1() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)", PHPDocCommentTokenId.language());
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)");
     }
 
     

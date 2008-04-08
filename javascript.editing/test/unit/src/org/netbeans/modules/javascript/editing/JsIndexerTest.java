@@ -52,7 +52,10 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Tor Norbye
@@ -292,6 +295,67 @@ public class JsIndexerTest extends JsTestBase {
         }
         
         return null;
+    }
+    
+    private void checkIsIndexable(String relFilePath, boolean isIndexable) throws Exception {
+        JsIndexer indexer = new JsIndexer();
+        FileObject fo = getTestFile(relFilePath);
+        assertNotNull(fo);
+        ParserFile file = new DefaultParserFile(fo, null, false);
+        
+        assertEquals(isIndexable, indexer.isIndexable(file));
+    }
+    
+    public void testIsIndexable1() throws Exception {
+        checkIsIndexable("testfiles/indexable/lib.js", true);
+    }
+    
+    public void testIsIndexable2() throws Exception {
+        checkIsIndexable("testfiles/indexable/data.json", false);
+    }
+    
+    public void testIsIndexable3() throws Exception {
+        checkIsIndexable("testfiles/indexable/ext-all-debug.js", true);
+        checkIsIndexable("testfiles/indexable/ext-all.js", false);
+    }
+    
+    public void testIsIndexable4() throws Exception {
+        checkIsIndexable("testfiles/indexable/yui.js", false);
+        checkIsIndexable("testfiles/indexable/yui-min.js", false);
+        checkIsIndexable("testfiles/indexable/yui-debug.js", true);
+    }
+    
+    public void testIsIndexable5() throws Exception {
+        checkIsIndexable("testfiles/indexable/index.html", true);
+        checkIsIndexable("testfiles/indexable/servlet.jsp", true);
+        checkIsIndexable("testfiles/indexable/view2.php", true);
+        checkIsIndexable("testfiles/indexable/view3.rhtml", true);
+    }
+    
+    public void testIsIndexable6() throws Exception {
+        checkIsIndexable("testfiles/indexable/dojo.js", false);
+        checkIsIndexable("testfiles/indexable/dojo.uncompressed.js", true);
+    }
+    
+    public void testIsIndexable7() throws Exception {
+        checkIsIndexable("testfiles/indexable/foo.js", true);
+        checkIsIndexable("testfiles/indexable/foo.min.js", false);
+    }
+    
+    public void testIsIndexable8() throws Exception {
+        checkIsIndexable("testfiles/indexable/doc.sdoc", true);
+    }
+
+    // Not yet hooked up
+    //public void testIsIndexable9() throws Exception {
+    //    checkIsIndexable("testfiles/indexable/view.erb", true);
+    //}
+    
+    public void testQueryPath() throws Exception {
+        JsIndexer indexer = new JsIndexer();
+        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
+        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
+        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
     }
     
     public void testIndex0() throws Exception {

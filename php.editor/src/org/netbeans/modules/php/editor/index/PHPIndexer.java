@@ -158,7 +158,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.5"; // NOI18N
+        return "0.2.7"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -221,7 +221,7 @@ public class PHPIndexer implements Indexer {
             
             for (Statement statement : program.getStatements()){
                 if (statement instanceof FunctionDeclaration){
-                    indexFunction(FIELD_BASE, (FunctionDeclaration)statement, document);
+                    indexFunction((FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
                     if (expressionStatement.getExpression() instanceof Include) {
@@ -250,6 +250,7 @@ public class PHPIndexer implements Indexer {
             StringBuilder classSignature = new StringBuilder();
             classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
+            classSignature.append(classDeclaration.getModifier() + ";"); //NOI18N
             document.addPair(FIELD_CLASS, classSignature.toString(), true);
             // index 
             
@@ -258,7 +259,7 @@ public class PHPIndexer implements Indexer {
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-                    indexFunction(FIELD_METHOD, methodDeclaration.getFunction(), document);
+                    indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
                 }
                 
                 if (statement instanceof FieldsDeclaration) {
@@ -267,8 +268,12 @@ public class PHPIndexer implements Indexer {
                     for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
                         if (field.getName().getName() instanceof Identifier) {
                             Identifier identifier = (Identifier) field.getName().getName();
-                            String fieldSignature = identifier.getName() + ";" + field.getStartOffset() + ";";
-                            document.addPair(FIELD_FIELD, fieldSignature, true);
+                            StringBuilder fieldSignature = new StringBuilder();
+                            fieldSignature.append(identifier.getName() + ";"); //NOI18N
+                            fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
+                            fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
+                                     
+                            document.addPair(FIELD_FIELD, fieldSignature.toString(), true);
                         }
                     }
                 }
@@ -308,7 +313,20 @@ public class PHPIndexer implements Indexer {
             }
         }
 
-        private void indexFunction(String field, FunctionDeclaration functionDeclaration, IndexDocument document) {
+        private void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document) {
+            String signature = getBaseSignatureForFunctionDeclaration(functionDeclaration);
+            document.addPair(FIELD_BASE, signature, true);
+        }
+        
+        private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
+            StringBuilder signature = new StringBuilder();
+            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
+            signature.append(modifiers + ";"); //NOI18N
+
+            document.addPair(FIELD_METHOD, signature.toString(), false);
+        }
+        
+        private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
 
@@ -330,10 +348,10 @@ public class PHPIndexer implements Indexer {
                     signature.append(",");
                 }
             }
+            
             signature.append(";");
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
-
-            document.addPair(field, signature.toString(), true);
+            return signature.toString();
         }
     }
     
