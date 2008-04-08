@@ -128,12 +128,12 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         //menuitem.setToolTipText(target.getDescription());
         menu.add(menuitem);
 
-        Map<Integer,String> versions = getVersions(project);
+        Map<Long,String> versions = getVersions(project);
 
         if (!versions.isEmpty()) {
             menu.addSeparator();
 
-            List<Integer> sortedList = new ArrayList<Integer>();
+            List<Long> sortedList = new ArrayList<Long>();
             sortedList.addAll(versions.keySet());
             Collections.sort(sortedList);
 
@@ -141,7 +141,7 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         }
     }
         
-    private static void buildMenu(RailsProject project, JMenu menu, int startIndex, int endIndex, List<Integer> versions, Map<Integer,String> descriptions) {
+    private static void buildMenu(RailsProject project, JMenu menu, int startIndex, int endIndex, List<Long> versions, Map<Long,String> descriptions) {
         int MAX_ITEMS = 20; // Max number of entries to show
         int MENU_COUNT = 15; // Number of menus to create (possibly nested)
         if (endIndex - startIndex > MAX_ITEMS) {
@@ -175,9 +175,10 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
                     // A single item - just add it as a menu item
                     buildMenu(project, menu, start, end, versions, descriptions);
                 } else {
-                    int startVersion = versions.get(start);
-                    int endVersion = versions.get(end);
-                    JMenu submenu = new JMenu(NbBundle.getMessage(MigrateAction.class, "VersionXtoY", startVersion, endVersion));
+                    long startVersion = versions.get(start);
+                    long endVersion = versions.get(end);
+                    JMenu submenu = new JMenu(NbBundle.getMessage(MigrateAction.class, "VersionXtoY",
+                            Long.toString(startVersion), Long.toString(endVersion)));
                     buildMenu(project, submenu, start, end, versions, descriptions);
                     menu.add(submenu);
                 }
@@ -187,22 +188,22 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         }
 
         for (int i = startIndex; i <= endIndex; i++) {
-            int version = versions.get(i);
+            long version = versions.get(i);
             String description = descriptions.get(version);
             if (description == null) {
                 description = "";
             }
             JMenuItem menuitem = new JMenuItem(NbBundle.getMessage(MigrateAction.class,
-                        "VersionX", version, description));
+                        "VersionX", Long.toString(version), description));
             menuitem.addActionListener(new MigrateMenuItemHandler(project, version));
             menu.add(menuitem);
         }
     }
 
-    static Map<Integer,String> getVersions(RailsProject project) {
+    static Map<Long,String> getVersions(RailsProject project) {
         FileObject projectDir = project.getProjectDirectory();
 
-        Map<Integer,String> versions = new HashMap<Integer,String>();
+        Map<Long,String> versions = new HashMap<Long,String>();
         // NOTE - FileObject.getFileObject wants / as a path separator, not File.separator!
         FileObject migrate = projectDir.getFileObject("db/migrate"); // NOI18N
 
@@ -212,15 +213,25 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
 
         for (FileObject fo : migrate.getChildren()) {
             String name = fo.getName();
-            if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE) &&
-                    name.matches("^\\d\\d\\d_.*")) { // NOI18N
-                try {
-                    int version = Integer.parseInt(fo.getName().substring(0, 3));
-                    String description = RubyUtils.underlinedNameToCamel(name.substring(4));
-                    versions.put(version, "- " + description);
-                } catch (NumberFormatException nfe) {
-                    // Shouldn't happen since we've prevetted the digits
-                    Exceptions.printStackTrace(nfe);
+            if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
+                if (name.matches("^\\d\\d\\d_.*")) { // NOI18N
+                    try {
+                        long version = Integer.parseInt(fo.getName().substring(0, 3));
+                        String description = RubyUtils.underlinedNameToCamel(name.substring(4));
+                        versions.put(version, "- " + description);
+                    } catch (NumberFormatException nfe) {
+                        // Shouldn't happen since we've prevetted the digits
+                        Exceptions.printStackTrace(nfe);
+                    }
+                } else if (name.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*")) { // NOI18N
+                    try {
+                        long version = Long.parseLong(fo.getName().substring(0, 14));
+                        String description = RubyUtils.underlinedNameToCamel(name.substring(15));
+                        versions.put(version, "- " + description);
+                    } catch (NumberFormatException nfe) {
+                        // Shouldn't happen since we've prevetted the digits
+                        Exceptions.printStackTrace(nfe);
+                    }
                 }
             }
         }
@@ -294,9 +305,9 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
      */
     private static final class MigrateMenuItemHandler implements ActionListener, Runnable {
         private final RailsProject project;
-        private final int version;
+        private final long version;
 
-        public MigrateMenuItemHandler(RailsProject project, int version) {
+        public MigrateMenuItemHandler(RailsProject project, long version) {
             this.project = project;
             this.version = version;
         }
@@ -332,7 +343,7 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
                 rake.runRake(pwd, null, displayName, fileLocator, true, false, "db:migrate"); // NOI18N
             } else {
                 rake.runRake(pwd, null, displayName, fileLocator, true, false, "db:migrate", // NOI18N
-                    "VERSION=" + Integer.toString(version)); // NOI18N
+                    "VERSION=" + Long.toString(version)); // NOI18N
             }
         }
     }

@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Indexer;
@@ -149,8 +150,11 @@ public class PHPIndexer implements Indexer {
 
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         PHPParseResult r = (PHPParseResult)result;
-        assert factory != null;
-        assert result != null;
+        
+        if (r.getProgram() == null){
+            return Collections.<IndexDocument>emptyList();
+        }
+        
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
         
@@ -158,7 +162,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.7"; // NOI18N
+        return "0.2.8"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -250,11 +254,16 @@ public class PHPIndexer implements Indexer {
             StringBuilder classSignature = new StringBuilder();
             classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
-            classSignature.append(classDeclaration.getModifier() + ";"); //NOI18N
-            document.addPair(FIELD_CLASS, classSignature.toString(), true);
-            // index 
             
-            classDeclaration.getSuperClass();
+            String superClass = ""; //NOI18N
+            
+            if (classDeclaration.getSuperClass() instanceof Identifier) {
+                Identifier identifier = (Identifier) classDeclaration.getSuperClass();
+                superClass = identifier.getName();
+            }
+            
+            classSignature.append(superClass + ";"); //NOI18N
+            document.addPair(FIELD_CLASS, classSignature.toString(), true);
             
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {

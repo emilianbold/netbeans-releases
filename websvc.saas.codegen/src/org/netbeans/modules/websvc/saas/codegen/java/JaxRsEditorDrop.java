@@ -149,10 +149,6 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
                             errors.add(ex);
                     }
-                    try {
-                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
-                    } catch(IOException ex) {//ignore
-                    }
                 } catch (Exception ioe) {
                     if(ioe.getMessage().equals(Constants.UNSUPPORTED_DROP)) {
                         Util.showUnsupportedDropMessage(new Object[] {
