@@ -34,7 +34,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    if [ 1 -eq $ML_BUILD ] ; then
         ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip-ml/*      
         ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml/moduleclusters
-	scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
+	#scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
         ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
    fi
    ERROR_CODE=$?
@@ -117,7 +117,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
                 fi    
 	fi
     else
-        tail -100 $MAC_LOG
+        tail -100 $MAC_LOG_NEW
         echo "ERROR: - Native Mac Installers build failed"
         exit 1;
     fi
