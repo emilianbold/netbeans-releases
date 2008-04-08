@@ -79,10 +79,9 @@ public class RuntimeInputAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeInputImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND030: Add/Edit Runtime Inputs (Shift-I)");
+        String nbBundle2 = mLoc.t("BUND030: Add/Edit Runtime Inputs");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-        // Acceleratot Shift-I
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('I', InputEvent.SHIFT_DOWN_MASK ));
+        
     }
 
     /**

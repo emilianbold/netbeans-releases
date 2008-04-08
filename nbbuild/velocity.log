@@ -1,62 +1,61 @@
-Thu Apr 03 17:56:41 IST 2008  [debug] AvalonLogSystem initialized using logfile 'velocity.log'
-Thu Apr 03 17:56:41 IST 2008   [info] ************************************************************** 
-Thu Apr 03 17:56:41 IST 2008   [info] Starting Jakarta Velocity v1.4
-Thu Apr 03 17:56:41 IST 2008   [info] RuntimeInstance initializing.
-Thu Apr 03 17:56:41 IST 2008   [info] Default Properties File: org\apache\velocity\runtime\defaults\velocity.properties
-Thu Apr 03 17:56:41 IST 2008   [info] Trying to use logger class org.apache.velocity.runtime.log.AvalonLogSystem
-Thu Apr 03 17:56:41 IST 2008   [info] Using logger class org.apache.velocity.runtime.log.AvalonLogSystem
-Thu Apr 03 17:56:41 IST 2008   [info] Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
-Thu Apr 03 17:56:41 IST 2008   [info] Resource Loader Instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ClasspathResourceLoader : initialization starting.
-Thu Apr 03 17:56:41 IST 2008   [info] ClasspathResourceLoader : initialization complete.
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceCache : initialized. (class org.apache.velocity.runtime.resource.ResourceCacheImpl)
-Thu Apr 03 17:56:41 IST 2008   [info] Default ResourceManager initialization complete.
-Thu Apr 03 17:56:41 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Literal
-Thu Apr 03 17:56:41 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Macro
-Thu Apr 03 17:56:41 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Parse
-Thu Apr 03 17:56:41 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Include
-Thu Apr 03 17:56:41 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
-Thu Apr 03 17:56:41 IST 2008   [info] Created: 20 parsers.
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : initialization starting.
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : adding VMs from VM library template : VM_global_library.vm
-Thu Apr 03 17:56:41 IST 2008  [error] ResourceManager : unable to find resource 'VM_global_library.vm' in any resource loader.
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : error using  VM library template VM_global_library.vm : org.apache.velocity.exception.ResourceNotFoundException: Unable to find resource 'VM_global_library.vm'
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro :  VM library template macro registration complete.
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : allowInline = true : VMs can be defined inline in templates
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : allowInlineLocal = false : VMs defined inline will be  global in scope if allowed.
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : messages on  : VM system will output logging messages
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : autoload off  : VM system will not automatically reload global library macros
-Thu Apr 03 17:56:41 IST 2008   [info] Velocimacro : initialization complete.
-Thu Apr 03 17:56:41 IST 2008   [info] Velocity successfully started.
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/createLogSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/createDbLink.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/createExternalRemote.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008  [error] Left side ($vendor) of '!=' operation has null value. Operation not possible. org/netbeans/modules/sql/framework/codegen/axion/config/createExternalRemote.vm [line 28, column 16]
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/createExternalRemote.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008  [error] Left side ($vendor) of '!=' operation has null value. Operation not possible. org/netbeans/modules/sql/framework/codegen/axion/config/createExternalRemote.vm [line 28, column 16]
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/createExternalRemote.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008  [error] Left side ($vendor) of '!=' operation has null value. Operation not possible. org/netbeans/modules/sql/framework/codegen/axion/config/createExternalRemote.vm [line 28, column 16]
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/join.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/insertSelect.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008  [error] RHS of #set statement is null. Context will not be modified. org/netbeans/modules/sql/framework/codegen/axion/config/insertSelect.vm [line 19, column 1]
-Thu Apr 03 17:56:41 IST 2008  [error] Left side ($conditionQualifier) of '!=' operation has null value. Operation not possible. org/netbeans/modules/sql/framework/codegen/axion/config/insertSelect.vm [line 21, column 35]
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/select.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/from.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/insertStartDateIntoSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/selectExecutionIdFromSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/updateEndDateInSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
-Thu Apr 03 17:56:41 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008  [debug] AvalonLogSystem initialized using logfile 'velocity.log'
+Fri Apr 04 18:02:20 IST 2008   [info] ************************************************************** 
+Fri Apr 04 18:02:20 IST 2008   [info] Starting Jakarta Velocity v1.4
+Fri Apr 04 18:02:20 IST 2008   [info] RuntimeInstance initializing.
+Fri Apr 04 18:02:20 IST 2008   [info] Default Properties File: org\apache\velocity\runtime\defaults\velocity.properties
+Fri Apr 04 18:02:20 IST 2008   [info] Trying to use logger class org.apache.velocity.runtime.log.AvalonLogSystem
+Fri Apr 04 18:02:20 IST 2008   [info] Using logger class org.apache.velocity.runtime.log.AvalonLogSystem
+Fri Apr 04 18:02:20 IST 2008   [info] Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+Fri Apr 04 18:02:20 IST 2008   [info] Resource Loader Instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ClasspathResourceLoader : initialization starting.
+Fri Apr 04 18:02:20 IST 2008   [info] ClasspathResourceLoader : initialization complete.
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceCache : initialized. (class org.apache.velocity.runtime.resource.ResourceCacheImpl)
+Fri Apr 04 18:02:20 IST 2008   [info] Default ResourceManager initialization complete.
+Fri Apr 04 18:02:20 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+Fri Apr 04 18:02:20 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+Fri Apr 04 18:02:20 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+Fri Apr 04 18:02:20 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Include
+Fri Apr 04 18:02:20 IST 2008   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+Fri Apr 04 18:02:20 IST 2008   [info] Created: 20 parsers.
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : initialization starting.
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : adding VMs from VM library template : VM_global_library.vm
+Fri Apr 04 18:02:20 IST 2008  [error] ResourceManager : unable to find resource 'VM_global_library.vm' in any resource loader.
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : error using  VM library template VM_global_library.vm : org.apache.velocity.exception.ResourceNotFoundException: Unable to find resource 'VM_global_library.vm'
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro :  VM library template macro registration complete.
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : allowInline = true : VMs can be defined inline in templates
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : allowInlineLocal = false : VMs defined inline will be  global in scope if allowed.
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : messages on  : VM system will output logging messages
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : autoload off  : VM system will not automatically reload global library macros
+Fri Apr 04 18:02:20 IST 2008   [info] Velocimacro : initialization complete.
+Fri Apr 04 18:02:20 IST 2008   [info] Velocity successfully started.
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/select.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:02:20 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/from.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/select.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:03:31 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/from.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/sourceTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/insertSelect.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008  [error] RHS of #set statement is null. Context will not be modified. org/netbeans/modules/sql/framework/codegen/axion/config/insertSelect.vm [line 19, column 1]
+Fri Apr 04 18:06:45 IST 2008  [error] Left side ($conditionQualifier) of '!=' operation has null value. Operation not possible. org/netbeans/modules/sql/framework/codegen/axion/config/insertSelect.vm [line 21, column 35]
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/select.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/from.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/insertStartDateIntoSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/selectExecutionIdFromSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/createLogSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/axion/config/updateEndDateInSummaryTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Fri Apr 04 18:06:45 IST 2008   [info] ResourceManager : found org/netbeans/modules/sql/framework/codegen/base/config/targetTable.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
