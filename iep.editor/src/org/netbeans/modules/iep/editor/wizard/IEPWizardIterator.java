@@ -139,10 +139,12 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         
         //set targetNamespace on iepfile
         String tns = Utility.generateTargetNamespace(createdObject);
-        
+        String packageName = Utility.generatPackageName(createdObject); 
         model.startTransaction();
         model.getPlanComponent().setName(createdObject.getName());
-        model.getPlanComponent().setTargetNamespace(tns);
+        
+//        model.getPlanComponent().setTargetNamespace(tns);
+        model.getPlanComponent().setPackageName(packageName);
         model.endTransaction();
         
         Set set = new HashSet(1);                

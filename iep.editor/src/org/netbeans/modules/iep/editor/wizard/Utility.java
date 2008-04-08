@@ -29,12 +29,16 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.openide.explorer.view.TreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 
 public class Utility {
     
@@ -116,5 +120,50 @@ public class Utility {
         
         
     	return tns.toString();
+    }
+    
+    public static String generatPackageName(PlanDataObject dataObject) {
+    	
+    	String packageName = "";
+        
+        FileObject iepFile = dataObject.getPrimaryFile();
+        FileObject iepFileParent = iepFile.getParent();
+        if(iepFile != null) {
+            Project project = FileOwnerQuery.getOwner(iepFile);
+            if(project != null) {
+                Sources sources = ProjectUtils.getSources(project);
+                if(sources != null) {
+                    //SourceGroup[] sg = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                    SourceGroup[] sg = sources.getSourceGroups("BIZPRO");
+                    
+                    if(sg != null) {
+                        for(int i =0; i < sg.length; i++) {
+                            FileObject rootFolder = sg[i].getRootFolder();
+                            if(FileUtil.isParentOf(rootFolder, iepFileParent)) {
+                            	packageName = FileUtil.getRelativePath(rootFolder, iepFileParent);
+                                break;
+                            }
+                        }
+                        
+                    }
+                }
+            }
+        }
+        
+        if(packageName != null) {
+//            int dotIndex = packageName.lastIndexOf(".");
+//            if(dotIndex != -1) {
+//            	packageName = packageName.substring(0, dotIndex) + "_" + qualifiedName.substring(dotIndex +1, qualifiedName.length());
+//            }
+            
+        	packageName = packageName.replaceAll("/", ".");
+        } else {
+        	//no package so iep file resides in src folder
+        	// so "" indicate default package
+        	packageName = ""; 
+        }
+        
+        return packageName;
+    	
     }
 }
