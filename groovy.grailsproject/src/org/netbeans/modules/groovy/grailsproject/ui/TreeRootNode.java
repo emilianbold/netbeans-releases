@@ -125,6 +125,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             category = SourceCategory.LIB;
         } else if (dirName.startsWith("test")) {
             category = SourceCategory.TESTS;
+        } else if (dirName.startsWith("scripts")) {
+            category = SourceCategory.SCRIPTS;
         } else if (dirName.startsWith("views")) {
             category = SourceCategory.VIEWS;
         }
@@ -190,6 +192,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 break;
             case TESTS:
                 result.add(CommonProjectActions.newFileAction());
+                break;
+            case SCRIPTS:
+                result.add(new NewArtifactAction(project, SourceCategory.SCRIPTS, "Create a new Command Script"));
                 break;
             case SERVICES:
                 result.add(new NewArtifactAction(project, SourceCategory.SERVICES, "Create a new Service"));

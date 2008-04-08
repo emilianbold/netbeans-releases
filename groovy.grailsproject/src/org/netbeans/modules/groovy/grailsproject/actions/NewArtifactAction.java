@@ -82,6 +82,9 @@ public class NewArtifactAction extends AbstractAction {
             case TAGLIB:
                 wiz = new WizardDescriptor(new NewArtifactWizardIterator(project, cat));
                 break;
+            case SCRIPTS:
+                wiz = new WizardDescriptor(new NewArtifactWizardIterator(project, cat));
+                break;
             default:
                 return;
             }

@@ -102,6 +102,10 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_TAGLIB");
                 serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_TAGLIB");
                 break;    
+            case SCRIPTS:
+                wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SCRIPTS");
+                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_SCRIPTS");
+                break;    
             }
         }
    
@@ -129,11 +133,11 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
 
             serverRunning = false;
             
-            LOG.log(Level.WARNING, "Artifact Name: " + pls.getFileName());
+            LOG.log(Level.FINEST, "Artifact Name: " + pls.getFileName());
             File artifactFile = new File(pls.getFileName());
             
             if (artifactFile != null) {
-                LOG.log(Level.WARNING, "Created File: " + artifactFile.getAbsolutePath());
+                LOG.log(Level.FINEST, "Created File: " + artifactFile.getAbsolutePath());
                 project.getProjectDirectory().getFileSystem().refresh(true);
                 artifactFile = FileUtil.normalizeFile(artifactFile);
                 FileObject fo = FileUtil.toFileObject(artifactFile);

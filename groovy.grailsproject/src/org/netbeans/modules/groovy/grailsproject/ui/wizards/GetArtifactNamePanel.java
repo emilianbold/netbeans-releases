@@ -63,29 +63,39 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         initComponents();
 
         String subDirName = "<unknown>";
+        String dirPrefix  = "";
         
         switch(cat){
             case DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
                 subDirName = "domain";
+                dirPrefix = "grails-app" + File.separatorChar;
                 break;
             case CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
                 subDirName = "controllers";
+                dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Controller";
                 break;
             case SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
                 subDirName = "services";
+                dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Service";
                 break; 
             case VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
                 subDirName = "views";
+                dirPrefix = "grails-app" + File.separatorChar;
                 break;    
             case TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 subDirName = "taglib";
+                dirPrefix = "grails-app" + File.separatorChar;
+                break;    
+            case SCRIPTS:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
+                subDirName = "scripts";
                 break;    
             }
         
@@ -96,7 +106,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         projectTextField.setText(project.getProjectDirectory().getName());
         
         baseDir =   FileUtil.getFileDisplayName(project.getProjectDirectory()) + 
-                    File.separatorChar + "grails-app" + File.separatorChar + subDirName;
+                    File.separatorChar + dirPrefix + subDirName;
         
         createdFileTextField.setText(baseDir + File.separatorChar );
         

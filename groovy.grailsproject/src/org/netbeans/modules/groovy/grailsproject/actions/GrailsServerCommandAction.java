@@ -28,17 +28,24 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 import org.openide.util.actions.Presenter;
 
 public class GrailsServerCommandAction extends AbstractAction implements Presenter.Popup {
 
     JMenu grailsCommandMenu = new JMenu("Grails");
+    Project project;
     
     public GrailsServerCommandAction (Project project){
+        this.project = project;
+        
         grailsCommandMenu.add(new RunGrailsServerCommandAction(project));
         grailsCommandMenu.add(new StopGrailsServerCommandAction(project));
         grailsCommandMenu.add(new CreateWarFileAction(project));
@@ -47,7 +54,39 @@ public class GrailsServerCommandAction extends AbstractAction implements Present
         grailsCommandMenu.add(new GrailsTargetAction(project, "Upgrade", "upgrade"));
         grailsCommandMenu.add(new GrailsTargetAction(project, "Help", "help"));
         grailsCommandMenu.add(new ShellAction(project));
+        
+        List<String> cmdlist = getCustomScripts();
+        
+        if(!cmdlist.isEmpty()){
+            grailsCommandMenu.addSeparator();
+            
+            for (String cmd : cmdlist) {
+                grailsCommandMenu.add(new GrailsTargetAction(project, cmd, cmd));
+            }
+        }
+        
     }
+    
+    List<String> getCustomScripts(){
+        List<String> cmdlist = new ArrayList<String>();
+        
+        FileObject prjDir = project.getProjectDirectory();
+        assert prjDir != null;
+        
+        FileObject scriptsDir =prjDir.getFileObject("scripts");
+        assert scriptsDir != null; 
+        
+        for (Enumeration e = scriptsDir.getChildren(false); e.hasMoreElements();) {
+                    FileObject fo = (FileObject) e.nextElement();
+                    if (fo != null) {
+                        cmdlist.add(fo.getName());
+                    }
+        }
+        
+        return cmdlist;
+    }
+    
+    
     
     public void actionPerformed(ActionEvent e) {
         return;
