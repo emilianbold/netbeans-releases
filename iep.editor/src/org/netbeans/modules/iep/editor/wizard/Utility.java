@@ -122,48 +122,5 @@ public class Utility {
     	return tns.toString();
     }
     
-    public static String generatPackageName(PlanDataObject dataObject) {
-    	
-    	String packageName = "";
-        
-        FileObject iepFile = dataObject.getPrimaryFile();
-        FileObject iepFileParent = iepFile.getParent();
-        if(iepFile != null) {
-            Project project = FileOwnerQuery.getOwner(iepFile);
-            if(project != null) {
-                Sources sources = ProjectUtils.getSources(project);
-                if(sources != null) {
-                    //SourceGroup[] sg = sources.getSourceGroups(Sources.TYPE_GENERIC);
-                    SourceGroup[] sg = sources.getSourceGroups("BIZPRO");
-                    
-                    if(sg != null) {
-                        for(int i =0; i < sg.length; i++) {
-                            FileObject rootFolder = sg[i].getRootFolder();
-                            if(FileUtil.isParentOf(rootFolder, iepFileParent)) {
-                            	packageName = FileUtil.getRelativePath(rootFolder, iepFileParent);
-                                break;
-                            }
-                        }
-                        
-                    }
-                }
-            }
-        }
-        
-        if(packageName != null) {
-//            int dotIndex = packageName.lastIndexOf(".");
-//            if(dotIndex != -1) {
-//            	packageName = packageName.substring(0, dotIndex) + "_" + qualifiedName.substring(dotIndex +1, qualifiedName.length());
-//            }
-            
-        	packageName = packageName.replaceAll("/", ".");
-        } else {
-        	//no package so iep file resides in src folder
-        	// so "" indicate default package
-        	packageName = ""; 
-        }
-        
-        return packageName;
-    	
-    }
+    
 }
