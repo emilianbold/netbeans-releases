@@ -57,6 +57,8 @@ import org.tigris.subversion.svnclientadapter.*;
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
  * 
+ * XXX - review all event methods is their impl still makes sense
+ * 
  * @author Maros Sandor
  */
 class FilesystemHandler extends VCSInterceptor {
@@ -180,16 +182,15 @@ class FilesystemHandler extends VCSInterceptor {
         Subversion.LOG.fine("afterMove " + from +  " -> " + to);
         Utils.post(new Runnable() {
             public void run() {                
-                // there might have been no notification 
-                // for the children files - refresh them all
-                SvnUtils.refreshRecursively(to);
-                cache.notifyChanges(to); // as if there were an event
-                File parent = to.getParentFile();
+                // refresh the whole target tree
+                cache.refreshAsync(true, to);                
+                File parent = to.getParentFile(); // XXX parent? WTF?              
                 if (parent != null) {
                     if (from.equals(to)) {
                         Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());                        
                     }
-                    cache.notifyChanges(from); // as if there were an event
+                    // as if there were an event
+                    cache.refreshAsync(from); 
                 }
             }
         });
@@ -264,7 +265,7 @@ class FilesystemHandler extends VCSInterceptor {
         Utils.post(new Runnable() {
             public void run() {                
                 if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {                    
-                    cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                                        
+                    cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                                        
                 }
             }
         });
@@ -362,7 +363,7 @@ class FilesystemHandler extends VCSInterceptor {
                             client.move(srcFile, dstFile, force);
                             
                             // fire events explicitly for all children which are already gone
-                            cache.notifyChanges(srcChildren.toArray(new File[srcChildren.size()]));    
+                            cache.refreshAsync(srcChildren);    
                         }                        
                                                 
                         break;
@@ -407,7 +408,7 @@ class FilesystemHandler extends VCSInterceptor {
         // all children which are already gone
         refreshFiles.add(srcFile);
         refreshFiles.add(dstFile);        
-        cache.notifyChanges(refreshFiles.toArray(new File[refreshFiles.size()]));    
+        cache.refreshAsync(refreshFiles);    
     }
         
     private List<File> listAllChildren(File file) {

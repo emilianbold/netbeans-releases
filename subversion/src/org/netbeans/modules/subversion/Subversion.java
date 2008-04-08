@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
@@ -93,6 +94,7 @@ public class Subversion {
     private FileStatusCache                     fileStatusCache;
     private FilesystemHandler                   filesystemHandler;
     private FileStatusProvider                  fileStatusProvider;
+    private SvnClientRefreshHandler             refreshHandler;
     private Annotator                           annotator;
     private HashMap<String, RequestProcessor>   processorsToUrl;
 
@@ -123,6 +125,7 @@ public class Subversion {
         annotator = new Annotator(this);
         fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
+        refreshHandler = new SvnClientRefreshHandler();
         cleanup();
     }
                            
@@ -168,6 +171,7 @@ public class Subversion {
     }
 
     /**
+     * XXX move to svnutils
      * Tests <tt>.svn</tt> directory itself.  
      */
     public boolean isAdministrative(File file) {
@@ -177,6 +181,7 @@ public class Subversion {
                ( administrative && file.exists() && file.isDirectory() ); // lets suppose it's administrative if file doesnt exist
     }  
 
+    // XXX move to svnutils
     public boolean isAdministrative(String fileName) {        
         return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
     }
@@ -187,6 +192,10 @@ public class Subversion {
 
     public Annotator getAnnotator() {
         return annotator;
+    }
+    
+    public SvnClientRefreshHandler getRefreshHandler() {
+        return refreshHandler;
     }
 
     public boolean checkClientAvailable() {
@@ -348,7 +357,7 @@ public class Subversion {
     private void attachListeners(SvnClient client) {
         // XXX let the cache and logger register by themself (addXXXListener)
         client.addNotifyListener(getLogger(client.getSvnUrl())); 
-        client.addNotifyListener(fileStatusCache);
+        client.addNotifyListener(refreshHandler);
         
         List<ISVNNotifyListener> l = getSVNNotifyListeners();
         
@@ -487,6 +496,19 @@ public class Subversion {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
     }
 
+    /**
+     * Refreshes all textual annotations and badges for the given files.
+     * 
+     * @param files files to chage the annotations for
+     */
+    public void refreshAnnotations(File... files) {
+        Set<File> s = new HashSet<File>();
+        for (File file : files) {
+            s.add(file);
+        }        
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, s);
+    }
+    
     void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }

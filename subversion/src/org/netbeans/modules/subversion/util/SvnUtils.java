@@ -922,4 +922,26 @@ public class SvnUtils {
         
         return true;        
     }    
+    
+    public static List<File> listRecursively(File root) {            
+        List<File> ret = new ArrayList<File>();
+        if(root == null) {
+            return ret;
+        }
+        ret.add(root);
+        File[] files = root.listFiles();
+        if(files != null) {        
+            for (File file : files) {                
+                if(!(isPartOfSubversionMetadata(file) || Subversion.getInstance().isAdministrative(file))) {                    
+                    if(file.isDirectory()) {                
+                        ret.addAll(listRecursively(file));                
+                    } else {
+                        ret.add(file);
+                    }               
+                }
+            }        
+        }        
+        return ret;
+    }    
+    
 }
