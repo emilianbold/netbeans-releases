@@ -43,7 +43,7 @@ var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
 
 var JDK_LATEST_UPDATE = "5";
 
-var LOAD_OMNITURE_CODE = 0;
+var LOAD_OMNITURE_CODE = 1;
 
 function add_download_tabs() {
 	add_download_tab("6.0.1", "http://download.netbeans.org/netbeans/6.0/final/");
