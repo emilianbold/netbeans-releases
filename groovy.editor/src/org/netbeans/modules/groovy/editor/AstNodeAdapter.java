@@ -149,48 +149,44 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
         return Enumerations.array(children);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<html>");
-        sb.append(node.toString());
-        sb.append("<i>");
+        sb.append(node.getClass().getSimpleName());
         sb.append(" (");
         sb.append(getStartOffset());
         sb.append("-");
         sb.append(getEndOffset());
         sb.append(") ");
-        sb.append("</i>");
-
-        String name = null;
-
-        if (node instanceof ModuleNode) {
-            name = ((ModuleNode)node).getDescription();
-        } else if (node instanceof ClassNode) {
-            name = ((ClassNode)node).getName();
-        } else if (node instanceof MethodNode) {
-            name = ((MethodNode)node).getName();
-        } else if (node instanceof FieldNode) {
-            name = ((FieldNode)node).getName();
-        }
-
-        if (name != null) {
-            sb.append(" : <b>");
-            sb.append(name);
-            sb.append("</b>");
-        }
-
         sb.append("</html>");
 
         return sb.toString();
     }
 
     public int getStartOffset() {
-        return AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+        int line = node.getLineNumber();
+        if (line < 1) {
+            line = 1;
+        }
+        int column = node.getColumnNumber();
+        if (column < 1) {
+            column = 1;
+        }
+        return AstUtilities.getOffset(doc, line, column);
     }
 
     public int getEndOffset() {
-        return AstUtilities.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+        int line = node.getLastLineNumber();
+        if (line < 1) {
+            line = 1;
+        }
+        int column = node.getLastColumnNumber();
+        if (column < 1) {
+            column = 1;
+        }
+        return AstUtilities.getOffset(doc, line, column);
     }
 
     public Object getAstNode() {
