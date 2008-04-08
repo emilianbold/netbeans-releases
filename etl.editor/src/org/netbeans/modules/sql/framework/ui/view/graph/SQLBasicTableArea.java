@@ -197,7 +197,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         String nbBundle1 = mLoc.t("BUND426: Select Columns...");
         String lbl = nbBundle1.substring(15);
         selectColumnsItem = new JMenuItem(lbl, new ImageIcon(selectColumnsUrl));
-        selectColumnsItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_MASK));
+        selectColumnsItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);
     }
@@ -207,7 +207,6 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         String nbBundle2 = mLoc.t("BUND152: Remove");
         String lbl = nbBundle2.substring(15);
         removeItem = new JMenuItem(lbl, new ImageIcon(removeUrl));
-        removeItem.setAccelerator(KeyStroke.getKeyStroke('O',InputEvent.CTRL_MASK));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
     }

@@ -62,7 +62,7 @@ public interface JDBCDriverDeployer {
      * Returns true if the specified target supports deployment of JDBC drivers,
      * false otherwise.
      * 
-     * @params target the JDBC drivers maight be deployed to.
+     * @param target the JDBC drivers maight be deployed to.
      * 
      * @return true if the specified target supports deployment of JDBC drivers,
      *         false otherwise.

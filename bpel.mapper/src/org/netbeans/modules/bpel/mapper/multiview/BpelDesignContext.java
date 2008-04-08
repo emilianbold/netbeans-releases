@@ -42,6 +42,8 @@ public interface BpelDesignContext {
   
     VisibilityScope getVisibilityScope();
     
+    StringBuffer getValidationErrMsgBuffer();
+
 /*
     private WeakReference<BpelEntity> mEntityRef;
     private WeakReference<Node> mActivatedNode;

@@ -190,7 +190,6 @@ public interface ConnectionConstraint {
                     Object node = tPath.getLastPathComponent();
                     if (node instanceof MapperTreeNode) {
                         Object dataObj = ((MapperTreeNode)node).getDataObject();
-                        System.out.println("::::::::::::::::: dataObj: "+dataObj);
                         if (isMessageVariable(dataObj)) {
                             return false;
                         }

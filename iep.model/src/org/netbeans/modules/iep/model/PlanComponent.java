@@ -11,6 +11,10 @@ public interface PlanComponent extends Component {
 	
 	static final Attribute ATTR_TARGETNAMESPACE = new StringAttribute(TARGETNAMESPACE_PROPERTY);
 	
+	static final String PACKAGENAME_PROPERTY = "packageName";
+	
+	static final Attribute ATTR_PACKAGENAME = new StringAttribute(PACKAGENAME_PROPERTY);
+	
 	OperatorComponentContainer getOperatorComponentContainer();
 	
 	LinkComponentContainer getLinkComponentContainer();
@@ -19,7 +23,11 @@ public interface PlanComponent extends Component {
 	
     List<Import> getImports();
         
-    String getTargetNamespace();
+//    String getTargetNamespace();
+//    
+//    void setTargetNamespace(String targetNamespace);
     
-    void setTargetNamespace(String targetNamespace);
+    void setPackageName(String packageName);
+    
+    String getPackageName();
 }

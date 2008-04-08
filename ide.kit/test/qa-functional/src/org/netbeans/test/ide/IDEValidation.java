@@ -369,7 +369,7 @@ public class IDEValidation extends JellyTestCase {
         String databasesLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "NDN_Databases");
         Node databasesNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel);
         // "Please wait..."
-        String waitNodeLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "WaitNode");
+        String waitNodeLabel = Bundle.getString("org.openide.nodes.Bundle", "LBL_WAIT");
         // wait until the wait node dismiss and after that start waiting for Drivers node
         // (see issue http://www.netbeans.org/issues/show_bug.cgi?id=43910 - Creation of 
         // children under Databases node is not properly synchronized)

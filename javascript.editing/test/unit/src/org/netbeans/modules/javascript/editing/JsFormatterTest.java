@@ -42,7 +42,6 @@ package org.netbeans.modules.javascript.editing;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
@@ -98,8 +97,7 @@ public class JsFormatterTest extends JsTestBase {
             endPos = doc.getLength();
         }
         
-        //ParserResult result = parse(fo);
-        JsFormatter.reformat(doc, startPos, endPos, null);
+        JsFormatter.reformat(doc, startPos, endPos, getInfoForText(source));
 
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
@@ -114,7 +112,7 @@ public class JsFormatterTest extends JsTestBase {
         
         JsFormatter formatter = getFormatter(preferences);
 
-        formatter.reformat(doc, 0, doc.getLength(), null);
+        formatter.reformat(doc, 0, doc.getLength(), getInfo(fo));
         String after = doc.getText(0, doc.getLength());
         
         assertDescriptionMatches(file, after, false, ".formatted");
@@ -303,7 +301,7 @@ public class JsFormatterTest extends JsTestBase {
                 "    foo();\n" +
                 "}", null
                 );
-        format(
+         format(
                 "if (true) x = {};\n" +
                 "foo()\n" +
                 "{\n" +
@@ -415,6 +413,30 @@ public class JsFormatterTest extends JsTestBase {
         // What about thesed: do? with?
     }
     
+    public void testFor() throws Exception {
+        format(
+                "for (var property in source) {\n" +
+                "        destination[property] = source[property];\n" +
+                "    }\n" +
+                " foo();",
+                "for (var property in source) {\n" +
+                "    destination[property] = source[property];\n" +
+                "}\n" +
+                "foo();", null
+                );
+    }
+    
+    public void testFor2() throws Exception {
+        format(
+                "for (var i = 0; i < length; i++)\n" +
+                "foo();\n" +
+                "bar();\n",
+                "for (var i = 0; i < length; i++)\n" +
+                "    foo();\n" +
+                "bar();\n", null
+                );
+    }
+    
     public void testLineContinuationAsgn() throws Exception {
         format("x =\n1",
                "x =\n    1", null);
@@ -443,12 +465,14 @@ public class JsFormatterTest extends JsTestBase {
     public void testSwitch1() throws Exception {
         format(
                 " switch (n) {\n" +
+                " case 0:\n" +
                 " case 1:\n" +
                 " // comment\n" +
                 " foo();\n" +
                 " break;\n" +
                 " default: break;\n",
                 "switch (n) {\n" +
+                "    case 0:\n" +
                 "    case 1:\n" +
                 "        // comment\n" +
                 "        foo();\n" +
@@ -491,13 +515,13 @@ public class JsFormatterTest extends JsTestBase {
                 " switch (n) {\n" +
                 " case '1':\n" +
                 " case '2':\n" +
-                " case '3': return\n" +
+                " case '3':\n" +
                 " case '4':\n" +
                 " }\n",
                 "switch (n) {\n" +
                 "    case '1':\n" +
                 "    case '2':\n" +
-                "    case '3': return\n" +
+                "    case '3':\n" +
                 "    case '4':\n" +
                 "}\n", null
                 );
@@ -505,52 +529,29 @@ public class JsFormatterTest extends JsTestBase {
     
     public void testSwitch4() throws Exception {
         format(
-                " for (var a in b) {\n" +
-                " if (true) {\n" +
-                " break;\n" +
-                " }\n" +
-                " }\n" +
-                " foo();\n" +
-                " for (var c in d)\n" +
-                " if (false) break;\n" +
-                " bar();",
-                "for (var a in b) {\n" +
-                "    if (true) {\n" +
-                "        break;\n" +
-                "    }\n" +
-                "}\n" +
-                "foo();\n" +
-                "for (var c in d)\n" +
-                "    if (false) break;\n" +
-                "bar();", null
-                );
-    }
-    
-    public void testSwitch5() throws Exception {
-        format(
                 " switch (n) {\n" +
                 " case 1: foo(); break;\n" +
-                " default: return null;\n" +
+                " default: bar();\n" +
                 " }\n" +
                 " bar();\n",
                 "switch (n) {\n" +
                 "    case 1: foo(); break;\n" +
-                "    default: return null;\n" +
+                "    default: bar();\n" +
                 "}\n" +
                 "bar();\n", null
                 );
     }
     
-    public void testSwitch6() throws Exception {
+    public void testSwitch5() throws Exception {
         format(
                 " switch(n) {\n" +
                 " case 1: foo(); break;\n" +
-                " default: return null;\n" +
+                " default: bar();\n" +
                 " }\n" +
                 " bar();\n",
                 "switch(n) {\n" +
                 "    case 1: foo(); break;\n" +
-                "    default: return null;\n" +
+                "    default: bar();\n" +
                 "}\n" +
                 "bar();\n", null
                 );
@@ -621,6 +622,202 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testIndent3() throws Exception {
         insertNewline("      var foo^", "      var foo\n      ^", null);
+    }
+    
+    public void testBraceNewline1() throws Exception {
+        format(
+                "if (true) { foo(); } else { bar(); }",
+                "if (true) { \n" +
+                "    foo(); \n" +
+                "} else { \n" +
+                "    bar(); \n" +
+                "}", null
+                );
+    }
+    
+    public void testBraceNewline2() throws Exception {
+        format(
+                "var Prototype = {\n" +
+                "    emptyFunction: function() { },\n" +
+                "    K: function(x) { return x },\n" +
+                "    L: function(x) { return x }\n" +
+                "}",
+                "var Prototype = {\n" +
+                "    emptyFunction: function() { },\n" +
+                "    K: function(x) { \n" +
+                "        return x \n" +
+                "    },\n" +
+                "    L: function(x) { \n" +
+                "        return x \n" +
+                "    }\n" +
+                "}", null
+                );
+    }
+    
+    public void testBraceNewline3() throws Exception {
+        format(
+                "var Prototype = {\n" +
+                "    emptyFunction: function() {\n" +
+                "    },\n" +
+                "    K: function(x) {\n" +
+                "        return x\n" +
+                "    },\n" +
+                "    L: function(x) {\n" +
+                "        return x\n" +
+                "    }\n" +
+                "};",
+                "var Prototype = {\n" +
+                "    emptyFunction: function() {\n" +
+                "    },\n" +
+                "    K: function(x) {\n" +
+                "        return x\n" +
+                "    },\n" +
+                "    L: function(x) {\n" +
+                "        return x\n" +
+                "    }\n" +
+                "};", null
+                );
+    }
+
+    public void testFunction1() throws Exception {
+        format(
+                " toQueryString: function(obj) {\n" +
+                "\t  this.prototype._each.call(obj, function(pair) {\n" +
+                "\t  foo();\n" +
+                "\t  });\n" +
+                " }\n",
+                "toQueryString: function(obj) {\n" +
+                "    this.prototype._each.call(obj, function(pair) {\n" +
+                "        foo();\n" +
+                "    });\n" +
+                "}\n", null);
+    }
+    
+    public void testBlocks() throws Exception {
+        format(
+                " while (true) {\n" +
+                "   if (true) {\n" +
+                "     foo();\n" +
+                "    }\n" +
+                "    }",
+                "while (true) {\n" +
+                "    if (true) {\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "}", null
+                );
+        format(
+                "if (true)\n" +
+                "foo();",
+                "if (true)\n" +
+                "    foo();", null
+                );
+        format(
+                " Object.extend = function() {\n" +
+                "    foo();\n" +
+                "  }",
+                "Object.extend = function() {\n" +
+                "    foo();\n" +
+                "}", null
+                );
+    }
+    
+    public void testRegexp() throws Exception {
+        format(
+                "dojo.isAlien = function(/*anything*/ it){\n" +
+                "        return it && !dojo.isFunction(it) && /\\{\\s*\\[native code\\]\\s*\\}/.test(String(it)); // Boolean\n" +
+                "}", 
+                "dojo.isAlien = function(/*anything*/ it){\n" +
+                "    return it && !dojo.isFunction(it) && /\\{\\s*\\[native code\\]\\s*\\}/.test(String(it)); // Boolean\n" +
+                "}", null
+                );
+    }
+    
+    public void testComment() throws Exception {
+        format(
+                "foo = function(/* foo() {}*/ it) { // call foo() { bar(); }\n" +
+                "  bar();\n" +
+                " }",
+                "foo = function(/* foo() {}*/ it) { // call foo() { bar(); }\n" +
+                "    bar();\n" +
+                "}", null
+                );
+    }
+    
+    public void testExpression() throws Exception {
+        format(
+                "foo();\n" +
+                "Foo.Bar.name = bar();",
+                "foo();\n" +
+                "Foo.Bar.name = bar();", null
+                );
+    }
+    
+    public void testTryCatch1() throws Exception {
+        format(
+                "function myfunc() {\n" +
+                "   try {\n" +
+                "       in_try_block();\n" +
+                "   } catch ( e if e == \"InvalidNameException\"  ) {\n" +
+                "       in_first_catch();\n" +
+                "   } finally {\n" +
+                "       in_finally();\n" +
+                "   }\n" +
+                "}",
+                "function myfunc() {\n" +
+                "    try {\n" +
+                "        in_try_block();\n" +
+                "    } catch ( e if e == \"InvalidNameException\"  ) {\n" +
+                "        in_first_catch();\n" +
+                "    } finally {\n" +
+                "        in_finally();\n" +
+                "    }\n" +
+                "}", null
+                );
+    }
+
+    public void testTryCatch2() throws Exception {
+        format(
+                "if (true) {\n" +
+                "    try {\n" +
+                "    } finally {\n" +
+                "}\n" +
+                "}",
+                "if (true) {\n" +
+                "    try {\n" +
+                "    } finally {\n" +
+                "    }\n" +
+                "}", null
+                );
+    }
+    
+    public void testCall() throws Exception {
+        format(
+                "sortBy: function(iterator) {\n" +
+                "return this.map(function(value, index) {\n" +
+                "  return {value: value, criteria: iterator(value, index)};\n" +
+                "}).sort(function() {\n" +
+                "  return foo();\n" +
+                "}).pluck('value');\n" +
+                "}\n",
+                "sortBy: function(iterator) {\n" +
+                "    return this.map(function(value, index) {\n" +
+                "        return {\n" +
+                "            value: value, \n" +
+                "            criteria: iterator(value, index)\n" +
+                "            };\n" +
+                "    }).sort(function() {\n" +
+                "        return foo();\n" +
+                "    }).pluck('value');\n" +
+                "}\n", null
+                );
+    }
+
+    public void testCompressed() throws Exception {
+        format(
+                "if(true&&(/alpha/i).test()){}",
+                "if(true&&(/alpha/i).test()){}", null
+                );
     }
     
 //    public void testLineContinuation4() throws Exception {

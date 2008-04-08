@@ -71,6 +71,14 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	this.name = name;
     }
     
+    /*package-local*/ char getKind(){
+        return kind;
+    }
+
+    /*package-local*/ CharSequence getName(){
+        return name;
+    }
+    
     @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
