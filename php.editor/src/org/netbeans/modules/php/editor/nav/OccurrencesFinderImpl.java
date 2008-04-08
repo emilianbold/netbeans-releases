@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -129,10 +130,22 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 }
                 super.visit(node);
             }
+
+            @Override
+            public void visit(Scalar scalar) {
+                if (el == a.getElement(scalar)) {
+                    usages.add(scalar);
+                }
+                super.visit(scalar);
+            }
         }.scan(Utils.getRoot(parameter));
         
         for (ASTNode n : usages) {
-            result.add(new OffsetRange(n.getStartOffset(), n.getEndOffset()));
+            if (n instanceof Scalar && ((Scalar) n).getScalarType() == Scalar.Type.STRING && NavUtils.isQuoted(((Scalar) n).getStringValue())) {
+                result.add(new OffsetRange(n.getStartOffset() + 1, n.getEndOffset() - 1));
+            } else {
+                result.add(new OffsetRange(n.getStartOffset(), n.getEndOffset()));
+            }
         }
         
         return result;
