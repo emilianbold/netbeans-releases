@@ -113,7 +113,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "ImportReferencedSchema",
         "ImportReferencedSchema2",
         "DeleteReferencedSchema",
-        "FindUsages",
+        //"FindUsages", // TODO : How to find find usages output?
+        "ValidateAndBuild",
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -442,7 +443,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         JPopupMenuOperator popup = new JPopupMenuOperator( );
         popup.pushMenu( "Delete" );
 
-        try{ Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+        try{ Thread.sleep( 1500 ); } catch( InterruptedException ex ) { }
       }
 
       // Go to source
@@ -502,6 +503,57 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       FindUsagesOperator fuop = new FindUsagesOperator( );
       
       System.out.println( "******" + ( null == fuop ) );
+
+      endTest( );
+    }
+
+    public void ValidateAndBuild( )
+    {
+      startTest( );
+
+      // Validate
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Validate XML");
+
+      // "Output - XML Check"
+      OutputOperator out = new OutputOperator( );
+      String sText = out.getText( );
+      String[] asIdealOutput =
+      {
+          "XML validation started.",
+          "0 Error(s),  0 Warning(s).",
+          "XML validation finished."
+      };
+      for( String sChecker : asIdealOutput )
+      {
+        if( -1 == sText.indexOf( sChecker ) )
+          fail( "Unable to find ideal XML validate output: " + sChecker + "\n" + sText );
+      }
+
+      // Build
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          SAMPLE_NAME
+        );
+      prn.select( );
+
+      // Ensure we will catch all with any slowness
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      prn.performPopupActionNoBlock( "Build" );
+
+      // Wait till JAXB really created
+      stt.waitText( "Finished building build.xml (dist_se)." );
+      stt.stop( );
+
+      // Get output
+      out = new OutputOperator( );
+      sText = out.getText( );
+      if( -1 == sText.indexOf( "BUILD SUCCESSFUL" ) )
+        fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
+      if( -1 != sText.indexOf( "BUILD FAILED" ) )
+        fail( "BUILD FAILED mark fopund:\n" + sText + "\n" );
 
       endTest( );
     }

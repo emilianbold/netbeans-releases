@@ -158,6 +158,17 @@ final class IRFactory
         //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
         //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
         Node.Jump switchNode = (Node.Jump)switchBlock;
+        int start = caseStart;
+        int end;
+        if (statements.hasChildren()) {
+            end = statements.getSourceEnd();
+        } else if (caseExpression != null) {
+            // should add in colon too
+            end = caseExpression.getSourceEnd();
+        } else {
+            // Must be a default:
+            end = caseStart+7; // "default".length()
+        }
         // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
@@ -167,8 +178,6 @@ final class IRFactory
             caseNode.target = gotoTarget;
             switchNode.addChildToBack(caseNode);
             // <netbeans>
-            int start = caseStart;
-            int end = statements.getSourceEnd();
             caseNode.setSourceBounds(start, end);
             caseNode.addChildToBack(statements);
             // </netbeans>
@@ -177,7 +186,7 @@ final class IRFactory
             // <netbeans>
             // Put the default statement in its own node
             Node defaultNode = new Node(Token.DEFAULT, statements);
-            defaultNode.setSourceBounds(caseStart, statements.getSourceEnd());
+            defaultNode.setSourceBounds(caseStart, end);
             switchNode.addChildToBack(defaultNode);
             // </netbeans>
         }

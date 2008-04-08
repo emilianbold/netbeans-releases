@@ -303,15 +303,15 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceRootsPanel.setLayout(sourceRootsPanelLayout);
         sourceRootsPanelLayout.setHorizontalGroup(
             sourceRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, sourceRootsPanelLayout.createSequentialGroup()
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(sourceRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(addSourceRoot)
-                    .add(removeSourceRoot, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(upSourceRoot, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(downSourceRoot, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(sourceRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(addSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(removeSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(upSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(downSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         sourceRootsPanelLayout.setVerticalGroup(
             sourceRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -327,7 +327,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                         .add(upSourceRoot)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(downSourceRoot)
-                        .add(24, 24, 24))
+                        .addContainerGap())
                     .add(jScrollPane1, 0, 0, Short.MAX_VALUE)))
         );
 
@@ -386,15 +386,15 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         testRootsPanel.setLayout(testRootsPanelLayout);
         testRootsPanelLayout.setHorizontalGroup(
             testRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, testRootsPanelLayout.createSequentialGroup()
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(testRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(addTestRoot)
-                    .add(removeTestRoot, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(upTestRoot, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(downTestRoot, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(testRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(addTestRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(removeTestRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(upTestRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(downTestRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         testRootsPanelLayout.setVerticalGroup(
             testRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -409,9 +409,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(upTestRoot)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(downTestRoot)
-                        .addContainerGap(50, Short.MAX_VALUE))
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)))
+                        .add(downTestRoot))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE))
+                .add(11, 11, 11))
         );
 
         addTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_addTestRoot")); // NOI18N
@@ -487,10 +487,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                                     .add(webInfBrowseButton)
                                     .add(jButtonBrowse))
                                 .add(0, 0, 0))
-                            .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)))
+                            .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)))
                     .add(testRootsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(sourceRootsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE))
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
