@@ -78,7 +78,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
 
     public GroovyOccurrencesFinder() {
         super();
-        LOG.setLevel(Level.FINEST);
+//        LOG.setLevel(Level.FINEST);
     }
     
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
