@@ -131,7 +131,8 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     }
 
     @Override
-    public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, String portName, String packageName, boolean isJsr109) {
+public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, 
+            String portName, String packageName, boolean isJsr109, boolean useProvider) {
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);
         if (fo==null) {
@@ -141,7 +142,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                 Exceptions.printStackTrace(ex);
             }
         }
-        return super.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109);
+        return super.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109, useProvider);
     }
 
     @Override

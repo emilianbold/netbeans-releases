@@ -1146,7 +1146,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
-            return  VisibilityQuery.getDefault().isVisible(fo) && !(obj instanceof DataFolder) && group.contains(fo);
+            return  fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) && !(obj instanceof DataFolder) && group.contains(fo);
         }
         
         public void stateChanged( ChangeEvent e) {            

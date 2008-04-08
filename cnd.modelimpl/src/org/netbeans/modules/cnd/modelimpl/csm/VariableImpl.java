@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -99,6 +100,18 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
+        this.name = QualifiedNameCache.getManager().getString(name);
+        this.type = type;
+	_setScope(scope);
+        if (registerInProject) {
+            registerInProject();
+        }
+    }
+    
+    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+        super(file, pos);
+        this._static = _static;
+        this._extern = _extern;
         this.name = QualifiedNameCache.getManager().getString(name);
         this.type = type;
 	_setScope(scope);
@@ -156,13 +169,33 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     private final void initInitialValue(AST node) {
-        if( node != null ) {
+        if (node != null) {
+            int start = 0;
+            int end = 0;
             AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
-            if( tok != null ) {
+            if (tok != null) {
                 tok = tok.getNextSibling();
             }
-            if( tok != null ) {
-                initExpr = new ExpressionBase(tok, getContainingFile(), null, _getScope());
+            if (tok != null) {
+                CsmAST startAST = AstUtil.getFirstCsmAST(tok);
+                if (startAST != null) {
+                    start = startAST.getOffset();
+                }
+            }
+            AST lastInitAst = tok;
+            while (tok != null) {
+                if (tok.getType() == CPPTokenTypes.SEMICOLON) {
+                    break;
+                }
+                lastInitAst = tok;
+                tok = tok.getNextSibling();
+            }
+            if (lastInitAst != null) {
+                AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
+                if ((lastChild != null) && (lastChild instanceof CsmAST)) {
+                    end = ((CsmAST) lastChild).getEndOffset();
+                    initExpr = new ExpressionBase(start, end, getContainingFile(), null, _getScope());
+                }
             }
         }
     }
@@ -275,7 +308,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            // scope could be null when enclosing context is invalidated
         }
         return scope;
     }

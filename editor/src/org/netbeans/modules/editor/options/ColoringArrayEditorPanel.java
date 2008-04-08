@@ -107,7 +107,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         initComponents ();
 
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CAEP_Panel")); // NOI18N
-        syntaxLabel.setDisplayedMnemonic (getBundleString("CAEP_SyntaxLabel_Mnemonic").charAt (0)); // NOI18N
         syntaxList.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CAEP_Syntax")); // NOI18N
 
         coloringModel = new PropertyModelSupport( ColoringBean.class, ColoringEditor.class);
@@ -221,7 +220,8 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
 
     /** This method is called from within the constructor to initialize the form. */
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         detailPanel = new javax.swing.JPanel();
@@ -233,7 +233,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         detailPanel.setLayout(new java.awt.GridLayout(1, 1));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -246,7 +245,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         masterPanel.setLayout(new java.awt.GridBagLayout());
 
         syntaxLabel.setLabelFor(syntaxList);
-        syntaxLabel.setText(getBundleString("CAEP_SyntaxLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(syntaxLabel, getBundleString("CAEP_SyntaxLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -257,7 +256,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
                 syntaxListValueChanged(evt);
             }
         });
-
         syntaxScroll.setViewportView(syntaxList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -276,8 +274,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
         add(masterPanel, gridBagConstraints);
-
-    }//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void syntaxListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_syntaxListValueChanged
         // Bug #18539 invoking List value change after property sheet changes the property value
@@ -299,11 +296,11 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel detailPanel;
     private javax.swing.JPanel masterPanel;
     private javax.swing.JLabel syntaxLabel;
-    private javax.swing.JScrollPane syntaxScroll;
     private javax.swing.JList syntaxList;
-    private javax.swing.JPanel detailPanel;
+    private javax.swing.JScrollPane syntaxScroll;
     // End of variables declaration//GEN-END:variables
 
     private class PropertyModelSupport implements PropertyModel {

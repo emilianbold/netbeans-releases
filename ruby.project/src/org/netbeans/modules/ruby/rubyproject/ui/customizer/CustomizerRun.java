@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,8 +46,6 @@ import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
@@ -69,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
@@ -83,14 +82,13 @@ import org.openide.util.Utilities;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
-    private RubyProject project;
+    private final RubyProject project;
     
-    private JTextField[] data;
-    private JLabel[] dataLabels;
-    private String[] keys;
-    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
-    RubyProjectProperties uiProperties;
-    private ItemListener platformListener;
+    private final JTextField[] data;
+    private final String[] keys;
+    private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
+    private final RubyProjectProperties uiProperties;
+    private PlatformComponentFactory.PlatformChangeListener platformListener;
 
     public CustomizerRun(RubyProjectProperties uiProperties) {
         this.uiProperties = uiProperties;
@@ -107,7 +105,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextWorkingDirectory,
             rakeTextField
         };
-        dataLabels = new JLabel[] {
+        JLabel[] dataLabels = new JLabel[]{
             jLabelMainClass,
             jLabelArgs,
             jLabelVMOptions,
@@ -134,7 +132,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     label = null;
                 } else if (config.length() > 0) {
                     Map<String,String> m = configs.get(config);
-                    label = m != null ? m.get("$label") : /* temporary? */ null;
+                    label = m != null ? m.get("$label") : /* temporary? */ null; // NOI18N
                     if (label == null) {
                         label = config;
                     }
@@ -182,7 +180,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         config = null;
                     }
                     String def = configs.get(null).get(prop);
-                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont);
+                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont); // NOI18N
                 }
             });
         }
@@ -193,18 +191,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     public @Override void addNotify() {
         super.addNotify();
-        platformListener = new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
-                }
+        platformListener = new PlatformComponentFactory.PlatformChangeListener() {
+            public void platformChanged() {
+                uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
             }
         };
-        platforms.addItemListener(platformListener);
+        PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);
     }
     
     public @Override void removeNotify() {
-        platforms.removeItemListener(platformListener);
+        PlatformComponentFactory.removePlatformChangeListener(platforms, platformListener);
         super.removeNotify();
     }
     
@@ -268,9 +264,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptions.setLabelFor(jTextVMOptions);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options")); // NOI18N
 
-        jLabelVMOptionsExample.setLabelFor(jTextFieldMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
 
+        rakeLabel.setLabelFor(rakeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(rakeLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgs")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(rakeExampleLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
@@ -342,14 +338,20 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jTextFieldMainClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextFieldMainClass.AccessibleContext.accessibleName")); // NOI18N
         jTextFieldMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldMainClass")); // NOI18N
         jButtonMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jButtonMainClass")); // NOI18N
+        jTextFieldArgs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextFieldArgs.AccessibleContext.accessibleName")); // NOI18N
         jTextFieldArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldArgs")); // NOI18N
+        jTextWorkingDirectory.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextWorkingDirectory.AccessibleContext.accessibleName")); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle"); // NOI18N
         jTextWorkingDirectory.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_Working_Directory")); // NOI18N
         jButtonWorkingDirectoryBrowse.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_Working_Directory_Browse")); // NOI18N
+        jTextVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextVMOptions.AccessibleContext.accessibleName")); // NOI18N
         jTextVMOptions.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_VM_Options")); // NOI18N
         jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
+        rakeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        rakeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeTextField.AccessibleContext.accessibleName")); // NOI18N
 
         rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyPlatformLabel")); // NOI18N
@@ -364,7 +366,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
 
-        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" })); // NOI18N
         configCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configComboActionPerformed(evt);
@@ -437,6 +439,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        rubyPlatformLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rubyPlatformLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.manageButton.AccessibleContext.accessibleDescription")); // NOI18N
+        configLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        configNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
@@ -570,14 +577,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel rubyPlatformLabel;
     // End of variables declaration//GEN-END:variables
     
-    
-    // Innercasses -------------------------------------------------------------------------
-    
     private class MainClassListener implements ActionListener /*, DocumentListener */ {
         
         private final JButton okButton;
-        private SourceRoots sourceRoots;
-        private JTextField mainClassTextField;
+        private final SourceRoots sourceRoots;
+        private final JTextField mainClassTextField;
         
         MainClassListener( SourceRoots sourceRoots, JTextField mainClassTextField ) {            
             this.sourceRoots = sourceRoots;
@@ -586,14 +590,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK"));
         }
         
-        // Implementation of ActionListener ------------------------------------
-        
-        /** Handles button events
-         */        
+        /** Handles button events */        
         public void actionPerformed( ActionEvent e ) {
-            
             // only chooseMainClassButton can be performed
-            
             final MainClassChooser panel = new MainClassChooser (sourceRoots.getRoots());
             Object[] options = new Object[] {
                 okButton,

@@ -186,7 +186,26 @@ public abstract class BaseDocumentUnitTestCase extends BaseTestCase {
             sb.append("\n----- document text: -----\n");
             appendDebugText(sb, docText);
             sb.append("\n-----\n");
-
+            int startLine = 1;
+            for (int i = 0; i < docText.length() && i < expectedText.length(); i++){
+                if (expectedText.charAt(i) == '\n') {
+                    startLine++;
+                }
+                if (expectedText.charAt(i) != docText.charAt(i)){
+                    sb.append("Diff starts in line "+startLine+"\n");
+                    String context = expectedText.substring(i);
+                    if (context.length()>40){
+                        context = context.substring(0, 40);
+                    }
+                    sb.append("Expected "+context+"\n");
+                    context = docText.substring(i);
+                    if (context.length()>40){
+                        context = context.substring(0, 40);
+                    }
+                    sb.append("Found "+context+"\n");
+                    break;
+                }
+            }
             fail(sb.toString());
         }
     }

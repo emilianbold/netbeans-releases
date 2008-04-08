@@ -140,6 +140,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
     //TODO: should be implemented better
     private boolean checkSafeDelete(Lookup object) {
         boolean a=false;
+        NonRecursiveFolder folder = object.lookup(NonRecursiveFolder.class);
+        if (folder != null){
+            return true;
+        }
         for (FileObject f:object.lookupAll(FileObject.class)) {
             a=true;
             if (!RetoucheUtils.isJavaFile(f) && !isPackage(f)) {

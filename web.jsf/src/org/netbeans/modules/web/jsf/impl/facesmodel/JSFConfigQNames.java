@@ -112,6 +112,10 @@ public enum JSFConfigQNames {
         return value;
     }
     
+    public QName getQName(String namespaceURI) {
+        return new QName(namespaceURI, getLocalName(), JSFCONFIG_PREFIX);
+    }
+
     public String getLocalName() {
         return qname_1_2.getLocalPart();
     }

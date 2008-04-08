@@ -60,13 +60,11 @@ public class AttachingSessionProvider extends SessionProvider {
 
     public AttachingSessionProvider (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        sadic = (AttachingDICookie) contextProvider.lookupFirst 
-            (null, AttachingDICookie.class);
+        sadic = contextProvider.lookupFirst(null, AttachingDICookie.class);
     };
     
     public String getSessionName () {
-        Map arguments = (Map) contextProvider.lookupFirst 
-            (null, Map.class);
+        Map arguments = contextProvider.lookupFirst(null, Map.class);
         if (arguments != null) {
             String processName = (String) arguments.get ("name");
             if (processName != null)

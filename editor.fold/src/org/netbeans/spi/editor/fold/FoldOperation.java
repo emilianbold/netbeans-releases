@@ -45,6 +45,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.modules.editor.fold.ApiPackageAccessor;
 import org.netbeans.modules.editor.fold.FoldHierarchyTransactionImpl;
 import org.netbeans.modules.editor.fold.FoldOperationImpl;
 import org.netbeans.modules.editor.fold.SpiPackageAccessor;
@@ -176,6 +177,17 @@ public final class FoldOperation {
      */
     public void removeFromHierarchy(Fold fold, FoldHierarchyTransaction transaction) {
         impl.removeFromHierarchy(fold, transaction.getImpl());
+    }
+    
+    /**
+     * Check whether this fold operation has produced the given fold.
+     * 
+     * @param fold non-null fold.
+     * @return true if this fold operation produced the given fold (by its <code>addToHierarchy()</code> method)
+     *   or false otherwise.
+     */
+    public boolean owns(Fold fold) {
+        return (ApiPackageAccessor.get().foldGetOperation(fold) == impl);
     }
     
     /**

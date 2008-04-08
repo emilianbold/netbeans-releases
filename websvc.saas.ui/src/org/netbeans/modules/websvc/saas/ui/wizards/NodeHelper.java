@@ -168,9 +168,7 @@ public final class NodeHelper {
         
         List<String> members = ReflectionHelper.getPropertyNames(inType, getRuntimeClassLoader());
         for (String fieldName : members) {
-            //TODO:nam
-            //String fieldType = ReflectionHelper.getPropertyType(inType, fieldName, getRuntimeClassLoader());
-            String fieldType = null;
+            String fieldType = ReflectionHelper.getPropertyType(inType, fieldName, getRuntimeClassLoader());
             TypeNodeData childData = ReflectionHelper.createTypeData(fieldType, fieldName);
             childData.setTypeValue(getParameterDefaultValue(childData));
             
@@ -195,14 +193,10 @@ public final class NodeHelper {
         if (parentValue != null) {
             List<String> members = ReflectionHelper.getPropertyNames(parentType, getRuntimeClassLoader());
             for (String fieldName : members) {
-                //TODO:nam
-                //String fieldType = ReflectionHelper.getPropertyType(parentType, fieldName, getRuntimeClassLoader());
-                String fieldType;
+                String fieldType = ReflectionHelper.getPropertyType(parentType, fieldName, getRuntimeClassLoader());
                 Object fieldValue = ReflectionHelper.getPropertyValue(parentValue, fieldName, getRuntimeClassLoader());
                 
-                //TODO:nam
-                //TypeNodeData resultData = ReflectionHelper.createTypeData(fieldType, fieldName, fieldValue);
-                TypeNodeData resultData = null;
+                TypeNodeData resultData = ReflectionHelper.createTypeData(fieldType, fieldName, fieldValue);
                 DefaultMutableTreeNode resultNode = createResultNodeFromData(resultData);
                 
                 inParentNode.add(resultNode);

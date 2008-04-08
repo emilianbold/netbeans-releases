@@ -107,6 +107,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.workflow.project</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.resources</package>
             </friend-packages>
         </data>

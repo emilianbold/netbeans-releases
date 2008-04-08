@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/001_create_products_renamed.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : CreateProductsRenamed
   class-ig : createproductsrenamed
@@ -17,17 +13,14 @@ Indexed:
   fqn : CreateProductsRenamed
   method : down|STATIC|
   method : up|STATIC|
-  source : <TESTURL>/001_create_products_renamed.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;1429
 
 
 Document 2
-Delete:
 Indexed:
   dbtable : products
-  source : <TESTURL>/001_create_products_renamed.rb
 
 Not Indexed:
   dbcolumn : desc

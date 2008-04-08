@@ -46,8 +46,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -310,24 +308,6 @@ public class RubyExecution extends ExecutionService {
         }
         
         return javaHome;
-    }
-
-    /**
-     * Add settings in the environment appropriate for running JRuby:
-     * add the given directory into the path, and set up JRUBY_HOME
-     */
-    public @Override void setupProcessEnvironment(Map<String, String> env) {
-        super.setupProcessEnvironment(env);
-
-        // In case we're launching JRuby:
-        RubyPlatform platform = descriptor.getPlatform();
-        if (platform.isJRuby()) {
-            File rubyHome = platform.getHome();
-            String jrubyHome = rubyHome.getAbsolutePath();
-            env.put("JRUBY_HOME", jrubyHome); // NOI18N
-            env.put("JRUBY_BASE", jrubyHome); // NOI18N
-            env.put("JAVA_HOME", getJavaHome()); // NOI18N
-        }
     }
     
     /** Package-private for unit test. */

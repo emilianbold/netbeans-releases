@@ -103,7 +103,6 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/j2ee/hints/EntityRelations.class"/>
-                <include name="org/netbeans/test/j2ee/hints/WebServices.class"/>
             </patternset>
         </testset>
     </testbag>

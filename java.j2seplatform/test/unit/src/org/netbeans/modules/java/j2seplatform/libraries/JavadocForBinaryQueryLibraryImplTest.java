@@ -45,35 +45,34 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.core.startup.layers.ArchiveURLMapper;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.masterfs.MasterURLMapper;
 
 // XXX needs to test listening as well
+import org.openide.util.test.MockLookup;
 
 /**
- * JavadocForBinaryQueryLibraryImpl test
- *
  * @author  David Konecny
  */
-public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements Lookup.Provider {
-    
-    private Lookup lookup;
-    
+public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
     
     public JavadocForBinaryQueryLibraryImplTest(java.lang.String testName) {
         super(testName);
-        TestUtil.setLookup(Lookups.proxy(this));
+        MockLookup.setInstances(
+                LibraryProviderImpl.getDefault(),
+                new JavaPlatformProviderImpl(),
+                new ArchiveURLMapper(),
+                new JavadocForBinaryQueryLibraryImpl(),
+                new MasterURLMapper());
     }
     
     private String getBase() throws Exception {
@@ -84,7 +83,7 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements 
         return dir.toString();
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath()); 
         super.setUp();
         clearWorkDir();        
@@ -135,14 +134,15 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements 
     private void registerLibrary(final String libName, final File cp, final File javadoc) throws Exception {
         DefaultLibraryImplementation lib;
         lib = new DefaultLibraryImplementation("j2se", new String[]{"classpath", "javadoc"});
-        ArrayList l = new ArrayList();
+        lib.setName(libName);
+        List<URL> l = new ArrayList<URL>();
         URL u = cp.toURI().toURL();
         if (cp.getPath().endsWith(".jar")) {
             u = FileUtil.getArchiveRoot(u);
         }
         l.add(u);
         lib.setContent("classpath", l);
-        l = new ArrayList();
+        l = new ArrayList<URL>();
         u = javadoc.toURI().toURL();
         if (javadoc.getPath().endsWith(".jar")) {
             u = FileUtil.getArchiveRoot(u);
@@ -181,19 +181,5 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements 
         assertEquals(1, urls.length);
         assertEquals(base+"library3/javadoc3/", urls[0].toExternalForm());
     }
-    
-    public synchronized Lookup getLookup() {
-        if (this.lookup == null) {
-            this.lookup = Lookups.fixed (
-                new Object[] {
-                    LibraryProviderImpl.getDefault(),
-                    new JavaPlatformProviderImpl (),
-                    new ArchiveURLMapper (),
-                    new JavadocForBinaryQueryLibraryImpl(),
-                    new MasterURLMapper(),
-                });
-        }
-        return this.lookup;
-    }    
     
 }

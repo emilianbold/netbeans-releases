@@ -1,1 +1,2 @@
 org.netbeans.modules.j2ee.deployment.impl.query.J2eePlatformJavadocForBinaryQuery
+org.netbeans.modules.j2ee.deployment.impl.sharability.JavadocForBinaryQueryImpl

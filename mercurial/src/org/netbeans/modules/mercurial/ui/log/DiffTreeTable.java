@@ -83,6 +83,7 @@ class DiffTreeTable extends TreeTableView {
         tree.setCellRenderer(renderer);
     }
     
+    @SuppressWarnings("unchecked")
     private void setupColumns() {
         Node.Property [] columns = new Node.Property[4];
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
@@ -208,11 +209,13 @@ class DiffTreeTable extends TreeTableView {
         protected void addNotify() {
             refreshKeys();
         }
-
+        
+        @SuppressWarnings("unchecked")
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
         }
     
+        @SuppressWarnings("unchecked")
         private void refreshKeys() {
             setKeys(results);
         }

@@ -49,6 +49,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -85,6 +86,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private Map<CharSequence, CsmUID<CsmNamespace>> nestedMap = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
     
     private Map<CharSequence,CsmUID<CsmOffsetableDeclaration>> declarations = new ConcurrentHashMap<CharSequence,CsmUID<CsmOffsetableDeclaration>>();
+    private Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
     //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
@@ -177,13 +179,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (minVal != 0) {
             out = out + minVal;
         }
-        unnamedNrs.add(new Integer(minVal));
+        unnamedNrs.add(Integer.valueOf(minVal));
         return out;
     }
     
     private int getMinUnnamedValue() {
         for (int i = 0; i < unnamedNrs.size(); i++) {
-            if (!unnamedNrs.contains(new Integer(i))) {
+            if (!unnamedNrs.contains(Integer.valueOf(i))) {
                 return i;
             }
         }
@@ -200,7 +202,14 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
-        Collection<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values()));
+        // add all declarations
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
+        // add all unnamed declarations
+        synchronized (unnamedDeclarations) {
+            uids.addAll(unnamedDeclarations);
+        }
+        // convert to objects
+        Collection<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(uids);
         return decls;
     }
     
@@ -261,14 +270,15 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                     DiagnosticExceptoins.register(ex);
                 }
             } else {
-                unnamedNrs.remove(new Integer(0));
+                unnamedNrs.remove(Integer.valueOf(0));
             }
         }
     }
     
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
-        
-        if( !ProjectBase.canRegisterDeclaration(declaration) ) {
+        boolean unnamed = !ProjectBase.canRegisterDeclaration(declaration);
+        // allow to register any enum
+        if(unnamed && !CsmKindUtilities.isEnum(declaration) ) {
             return;
         }
         
@@ -310,7 +320,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         
         CsmUID<CsmOffsetableDeclaration> newDeclarationUID = UIDCsmConverter.declarationToUID(declaration);
-        declarations.put(uniqueName, newDeclarationUID);
+        if (unnamed) {
+            unnamedDeclarations.add(newDeclarationUID);
+        } else {
+            declarations.put(uniqueName, newDeclarationUID);
+        }
         
 //        if( "Cursor".equals(declaration.getName()) ) {
 //            System.err.println("Cursor");
@@ -336,7 +350,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-        CsmUID<CsmOffsetableDeclaration> declarationUid = declarations.remove(declaration.getUniqueName());
+        CsmUID<CsmOffsetableDeclaration> declarationUid;
+        if (declaration.getName().length() == 0) {
+            declarationUid = declaration.getUID();
+            unnamedDeclarations.remove(declarationUid);
+        } else {
+            declarationUid = declarations.remove(declaration.getUniqueName());
+        }
         // do not clean repository, it must be done from physical container of declaration
         if (false) RepositoryUtils.remove(declarationUid);
         // update repository
@@ -485,6 +505,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } finally {
             nsDefinitionsLock.readLock().unlock();
         }
+        theFactory.writeUIDCollection(this.unnamedDeclarations, output, true);
     }
     
     public NamespaceImpl(DataInput input) throws IOException {
@@ -508,6 +529,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.readStringToUIDMap(this.nestedMap, input, QualifiedNameCache.getManager());
         theFactory.readStringToUIDMap(this.declarations, input, QualifiedNameCache.getManager());
         theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
+        theFactory.readUIDCollection(this.unnamedDeclarations, input);
     }
     
     

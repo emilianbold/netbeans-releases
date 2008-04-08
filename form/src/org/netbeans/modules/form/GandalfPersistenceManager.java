@@ -3690,15 +3690,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             saveProperties(component.getKnownBeanProperties(),
                            XML_PROPERTIES, buf, indent);
 
-            if (component instanceof RADVisualComponent) {
-                // try to save accessibility properties
-                FormProperty[] accProps = ((RADVisualComponent)component)
-                                            .getAccessibilityProperties();
-                saveProperties(accProps, XML_A11Y_PROPERTIES, buf, indent);
-//                if (saveProperties(accProps,
-//                                   XML_A11Y_PROPERTIES, buf, indent))
-//                    raiseFormatVersion(NB34_VERSION);
-            }
+            // try to save accessibility properties
+            FormProperty[] accProps = component.getAccessibilityProperties();
+            saveProperties(accProps, XML_A11Y_PROPERTIES, buf, indent);
         }
 
         // 2. Binding properties

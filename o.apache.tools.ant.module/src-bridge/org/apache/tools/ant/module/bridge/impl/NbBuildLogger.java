@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -1163,7 +1164,12 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                 if (o instanceof String) {
                     return (String) o;
                 } else {
-                    return null;
+                    o = project.getReference(name);
+                    if (o != null) {
+                        return o.toString();
+                    } else {
+                        return null;
+                    }
                 }
             } else {
                 return null;
@@ -1174,7 +1180,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             verifyRunning();
             Project project = getProjectIfPropertiesDefined();
             if (project != null) {
-                return NbCollections.checkedSetByFilter(project.getProperties().keySet(), String.class, true);
+                Set<String> s = new HashSet<String>();
+                s.addAll(NbCollections.checkedSetByFilter(project.getProperties().keySet(), String.class, true));
+                s.addAll(NbCollections.checkedSetByFilter(project.getReferences().keySet(), String.class, true));
+                return s;
             } else {
                 return Collections.emptySet();
             }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -72,7 +72,7 @@ import org.openide.windows.TopComponent;
  * which perform logic appropriate for the file type being opened.
  * <p>
  * Much of this is based on the original JUnit action by Marian Petras.
-å * 
+ * 
  * @author  Marian Petras
  * @author Tor Norbye
  */
@@ -84,11 +84,6 @@ public class GotoOppositeAction extends CallableSystemAction {
 
     public GotoOppositeAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-
-        String name = NbBundle.getMessage(
-                GotoOppositeAction.class,
-                "LBL_Action_GoToTest"); //NOI18N
-        putValue("PopupMenuText", name); //NOI18N
 
         // Not sure what the following is used for - a grep for trimmed-text
         // doesn't reveal any clients. Obsolete code perhaps?

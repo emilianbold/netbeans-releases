@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 public class WebServicesRootNode extends AbstractNode {
-    private static final String SERVICES_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png"; // NOI18N
+    private static final String SERVICES_BADGE = "org/netbeans/modules/websvc/jaxrpc/nodes/resources/webservicegroup.png"; // NOI18N
     private Image cachedServicesBadge;
     private Icon folderIconCache;
     private Icon openedFolderIconCache;

@@ -73,7 +73,7 @@ import org.openide.NotifyDescriptor;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ahimanikya Satapathy
@@ -83,7 +83,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
 
     private static final String CMD_SHOWDATA = "ShowData"; // NOI18N
     private static final String LOG_CATEGORY = PreviewDataPanel.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(PreviewDataPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(PreviewDataPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private FlatfileDBTable currentTable;
     private JButton previewBtn;
@@ -95,8 +95,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
 
     public PreviewDataPanel(FlatfileDBTable table) {
         currentTable = table;
-        String nbBundle1 = mLoc.t("PRSR001: Preview Table Content");
-        String previewLabel =  Localizer.parse(nbBundle1);
+        String nbBundle1 = mLoc.t("BUND220: Preview Table Content");
+        String previewLabel =  nbBundle1.substring(15);
         setBorder(BorderFactory.createTitledBorder(previewLabel));
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         add(createPreviewControls());
@@ -175,14 +175,14 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             }
 
             String url = FlatfileDBConnectionFactory.DEFAULT_FLATFILE_JDBC_URL_PREFIX + "preview:" + metadataDir;
-            mLogger.infoNoloc(mLoc.t("PRSR075: Preview URL: {0}", url));
+            mLogger.infoNoloc(mLoc.t("EDIT075: Preview URL: {0}", url));
             conn = FlatfileDBConnectionFactory.getInstance().getConnection(url);
             Statement stmt = conn.createStatement();
 
             stmt.execute("DROP TABLE IF EXISTS " + table.getTableName());
             String create = table.getCreateStatementSQL();
 
-            mLogger.infoNoloc(mLoc.t("PRSR076: Generated create statement: {0}", create));
+            mLogger.infoNoloc(mLoc.t("EDIT076: Generated create statement: {0}", create));
             stmt.execute(create);
 
             ResultSet rs = stmt.executeQuery(table.getSelectStatementSQL(ct));
@@ -191,7 +191,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
 
             // get the count of all rows
             String countSql = "Select count(*) From " + table.getName();
-            mLogger.infoNoloc(mLoc.t("PRSR077: Select count(*) statement used for total rows:{0}", countSql));
+            mLogger.infoNoloc(mLoc.t("EDIT077: Select count(*) statement used for total rows:{0}", countSql));
 
             stmt = conn.createStatement();
             ResultSet cntRs = stmt.executeQuery(countSql);
@@ -209,11 +209,11 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             stmt.execute("DROP TABLE " + table.getTableName());
         } catch (NoSuchElementException nse) {
             String errorMsg = "ERROR: Current sample file may be corrupt, or does not match specified datatypes.";
-            String nbBundle2 = mLoc.t("PRSR001: Could not preview current sample file.One of the column datatypes may not match the sample data,or the sample file may be corrupt.Try changing a column datatype and preview again, or supply a different sample file.");
+            String nbBundle2 = mLoc.t("BUND221: Could not preview current sample file.One of the column datatypes may not match the sample data,or the sample file may be corrupt.Try changing a column datatype and preview again, or supply a different sample file.");
             try {
-                errorMsg =  Localizer.parse(nbBundle2);
+                errorMsg =  nbBundle2.substring(15);
             } catch (MissingResourceException mre) {
-                mLogger.infoNoloc(mLoc.t("PRSR078: Could not locate resource string for ERROR_bad_preview:{0}", mre));
+                mLogger.infoNoloc(mLoc.t("EDIT078: Could not locate resource string for ERROR_bad_preview:{0}", mre));
 
             }
             showError("Sample file may be corrupt, or does not match specified datatypes", errorMsg, nse);
@@ -223,10 +223,10 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             String sqlExMsg = "Sample file may be corrupt, or does not match specified datatypes";
             try {
                 sqlExMsg = stripExceptionHeaderFromMessage(se);
-                String nbBundle3 = mLoc.t("PRSR001: Could not preview current sample file.One or more values for field length, scale, datatype, or nullability do not agree with the current sample file.Review your field specifications and click 'Preview' again.Error:{0}",sqlExMsg);
-                errorMsg = Localizer.parse(nbBundle3);
+                String nbBundle3 = mLoc.t("BUND222: Could not preview current sample file.One or more values for field length, scale, datatype, or nullability do not agree with the current sample file.Review your field specifications and click 'Preview' again.Error:{0}",sqlExMsg);
+                errorMsg = nbBundle3.substring(15);
             } catch (MissingResourceException mre) {
-                mLogger.errorNoloc(mLoc.t("PRSR079: Could not locate resource string for ERROR_bad_preview {0}", LOG_CATEGORY), mre);
+                mLogger.errorNoloc(mLoc.t("EDIT079: Could not locate resource string for ERROR_bad_preview {0}", LOG_CATEGORY), mre);
             }
             showError(sqlExMsg, errorMsg, se);
             isValid = false;
@@ -272,7 +272,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorMsg, NotifyDescriptor.WARNING_MESSAGE));
         }
         setEnabled(false);
-        mLogger.errorNoloc(mLoc.t("PRSR080: errorMsg {0}", LOG_CATEGORY), t);
+        mLogger.errorNoloc(mLoc.t("EDIT080: errorMsg {0}", LOG_CATEGORY), t);
     }
 
     /**
@@ -343,15 +343,19 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         // add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         previewBtn = new JButton(new ImageIcon(url));
-        previewBtn.setMnemonic('S');
-        previewBtn.setToolTipText("Show data for this table definition");
+        String nbBundle30 = mLoc.t("BUND223: Show data for this table definition");
+        previewBtn.setToolTipText(nbBundle30.substring(15));
+        previewBtn.getAccessibleContext().setAccessibleName(nbBundle30.substring(15));
+        previewBtn.setMnemonic(nbBundle30.substring(15).charAt(0));
         previewBtn.setActionCommand(CMD_SHOWDATA);
         previewBtn.addActionListener(this);
 
         JPanel recordCountPanel = new JPanel();
         recordCountPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-
-        JLabel lbl = new JLabel("Limit rows:");
+        
+        String nbBundle50 = mLoc.t("BUND224: Limit rows:");
+        JLabel lbl = new JLabel(nbBundle50.substring(15));
+        lbl.getAccessibleContext().setAccessibleName(nbBundle50.substring(15));
         lbl.setDisplayedMnemonic('l');
         recordCountPanel.add(lbl);
         recordCount = new JTextField("25", 5);
@@ -365,7 +369,10 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         fl.setAlignment(FlowLayout.LEFT);
         totalRowsPanel.setLayout(fl);
 
-        JLabel totalRowsNameLabel = new JLabel("Total rows:");
+        String nbBundle40 = mLoc.t("BUND263: Total rows:");
+        JLabel totalRowsNameLabel = new JLabel(nbBundle40.substring(15));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(nbBundle40.substring(15));
+        totalRowsNameLabel.setDisplayedMnemonic(nbBundle40.substring(15).charAt(0));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
         totalRowsPanel.add(totalRowsNameLabel);
 

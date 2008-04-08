@@ -202,7 +202,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     private DataObject jspDataObject;
             
     // memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.jsfTopComponents"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     private final JPanel panel = new JPanel();
     
@@ -211,8 +211,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        super(webform);
         super(jsfForm, designer);
 
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "JsfTopComponent"); // NOI18N
+        if (TIMERS.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "JsfTopComponent"); // NOI18N
             rec.setParameters(new Object[]{ this });
             TIMERS.log(rec);
         }

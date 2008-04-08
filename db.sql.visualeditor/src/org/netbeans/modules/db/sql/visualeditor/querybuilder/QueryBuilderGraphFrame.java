@@ -120,6 +120,7 @@ import org.netbeans.api.visual.anchor.AnchorShapeFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -2119,7 +2120,12 @@ public class QueryBuilderGraphFrame extends JPanel
                     String justTableName;
                     for (int j=0; j < tableNamesArrayList.size(); j++){
                         tableName = (String) tableNamesArrayList.get(j);
-                        justTableName = (String)tableName.split("\\.")[1];
+                        String[] parts = tableName.split("\\.");
+                        if ( parts.length > 1 ) {
+                            justTableName = parts[1];
+                        } else {
+                            justTableName = parts[0];
+                        }
                         if (justTableName.equals(fullTableName )){
                             fullTableName = tableName;
                             break;
@@ -2160,7 +2166,7 @@ public class QueryBuilderGraphFrame extends JPanel
             }
             e.rejectDrop();
         } catch (Exception ex) {
-            Log.getLogger().finest("Data transfer exception:  " + ex.getLocalizedMessage()); // NOI18N
+            Exceptions.printStackTrace(ex);
         }
     }
     

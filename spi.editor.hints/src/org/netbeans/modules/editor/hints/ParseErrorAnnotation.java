@@ -56,20 +56,20 @@ import org.openide.util.WeakListeners;
 public class ParseErrorAnnotation extends Annotation implements PropertyChangeListener {
 
     private final Severity severity;
-    private final LazyFixList fixes;
+    private final FixData fixes;
     private final String description;
     private final Position lineStart;
     private final AnnotationHolder holder;
     
     /** Creates a new instance of ParseErrorAnnotation */
-    public ParseErrorAnnotation(Severity severity, LazyFixList fixes, String description, Position lineStart, AnnotationHolder holder) {
+    public ParseErrorAnnotation(Severity severity, FixData fixes, String description, Position lineStart, AnnotationHolder holder) {
         this.severity = severity;
         this.fixes = fixes;
         this.description = description;
         this.lineStart = lineStart;
         this.holder = holder;
         
-        if (fixes.probablyContainsFixes() && !fixes.isComputed()) {
+        if (!fixes.isComputed()) {
             fixes.addPropertyChangeListener(WeakListeners.propertyChange(this, fixes));
         }
     }
@@ -119,7 +119,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         }
     }
     
-    public LazyFixList getFixes() {
+    public FixData getFixes() {
         return fixes;
     }
     

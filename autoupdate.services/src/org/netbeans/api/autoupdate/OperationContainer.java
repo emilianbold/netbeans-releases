@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -207,7 +207,10 @@ public final class OperationContainer<Support> {
     }
     
     /**
-     * @return either {@link OperationSupport} or {@link InstallSupport} depending on type parameter of <code>OperationContainer&lt;Support&gt;</code>      
+     * @return either {@link OperationSupport} or {@link InstallSupport} depending on type parameter of <code>OperationContainer&lt;Support&gt;</code> or
+     * <code>null</code> if the <code>OperationContainer</code> is empty or contains any invalid elements
+     * @see #listAll
+     * @see #listInvalid
      * <br><p>See the difference between {@link #createForInstall} and {@link #createForDirectInstall} for example</p>
      */                        
     public Support getSupport() {

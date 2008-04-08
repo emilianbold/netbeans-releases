@@ -81,6 +81,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.debugger.ui.Controller;
@@ -316,7 +317,7 @@ Controller, ActionListener {
         
         // Take the start off the AWT EQ:
         final RequestProcessor.Task[] startTaskPtr = new RequestProcessor.Task[1];
-        startTaskPtr[0] = RequestProcessor.getDefault().post(new Runnable() {
+        startTaskPtr[0] = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 final Thread theCurrentThread = Thread.currentThread();
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
@@ -359,8 +360,7 @@ Controller, ActionListener {
                         );
                     if (es != null) {
                         for (int i = 0; i < es.length; i++) {
-                            JPDADebugger d = (JPDADebugger) es [i].lookupFirst 
-                                (null, JPDADebugger.class);
+                            JPDADebugger d = es[i].lookupFirst(null, JPDADebugger.class);
                             if (d == null) continue;
                             try {
                                 // workaround for #64227
@@ -379,6 +379,13 @@ Controller, ActionListener {
                 }
             }
         });
+        Runnable action = new Runnable() {
+            
+            public void run() {
+                startTaskPtr[0].schedule(0);
+            }
+        };
+        ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (ConnectPanel.class, "CTL_Connect"));   //NOI18N
         //System.out.println("Before return from ConnectPanel.ok()");
         return true;
     }

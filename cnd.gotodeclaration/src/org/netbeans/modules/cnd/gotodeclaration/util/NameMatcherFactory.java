@@ -144,8 +144,8 @@ public class NameMatcherFactory {
             switch( type ) {
                 case EXACT_NAME:
                     return new ExactNameMatcher(text);
-//                case CASE_INSENSITIVE_EXACT_NAME:
-//                    return new CaseInsensitiveExactNameMatcher(text);
+                case CASE_INSENSITIVE_EXACT_NAME:
+                    return new CaseInsensitiveExactNameMatcher(text);
                 case PREFIX:
                     return new PrefixNameMatcher(text);
                 case REGEXP:

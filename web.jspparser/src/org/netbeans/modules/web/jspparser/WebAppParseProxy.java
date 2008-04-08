@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,13 +61,11 @@ import org.openide.filesystems.FileObject;
 public interface WebAppParseProxy {
     
    
-    public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor);
+    JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor);
     
-    public JspParserAPI.ParseResult analyzePage(FileObject jspFile, int errorReportingMode);
+    JspParserAPI.ParseResult analyzePage(FileObject jspFile, int errorReportingMode);
     
-    public Map getTaglibMap(boolean useEditor) throws IOException;
+    Map<String, String[]> getTaglibMap(boolean useEditor) throws IOException;
     
-    public URLClassLoader getWAClassLoader();
-    
-    
+    URLClassLoader getWAClassLoader();
 }

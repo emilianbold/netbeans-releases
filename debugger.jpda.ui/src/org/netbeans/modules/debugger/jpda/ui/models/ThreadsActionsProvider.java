@@ -94,9 +94,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
                 if (nodes[0] instanceof MonitorModel.ThreadWithBordel) nodes[0] = ((MonitorModel.ThreadWithBordel) nodes[0]).originalThread;
                 String language = DebuggerManager.getDebuggerManager ().
                     getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = (SourcePath) DebuggerManager.
-                    getDebuggerManager ().getCurrentEngine ().lookupFirst 
-                    (null, SourcePath.class);
+                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
                 sp.showSource ((JPDAThread) nodes [0], language);
             }
         },
@@ -184,8 +182,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     
     
     public ThreadsActionsProvider (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (null, JPDADebugger.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
@@ -246,10 +243,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
             getCurrentSession ().getCurrentLanguage ();
         if (!t.isSuspended ())
             return false;
-        String className = t.getClassName ();
-        SourcePath sp = (SourcePath) DebuggerManager.
-            getDebuggerManager ().getCurrentEngine ().lookupFirst 
-            (null, SourcePath.class);
+        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
         return sp.sourceAvailable (t, language, true);
     }
 }

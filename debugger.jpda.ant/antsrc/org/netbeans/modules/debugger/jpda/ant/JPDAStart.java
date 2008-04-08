@@ -59,6 +59,7 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,6 +86,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.platform.JavaPlatform;
 
@@ -314,6 +316,7 @@ public class JPDAStart extends Task implements Runnable {
                 properties.put ("name", getName ()); // NOI18N
                 properties.put ("jdksources", jdkSourcePath); // NOI18N
                 final ListeningConnector flc = lc;
+                final WeakReference<Session> startedSessionRef[] = new WeakReference[] { new WeakReference<Session>(null) };
                 // Let it start asynchronously so that the script can go on and start the debuggee
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -323,6 +326,8 @@ public class JPDAStart extends Task implements Runnable {
                                 args,
                                 new Object[] { properties }
                             );
+                            Session startedSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+                            startedSessionRef[0] = new WeakReference(startedSession);
                         } catch (DebuggerStartException dsex) {
                             // Was not able to start up
                         }
@@ -341,6 +346,10 @@ public class JPDAStart extends Task implements Runnable {
                             flc.stopListening(args);
                         } catch (java.io.IOException ioex) {
                         } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException iaex) {
+                        }
+                        Session s = startedSessionRef[0].get();
+                        if (s != null) {
+                            s.kill();
                         }
                     }
                     
@@ -569,8 +578,7 @@ public class JPDAStart extends Task implements Runnable {
         }
         
         public void engineAdded (DebuggerEngine engine) {
-            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
-                (null, JPDADebugger.class);
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
             debugger.addPropertyChangeListener (
                 JPDADebugger.PROP_STATE,
@@ -580,8 +588,7 @@ public class JPDAStart extends Task implements Runnable {
         }
         
         public void engineRemoved (DebuggerEngine engine) {
-            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
-                (null, JPDADebugger.class);
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
             debugger.removePropertyChangeListener (
                 JPDADebugger.PROP_STATE,

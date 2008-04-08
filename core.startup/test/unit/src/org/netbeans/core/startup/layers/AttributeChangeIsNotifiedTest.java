@@ -44,13 +44,12 @@ package org.netbeans.core.startup.layers;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
-import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -68,7 +67,7 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         
         File u = new File(getWorkDir(), "userdir");
@@ -88,9 +87,6 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         
     }
 
-    protected void tearDown() throws Exception {
-    }
-    
     protected ModuleLayeredFileSystem getTheLayer(SystemFileSystem sfs) {
         return sfs.getUserLayer();
     }
@@ -105,9 +101,9 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         File f3 = changeOfAnAttributeInLayerIsFiredgenerateLayer("NoChange", "nochange");
 
         {
-            ArrayList list = new ArrayList();
-            list.add(f1.toURL());
-            list.add(f3.toURL());
+            List<URL> list = new ArrayList<URL>();
+            list.add(f1.toURI().toURL());
+            list.add(f3.toURI().toURL());
             fs.setURLs (list);
         }
         
@@ -126,9 +122,9 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         assertAttr("Imutable value is nochange", nochange, "value", "nochange");
         
         {
-            ArrayList list = new ArrayList();
-            list.add(f2.toURL());
-            list.add(f3.toURL());
+            List<URL> list = new ArrayList<URL>();
+            list.add(f2.toURI().toURL());
+            list.add(f3.toURI().toURL());
             fs.setURLs (list);
         }
         String v2 = (String) file.getAttribute("value");
@@ -166,9 +162,9 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         return f;
     }
     
-    private static class FSListener extends FileChangeAdapter {
-        public List events = new ArrayList();
-        public List change = new ArrayList();
+    private static class FSListener implements FileChangeListener {
+        public List<FileEvent> events = new ArrayList<FileEvent>();
+        public List<FileEvent> change = new ArrayList<FileEvent>();
         
         
         public void fileRenamed(FileRenameEvent fe) {

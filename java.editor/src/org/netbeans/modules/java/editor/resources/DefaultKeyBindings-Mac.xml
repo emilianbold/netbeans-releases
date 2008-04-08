@@ -56,4 +56,6 @@ made subject to such option by the copyright holder.
     <bind key="O-I" actionName="generate-code"/>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
+    <!-- remove Ctrl-INSERT on Mac (no INSERT on Mac keyboard)-->
+    <bind key="O-INSERT" remove="true"/>
 </bindings>

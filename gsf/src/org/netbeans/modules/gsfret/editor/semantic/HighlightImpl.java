@@ -50,7 +50,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.gsf.ColoringAttributes;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.editor.Coloring;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;

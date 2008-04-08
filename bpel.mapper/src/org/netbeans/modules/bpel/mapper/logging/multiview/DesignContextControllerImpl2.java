@@ -123,6 +123,12 @@ public class DesignContextControllerImpl2
     public synchronized void setContext(BpelDesignContext newContext, boolean forceReload) {
         assert EventQueue.isDispatchThread();
         //
+        
+        if (mNewContext == null && forceReload) {
+            reloadMapper(new EventObject(new Object()));
+            return;
+        }
+        
         mNewContext = newContext;
 
         boolean isValidContext = DesignContextUtil.isValidContext(mContext);
@@ -389,11 +395,12 @@ public class DesignContextControllerImpl2
     }
 
     private synchronized Object getBpelModelUpdateSource() {
-        if (mBpelModelUpdateSourceRef != null) {
+        if (mBpelModelUpdateSourceRef == null) {
+            // Mapper is the default synchronization source
+            return mMapperTcContext.getMapper();
+        } else {
             return mBpelModelUpdateSourceRef.get();
         }
-        //
-        return null;
     }
 
     /**

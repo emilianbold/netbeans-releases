@@ -262,6 +262,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.sun.avk</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
+                <friend>org.netbeans.modules.portalpack.servers.base_psframework</friend>
+                <friend>org.netbeans.modules.portalpack.servers.opensourcepc</friend>
                 <package>org.netbeans.modules.j2ee.sun.api</package>
                 <package>org.netbeans.modules.j2ee.sun.appsrvapi</package>
                 <package>org.netbeans.modules.j2ee.sun.ide.editors</package>

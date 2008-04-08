@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.TokenUtils;

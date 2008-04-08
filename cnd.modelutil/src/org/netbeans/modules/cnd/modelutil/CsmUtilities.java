@@ -79,8 +79,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -294,6 +297,16 @@ public class CsmUtilities {
 	    exc.printStackTrace();
 	}
 	return csmProject;
+    }
+    
+    public static boolean isAnyNativeProjectOpened() {
+	Project[] projects = OpenProjects.getDefault().getOpenProjects();
+	for (int i = 0; i < projects.length; i++) {
+	    if( projects[i].getLookup().lookup(NativeProject.class) != null) {
+		return true;
+	    }
+	}
+	return false;
     }
     
     public static CsmFile[] getCsmFiles(DataObject dobj) {

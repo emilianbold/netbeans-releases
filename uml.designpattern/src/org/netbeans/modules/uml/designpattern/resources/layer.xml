@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
    <folder name="Menu">
       <folder name="Window">
          <folder name="Other">
+            <attr name="position" intvalue="1700"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/> 
             <file name="DesignCenter.shadow">
                <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>    		

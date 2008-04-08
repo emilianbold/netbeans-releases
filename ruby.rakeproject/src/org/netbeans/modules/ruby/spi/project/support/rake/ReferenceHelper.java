@@ -348,6 +348,10 @@ public final class ReferenceHelper {
             };
         } else {                        
             // use an absolute path.
+            // mkleint: when the AlwaysRelativeCollocationQueryImplementation gets removed
+            // this code gets called more frequently
+            // to get the previous behaviour replace CollocationQuery.areCollocated(base, path)
+            // with PropertyUtils.relativizeFile(base, path) != null
             propertiesFiles = new String[] {
                 RakeProjectHelper.PRIVATE_PROPERTIES_PATH
             };
@@ -1584,7 +1588,7 @@ public final class ReferenceHelper {
         
         /**
          * Get the type of the foreign project's build artifact.
-         * For example, <a href="@JAVA/PROJECT@/org/netbeans/api/gsfpath/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>.
+         * For example, <a href="@JAVA/PROJECT@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>.
          * @return the artifact type
          */
         public String getArtifactType() {

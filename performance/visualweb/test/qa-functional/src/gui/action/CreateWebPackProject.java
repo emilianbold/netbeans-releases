@@ -132,6 +132,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         wizard_location.txtProjectName().typeText(project_name);
         
         wizard_location.next();
+        wizard_location.next();
         
         JTableOperator frameworkselector = new JTableOperator(wizard);
         frameworkselector.selectCell(0,0);

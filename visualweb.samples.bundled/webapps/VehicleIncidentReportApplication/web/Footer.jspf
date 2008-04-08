@@ -30,13 +30,13 @@
 -->
 <div style="-rave-layout: grid" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <f:subview id="Footer">
-        <h:panelGrid binding="#{Footer.footer}" id="footer" style="left: 0px; top: 0px; position: absolute; width: 800px" styleClass="footer">
-            <h:panelGrid binding="#{Footer.footerGrid}" id="footerGrid" style="">
-                <h:panelGrid binding="#{Footer.feedbackCell}" id="feedbackCell" style="">
-                    <webuijsf:hyperlink binding="#{Footer.feedbackLink}" id="feedbackLink" styleClass="footertext" text="Feedback"/>
+        <h:panelGrid id="footer" style="left: 0px; top: 0px; position: absolute; width: 800px" styleClass="footer">
+            <h:panelGrid id="footerGrid" style="">
+                <h:panelGrid id="feedbackCell" style="">
+                    <webuijsf:hyperlink id="feedbackLink" styleClass="footertext" text="Feedback"/>
                 </h:panelGrid>
             </h:panelGrid>
-            <webuijsf:hyperlink binding="#{Footer.powerByLink}" id="powerByLink" styleClass="footertext" text="Powered by Netbeans 6"/>
+            <webuijsf:hyperlink id="powerByLink" styleClass="footertext" text="Powered by Netbeans 6"/>
         </h:panelGrid>
     </f:subview>
 </div>

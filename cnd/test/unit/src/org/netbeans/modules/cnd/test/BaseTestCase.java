@@ -96,9 +96,9 @@ public abstract class BaseTestCase extends NbTestCase {
         super.setUp();
         
         MockServices.setServices(MockMimeLookup.class);
-        MimePath mimePath = MimePath.parse("text/x-c++");
+        MimePath mimePath = MimePath.parse("text/x-c++"); // NOI18N
         MockMimeLookup.setInstances(mimePath, new CCKit());
-        mimePath = MimePath.parse("text/x-c");
+        mimePath = MimePath.parse("text/x-c"); // NOI18N
         MockMimeLookup.setInstances(mimePath, new CKit());
     }
 
@@ -121,7 +121,7 @@ public abstract class BaseTestCase extends NbTestCase {
     public File getGoldenFile(String filename) {
         String fullClassName = getTestCaseGoldenDataClass().getName();
         String goldenFileName = fullClassName.replace('.', File.separatorChar) + File.separator + filename;
-        File goldenFile = new File(getDataDir() + "/goldenfiles/" + goldenFileName);
+        File goldenFile = new File(getDataDir() + "/goldenfiles/" + goldenFileName); // NOI18N
         return goldenFile;
     }
 
@@ -171,12 +171,12 @@ public abstract class BaseTestCase extends NbTestCase {
             
             if (CndCoreTestUtils.diff(testFile, goldenFile, null)) {
                 // copy golden
-                File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden");
-                CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); // NOI18N
-                fail("Files differ; check " + goldenDataFileCopy);
+                File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
+                CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
+                fail("Files differ; check " + goldenDataFileCopy); // NOI18N
             }             
         } catch (IOException ioe) {
-            fail("Could not obtain working direcory " + ioe);
+            fail("Could not obtain working direcory " + ioe); // NOI18N
         }
     }    
     
@@ -187,6 +187,6 @@ public abstract class BaseTestCase extends NbTestCase {
      */
     @Override
     public void compareReferenceFiles() {
-        compareReferenceFiles(this.getName()+".ref",this.getName()+".ref");
+        compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
     }    
 }

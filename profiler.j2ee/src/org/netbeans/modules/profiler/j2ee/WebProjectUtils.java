@@ -49,7 +49,6 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
-import org.netbeans.modules.profiler.utils.SourceUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.openide.ErrorManager;
@@ -71,6 +70,7 @@ import java.util.*;
 import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**

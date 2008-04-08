@@ -37,6 +37,7 @@ public final class ProcessExecutionColumnModel_Name extends AbstractColumn {
         myName = "CTL_PEV_Column_Name"; // NOI18N
         myTooltip = "CTL_PEV_Column_Name_Tooltip"; // NOI18N
         myType = null;
+        mySortable = false;
     }
     
     @Override

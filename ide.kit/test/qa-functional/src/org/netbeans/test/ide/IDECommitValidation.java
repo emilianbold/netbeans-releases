@@ -60,6 +60,9 @@ public class IDECommitValidation extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        if (System.getProperty("xtest.ide.blacklist") != null) {
+            suite.addTest(new IDEValidation("testBlacklistedClassesHandler"));
+        }
         suite.addTest(new IDEValidation("testInitGCProjects"));
         suite.addTest(new IDEValidation("testMainMenu"));
         suite.addTest(new IDEValidation("testHelp"));

@@ -74,14 +74,14 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testFindGemExecutableInRubyBin() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        touch("rdebug-ide", platform.getBinDir());
+        touch(platform.getBinDir(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
     public void testFindGemExecutableInGemRepo() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        touch("rdebug-ide", new File(gemManager.getGemHome(), "bin").getPath());
+        touch(new File(gemManager.getGemHome(), "bin").getPath(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
@@ -95,24 +95,32 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNotNull("rdoc found", platform.getRDoc());
     }
     
+    public void testFindIRB() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        assertNotNull("irb found", platform.getIRB());
+    }
+
+    public void testFindJIRB() throws Exception {
+        assertNotNull("jirb found", RubyPlatformManager.getDefaultPlatform().getIRB());
+    }
+
+    public void testFindIRBWithSuffix() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        assertNotNull("irb found", platform.getIRB());
+    }
+    
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());
+        assertEquals("right long description", "JRuby 1.8.6 (2008-03-31 patchlevel 6360) [java]", jruby.getInfo().getLongDescription());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
     }
     
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC1)", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
-    }
-
-    private String touch(String path, String dir) throws IOException {
-        File f = new File(dir, path);
-        f.createNewFile();
-        return f.getAbsolutePath();
     }
 
     public void testHasFastDebuggerInstalled() throws IOException {
@@ -120,9 +128,17 @@ public class RubyPlatformTest extends RubyTestBase {
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
         assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
         installFakeFastRubyDebugger(jruby);
         assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
+    }
+    
+    public void testHasFastDebuggerInstalledExactness() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
+        installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
+        assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());
     }
     
     public void testFireGemsChanged() throws Exception {
@@ -142,9 +158,14 @@ public class RubyPlatformTest extends RubyTestBase {
         });
         
         installFakeGem("jalokivi", "9.9", jruby);
-        
         assertTrue(gotEvent[0]);
-        
     }
 
+    public void testDefaultPlatformInfo() {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform.Info info = platform.getInfo();
+        RubyPlatform.Info computed = RubyPlatformManager.computeInfo(platform.getInterpreterFile());
+        assertEquals("correct info for bundled JRuby", computed, info);
+        assertEquals("correct info for bundled JRuby", computed.getJVersion(), info.getJVersion());
+    }
 }

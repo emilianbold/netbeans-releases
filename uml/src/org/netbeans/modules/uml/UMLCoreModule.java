@@ -60,10 +60,9 @@ import org.openide.util.Utilities;
 /**
  *
  */
-public class UMLCoreModule extends ModuleInstall 
+public class UMLCoreModule 
 {   
-   public void restored() 
-   {
+   public static void checkInitUml1() {
       // Retrieve the desired configuration home.  If the property
       // embarcadero.home-dir has already been set then do not change it
       // (because that is where the user wants the configuration directory).
@@ -115,18 +114,20 @@ public class UMLCoreModule extends ModuleInstall
 
    public static void copyDotUmlIntoUserDir(String userdir, String zipResource, String subdirToExist) 
    {
-       try 
-	   {
+       try {
 			//check to see if .uml already exists in the userdir
-			File file1 = new File(userdir+File.separator+".uml"
-                                              + (subdirToExist != null && ! subdirToExist.equals("")
-                                                 ? File.separator + subdirToExist
-                                                 : ""));
-			if (file1.exists()) {
+                        File file1;
+                        if (subdirToExist == null || subdirToExist.length() == 0) {
+                            file1 = new File(new File(new File(userdir), ".uml"), ".created-" + Integer.toHexString(zipResource.hashCode()));
+                        } else {
+                            file1 = new File(new File(new File(userdir), ".uml"), subdirToExist);
+                        }
+                        
+                        if (file1.exists()) {
                             return;
 			}
 
-                        if (Utilities.isMac()) {
+                            if (Utilities.isMac()) {
                                showMacWarning() ;
                         }
                         
@@ -174,6 +175,10 @@ public class UMLCoreModule extends ModuleInstall
             }//while
 
             zipInputStream.close();
+            
+            if (!file1.exists()) {
+                file1.createNewFile();
+            }
         }
         catch (Exception e)
         {

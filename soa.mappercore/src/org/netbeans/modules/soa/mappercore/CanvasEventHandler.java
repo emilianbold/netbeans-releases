@@ -37,8 +37,7 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
 public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     private MouseEvent initialEvent = null;
-    private AutoSelectionCanvas  autoSelection;
-
+    
     public CanvasEventHandler(Canvas canvas) {
         super(canvas.getMapper(), canvas);
         new AutoSelectionCanvas(canvas);
@@ -178,13 +177,13 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             }
             Mapper mapper = getMapper();
             MapperNode node = mapper.getNodeAt(y);
-            if (node != null  && node.getGraph() != null) {
-                if (node.isGraphCollapsed()) {
-                    mapper.setExpandedGraphState(node.getTreePath(), true);
-                } else if (searchResult == null ||
-                        searchResult.getGraphItem() == null) {
-                    mapper.setExpandedGraphState(node.getTreePath(), false);
-                }
+            if (node != null  && node.getGraph() != null 
+                    && !node.getGraph().isEmptyOrOneLink()) 
+            {
+                if (item == null) {
+                    mapper.setExpandedGraphState(node.getTreePath(), 
+                            node.isGraphCollapsed());
+                } 
                 getLinkTool().done();
             }
         }

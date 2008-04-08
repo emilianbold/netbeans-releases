@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import org.netbeans.modules.soa.ui.form.CustomNodeChooser;
 import org.netbeans.modules.bpel.properties.Util;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.openide.nodes.Node;
@@ -54,7 +55,8 @@ public class TreeNodeChooser extends JPanel implements CustomNodeChooser<Node> {
         // initControls();
         //
         Util.attachDefaultDblClickAction(myTreePanel, myTreePanel);
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
+        accessibleContext = treePanel.getAccessibleContext();
     }
     
     public AbstractTreeChooserPanel getTreePanel() {

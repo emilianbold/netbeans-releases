@@ -688,14 +688,17 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             // IDE does not have the JAXRPC support
             if (libJAXRPC == null) {
                 // Server does not have the JAXRPC support
-                if (serverInstanceID == null) {
-                    addJAXRPC = true;
-                } else {
-                    try {
-                        File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
-                        addJAXRPC = !Util.containsClass(Arrays.asList(cp), "javax.xml.rpc.Service"); // NOI18N
-                    } catch (IOException exc) {
+                try {
+                    File[] cp;
+                    J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+                    // j2eeplatform can be null, when the target server is not accessible.
+                    if (platform != null) {
+                        cp = platform.getClasspathEntries();
+                    } else {
+                        cp = new File[0];
                     }
+                    addJAXRPC = !Util.containsClass(Arrays.asList(cp), "javax.xml.rpc.Service"); // NOI18N
+                } catch (IOException exc) {
                 }
             }
         }

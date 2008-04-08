@@ -77,6 +77,10 @@ public class PluginManagerActionTest extends NbTestCase {
     private static Object help;
     
     public void testMemLeakPluginManagerUI () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         help = this;
         
         close = new JButton ();

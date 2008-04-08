@@ -56,14 +56,14 @@ import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.settings.JSPOptions;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 
 /**
  * Test of Page Up and Page Down in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
+public class PageUpPageDownInJspEditor extends PerformanceTestCase {
     private boolean pgup;
     private String file;
     
@@ -84,8 +84,9 @@ public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
     }
     
     protected void init() {
-        super.init();
+//        super.init();
         expectedTime = UI_RESPONSE;
+        WAIT_AFTER_OPEN = 100;
     }
     
     private EditorOperator editorOperator;
@@ -94,17 +95,17 @@ public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
     
     protected void initialize() {
         EditorOperator.closeDiscardAll();
-        jspOptions().setCaretBlinkRate(0);
+//        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
-        jspOptions().setStatusBarCaretDelay(0);
+//        jspOptions().setStatusBarCaretDelay(0);
 //        jspOptions().setCodeFoldingEnable(false);
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
         editorOperator = new EditorWindowOperator().getEditor(file);
         // turn off the status bar delay
-        JSPOptions options = (JSPOptions) BaseOptions.getOptions(JSPKit.class);
-        statusBarCaretDelay = options.getStatusBarCaretDelay();
-        options.setStatusBarCaretDelay(0);
+//        JSPOptions options = (JSPOptions) BaseOptions.getOptions(JSPKit.class);
+//        statusBarCaretDelay = options.getStatusBarCaretDelay();
+//        options.setStatusBarCaretDelay(0);
 //        codeFoldindEnabled = options.getCodeFoldingEnable();
 //        options.setCodeFoldingEnable(false);
         waitNoEvent(2000);
@@ -119,7 +120,7 @@ public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
         else
             // go to the first line
             editorOperator.setCaretPositionToLine(1);
-        eventTool().waitNoEvent(500);
+        waitNoEvent(500);
     }
     
     public ComponentOperator open(){

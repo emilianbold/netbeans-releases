@@ -408,7 +408,7 @@ public abstract class BaseAction extends TextAction {
                     writeLocked = true;
                     doc.extWriteLock();
                     Caret caret = target.getCaret();
-                    if (caret != null && caret.isSelectionVisible()) {
+                    if (caret != null && Utilities.isSelectionShowing(caret)) {
                         int dot = caret.getDot();
                         int markPos = caret.getMark();
                         if (dot < markPos) { // swap positions

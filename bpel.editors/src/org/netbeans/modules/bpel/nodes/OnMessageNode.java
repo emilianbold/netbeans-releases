@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -29,7 +30,7 @@ import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.props.CustomEditorProperty;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
@@ -137,6 +138,8 @@ public class OnMessageNode extends BpelNode<OnMessage> {
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.SEPARATOR,
+            ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
 //            ActionType.CYCLE_MEX, // Issue 85553
             ActionType.SHOW_POPERTY_EDITOR,

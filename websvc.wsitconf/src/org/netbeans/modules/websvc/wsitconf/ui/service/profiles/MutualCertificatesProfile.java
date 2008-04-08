@@ -159,14 +159,15 @@ public class MutualCertificatesProfile extends ProfileBase
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);        
         if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
             ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
-//                if (Util.isTomcat(p)) {
-                    if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
-                        (Util.getDefaultPassword(p).equals(trustPasswd)) && 
-                        (Util.getStoreLocation(p, false, true).equals(keyLoc)) && 
-                        (Util.getStoreLocation(p, true, true).equals(trustLoc))) {
+                String defPassword = Util.getDefaultPassword(p);
+                String defKeyLocation = Util.getStoreLocation(p, false, true);
+                String defTrustLocation = Util.getStoreLocation(p, true, true);
+                if ((defPassword != null) && (defKeyLocation != null) && (defTrustLocation != null)) {
+                    if ((defPassword.equals(keyPasswd)) && defPassword.equals(trustPasswd) &&
+                        (defKeyLocation.equals(keyLoc)) && (defTrustLocation.equals(trustLoc))) {
                             return true;
                     }
-//                }
+                }
         }
         return false;
     }
@@ -176,12 +177,14 @@ public class MutualCertificatesProfile extends ProfileBase
         String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(storeAlias)) {
-//            if (Util.isTomcat(p)) {
-                if ((Util.getDefaultPassword(p).equals(storePasswd)) && 
-                    (Util.getStoreLocation(p, false, false).equals(storeLoc))) {
+            String defPassword = Util.getDefaultPassword(p);
+            String defLocation = Util.getStoreLocation(p, false, false);
+            if ((defPassword != null) && (defLocation != null)) {
+                if ((defPassword.equals(storePasswd)) && 
+                    (defLocation.equals(storeLoc))) {
                         return true;
                 }
-//        }
+            }
         }
         return false;
     }

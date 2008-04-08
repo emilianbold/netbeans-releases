@@ -1,0 +1,141 @@
+#!/bin/sh
+
+[ "$action" = "build" ] || [ "$action" = "sync" ] || exit 101
+
+[ -n "$push_username" ] || exit 102
+[ -n "$push_password" ] || exit 103
+
+
+ANT_OPTS="-Xmx512m"
+export ANT_OPTS
+HGMERGE=merge
+export HGMERGE
+
+rm -rf real.workspace
+hg clone . real.workspace || exit 1
+cd real.workspace
+
+RESULT=`pwd`/nbbuild/build/test-results.txt
+export RESULT
+rm $RESULT
+
+testmodule() {
+    if ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true; then
+        echo Test OK: $1
+    else
+        echo $1 >>$RESULT
+    fi
+}
+
+if [ "$action" = "build" ]; then
+#    hg fetch http://hg.netbeans.org/main || exit 1
+#    hg pull http://hg.netbeans.org/main || exit 1
+#    if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+#    then
+#       hg up || exit 6
+#    else
+#       hg merge || exit 7
+#       hg ci -m 'Automated merge' || exit 8
+#    fi
+
+    ant build || exit 2
+    ant commit-validation || echo commit-validation >$RESULT
+    ant commit-validation-junit-format
+    testmodule openide.util  
+    testmodule openide.modules
+    testmodule openide.filesystems 
+    testmodule openide.nodes
+    testmodule openide.options 
+    testmodule openide.dialogs
+    testmodule openide.awt 
+    testmodule openide.windows 
+    testmodule core.startup 
+    testmodule api.progress 
+    testmodule api.visual 
+    testmodule applemenu  
+    testmodule autoupdate.services  
+    testmodule autoupdate.ui  
+    testmodule core.execution 
+    testmodule core.kit  
+    testmodule core.multiview  
+    testmodule core.nativeaccess  
+    testmodule core.output2  
+    testmodule core.ui  
+    testmodule core.windows  
+    testmodule editor.mimelookup  
+    testmodule editor.mimelookup.impl  
+    testmodule favorites  
+    testmodule javahelp  
+    testmodule libs.jna  
+    testmodule libs.jsr223  
+    testmodule masterfs  
+    testmodule o.jdesktop.layout  
+    testmodule o.n.bootstrap  
+    testmodule o.n.core  
+    testmodule o.n.swing.plaf  
+    testmodule o.n.swing.tabcontrol  
+    testmodule openide.actions  
+    testmodule openide.compat  
+    testmodule openide.dialogs  
+    testmodule openide.execution  
+    testmodule openide.explorer  
+    testmodule openide.io  
+    testmodule openide.loaders  
+    testmodule openide.modules 
+    testmodule openide.nodes 
+    testmodule openide.options  
+    testmodule openide.text  
+    testmodule openide.util  
+    testmodule openide.util.enumerations  
+    testmodule options.api  
+    testmodule options.keymap  
+    testmodule progress.ui  
+    testmodule queries  
+    testmodule sendopts  
+    testmodule settings  
+    testmodule templates
+
+
+    if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
+        echo No outgoing changes
+#        exit 0
+    fi
+
+    FAILED=`cat $RESULT | wc -l`
+    if [ "$FAILED" -gt 0 ]; then
+        echo "No push. Failed tests in following modules:"
+        cat $RESULT
+        exit
+    fi
+
+    for i in 1 2 3 4 5; do
+       hg pull http://hg.netbeans.org/main || exit 5
+       if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+       then
+           hg up || exit 6
+       else
+           hg merge || exit 7
+           hg ci -m 'Automated merge' || exit 8
+       fi
+       hg out http://hg.netbeans.org/main
+       hg in http://hg.netbeans.org/main
+       hg push https://"$push_username":"$push_password"@hg.netbeans.org/main && exit 0
+    done
+    exit 5
+fi
+
+if [ "$action" = "sync" ]; then
+    HEADS=`hg heads --template "{node}\n" | wc -l`
+    if [ $HEADS = 2 ]; then
+      hg merge
+      hg ci -m "Automated merge"
+      hg up -C
+    fi
+    hg fetch http://hg.netbeans.org/core-main
+    hg push https://"$push_username":"$push_password"@hg.netbeans.org/core-main
+    exit 0
+fi
+
+
+
+

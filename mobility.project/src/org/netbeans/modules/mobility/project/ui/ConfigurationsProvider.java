@@ -63,6 +63,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
+import javax.swing.filechooser.FileSystemView;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -321,6 +322,10 @@ class ConfigurationsProvider
                         File parent=f.getParentFile();
                         while (parent != null && !(parent.isFile() || parent.isDirectory()))
                             parent=parent.getParentFile();
+                        
+                        if (parent == null){ //can not be found at all
+                            parent = FileSystemView.getFileSystemView().getDefaultDirectory();//fallback fix for 122648 
+                        }                        
                         fRoot=FileUtil.toFileObject(parent);
                     }
                     else 

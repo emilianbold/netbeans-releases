@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -78,6 +78,7 @@ public class NewWebProjectTest extends JellyTestCase {
         return suite;
     }
 
+    @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     }
@@ -107,6 +108,7 @@ public class NewWebProjectTest extends JellyTestCase {
             } catch (IOException ioe) {
                 fail(ioe);
             }
+            lop.next();
             lop.finish();
             // Opening Projects
             String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");

@@ -40,18 +40,21 @@ package org.netbeans.modules.ruby.railsprojects.server;
 
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
 /**
  *
  * @author Erno Mononen
  */
-public class RubyServerTest extends TestCase {
+public class RubyServerTest extends RubyTestBase {
 
     public RubyServerTest(String testName) {
         super(testName);
     }
 
-    public void testMongrelStartup() {
+    public void testMongrelStartup() throws Exception {
 
         String mongrel = "** Mongrel available at 127.0.0.1:3000 **";
         String mongrel_with_version_nro = "** Mongrel 1.1.3 available at 127.0.0.1:3000 **";
@@ -59,7 +62,7 @@ public class RubyServerTest extends TestCase {
         String mongrel_dos_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\r\n";
         String mongrel_unix_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\n";
 
-        Mongrel mongrelInstance = new Mongrel(null, "");
+        Mongrel mongrelInstance = new Mongrel(RubyPlatformManager.addPlatform(setUpRubyWithGems()), "1.1.3");
         
         assertTrue(mongrelInstance.isStartupMsg(mongrel));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro));
@@ -69,14 +72,14 @@ public class RubyServerTest extends TestCase {
 
     }
 
-    public void testWebrickStartup() {
+    public void testWebrickStartup() throws Exception {
 
         String webBrick = "=> Rails application started on http://0.0.0.0:3000";
         String webBrick2 = "=> Rails application started on http://localhost:3000";
         String webBrick_dos_line_end = "=> Rails application started on http://localhost:3000 \r\n";
         String webBrick_unix_line_end = "=> Rails application started on http://localhost:3000\n";
         
-        WEBrick webrickInstance = new WEBrick(null);
+        WEBrick webrickInstance = new WEBrick(RubyPlatformManager.addPlatform(setUpRubyWithGems()));
 
         assertTrue(webrickInstance.isStartupMsg(webBrick));
         assertTrue(webrickInstance.isStartupMsg(webBrick2));

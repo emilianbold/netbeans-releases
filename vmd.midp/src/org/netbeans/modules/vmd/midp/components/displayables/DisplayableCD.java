@@ -165,6 +165,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             // accept
             new DisplayableAccept.DisplayableCommandsAcceptPresenter (),
             new MidpAcceptProducerKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER),
+            new MidpAcceptTrensferableKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER),
             // flow
             new FlowInfoNodePresenter (),
             new FlowDisplayableCommandPinOrderPresenter (),

@@ -18,7 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import javax.swing.KeyStroke;
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.openide.util.NbBundle;
 
@@ -29,12 +30,12 @@ import org.openide.util.NbBundle;
  */
 public class GoToSourceAction extends BpelNodeAction {
     private static final long serialVersionUID = 1L;
-    public static final KeyStroke GOTOSOURCE_KEYSTROKE = KeyStroke.getKeyStroke(
-            NbBundle.getMessage(GoToSourceAction.class,"ACT_GoToSourceAction"));// NOI18N
+//    public static final KeyStroke GOTOSOURCE_KEYSTROKE = KeyStroke.getKeyStroke(
+//            NbBundle.getMessage(GoToSourceAction.class,"ACT_GoToSourceAction"));// NOI18N
 
     public GoToSourceAction() {
         super();
-        putValue(GoToSourceAction.ACCELERATOR_KEY, GOTOSOURCE_KEYSTROKE);
+//        putValue(GoToSourceAction.ACCELERATOR_KEY, GOTOSOURCE_KEYSTROKE);
     }
 
     protected String getBundleName() {

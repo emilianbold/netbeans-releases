@@ -48,6 +48,8 @@ import org.openide.util.Lookup;
  * @author nam
  */
 public interface SaasNodeActionsProvider {
+    public static final Action[] EMPTY_ACTIONS = new Action[0];
+    
     /**
      * @param lookup context to query the actions from
      * @return list of consumer-specific actions for SaaS service node

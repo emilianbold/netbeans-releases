@@ -45,6 +45,7 @@ made subject to such option by the copyright holder.
 
     <!-- Validation suite for whole IDE before commit-->
     <testbag testattribs="commit or stable" executor="ide" name="IDE commit validation" timeout="900000">
+        <testproperty name="xtest.ide.blacklist" value="blacklist.txt"/>
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/ide/IDECommitValidation.class"/>

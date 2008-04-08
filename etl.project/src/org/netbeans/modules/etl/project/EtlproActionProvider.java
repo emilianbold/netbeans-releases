@@ -14,7 +14,7 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project;
 
@@ -48,16 +48,16 @@ class EtlproActionProvider implements ActionProvider {
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
-        COMMAND_REBUILD,        
+        COMMAND_REBUILD,
         COMMAND_COMPILE_SINGLE,
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
+        EtlproProject.COMMAND_BULK_LOADER,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-      };
-    
+    };
     // Project
     EtlproProject project;
     // Ant project helper of the project
@@ -73,6 +73,7 @@ class EtlproActionProvider implements ActionProvider {
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
         commands.put(EtlproProject.COMMAND_GENWSDL, new String[]{"gen-wsdl"}); // NOI18N
         commands.put(EtlproProject.COMMAND_SCHEMA, new String[]{"gen-schema"}); // NOI18N
+        commands.put(EtlproProject.COMMAND_BULK_LOADER, new String[]{"etl_bulkloader"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 
@@ -109,12 +110,8 @@ class EtlproActionProvider implements ActionProvider {
             return;
         }
         if (COMMAND_DELETE.equals(command)) {
-            try {
-                project.getAntProjectHelper().resolveFileObject("data").delete();
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-                return;
-            } catch (IOException ex) {                
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return;
         }
         //EXECUTION PART
         if (command.equals(IcanproConstants.COMMAND_DEPLOY) || command.equals(IcanproConstants.COMMAND_REDEPLOY)) {
@@ -122,10 +119,10 @@ class EtlproActionProvider implements ActionProvider {
                 return;
             }
         } /*else {
-            p = null;
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
+        p = null;
+        if (targetNames == null) {
+        throw new IllegalArgumentException(command);
+        }
         }*/
 
         try {
@@ -167,6 +164,7 @@ class EtlproActionProvider implements ActionProvider {
                     NbBundle.getMessage(NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+            dlg.getAccessibleContext().setAccessibleDescription("This dialog displays warning if no server is selected");
             dlg.setVisible(true);
             if (desc.getValue() != options[0]) {
                 selected = false;

@@ -115,7 +115,9 @@ public class ComponentDecorationsUpdater {
                 (view == designView.getProvidersView()) ? providerComponents : null;
         
         
-        if (decoration != null && decoration.hasComponents()) {
+        if (list != null // 128296 - nonvisual patterns hasn't got view
+                && decoration != null && decoration.hasComponents()) 
+        {
             for (Component c : decoration.getComponents()) {
                 list.add(c);
             }

@@ -41,13 +41,16 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -60,6 +63,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -431,17 +435,20 @@ public final class ParseProjectXml extends Task {
                 }
                 File nball = new File(getProject().getProperty("nb_all"));
                 File basedir = getProject().getBaseDir();
-                File dir = basedir;
-                while (true) {
-                    File parent = dir.getParentFile();
-                    if (parent == null) {
-                        throw new BuildException("Could not find " + basedir + " inside " + nball + " for purposes of defining " + domainProperty);
+                Pattern p = Pattern.compile("([^/]+)(/([^/]+))*//([^/]+)/" + Pattern.quote(basedir.getName()));
+                Reader r = new FileReader(new File(nball, "nbbuild/translations"));
+                try {
+                    BufferedReader br = new BufferedReader(r);
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        Matcher m = p.matcher(line);
+                        if (m.matches()) {
+                            define(domainProperty, m.group(1));
+                            break;
+                        }
                     }
-                    if (parent.equals(nball)) {
-                        define(domainProperty, dir.getName());
-                        break;
-                    }
-                    dir = parent;
+                } finally {
+                    r.close();
                 }
             }
             if (classPathExtensionsProperty != null) {

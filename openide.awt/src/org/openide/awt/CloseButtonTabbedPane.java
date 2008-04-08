@@ -125,6 +125,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     private int mouseOverCloseButtonIndex = -1;
     private boolean draggedOut = false;
 
+    @Override
     public Component add (Component c) {
         Component result = super.add(c);
         // #75317 - don't try to set the title if LF (such as Substance LF)
@@ -139,6 +140,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return result;
     }
 
+    @Override
     public void setTitleAt(int idx, String title) {
         String nue = title.indexOf("</html>") != -1 ? //NOI18N
             Utilities.replaceString(title, "</html>", "&nbsp;&nbsp;</html>") //NOI18N
@@ -216,6 +218,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return "Metal".equals( lfID ); //NOI18N
     }
     
+    @Override
     public void paint(Graphics g) {
         super.paint(g);
 
@@ -223,7 +226,6 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         // http://ui.netbeans.org/docs/ui/closeButton/closeButtonUISpec.html
         // to see how the buttons are specified to be drawn.
 
-        int selectedIndex = getSelectedIndex();
         for (int i = 0, n = getTabCount(); i < n; i++) {
             Rectangle r = getCloseButtonBoundsAt(i);
             if (r == null)
@@ -298,7 +300,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (pressedCloseButtonIndex >= 0
         && pressedCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(pressedCloseButtonIndex);
-            repaint(r.x, r.y, r.width + 2, r.height + 2);
+            if (r != null) {
+                repaint(r.x, r.y, r.width + 2, r.height + 2);
+            }
 
             JComponent c = _getJComponentAt(pressedCloseButtonIndex);
             if( c != null )
@@ -310,7 +314,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (pressedCloseButtonIndex >= 0
         && pressedCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(pressedCloseButtonIndex);
-            repaint(r.x, r.y, r.width + 2, r.height + 2);
+            if (r != null) {
+                repaint(r.x, r.y, r.width + 2, r.height + 2);
+            }
             setMouseOverCloseButtonIndex(-1);
             setToolTipTextAt(pressedCloseButtonIndex, null);
         }
@@ -323,7 +329,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (mouseOverCloseButtonIndex >= 0
         && mouseOverCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(mouseOverCloseButtonIndex);
-            repaint(r.x, r.y, r.width + 2, r.height + 2);
+            if (r != null) {
+                repaint(r.x, r.y, r.width + 2, r.height + 2);
+            }
             JComponent c = _getJComponentAt(mouseOverCloseButtonIndex);
             if( c != null )
                 setToolTipTextAt(mouseOverCloseButtonIndex, c.getToolTipText());
@@ -334,7 +342,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (mouseOverCloseButtonIndex >= 0
         && mouseOverCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(mouseOverCloseButtonIndex);
-            repaint(r.x, r.y, r.width + 2, r.height + 2);
+            if (r != null) {
+                repaint(r.x, r.y, r.width + 2, r.height + 2);
+            }
             setPressedCloseButtonIndex(-1);
             setToolTipTextAt(mouseOverCloseButtonIndex, null);
         }
@@ -372,6 +382,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     }
     
 
+    @Override
     protected void processMouseEvent (MouseEvent me) {
         try {
             super.processMouseEvent (me);
@@ -382,6 +393,19 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             Exceptions.attachLocalizedMessage(aioobe,
                                               "Suppressed AIOOBE bug in BasicTabbedPaneUI"); //NOI18N
             Logger.getAnonymousLogger().log(Level.WARNING, null, aioobe);
+        }
+    }
+
+    @Override
+    protected void fireStateChanged() {
+        try {
+            super.fireStateChanged();
+        } catch( ArrayIndexOutOfBoundsException e ) {
+            if( Utilities.isMac() ) {
+                //#126651 - JTabbedPane is buggy on Mac OS
+            } else {
+                throw e;
+            }
         }
     }
 

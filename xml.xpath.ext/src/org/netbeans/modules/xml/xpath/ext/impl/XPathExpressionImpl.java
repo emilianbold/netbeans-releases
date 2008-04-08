@@ -35,8 +35,6 @@ public abstract class XPathExpressionImpl implements XPathExpression {
     protected XPathModel myModel;
     
     public XPathExpressionImpl(XPathModel model) {
-        // This implementation works only with its own model
-        assert model instanceof XPathModelImpl;
         myModel = model;
     }
     

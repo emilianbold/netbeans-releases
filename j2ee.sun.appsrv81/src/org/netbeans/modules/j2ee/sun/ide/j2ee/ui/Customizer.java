@@ -65,6 +65,7 @@ public class Customizer extends JTabbedPane {
         initComponents ();
     }
     public void removeNotify(){
+        super.removeNotify();
         ctvp.syncUpWithModel();
     }
     private void initComponents() {

@@ -61,8 +61,8 @@ import java.nio.CharBuffer;
 import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserFile;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
@@ -195,7 +195,11 @@ public class FileObjects {
         public boolean isPlatform() {
             return platform;
         }
-}
+
+        public File getFile() {
+            return file;
+        }
+    }
     
     //    
 //    /**

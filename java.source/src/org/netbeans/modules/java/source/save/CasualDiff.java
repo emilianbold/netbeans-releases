@@ -2058,6 +2058,14 @@ public class CasualDiff {
                     copyTo(start, pos = end, printer);
                     break;
                 }
+                case DELETE: {
+                    oldIndex++;
+                    int[] bounds = getBounds(item.element);
+                    tokenSequence.move(bounds[1] - 1);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    pos = tokenSequence.offset();
+                    break;
+                }
                 default: 
                     break;
             }
@@ -2102,7 +2110,7 @@ public class CasualDiff {
                     if (!fieldGroup.isEmpty()) {
                         int oldPos = getOldPos(fieldGroup.get(0));
                         
-                        if (oldPos != (-1) && oldPos == getOldPos(var) && fieldGroup.get(0).getModifiers() == var.getModifiers()) {
+                        if (oldPos != (-1) && oldPos != NOPOS && oldPos == getOldPos(var) && fieldGroup.get(0).getModifiers() == var.getModifiers()) {
                             //seems like a field group:
                             fieldGroup.add(var);
                         } else {

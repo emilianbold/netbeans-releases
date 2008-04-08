@@ -29,7 +29,9 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -72,7 +74,7 @@ public class CsmFileModel {
     }
 
     public void addOffset(Node node, CsmOffsetable element) {
-        lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset()));
+        lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
     
     private void buildModel(CsmFile csmFile) {
@@ -106,21 +108,54 @@ public class CsmFileModel {
         if (csmFile != null &&  csmFile.isValid()) {
             Collections.<CppDeclarationNode>sort(list);
             Collections.<IndexOffsetNode>sort(lineNumberIndex);
+            resetScope();
         } else {
             list.clear();
             lineNumberIndex.clear();
         }
     }
 
+    private void resetScope(){
+        Stack<IndexOffsetNode> stack = new Stack<IndexOffsetNode>();
+        for(IndexOffsetNode node : lineNumberIndex){
+            while (!stack.empty()) {
+                IndexOffsetNode scope = stack.peek();
+                if (node.getStartOffset() >= scope.getStartOffset() &&
+                    node.getEndOffset() <= scope.getEndOffset()) {
+                    node.setScope(scope);
+                    break;
+                }
+                stack.pop();
+            }
+            stack.push(node);
+        }
+    }
+    
     public Node setSelection(long caretLineNo) {
         // Find nearest Node
-        int index = Collections.<IndexOffsetNode>binarySearch(lineNumberIndex, new IndexOffsetNode(null, caretLineNo));
+        int index = Collections.<IndexOffsetNode>binarySearch(lineNumberIndex, new IndexOffsetNode(null, caretLineNo, caretLineNo));
         if (index < 0) {
             // exact line not found, but insersion index (-1) returned instead
             index = -index-2;
         }
         if (index > -1 && index < lineNumberIndex.size()) {
             IndexOffsetNode node  = lineNumberIndex.get(index);
+            if (node.getStartOffset() <= caretLineNo &&
+                node.getEndOffset() >= caretLineNo) {
+                // exactly found
+                return node.getNode();
+            }
+            IndexOffsetNode scopedNode = node.getScope();
+            while (scopedNode != null){
+                node = scopedNode;
+                if (scopedNode.getStartOffset() <= caretLineNo &&
+                    scopedNode.getEndOffset() >= caretLineNo) {
+                    // found in parent
+                    return scopedNode.getNode();
+                }
+                scopedNode = scopedNode.getScope();
+            }
+            // not found, return last scope
             return node.getNode();
         }
         return null;

@@ -122,8 +122,11 @@ public class FormEvents {
     // --------
     // public interface - adding/removing events
 
-    public void attachEvent(Event event, String handlerName, String handlerText)
-    {
+    public void attachEvent(Event event, String handlerName, String handlerText) {
+        attachEvent(event, handlerName, handlerText, null);
+    }
+
+    public void attachEvent(Event event, String handlerName, String handlerText, String annotationText) {
         boolean newHandler = false; // if new event handler has been created
 
         if (handlerName == null && event.hasEventHandlers()) { // nothing to do
@@ -158,8 +161,7 @@ public class FormEvents {
                 event = null;
         }
 
-        formModel.fireEventHandlerAdded(event,
-                                        handlerName, handlerText, newHandler);
+        formModel.fireEventHandlerAdded(event, handlerName, handlerText, annotationText, newHandler);
     }
 
     public void detachEvent(Event event, String handlerName) {

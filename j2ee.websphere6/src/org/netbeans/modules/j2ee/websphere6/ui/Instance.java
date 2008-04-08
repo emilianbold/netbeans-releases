@@ -47,7 +47,7 @@ package org.netbeans.modules.j2ee.websphere6.ui;
  * @author Kirill Sorokin
  * @author Dmitry Lipin
  */
-public class Instance {
+public final class Instance {
     /**
      * Instance's name, it is used a the parameter to the startup/shutdown
      * scripts
@@ -79,6 +79,9 @@ public class Instance {
     private String httpPort;
     
     private String defaultHostPort;
+    
+    private final boolean securityEnabled;
+    
     /**
      * Creates a new instance of Instance
      *
@@ -89,7 +92,8 @@ public class Instance {
      * @param configXmlPath path to the server.xml file
      */
     public Instance(String name, String host, String port,
-            String domainPath, String configXmlPath, String adminPort,String httpPort,String defaultHostPort) {
+            String domainPath, String configXmlPath, String adminPort,
+            String httpPort, String defaultHostPort, boolean securityEnabled) {
         // save the properties
         this.name = name;
         this.host = host;
@@ -97,8 +101,9 @@ public class Instance {
         this.domainPath = domainPath;
         this.configXmlPath = configXmlPath;
         this.adminPort = adminPort;
-        this.httpPort=httpPort;
-        this.defaultHostPort=defaultHostPort;
+        this.httpPort = httpPort;
+        this.defaultHostPort = defaultHostPort;
+        this.securityEnabled = securityEnabled;
     }
     
     /**
@@ -233,6 +238,11 @@ public class Instance {
     public void setHttpPort(String adminPort) {
         this.httpPort = adminPort;
     }
+
+    public boolean isSecurityEnabled() {
+        return securityEnabled;
+    }
+        
     /**
      * An overriden version of the Object's toString() so that the
      * instance is displayed properly in the combobox

@@ -40,15 +40,12 @@
  */
 package org.netbeans.modules.xml.text.syntax;
 
-import java.util.*;
 import java.io.*;
 
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 
-import org.openide.windows.*;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.*;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
 /**
@@ -61,10 +58,15 @@ import org.netbeans.modules.xml.api.EncodingUtil;
  */
 public class UniKit extends NbEditorKit {
 
-    /** Serial Version UID */
+    /**
+     * Serial Version UID
+     */
     private static final long serialVersionUID = -940485353900594155L;
     
-    /** Read document. */
+    /**
+     * Read document.
+     */
+    @Override
     public void read(InputStream in, Document doc, int pos) throws IOException, BadLocationException {
 
         // predetect it to get optimalized XmlReader if utf-8
@@ -78,13 +80,18 @@ public class UniKit extends NbEditorKit {
 
     }
 
-    /** Hope that it is called by knowing (encoding).
-    */  
+    /**
+     * Hope that it is called by knowing (encoding).
+     */  
+    @Override
     public void read(Reader in, Document doc, int pos) throws IOException, BadLocationException {
         super.read(in, doc, pos);
     }
 
-    /** Write document. */
+    /**
+     * Write document.
+     */
+    @Override
     public void write(OutputStream out, Document doc, int pos, int len) throws IOException, BadLocationException {
         String enc = EncodingUtil.detectEncoding(doc);
         if ( enc == null ) {
@@ -94,8 +101,10 @@ public class UniKit extends NbEditorKit {
         super.write( new OutputStreamWriter(out, enc), doc, pos, len);
     }
 
-    /** Hope that it is called by knowing (encoding).
-    */  
+    /**
+     * Hope that it is called by knowing (encoding).
+     */  
+    @Override
     public void write(Writer out, Document doc, int pos, int len) throws IOException, BadLocationException {
         super.write(out, doc, pos, len);
     }

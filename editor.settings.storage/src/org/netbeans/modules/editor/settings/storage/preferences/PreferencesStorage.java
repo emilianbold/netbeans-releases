@@ -93,16 +93,16 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
         return "properties.xml"; //NOI18N
     }
 
-    public StorageReader<String, TypedValue> createReader(FileObject f) {
+    public StorageReader<String, TypedValue> createReader(FileObject f, String mimePath) {
         if (MIME_TYPE.equals(f.getMIMEType())) {
-            return new Reader();
+            return new Reader(f, mimePath);
         } else {
             // assume legacy file
-            return new LegacyReader();
+            return new LegacyReader(f, mimePath);
         }
     }
 
-    public StorageWriter<String, TypedValue> createWriter(FileObject f) {
+    public StorageWriter<String, TypedValue> createWriter(FileObject f, String mimePath) {
         return new Writer();
     }
 
@@ -127,6 +127,9 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
     private static final String MIME_TYPE = "text/x-nbeditor-preferences"; //NOI18N
     
     private static abstract class PreferencesReader extends StorageReader<String, TypedValue> {
+        protected PreferencesReader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         public abstract Map<String, TypedValue> getAdded();
         public abstract Set<String> getRemoved();
     }
@@ -144,6 +147,10 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
         private StringBuilder text = null;
         private StringBuilder cdataText = null;
         private boolean insideCdata = false;
+        
+        public Reader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         
         public Map<String, TypedValue> getAdded() {
             return entriesMap;
@@ -266,6 +273,10 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
         private String name = null;
         private String value = null;
         private String javaType = null;
+        
+        public LegacyReader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         
         public Map<String, TypedValue> getAdded() {
             return entriesMap;

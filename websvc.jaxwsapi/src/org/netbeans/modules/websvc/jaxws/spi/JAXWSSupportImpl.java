@@ -79,10 +79,11 @@ public interface JAXWSSupportImpl {
      * @param portName port name (from service:port element), e.g. SearchServicePort
      * @param packageName package name where java artifacts will be generated
      * @param isJsr109 Indicates if the web service is being created in a project that supports a JSR 109 container
+     * @param useProvider indicates if the generated impl is a Provider
      * @return returns the unique IDE service name
      */
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, 
-            String portName, String packageName, boolean isJsr109);
+            String portName, String packageName, boolean isJsr109,  boolean useProvider);
     
     /**
      * Returns the list of web services in the project

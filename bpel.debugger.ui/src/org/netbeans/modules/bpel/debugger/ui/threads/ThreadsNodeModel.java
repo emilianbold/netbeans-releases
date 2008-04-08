@@ -41,8 +41,7 @@ public class ThreadsNodeModel implements NodeModel, Constants {
     
     public ThreadsNodeModel(
             final ContextProvider contextProvider) {
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

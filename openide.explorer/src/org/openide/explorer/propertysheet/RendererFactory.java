@@ -78,6 +78,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
@@ -649,6 +650,7 @@ final class RendererFactory {
         private JLabel htmlLabel = HtmlRenderer.createLabel();
         private JLabel noHtmlLabel = new JLabel();
         private Object value = null;
+        private static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
 
         public StringRenderer(boolean tableUI) {
             this.tableUI = tableUI;
@@ -763,14 +765,30 @@ final class RendererFactory {
                 lbl.setIconTextGap(getIconTextGap());
                 lbl.setBounds(getBounds());
                 lbl.setOpaque(true);
-                lbl.setBackground(getBackground());
+                if( isGTK ) {
+                    //#127522 - debugger color scheme washed out, very hard to read
+                    Color bgColor = UIManager.getColor("Tree.textBackground" ); //NOI18N
+                    if( null == bgColor )
+                        bgColor = Color.WHITE;
+                    lbl.setBackground(bgColor);
+                } else { 
+                    lbl.setBackground(getBackground());
+                }
                 lbl.setForeground(getForeground());
                 lbl.setBorder( getBorder() );
-                if ("com.sun.java.swing.plaf.windows.WindowsLabelUI".equals(lbl.getUI().getClass().getName()) &&
-                        ! isEnabled() && ! htmlValueUsed) {
+                if ((isGTK || "com.sun.java.swing.plaf.windows.WindowsLabelUI".equals(lbl.getUI().getClass().getName())) 
+                        && ! isEnabled() && ! htmlValueUsed) {
                     // the shadow effect from the label was making a problem
                     // let's paint the text "manually" in this case
-                    g.setColor(lbl.getBackground());
+                    if( isGTK ) {
+                        //#127522 - debugger color scheme washed out, very hard to read
+                        Color bgColor = UIManager.getColor("Tree.textBackground" ); //NOI18N
+                        if( null == bgColor )
+                            bgColor = Color.WHITE;
+                        g.setColor(bgColor);
+                    } else {
+                        g.setColor(lbl.getBackground());
+                    }
                     g.fillRect(0, 0, lbl.getWidth(), lbl.getHeight());
                     g.setColor(lbl.getForeground());
                     Icon icon = (lbl.isEnabled()) ? lbl.getIcon() : lbl.getDisabledIcon();
@@ -804,7 +822,13 @@ final class RendererFactory {
                     // we are here only if the property is read-only (disabled)
                     //   --> make the foreground brighter
                     Color fg = lbl.getForeground();
-                    Color changedForeground = lbl.getForeground().brighter();
+                    if( isGTK ) {
+                        //#127522 - debugger color scheme washed out, very hard to read
+                        fg = UIManager.getColor("Tree.textForeground" ); //NOI18N
+                        if( null == fg )
+                            fg = Color.BLACK;
+                    }
+                    Color changedForeground = fg.brighter();
                     if (Color.BLACK.equals(fg)) {
                         // for some unknown reason the code with brighter does
                         // not work for me!

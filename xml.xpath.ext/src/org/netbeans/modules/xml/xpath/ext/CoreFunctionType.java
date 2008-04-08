@@ -56,13 +56,14 @@ public enum CoreFunctionType {
     FUNC_SUM(new SumFuncMetadata()), // Function code: sum
     FUNC_FLOOR(new FloorFuncMetadata()), // Function code: floor
     FUNC_CEILING(new CeilingFuncMetadata()), // Function code: ceiling
-    FUNC_ROUND(new RoundFuncMetadata()), // Function code: round
+    FUNC_ROUND(new RoundFuncMetadata()); // Function code: round
     //
     // Following functions are extenstion but they are resolved by JXPath. 
     // So they are considered as core functions here.
-    FUNC_NULL(new NullFuncMetadata()), // Function code: null
-    FUNC_KEY(new KeyFuncMetadata()), // Function code: key
-    FUNC_FORMAT_NUMBER(new FormatNumberFuncMetadata()); // Function code: format-number
+    // COMMENTED BECAUSE THE RUNTIME DOESN'T SUPPORT THEM!
+    // FUNC_NULL(new NullFuncMetadata()), // Function code: null
+    // FUNC_KEY(new KeyFuncMetadata()), // Function code: key
+    // FUNC_FORMAT_NUMBER(new FormatNumberFuncMetadata()); // Function code: format-number
 
 
     private CoreFunctionMetadata myMetadata;

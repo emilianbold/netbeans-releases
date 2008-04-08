@@ -44,15 +44,12 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
@@ -81,15 +78,6 @@ public abstract class CasaPinWidget extends ErrableWidget {
     public enum AnchorScheme {
         HORIZONTAL, LEFT, RIGHT, VERTICAL, TOP, BOTTOM
     };
-
-    protected static final Image IMAGE_ARROW_LEFT_PROVIDES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeft.png"); // NOI18N
-    protected static final Image IMAGE_ARROW_RIGHT_CONSUMES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png"); // NOI18N
-    protected static final Image IMAGE_ARROW_RIGHT_PROVIDES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png"); // NOI18N
-    protected static final Image IMAGE_ARROW_LEFT_CONSUMES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesLeft.png"); // NOI18N
     
     protected ImageWidget mImageWidget;
     
@@ -101,21 +89,36 @@ public abstract class CasaPinWidget extends ErrableWidget {
     private Image mUnHighlightedImage;
     private GrayFilter mPinGrayFilter = new GrayFilter(true, 20);
     
+    private Image mPinImage;
+    private Image mClassicPinImage;
     
     /**
      * Creates a pin widget.
      * @param scene the scene
      */
-    public CasaPinWidget(Scene scene) {
+    public CasaPinWidget(Scene scene, Image pinImage, Image classicPinImage) {
         super (scene);
         
+        mPinImage = pinImage;
+        mClassicPinImage = classicPinImage;
+        
         mImageWidget = new ImageWidget(scene);
+        mImageWidget.setImage(getPinImage());
         
         setOpaque(false);
         setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
     }
-
+        
+    public void updatePinImage() {
+        mImageWidget.setImage(getPinImage());
+    }
+    
+    protected Image getPinImage() {
+        return CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE() ? 
+            mClassicPinImage : mPinImage;
+    }
+    
     protected boolean hasPreferredLocation() {
         return false;
     }    
@@ -129,8 +132,16 @@ public abstract class CasaPinWidget extends ErrableWidget {
     }
     
     protected abstract void setPinName(String name);
-    
-    protected abstract void setSelected(boolean isSelected);
+        
+    protected void setSelected(boolean isSelected) {
+        Image originalImage = getPinImage();
+        
+        if (isSelected) {
+            mImageWidget.setImage(createSelectedPinImage(originalImage));
+        } else {
+            mImageWidget.setImage(originalImage);
+        }
+    }
     
     
     /**
@@ -138,6 +149,7 @@ public abstract class CasaPinWidget extends ErrableWidget {
      * @param previousState the previous state
      * @param state the new state
      */
+    @Override
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         if ((!previousState.isSelected() && state.isSelected()) ||
@@ -156,7 +168,7 @@ public abstract class CasaPinWidget extends ErrableWidget {
         }
     }
 
-    private void hoverConnections() {
+    public Set<CasaComponent> getConnections() {
         CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
         CasaEndpointRef pinObject = (CasaEndpointRef) scene.findObject(this);
         Collection<CasaComponent> edges = scene.getEdges();
@@ -170,6 +182,13 @@ public abstract class CasaPinWidget extends ErrableWidget {
                 pinConnections.add(edge);
             }
         }
+        
+        return pinConnections;
+    } 
+    
+    private void hoverConnections() {
+        CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
+        Set<CasaComponent> pinConnections = getConnections();
         scene.setHighlightedObjects(pinConnections);
     }
     

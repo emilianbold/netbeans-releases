@@ -100,7 +100,4 @@ public class SIPModuleNode extends AppserverMgmtApplicationsNode {
         ((DeployedItemsController)getController()).undeploy(getName());
     }
     
-    protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.getNodeProperties(NodeTypes.SIP_APPLICATION));
-    }
 }

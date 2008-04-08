@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.util.Collections;
@@ -60,7 +59,6 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionAttribute;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionElement;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledExtensionInfo;
-import org.netbeans.modules.compapp.projects.jbi.api.Endpoint;
 import org.openide.nodes.Sheet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -71,22 +69,13 @@ import org.w3c.dom.Element;
  * @author jqian
  */
 public class ExtensionPropertyHelper {
-          
+
     private static Logger logger = Logger.getLogger(
             "org.netbeans.modules.compapp.casaeditor.nodes.ExtensionPropertyHelper"); // NOI18N
-           
-    private static Map<JbiExtensionAttribute.Type, Class> classMap = 
-            new HashMap<JbiExtensionAttribute.Type, Class>();
-    
-    static {
-        classMap.put(JbiExtensionAttribute.Type.STRING, String.class); // NOI18N
-        classMap.put(JbiExtensionAttribute.Type.INTEGER, Integer.class); // NOI18N
-        classMap.put(JbiExtensionAttribute.Type.QNAME, QName.class); // NOI18N
-        classMap.put(JbiExtensionAttribute.Type.ENDPOINT, Endpoint.class); // NOI18N 
-    }
-    
+
     private static String EXTENSION_TARGET_ALL = "all"; // NOI18N
-    
+
+
     /**
      * Sets up property sheet for a CASA extension point component's 
      * extensibility elements.
@@ -102,86 +91,84 @@ public class ExtensionPropertyHelper {
      */
     public static void setupExtensionPropertySheet(CasaNode node,
             CasaComponent casaExtPoint,
-            Sheet sheet, 
-            String extensionType, 
+            Sheet sheet,
+            String extensionType,
             String extensionTarget) {
-        
-        JbiInstalledExtensionInfo installedExtInfo = 
+
+        JbiInstalledExtensionInfo installedExtInfo =
                 JbiInstalledExtensionInfo.getInstalledExtensionInfo();
-        
-        Document document = casaExtPoint.getPeer().getOwnerDocument(); 
-        
+
+        Document document = casaExtPoint.getPeer().getOwnerDocument();
+
         // Assumptions: 
         // * Each extension (subtree) in the CASA model is either complete or
         //   doesn't exist at all.
-        
+
         Set<QName> existingTopEEQNames = new HashSet<QName>();
-        
+
         // 1. for top level extensibility elements existing in the CASA model 
-        for (CasaExtensibilityElement ee : 
-                casaExtPoint.getExtensibilityElements()) {
+        for (CasaExtensibilityElement ee : casaExtPoint.getExtensibilityElements()) {
             // ee:  <config:application-config name="FOO"/>
             QName eeQName = ee.getQName();
-            
+
             existingTopEEQNames.add(eeQName);
-            
+
             String eeNamespace = eeQName.getNamespaceURI();
             String eeLocalName = eeQName.getLocalPart();
 
             List<JbiExtensionInfo> extInfoList = installedExtInfo.getJbiExtensionList();
-            Collections.sort(extInfoList, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    JbiExtensionInfo extInfo1 = (JbiExtensionInfo)o1;
-                    JbiExtensionInfo extInfo2 = (JbiExtensionInfo)o2;
-                    return extInfo1.getName().compareTo(extInfo2.getName());
-                }                
+            Collections.sort(extInfoList, new Comparator<JbiExtensionInfo>() {
+
+                public int compare(JbiExtensionInfo o1, JbiExtensionInfo o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
             });
-            
+
             for (JbiExtensionInfo extInfo : extInfoList) {
                 if (!(extInfo.getNameSpace().equals(eeNamespace)) ||
                         !(extensionType.equals(extInfo.getType()))) {
                     continue;
                 }
-                
+
                 String extInfoTarget = extInfo.getTarget();
-                if (!(extensionTarget.equals(extInfoTarget)) && 
-                         !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
+                if (!(extensionTarget.equals(extInfoTarget)) &&
+                        !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
                     continue;
                 }
-                
-                String namespace = extInfo.getNameSpace();                
-                
+
+                String namespace = extInfo.getNameSpace();
+
                 for (JbiExtensionElement extElement : extInfo.getElements()) {
                     if (extElement.getName().equals(eeLocalName)) {
-                        Sheet.Set extPropertySet = 
+                        Sheet.Set extPropertySet =
                                 node.getPropertySet(sheet, extInfo.getName());
-                        createExistingProperties(node, document, extElement, 
-                                extPropertySet, casaExtPoint, 
-                                ee, ee, namespace);
+                        createExistingProperties(node, document, extElement,
+                                extPropertySet, casaExtPoint,
+                                ee, ee, namespace, extInfo.getProvider());
                         break;
                     }
                 }
             }
         }
-        
+
         // 2. for top level extensibility elements that do not exist 
         //    in the CASA model yet
         for (JbiExtensionInfo extInfo : installedExtInfo.getJbiExtensionList()) {
             logger.fine(extInfo.toString());
-            
+
             if (!(extensionType.equals(extInfo.getType()))) {
                 continue;
-            }            
-             
+            }
+
             String extInfoTarget = extInfo.getTarget();
-            if (!(extensionTarget.equals(extInfoTarget)) && 
-                     !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
+            if (!(extensionTarget.equals(extInfoTarget)) &&
+                    !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
                 continue;
             }
-            
+
             // For each extension, create a new property sheet
             Sheet.Set extPropertySet = node.getPropertySet(sheet, extInfo.getName());
-            
+
             String namespace = extInfo.getNameSpace();
 
             for (JbiExtensionElement extElement : extInfo.getElements()) {
@@ -190,13 +177,13 @@ public class ExtensionPropertyHelper {
                     // extElement doesn't have a corresponding CASA 
                     // extensibility element yet               
                     createNonExistingProperties(node, document,
-                            extElement, extPropertySet, 
-                            casaExtPoint, null, null, namespace, true);
+                            extElement, extPropertySet,
+                            casaExtPoint, null, null, namespace, extInfo.getProvider(), true);
                 }
             }
         }
     }
-    
+
     /**
      * Creates a CASA extensibility element for the given 
      * <code>JbiExtensionElement</code> instance; installs attribute properties 
@@ -221,164 +208,184 @@ public class ExtensionPropertyHelper {
             Document document,
             JbiExtensionElement extElement,
             Sheet.Set extSheetSet,
-            CasaComponent casaExtPoint, 
+            CasaComponent casaExtPoint,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String namespace, 
+            String namespace,
+            String provider,
             boolean install) {
-        
+
         CasaWrapperModel casaModel = (CasaWrapperModel) casaExtPoint.getModel();
         CasaComponentFactory casaFactory = casaModel.getFactory();
 
         String extElementName = extElement.getName();
+        String extElementDescription = extElement.getDescription();
         Element domElement = document.createElementNS(namespace, extElementName);
-        
-        CasaExtensibilityElement newEE = (CasaExtensibilityElement) 
-                casaFactory.create(domElement, casaExtPoint);
-        
+
+        CasaExtensibilityElement newEE = (CasaExtensibilityElement) casaFactory.create(domElement, casaExtPoint);
+
         if (firstEE == null) {
             firstEE = newEE;
-        }        
-        
+        }
+
         if (lastEE != null) {
             lastEE.addAnyElement(newEE, lastEE.getAnyElements().size());
         }
         lastEE = newEE;
-                
+
         if (extElement instanceof JbiChoiceExtensionElement) {
-            // Note that multi-level choice  element is not supported for now.
-                    
+            // Note that multi-level choice element is not supported for now.
+
+            JbiChoiceExtensionElement choiceExtElement =
+                    (JbiChoiceExtensionElement) extElement;
+            String defaultChoice = choiceExtElement.getDefaultChoice();
+
             // Build choice map.
-            Map<String, CasaExtensibilityElement> choiceMap = 
+            Map<String, CasaExtensibilityElement> choiceMap =
                     new HashMap<String, CasaExtensibilityElement>();
             for (JbiExtensionElement childElement : extElement.getElements()) {
-                CasaExtensibilityElement childEE = 
+                CasaExtensibilityElement childEE =
                         createNonExistingProperties(node, document,
-                        childElement, extSheetSet, 
-                        lastEE, null, null, namespace, false);
+                        childElement, extSheetSet,
+                        lastEE, null, null, namespace, provider, false);
                 choiceMap.put(childElement.getName(), childEE);
-            }  
-            
+            }
+
             // Add an artificial property for the choice extension element.
             PropertyUtils.installChoiceExtensionProperty(
-                    extSheetSet, node, casaExtPoint, 
+                    extSheetSet, node, casaExtPoint,
                     firstEE, lastEE,
-                    CasaNode.ALWAYS_WRITABLE_PROPERTY, 
-                    String.class, 
-                    extElementName, extElementName, 
-                    "", // FIXME: description
-                    choiceMap); 
-            
-        } else {        
+                    CasaNode.ALWAYS_WRITABLE_PROPERTY,
+                    String.class,
+                    extElementName, extElementName,
+                    extElementDescription,
+                    choiceMap,
+                    defaultChoice);
+
+        } else {
             // Add properties for attributes of the current extenstion element.
             List<JbiExtensionAttribute> attributes = extElement.getAttributes();
             if (attributes != null) {
                 for (JbiExtensionAttribute attr : extElement.getAttributes()) {
                     String attrName = attr.getName();
-                    JbiExtensionAttribute.Type attrType = attr.getType();
+                    String attrType = attr.getType();
                     String attrDescription = attr.getDescription();
                     boolean codeGen = attr.getCodeGen();
 
                     if (codeGen) {
                         lastEE.setAttribute(attrName, ""); // NOI18N
+
                     }
 
                     if (install) {
                         PropertyUtils.installExtensionProperty(
-                            extSheetSet, node, casaExtPoint, 
-                            firstEE, lastEE,
-                            CasaNode.ALWAYS_WRITABLE_PROPERTY, classMap.get(attrType), 
-                            attrName, attrName, attrDescription);
+                                extSheetSet, node, casaExtPoint,
+                                firstEE, lastEE,
+                                CasaNode.ALWAYS_WRITABLE_PROPERTY, attrType,
+                                attrName, attrName, attrDescription, provider);
                     }
                 }
-            } 
+            }
 
             // Add properties for child extension elements.
             List<JbiExtensionElement> childExtElements = extElement.getElements();
             if (childExtElements != null) {
                 for (JbiExtensionElement childElement : childExtElements) {
                     createNonExistingProperties(node, document,
-                            childElement, extSheetSet, 
-                            casaExtPoint, firstEE, lastEE, namespace,
+                            childElement, extSheetSet,
+                            casaExtPoint, firstEE, lastEE, namespace, provider,
                             true);
                 }
             }
         }
-        
+
         return newEE;
     }
-                
+
     private static void createExistingProperties(CasaNode node,
             Document document,
             JbiExtensionElement extElement,
             Sheet.Set extSheetSet,
-            CasaComponent casaExtPoint, 
+            CasaComponent casaExtPoint,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String namespace) {        
-                  
+            String namespace,
+            String provider) {
+
         // Add a property for choice extension element.
         if (extElement instanceof JbiChoiceExtensionElement) {
+
+            JbiChoiceExtensionElement choiceExtElement =
+                    (JbiChoiceExtensionElement) extElement;
+            String defaultChoice = choiceExtElement.getDefaultChoice();
+
             String elementName = extElement.getName();
-            
-            List<CasaExtensibilityElement> currentChildren = 
+            String elementDescription = extElement.getDescription();
+
+            CasaExtensibilityElement currentChild = null;
+            String currentChildName = null;
+
+            List<CasaExtensibilityElement> currentChildren =
                     lastEE.getExtensibilityElements();
             if (currentChildren != null && currentChildren.size() > 0) {
-                assert currentChildren != null && currentChildren.size() == 1;
-                CasaExtensibilityElement currentChild = currentChildren.get(0);
-                String currentChildName = currentChild.getQName().getLocalPart();
-
-                // Build choice map.
-                Map<String, CasaExtensibilityElement> choiceMap = 
-                        new HashMap<String, CasaExtensibilityElement>();
-                List<JbiExtensionElement> childExtElements = extElement.getElements();
-                if (childExtElements != null) {
-                    // Add potential children
-                    for (JbiExtensionElement childElement : childExtElements) {
-                        String childElementName = childElement.getName();
-                        if (! childElementName.equals(currentChildName)) {
-                            CasaExtensibilityElement childEE = 
-                                    createNonExistingProperties(node, document,
-                                    childElement, extSheetSet, 
-                                    casaExtPoint, null, null, namespace, false);
-                            choiceMap.put(childElementName, childEE);
-                        }
-                    }
-
-                    // Add current child
-                    CasaExtensibilityElement clonedExistingChildEE = 
-                            (CasaExtensibilityElement) currentChild.copy(lastEE);
-                    choiceMap.put(currentChildName, clonedExistingChildEE);
-                }
-
-                // Add an artificial property for the choice extension element.
-                PropertyUtils.installChoiceExtensionProperty(
-                        extSheetSet, node, casaExtPoint, 
-                        firstEE, lastEE,
-                        CasaNode.ALWAYS_WRITABLE_PROPERTY, 
-                        String.class, 
-                        elementName, elementName, 
-                        "", // FIXME: description
-                        choiceMap); 
+                assert currentChildren.size() == 1;
+                currentChild = currentChildren.get(0);
+                currentChildName = currentChild.getQName().getLocalPart();
             }
-        } 
-        
+
+            // Build choice map.
+            Map<String, CasaExtensibilityElement> choiceMap =
+                    new HashMap<String, CasaExtensibilityElement>();
+            List<JbiExtensionElement> childExtElements = extElement.getElements();
+            if (childExtElements != null) {
+                // Add potential children defined in the layer.
+                for (JbiExtensionElement childElement : childExtElements) {
+                    String childElementName = childElement.getName();
+                    if (!childElementName.equals(currentChildName)) {
+                        CasaExtensibilityElement childEE =
+                                createNonExistingProperties(node, document,
+                                childElement, extSheetSet,
+                                casaExtPoint, null, null, namespace, provider, false);
+                        choiceMap.put(childElementName, childEE);
+                    }
+                }
+            }
+
+            if (currentChild != null) {
+                // Add current child by cloning the existing one.
+                CasaExtensibilityElement clonedExistingChildEE =
+                        (CasaExtensibilityElement) currentChild.copy(lastEE);
+                choiceMap.put(currentChildName, clonedExistingChildEE);
+            }
+
+            // Add an artificial property for the choice extension element.
+            PropertyUtils.installChoiceExtensionProperty(
+                    extSheetSet, node, casaExtPoint,
+                    firstEE, lastEE,
+                    CasaNode.ALWAYS_WRITABLE_PROPERTY,
+                    String.class,
+                    elementName, elementName,
+                    elementDescription,
+                    choiceMap,
+                    defaultChoice);
+        }
+
         // Add properties for attributes of the current extenstion element.
         List<JbiExtensionAttribute> attributes = extElement.getAttributes();
         if (attributes != null) {
             for (JbiExtensionAttribute attr : attributes) {
                 String attrName = attr.getName();
-                JbiExtensionAttribute.Type attrType = attr.getType();
+                String attrType = attr.getType();
                 String attrDescription = attr.getDescription();
                 PropertyUtils.installExtensionProperty(
-                    extSheetSet, node, casaExtPoint, 
-                    firstEE, lastEE,
-                    CasaNode.ALWAYS_WRITABLE_PROPERTY, 
-                    classMap.get(attrType), 
-                    attrName, attrName, attrDescription);
+                        extSheetSet, node, casaExtPoint,
+                        firstEE, lastEE,
+                        CasaNode.ALWAYS_WRITABLE_PROPERTY,
+                        attrType,
+                        attrName, attrName, attrDescription, provider);
             }
-        } 
-        
+        }
+
         // Add properties for child extension elements.
         List<JbiExtensionElement> childExtElements = extElement.getElements();
         if (childExtElements != null) {
@@ -388,13 +395,13 @@ public class ExtensionPropertyHelper {
                 for (JbiExtensionElement childExtElement : childExtElements) {
                     if (eeName.equals(childExtElement.getName())) {
                         createExistingProperties(node, document,
-                                childExtElement, 
-                                extSheetSet, casaExtPoint, 
-                                firstEE, ee, namespace);
+                                childExtElement,
+                                extSheetSet, casaExtPoint,
+                                firstEE, ee, namespace, provider);
                         found = true;
                         break;
                     }
-                }                
+                }
                 assert found;
             }
         }

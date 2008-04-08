@@ -76,7 +76,7 @@ public class JspContextInfoImpl extends JspContextInfo {
     }
     
     public URLClassLoader getModuleClassLoader(Document doc, FileObject fo){
-        return JspParserFactory.getJspParser().getModuleClassLoader(JspParserAccess.getJspParserWM (WebModule.getWebModule (fo)));
+        return JspParserFactory.getJspParser().getModuleClassLoader(WebModule.getWebModule (fo));
     }
     
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.
@@ -89,7 +89,7 @@ public class JspContextInfoImpl extends JspContextInfo {
                 Logger.getLogger("global").log(Level.INFO, null, new NullPointerException());
             }
             else {
-                return parser.getTaglibMap(JspParserAccess.getJspParserWM (WebModule.getWebModule (fo)));
+                return parser.getTaglibMap(WebModule.getWebModule(fo));
             }
         }
         catch (IOException e) {

@@ -118,6 +118,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     protected @Override boolean runInEQ() {
         return true;
     }
+
+    /* Causes mysterious failure in otherwise OK-looking UI/Runtime/org-netbeans-modules-db-explorer-nodes-RootNode.instance: 
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
+    }
+    */
     
     public void testAreAttributesFine () {
         List<String> errors = new ArrayList<String>();

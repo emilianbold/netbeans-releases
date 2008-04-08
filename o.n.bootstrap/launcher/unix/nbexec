@@ -41,6 +41,7 @@
 
 PRG=$0
 
+
 resolve_symlink () {
     file="$1"
     while [ -h "$file" ]; do
@@ -378,6 +379,11 @@ fi
 # http://java.sun.com/j2se/1.5.0/docs/guide/2d/flags.html#pixmaps
 J2D_PIXMAPS=shared
 export J2D_PIXMAPS
+
+# Check DISPLAY variable on non-Mac
+if [ "no$DISPLAY" = "no" -a `uname` != Darwin ]; then
+    echo "$0: WARNING: environment variable DISPLAY is not set"
+fi
 
 #
 # main loop

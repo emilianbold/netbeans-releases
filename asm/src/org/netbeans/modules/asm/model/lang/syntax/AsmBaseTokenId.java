@@ -43,7 +43,7 @@
 package org.netbeans.modules.asm.model.lang.syntax;
 
 public enum AsmBaseTokenId implements AsmTokenId {
-    ASM_EMPTY("whitespace"),
+    ASM_EMPTY("whitespace"), // NOI18N
     ASM_EOF,
     
     ASM_COMMENT,

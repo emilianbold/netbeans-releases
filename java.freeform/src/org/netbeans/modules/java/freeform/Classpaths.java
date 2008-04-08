@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -65,7 +64,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -86,7 +84,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -446,27 +443,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     
     private URL createClasspathEntry(String text) {
         File entryFile = helper.resolveFile(text);
-        URL entry;
-        try {
-            entry = entryFile.toURI().toURL();
-        } catch (MalformedURLException x) {
-            throw new AssertionError(x);
-        }
-        if (FileUtil.isArchiveFile(entry)) {
-            return FileUtil.getArchiveRoot(entry);
-        } else {
-            String entryS = entry.toExternalForm();
-            if (!entryS.endsWith("/")) { // NOI18N
-                // A nonexistent dir. Have to add trailing slash ourselves.
-                try {
-                    return new URL(entryS + '/');
-                } catch (MalformedURLException x) {
-                    throw new AssertionError(x);
-                }
-            } else {
-                return entry;
-            }
-        }
+        return FileUtil.urlForArchiveOrDir(entryFile);
     }
     
     private List<URL> createExecuteClasspath(List<String> packageRoots, Element compilationUnitEl) {
@@ -505,37 +482,14 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 return createClasspath(e);
             }
         }
-        // None specified; try to find a matching Java platform.
+        // None specified;
         // First check whether user has configured a specific JDK.
         JavaPlatform platform = new JdkConfiguration(null, helper, evaluator).getSelectedPlatform();
         if (platform == null) {
-            // Nope; so look for some platform of reasonable source level instead.
+            // Nope; Use default one
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             platform = jpm.getDefaultPlatform(); // fallback
-            for (Element e : Util.findSubElements(compilationUnitEl)) {
-                if (e.getLocalName().equals("source-level")) { // NOI18N
-                    String level = Util.findText(e);
-                    Specification spec = new Specification("j2se", new SpecificationVersion(level)); // NOI18N
-                    JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
-                    if (matchingPlatforms.length > 0) {
-                        // Pick one. Prefer one with sources if there is a choice, else with Javadoc.
-                        platform = matchingPlatforms[0];
-                        for (JavaPlatform matchingPlatform : matchingPlatforms) {
-                            if (!matchingPlatform.getJavadocFolders().isEmpty()) {
-                                platform = matchingPlatform;
-                                break;
-                            }
-                        }
-                        for (JavaPlatform matchingPlatform : matchingPlatforms) {
-                            if (matchingPlatform.getSourceFolders().getRoots().length > 0) {
-                                platform = matchingPlatform;
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+            // #126216: source level guessing logic removed
         }
         if (platform != null) {
             // XXX this is not ideal; should try to reuse the ClassPath as is?
@@ -637,14 +591,16 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             if (!roots.equals(oldRoots)) {
                 resources = new ArrayList<PathResourceImplementation>(roots.size());
                 for (URL root : roots) {
-                    assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
-                    PathResourceImplementation pri;
-                    if (type.equals(ClassPath.SOURCE)) {
-                        pri = new SourcePRI(root);
-                    } else {
-                        pri = ClassPathSupport.createResource(root);
+                    if (root != null) {
+                        assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
+                        PathResourceImplementation pri;
+                        if (type.equals(ClassPath.SOURCE)) {
+                            pri = new SourcePRI(root);
+                        } else {
+                            pri = ClassPathSupport.createResource(root);
+                        }
+                        resources.add(pri);
                     }
-                    resources.add(pri);
                 }
                 return true;
             } else {

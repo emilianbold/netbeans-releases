@@ -3,18 +3,13 @@
 Document 0
 Delete:  source : <TESTURL>/active_record.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : Base
   class-ig : base
   fqn : ActiveRecord::Base
-  source : <TESTURL>/active_record.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -24,12 +19,10 @@ Not Indexed:
 
 
 Document 2
-Delete:
 Indexed:
   class : Migration
   class-ig : migration
   fqn : ActiveRecord::Migration
-  source : <TESTURL>/active_record.rb
 
 Not Indexed:
   attrs : |CLASS|

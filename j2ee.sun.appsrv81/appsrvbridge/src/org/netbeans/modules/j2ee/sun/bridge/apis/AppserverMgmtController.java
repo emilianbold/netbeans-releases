@@ -318,7 +318,7 @@ public class AppserverMgmtController extends AppserverMgmtControllerBase {
                 getConnectorResourceConfigByName(jmsConnFactoryName);
         String connectorPoolName = res.getPoolName();
         Map poolProps = getConnectorConnectionPoolProperties(connectorPoolName, 
-                Arrays.asList(NodeTypes.CONNECTION_FACTORY_POOL));
+                NodeTypes.getNodeProperties(NodeTypes.CONNECTION_FACTORY_POOL));
         Map factoryProps = getPropertiesFromBackend(NodeTypes.CONNECTION_FACTORY, res,
                 propsToIgnore);      
         factoryProps.putAll(poolProps);
@@ -967,7 +967,7 @@ public class AppserverMgmtController extends AppserverMgmtControllerBase {
         }else{
             removeResourceRef(res, resName);
             getDomainConfig().removeJDBCResourceConfig(resName);       
-        }    
+        }  
     }
     
     
@@ -1236,9 +1236,9 @@ public class AppserverMgmtController extends AppserverMgmtControllerBase {
     }
     
     /*
-     * Get Server Type : PR or EE
+     * Get Server Type : PE or EE
      *
-     * @return true if 8.x EE
+     * @return false if 8.x EE
      */
     public boolean isEightPlatform(){
         boolean isPlatform = true;

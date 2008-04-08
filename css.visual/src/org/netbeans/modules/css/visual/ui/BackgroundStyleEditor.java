@@ -50,7 +50,7 @@ package org.netbeans.modules.css.visual.ui;
 import org.netbeans.modules.css.visual.model.BackgroundModel;
 import org.netbeans.modules.css.visual.model.BackgroundPositionData;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.model.CssRuleContent;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import java.awt.BorderLayout;
@@ -479,7 +479,7 @@ public class BackgroundStyleEditor extends StyleEditor {
     }//GEN-LAST:event_imageFileFieldActionPerformed
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        BackgroundImageUrlDialog imageUrlDialog = new BackgroundImageUrlDialog(content().fileObject());
+        BackgroundImageUrlDialog imageUrlDialog = new BackgroundImageUrlDialog(content().base());
         if(imageUrlDialog.show(this)){
             imageFileField.setText(imageUrlDialog.getImageUrl());
         }

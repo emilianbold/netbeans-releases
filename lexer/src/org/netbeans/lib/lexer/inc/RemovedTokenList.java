@@ -182,4 +182,9 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return LexerUtilsConstants.appendTokenList(null, this).toString();
+    }
+    
 }

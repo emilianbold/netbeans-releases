@@ -24,6 +24,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -51,6 +52,7 @@ public class WsdlFileNode extends BpelNode<WSDLModel> {
         return NodeType.WSDL_FILE;
     }
     
+    @Override
     protected String getNameImpl() {
         WSDLModel ref = getReference();
         if (ref == null) {
@@ -61,12 +63,13 @@ public class WsdlFileNode extends BpelNode<WSDLModel> {
             return null;
         }
         BpelModel bpelModel = getLookup().lookup(BpelModel.class);
-        Project modelProject = ResolverUtility.safeGetProject(bpelModel);
+        Project modelProject = Utils.safeGetProject(bpelModel);
         String relativePath = ResolverUtility.safeGetRelativePath(fo, modelProject);
         
         return relativePath != null ? relativePath : fo.getPath();
     }
     
+    @Override
     protected String getImplHtmlDisplayName() {
         return SoaUiUtil.getGrayString(super.getImplHtmlDisplayName());
     }

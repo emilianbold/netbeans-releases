@@ -57,7 +57,10 @@ import javax.swing.text.Document;
 import java.io.File;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Utilities for Versioning SPI classes. 
@@ -149,13 +152,13 @@ public class Utils {
      * @param file file/directory to delete
      */
     public static void deleteRecursively(File file) {
-        if (file.isDirectory()) {
-            File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
-            }
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return;
+        try {
+            fo.delete();
+        } catch (IOException e) {
+            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, "", e);
         }
-        file.delete();
     }
 
     public static boolean isLocalHistory(VersioningSystem system) {

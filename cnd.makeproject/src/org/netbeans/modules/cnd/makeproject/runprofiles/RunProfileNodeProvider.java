@@ -45,16 +45,29 @@ import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class RunProfileNodeProvider {
+public class RunProfileNodeProvider implements CustomizerNodeProvider {
+    
+    /**
+     * Creates an instance of a customizer node
+     */
+    private CustomizerNode customizerNode = null;
+    
+    public CustomizerNode factoryCreate() {
+        if (customizerNode == null)
+            customizerNode = createProfileNode();
+	return customizerNode;
+    }
+    
     public CustomizerNode createProfileNode() {
             return new RunProfileCustomizerNode(
-                "Running", // NOI18N
+                "Run", // NOI18N
                 getString("RUNNING"),
                 null);
     }

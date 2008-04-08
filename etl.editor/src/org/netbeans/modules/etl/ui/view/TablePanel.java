@@ -86,6 +86,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import com.sun.sql.framework.exception.BaseException;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
@@ -95,6 +97,8 @@ import org.netbeans.modules.sql.framework.model.DatabaseModel;
  * @version $Revision$
  */
 public class TablePanel extends JPanel {
+    private static transient final Logger mLogger = Logger.getLogger(TablePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     class ActionAdapter implements ActionListener {
 
@@ -686,6 +690,7 @@ public class TablePanel extends JPanel {
         DialogDescriptor dd = new DialogDescriptor(this, title);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This is the dialog to add Input/Output Runtime arguments");
         dlg.setSize(450, 400);
         dlg.setVisible(true);
 
@@ -874,11 +879,17 @@ public class TablePanel extends JPanel {
 
         ActionAdapter aAdapter = new ActionAdapter();
 
-        JButton addColumnButton = new JButton("Add");
+        String nbBundle1 = mLoc.t("BUND151: Add");
+        JButton addColumnButton = new JButton(nbBundle1.substring(15));
+        addColumnButton.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
         addColumnButton.setActionCommand("Add");
+        addColumnButton.setMnemonic(nbBundle1.substring(15).charAt(0));
         addColumnButton.addActionListener(aAdapter);
-        JButton removeColumnButton = new JButton("Remove");
+        String nbBundle2 = mLoc.t("BUND152: Remove");
+        JButton removeColumnButton = new JButton(nbBundle2.substring(15));
+        removeColumnButton.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
         removeColumnButton.setActionCommand("Remove");
+        removeColumnButton.setMnemonic(nbBundle2.substring(15).charAt(0));
         removeColumnButton.addActionListener(aAdapter);
 
         tableButtonPanel.add(addColumnButton);

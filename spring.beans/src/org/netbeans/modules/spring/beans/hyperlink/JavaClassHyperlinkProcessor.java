@@ -46,12 +46,12 @@ import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class JavaClassHyperlinkProcessor implements HyperlinkProcessor {
+public class JavaClassHyperlinkProcessor extends HyperlinkProcessor {
 
     public JavaClassHyperlinkProcessor() {
     }
 
     public void process(HyperlinkEnv env) {
-        SpringXMLConfigEditorUtils.findAndOpenJavaClass(env.getValueString(), env.getDocument());
+        SpringXMLConfigEditorUtils.findAndOpenJavaClass(env.getValueString(), env.getFileObject());
     }
 }

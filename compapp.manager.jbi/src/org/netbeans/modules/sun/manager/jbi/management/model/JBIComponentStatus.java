@@ -42,6 +42,7 @@
 package org.netbeans.modules.sun.manager.jbi.management.model;
 
 import com.sun.jbi.ui.common.JBIComponentInfo;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,10 @@ public class JBIComponentStatus extends JBIComponentInfo {
 //    /** Shared Library Type */
 //    public static final String LIBRARY = "Namespace";    // NOI18N
     
+    private URL projectIconURL;
+    
+    private URL fileIconURL;
+    
 
     public JBIComponentStatus() {
         super();
@@ -74,6 +79,22 @@ public class JBIComponentStatus extends JBIComponentInfo {
             List<String> namespaces) {
         super(type, state, name, description);
         setNamespaces(namespaces);
+    }
+    
+    public void setProjectIconURL(URL projectIconURL) {
+        this.projectIconURL = projectIconURL;
+    }
+        
+    public void setFileIconURL(URL fileIconURL) {
+        this.fileIconURL = fileIconURL;
+    }
+
+    public URL getProjectIconURL() {
+        return projectIconURL;
+    }
+
+    public URL getFileIconURL() {
+        return fileIconURL;
     }
         
     /**

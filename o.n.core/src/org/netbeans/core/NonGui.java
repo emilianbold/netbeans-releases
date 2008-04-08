@@ -111,9 +111,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // 8. Advance Policy
 
         // set security manager
-        SecurityManager secman = new TopSecurityManager();
-
-        System.setSecurityManager(secman);
+        TopSecurityManager.install();
         TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
 
         // install java.net.Authenticator
@@ -133,7 +131,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         
         StartLog.logStart ("Main window initialization"); //NOI18N
 
-        TimeableEventQueue.initialize();
+        TimableEventQueue.initialize();
         
         // -----------------------------------------------------------------------------------------------------
         // 11. Initialization of main window

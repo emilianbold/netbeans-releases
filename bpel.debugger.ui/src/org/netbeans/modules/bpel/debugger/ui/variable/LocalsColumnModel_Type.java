@@ -39,8 +39,7 @@ public final class LocalsColumnModel_Type extends AbstractColumn {
     public LocalsColumnModel_Type(final ContextProvider context) {
         super();
         
-        myDebugger = (BpelDebugger) context.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = context.lookupFirst(null, BpelDebugger.class);
         
         myId = Constants.LOCALS_TYPE_COLUMN_ID;
         myName = "CTL_Variable_Column_Type";
@@ -67,7 +66,11 @@ public final class LocalsColumnModel_Type extends AbstractColumn {
         
         @Override
         public String getAsText() {
-            if ("".equals(getValue())) {
+            if (getValue() instanceof LocalsTreeModel.Dummy) {
+                return "";
+            }
+            
+            if (getValue() == null) {
                 return "";
             }
             

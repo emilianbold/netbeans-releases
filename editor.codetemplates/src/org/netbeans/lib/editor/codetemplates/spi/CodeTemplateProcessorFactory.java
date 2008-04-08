@@ -41,8 +41,6 @@
 
 package org.netbeans.lib.editor.codetemplates.spi;
 
-import java.util.Collection;
-
 /**
  * Factory constructs code template processor for a given insert request.
  * <br/>

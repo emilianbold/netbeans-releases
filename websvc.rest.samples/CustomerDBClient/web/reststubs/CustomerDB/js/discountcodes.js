@@ -121,9 +121,9 @@ DiscountCodes.prototype = {
       for(j=0;j<this.items.length;j++) {
          var c = this.items[j];
          if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}},';
+            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":"'+rjsSupport.findIdFromUrl(c.getUri())+'"},';
          else
-            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}}';
+            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}';
       }
       if(this.items.length > 1)
           s = s + ']';

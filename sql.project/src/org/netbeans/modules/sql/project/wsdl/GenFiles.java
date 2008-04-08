@@ -216,8 +216,8 @@ public class GenFiles extends CallableSystemAction {
     	Map wsdlMap = new HashMap();
         
         try {
-        	String baseDir = project.getProjectDirectory().getPath();
-			String OS = System.getProperty("os.name").toLowerCase();
+        	String baseDir = org.openide.filesystems.FileUtil.getFileDisplayName(project.getProjectDirectory());
+		String OS = System.getProperty("os.name").toLowerCase();
                 if(OS.indexOf("windows") > -1){
                     //do nothing
                 }else{

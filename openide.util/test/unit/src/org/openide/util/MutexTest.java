@@ -61,10 +61,6 @@ public class MutexTest extends NbTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite(MutexTest.class);
 
@@ -73,17 +69,22 @@ public class MutexTest extends NbTestCase {
     
     /** Sets up the test.
      */
+    @Override
     protected void setUp () {
         p = new Mutex.Privileged ();
         m = new Mutex (p);
         Mutex.beStrict = true;
+    }
+    @Override 
+    protected Level logLevel() {
+        return Level.FINEST;
     }
     
     public void testReadWriteRead() throws Exception {
         
         final Object lock = new Object();
         final Mutex.Privileged mPriv =  new Mutex.Privileged();
-        final Mutex m = new Mutex( mPriv );
+        final Mutex tmpMutex = new Mutex( mPriv );
         
         synchronized ( lock ) {
             mPriv.enterReadAccess();
@@ -555,7 +556,7 @@ public class MutexTest extends NbTestCase {
         final Ticker tickX2 = new Ticker();     
         final Ticker tickX3 = new Ticker();     
         
-        Thread A = new Thread("A") { public void run() {
+        Thread A = new Thread("A") { public @Override void run() {
             PR.enterReadAccess();
             
             tickX1.tick();
@@ -568,7 +569,7 @@ public class MutexTest extends NbTestCase {
             PR.exitReadAccess();
         }};
                
-        Thread B = new Thread("B") { public void run() {
+        Thread B = new Thread("B") { public @Override void run() {
             synchronized(L) {
                 
                 tickX2.tick();
@@ -581,7 +582,7 @@ public class MutexTest extends NbTestCase {
             }
         }};
 
-        Thread C = new Thread("C") { public void run() {
+        Thread C = new Thread("C") { public @Override void run() {
             PR.enterReadAccess();
             M.postWriteRequest(new Runnable() {public void run() {
                    done[2] = true;
@@ -651,7 +652,7 @@ public class MutexTest extends NbTestCase {
         final Ticker tick3 = new Ticker();
         
         Thread A = new Thread() {
-            public void run() {
+            public @Override void run() {
                 pr1.enterWriteAccess();
                 tick0.tick();
                 
@@ -671,7 +672,7 @@ public class MutexTest extends NbTestCase {
 
         
         Thread B = new Thread() {
-            public void run() {
+            public @Override void run() {
                 pr2.enterWriteAccess();
                 
                 mutex2.postReadRequest(new Runnable() {
@@ -739,9 +740,22 @@ public class MutexTest extends NbTestCase {
         final Mutex.Privileged pr = new Mutex.Privileged();
         final Mutex mutex = new Mutex(pr);
         final Ticker tick = new Ticker();
-        final AtomicBoolean inWrite = new AtomicBoolean();
+        class WR implements Runnable {
+            boolean inWrite;
+            public void run() {
+                inWrite = true;
+                // just keep the write lock for a while
+                MutexTest.sleep(1000);
+                inWrite = false;
+            }            
+        }
+        WR wr = new WR();
         
-        Thread t = new Thread("testReadEnterAfterPostWriteWasContended87932-reader") {
+        class T extends Thread {
+            public T() {
+                super("testReadEnterAfterPostWriteWasContended87932-reader");
+            }
+            @Override
             public void run() {
                 pr.enterReadAccess();
                 tick.tick();
@@ -762,7 +776,9 @@ public class MutexTest extends NbTestCase {
                 
                 
             }
-        };
+        }
+        
+        Thread t = new T();
         String str = "THREAD:testReadEnterAfterPostWriteWasContended87932-reader MSG:wait for exploitable place in Mutex" + 
                 "THREAD:main MSG:.*Processing posted requests: 2" +
                 "THREAD:testReadEnterAfterPostWriteWasContended87932-reader MSG:Let the other thread continue";
@@ -772,14 +788,9 @@ public class MutexTest extends NbTestCase {
         t.start();
         
         tick.waitOn();
-        mutex.postWriteRequest(new Runnable() {
-            public void run() {
-                inWrite.set(true);
-                // just keep the write lock for a while
-                sleep(1000);
-                inWrite.set(false);
-            }            
-        });
+        
+        
+        mutex.postWriteRequest(wr);
         pr.exitReadAccess();
         
         t.join(10000);
@@ -965,13 +976,13 @@ public class MutexTest extends NbTestCase {
         
         PR.enterWriteAccess();
         
-        Thread A = new Thread("A") { public void run() {
+        Thread A = new Thread("A") { public @Override void run() {
             PR.enterReadAccess();
             done[0] = true;
             PR.exitReadAccess();
         }};
                
-        Thread B = new Thread("B") { public void run() {
+        Thread B = new Thread("B") { public @Override void run() {
             PR.enterReadAccess();
             done[1] = true;
             PR.exitReadAccess();
@@ -981,7 +992,7 @@ public class MutexTest extends NbTestCase {
         Thread.sleep(100); // wait for A to chain in M
         
         B.start();
-        Thread.sleep(100);; // B should chain as well
+        Thread.sleep(100); // B should chain as well
         
         assertFalse ("B should chain-wait", done[1]);
         
@@ -1080,6 +1091,7 @@ public class MutexTest extends NbTestCase {
             this.write = write;
         }
 
+        @Override
         protected void finalize () {
             assertNull ("Run method was not called!", msg);
         }
@@ -1107,9 +1119,5 @@ public class MutexTest extends NbTestCase {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
-    }
-
-    protected Level logLevel() {
-        return Level.FINEST;
     }
 }

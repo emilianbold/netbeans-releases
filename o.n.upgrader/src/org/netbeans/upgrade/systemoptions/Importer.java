@@ -43,6 +43,8 @@ package org.netbeans.upgrade.systemoptions;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.*;
 
 /**
@@ -93,9 +95,12 @@ public class Importer {
         for (FileObject f: files) {
             try {
                 retval.add(SystemOptionsParser.parse(f, false));
-            } catch (ClassNotFoundException ex) {
-                continue;
-            } catch (IOException ex) {
+            } catch (Exception ex) {
+                boolean assertOn = false;
+                assert assertOn = true;
+                if (assertOn) {
+                    Logger.getLogger("org.netbeans.upgrade.systemoptions.parse").log(Level.INFO, "importing: " + f.getPath(), ex); // NOI18N
+                }
                 continue;
             }
         }

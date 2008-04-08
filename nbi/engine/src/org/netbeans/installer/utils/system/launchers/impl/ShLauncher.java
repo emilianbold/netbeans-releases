@@ -267,6 +267,7 @@ public class ShLauncher extends CommonLauncher {
                 path = resource.getAbsolutePath();
             }
             addNumberVariable(sb, id + "_SIZE", size);
+            addStringVariable(sb, id + "_MD5", resource.getMD5());
         } else {
             path = resource.getAbsolutePath();
         }

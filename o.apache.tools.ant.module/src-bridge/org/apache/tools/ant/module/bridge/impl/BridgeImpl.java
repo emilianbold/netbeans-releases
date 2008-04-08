@@ -333,14 +333,8 @@ public class BridgeImpl implements BridgeInterface {
 
     private static final RequestProcessor.Task refreshFilesystemsTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
-            //copy - paste programming
-            //http://ant.netbeans.org/source/browse/ant/src-bridge/org/apache/tools/ant/module/bridge/impl/BridgeImpl.java.diff?r1=1.15&r2=1.16
-            //http:/java.netbeans.org/source/browse/java/javacore/src/org/netbeans/modules/javacore/Util.java    
-            //http://core.netbeans.org/source/browse/core/ui/src/org/netbeans/core/ui/MenuWarmUpTask.java
-            //http://core.netbeans.org/source/browse/core/src/org/netbeans/core/actions/RefreshAllFilesystemsAction.java
-            //http://java.netbeans.org/source/browse/java/api/src/org/netbeans/api/java/classpath/ClassPath.java
             Logger.getLogger(BridgeImpl.class.getName()).log(Level.FINE, "Refreshing filesystems");
-            FileUtil.refreshFor(File.listRoots()); 
+            FileUtil.refreshAll(); 
         }
     });
 

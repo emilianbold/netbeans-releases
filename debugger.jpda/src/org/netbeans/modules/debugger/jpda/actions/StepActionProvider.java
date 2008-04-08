@@ -118,7 +118,7 @@ implements Executor {
         );
         this.lookupProvider = lookupProvider;
         setProviderToDisableOnLazyAction(this);
-        Map properties = (Map) lookupProvider.lookupFirst (null, Map.class);
+        Map properties = lookupProvider.lookupFirst(null, Map.class);
         if (properties != null) {
             smartSteppingStepOut = properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
         }
@@ -261,8 +261,8 @@ implements Executor {
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
-        removeStepRequests (tr);
         setLastOperation(tr);
+        removeStepRequests (tr);
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 
@@ -311,11 +311,6 @@ implements Executor {
                      (lookupProvider, t, getSmartSteppingFilterImpl ())
                 ) {
                     // YES!
-                    Session session = (Session) lookupProvider.lookupFirst(null, Session.class);
-                    if (session != null) {
-                        DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                    }
-                    getDebuggerImpl ().setStoppedState (tr);
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     return false; // do not resume
                 }
@@ -416,8 +411,7 @@ implements Executor {
     
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
-            compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
-                lookupFirst (null, CompoundSmartSteppingListener.class);
+            compoundSmartSteppingListener = lookupProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
 }

@@ -247,7 +247,8 @@ public final class BrandingSupport {
     }
     
     private ModuleEntry getModuleEntry(final String moduleCodeNameBase) {
-        return getActivePlatform().getModule(moduleCodeNameBase);
+        NbPlatform p = getActivePlatform();
+        return p != null ? p.getModule(moduleCodeNameBase) : null;
     }
 
     private NbPlatform getActivePlatform() {
@@ -341,6 +342,9 @@ public final class BrandingSupport {
     
     private void init() throws IOException {
         NbPlatform newPlatform = getActivePlatform();
+        if (newPlatform == null) {
+            return;
+        }
         
         if (brandedModules == null || !newPlatform.equals(platform)) {
             brandedModules = new HashSet<ModuleEntry>();
@@ -519,6 +523,7 @@ public final class BrandingSupport {
             this.value = value;
         }
         
+        @Override
         public boolean equals(Object obj) {
             boolean retval = false;
             
@@ -532,6 +537,7 @@ public final class BrandingSupport {
             return  retval;
         }
         
+        @Override
         public int hashCode() {
             return 0;
         }
@@ -599,6 +605,7 @@ public final class BrandingSupport {
             return modified;
         }
         
+        @Override
         public boolean equals(Object obj) {
             boolean retval = false;
             
@@ -612,6 +619,7 @@ public final class BrandingSupport {
             return  retval;
         }
 
+        @Override
         public int hashCode() {
             return 0;
         }
@@ -619,7 +627,11 @@ public final class BrandingSupport {
     }
 
     public String getNameOfBrandingFolder() {
-        return suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
+        String f = suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
+        if (f == null) { // #125160
+            f = "branding"; // NOI18N
+        }
+        return f;
     }
     
 }

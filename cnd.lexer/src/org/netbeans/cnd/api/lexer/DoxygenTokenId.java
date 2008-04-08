@@ -59,12 +59,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum DoxygenTokenId implements TokenId {
 
-    IDENT("comment"),
-    TAG("doxygen-tag"),
-    HTML_TAG("html-tag"),
-    DOT("comment"),
-    HASH("comment"),
-    OTHER_TEXT("comment");
+    IDENT("comment"), // NOI18N
+    TAG("doxygen-tag"), // NOI18N
+    HTML_TAG("html-tag"), // NOI18N
+    DOT("comment"), // NOI18N
+    HASH("comment"), // NOI18N
+    OTHER_TEXT("comment"); // NOI18N
 
     private final String primaryCategory;
 
@@ -102,7 +102,7 @@ public enum DoxygenTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/x-doxygen";
+            return "text/x-doxygen"; // NOI18N
         }
     };    
 }

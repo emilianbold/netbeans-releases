@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -179,14 +180,14 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
     }
 
     public @Override void componentOpened() {
-        CsmModelAccessor.getModel().addModelListener(this);
+        CsmListeners.getDefault().addModelListener(this);
     }
 
     public @Override void componentClosed() {
         removeAll();
         initComponents();
         last = null;
-        CsmModelAccessor.getModel().removeModelListener(this);
+        CsmListeners.getDefault().removeModelListener(this);
     }
 
     /** replaces this in object stream */

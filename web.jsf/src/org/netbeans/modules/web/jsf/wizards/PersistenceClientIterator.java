@@ -51,7 +51,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
@@ -95,23 +95,32 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
         }
         
+        int[] nameAttemptIndices = new int[entities.size()];
         FileObject[] controllerFileObjects = new FileObject[entities.size()];
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
             String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
-            String simpleControllerName = simpleClassName + "Controller";
+            String simpleControllerNameBase = simpleClassName + "Controller";
+            String simpleControllerName = simpleControllerNameBase;
+            while (targetFolder.getFileObject(simpleControllerName, "java") != null && nameAttemptIndices[i] < 1000) {
+                simpleControllerName = simpleControllerNameBase + ++nameAttemptIndices[i];
+            }
             controllerFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleControllerName, null);
         }
         
+        JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+        
         for (int i = 0; i < controllerFileObjects.length; i++) {
-            //String entityClass = entity.getClass2();
             String entityClass = entities.get(i);
             String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
             String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
+            if (nameAttemptIndices[i] > 0) {
+                firstLower += nameAttemptIndices[i];
+            }
             String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
-            folder = folder + firstLower;
-            String controller = controllerPkg + "." + simpleClassName + "Controller";
-            JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder, controllerFileObjects[i]);
+            folder += firstLower;
+            String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
+            JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport);
         }
         
         return Collections.singleton(DataFolder.findFolder(targetFolder));
@@ -132,7 +141,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                        new HelpCtx(PersistenceClientIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard)); // NOI18N
+                        new HelpCtx("framework_jsf_fromentity"), wizard)); // NOI18N
         WizardDescriptor.Panel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
 //        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
 //        panels = new WizardDescriptor.Panel[] { javaPanel };

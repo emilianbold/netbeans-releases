@@ -131,7 +131,8 @@ public abstract class SearchControlPanel extends JPanel
                 searchResultIndex = 0;
                 beep();
             }
-            showSearchResult(searchResults.get(searchResultIndex));
+            if(searchResults.size() > 0)
+                showSearchResult(searchResults.get(searchResultIndex));
         } else if (src == prevButton) {
             if(!isSameQuery()) {
                 dismissSearch();
@@ -142,7 +143,8 @@ public abstract class SearchControlPanel extends JPanel
                 searchResultIndex = searchResults.size() - 1;
                 beep();
             }
-            showSearchResult(searchResults.get(searchResultIndex));
+            if(searchResults.size() > 0 )
+                showSearchResult(searchResults.get(searchResultIndex));
             searchField.requestFocus();
         }
     }

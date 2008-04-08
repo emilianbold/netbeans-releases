@@ -129,6 +129,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
     
     private static boolean canRefactor(Lookup lookup) {
+        // Disabled - this module only seems to handle JavaScript, not
+        // Schliemann filetypes in general, and JavaScript is handled by
+        // the javascript.refactoring module now
+        return false;
+        /*
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         if (nodes.size() != 1) {
             return false;
@@ -162,6 +167,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             return node != null;
         }
         return false;
+         */
     }
     
 }

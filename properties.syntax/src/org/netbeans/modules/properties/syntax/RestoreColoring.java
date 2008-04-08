@@ -44,7 +44,6 @@ package org.netbeans.modules.properties.syntax;
 import java.util.MissingResourceException;
 
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.Settings;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
@@ -61,18 +60,12 @@ public class RestoreColoring extends ModuleInstall {
 
     /** Registers properties editor, installs options and copies settings. Overrides superclass method.  */
     public void restored() {
-        addInitializer();
         installOptions();
     }
 
     /** Uninstalls properties options. And cleans up editor settings copy. Overrides superclass method. */
     public void uninstalled() {
         uninstallOptions();
-    }
-
-    /** Adds initializer and registers editor kit. */
-    public void addInitializer() {
-        Settings.addInitializer(new PropertiesSettingsInitializer());
     }
 
     /** Installs properties editor and print options. */

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.debugger.breakpoints;
 
 import javax.swing.Action;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
+import org.netbeans.modules.ruby.debugger.breakpoints.ui.BreakpointCustomizer;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.ActionPerformer;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -53,28 +54,40 @@ import org.openide.util.NbBundle;
 /**
  * Provides actions for nodes representing {@link RubyBreakpoint} in the
  * Breapoint view.
- *
- * @author Martin Krauskopf
  */
 public final class RubyBreakpointNodeActions implements NodeActionsProviderFilter {
     
     private static final Action GO_TO_SOURCE_ACTION;
+    private static final Action CUSTOMIZE_ACTION;
     
     static {
-        String name = NbBundle.getMessage(RubyBreakpointNodeActions.class, "CTL_GoToSource");
-        ActionPerformer ap = new ActionPerformer() {
+        ActionPerformer goToSource = new ActionPerformer() {
             public boolean isEnabled(Object node) { return true; }
             public void perform(Object[] nodes) {
                 RubyBreakpoint bp = (RubyBreakpoint) nodes[0];
-                EditorUtil.showLine(EditorUtil.getLine(bp.getFilePath(), bp.getLineNumber() - 1));
+                EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
             }
         };
-        GO_TO_SOURCE_ACTION = Models.createAction(name, ap, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
+        GO_TO_SOURCE_ACTION = Models.createAction(
+                NbBundle.getMessage(RubyBreakpointNodeActions.class, "CTL_GoToSource"),
+                goToSource, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
+        
+        ActionPerformer customize = new ActionPerformer() {
+            public boolean isEnabled(Object node) { return true; }
+            public void perform(Object[] nodes) {
+                RubyBreakpoint bp = (RubyBreakpoint) nodes[0];
+                BreakpointCustomizer.customize(bp);
+            }
+        };
+        CUSTOMIZE_ACTION = Models.createAction(
+                NbBundle.getMessage(RubyBreakpointNodeActions.class, "CTL_customize"),
+                customize, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
     }
+    
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (node instanceof RubyBreakpoint) {
             RubyBreakpoint bp = (RubyBreakpoint) node;
-            EditorUtil.showLine(EditorUtil.getLine(bp.getFilePath(), bp.getLineNumber() - 1));
+            EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
         } else {
             original.performDefaultAction(node);
         }
@@ -83,10 +96,11 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
     public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
         Action[] origActions = original.getActions(node);
         if (node instanceof RubyBreakpoint) {
-            Action[] actions = new Action[origActions.length + 2];
+            Action[] actions = new Action[origActions.length + 3];
             actions[0] = GO_TO_SOURCE_ACTION;
             actions[1] = null;
             System.arraycopy(origActions, 0, actions, 2, origActions.length);
+            actions[actions.length - 1] = CUSTOMIZE_ACTION;
             return actions;
         } else {
             return origActions;

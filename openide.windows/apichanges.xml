@@ -48,6 +48,25 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+<change id="KeepNonPersistentTCInModelWhenClosed">
+    <api name="winsys"/>
+    <summary>Changed behavior of TopComponent.close() and TopComponentGroup.close() for non persistent TopComponent</summary>
+    <version major="6" minor="20"/>
+    <date day="27" month="3" year="2008"/>
+    <author login="mslama"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+	Add client property KeepNonPersistentTCInModelWhenClosed to TopComponent to control behavior of winsys
+        when nonpersistent TopComponent is closed. As some TopComponent wants to keep their position in winsys
+	ie. be able to reopen at the same place and some TopComponent wants to be removed from winsys model.
+	We added client boolean property KeepNonPersistentTCInModelWhenClosed. When this property is not set
+	nn persistent TopComponent is removed from model when closed - it is original behavior before fix of
+	issue #101700. If client property is set (to Boolean.TRUE) then TopComponent is kept in model. It means that
+	client must explicitly set this client property to get behavior requested by issue #101700.
+    </description>
+    <issue number="121218"/>
+</change>
+
 <change id="close_component_group">
     <api name="winsys"/>
     <summary>Changed behavior of TopComponent.close() and TopComponentGroup.close() for non persistent TopComponent</summary>

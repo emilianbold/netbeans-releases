@@ -54,3 +54,7 @@ apisupport.paintapp/PaintApp-suite/ColorChooser/release/modules/ext/ColorChooser
 
 # Build by NetBeans team
 ruby.platform/release/*.zip
+
+# Build by NetBeans team
+mobility.databindingme/lib/*
+

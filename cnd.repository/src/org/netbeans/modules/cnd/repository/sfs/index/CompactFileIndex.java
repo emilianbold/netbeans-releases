@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.repository.util.LongHashMap;
+import org.netbeans.modules.cnd.repository.util.SlicedLongHashMap;
 
 /**
  * LongHashMap based implementation of FileIndex
@@ -59,62 +60,12 @@ import org.netbeans.modules.cnd.repository.util.LongHashMap;
 public class CompactFileIndex implements FileIndex, SelfPersistent {
     private static final int shift = 37;
     private static final long mask = (1L<<shift)-1;
-    private static final int DEFAULT_INDEX_CAPACITY = 1024;
-    private static final int DEFAULT_SLICE_NUMBER = 29;
+    private static final int DEFAULT_SLICE_CAPACITY = 1024;
+    private static final int DEFAULT_SLICE_COUNT = 29;
 
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     
-    private final SlicedLongHashMap<Key> map = new SlicedLongHashMap<Key>(DEFAULT_SLICE_NUMBER);
-    
-    private static final class SlicedLongHashMap<K> {
-        private final LongHashMap<K>[] instances;
-        private int sliceNumber;
-        private SlicedLongHashMap(int sliceNumber){
-            this.sliceNumber = sliceNumber;
-            instances = new LongHashMap[sliceNumber];
-            for(int i = 0; i < sliceNumber; i++){
-                instances[i] = new LongHashMap<K>(DEFAULT_INDEX_CAPACITY);
-            }
-        }
-        private LongHashMap<K> getDelegate(K key){
-            int index = key.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
-            return instances[index];
-            
-        }
-        private long put(K key, long value){
-            return getDelegate(key).put(key, value);
-        }
-        private long get(K key){
-            return getDelegate(key).get(key);
-        }
-        private long remove(K key){
-            return getDelegate(key).remove(key);
-        }
-        private int size(){
-            int size = 0;
-            for(int i = 0; i < sliceNumber; i++){
-                size += instances[i].size();
-            }
-            return size;
-        }
-        private Collection<K> keySet() {
-            Collection<K> res = new ArrayList<K>(size());
-            for(int i = 0; i < sliceNumber; i++){
-                res.addAll(instances[i].keySet());
-            }
-            return res;
-        }
-        public Collection<LongHashMap.Entry<K>> entrySet() {
-            Collection<LongHashMap.Entry<K>> res = new ArrayList<LongHashMap.Entry<K>>(size());
-            for(int i = 0; i < sliceNumber; i++){
-                res.addAll(instances[i].entrySet());
-            }
-            return res;
-        }
-    }
+    private final SlicedLongHashMap<Key> map = new SlicedLongHashMap<Key>(DEFAULT_SLICE_COUNT, DEFAULT_SLICE_CAPACITY);
     
     public CompactFileIndex () {
     }

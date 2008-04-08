@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/101_rails20_migrations.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : Rails20Migrations
   class-ig : rails20migrations
@@ -17,17 +13,14 @@ Indexed:
   fqn : Rails20Migrations
   method : down|STATIC|
   method : up|STATIC|
-  source : <TESTURL>/101_rails20_migrations.rb
 
 Not Indexed:
   attrs : |CLASS|
 
 
 Document 2
-Delete:
 Indexed:
   dbtable : products
-  source : <TESTURL>/101_rails20_migrations.rb
 
 Not Indexed:
   dbcolumn : created_at;datetime

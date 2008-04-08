@@ -68,6 +68,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -86,6 +87,7 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffControllerImpl;
+import org.netbeans.editor.EditorUI;
 import org.openide.text.NbDocument;
 
 /**
@@ -96,6 +98,8 @@ import org.openide.text.NbDocument;
  */
 public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener, PreferenceChangeListener {
 
+    private static final int INITIAL_DIVIDER_SIZE = 32;
+    
     private Stroke boldStroke = new BasicStroke(3);
     
     // === Default Diff Colors ===========================================================
@@ -132,7 +136,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private int diffSerial;
     private Difference[] diffs = NO_DIFFERENCES;
    
-    private int ignoredUpdateEvents;
+    private boolean ignoredUpdateEvents;
     
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;
@@ -172,11 +176,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (!binaryDiff) {
             jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
         }
-        jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
+        jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
         spui = new DiffSplitPaneUI(jSplitPane1);
         jSplitPane1.setUI(spui);
         jSplitPane1.setResizeWeight(0.5);
-        jSplitPane1.setDividerSize(32);
+        jSplitPane1.setDividerSize(INITIAL_DIVIDER_SIZE);
         jSplitPane1.putClientProperty("PersistenceType", "Never"); // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
@@ -274,16 +278,20 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
-    public void setLocation(DiffController.DiffPane pane, DiffController.LocationType type, int location) {
-        if (type == DiffController.LocationType.DifferenceIndex) {
-            setDifferenceImpl(location);
-        } else {
-            if (pane == DiffController.DiffPane.Base) {
-                setBaseLineNumberImpl(location);
-            } else {
-                setModifiedLineNumberImpl(location);
+    public void setLocation(final DiffController.DiffPane pane, final DiffController.LocationType type, final int location) {
+        manager.runWithSmartScrollingDisabled(new Runnable() {
+            public void run() {
+                if (type == DiffController.LocationType.DifferenceIndex) {
+                    setDifferenceImpl(location);
+                } else {
+                    if (pane == DiffController.DiffPane.Base) {
+                        setBaseLineNumberImpl(location);
+                    } else {
+                        setModifiedLineNumberImpl(location);
+                    }
+                }
             }
-        }
+        });
     }
 
     private void setModifiedLineNumberImpl(int line) {
@@ -291,19 +299,25 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setBaseLineNumberImpl(int line) {
-        int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
-            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
-            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), line);
-
+            EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1.getEditorPane());
+            if (editorUI == null) return;
+            int lineHeight = editorUI.getLineHeight();
+    
+            int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 5;
+            int lineOffset = lineHeight * line - offset;
+    
+            double scrollFactor = manager.getScrollFactor();
+    
+            int off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
             jEditorPane1.getEditorPane().setCaretPosition(off1);
-            jEditorPane2.getEditorPane().setCaretPosition(off2);
-
+    
             JScrollBar leftScrollBar = jEditorPane1.getScrollPane().getVerticalScrollBar();
             JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
-            int value = leftScrollBar.getValue();
-            rightScrollBar.setValue((int) (value / manager.getScrollFactor()));
+    
+            leftScrollBar.setValue(lineOffset);
+            rightScrollBar.setValue((int) (lineOffset / scrollFactor));
             
             updateCurrentDifference();
         } catch (IndexOutOfBoundsException ex) {
@@ -318,8 +332,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             setDifferenceIndex(location);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ignoredUpdateEvents = 6;
+                    ignoredUpdateEvents = true;
                     showCurrentDifference();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            ignoredUpdateEvents = false;
+                        }
+                    });
                 }
             });
         }
@@ -551,8 +570,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
      */
     void updateCurrentDifference() {
         assert SwingUtilities.isEventDispatchThread();
-        if (ignoredUpdateEvents > 0) {
-            ignoredUpdateEvents--;
+        if (ignoredUpdateEvents) {
             return;
         }
         int cd = computeCurrentDifference();
@@ -917,6 +935,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);
+                        refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
                     }
@@ -949,6 +968,15 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
     
+    private void refreshDividerSize() {
+        Font font = jSplitPane1.getFont();
+        if (font == null) return;
+        FontMetrics fm = jSplitPane1.getFontMetrics(jSplitPane1.getFont());
+        String maxDiffNumber = Integer.toString(Math.max(1, diffs.length));
+        int neededWidth = fm.stringWidth(maxDiffNumber + " /" + maxDiffNumber);
+        jSplitPane1.setDividerSize(Math.max(neededWidth, INITIAL_DIVIDER_SIZE));
+    }
+
     synchronized int getDiffSerial() {
         return diffSerial;
     }
@@ -984,25 +1012,25 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
      */
     private class EditableDiffMarkProvider extends MarkProvider {
 
-        private List<DiffMark> marks;
+        private List<Mark> marks;
 
         public EditableDiffMarkProvider() {
             marks = getMarksForDifferences();
         }
 
-        public List getMarks() {
+        public List<Mark> getMarks() {
             return marks;
         }
 
         void refresh() {
-            List<DiffMark> oldMarks = marks;
+            List<Mark> oldMarks = marks;
             marks = getMarksForDifferences();
             firePropertyChange(PROP_MARKS, oldMarks, marks);
         }
 
-        private List<DiffMark> getMarksForDifferences() {
+        private List<Mark> getMarksForDifferences() {
             if (diffs == null) return Collections.emptyList();
-            List<DiffMark> marks = new ArrayList<DiffMark>(diffs.length);
+            List<Mark> marks = new ArrayList<Mark>(diffs.length);
             for (int i = 0; i < diffs.length; i++) {
                 Difference difference = diffs[i];
                 marks.add(new DiffMark(difference, getColor(difference)));

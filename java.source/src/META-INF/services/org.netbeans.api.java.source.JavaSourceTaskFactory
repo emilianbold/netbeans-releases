@@ -1,3 +1,2 @@
 org.netbeans.modules.java.source.tasklist.FirstParseCatcher
-org.netbeans.modules.java.IsMainResolver$FactoryImpl
-org.netbeans.modules.java.IsMainResolver$EditorBasedFactoryImpl
+org.netbeans.modules.java.source.tasklist.IncorrectErrorBadges$FactoryImpl

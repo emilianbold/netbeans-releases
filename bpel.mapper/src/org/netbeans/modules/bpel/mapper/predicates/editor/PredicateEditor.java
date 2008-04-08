@@ -37,6 +37,7 @@ import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -100,6 +101,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                 }
             }
         });
+        SoaUiUtil.activateInlineMnemonics(this);
     }
 
     @Override
@@ -155,8 +157,11 @@ public class PredicateEditor extends EditorLifeCycleAdapter
         // Look for the tree node
         TreeModel leftTreeModel = mMapperModel.getLeftTreeModel();
         assert leftTreeModel instanceof MapperSwingTreeModel;
-        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
-                findFirstNode(finderList);
+        TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                (MapperSwingTreeModel)leftTreeModel);
+        TreePath schemaContextPath = fProcessor.findFirstNode(finderList);
+//        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
+//                findFirstNode(finderList);
         //
         // Show context path
         if (schemaContextPath != null) {
@@ -209,21 +214,18 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                         }
                     }
                     //
-                    if (unconnectedGraphs > 0) {
-                        if (notEmptyGraphs.size() == unconnectedGraphs) {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
-                        } else {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
-                        }
+                    if (notEmptyGraphs.size() == unconnectedGraphs) {
+                        addReasonKey(Severity.ERROR,
+                                "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
+                    } else if (unconnectedGraphs > 0) {
+                        addReasonKey(Severity.WARNING,
+                                "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
                     }
                     if (incompleteGraphs > 0) {
                         addReasonKey(Severity.WARNING, 
                                 "WARN_THERE_ARE_INCOMPLETE_GRAPHS"); //NOI18N
                     }
                 }
-                
             };
         }
         return mValidator;
@@ -261,12 +263,12 @@ public class PredicateEditor extends EditorLifeCycleAdapter
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
-                    .add(pnlMenu, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
+                    .add(pnlMenu, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(lblContext)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fldContext, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                        .add(fldContext, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 808, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnGoToContext)))
                 .addContainerGap())
@@ -276,13 +278,21 @@ public class PredicateEditor extends EditorLifeCycleAdapter
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(pnlMenu, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                .add(pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblContext)
                     .add(btnGoToContext)
                     .add(fldContext, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        fldContext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSN_TXTFLD_SchemaContext")); // NOI18N
+        fldContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSD_TXTFLD_SchemaContext")); // NOI18N
+        btnGoToContext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSN_BTN_SetFocus")); // NOI18N
+        btnGoToContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSD_BTN_SetFocus")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSN_DLG_PredicateEditor")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSD_DLG_PredicateEditor")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

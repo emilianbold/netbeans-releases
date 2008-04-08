@@ -97,7 +97,9 @@ public abstract class CodeTemplateApiPackageAccessor {
         String abbreviation, 
         String description, 
         String parametrizedText,
-        List<String> contexts);
+        List<String> contexts,
+        String mimePath);
 
     public abstract String getSingleLineText(CodeTemplate codeTemplate);
+    public abstract String getCodeTemplateMimePath(CodeTemplate codeTemplate);
 }

@@ -21,10 +21,8 @@ package org.netbeans.modules.soa.ui.form.valid;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.soa.ui.SoaConstants;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
 import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
@@ -165,7 +163,7 @@ public class DefaultValidStateManager implements ValidStateManager {
         if (firstReason == null) {
             firstReason = getFistReason(Severity.WARNING);
         }
-        if (firstReason == null) {
+        if (firstReason != null) {
             String text = firstReason.getText();
             if (text.startsWith(HTML)) {
                 // cut out the <html> tag from the reason text if it present

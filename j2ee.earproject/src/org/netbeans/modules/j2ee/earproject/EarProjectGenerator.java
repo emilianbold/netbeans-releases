@@ -59,21 +59,21 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -87,6 +87,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -111,9 +113,11 @@ public final class EarProjectGenerator {
     private final String serverInstanceID;
     private final String sourceLevel;
     private final FileObject prjDirFO;
+    private String librariesDefinition;
+    private String serverLibraryName;
     
     private EarProjectGenerator(File prjDir, FileObject prjDirFO, String name, String j2eeLevel,
-            String serverInstanceID, String sourceLevel) {
+            String serverInstanceID, String sourceLevel, String librariesDefinition, String serverLibraryName) {
         this.prjDir = prjDir;
         this.prjDirFO = prjDirFO;
         this.name = name;
@@ -123,6 +127,8 @@ public final class EarProjectGenerator {
         if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
             sourceLevel = "1.5";       
         this.sourceLevel = sourceLevel;
+        this.librariesDefinition = librariesDefinition;
+        this.serverLibraryName = serverLibraryName;
     }
     
     /**
@@ -134,10 +140,10 @@ public final class EarProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(File prjDir, String name, String j2eeLevel,
-            String serverInstanceId, String sourceLevel) throws IOException {
+            String serverInstanceId, String sourceLevel, String librariesDefinition, String serverLibraryName) throws IOException {
         FileObject projectDir = FileUtil.createFolder(prjDir);
         final EarProjectGenerator earGen = new EarProjectGenerator(prjDir, projectDir, name, j2eeLevel,
-                serverInstanceId, sourceLevel);
+                serverInstanceId, sourceLevel, librariesDefinition, serverLibraryName);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         
         // create project in one FS atomic action:
@@ -152,11 +158,12 @@ public final class EarProjectGenerator {
     
     public static AntProjectHelper importProject(File pDir, final File sDir, String name,
             String j2eeLevel, String serverInstanceID, final String platformName,
-            String sourceLevel, final Map<FileObject, ModuleType> userModules)
+            String sourceLevel, final Map<FileObject, ModuleType> userModules,
+            String librariesDefinition, String serverLibraryName)
             throws IOException {
         FileObject projectDir = FileUtil.createFolder(pDir);
         final EarProjectGenerator earGen = new EarProjectGenerator(pDir, projectDir, name,
-                j2eeLevel, serverInstanceID, sourceLevel);
+                j2eeLevel, serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         
         // create project in one FS atomic action:
@@ -170,27 +177,51 @@ public final class EarProjectGenerator {
     }
     
     private AntProjectHelper doCreateProject() throws IOException {
-        AntProjectHelper h = setupProject();
+        final AntProjectHelper h = setupProject();
         FileObject docBase = FileUtil.createFolder(prjDirFO, DEFAULT_DOC_BASE_FOLDER);
         
         // create a default manifest
         FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
                 "org-netbeans-modules-j2ee-earproject/MANIFEST.MF"), docBase, "MANIFEST"); // NOI18N
         
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
-        ep.setProperty(EarProjectProperties.META_INF, DEFAULT_DOC_BASE_FOLDER);
-        ep.setProperty(EarProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
-        Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(p);
+        final EarProject p = (EarProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
+        final ReferenceHelper refHelper = p.getReferenceHelper();
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep.put(EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
+                    ep.setProperty(EarProjectProperties.META_INF, DEFAULT_DOC_BASE_FOLDER);
+                    ep.setProperty(EarProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+                    ProjectManager.getDefault().saveProject(p);
+                    copyRequiredLibraries(h, refHelper, serverInstanceID, serverLibraryName);
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            Exceptions.printStackTrace(ex.getException());
+        }
         EarProject earProject = p.getLookup().lookup(EarProject.class);
         assert earProject != null;
         setupDD(j2eeLevel, docBase, earProject);
         
         return h;
     }
+
+    private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh,
+            String serverInstanceId, String serverlibraryName) throws IOException {
+
+        if (!h.isSharableProject()) {
+            return;
+        }
+        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
+                h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
+
+            SharabilityUtility.createLibrary(
+                h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
+        }
+     }
     
     private AntProjectHelper doImportProject(final File srcPrjDir,
             Map<FileObject, ModuleType> userModules,
@@ -265,7 +296,7 @@ public final class EarProjectGenerator {
         if (userModules == null || userModules.isEmpty()) {
             userModules = ModuleType.detectModules(srcPrjDirFO);
         }
-        addUserModules(userModules, platformName, earHelper, earProject);
+        addUserModules(earProject, userModules, platformName, earHelper, earProject);
         
         // XXX all web module URI-to-ContextRoot mapping should happen here
         
@@ -279,19 +310,14 @@ public final class EarProjectGenerator {
         return earHelper;
     }
     
-    private void addUserModules(final Map<FileObject, ModuleType> userModules,
+    private void addUserModules(EarProject p, final Map<FileObject, ModuleType> userModules,
             final String platformName, final AntProjectHelper h, final EarProject earProject) throws IOException {
-        
-        AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
-        ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
-        EarProjectProperties epp = new EarProjectProperties(earProject, refHelper, new EarProjectType());
-        
         Set<Project> ejbs = new HashSet<Project>();
         Set<Project> webAndCars = new HashSet<Project>();
         for (Map.Entry<FileObject, ModuleType> entry : userModules.entrySet()) {
             FileObject subprojectDir = entry.getKey();
             ModuleType type = entry.getValue();
-            Project subProject = addModule(type, epp, platformName, subprojectDir);
+            Project subProject = addModule(p, type, platformName, subprojectDir);
             assert subProject != null : "Directory " + subprojectDir + " does not contain valid project";
             switch (type) {
                 case EJB:
@@ -336,7 +362,7 @@ public final class EarProjectGenerator {
         }
     }
     
-    private Project addModule(final ModuleType type, final EarProjectProperties epp,
+    private Project addModule(EarProject p, final ModuleType type, 
             final String platformName, final FileObject subprojectRoot)
             throws IllegalArgumentException, IOException {
         
@@ -362,7 +388,7 @@ public final class EarProjectGenerator {
         if (null != subProjHelper) {
             subProject = ProjectManager.getDefault().findProject(
                     subProjHelper.getProjectDirectory());
-            epp.addJ2eeSubprojects(new Project[] { subProject });
+            EarProjectProperties.addJ2eeSubprojects(p, new Project[] { subProject });
         }
         return subProject;
     }
@@ -433,7 +459,7 @@ public final class EarProjectGenerator {
      * @throws java.io.IOException if any error occurs.
      */
     public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
-            final Project earProject, boolean force) throws IOException {
+            final EarProject earProject, boolean force) throws IOException {
         FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
         if (dd != null) {
             return dd; // already created
@@ -470,9 +496,8 @@ public final class EarProjectGenerator {
             // API for retrieval of getJarContentAdditional() not present.
             EarProject defInst = earProject.getLookup().lookup(EarProject.class);
             if (defInst != null) {
-                EarProjectProperties epp = defInst.getProjectProperties();
-                for (VisualClassPathItem vcpi : epp.getJarContentAdditional()) {
-                    epp.addItemToAppDD(app, vcpi);
+                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(earProject)) {
+                    EarProjectProperties.addItemToAppDD(earProject, app, vcpi);
                 }
             }
             app.write(dd);
@@ -505,7 +530,8 @@ public final class EarProjectGenerator {
     }
     
     private AntProjectHelper setupProject() throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(prjDirFO, EarProjectType.TYPE);
+        AntProjectHelper h = ProjectGenerator.createProject(prjDirFO, EarProjectType.TYPE, librariesDefinition);
+        EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -539,6 +565,10 @@ public final class EarProjectGenerator {
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         
+        if (h.isSharableProject() && serverLibraryName != null) {
+            ep.setProperty(ProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
+        }
+        
         String srcLevel = sourceLevel;
         if (srcLevel == null) {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
@@ -566,31 +596,13 @@ public final class EarProjectGenerator {
                 EarProjectProperties.JAR_CONTENT_ADDITIONAL+"}:${"+ // NOI18N
                 EarProjectProperties.RUN_CLASSPATH+"}"); // NOI18N
         
-        J2eePlatform j2eePlatform = deployment.getJ2eePlatform(serverInstanceID);
-        EarProjectProperties.setACProperties(j2eePlatform, ep);
+        EditableProperties privateEP = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+
+        EarProjectProperties.storeJ2EEServerProperties(serverInstanceID, p, ep, privateEP, serverLibraryName);
+        
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(EarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-        
-        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
-        if (deployAntPropsFile != null) {
-            ep.setProperty(EarProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
-        }
-        
-        EarProjectProperties.setACPrivateProperties(j2eePlatform, serverInstanceID, ep);
-        
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-        Project p = ProjectManager.getDefault().findProject(prjDirFO);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);
         ProjectManager.getDefault().saveProject(p);
-        // ant deployment support
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(prjDir,
-                    EarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
-                    J2eeModule.EAR, serverInstanceID);
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
         return h;
     }
     

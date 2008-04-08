@@ -55,7 +55,12 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -75,12 +80,21 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[]{
         NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
+        NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "NewAppClientProjectWizardIterator.secondStep"), // NOI18N
         NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LAB_ConfigureSourceRoots") //NOI18N
     };
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ImportLocation(),
+            new ProjectImportLocationWizardPanel(J2eeModule.CLIENT, 
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_IW_ImportTitle"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_ImportAppClientModule"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_JavaApplication"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_IW_LocationSrcDesc")),
+            new ProjectServerWizardPanel(J2eeModule.CLIENT, 
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "NewAppClientProjectWizardIterator.secondStep"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_ImportAppClientModule"),
+                    true, true, false, false, true, false),
             new PanelSourceFolders.Panel()
         };
     }
@@ -95,25 +109,32 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         handle.progress(NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LBL_NewAppClientProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
+        String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
 //        File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         File[] sourceFolders = (File[]) wiz.getProperty(WizardProperties.JAVA_ROOT);
         File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
         File configFilesFolder = (File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
         File libName = (File) wiz.getProperty(WizardProperties.LIB_FOLDER);
-        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
+        String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
+        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         
-        AntProjectHelper h = AppClientProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
+        String librariesDefinition =
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
+        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
+        
+        AntProjectHelper h = AppClientProjectGenerator.importProject(dirF, name,
+                sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel,
+                serverInstanceID, librariesDefinition, serverLibraryName);
+        
         handle.progress(2);
         
         FileObject dir = FileUtil.toFileObject (dirF);
 
-        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        Project earProject = (Project) wiz.getProperty(ProjectServerWizardPanel.EAR_APPLICATION);
         AppClientProject createdAppClientProject = (AppClientProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdAppClientProject != null) {
             Ear ear = Ear.getEar(earProject.getProjectDirectory());
@@ -130,11 +151,11 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         }
         
         // remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4
-        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
-        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
+        String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL);
         if (platformName != null || sourceLevel != null) {
             AppClientProjectGenerator.setPlatform(h, platformName, sourceLevel);
         }
@@ -156,15 +177,15 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(WizardProperties.PROJECT_DIR, null);
-        this.wiz.putProperty(WizardProperties.NAME, null);
-        this.wiz.putProperty (WizardProperties.SOURCE_ROOT, null);
+        this.wiz.putProperty(ProjectLocationWizardPanel.PROJECT_DIR, null);
+        this.wiz.putProperty(ProjectLocationWizardPanel.NAME, null);
+        this.wiz.putProperty(WizardProperties.SOURCE_ROOT, null);
         this.wiz.putProperty(WizardProperties.JAVA_ROOT, null);
         this.wiz.putProperty(WizardProperties.TEST_ROOT, null);
         this.wiz.putProperty(WizardProperties.CONFIG_FILES_FOLDER, null);
         this.wiz.putProperty(WizardProperties.LIB_FOLDER, null);
-        this.wiz.putProperty(WizardProperties.SERVER_INSTANCE_ID, null);
-        this.wiz.putProperty(WizardProperties.J2EE_LEVEL, null);
+        this.wiz.putProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID, null);
+        this.wiz.putProperty(ProjectServerWizardPanel.J2EE_LEVEL, null);
         this.wiz = null;
         panels = null;
     }

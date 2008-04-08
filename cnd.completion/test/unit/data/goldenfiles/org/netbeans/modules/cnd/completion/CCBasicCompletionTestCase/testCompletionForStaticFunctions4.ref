@@ -1,0 +1,11 @@
+A
+B
+C
+bar5() double
+funcion4() double
+function1() void
+function2(double d, int i) int
+function3() int
+globInt int
+globFoo() void
+main(int argc, char** argv) int

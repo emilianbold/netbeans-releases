@@ -289,15 +289,17 @@ public class DocumentFinder
         if (finder == null){
             return blocks;
         }
-        finder.reset();
-        finder.setBlocks(blocks);
         CharSequence cs = DocumentUtilities.getText(doc, startOffset, endOffset - startOffset);
         if (cs==null){
             return null;
         }
-        finder.find(startOffset, cs);
-        int ret [] = finder.getBlocks();
-        return ret;
+        synchronized (finder) {
+            finder.reset();
+            finder.setBlocks(blocks);
+            finder.find(startOffset, cs);
+            int ret [] = finder.getBlocks();
+            return ret;
+        }
     }
     
     /**

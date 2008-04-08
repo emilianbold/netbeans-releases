@@ -91,8 +91,8 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
  */
 public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
 {
-   private static final Logger LOG = 
-                Logger.getLogger("org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl");
+   private static final Logger logger = 
+                Logger.getLogger("uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl");
    private HashMap < String, Integer > m_SortMap = new HashMap < String, Integer >();
    //private HashMap m_SortMap = new HashMap();
    private IPropertyDefinitionFactory m_DefFactory = null;
@@ -1614,7 +1614,7 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
                   if(getNodeFactory() != null)
                   {
                      diagName = diagrams.get(index).getNameWithAlias();
-                     LOG.info("*** retrieveDiagramsForElement: diagramNameWithAlias = "+ diagName);
+                     logger.fine("*** retrieveDiagramsForElement: diagramNameWithAlias = "+ diagName);
                      ITreeDiagram newItem = getNodeFactory().createDiagramNode(diagrams.get(index));
                      newItem.setDisplayedName(diagName);
                      // cvc - CR#6265213   

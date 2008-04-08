@@ -213,11 +213,10 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         portField.setEditable(false);
         //portField.setEnabled(false);
         hostField.setEditable(false);
-        String getLocal=targetData.getIsLocal();
-        if(getLocal!=null)
-            serverTypeCombo.setSelectedItem(getLocal.equals("true")?
-                NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeLocal"):
-                NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeRemote"));
+        
+        serverTypeCombo.setSelectedItem(targetData.isLocal() ?
+            NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeLocal"):
+            NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeRemote"));
         
         //setName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TITLE_AddUserDefinedLocalServerPanel"));
         

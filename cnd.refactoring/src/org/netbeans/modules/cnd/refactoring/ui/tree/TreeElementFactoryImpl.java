@@ -49,11 +49,14 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.refactoring.support.CsmObjectBoxFactory;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ElementGrip;
+import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * factory of tree elements for C/C++ refactorings
@@ -74,8 +77,9 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
             return result;
         }
         if (o instanceof RefactoringElement) {
-            CsmOffsetable csmObject = ((RefactoringElement) o).getLookup().lookup(CsmOffsetable.class);
-            if (csmObject!=null) {
+            Lookup lkp = ((RefactoringElement) o).getLookup();
+            CsmOffsetable csmObject = lkp.lookup(CsmOffsetable.class);
+            if (csmObject != null) {
                 result = new RefactoringTreeElement((RefactoringElement) o);
             } else {
                 CsmObject obj = ((RefactoringElement) o).getLookup().lookup(CsmObject.class);
@@ -83,6 +87,8 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
                     System.err.println("unhandled CsmObject: " + obj);
                 }
             }
+        } else if (o instanceof ElementGrip) {
+            result = new ElementGripTreeElement((ElementGrip)o);
         } else if (CsmKindUtilities.isProject(o)) {
             result = new ProjectTreeElement((CsmProject)o);
         } else if (CsmKindUtilities.isCsmObject(o)) {
@@ -93,6 +99,10 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
             } else {
                 result = new ParentTreeElement(csm);
             }
+        } else if (o instanceof FileObject) {
+            FileObject fo = (FileObject)o;
+            CsmFile csmFile = CsmUtilities.getCsmFile(fo, false);
+            result = new FileTreeElement(fo, csmFile);
         }
         if (result != null) {
             map.put(o, result);
@@ -102,6 +112,6 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
 
     public void cleanUp() {
         map.clear();
-        CsmObjectBoxFactory.getDefault().cleanUp();
+        ElementGripFactory.getDefault().cleanUp();
     }
 }

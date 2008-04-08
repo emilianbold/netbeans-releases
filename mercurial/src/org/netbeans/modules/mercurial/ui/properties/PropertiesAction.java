@@ -78,7 +78,7 @@ public class PropertiesAction extends ContextAction {
 
         final PropertiesTable propTable;
 
-        propTable = new PropertiesTable(PropertiesTable.PROPERTIES_COLUMNS);
+        propTable = new PropertiesTable(panel.labelForTable, PropertiesTable.PROPERTIES_COLUMNS);
 
         panel.setPropertiesTable(propTable);
 
@@ -104,9 +104,11 @@ public class PropertiesAction extends ContextAction {
         panel.putClientProperty("contentTitle", null);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSD_Properties_Dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
         if (dd.getValue() == okButton) {
+            hgProperties.updateLastSelection();
             hgProperties.setProperties();
         }
     }

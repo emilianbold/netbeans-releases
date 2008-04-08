@@ -50,16 +50,21 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -641,7 +646,25 @@ public class PlatformImpl extends J2eePlatformImpl {
     }
     
     public JavaPlatform getJavaPlatform() {
-        // TODO
+        if (dmProps.getSunDeploymentManager().isLocal()) {
+            Asenv envData = new Asenv(root);
+            FileObject currHome = FileUtil.toFileObject(new File(envData.get(Asenv.AS_JAVA)));
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+
+            if (currHome != null) {
+                JavaPlatform[] installedPlatforms = jpm.getPlatforms(null, new Specification("J2SE", null)); // NOI18N
+                for (int i = 0; i < installedPlatforms.length; i++) {
+                    JavaPlatform platform = installedPlatforms[i];
+                    Iterator itr = platform.getInstallFolders().iterator();
+                    while (itr.hasNext()) {
+                        FileObject propName = (FileObject) itr.next();
+                        if (propName.equals(currHome)) {
+                            return platform;
+                        }
+                    }
+                }
+            }
+        }
         return null;
     }
     
@@ -681,6 +704,31 @@ public class PlatformImpl extends J2eePlatformImpl {
                 sb.append(" -Dorg.xml.sax.driver=com.sun.org.apache.xerces.internal.parsers.SAXParser"); // NOI18N
                 sb.append(" -Djava.util.logging.manager=com.sun.enterprise.server.logging.ACCLogManager"); // NOI18N
                 return sb.toString();
+            }
+            if (J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION.equals(propertyName)) {
+                File exFile = new File(root, "lib/javaee.jar"); // NOI18N
+                FileObject location = FileUtil.toFileObject(FileUtil.normalizeFile(new File(dmProps.getLocation())));
+                if (location == null) {
+                    return null;
+                }
+                FileObject domain = location.getFileObject(
+                        dmProps.getInstanceProperties().getProperty(DeploymentManagerProperties.DOMAIN_ATTR));
+                if (domain == null) {
+                    return null;
+                }
+
+                if (exFile.exists()) {
+                    FileObject copyLocation = domain.getFileObject("generated/xml/j2ee-modules"); // NOI18N
+                    if (copyLocation != null) {
+                        return FileUtil.toFile(copyLocation).getAbsolutePath();
+                    }
+                } else {
+                    FileObject copyLocation = domain.getFileObject("applications/j2ee-modules"); // NOI18N
+                    if (copyLocation != null) {
+                        return FileUtil.toFile(copyLocation).getAbsolutePath();
+                    }
+                }
+                return null;
             }
             if ("j2ee.appclient.args".equals(propertyName)) { // NOI18N
                 return "-configxml " + quotedString(new File(dmProps.getLocation(), dmProps.getDomainName() + "/config/sun-acc.xml").getAbsolutePath()); // NOI18N

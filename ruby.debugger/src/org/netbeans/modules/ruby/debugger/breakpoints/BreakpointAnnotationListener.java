@@ -49,11 +49,9 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.ruby.debugger.DebuggerAnnotation;
+import org.netbeans.modules.ruby.debugger.DebuggerBreakpointAnnotation;
 import org.openide.text.Annotation;
 
-/**
- * @author Martin Krauskopf
- */
 public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
         implements PropertyChangeListener {
     
@@ -87,9 +85,9 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
     }
     
     private void addAnnotation(final Breakpoint b) {
-        Annotation debugAnnotation = new DebuggerAnnotation(
-                b.isEnabled() ? DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
-                ((RubyBreakpoint) b).getLine());
+        Annotation debugAnnotation = new DebuggerBreakpointAnnotation(
+                b.isEnabled() ? DebuggerBreakpointAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerBreakpointAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
+                ((RubyBreakpoint) b).getLine(), b);
         breakpointToAnnotation.put(b, debugAnnotation);
         b.addPropertyChangeListener(this);
     }

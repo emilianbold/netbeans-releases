@@ -63,8 +63,7 @@ public class WatchesTreeModel implements TreeModel, Constants {
             final ContextProvider contextProvider) {
         
         myContextProvider = contextProvider;
-        myDebugger = (BpelDebugger) 
-                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myHelper = new Util(myDebugger);
     }
     
@@ -95,13 +94,15 @@ public class WatchesTreeModel implements TreeModel, Constants {
                 return new Object[0];
             }
             
-            // If the watched expression is a variable, handle in a special
-            // way.
-            if (bpelWatch.getExpression().startsWith("$")) {
-                return myHelper.getChildren(bpelWatch.getExpression());
+            // If we did not get the value in an ordinary way, it could be 
+            // a variable expression. Check if it starts with a "$", 
+            // prepend if it not and try to fetch the value
+            String expression = bpelWatch.getExpression();
+            if (!expression.startsWith("$")) {
+                expression = "$" + expression;
             }
             
-            return new Object[0];
+            return myHelper.getChildren(expression);
         }
         
         if (object instanceof NamedValueHost) {
@@ -138,13 +139,12 @@ public class WatchesTreeModel implements TreeModel, Constants {
                 return 0;
             }
             
-            // If the watched expression is a variable, handle in a special
-            // way.
-            if (bpelWatch.getExpression().startsWith("$")) {
-                return myHelper.getChildren(bpelWatch.getExpression()).length;
+            String expression = bpelWatch.getExpression();
+            if (!expression.startsWith("$")) {
+                expression = "$" + expression;
             }
             
-            return 0;
+            return myHelper.getChildren(expression).length;
         }
         
         if (object instanceof NamedValueHost) {

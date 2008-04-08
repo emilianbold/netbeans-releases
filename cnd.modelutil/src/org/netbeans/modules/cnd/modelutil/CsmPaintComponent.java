@@ -1057,6 +1057,18 @@ public abstract class CsmPaintComponent extends JPanel {
             return buf.toString();            
         }        
     }
+
+    public static class FileLocalFunctionPaintComponent extends MethodPaintComponent {
+        private Color FUN_COLOR = Color.red.darker().darker();
+        
+        public FileLocalFunctionPaintComponent(){
+            super();
+        }
+        
+        public Color getNameColor() {
+            return FUN_COLOR;
+        }
+    }
     
     public static class GlobalFunctionPaintComponent extends MethodPaintComponent {
         private Color FUN_COLOR = Color.red.darker().darker();

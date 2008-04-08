@@ -145,15 +145,6 @@ public class JspEditorWarmUpTask implements Runnable{
     public void run() {
         switch (status) {
             case STATUS_INIT:
-                //preinit Schlieman languages - fix of issue #120442 - 20 sec delay when samples jsps are edited
-                //the jsp warmuptask is run just if the ide is run and a web project is opened - so not run after 
-                //ide start with new userdir.
-                //Typically the user opens the ide for the first time, then opens or creates a web 
-                //project and edits some files.
-                 Language.find("text/x-css");
-                 Language.find("text/x-css-inlined");
-                 Language.find("text/javascript");
-                
                 //test whether a WebProject is opened
                 if(!isWebProjectOpened()) return ;
         

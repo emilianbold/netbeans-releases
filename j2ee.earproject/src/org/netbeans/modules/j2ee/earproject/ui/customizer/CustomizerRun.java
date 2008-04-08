@@ -43,28 +43,28 @@ package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 1L;
-    
-    // Helper for storing properties
-    private final VisualPropertySupport vps;
-    // VisualPropertySupport currently does not support more combo boxes when
-    // item values differ from their display texts - see #53893
-    private final VisualPropertySupport vps1;
-    //private VisualArchiveIncludesSupport vws;
-//    private final ProjectEar wm;
     
     private String[] serverInstanceIDs;
     private String[] serverNames;
@@ -72,34 +72,25 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
     /** Whether this panel was already initialized. */
     private boolean initialized;
     
-    private final EarProjectProperties earProperties;
+    private final EarProjectProperties uiProperties;
     
-    public CustomizerRun(final EarProjectProperties earProperties/*, final ProjectEar wm*/) {
-        this.earProperties = earProperties;
+    public CustomizerRun(EarProjectProperties earProperties) {
+        this.uiProperties = earProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_A11YDesc")); // NOI18N
-//        vws = new VisualArchiveIncludesSupport( earProperties.getProject(),
-//        this.wm = wm;
-        vps = new VisualPropertySupport(earProperties);
-        vps1 = new VisualPropertySupport(earProperties);
         clientModuleUriCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateEnabled();
             }
         });
-        updateEnabled();
-        String j2eeVersion = earProperties.getProject().getJ2eePlatformVersion();
-        if (J2eeModule.JAVA_EE_5.equals(j2eeVersion)) {
-            jTextFieldVersion.setText(EarProjectProperties.JAVA_EE_SPEC_50_LABEL);
-        } else if (J2eeModule.J2EE_14.equals(j2eeVersion)) {
-            jTextFieldVersion.setText(EarProjectProperties.J2EE_SPEC_14_LABEL);
-        }
         initValues();
+        updateEnabled();
     }
     
     private boolean isWebModuleSelected() {
-        return earProperties.isWebUri((String) clientModuleUriCombo.getSelectedItem());
+        return clientModuleUriCombo.getSelectedItem() == null ||
+                !((ClientModuleItem)clientModuleUriCombo.getSelectedItem()).appClient;
     }
     
     private void updateEnabled() {
@@ -120,39 +111,20 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         if (initialized) {
             return;
         }
-        initServerInstances();
-        
-        vps.register(jCheckBoxDisplayBrowser, EarProjectProperties.DISPLAY_BROWSER);
-        vps.register(jTextFieldRelativeURL, EarProjectProperties.LAUNCH_URL_RELATIVE);
-        vps.register(jComboBoxServer, serverNames, serverInstanceIDs, EarProjectProperties.J2EE_SERVER_INSTANCE);
-        
-        vps.register(jTextMainClass, EarProjectProperties.APPCLIENT_MAIN_CLASS);
-        vps.register(jTextArgs, EarProjectProperties.APPCLIENT_ARGS);
-        vps.register(jTextVMOptions, EarProjectProperties.APPCLIENT_JVM_OPTIONS);
-        
-//        EarProjectProperties.PropertyDescriptor.Saver contextPathSaver = new EarProjectProperties.PropertyDescriptor.Saver() {
-//            public void save(WebProjectProperties.PropertyInfo propertyInfo) {
-//                final String serverInstId = (String) earProperties.get(EarProjectProperties.J2EE_SERVER_INSTANCE);
-//                final String path = (String) propertyInfo.getValue();
-//                final String oldValue = (String) propertyInfo.getOldValue();
-//                if(path != null && !path.equals(oldValue)) {
-//                    wm.setContextPath(serverInstId, path);
-//                }
-//            }
-//        };
-//        if (earProperties.get(EarProjectProperties.CLIENT_MODULE_URI) == null) {
-//            EarProjectProperties.PropertyDescriptor propertyDescriptor = new EarProjectProperties.PropertyDescriptor(
-//                    EarProjectProperties.CLIENT_MODULE_URI, null, EarProjectProperties.STRING_PARSER, contextPathSaver);
-//            final String contextPath = wm.getContextPath();
-//            EarProjectProperties.PropertyInfo propertyInfo =
-//                    earProperties.new PropertyInfo(propertyDescriptor, contextPath, contextPath);
-//            earProperties.initProperty(WebProjectProperties.CLIENT_MODULE_URI, propertyInfo);
-//        }
-        
-        String[] displayUris = getDisplayUris();
-        vps1.register(clientModuleUriCombo, displayUris, getUris(displayUris),
-                EarProjectProperties.CLIENT_MODULE_URI);
-        
+        jTextFieldRelativeURL.setDocument( uiProperties.LAUNCH_URL_RELATIVE_MODEL );
+        jCheckBoxDisplayBrowser.setModel( uiProperties.DISPLAY_BROWSER_MODEL ); 
+        jComboBoxServer.setModel( uiProperties.J2EE_SERVER_INSTANCE_MODEL );
+        jTextMainClass.setDocument(uiProperties.MAIN_CLASS_MODEL);
+        jTextArgs.setDocument(uiProperties.ARUGMENTS_MODEL);
+        jTextVMOptions.setDocument(uiProperties.VM_OPTIONS_MODEL);
+        clientModuleUriCombo.setModel(uiProperties.CLIENT_MODULE_MODEL);
+
+        String j2eeVersion = uiProperties.getProject().getJ2eePlatformVersion();
+        if (J2eeModule.JAVA_EE_5.equals(j2eeVersion)) {
+            jTextFieldVersion.setText(EarProjectProperties.JAVA_EE_SPEC_50_LABEL);
+        } else if (J2eeModule.J2EE_14.equals(j2eeVersion)) {
+            jTextFieldVersion.setText(EarProjectProperties.J2EE_SPEC_14_LABEL);
+        }
         handleWebModuleRelated();
         initialized = true;
     }
@@ -166,32 +138,6 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelContextPathDesc.setEnabled(isWebUri);
         jLabelRelativeURL.setEnabled(isWebUri);
         jTextFieldRelativeURL.setEnabled(isWebUri);
-    }
-    
-    private String[] getDisplayUris() {
-        Collection<String> uris = new LinkedHashSet<String>();
-        uris.addAll(Arrays.asList(earProperties.getWebUris()));
-        uris.addAll(Arrays.asList(earProperties.getAppClientUris()));
-        return uris.toArray(new String[uris.size()]);
-    }
-    
-    private String[] getUris(final String[] displayUris) {
-        String appClient = (String) earProperties.get(earProperties.APPLICATION_CLIENT);
-        String[] uris = new String[displayUris.length];
-        for (int i = 0; i < uris.length; i++) {
-            if (earProperties.isWebUri(displayUris[i])) {
-                uris[i] = displayUris[i];
-            } else if (earProperties.isAppClientUri(displayUris[i])) {
-                if (displayUris[i].equals(appClient)) {
-                    uris[i] = earProperties.getClientModuleUriForAppClient();
-                } else {
-                    uris[i] = displayUris[i];
-                }
-            } else {
-                assert false : "Nor web module neither application client: " + displayUris[i]; // NOI18N
-            }
-        }
-        return uris;
     }
     
     private int getLongestVersionLength() {
@@ -438,23 +384,166 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         return new HelpCtx(CustomizerRun.class);
     }
     
-    private void initServerInstances() {
-        String j2eeSpec = (String)earProperties.get(EarProjectProperties.J2EE_PLATFORM);
-        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
-        Deployment deployment = Deployment.getDefault();
-        Map<String, String> servers = new TreeMap<String, String>();
-        for (int i = 0; i < servInstIDs.length; i++) {
-            String instanceID = servInstIDs[i];
-            J2eePlatform j2eePlat = deployment.getJ2eePlatform(instanceID);
-            String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
-            if (servInstDisplayName != null
-                    && j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EAR)
-                    && j2eePlat.getSupportedSpecVersions(J2eeModule.EAR).contains(j2eeSpec)) {
-                servers.put(servInstDisplayName, instanceID);
+    public static ApplicationUrisComboBoxModel createApplicationUrisComboBoxModel(EarProject project) {
+        return new ApplicationUrisComboBoxModel(project);
+    }
+    
+    public static final class ApplicationUrisComboBoxModel extends AbstractListModel implements ComboBoxModel {
+        
+        private List<ClientModuleItem> values;
+        private EarProject project;
+        private ClientModuleItem selected;
+        
+        public ApplicationUrisComboBoxModel(EarProject project) {
+            this.project = project;
+            initValues(EarProjectProperties.getJarContentAdditional(project));
+        }
+        
+        public Object getElementAt(int index) {
+            return values.get(index);
+        }
+
+        private boolean setSelectedItem(String clientModuleURI, String appClient) {
+            if (clientModuleURI != null && values.contains(new ClientModuleItem(clientModuleURI, false))) {
+                setSelectedItem(new ClientModuleItem(clientModuleURI, false));
+                return true;
+            } else if (appClient != null && values.contains(new ClientModuleItem(appClient, true))) {
+                setSelectedItem(new ClientModuleItem(appClient, true));
+                return true;
+            }
+            return false;
+        }
+        
+        public void storeSelectedItem(EditableProperties ep) {
+            ClientModuleItem sel = (ClientModuleItem)getSelectedItem();
+            if (sel == null) {
+                ep.remove(EarProjectProperties.APPLICATION_CLIENT);
+                ep.remove(EarProjectProperties.CLIENT_MODULE_URI);
+            } else if (sel.isAppClient()) {
+                ep.setProperty(EarProjectProperties.APPLICATION_CLIENT, sel.getUri());
+                ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, getClientModuleUriForAppClient(project));
+            } else {
+                ep.remove(EarProjectProperties.APPLICATION_CLIENT);
+                ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, sel.getUri());
             }
         }
-        serverInstanceIDs = servers.values().toArray(new String[servers.size()]);
-        serverNames = servers.keySet().toArray(new String[servers.size()]);
-    }
+        
+        public int getSize() {
+            return values.size();
+        }
+        
+        public Object getSelectedItem() {
+            return selected;
+        }
+        
+        public void setSelectedItem(Object obj) {
+            selected = (ClientModuleItem)obj;
+        }
+        
+        void refresh(List<ClassPathSupport.Item> list) {
+            initValues(list);
+            fireContentsChanged(this, 0, values.size());
+        }
+        
+        private void initValues(List<ClassPathSupport.Item> list) {
+            Set<ClientModuleItem> items = new TreeSet<ClientModuleItem>();
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.WAR)) {
+                items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), false));
+            }
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.CLIENT)) {
+                items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), true));
+            }
+            values = new ArrayList<ClientModuleItem>(items);
+            EditableProperties ep = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String clientModuleURI = ep.getProperty(EarProjectProperties.CLIENT_MODULE_URI);
+            String appClient = ep.getProperty(EarProjectProperties.APPLICATION_CLIENT);
+            if (!setSelectedItem(clientModuleURI, appClient)) {
+                setSelectedItem(values.size() > 0 ? values.get(0) : null);
+            }
+        }
 
+        private static String getClientModuleUriForAppClient(EarProject project) {
+            String name = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.JAR_NAME);
+            if (name.endsWith(".ear")) { // NOI18N
+                name = name.substring(0, name.length() - 4);
+            }
+            return name + "/${" + EarProjectProperties.APPLICATION_CLIENT + '}'; // NOI18N
+        }
+        
+        public static void moduleWasRemove(Project removedProject, EditableProperties props) {
+            String name = ProjectUtils.getInformation(removedProject).getName();
+            if (name.equals(props.getProperty(EarProjectProperties.APPLICATION_CLIENT)) ||
+                name.equals(props.getProperty(EarProjectProperties.CLIENT_MODULE_URI))) {
+                props.remove(EarProjectProperties.APPLICATION_CLIENT);
+                props.remove(EarProjectProperties.CLIENT_MODULE_URI);
+            }
+        }
+        
+        public static void initializeProperties(final EarProject project, final String warName, final String carName) {
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    try {
+                        EditableProperties ep = project.getUpdateHelper().getProperties(
+                                AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        if (warName != null) {
+                            ep.remove(EarProjectProperties.APPLICATION_CLIENT);
+                            ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, warName);
+                        } else if (carName != null) {
+                            ep.setProperty(EarProjectProperties.APPLICATION_CLIENT, carName);
+                            ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, getClientModuleUriForAppClient(project));
+                        }
+                        project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            });
+        }
+        
+     }
+    
+    public static final class ClientModuleItem implements Comparable {
+        private String uri;
+        private boolean appClient;
+
+        public ClientModuleItem(String uri, boolean appClient) {
+            assert uri != null;
+            this.uri = uri;
+            this.appClient = appClient;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public boolean isAppClient() {
+            return appClient;
+        }
+        
+        @Override
+        public String toString() {
+            return uri;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            return uri.equals(((ClientModuleItem)obj).uri);
+        }
+
+        @Override
+        public int hashCode() {
+            return uri.hashCode();
+        }
+
+        public int compareTo(Object obj) {
+            return uri.compareTo(((ClientModuleItem)obj).uri);
+        }
+
+    }
 }

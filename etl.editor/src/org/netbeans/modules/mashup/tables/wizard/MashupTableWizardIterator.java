@@ -244,7 +244,7 @@ public final class MashupTableWizardIterator implements WizardDescriptor.Iterato
         }
     }
 
-    public static void setProjectInfo(String name,String prjInfo, boolean value) {
+    public static void setProjectInfo(String name,String prjInfo, boolean value) {        
         IS_PROJECT_CALL = value;
         ETLEditorSupport.PRJ_NAME = name;
         ETLEditorSupport.PRJ_PATH = DBExplorerUtil.unifyPath(prjInfo);

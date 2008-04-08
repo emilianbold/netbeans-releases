@@ -80,8 +80,9 @@ import org.openide.windows.TopComponent;
  */
 
 public class TestUtils {
+
     public static final String KEY_STRING_AFTER_PRJ_NAME_J2EE = "src",
-            KEY_STRING_AFTER_PRJ_NAME_JSF  = "web";
+                               KEY_STRING_AFTER_PRJ_NAME_JSF  = "web";
     private static final String SAVE_DIALOG_TITLE = "Save";
     private static final String SAVE_ALL = "Save All";
     //public static final String SAVE_ALL = Bundle.getStringTrimmed("com.sun.rave.project.actions.Bundle", "LBL_SaveAllAction");
@@ -92,6 +93,8 @@ public class TestUtils {
     private static String fSep = System.getProperty("file.separator");
     
     private static String pathLastCreatedProject;
+
+    private static final String LBL_VWJSF = "Visual Web JavaServer Faces";
     
     /** Create new Project with given name
      *   @param projectName - Project's name
@@ -244,7 +247,7 @@ public class TestUtils {
      */
     public static String createJavaEE5ProjectLoc(String location, String projectName,
             boolean absoluteLocation, String projectCategory, String projectType) {
-        projectName = createNewProject(location, projectName, absoluteLocation, projectCategory, projectType, null,"Java EE 5");
+        projectName = createNewProject(location, projectName, absoluteLocation, projectCategory, projectType, null, "Java EE 5");
         return projectName;
     }
     
@@ -340,17 +343,17 @@ public class TestUtils {
         po.next();
         wait(2000);
         if (projectName != null) {
-            new JTextFieldOperator(po).setText(projectName);
+            new JTextFieldOperator(po).typeText(projectName);
         } else {
             projectName = new JTextFieldOperator(po).getText();
         }
         if (location != null) {
             if (!absoluteLocation){
-                location=new JTextFieldOperator(po, 1).getText() + "/" + location;
+                location=new JTextFieldOperator(po, 2).getText() + "/" + location;
             }
-            new JTextFieldOperator(po,1).setText(location);
+            new JTextFieldOperator(po,2).setText(location);
         } else {
-            location = new JTextFieldOperator(po, 1).getText();
+            location = new JTextFieldOperator(po, 2).getText();
         }
         pathLastCreatedProject = location;
         
@@ -358,26 +361,27 @@ public class TestUtils {
         //if (sourceStructure!=null) {
         //   new JComboBoxOperator(po, 0).selectItem(sourceStructure);
         //}
-        
-        wait(1000);
+
+        po.next();
+        wait(2000);
         //Setting Server
         if (server != null) {
-            new JComboBoxOperator(po, 1).selectItem(server);
+            new JComboBoxOperator(po, 0).selectItem(server);
         }
         
         wait(1000);
         //Setting level of J2EE
-        if (J2EELevel!=null) {
-            new JComboBoxOperator(po, 2).selectItem(J2EELevel);
+        if (J2EELevel != null) {
+            new JComboBoxOperator(po, 1).selectItem(J2EELevel);
         }
         wait(1000);
         if (new JButtonOperator(po, "Next").isEnabled()) {
             po.next();
             wait(1000);
-            //TODO clicked on Down button and then Brake Space pressed to select needed checkbox
-            po.pushKey(KeyEvent.VK_DOWN);
-            wait(2000);
-            po.pushKey(KeyEvent.VK_SPACE);
+            //Setting "Visual Web JavaServer Faces" framework
+            JTableOperator tlbFrameworks = new JTableOperator(po);
+            Point VWcell = tlbFrameworks.findCell(LBL_VWJSF, 1);
+            tlbFrameworks.selectCell(VWcell.y, VWcell.x);
             wait(2000);
         }
         po.finish();

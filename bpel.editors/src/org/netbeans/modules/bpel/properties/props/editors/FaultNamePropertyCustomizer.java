@@ -52,6 +52,7 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -69,6 +70,7 @@ import org.openide.util.actions.NodeAction;
 public class FaultNamePropertyCustomizer extends ValidablePropertyCustomizer
         implements CustomNodeChooser<QName>, PropertyChangeListener {
     
+    private static final long serialVersionUID = 1L;
     private Timer inputDelayTimer;
     private QName myFaultName;
     
@@ -179,7 +181,7 @@ public class FaultNamePropertyCustomizer extends ValidablePropertyCustomizer
             public void actionPerformed(ActionEvent e) {
                 Lookup lookup = getLookup();
                 //
-                BpelModel model = (BpelModel)lookup.lookup(BpelModel.class);
+                BpelModel model = lookup.lookup(BpelModel.class);
                 Process process = model.getProcess();
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
@@ -218,7 +220,7 @@ public class FaultNamePropertyCustomizer extends ValidablePropertyCustomizer
         FaultNameChooserPanel chooserPanel = getChooserPanel();
         Util.attachDefaultDblClickAction(chooserPanel, chooserPanel);
         //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
         //
         HelpCtx.setHelpIDString(this, this.getClass().getName());
     }

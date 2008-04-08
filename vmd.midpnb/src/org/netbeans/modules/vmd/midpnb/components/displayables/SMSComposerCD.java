@@ -75,6 +75,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorPhoneNumber;
 import org.netbeans.modules.vmd.midpnb.screen.display.SMSComposerDisplayPresenter;
 import org.openide.util.NbBundle;
 
@@ -134,8 +135,8 @@ public final class SMSComposerCD extends ComponentDescriptor {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(CATEGORIES_SMS) 
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumber"), //NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(SMSComposerCD.class,
-                            "LBL_SMSComposer_PhoneNumber")), PROP_PHONE_NUMBER) //NOI18N
+                        PropertyEditorPhoneNumber.createInstance(NbBundle.getMessage(SMSComposerCD.class,
+                            "LBL_SMSComposer_PhoneNumber"), "testing"), PROP_PHONE_NUMBER) //NOI18N
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Message"), //NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(SMSComposerCD.class,
                             "LBL_SMSComposer_Message")), PROP_MESSAGE) //NOI18N

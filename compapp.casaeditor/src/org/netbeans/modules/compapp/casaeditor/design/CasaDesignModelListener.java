@@ -106,7 +106,10 @@ public class CasaDesignModelListener implements PropertyChangeListener {
             
         } else if (name.equals(CasaWrapperModel.PROPERTY_CASA_PORT_REMOVED)) {
             removeCasaPort((CasaPort) source);
-            
+
+        } else if (name.equals(CasaWrapperModel.PROPERTY_CASA_PORT_REFRESH)) {
+            refreshCasaPort((CasaPort) source);
+
         } else if (name.equals(CasaWrapperModel.PROPERTY_ENDPOINT_REMOVED)) {
             removeEndpoint((CasaEndpointRef) source);
             
@@ -178,7 +181,13 @@ public class CasaDesignModelListener implements PropertyChangeListener {
         // validate
         mScene.validate();
     }
-    
+
+    private void refreshCasaPort(CasaPort casaPort) {
+        mScene.refreshNode(casaPort);
+        // validate
+        mScene.validate();
+    }
+
     private void addServiceUnit(CasaServiceEngineServiceUnit serviceUnit) {
         Widget w = CasaModelGraphUtilities.createNode(
                 serviceUnit,
@@ -254,7 +263,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
         if (widget instanceof CasaPinWidget) {
             CasaPinWidget pinWidget = (CasaPinWidget) widget;
             CasaEndpointRef endpointRef = (CasaEndpointRef) component;
-            pinWidget.setProperties(endpointRef.getEndpointName());
+            pinWidget.setProperties(endpointRef.getDisplayName());
             pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
             
         } else if (widget instanceof CasaNodeWidgetBinding) {

@@ -43,5 +43,5 @@ made subject to such option by the copyright holder.
 
 <project name="html.editor.lib" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-
+    
 </project>

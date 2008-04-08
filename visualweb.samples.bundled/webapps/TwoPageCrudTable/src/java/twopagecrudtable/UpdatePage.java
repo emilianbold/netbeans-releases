@@ -84,93 +84,6 @@ public class UpdatePage extends AbstractPageBean {
     private void _init() throws Exception {
         tripDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.tripRowSet}"));
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
-    
-    private Form form1 = new Form();
-    
-    public Form getForm1() {
-        return form1;
-    }
-    
-    public void setForm1(Form f) {
-        this.form1 = f;
-    }
-    private HtmlPanelGrid mainPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(HtmlPanelGrid hpg) {
-        this.mainPanel = hpg;
-    }
-    private HtmlPanelGrid tripPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getTripPanel() {
-        return tripPanel;
-    }
-
-    public void setTripPanel(HtmlPanelGrid hpg) {
-        this.tripPanel = hpg;
-    }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
     private Calendar dateCalendar = new Calendar();
 
     public Calendar getDateCalendar() {
@@ -180,51 +93,6 @@ public class UpdatePage extends AbstractPageBean {
     public void setDateCalendar(Calendar c) {
         this.dateCalendar = c;
     }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
-    }
-    private TextField fromCity = new TextField();
-
-    public TextField getFromCity() {
-        return fromCity;
-    }
-
-    public void setFromCity(TextField tf) {
-        this.fromCity = tf;
-    }
-    private Label label3 = new Label();
-
-    public Label getLabel3() {
-        return label3;
-    }
-
-    public void setLabel3(Label l) {
-        this.label3 = l;
-    }
-    private TextField toCity = new TextField();
-
-    public TextField getToCity() {
-        return toCity;
-    }
-
-    public void setToCity(TextField tf) {
-        this.toCity = tf;
-    }
-    private Label label4 = new Label();
-
-    public Label getLabel4() {
-        return label4;
-    }
-
-    public void setLabel4(Label l) {
-        this.label4 = l;
-    }
     private DropDown tripType = new DropDown();
 
     public DropDown getTripType() {
@@ -233,42 +101,6 @@ public class UpdatePage extends AbstractPageBean {
 
     public void setTripType(DropDown dd) {
         this.tripType = dd;
-    }
-    private HtmlPanelGrid buttonPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getButtonPanel() {
-        return buttonPanel;
-    }
-
-    public void setButtonPanel(HtmlPanelGrid hpg) {
-        this.buttonPanel = hpg;
-    }
-    private Button updateButton = new Button();
-
-    public Button getUpdateButton() {
-        return updateButton;
-    }
-
-    public void setUpdateButton(Button b) {
-        this.updateButton = b;
-    }
-    private Button cancel = new Button();
-
-    public Button getCancel() {
-        return cancel;
-    }
-
-    public void setCancel(Button b) {
-        this.cancel = b;
-    }
-    private MessageGroup messageGroup = new MessageGroup();
-
-    public MessageGroup getMessageGroup() {
-        return messageGroup;
-    }
-
-    public void setMessageGroup(MessageGroup mg) {
-        this.messageGroup = mg;
     }
     private CachedRowSetDataProvider tripDataProvider = new CachedRowSetDataProvider();
 

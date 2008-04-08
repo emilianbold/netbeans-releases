@@ -1,0 +1,21 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/yui-anim.js
+
+
+
+Document 1
+Indexed:
+  base : anim;YAHOO.util;Anim;|CONSTRUCTOR|;;0;;;;
+  base : anim;YAHOO.util;Anim;|DOCUMENTED|CONSTRUCTOR|;el:String|HTMLElement,attributes:Object,duration:Number,method:Function;0;1d4;;Anim;
+  base : patterns;YAHOO.util.Anim;patterns;|PROPERTY|;;0;;;;
+  base : tostring;YAHOO.util.Anim;toString;|DOCUMENTED|FUNCTION|;;0;6d1;;String;
+  clz : Anim;|CONSTRUCTOR|;;0;;;;
+  clz : Anim;|DOCUMENTED|CONSTRUCTOR|;el:String|HTMLElement,attributes:Object,duration:Number,method:Function;0;1d4;;Anim;
+  fqn : yahoo.util.anim.patterns;;YAHOO.util.Anim.patterns;|PROPERTY|;;0;;;;
+  fqn : yahoo.util.anim.tostring;;YAHOO.util.Anim.toString;|DOCUMENTED|FUNCTION|;;0;6d1;;String;
+  fqn : yahoo.util.anim;;YAHOO.util.Anim;|CONSTRUCTOR|;;0;;;;
+  fqn : yahoo.util.anim;;YAHOO.util.Anim;|DOCUMENTED|CONSTRUCTOR|;el:String|HTMLElement,attributes:Object,duration:Number,method:Function;0;1d4;;Anim;
+
+Not Indexed:

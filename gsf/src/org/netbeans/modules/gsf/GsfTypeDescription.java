@@ -44,8 +44,9 @@ package org.netbeans.modules.gsf;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Element;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Source;
@@ -65,12 +66,12 @@ public class GsfTypeDescription extends TypeDescriptor {
     
     private final GsfTypeProvider.CacheItem cacheItem;
     
-    private final Element/*Handle<Element>*/ handle;
+    private final ElementHandle handle;
     private String simpleName;
     private String outerName;
     private String packageName;
 
-    public GsfTypeDescription(GsfTypeProvider.CacheItem cacheItem, final Element/*Handle<Element>*/ handle ) {
+    public GsfTypeDescription(GsfTypeProvider.CacheItem cacheItem, final ElementHandle handle) {
        this.cacheItem = cacheItem;
        this.handle = handle; 
        init();
@@ -81,8 +82,8 @@ public class GsfTypeDescription extends TypeDescriptor {
         if ( cacheItem.isBinary() ) {
             final ClasspathInfo ci = ClasspathInfo.create(cacheItem.getRoot());
             Source js = Source.create( ci );
-            final Element/*Handle<Element>*/ eh = handle;
-            final Element[] el = new Element[1];
+            final ElementHandle eh = handle;
+            final ElementHandle[] el = new ElementHandle[1];
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
 
@@ -199,12 +200,12 @@ public class GsfTypeDescription extends TypeDescriptor {
             }
                         
         }
-        icon = Icons.getElementIcon (handle.getKind(), null);
+        icon = Icons.getElementHandleIcon (handle.getKind(), null);
          */
         
         // Initialie simpleName, packageName, outerName and icon from handle
-        //Element element = handle.getOldElement();
-        Element element = handle;
+        //ElementHandle element = handle.getOldElement();
+        ElementHandle element = handle;
         icon = Icons.getElementIcon (element.getKind(), null);
         simpleName = element.getName();
         packageName = element.getIn();

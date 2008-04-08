@@ -60,13 +60,11 @@ public class ListeningSessionProvider extends SessionProvider {
 
     public ListeningSessionProvider (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        smadic = (ListeningDICookie) contextProvider.lookupFirst 
-            (null, ListeningDICookie.class);
+        smadic = contextProvider.lookupFirst(null, ListeningDICookie.class);
     };
     
     public String getSessionName () {
-        Map arguments = (Map) contextProvider.lookupFirst 
-            (null, Map.class);
+        Map arguments = contextProvider.lookupFirst(null, Map.class);
         if (arguments != null) {
             String processName = (String) arguments.get ("name");
             if (processName != null)

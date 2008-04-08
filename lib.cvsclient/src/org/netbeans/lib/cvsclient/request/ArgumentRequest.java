@@ -53,12 +53,23 @@ public class ArgumentRequest extends Request {
      * The argument to pass in
      */
     private final String argument;
+    private final boolean escapeLeadingDash;
 
     /**
      * Create a new request
      * @param theArgument the argument to use
      */
     public ArgumentRequest(String argument) {
+        this(argument, false);
+    }
+
+    /**
+     * Create a new request
+     * @param theArgument the argument to use
+     * @param escapeLeadingDash true to escape leasding dash in the argument with another "--" Argument request, false otherwise
+     */
+    public ArgumentRequest(String argument, boolean escapeLeadingDash) {
+        this.escapeLeadingDash = escapeLeadingDash;
         if (argument == null) {
             throw new IllegalArgumentException("argument must not be null!"); // NOI18N
         }
@@ -71,6 +82,9 @@ public class ArgumentRequest extends Request {
      * @return the request String
      */
     public String getRequestString() {
+        if (escapeLeadingDash && argument.startsWith("-")) {
+            return "Argument --\nArgument " + argument + "\n"; //NOI18N
+        }
         return "Argument " + argument + "\n"; //NOI18N
     }
 

@@ -41,17 +41,16 @@
 -->
 <div style="height: 155px; width: 760px; -rave-layout: grid" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <f:subview id="Masthead">
-        <h:panelGrid binding="#{Masthead.mainPanel}" id="mainPanel" style="height: 155px; left: 0px; top: 0px; width: 760px">
-            <h:panelGrid binding="#{Masthead.titlePanel}" id="titlePanel" style="background-image: url(resources/masthead_background.gif); height: 120px; text-indent: 25px; width: 760px">
-                <webuijsf:staticText binding="#{Masthead.appName}" id="appName"
+        <h:panelGrid id="mainPanel" style="height: 155px; left: 0px; top: 0px; width: 760px">
+            <h:panelGrid id="titlePanel" style="background-image: url(resources/masthead_background.gif); height: 120px; text-indent: 25px; width: 760px">
+                <webuijsf:staticText id="appName"
                     style="color: rgb(255, 255, 255); font-family: Georgia,'Times New Roman',times,serif; font-size: 24px; font-weight: bold" text="Movie Administrator"/>
-                <webuijsf:staticText binding="#{Masthead.poweredBy}" id="poweredBy"
-                    style="color: #ffffff; font-family: Georgia,'Times New Roman',times,serif; font-size: 10px" text="Empowered by NetBeans 6"/>
+                <webuijsf:staticText id="poweredBy" style="color: #ffffff; font-family: Georgia,'Times New Roman',times,serif; font-size: 10px" text="Empowered by NetBeans 6"/>
             </h:panelGrid>
-            <h:panelGrid binding="#{Masthead.navPanel}" columns="3" id="navPanel" style="background-color: #dde2ee; height: 24px; width: 760px">
-                <h:panelGrid binding="#{Masthead.fillerPanel}" id="fillerPanel" style="height: 24px; width: 380px"/>
-                <webuijsf:imageHyperlink binding="#{Masthead.home}" id="home" imageURL="/resources/home.gif" text="Home" url="http://visualweb.netbeans.org/" target="_blank"/>
-                <webuijsf:imageHyperlink binding="#{Masthead.help}" id="help" imageURL="/resources/help.gif" text="Help" url="readme.html" target="_blank"/>
+            <h:panelGrid columns="3" id="navPanel" style="background-color: #dde2ee; height: 24px; width: 760px">
+                <h:panelGrid id="fillerPanel" style="height: 24px; width: 380px"/>
+                <webuijsf:imageHyperlink id="home" imageURL="/resources/home.gif" target="_blank" text="Home" url="http://visualweb.netbeans.org/"/>
+                <webuijsf:imageHyperlink id="help" imageURL="/resources/help.gif" target="_blank" text="Help" url="readme.html"/>
             </h:panelGrid>
         </h:panelGrid>
     </f:subview>

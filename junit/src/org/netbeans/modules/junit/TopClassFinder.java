@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,7 +54,9 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -62,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
+import org.openide.filesystems.FileObject;
 
 /**
  * Finds all non-annotation top-level classes in a compilation unit.
@@ -69,6 +72,62 @@ import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
  * @author  Marian Petras
  */
 final class TopClassFinder {
+
+    interface Filter {
+        boolean passes(TypeElement topClass,
+                       CompilationInfo compInfo);
+    }
+
+    static class BasicTestabilityFilter implements Filter {
+        public boolean passes(TypeElement topClass,
+                              CompilationInfo compInfo) {
+            ElementKind elemKind = topClass.getKind();
+            return (elemKind != ElementKind.ANNOTATION_TYPE)
+                   && (elemKind.isClass()|| elemKind.isInterface());
+        }
+    }
+
+    static final class MainClassOnly extends BasicTestabilityFilter {
+        @Override
+        public boolean passes(TypeElement topClass,
+                              CompilationInfo compInfo) {
+            if (!super.passes(topClass, compInfo)) {
+                return false;
+            }
+
+            FileObject javaFileObj = compInfo.getFileObject();
+            ClassPath sourceCP = compInfo.getClasspathInfo().getClassPath(PathKind.SOURCE);
+            String qualifiedClassName = topClass.getQualifiedName().toString();
+            return qualifiedClassName.equals(sourceCP.getResourceName(javaFileObj, '.', false));
+        }
+    }
+
+    static final class ExtendedTestabilityFilter implements Filter {
+
+        private final TestabilityJudge testabilityJudge;
+        private final Collection<SkippedClass> nonTestable;
+
+        ExtendedTestabilityFilter(TestabilityJudge testabilityJudge,
+                                  Collection<SkippedClass> nonTestable) {
+            this.testabilityJudge = testabilityJudge;
+            this.nonTestable = nonTestable;
+        }
+        public boolean passes(TypeElement topClass,
+                              CompilationInfo compInfo) {
+            TestabilityResult testabilityStatus
+                    = testabilityJudge.isClassTestable(compInfo,
+                                                       topClass);
+            if (testabilityStatus.isTestable()) {
+                return true;
+            } else {
+                nonTestable.add(
+                        new SkippedClass(topClass.getQualifiedName().toString(),
+                                         testabilityStatus));
+                return false;
+            }
+        }
+
+    }
     
     private TopClassFinder() { }
 
@@ -76,24 +135,14 @@ final class TopClassFinder {
      */
     private static class TopClassFinderTask
                             implements CancellableTask<CompilationController> {
+        private final Filter filter;
         private List<ElementHandle<TypeElement>> topClassElems;
-        private TestabilityJudge judgeOfTestability;
-        private Collection<SkippedClass> nonTestable;
         private volatile boolean cancelled;
         private TopClassFinderTask() {
-            this.judgeOfTestability = null;
-            this.nonTestable = null;
+            this(new BasicTestabilityFilter());
         }
-        private TopClassFinderTask(TestabilityJudge testabilityJudge,
-                                   Collection<SkippedClass> nonTestable) {
-            if (testabilityJudge == null) {
-                throw new IllegalArgumentException("judgeOfTestability: null"); //NOI18N
-            }
-            if (nonTestable == null) {
-                throw new IllegalArgumentException("nonTestable: null");  //NOI18N
-            }
-            this.judgeOfTestability = testabilityJudge;
-            this.nonTestable = nonTestable;
+        private TopClassFinderTask(Filter filter) {
+            this.filter = filter;
         }
         public void run(CompilationController controller) throws IOException {
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -101,17 +150,13 @@ final class TopClassFinder {
                 return;
             }
             
-            if (judgeOfTestability == null) {
-                topClassElems = findTopClassElemHandles(
-                                                    controller,
-                                                    controller.getCompilationUnit());
-            } else {
-                topClassElems = findTopClassElemHandles(
-                                                    controller,
-                                                    controller.getCompilationUnit(),
-                                                    judgeOfTestability,
-                                                    nonTestable);
+            if (topClassElems == null) {
+                topClassElems = new ArrayList<ElementHandle<TypeElement>>(10);
             }
+            topClassElems.addAll(findTopClassElemHandles(
+                                                controller,
+                                                controller.getCompilationUnit(),
+                                                filter));
         }
         public void cancel() {
             cancelled = true;
@@ -124,6 +169,18 @@ final class TopClassFinder {
                                                     JavaSource javaSource)
                                                         throws IOException {
         TopClassFinderTask analyzer = new TopClassFinderTask();
+        javaSource.runUserActionTask(analyzer, true);
+        return analyzer.topClassElems;
+    }
+    
+    /**
+     * Finds main top classes, i.e. those whose name matches with the name
+     * of the file they reside in.
+     */
+    static List<ElementHandle<TypeElement>> findMainTopClasses(
+                                                    JavaSource javaSource)
+                                                        throws IOException {
+        TopClassFinderTask analyzer = new TopClassFinderTask(new MainClassOnly());
         javaSource.runUserActionTask(analyzer, true);
         return analyzer.topClassElems;
     }
@@ -147,7 +204,7 @@ final class TopClassFinder {
                                                 TestabilityJudge testabilityJudge,
                                                 Collection<SkippedClass> nonTestable)
                                                         throws IOException {
-        TopClassFinderTask analyzer = new TopClassFinderTask(testabilityJudge, nonTestable);
+        TopClassFinderTask analyzer = new TopClassFinderTask(new ExtendedTestabilityFilter(testabilityJudge, nonTestable));
         javaSource.runUserActionTask(analyzer, true);
         return analyzer.topClassElems;
     }
@@ -186,8 +243,7 @@ final class TopClassFinder {
     private static List<TypeElement> findTopClassElems(
                                         CompilationInfo compInfo,
                                         CompilationUnitTree compilationUnit,
-                                        TestabilityJudge testabilityJudge,
-                                        Collection<SkippedClass> nonTestable) {
+                                        Filter filter) {
         List<? extends Tree> typeDecls = compilationUnit.getTypeDecls();
         if ((typeDecls == null) || typeDecls.isEmpty()) {
             return Collections.<TypeElement>emptyList();
@@ -201,18 +257,7 @@ final class TopClassFinder {
                 Element element = trees.getElement(
                         new TreePath(new TreePath(compilationUnit), typeDecl));
                 TypeElement typeElement = (TypeElement) element;
-                if (testabilityJudge != null) {
-                    TestabilityResult testabilityStatus
-                            = testabilityJudge.isClassTestable(compInfo,
-                                                               typeElement);
-                    if (testabilityStatus.isTestable()) {
-                        result.add(typeElement);
-                    } else {
-                        nonTestable.add(new SkippedClass(
-                                typeElement.getQualifiedName().toString(),
-                                testabilityStatus));
-                    }
-                } else if (isTestable(element)) {
+                if (filter.passes(typeElement, compInfo)) {
                     result.add(typeElement);
                 }
             }
@@ -228,23 +273,10 @@ final class TopClassFinder {
      */
     private static List<ElementHandle<TypeElement>> findTopClassElemHandles(
                                         CompilationInfo compInfo,
-                                        CompilationUnitTree compilationUnit) {
-        return getElemHandles(findTopClassElems(compInfo, compilationUnit,
-                                                null, null));
-    }
-
-    /**
-     * 
-     * @return  list of handles to {@code Element}s representing top classes,
-     *          or an empty list of none were found
-     */
-    private static List<ElementHandle<TypeElement>> findTopClassElemHandles(
-                                        CompilationInfo compInfo,
                                         CompilationUnitTree compilationUnit,
-                                        TestabilityJudge testabilityJudge,
-                                        Collection<SkippedClass> nonTestable) {
-        return getElemHandles(findTopClassElems(compInfo, compilationUnit,
-                                                testabilityJudge, nonTestable));
+                                        Filter filter) {
+        return getElemHandles(
+                    findTopClassElems(compInfo, compilationUnit, filter));
     }
 
     private static <T extends Element> List<ElementHandle<T>> getElemHandles(List<T> elements) {
@@ -267,7 +299,7 @@ final class TopClassFinder {
         return !treeUtils.isAnnotation(typeDecl);
     }
 
-    static boolean isTestable(Element typeDeclElement) {
+    static boolean isTestable(TypeElement typeDeclElement) {
         ElementKind elemKind = typeDeclElement.getKind();
         return (elemKind != ElementKind.ANNOTATION_TYPE)
                && (elemKind.isClass()|| elemKind.isInterface());

@@ -36,25 +36,25 @@
 ==============================================================
 'name', tokenID=identifier, offset=2194 [45:5/2194-45:9/2198]
 --OWNER:
-    FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
+    EXPR null text='name(initName'
 --RESOLVED TO:
     VARIABLE name [56:9/2374-56:21/2386] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [56:9/2374-56:15/2380]  INIT: null  SCOPE: Customer 
 ==============================================================
 'initName', tokenID=identifier, offset=2199 [45:10/2199-45:18/2207]
 --OWNER:
-    FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
+    EXPR null text='name(initName'
 --RESOLVED TO:
     VARIABLE initName [44:20/2147-44:41/2168] ReferencesTestCase/customer.cc  TYPE: const $unresolved$::string TEXT=const string  [44:20/2147-44:32/2159]  INIT: null  SCOPE: Customer 
 ==============================================================
 'discount', tokenID=identifier, offset=2214 [46:5/2214-46:13/2222]
 --OWNER:
-    FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
+    EXPR null text='discount(initDiscount'
 --RESOLVED TO:
     VARIABLE discount [57:9/2395-57:22/2408] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [57:9/2395-57:12/2398]  INIT: null  SCOPE: Customer 
 ==============================================================
 'initDiscount', tokenID=identifier, offset=2223 [46:14/2223-46:26/2235]
 --OWNER:
-    FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
+    EXPR null text='discount(initDiscount'
 --RESOLVED TO:
     VARIABLE initDiscount [44:43/2170-44:59/2186] ReferencesTestCase/customer.cc  TYPE: int TEXT=int  [44:43/2170-44:46/2173]  INIT: null  SCOPE: Customer 
 ==============================================================

@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2008 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -12,7 +12,7 @@
 </head>
 <body>
 <h2>JSF 1.1 Tab Component</h2>
-<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+<p><small><a href="#seealso">See Also</a></small></p>
 <p>A Tab <img src="../../../images/bh_tab_icon.gif" alt="Tab icon">&nbsp;component 
 is part of a <a href="tab_set.html">Tab Set component</a>. </p>
     <ul class="note">
@@ -47,7 +47,12 @@ is part of a <a href="tab_set.html">Tab Set component</a>. </p>
   <li><b>Edit action Event Handler.</b> Code the action event handler, the method that is called when the user clicks the tab. This method determines which page or resource to open based on specified conditions. The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>tab-id</code></i><code>_action</code>, where <i>tab-id</i> is the value of the tab's <code>id</code> property. </li>
   <li><b>Bind to Data. </b>Dynamically set the text that appears on the tab. You can bind the component's <code>text</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
   <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or bean properties that update this component's properties automatically.</li>
+<li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
 </ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li></ul>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="propsheets/bh_tab_props.html">Tab Component Properties Window</a></dd>
@@ -58,16 +63,6 @@ is part of a <a href="tab_set.html">Tab Set component</a>. </p>
     Tasks: Quick Reference</a></dd>
  
   <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
-</dl>
-<dl>
-<dt><a name="tutorials">Tutorials</a></dt>
-
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
 </dl>
 
 

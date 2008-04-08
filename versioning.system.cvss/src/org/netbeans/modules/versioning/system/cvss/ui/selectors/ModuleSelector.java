@@ -106,7 +106,7 @@ public final class ModuleSelector {
                 }
             });
 
-            Set  modules = new LinkedHashSet();
+            Set<String>  modules = new LinkedHashSet<String>();
             for (int i = 0; i < selected.length; i++) {
                 Node node = selected[i];
                 String path = (String) node.getLookup().lookup(String.class);
@@ -163,9 +163,9 @@ public final class ModuleSelector {
      * @param path "/" separated repository folder path (e.g. "javacvs/cvsmodule")
      * @return folders never <code>null</code>
      */
-    public static List listRepositoryPath(Client client, CVSRoot root, String path) throws CommandException, AuthenticationException {
+    public static List<String> listRepositoryPath(Client client, CVSRoot root, String path) throws CommandException, AuthenticationException {
 
-        final List list = new ArrayList();
+        final List<String> list = new ArrayList<String>();
         GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
         gtx.setCVSRoot(root.toString());
         gtx.setDoNoChanges(true);
@@ -222,11 +222,11 @@ public final class ModuleSelector {
      *
      * @return list of ModuleListInformation
      */
-    public static List listAliases(Client client, CVSRoot root) throws CommandException, AuthenticationException {
+    public static List<ModuleListInformation> listAliases(Client client, CVSRoot root) throws CommandException, AuthenticationException {
 
         CheckoutCommand checkout = new CheckoutCommand();
         checkout.setShowModules(true);
-        final List modules = new LinkedList();
+        final List<ModuleListInformation> modules = new LinkedList<ModuleListInformation>();
         EventManager mgr = client.getEventManager();
         mgr.addCVSListener(new CVSListener() {
             public void messageSent(MessageEvent e) {

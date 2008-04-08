@@ -43,12 +43,11 @@ package org.netbeans.modules.ruby;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.parser.RubyParserResult;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.modules.ruby.elements.AstRootElement;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**
@@ -59,7 +58,6 @@ public class RubyParseResult extends ParserResult {
     private AstTreeNode ast;
     private Node root;
     private RootNode realRoot;
-    private AstRootElement rootElement;
     private String source;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
@@ -68,10 +66,9 @@ public class RubyParseResult extends ParserResult {
     private RubyParserResult jrubyResult;
     private boolean commentsAdded;
 
-    public RubyParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
+    public RubyParseResult(RubyParser parser, ParserFile file, AstTreeNode ast, Node root,
         RootNode realRoot, RubyParserResult jrubyResult) {
-        super(file);
-        this.rootElement = rootElement;
+        super(parser, file, RubyMimeResolver.RUBY_MIME_TYPE);
         this.ast = ast;
         this.root = root;
         this.realRoot = realRoot;
@@ -84,11 +81,6 @@ public class RubyParseResult extends ParserResult {
 
     public void setAst(AstTreeNode ast) {
         this.ast = ast;
-    }
-
-    @Override
-    public Element getRoot() {
-        return rootElement;
     }
 
     /** The root node of the AST produced by the parser.
@@ -148,7 +140,7 @@ public class RubyParseResult extends ParserResult {
     @NonNull
     public StructureAnalyzer.AnalysisResult getStructure() {
         if (analysisResult == null) {
-            analysisResult = new StructureAnalyzer().analyze(this);
+            analysisResult = new StructureAnalyzer().analyze(this, getInfo());
         }
         return analysisResult;
     }

@@ -76,6 +76,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -95,6 +96,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
     private List<ModelListener> listeners = new ArrayList<ModelListener>();
+    private PropertyChangeListener[] varListeners;
     //private Map                 cachedLocals = new WeakHashMap();
     private Map<Value, ArrayChildrenNode> cachedArrayChildren = new WeakHashMap<Value, ArrayChildrenNode>();
     
@@ -413,6 +415,18 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             );
     }
 
+    private void fireNodeChanged (Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        int i, k = ls.size ();
+        for (i = 0; i < k; i++)
+            ls.get(i).modelChanged (
+                new ModelEvent.NodeChanged (this, node)
+            );
+    }
+
     
     // private methods .........................................................
     
@@ -524,6 +538,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             }
             locals = subLocals;
         }
+        updateVarListeners(locals);
         return locals;
         /*
         try {
@@ -573,6 +588,20 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         return local;
     }
      */
+    
+    private void updateVarListeners(org.netbeans.api.debugger.jpda.LocalVariable[] vars) {
+        varListeners = new PropertyChangeListener[vars.length];
+        for (int i = 0; i < vars.length; i++) {
+            final org.netbeans.api.debugger.jpda.LocalVariable var = vars[i];
+            PropertyChangeListener l = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    fireNodeChanged(var);
+                }
+            };
+            varListeners[i] = l; // Hold it so that it does not get lost, till the array is updated.
+            ((AbstractVariable) var).addPropertyChangeListener(WeakListeners.propertyChange(l, var));
+        }
+    }
     
     public Variable getVariable (Value v) {
         if (v instanceof ObjectReference)

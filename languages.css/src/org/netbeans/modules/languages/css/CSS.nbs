@@ -342,6 +342,16 @@ MARK:ERROR: {
     message:"LBL_SYNTAX_ERROR";
 }
 
+SYNTAX_ERROR:declaration: {
+    token_identifier:";";
+    nt:"declarations";
+}
+
+SYNTAX_ERROR:body: {
+    token_identifier:"}";
+    nt:"body";
+}
+
 PROPERTIES {
     navigator_sort:"true"; 
     #traceSteps:"true";

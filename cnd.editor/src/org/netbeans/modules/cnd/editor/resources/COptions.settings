@@ -10,5 +10,6 @@
     <instanceof class="org.netbeans.modules.editor.options.OptionSupport"/>
     <instanceof class="org.netbeans.modules.editor.options.BaseOptions"/>
     <instanceof class="org.netbeans.modules.cnd.editor.cplusplus.CCOptions"/>
+    <instanceof class="org.netbeans.modules.cnd.editor.cplusplus.COptions"/>
     <instance class="org.netbeans.modules.cnd.editor.cplusplus.COptions"/>
 </settings>

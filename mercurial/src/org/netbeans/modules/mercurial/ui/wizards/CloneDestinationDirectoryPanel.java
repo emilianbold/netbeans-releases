@@ -108,6 +108,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         directoryLabel = new javax.swing.JLabel();
         directoryBrowseButton = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
 
         destinationDirectoryPanel.setName(org.openide.util.NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "destinationDirectoryPanel.Name")); // NOI18N
 
@@ -128,6 +129,8 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         scanForProjectsCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(scanForProjectsCheckBox, org.openide.util.NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "CTL_Scan_After_Clone")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "directoryTitleLabel.Name")); // NOI18N
+
         org.jdesktop.layout.GroupLayout destinationDirectoryPanelLayout = new org.jdesktop.layout.GroupLayout(destinationDirectoryPanel);
         destinationDirectoryPanel.setLayout(destinationDirectoryPanelLayout);
         destinationDirectoryPanelLayout.setHorizontalGroup(
@@ -140,17 +143,19 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
                             .add(directoryLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(destinationDirectoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(nameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                            .add(directoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE))
+                            .add(nameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                            .add(directoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(directoryBrowseButton))
-                    .add(scanForProjectsCheckBox))
+                    .add(scanForProjectsCheckBox)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 597, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         destinationDirectoryPanelLayout.setVerticalGroup(
             destinationDirectoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(destinationDirectoryPanelLayout.createSequentialGroup()
-                .add(36, 36, 36)
+                .add(jLabel1)
+                .add(20, 20, 20)
                 .add(destinationDirectoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(directoryLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(directoryBrowseButton)
@@ -263,6 +268,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     private javax.swing.JButton directoryBrowseButton;
     final javax.swing.JTextField directoryField = new javax.swing.JTextField();
     private javax.swing.JLabel directoryLabel;
+    private javax.swing.JLabel jLabel1;
     final javax.swing.JTextField nameField = new javax.swing.JTextField();
     private javax.swing.JLabel nameLabel;
     final javax.swing.JCheckBox scanForProjectsCheckBox = new javax.swing.JCheckBox();

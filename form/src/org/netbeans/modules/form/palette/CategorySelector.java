@@ -77,7 +77,11 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
         JLabel categoryLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(categoryLabel, 
                 PaletteUtils.getBundleString("CTL_PaletteCategories")); // NOI18N
-        categoryLabel.setLabelFor(listView);
+        if ((listView.getViewport() != null) && (listView.getViewport().getView() != null)) {
+            categoryLabel.setLabelFor(listView.getViewport().getView());
+        } else {
+            categoryLabel.setLabelFor(listView);
+        }
 
         getAccessibleContext().setAccessibleDescription(
             PaletteUtils.getBundleString("ACSD_PaletteCategoriesSelector")); // NOI18N

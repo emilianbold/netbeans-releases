@@ -106,7 +106,7 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
                 SystemAction.get(CreateDatabaseAction.class),
-                SystemAction.get(DerbySettingsAction.class),
+                SystemAction.get(DerbyPropertiesAction.class),
             }, Utilities.actionsGlobalContext());
             while (menu.getComponentCount() > 0) {
                 Component c = menu.getComponent(0);

@@ -60,8 +60,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -73,14 +71,12 @@ import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandler;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,68 +96,57 @@ public class AddOverrideAnnotation extends AbstractHint {
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null)
-                return null;
-            
-            TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override"); //NOI18N
-            
-            if (el == null || !GeneratorUtils.supportsOverride(compilationInfo.getFileObject()))
-                return null;
-            
-            Element e = compilationInfo.getTrees().getElement(treePath);
-            
-            if (e != null && e.getKind() == ElementKind.METHOD) {
-                ExecutableElement ee = (ExecutableElement) e;
-                List<ElementDescription> result = new ArrayList<ElementDescription>();
-                
-                AnnotationType type = IsOverriddenAnnotationHandler.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
-                
-                boolean hasOverriddenAnnotation = false;
-                
-                for (AnnotationMirror am : ee.getAnnotationMirrors()) {
-                    if (compilationInfo.getTypes().isSameType(am.getAnnotationType(), el.asType())) {
-                        hasOverriddenAnnotation = true;
-                        break;
-                    }
-                }
-                
-                if (hasOverriddenAnnotation) {
-                    return null;
-                }
-                
-                boolean addHint = false;
-                
-                if (type == AnnotationType.OVERRIDES) {
-                    addHint = true;
-                } else {
-                    if (type == AnnotationType.IMPLEMENTS) {
-                        String sourceLevel = SourceLevelQuery.getSourceLevel(compilationInfo.getFileObject());
-                        
-                        if (!"1.5".equals(sourceLevel))
-                            addHint = true;
-                    }
-                }
-                
-                if (addHint) {
-                    List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()));
-                    
-                    int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
-                    
-                    if (span[0] != (-1) && span[1] != (-1)) {
-                        String desc = NbBundle.getMessage(AddOverrideAnnotation.class, "HINT_AddOverrideAnnotation");
-                        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, doc, doc.createPosition(span[0]), doc.createPosition(span[1]));
-                        
-                        return Collections.singletonList(ed);
-                    }
+        TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override"); //NOI18N
+
+        if (el == null || !GeneratorUtils.supportsOverride(compilationInfo.getFileObject()))
+            return null;
+
+        Element e = compilationInfo.getTrees().getElement(treePath);
+
+        if (e != null && e.getKind() == ElementKind.METHOD) {
+            ExecutableElement ee = (ExecutableElement) e;
+            List<ElementDescription> result = new ArrayList<ElementDescription>();
+
+            AnnotationType type = IsOverriddenAnnotationHandler.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
+
+            boolean hasOverriddenAnnotation = false;
+
+            for (AnnotationMirror am : ee.getAnnotationMirrors()) {
+                if (compilationInfo.getTypes().isSameType(am.getAnnotationType(), el.asType())) {
+                    hasOverriddenAnnotation = true;
+                    break;
                 }
             }
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+
+            if (hasOverriddenAnnotation) {
+                return null;
+            }
+
+            boolean addHint = false;
+
+            if (type == AnnotationType.OVERRIDES) {
+                addHint = true;
+            } else {
+                if (type == AnnotationType.IMPLEMENTS) {
+                    String sourceLevel = SourceLevelQuery.getSourceLevel(compilationInfo.getFileObject());
+
+                    if (!"1.5".equals(sourceLevel))
+                        addHint = true;
+                }
+            }
+
+            if (addHint) {
+                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()));
+
+                int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf());
+
+                if (span != null) {
+                    String desc = NbBundle.getMessage(AddOverrideAnnotation.class, "HINT_AddOverrideAnnotation");
+                    ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, compilationInfo.getFileObject(), span[0], span[1]);
+
+                    return Collections.singletonList(ed);
+                }
+            }
         }
         
         return null;

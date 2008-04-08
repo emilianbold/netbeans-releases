@@ -42,19 +42,24 @@
 package org.netbeans.modules.j2ee.earproject.ui;
 
 import java.awt.Image;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.earproject.ProjectPropertyProvider;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -75,15 +80,26 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     private static Action[] actions;
     
     private final FileObject projectDirectory;
-    private final VisualClassPathItem key;
+    private final ClassPathSupport.Item key;
+    private ClassPathSupport cs;
+    private final UpdateHelper updateHelper;
+    private EarProject project;
+    boolean isWAR;
     
-    public ModuleNode(final VisualClassPathItem key, final FileObject projectDirectory) {
+    public ModuleNode(final ClassPathSupport.Item key, final FileObject projectDirectory, 
+            EarProject project, UpdateHelper updateHelper, ClassPathSupport cs) {
         super(Children.LEAF);
+        assert key.getType() == ClassPathSupport.Item.TYPE_ARTIFACT;
         this.key = key;
         this.projectDirectory = projectDirectory;
         setName(ModuleNode.MODULE_NODE_NAME);
-        setDisplayName(key.getCompletePathInArchive());
+        isWAR = project.evaluator().evaluate(key.getReference()).endsWith(".war"); // NOI18N
+        String dispName = EarProjectProperties.getCompletePathInArchive(project, key);
+        setDisplayName(dispName);
         setShortDescription(NbBundle.getMessage(ModuleNode.class, "HINT_ModuleNode"));
+        this.project = project;
+        this.updateHelper = updateHelper;
+        this.cs = cs;
     }
     
     // Create the popup menu:
@@ -108,9 +124,9 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     public Image getIcon(int type) {
         // XXX the "algorithm" based on the ant property name - in the case of
         // application client; is little odd. Also the rest is rather unclear.
-        if (key.toString().endsWith("war")) { // NOI18N
+        if (isWAR) { // NOI18N
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/WebModuleNode.gif");//NOI18N
-        } else if (key.getRaw().indexOf("j2ee-module-car") > 0) { //NOI18N
+        } else if (key.getReference().indexOf("j2ee-module-car") > 0) { //NOI18N
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/CarModuleNodeIcon.gif");//NOI18N
         } else {
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/EjbModuleNodeIcon.gif");//NOI18N
@@ -128,17 +144,10 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     }
     
     void removeFromJarContent() {
-        List<VisualClassPathItem> newList = new ArrayList<VisualClassPathItem>();
-        Project p = FileOwnerQuery.getOwner(projectDirectory);
-        ProjectPropertyProvider ppp = p.getLookup().lookup(ProjectPropertyProvider.class);
-        EarProjectProperties epp = ppp.getProjectProperties();
-        newList.addAll(epp.getJarContentAdditional());
-        newList.remove(key);
-        epp.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, newList);
-        epp.store();
+        EarProjectProperties.removeJ2eeSubprojects(project, new Project[]{key.getArtifact().getProject()});
     }
     
-    public VisualClassPathItem getVCPI() {
+    public ClassPathSupport.Item getVCPI() {
         return key;
     }
     

@@ -6,5 +6,6 @@
     <instanceof class="org.openide.text.IndentEngine"/>
     <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
     <instanceof class="org.netbeans.modules.cnd.editor.cplusplus.BaseIndentEngine"/>
+    <instanceof class="org.netbeans.modules.cnd.editor.cplusplus.CCIndentEngine"/>
     <instance class="org.netbeans.modules.cnd.editor.cplusplus.CCIndentEngine"/>
 </settings>

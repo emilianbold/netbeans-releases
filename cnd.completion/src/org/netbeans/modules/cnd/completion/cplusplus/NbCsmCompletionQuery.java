@@ -71,11 +71,11 @@ import org.openide.loaders.DataObject;
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
-    private final boolean localContext;
+    private final QueryScope queryScope;
     
-    protected NbCsmCompletionQuery(CsmFile csmFile, boolean localContext) {
+    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext) {
         this.csmFile = csmFile;
-        this.localContext = localContext;
+        this.queryScope = localContext;
     }
     
     protected CsmFinder getFinder() {
@@ -96,18 +96,23 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         }
         return this.csmFile;
     }
+
+    @Override
+    protected QueryScope getCompletionQueryScope() {
+        return this.queryScope;
+    }
     
     protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort) {
-	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, localContext);
+	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope);
     }
 
     private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
-            boolean openingSource, boolean sort, boolean localContext) {
+            boolean openingSource, boolean sort, QueryScope queryScope) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
             Class kit = bDoc.getKitClass();
             resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
-            ((CompletionResolverImpl)resolver).setResolveLocalContextOnly(localContext);
+            ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
         }
         return resolver;
     }    
@@ -142,7 +147,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     
     private static final int FILE_LOCAL_VAR_PRIORITY = TYPEDEF_PRIORITY + PRIORITY_SHIFT;
     private static final int FILE_LOCAL_ENUMERATOR_PRIORITY = FILE_LOCAL_VAR_PRIORITY + PRIORITY_SHIFT;
-    private static final int FILE_LOCAL_MACRO_PRIORITY = FILE_LOCAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
+    private static final int FILE_LOCAL_FUNCTION_PRIORITY = FILE_LOCAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
+    private static final int FILE_LOCAL_MACRO_PRIORITY = FILE_LOCAL_FUNCTION_PRIORITY + PRIORITY_SHIFT;
     private static final int FILE_INCLUDED_PRJ_MACRO_PRIORITY = FILE_LOCAL_MACRO_PRIORITY + PRIORITY_SHIFT;
     
     private static final int GLOBAL_VAR_PRIORITY = FILE_INCLUDED_PRJ_MACRO_PRIORITY + PRIORITY_SHIFT;
@@ -212,6 +218,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_LOCAL_MACRO_PRIORITY);  
         }
         
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
+            return new NbCsmResultItem.NbFileLocalFunctionResultItem(fun, substituteExp, FILE_LOCAL_FUNCTION_PRIORITY); 
+        }
+        
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_INCLUDED_PRJ_MACRO_PRIORITY);  
         }
@@ -276,6 +286,6 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
-        }        
+        }
     }
 }

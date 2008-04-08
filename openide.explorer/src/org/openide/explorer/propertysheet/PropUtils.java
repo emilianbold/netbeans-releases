@@ -45,7 +45,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.nodes.Node.*;
 import org.openide.util.*;
@@ -844,7 +843,7 @@ final class PropUtils {
                             result = new Boolean3WayEditor();
                         }
 
-                        if (updateEditor) {
+                        if (updateEditor || null == result.getValue()) {
                             updateEdFromProp(p, result, p.getDisplayName());
                         }
                     } catch (ProxyNode.DifferentValuesException dve) {

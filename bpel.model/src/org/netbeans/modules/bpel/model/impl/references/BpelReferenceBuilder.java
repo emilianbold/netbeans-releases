@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import java.util.Collection;
@@ -53,18 +49,17 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
+import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.bpel.model.impl.BpelEntityImpl;
-import org.netbeans.modules.bpel.model.impl.ContainerIterator;
+import org.netbeans.modules.bpel.model.api.support.ContainerIterator;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
-
 /**
  * @author ads
- *
  */
 public final class BpelReferenceBuilder {
 
@@ -613,5 +608,4 @@ class MessageExchangeReferenceFactory extends AbstractBpelNamedReferenceFactory 
         }
         return null;
     }
-
 }

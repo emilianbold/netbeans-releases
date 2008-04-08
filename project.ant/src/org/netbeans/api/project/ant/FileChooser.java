@@ -41,25 +41,16 @@
 
 package org.netbeans.api.project.ant;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import javax.swing.JFileChooser;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.ant.FileChooserAccessory;
-import org.netbeans.modules.project.ant.RelativizeFilePathCustomizer;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -157,67 +148,6 @@ public final class FileChooser extends JFileChooser {
         super.approveSelection();
     }
 
-    /**
-     * Show UI allowing user to decide how the given file should be referenced,
-     * that is via absolute or relative path. Optionally UI can allow to copy
-     * file to shared libraries folder.
-     * 
-     * @param fileToReference file in question
-     * @param projectArtifact any project artifact, e.g. project folder or project source etc.
-     * @param copyAllowed is file copying allowed
-     * @return possibly relative file; null if cancelled by user or project 
-     *  cannot be found for project artifact
-     * @throws java.io.IOException any IO failure during file copying
-     */
-    public static String showRelativizeFilePathCustomizer(File fileToReference, FileObject projectArtifact, 
-            boolean copyAllowed) throws IOException {
-        Project p = FileOwnerQuery.getOwner(projectArtifact);
-        if (p == null) {
-            return null;
-        }
-        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
-        assert aux != null : projectArtifact;
-        if (aux == null) {
-            return null;
-        }
-        File projFolder = FileUtil.toFile(p.getProjectDirectory());
-        File libBase = ProjectLibraryProvider.getLibrariesLocation(aux, projFolder);
-        if (libBase != null) {
-            libBase = libBase.getParentFile();
-        }
-        return showRelativizeFilePathCustomizer(fileToReference, projFolder, libBase, copyAllowed);
-    }
 
-    /**
-     * Show UI allowing user to decide how the given file should be referenced,
-     * that is via absolute or relative path. Optionally UI can allow to copy
-     * file to shared libraries folder.
-     * 
-     * @param fileToReference file in question
-     * @param baseFolder folder to relativize file against
-     * @param sharedLibrariesFolder optional shared libraries folder; can be null;
-     *  if provided UI will allow user to copy given file there
-     * @param copyAllowed is file copying allowed
-     * @return possibly relative file; null if cancelled by user
-     * @throws java.io.IOException any IO failure during file copying
-     */
-    private static String showRelativizeFilePathCustomizer(File fileToReference, File baseFolder, 
-            File sharedLibrariesFolder, boolean copyAllowed) throws IOException {
-        RelativizeFilePathCustomizer panel = new RelativizeFilePathCustomizer(
-            fileToReference, baseFolder, sharedLibrariesFolder, copyAllowed);
-        DialogDescriptor descriptor = new DialogDescriptor (panel,
-            NbBundle.getMessage(RelativizeFilePathCustomizer.class, "RelativizeFilePathCustomizer.title"));
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            dlg.setVisible(true);
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                return panel.getFile();
-            } else {
-                return null;
-            }
-        } finally {
-            dlg.dispose();
-        }
-    }
 
 }

@@ -57,7 +57,7 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
+import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
@@ -87,6 +87,7 @@ public final class ClasspathInfo {
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
+    private final ClassPath cachedSrcClassPath;
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
     private ClassPath outputClassPath;
@@ -96,6 +97,8 @@ public final class ClasspathInfo {
     private final boolean ignoreExcludes;
     private final JavaFileFilterImplementation filter;
     private JavaFileManager fileManager;
+    //@GuardedBy (this)
+    private OutputFileManager outFileManager;
     private EventListenerList listenerList =  null;
     private ClassIndex usagesQuery;
     
@@ -111,14 +114,15 @@ public final class ClasspathInfo {
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath);
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
-	if ( srcCp != null && !GlobalSourcePath.getDefault().isLibrary(srcCp)) {
-            this.srcClassPath = srcCp;
-            this.outputClassPath = CacheClassPath.forSourcePath (this.srcClassPath);
-	    this.srcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.srcClassPath));
-	}
-        else {
-            this.srcClassPath = ClassPathSupport.createClassPath(new URL[0]);
+        if (srcCp == null) {
+            this.cachedSrcClassPath = this.srcClassPath = ClassPathSupport.createClassPath(new URL[0]);
             this.outputClassPath = ClassPathSupport.createClassPath(new URL[0]);
+        }
+        else {
+            this.srcClassPath = srcCp;
+            this.cachedSrcClassPath = SourcePath.create(srcCp, backgroundCompilation);
+            this.outputClassPath = CacheClassPath.forSourcePath (this.cachedSrcClassPath);
+	    this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
         }
         this.backgroundCompilation = backgroundCompilation;
         this.ignoreExcludes = ignoreExcludes;
@@ -126,7 +130,13 @@ public final class ClasspathInfo {
     }
     
     public String toString() {
-        return "ClasspathInfo boot:[" + cachedBootClassPath + "],compile:[" + cachedCompileClassPath + "],src:[" + srcClassPath + "]," + "out:["+outputClassPath+"]";  //NOI18N
+        return String.format("ClasspathInfo boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal out: %s", //NOI18N
+                bootClassPath,
+                compileClassPath,
+                cachedSrcClassPath,
+                cachedBootClassPath,
+                cachedCompileClassPath,
+                outputClassPath);        
     }
     
     // Factory methods ---------------------------------------------------------
@@ -224,7 +234,7 @@ public final class ClasspathInfo {
 	    case COMPILE:
 		return this.cachedCompileClassPath;
 	    case SOURCE:
-		return this.srcClassPath;
+		return this.cachedSrcClassPath;
 	    case OUTPUT:
 		return this.outputClassPath;
 	    default:
@@ -239,7 +249,7 @@ public final class ClasspathInfo {
             usagesQuery = new ClassIndex (
                     this.bootClassPath,
                     this.compileClassPath,
-                    this.srcClassPath);
+                    this.cachedSrcClassPath);
         }
         return usagesQuery;
     }
@@ -248,16 +258,21 @@ public final class ClasspathInfo {
     
     synchronized JavaFileManager getFileManager() {
         if (this.fileManager == null) {
-            boolean hasSources = this.srcClassPath != null;
+            boolean hasSources = this.cachedSrcClassPath != null;
             this.fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
-                hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.srcClassPath, filter, false, ignoreExcludes)
-                    : new SourceFileManager (this.srcClassPath, ignoreExcludes)) : null,
-                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.srcClassPath) : null
+                hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
+                    : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
+                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath) : null
             );
         }
         return this.fileManager;
+    }
+    
+    synchronized OutputFileManager getOutputFileManager () {        
+        getFileManager();   //Side effect: initializes outFileManager
+        return this.outFileManager;
     }
     
     // Private methods ---------------------------------------------------------

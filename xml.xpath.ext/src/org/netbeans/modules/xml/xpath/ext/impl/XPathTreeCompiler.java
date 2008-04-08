@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 
@@ -44,9 +45,9 @@ import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
  */
 public class XPathTreeCompiler implements Compiler {
 
-    private XPathModelImpl myXPathModel;
+    private XPathModel myXPathModel;
     
-    public XPathTreeCompiler(XPathModelImpl xPathModel) {
+    public XPathTreeCompiler(XPathModel xPathModel) {
         myXPathModel = xPathModel;
     }
         
@@ -127,7 +128,7 @@ public class XPathTreeCompiler implements Compiler {
     public Object equal(Object left, Object right) {
         return createOperation(left, right, CoreOperationType.OP_EQ);
 
-        // TODO sort out if the old code is necessary or not.
+        // TO DO sort out if the old code is necessary or not.
 //        if (isNameAttributeTest((XPathExpression) left)) {
 //            return new NameAttributeTest((Expression) left, (Expression) right);
 //        }
@@ -201,7 +202,6 @@ public class XPathTreeCompiler implements Compiler {
     }
 
     public Object expressionPath(Object expression, Object[] predicates, Object[] steps) {
-        // TODO Predicates are ignored here ????
         XPathExpressionPath exprPath = myXPathModel.getFactory().
                 newXPathExpressionPath((XPathExpression)expression, 
                 toLocationStepArray(steps));
@@ -336,9 +336,13 @@ public class XPathTreeCompiler implements Compiler {
         case 27: return CoreFunctionType.FUNC_ROUND;
         //
         // WRONG Functions
-        case 28: return CoreFunctionType.FUNC_NULL;
-        case 29: return CoreFunctionType.FUNC_KEY;
-        case 30: return CoreFunctionType.FUNC_FORMAT_NUMBER;
+// COMMENTED BECAUSE THE RUNTIME DOESN'T SUPPORT THEM!
+//        case 28: return CoreFunctionType.FUNC_NULL;
+//        case 29: return CoreFunctionType.FUNC_KEY;
+//        case 30: return CoreFunctionType.FUNC_FORMAT_NUMBER;
+        case 28: 
+        case 29: 
+        case 30: return null;
         }
         //
         assert true : "Unknown Core Function";

@@ -58,5 +58,8 @@ public interface CasaEndpointRef extends CasaComponent {
     String getEndpointName();
     QName getInterfaceQName();
     QName getServiceQName();
-    String getFullyQualifiedEndpointName();
+    String getFullyQualifiedEndpointName();    
+    String getDisplayName();
+    String getProcessName();
+    String getFilePath();
 }

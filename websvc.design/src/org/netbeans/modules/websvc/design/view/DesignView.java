@@ -61,6 +61,8 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.openide.filesystems.FileObject;
@@ -83,7 +85,7 @@ public class DesignView extends JPanel  {
     private ZoomManager zoomer;
     private Widget mainLayer;
     private Widget messageWidget;
-    private Widget headerWidget;
+    private LabelWidget headerWidget;
     private Widget contentWidget;
     private Widget mainWidget;
     private Widget separatorWidget;
@@ -126,11 +128,21 @@ public class DesignView extends JPanel  {
         mainWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 12));
         
-        String serviceName = service.getName();
-        if (service.getWsdlUrl()!=null)
-            serviceName = service.getServiceName()+" ["+service.getPortName()+"]";
-        
-        headerWidget = new LabelWidget(scene,serviceName);
+        headerWidget = new LabelWidget(scene,getServiceName());
+        serviceModel.addServiceChangeListener(new ServiceChangeListener() {
+            public void propertyChanged(String propertyName, String oldValue, String newValue) {
+                if(propertyName.equals("serviceName") || propertyName.equals("portName") &&
+                        DesignView.this.service.getWsdlUrl()!=null) {
+                    headerWidget.setLabel(getServiceName());
+                }
+            }
+            public void operationAdded(MethodModel method) {
+            }
+            public void operationRemoved(MethodModel method) {
+            }
+            public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
+            }
+        });
         headerWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
         headerWidget.setForeground(Color.GRAY);
         headerWidget.setBorder(BorderFactory.createEmptyBorder(6,28,0,0));
@@ -219,5 +231,12 @@ public class DesignView extends JPanel  {
         super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.
         return scene.getView().requestFocusInWindow();
+    }
+    
+    private String getServiceName() {
+        String serviceName = serviceModel.getServiceName();
+        if (service.getWsdlUrl()!=null)
+            serviceName += " ["+serviceModel.getPortName()+"]";
+        return serviceName;
     }
 }

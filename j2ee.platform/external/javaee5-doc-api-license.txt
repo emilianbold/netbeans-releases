@@ -3,6 +3,7 @@ Version: 5
 Description: Java(TM) Enterprise Edition 5 API Documentation
 License: CDDL-1.0
 Origin: http://glassfish.dev.java.net
+OSR: 5563
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

@@ -44,12 +44,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -77,6 +73,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -120,7 +117,17 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
             sourceGroups = Util.getSourceGroups(project);
             SourceGroupUISupport.connect(locationCB, sourceGroups);
-            folderTextField.setText(Constants.REST_JMAKI_DIR);
+            String folderName = Constants.REST_STUBS_DIR;
+            if(createJmakiCheckBox.isSelected())
+                folderName = Constants.REST_JMAKI_DIR;
+            folderTextField.setText(folderName);
+            
+            if (isJmakiEnabled(project)) {
+                if (!createJmakiCheckBox.isEnabled()) {
+                    createJmakiCheckBox.setEnabled(true);
+                    createJmakiCheckBox.setSelected(true);
+                }
+            }
         }
     }
 
@@ -239,10 +246,12 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     continue;
                 }
                 ProjectInformation pInfo = ProjectUtils.getInformation(p);
-                listModel.addElement(pInfo);
-                changed = true;
+                if(!listModel.contains(pInfo)) {
+                    listModel.addElement(pInfo);
+                    changed = true;
+                }
             } catch(IOException ioe) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         if (rejecteds.size() > 0) {
@@ -282,15 +291,19 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         wadlTextField = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
 
+        projectLabel.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_Project")); // NOI18N
 
         projectTextField.setEditable(false);
 
+        locationLabel.setLabelFor(locationCB);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_Location")); // NOI18N
 
+        folderLabel.setLabelFor(folderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(folderLabel, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_Folder")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_BrowseFolder")); // NOI18N
+        browseButton.setToolTipText(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("HINT_BrowseFolder")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -333,8 +346,8 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         overwriteCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(overwriteCheckBox, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_OverwriteExisting")); // NOI18N
 
-        createJmakiCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createJmakiCheckBox, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_CreateJmakiRestComponents")); // NOI18N
+        createJmakiCheckBox.setEnabled(false);
         createJmakiCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 createJmakiCheckBoxStateChanged(evt);
@@ -342,6 +355,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(projectRadioButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_ProjectsToGenerateStubFor")); // NOI18N
+        projectRadioButton.setToolTipText(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("DESC_ProjectList")); // NOI18N
         projectRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 projectRadioButtonActionPerformed(evt);
@@ -349,13 +363,15 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(wadlRadioButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_WADLToGenerateStubFor")); // NOI18N
+        wadlRadioButton.setToolTipText(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("HINT_WADLToGenerateStubFor")); // NOI18N
         wadlRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 wadlRadioButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(wadlBrowseButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(wadlBrowseButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_BrowseWadl")); // NOI18N
+        wadlBrowseButton.setToolTipText(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("HINT_BrowseWadl")); // NOI18N
         wadlBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 wadlBrowseButtonActionPerformed(evt);
@@ -379,87 +395,89 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectRadioButton)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
+                .add(createJmakiCheckBox)
+                .add(18, 18, 18)
+                .add(overwriteCheckBox)
+                .addContainerGap(127, Short.MAX_VALUE))
+            .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectRadioButton)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, wadlRadioButton)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(folderLabel)
+                        .add(14, 14, 14)
+                        .add(folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                        .add(6, 6, 6))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, wadlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                        .add(4, 4, 4))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(locationLabel)
-                                            .add(folderLabel))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(locationCB, 0, 530, Short.MAX_VALUE)
-                                            .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                                    .add(projectLabel))
-                                .add(7, 7, 7))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(createJmakiCheckBox)
-                                .add(18, 18, 18)
-                                .add(overwriteCheckBox))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(72, 72, 72)
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 522, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(wadlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 535, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(wadlBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(browseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(wadlRadioButton)
-                        .addContainerGap(487, Short.MAX_VALUE))))
+                                .add(48, 48, 48)
+                                .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(locationLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(locationCB, 0, 312, Short.MAX_VALUE)))
+                        .add(6, 6, 6)))
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(browseButton)
+                    .add(addButton)
+                    .add(removeButton)
+                    .add(wadlBrowseButton)))
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
         );
+
+        layout.linkSize(new java.awt.Component[] {addButton, browseButton, removeButton, wadlBrowseButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(projectLabel)
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(7, 7, 7)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(locationLabel)
+                    .add(locationCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(folderLabel)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(browseButton)
+                        .add(folderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(8, 8, 8)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(projectRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(projectLabel)
-                            .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(7, 7, 7)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(locationLabel)
-                            .add(locationCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(folderLabel)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(folderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(browseButton)))
+                        .add(wadlRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(2, 2, 2)
-                        .add(projectRadioButton)
-                        .add(29, 29, 29)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(wadlBrowseButton)
+                            .add(wadlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton))
-                    .add(layout.createSequentialGroup()
-                        .add(142, 142, 142)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(wadlRadioButton)
+                        .add(removeButton)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(wadlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(wadlBrowseButton))
-                .add(5, 5, 5)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createJmakiCheckBox)
                     .add(overwriteCheckBox))
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "Project")); // NOI18N
@@ -482,6 +500,11 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "DESC_RemoveProject")); // NOI18N
         overwriteCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "OverwriteExistingStubs")); // NOI18N
         overwriteCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "DESC_OverwriteExisting")); // NOI18N
+        wadlTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("HINT_WADLToGenerateStubFor")); // NOI18N
+        wadlTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("HINT_WADLToGenerateStubFor")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("Templates/WebServices/RestClientStubs")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("Templates/WebServices/RestClientStubs")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -541,12 +564,21 @@ private void addButtonshowProjectDialog(java.awt.event.ActionEvent evt) {//GEN-F
 }//GEN-LAST:event_addButtonshowProjectDialog
 
 private void createJmakiCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_createJmakiCheckBoxStateChanged
-    if(createJmakiCheckBox.isSelected())
+    if(createJmakiCheckBox.isSelected()) {
         folderTextField.setText(Constants.REST_JMAKI_DIR);
-    else
+        enableFromWadl(false);
+    } else {
         folderTextField.setText(Constants.REST_STUBS_DIR);
+        enableFromWadl(true);
+    }
     fireChange();
 }//GEN-LAST:event_createJmakiCheckBoxStateChanged
+
+private void enableFromWadl(boolean enable) {
+    wadlRadioButton.setEnabled(enable);
+    wadlTextField.setEnabled(enable);
+    wadlBrowseButton.setEnabled(enable);
+}
 
 private void projectRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectRadioButtonActionPerformed
     isProjectSelection = true;
@@ -594,10 +626,7 @@ private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
 }//GEN-LAST:event_wadlTextFieldKeyTyped
     
     private boolean validateWadlFile(final String fileName) {
-        String name = fileName.replaceAll(File.separator, "/");
-        if(!name.startsWith("/"))
-            name = "/"+name;
-        File f = new File(name);
+        File f = new File(fileName);
         boolean isValid = false;
         try {
             if(f.isFile()) {

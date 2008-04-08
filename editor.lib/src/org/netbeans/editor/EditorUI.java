@@ -44,6 +44,8 @@ package org.netbeans.editor;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
@@ -68,7 +70,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
+import javax.swing.undo.UndoManager;
+import org.netbeans.editor.ext.Completion;
+import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.util.WeakListeners;
 
 /**
@@ -79,7 +85,7 @@ import org.openide.util.WeakListeners;
 * @author Miloslav Metelka
 * @version 1.00
 */
-public class EditorUI implements ChangeListener, PropertyChangeListener, SettingsChangeListener {
+public class EditorUI implements ChangeListener, PropertyChangeListener, SettingsChangeListener, MouseListener {
 
     private static final Logger LOG = Logger.getLogger(EditorUI.class.getName());
     
@@ -242,6 +248,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     /** Left right corner of the JScrollPane */
     private JPanel glyphCorner;
     
+    private boolean popupMenuEnabled;
+
     public static final String LINE_HEIGHT_CHANGED_PROP = "line-height-changed-prop"; //NOI18N
 
     /** init paste action #39678 */
@@ -252,7 +260,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         Settings.addSettingsChangeListener(this);
 
         focusL = new FocusAdapter() {
-                     public void focusGained(FocusEvent evt) {
+                     public @Override void focusGained(FocusEvent evt) {
                          Registry.activate(getComponent());
                          /* Fix of #25475 - copyAction's enabled flag
                           * must be updated on focus change
@@ -311,7 +319,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
      * @deprecated Use Editor Settings API instead.
      */
     protected static Map<String, Coloring> getSharedColoringMap(Class kitClass) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         return ColoringMap.get(mimeType).getMap();
     }
 
@@ -342,6 +350,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             // listen on component
             component.addPropertyChangeListener(this);
             component.addFocusListener(focusL);
+            component.addMouseListener(this);
 
             // listen on caret
             Caret caret = component.getCaret();
@@ -383,6 +392,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
                 // stop listening on component
                 component.removePropertyChangeListener(this);
                 component.removeFocusListener(focusL);
+                component.removeMouseListener(this);
             
             }
 
@@ -454,6 +464,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             if (disableLineNumbers)
                 lineNumberVisible = false;
         }
+
+        popupMenuEnabled = SettingsUtil.getBoolean(kitClass,
+            org.netbeans.editor.ext.ExtSettingsNames.POPUP_MENU_ENABLED, true);
 
         BaseDocument doc = getDocument();
         if (doc != null) {
@@ -605,7 +618,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
                         BaseKit kit = Utilities.getKit(c);
                         if (kit != null) {
                             boolean isEditable = c.isEditable();
-                            boolean selectionVisible = c.getCaret().isSelectionVisible();
+                            boolean selectionVisible = Utilities.isSelectionShowing(c);
                             boolean caretGuarded = isCaretGuarded();
 
                             Action a = kit.getActionByName(BaseKit.copyAction);
@@ -650,6 +663,23 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
 
             // add all document layers
             drawLayerList.add(newDoc.getDrawLayerList());
+            
+            // If there is the wrapper component the default UndoManager
+            // of the document gets cleared so that only the TopComponent's one gets used.
+            UndoManager undoManager = (UndoManager) newDoc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+            if (hasExtComponent()) {
+                if (undoManager != null) {
+                    newDoc.removeUndoableEditListener(undoManager);
+                    newDoc.putProperty(BaseDocument.UNDO_MANAGER_PROP, null);
+                }
+            } else { // Implicit use e.g. an editor pane in a dialog
+                if (undoManager == null) {
+                    // By default have an undo manager in UNDO_MANAGER_PROP
+                    undoManager = new UndoManager();
+                    newDoc.addUndoableEditListener(undoManager);
+                    newDoc.putProperty(BaseDocument.UNDO_MANAGER_PROP, undoManager);
+                }
+            }
         }
     }
 
@@ -1470,17 +1500,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
 
     public void adjustWindow(int caretPercentFromWindowTop) {
         final Rectangle bounds = getExtentBounds();
-        if (component != null && (component.getCaret() instanceof Rectangle)) {
-            Rectangle caretRect = (Rectangle)component.getCaret();
-            bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
-                       + (caretPercentFromWindowTop * lineHeight) / 100;
-            Utilities.runInEventDispatchThread(
-                new Runnable() {
+        if (component != null) {
+            try {
+                Rectangle caretRect = component.modelToView(component.getCaretPosition());
+                bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
+                        + (caretPercentFromWindowTop * lineHeight) / 100;
+                Utilities.runInEventDispatchThread(new Runnable() {
                     public void run() {
                         scrollRectToVisible(bounds, SCROLL_SMALLEST);
                     }
-                }
-            );
+                });
+            } catch (BadLocationException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
         }
     }
 
@@ -1617,6 +1649,36 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             ret = ((Integer)textLimitLine).intValue();
         }
         return ret;
+    }
+
+    public void mouseClicked(MouseEvent evt) {
+    }
+
+    public void mousePressed(MouseEvent evt) {
+        getWordMatch().clear();
+
+        Completion completion = ExtUtilities.getCompletion(component);
+        if (completion != null && completion.isPaneVisible()) {
+            // Hide completion if visible
+            completion.setPaneVisible(false);
+        }
+        showPopupMenuForPopupTrigger(evt);
+    }
+    
+    public void mouseReleased(MouseEvent evt) {
+        showPopupMenuForPopupTrigger(evt); // On Win the popup trigger is on mouse release
+    }
+
+    private void showPopupMenuForPopupTrigger(MouseEvent evt) {
+        if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
+            ExtUtilities.getExtEditorUI(component).showPopupMenu(evt.getX(), evt.getY());
+        }
+    }
+    
+    public void mouseEntered(MouseEvent evt) {
+    }
+
+    public void mouseExited(MouseEvent evt) {
     }
 
 }

@@ -5,7 +5,7 @@
   xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Body>
         <TravelItinerary xmlns="http://www.opentravel.org/OTA/2003/05">
-            <ItineraryRef Type="14" ID="M839LW">            
+            <ItineraryRef Type="14" ID="M839LW">
                 <UniqueID>M839LWHH</UniqueID>
             </ItineraryRef >
             <CustomerInfos>

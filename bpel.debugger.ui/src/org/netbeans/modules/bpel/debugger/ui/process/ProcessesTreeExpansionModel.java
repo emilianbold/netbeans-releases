@@ -42,8 +42,7 @@ public class ProcessesTreeExpansionModel implements TreeExpansionModel {
     public ProcessesTreeExpansionModel(
             final ContextProvider lookupProvider) {
         
-        myDebugger = (BpelDebugger)
-                lookupProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

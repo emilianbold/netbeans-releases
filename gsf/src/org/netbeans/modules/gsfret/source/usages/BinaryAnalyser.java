@@ -66,135 +66,139 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public class BinaryAnalyser implements LowMemoryListener {
-    
-    static final String OBJECT = Object.class.getName();                        
-    
-    private final Index index;
-    private final Map<String,List<String>> refs = new HashMap<String,List<String>>();
-    private final Set<String> toDelete = new HashSet<String> ();
-    private final AtomicBoolean lowMemory;
-    private boolean cacheCleared;
 
-    public BinaryAnalyser (Index index) {
-       assert index != null;
-       this.index = index;
-       this.lowMemory = new AtomicBoolean (false);
+    public void lowMemory(LowMemoryEvent event) {
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
-        /** Analyses a classpath root.
-     * @param URL the classpath root, either a folder or an archive file.
-     *     
-     */
-    public final void analyse (final URL root, final ProgressHandle handle) throws IOException, IllegalArgumentException  {
-//        assert root != null;        
-//            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void> () {
-//                public Void run () throws IOException {
-//                LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
-//                try {
-//                    if (root.isDirectory()) {        //NOI18N                    
-//                        String path = root.getAbsolutePath ();
-//                        if (path.charAt(path.length()-1) != File.separatorChar) {
-//                            path = path + File.separatorChar;
-//                        }                    
-//                        cacheCleared = false;
-//                        analyseFolder(root, path);                    
-//                    }
-//                    else {
-//                        if (root.exists() && root.canRead()) {
-//                            if (!isUpToDate(null,root.lastModified())) {
-//                                index.clear();
-//                                if (handle != null) { //Tests don't provide handle
-//                                    handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",root.getAbsolutePath()));
-//                                }
-//                                final ZipFile zipFile = new ZipFile(root);
-//                                try {
-//                                    analyseArchive( zipFile );
-//                                }
-//                                finally {
-//                                    zipFile.close();
-//                                }
-//                            }
-//                        }
-//                    }
-//                } finally {
-//                    LowMemoryNotifier.getDefault().removeLowMemoryListener(BinaryAnalyser.this);
-//                }
-//                store();
-//                return null;
-//            }});
-    }        
-    
-        /** Analyses a folder 
-     *  @param folder to analyze
-     *  @param rootURL the url of root, it would be nicer to pass an URL type,
-     *  but the {@link URL#toExternalForm} from some strange reason does not cache result,
-     *  the String type is faster.
-     */
-    private void analyseFolder (final File  folder, final String rootPath) throws IOException {
-//        if (folder.exists() && folder.canRead()) {
-//            File[] children = folder.listFiles();  
-//            for (File file : children) {
-//                if (file.isDirectory()) {
-//                    analyseFolder(file, rootPath);
-//                }
-//                else if (this.accepts(file.getName())) {
-//                    String filePath = file.getAbsolutePath();
-//                    long fileMTime = file.lastModified();
-//                    int dotIndex = filePath.lastIndexOf('.');
-//                    int slashIndex = filePath.lastIndexOf('/');
-//                    int endPos;
-//                    if (dotIndex>slashIndex) {
-//                        endPos = dotIndex;
-//                    }
-//                    else {
-//                        endPos = filePath.length();
-//                    }
-//                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-//                    if (!isUpToDate (relativePath, fileMTime)) {
-//                        if (!cacheCleared) {
-//                            this.index.clear();                            
-//                            cacheCleared = true;
-//                        }
-//                        InputStream in = new BufferedInputStream (new FileInputStream (file));
-//                        analyse (in);
-//                        if (this.lowMemory.getAndSet(false)) {
-//                            this.store();
-//                        }
-//                    }
-//                }
-//            }
+//    
+//    static final String OBJECT = Object.class.getName();                        
+//    
+//    private final Index index;
+//    private final Map<String,List<String>> refs = new HashMap<String,List<String>>();
+//    private final Set<String> toDelete = new HashSet<String> ();
+//    private final AtomicBoolean lowMemory;
+//    private boolean cacheCleared;
+//
+//    public BinaryAnalyser (Index index) {
+//       assert index != null;
+//       this.index = index;
+//       this.lowMemory = new AtomicBoolean (false);
+//    }
+//    
+//        /** Analyses a classpath root.
+//     * @param URL the classpath root, either a folder or an archive file.
+//     *     
+//     */
+//    public final void analyse (final URL root, final ProgressHandle handle) throws IOException, IllegalArgumentException  {
+////        assert root != null;        
+////            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void> () {
+////                public Void run () throws IOException {
+////                LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
+////                try {
+////                    if (root.isDirectory()) {        //NOI18N                    
+////                        String path = root.getAbsolutePath ();
+////                        if (path.charAt(path.length()-1) != File.separatorChar) {
+////                            path = path + File.separatorChar;
+////                        }                    
+////                        cacheCleared = false;
+////                        analyseFolder(root, path);                    
+////                    }
+////                    else {
+////                        if (root.exists() && root.canRead()) {
+////                            if (!isUpToDate(null,root.lastModified())) {
+////                                index.clear();
+////                                if (handle != null) { //Tests don't provide handle
+////                                    handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",root.getAbsolutePath()));
+////                                }
+////                                final ZipFile zipFile = new ZipFile(root);
+////                                try {
+////                                    analyseArchive( zipFile );
+////                                }
+////                                finally {
+////                                    zipFile.close();
+////                                }
+////                            }
+////                        }
+////                    }
+////                } finally {
+////                    LowMemoryNotifier.getDefault().removeLowMemoryListener(BinaryAnalyser.this);
+////                }
+////                store();
+////                return null;
+////            }});
+//    }        
+//    
+//        /** Analyses a folder 
+//     *  @param folder to analyze
+//     *  @param rootURL the url of root, it would be nicer to pass an URL type,
+//     *  but the {@link URL#toExternalForm} from some strange reason does not cache result,
+//     *  the String type is faster.
+//     */
+//    private void analyseFolder (final File  folder, final String rootPath) throws IOException {
+////        if (folder.exists() && folder.canRead()) {
+////            File[] children = folder.listFiles();  
+////            for (File file : children) {
+////                if (file.isDirectory()) {
+////                    analyseFolder(file, rootPath);
+////                }
+////                else if (this.accepts(file.getName())) {
+////                    String filePath = file.getAbsolutePath();
+////                    long fileMTime = file.lastModified();
+////                    int dotIndex = filePath.lastIndexOf('.');
+////                    int slashIndex = filePath.lastIndexOf('/');
+////                    int endPos;
+////                    if (dotIndex>slashIndex) {
+////                        endPos = dotIndex;
+////                    }
+////                    else {
+////                        endPos = filePath.length();
+////                    }
+////                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
+////                    if (!isUpToDate (relativePath, fileMTime)) {
+////                        if (!cacheCleared) {
+////                            this.index.clear();                            
+////                            cacheCleared = true;
+////                        }
+////                        InputStream in = new BufferedInputStream (new FileInputStream (file));
+////                        analyse (in);
+////                        if (this.lowMemory.getAndSet(false)) {
+////                            this.store();
+////                        }
+////                    }
+////                }
+////            }
+////        }
+//    }
+//    
+//    public void lowMemory (final LowMemoryEvent event) {
+//        this.lowMemory.set(true);
+//    }
+//
+//    // Implementation of StreamAnalyser ----------------------------------------           
+//    
+//    private boolean accepts(String name) {
+//        int index = name.lastIndexOf('.');
+//        if (index == -1 || (index+1) == name.length()) {
+//            return false;
 //        }
-    }
-    
-    public void lowMemory (final LowMemoryEvent event) {
-        this.lowMemory.set(true);
-    }
-
-    // Implementation of StreamAnalyser ----------------------------------------           
-    
-    private boolean accepts(String name) {
-        int index = name.lastIndexOf('.');
-        if (index == -1 || (index+1) == name.length()) {
-            return false;
-        }
-        return "CLASS".equalsIgnoreCase(name.substring(index+1));  // NOI18N
-    }
-
-    //Cleans up usages of deleted class
-    private final void delete (final String className) throws IOException {
-        assert className != null;
-        if (!this.index.isValid(false)) {
-            return;
-        }
-        this.toDelete.add(className);
-    }
-    
-    private void analyse (InputStream inputStream ) throws IOException {
-//        throw new RuntimeException("Not yet implemented");
-    }
-    
-    
-    private final boolean isUpToDate(String resourceName, long resourceMTime) throws IOException {
-        return this.index.isUpToDate(resourceName, resourceMTime);
-    }
+//        return "CLASS".equalsIgnoreCase(name.substring(index+1));  // NOI18N
+//    }
+//
+//    //Cleans up usages of deleted class
+//    private final void delete (final String className) throws IOException {
+//        assert className != null;
+//        if (!this.index.isValid(false)) {
+//            return;
+//        }
+//        this.toDelete.add(className);
+//    }
+//    
+//    private void analyse (InputStream inputStream ) throws IOException {
+////        throw new RuntimeException("Not yet implemented");
+//    }
+//    
+//    
+//    private final boolean isUpToDate(String resourceName, long resourceMTime) throws IOException {
+//        return this.index.isUpToDate(resourceName, resourceMTime);
+//    }
 }

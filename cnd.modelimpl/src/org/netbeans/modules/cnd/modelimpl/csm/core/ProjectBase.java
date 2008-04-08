@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -122,7 +123,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.CLOSE_AFTER_PARSE) {
             Terminator.create(this);
         }
-        needParseOrphan = ModelSupport.instance().needParseOrphan(platformProject);
+        needParseOrphan = ModelSupport.needParseOrphan(platformProject);
     }
     
     private void setStatus(Status newStatus) {
@@ -422,8 +423,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 ParserQueue.instance().onStartAddingProjectFiles(this);
-                ModelSupport.instance().registerProjectListeners(this, platformProject);
-                NativeProject nativeProject = ModelSupport.instance().getNativeProject(platformProject);
+		getModel().registerProjectListeners(this, platformProject);
+                NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
                 if( nativeProject != null ) {
                     try {
                         ParserQueue.instance().suspend();
@@ -527,7 +528,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
-            ModelSupport.instance().dumpNativeProject(nativeProject);
+            ModelSupport.dumpNativeProject(nativeProject);
         }
         
         try {
@@ -584,7 +585,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 continue;
             }
             assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
+            if( TraceFlags.DEBUG ) ModelSupport.trace(nativeFileItem);
             try {
                 createIfNeed(nativeFileItem, sources, validator);
             } catch (Exception ex){
@@ -609,7 +610,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert preprocHandler != null;
         int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
         
-        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.instance().getFileBuffer(file), nativeFile, fileType);
+        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
         
         if( fileAndHandler.preprocHandler == null ) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
@@ -1024,6 +1025,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onFileRemoved(getFile(nativeFile));
     }
     
+    public void onFileExternalChange(FileImpl file) {
+        DeepReparsingUtils.reparseOnEdit(file, this);
+   }
+    
     public CsmFile findFile(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
@@ -1062,7 +1067,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(file);
                 if( impl == null ) {
                     preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, nativeFileItem);
+                    impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
                     if (nativeFileItem != null) {
                         putNativeFileItem(impl.getUID(), nativeFileItem);
                     }
@@ -1205,10 +1210,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     
-    protected ModelImpl getModelImpl() {
-        return null;
-    }
-    
     /**
      * Creates a dummy ClassImpl for uresolved name, stores in map
      * @param nameTokens name
@@ -1309,7 +1310,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private void disposeFiles() {
-        List<FileImpl> list;
+        Collection<FileImpl> list;
 //        synchronized (fileContainer) {
         list = getFileContainer().getFileImpls();
         getFileContainer().clear();
@@ -1411,7 +1412,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * CsmProject implementation
      */
     public Collection<CsmFile> getAllFiles() {
-        return (Collection<CsmFile>) getFileContainer().getFiles();
+        return getFileContainer().getFiles();
     }
     
     /**
@@ -1424,24 +1425,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     public Collection<CsmFile> getSourceFiles() {
-        List<CsmFile> res = new ArrayList<CsmFile>();
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for(FileImpl file : getAllFileImpls()){
             if (file.isSourceFile()) {
-                res.add(file);
+                uids.add(file.getUID());
             }
         }
-        return res;
+        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     public Collection<CsmFile> getHeaderFiles() {
-        List<CsmFile> res = new ArrayList<CsmFile>();
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for(FileImpl file : getAllFileImpls()){
-            //if (file.isHeaderFile()) {
-            if (!file.isSourceFile()) {
-                res.add(file);
+            if ( ! file.isSourceFile()) {
+                uids.add(file.getUID());
             }
         }
-        return res;
+        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     public long getMemoryUsageEstimation() {
@@ -1671,7 +1671,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private NativeProject findNativeProjectHolder(Set<ProjectBase> visited) {
         visited.add(this);
-        NativeProject nativeProject = ModelSupport.instance().getNativeProject(getPlatformProject());
+        NativeProject nativeProject = ModelSupport.getNativeProject(getPlatformProject());
         if (nativeProject == null) {
             // try to find dependent projects and ask them
             List<ProjectBase> deps = this.getDependentProjects();

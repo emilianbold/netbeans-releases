@@ -7,5 +7,5 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/apache/tools/ant/module/loader/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 

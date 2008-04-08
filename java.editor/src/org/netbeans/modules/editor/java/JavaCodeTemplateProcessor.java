@@ -50,6 +50,8 @@ import java.util.concurrent.Future;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.*;
@@ -76,13 +78,15 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String NEW_VAR_NAME = "newVarName"; //NOI18N
     public static final String NAMED = "named"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
+    public static final String UNCAUGHT_EXCEPTION_CATCH_STATEMENTS = "uncaughtExceptionCatchStatements"; //NOI18N
 
-    private static final String FALSE = "false"; //NOI18N
+    private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
     
     private CodeTemplateInsertRequest request;
 
+    private int caretOffset;
     private CompilationInfo cInfo = null;
     private Future<Void> initTask = null;
     private TreePath treePath = null;
@@ -98,6 +102,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
     
     public synchronized void updateDefaultValues() {
+        updateTemplateEnding();
+        updateTemplateBasedOnCatchers();
         updateTemplateBasedOnSelection();
         boolean cont = true;
         while (cont) {
@@ -132,6 +138,54 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     public void release() {
     }
+
+    private void updateTemplateEnding() {
+        String text = request.getParametrizedText();
+        if (text.endsWith("\n")) { //NOI18N
+            JTextComponent component = request.getComponent();
+            int offset = component.getSelectionEnd();
+            Document doc = component.getDocument();
+            if (doc.getLength() > offset) {
+                try {
+                    if ("\n".equals(doc.getText(offset, 1))) {
+                        request.setParametrizedText(text.substring(0, text.length() - 1));
+                    }
+                } catch (BadLocationException ble) {
+                }
+            }
+        }
+    }
+
+    private void updateTemplateBasedOnCatchers() {
+        for (CodeTemplateParameter parameter : request.getAllParameters()) {
+            for (String hint : parameter.getHints().keySet()) {
+                if (UNCAUGHT_EXCEPTION_CATCH_STATEMENTS.equals(hint) && isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+                    SourcePositions[] sourcePositions = new SourcePositions[1];
+                    TreeUtilities tu = cInfo.getTreeUtilities();
+                    StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
+                    if (!errChecker.containsErrors(stmt)) {
+                        TreePath path = tu.pathFor(new TreePath(treePath, stmt), parameter.getInsertTextOffset(), sourcePositions[0]);
+                        path = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
+                        if (path != null && ((TryTree)path.getLeaf()).getBlock() != null) {
+                            tu.attributeTree(stmt, scope);
+                            StringBuilder sb = new StringBuilder();
+                            int cnt = 0;
+                            for (TypeMirror tm : tu.getUncaughtExceptions(new TreePath(path, ((TryTree)path.getLeaf()).getBlock()))) {
+                                sb.append("catch ("); //NOI18N
+                                sb.append("${_GEN_UCE_TYPE_" + cnt++ + " type=" + Utilities.getTypeName(tm, true) + " default=" + Utilities.getTypeName(tm, false) + "}"); //NOI18N
+                                sb.append(" ${_GEN_UCE_NAME_" + cnt++ + " newVarName}){}"); //NOI18N
+                            }
+                            if (sb.length() > 0) {
+                                StringBuilder ptBuilder = new StringBuilder(request.getParametrizedText());
+                                ptBuilder.replace(parameter.getParametrizedTextStartOffset(), parameter.getParametrizedTextEndOffset(), sb.toString());
+                                request.setParametrizedText(ptBuilder.toString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     private void updateTemplateBasedOnSelection() {
         for (CodeTemplateParameter parameter : request.getAllParameters()) {
@@ -148,8 +202,12 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             TreePath treePath = tu.pathFor(component.getSelectionStart());
                             Tree tree = treePath.getLeaf();
                             if (tree.getKind() == Tree.Kind.BLOCK && tree == tu.pathFor(component.getSelectionEnd()).getLeaf()) {
+                                String selection = component.getSelectedText();
+                                int idx = 0;
+                                while ((idx < selection.length()) && (selection.charAt(idx) <= ' '))
+                                    idx++;
                                 final StringBuilder selectionText = new StringBuilder(parameter.getValue());
-                                final int caretOffset = component.getSelectionStart();
+                                final int caretOffset = component.getSelectionStart() + idx;
                                 final StringBuilder sb = new StringBuilder();
                                 final Trees trees = cInfo.getTrees();
                                 final SourcePositions sp = trees.getSourcePositions();
@@ -233,7 +291,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
                 CodeTemplateParameter param = entry.getKey();
                 TypeMirror tm = param2types.get(param);
-                TreePath tp = cInfo.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
+                TreePath tp = cInfo.getTreeUtilities().pathFor(caretOffset + param.getInsertTextOffset());
                 CharSequence typeName = imp.resolveImport(tp, tm);
                 if (CAST.equals(param2hints.get(param))) {
                     param.setValue("(" + typeName + ")"); //NOI18N
@@ -450,7 +508,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (type.getKind() == TypeKind.DECLARED)
                         return NULL;
                     else if (type.getKind() == TypeKind.BOOLEAN)
-                        return FALSE;
+                        return TRUE;
                 }
             }
         } catch (Exception e) {
@@ -579,7 +637,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     return null;
                 if (left == null)
                     return null;
-                if (right.getKind() != TypeKind.ERROR && cInfo.getTypes().isAssignable(right, left))
+                if (right.getKind() == TypeKind.ERROR || cInfo.getTypes().isAssignable(right, left))
                     return null;
                 return left;
             }
@@ -673,7 +731,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private synchronized boolean initParsing() {
         if (cInfo == null && initTask == null) {
             JTextComponent c = request.getComponent();
-            final int caretOffset = c.getSelectionStart();
+            caretOffset = c.getSelectionStart();
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {

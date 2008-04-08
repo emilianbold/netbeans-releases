@@ -1,0 +1,34 @@
+<?php
+    $name = "Petr";
+    echo <<<HEREDOC
+        Dobry den $name!
+    HEREDOC
+
+    class Bob {
+        const TEST = 1;
+
+        // beginning of docblock area
+        /**
+         * @access private
+         * @var string 
+         */
+        var $_var1 = 'hello';
+        var $publicvar = 'Lookee me!';
+
+        /**
+        * xyz - do something
+        * @param string $src path to dir or textfile (local or remote)
+        * @return string Error when 
+        */
+        function xyz( $src) {
+            $a = 1 + b;
+            switch ($a) {
+                case 1;echo 1;break;
+                // TODO: something    
+                default; echo "default";
+            }
+        }
+    }
+    
+    echo Test::xyz();
+?>

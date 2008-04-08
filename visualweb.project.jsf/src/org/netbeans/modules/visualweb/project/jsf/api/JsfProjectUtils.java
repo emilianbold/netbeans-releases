@@ -128,6 +128,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -258,6 +261,15 @@ public class JsfProjectUtils {
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     if (fileContains(projXml, RAVE_AUX_NAMESPACE)) {
+                        setJsfProjectDir(dirs, Boolean.TRUE);
+                        return true;
+                    }
+                }
+
+                final FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
+                // Found the project root directory and got the Maven nb-configuration.xml file
+                if (projMaven != null) {
+                    if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
                         setJsfProjectDir(dirs, Boolean.TRUE);
                         return true;
                     }
@@ -1712,17 +1724,7 @@ public class JsfProjectUtils {
     }
     
     public static void addLocalizedRoots(Project project, String[] jarName) throws IOException {
-        ArrayList jars = new ArrayList(jarName.length);
-        for (int i = 0; i < jarName.length; i++) {
-            File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
-            if (f != null) {
-                URL root = FileUtil.getArchiveRoot(FileUtil.toFileObject(f)).getURL();
-                if (!hasRootReference(project, root)) {
-                    jars.add(root);
-                }
-            }
-        }
-        addRootReferences(project, (URL[])jars.toArray(new URL[0]));
+        addLocalizedRoots(project, jarName, ClassPath.COMPILE);
     }
 
     public static void addLocalizedRoots(Project project, String[] jarName, String type) throws IOException {
@@ -1739,6 +1741,16 @@ public class JsfProjectUtils {
         addRootReferences(project, (URL[])jars.toArray(new URL[0]), type);
     }
 
+    public static void addLocalizedRoots(Project project, URL[] roots, String type) throws IOException {
+        ArrayList<URL> jars = new ArrayList<URL>(roots.length);
+        for (URL root : roots) {
+            if (!hasRootReference(project, root, type)) {
+                jars.add(root);
+            }
+        }
+        addRootReferences(project, (URL[])jars.toArray(new URL[0]), type);
+    }
+
     public static void updateLocalizedRoots(Project project) {
         try {
             JsfProjectLibrary.updateLocalizedRoots(project);
@@ -1748,7 +1760,7 @@ public class JsfProjectUtils {
     }
 
     public static void addLocalizedTheme(Project project, String themeName) throws IOException {
-        URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
+        URL root = JsfProjectLibrary.getLocalizedThemeRoot(project, themeName);
         if (root != null) {
             if (!hasRootReference(project, root)) {
                 addRootReferences(project, new URL[] { root });
@@ -1757,7 +1769,7 @@ public class JsfProjectUtils {
     }
     
     public static void removeLocalizedTheme(Project project, String themeName)  throws IOException {
-        URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
+        URL root = JsfProjectLibrary.getLocalizedThemeRoot(project, themeName);
         if (root != null) {
             if (hasRootReference(project, root)) {
                 removeRootReferences(project, new URL[] { root });
@@ -1925,5 +1937,24 @@ public class JsfProjectUtils {
                 return new JFileChooser(currentDirectory) ;
             }
         });
+    }
+    
+    public static LibraryManager getProjectLibraryManager(Project project) {
+        LibraryManager lm = ReferenceHelper.getProjectLibraryManager(project);
+        if (lm != null) {
+            return lm;
+        }
+        return LibraryManager.getDefault();
+    }
+    
+    public static String[] getJ2eeClasspathEntries(Project project) {
+        WebPropertyEvaluator webPropertyEvaluator = (WebPropertyEvaluator)project.getLookup().lookup(WebPropertyEvaluator.class);
+        if(webPropertyEvaluator != null) {
+            String property = webPropertyEvaluator.evaluator().getProperty("j2ee.platform.classpath");    //NOI18N
+            if (property != null) {
+                return PropertyUtils.tokenizePath(property);
+            }
+        }
+        return new String[0];
     }
 }

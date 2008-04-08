@@ -1,10 +1,8 @@
-import os, re, urllib2, sha, inspect
-from mercurial import util, httprepo
+import os, re, urllib2, sha, inspect, sys
+from mercurial import util, httprepo, ui
 
-# XXX platform module does not seem to be loadable on Windows:
-#import platform
-#if map(int, platform.python_version_tuple()) < [2, 4, 4]:
-#    raise util.Abort('Requires Python 2.4.4+ (2.5.1 preferred)')
+if sys.version_info < (2, 4, 4):
+    ui.ui().warn('Warning: external hook requires Python 2.4.4+ (2.5.1 preferred)\n')
 
 # Workaround for a Python bug (in linecache.py?):
 # http://bugs.python.org/issue1728
@@ -68,6 +66,7 @@ def _download_to_cache(url, ui, sha1, filename, cachefile):
     return data
 
 def download(s, cmd, ui=None, filename=None, **kwargs):
+    # To support dev versions of Hg with f8ad3b76e923 but not f3a8b5360100:
     cmd = re.sub(r'^download: *', '', cmd)
     filename = _filename(filename)
     ui = _ui(ui)
@@ -130,7 +129,7 @@ def upload(s, cmd, ui=None, repo=None, filename=None, **kwargs):
             ui.status('Uploading %s to %s (%s Kb)\n' % (filename, url, len(s) / 1024))
             auth = urllib2.HTTPBasicAuthHandler(pm)
             try:
-                data = {'file': open(repo.wjoin(filename))}
+                data = {'file': repo.wfile(filename)}
                 # XXX support proxies; look at httprepo.httprepository.__init__
                 # or http://www.hackorama.com/python/upload.shtml
                 urllib2.build_opener(MultipartPostHandler, auth).open(url, data).close()
@@ -156,6 +155,7 @@ def reposetup(ui, repo):
             util.filtertable[name] = fn
 
 # --- FROM http://odin.himinbi.org/MultipartPostHandler.py ---
+# (with some bug fixes!)
 import urllib
 import urllib2
 import mimetools, mimetypes
@@ -177,15 +177,12 @@ class MultipartPostHandler(urllib2.BaseHandler):
         if data is not None and type(data) != str:
             v_files = []
             v_vars = []
-            try:
-                 for(key, value) in data.items():
-                     if type(value) == file:
-                         v_files.append((key, value))
-                     else:
-                         v_vars.append((key, value))
-            except TypeError:
-                systype, value, traceback = sys.exc_info()
-                raise TypeError, "not a valid non-string sequence or mapping object", traceback
+            for(key, value) in data.items():
+                try:
+                     value.name
+                     v_files.append((key, value))
+                except AttributeError:
+                     v_vars.append((key, value))
 
             if len(v_files) == 0:
                 data = urllib.urlencode(v_vars, doseq)
@@ -210,13 +207,11 @@ class MultipartPostHandler(urllib2.BaseHandler):
             buffer += 'Content-Disposition: form-data; name="%s"' % key
             buffer += '\r\n\r\n' + value + '\r\n'
         for(key, fd) in files:
-            file_size = os.fstat(fd.fileno())[stat.ST_SIZE]
             filename = os.path.basename(fd.name)
             contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             buffer += '--%s\r\n' % boundary
             buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)
             buffer += 'Content-Type: %s\r\n' % contenttype
-            # buffer += 'Content-Length: %s\r\n' % file_size
             fd.seek(0)
             buffer += '\r\n' + fd.read() + '\r\n'
         buffer += '--%s--\r\n\r\n' % boundary

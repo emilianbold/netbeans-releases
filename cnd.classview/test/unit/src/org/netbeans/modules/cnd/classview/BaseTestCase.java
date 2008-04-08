@@ -42,8 +42,10 @@
 package org.netbeans.modules.cnd.classview;
 
 import java.io.File;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbPreferences;
 
 /**
  * base class for class view golden tests
@@ -70,7 +73,9 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.classview.no-loading-node","true"); // NOI18N
-        super.setUp();
+	Preferences ps = NbPreferences.forModule(ClassViewTopComponent.class);
+	ps.putBoolean(ClassViewTopComponent.OPENED_PREFERENCE, true);
+	super.setUp();
     }
     
     @Override
@@ -78,14 +83,14 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
         super.tearDown();
     }
     
-    protected @Override void postTest(String[] args) {
+    protected @Override void postTest(String[] args, Object... params) {
         CsmProject project = getCsmProject();
         assertNotNull("Project not found",project); // NOI18N
         childrenUpdater = new ChildrenUpdater();
         CsmNamespace globalNamespace = project.getGlobalNamespace();
         NamespaceKeyArray global = new NamespaceKeyArray(childrenUpdater, globalNamespace);
         dump(global,"", !isReparsed);
-        getModel().addModelListener(this);
+        CsmListeners.getDefault().addModelListener(this);
         for(CsmFile file : project.getHeaderFiles()){
             reparseFile(file);
         }

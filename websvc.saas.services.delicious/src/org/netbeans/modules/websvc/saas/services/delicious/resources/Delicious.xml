@@ -47,22 +47,45 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://del.icio.us/help/api/posts"
-               url="/org/netbeans/modules/websvc/saas/services/delicious/resources/DeliciousWadl.xml">
+               api-doc="http://del.icio.us/help/api/"
+               url="org/netbeans/modules/websvc/saas/services/delicious/resources/DeliciousWadl.xml">
    
     <description>Bookmarking Service</description>
-    <display-name>Bookmarking</display-name>
+    <display-name>Bookmarking Service</display-name>
     
     <saas-metadata>
         
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.delicious.Bundle</localizing-bundle>
         
-        <icon16>org/netbeans/modules/websvc/components/delicious/resources/delicious16.png</icon16>
-
         <group name="Delicious"/>
         
-        <authentication profile="Templates/WebServices/profile.properties">
-            <http-basic/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp">
+                <artifact id="HttpBasicAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticatorDesktop.java"/>
+                <artifact id="HttpBasicAuthenticator" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticator.java"/>
+                <artifact id="HttpBasicAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/HttpBasicLogin.java"/>
+                <artifact id="HttpBasicAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/HttpBasicCallback.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="Templates/SaaSServices/httpbasic.properties">
+            <http-basic username="username" password="password">
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="HttpBasicAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="HttpBasicAuthenticator"/>
+                            <template type="login" href="HttpBasicAuthenticatorLogin"/>
+                            <template type="callback" href="HttpBasicAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
+            </http-basic>
         </authentication>
         
     </saas-metadata>

@@ -81,6 +81,9 @@ public class NbSheetTest extends NbTestCase {
     }
 
     public void testIssue97069EgUseSetActivatedNodesNull() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         class Empty implements Runnable {
             public void run() { }
         }
@@ -153,6 +156,9 @@ public class NbSheetTest extends NbTestCase {
 
 
     public void testMemoryLeakIssue125057() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         NbSheet sheet = NbSheet.getDefault();
         SwingUtilities.invokeAndWait( new Runnable() {
             public void run() {

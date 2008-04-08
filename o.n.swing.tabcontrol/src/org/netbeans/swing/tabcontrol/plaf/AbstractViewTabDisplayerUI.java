@@ -103,7 +103,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
     private TabDataModel dataModel;
 
-    private ViewTabLayoutModel layoutModel;
+    private TabLayoutModel layoutModel;
 
     private FontMetrics fm;
 
@@ -120,18 +120,29 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     /** Pin action */
     private final Action pinAction = new PinAction();
     private static final String PIN_ACTION = "pinAction";
+    //toggle transparency action
+    private static final String TRANSPARENCY_ACTION = "transparencyAction";
     
     public AbstractViewTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
         displayer.setLayout(null);
     }
 
+    @Override
     public void installUI(JComponent c) {
         super.installUI(c);
         ToolTipManager.sharedInstance().registerComponent(displayer);
         controller = createController();
         dataModel = displayer.getModel();
-        layoutModel = new ViewTabLayoutModel(dataModel, displayer);
+        if (Boolean.getBoolean("winsys.non_stretching_view_tabs")) {
+            ViewTabLayoutModel2.PaddingInfo padding = new ViewTabLayoutModel2.PaddingInfo();
+            padding.iconsXPad = 5;
+            padding.txtIconsXPad = 10;
+            padding.txtPad = new Dimension(5, 2);
+            layoutModel = new ViewTabLayoutModel2(displayer, padding);
+        } else {
+            layoutModel = new ViewTabLayoutModel(dataModel, c);
+        }
         dataModel.addChangeListener (controller);
         dataModel.addComplexListDataListener(controller);
         displayer.addPropertyChangeListener (controller);
@@ -221,6 +232,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return controlButtons;
     }
 
+    @Override
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
         ToolTipManager.sharedInstance().unregisterComponent(displayer);
@@ -244,6 +256,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return new Controller();
     }
 
+    @Override
     public void paint(Graphics g, JComponent c) {
 
         ColorUtil.setupAntialiasing(g);
@@ -375,6 +388,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
             remove(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0,
                                 InputEvent.CTRL_DOWN_MASK));
+        comp.getActionMap().remove(TRANSPARENCY_ACTION);
     }
 
     /** Registers shortcut for enable/ disable auto-hide functionality */
@@ -383,6 +397,16 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,
                                 InputEvent.CTRL_DOWN_MASK), PIN_ACTION);
         comp.getActionMap().put(PIN_ACTION, pinAction);
+
+        //TODO make shortcut configurable
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
+            put(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0,
+                                InputEvent.CTRL_DOWN_MASK), TRANSPARENCY_ACTION);
+        comp.getActionMap().put(TRANSPARENCY_ACTION, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                shouldPerformAction(TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY, getSelectionModel().getSelectedIndex(), null);
+            }
+        });
     }
     
     public Polygon getExactTabIndication(int index) {
@@ -443,6 +467,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
 
     /** Paints the rectangle occupied by a tab into an image and returns the result */
+    @Override
     public Image createImageOfTab(int index) {
         TabData td = displayer.getModel().getTab(index);
         
@@ -452,10 +477,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         width = width + td.getIcon().getIconWidth() + 6;
         height = Math.max(height, td.getIcon().getIconHeight()) + 5;
         
-        GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                        .getDefaultScreenDevice().getDefaultConfiguration();
-        
-        BufferedImage image = config.createCompatibleImage(width, height);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setColor(lbl.getForeground());
         g.setFont(lbl.getFont());
@@ -588,6 +610,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             return false;
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             Point p = e.getPoint();
             int i = getLayoutModel().indexOfPoint(p.x, p.y);
@@ -614,6 +637,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             }
         }
 
+        @Override
         public void mouseClicked (MouseEvent e) {
             if (e.getClickCount() >= 2 && !e.isPopupTrigger()) {
                 Point p = e.getPoint();
@@ -635,6 +659,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             // close button must not be active when selection change was
             // triggered by mouse press

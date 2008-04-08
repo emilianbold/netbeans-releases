@@ -377,12 +377,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             }
         });
 
+        rowsLabel.setLabelFor(rowsTextField);
         rowsLabel.setText(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.rowsLabel.text")); // NOI18N
         rowsLabel.setEnabled(false);
 
         rowsTextField.setEditable(false);
         rowsTextField.setEnabled(false);
 
+        columnsLabel.setLabelFor(columnsTextField);
         columnsLabel.setText(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.columnsLabel.text")); // NOI18N
         columnsLabel.setEnabled(false);
 
@@ -442,6 +444,23 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
                         .addContainerGap())
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
+
+        tableLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.tableLabel.accessible.name")); // NOI18N
+        tableLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.tableLabel.accessible.description")); // NOI18N
+        addColButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.addColButton.accessible.name")); // NOI18N
+        addColButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.addColButton.accessible.description")); // NOI18N
+        removeColButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.removeColButton.accessible.name")); // NOI18N
+        removeColButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.removeColButton.accessible.descriptions")); // NOI18N
+        removeRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.removeRowButton.accessible.name")); // NOI18N
+        removeRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.removeRowButton.accessible.description")); // NOI18N
+        addRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.addRowButton.accessible.name")); // NOI18N
+        addRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.addRowButton.accessible.description")); // NOI18N
+        headerCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.headerCheckBox.accessible.name")); // NOI18N
+        headerCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.headerCheckBox.accessible.description")); // NOI18N
+        rowsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.rowsLabel.accessible.name")); // NOI18N
+        rowsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.rowsLabel.accessible.description")); // NOI18N
+        columnsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.columnsLabel.accessible.name")); // NOI18N
+        columnsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.columnsLabel.accessible.description")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void addColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addColButtonActionPerformed

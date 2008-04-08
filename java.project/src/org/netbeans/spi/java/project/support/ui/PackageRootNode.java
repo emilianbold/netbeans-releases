@@ -335,14 +335,22 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     // Private methods ---------------------------------------------------------
     
     private Node getDataFolderNodeDelegate() {
-        Node retVal;
         DataFolder df = getLookup().lookup(DataFolder.class);
-        if (df.isValid()) {
-            retVal = df.getNodeDelegate();
-        } else {
-            retVal = new AbstractNode(Children.LEAF);
+        try {
+            if (df.isValid()) {
+                return df.getNodeDelegate();
+            } 
+        } catch (IllegalStateException e) {
+            //The data systems API is not thread save,
+            //the DataObject may become invalid after isValid call and before
+            //getNodeDelegate call, we have to catch the ISE. When the DataObject
+            //is valid - other cause rethrow it otherwise return leaf node.
+            //todo: The DataObject.getNodedelegate should throw specialized exception type.
+            if (df.isValid()) {
+                throw e;
+            }
         }
-        return retVal;
+        return new AbstractNode(Children.LEAF);
     }
     
     private Image computeIcon( boolean opened, int type ) {

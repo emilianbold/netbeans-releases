@@ -39,6 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.spi.impl;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -62,8 +63,9 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElement;
  * @author  Pavel Flaska
  */
 class CheckNodeListener implements MouseListener, KeyListener {
+
     private final boolean isQuery;
-    
+
     public CheckNodeListener(boolean isQuery) {
         this.isQuery = isQuery;
     }
@@ -92,10 +94,11 @@ class CheckNodeListener implements MouseListener, KeyListener {
                             findInSource(node);
                         }
                     } else {
-                        if (tree.isCollapsed(row))
+                        if (tree.isCollapsed(row)) {
                             tree.expandRow(row);
-                        else
+                        } else {
                             tree.collapseRow(row);
+                        }
                     }
                 } else if (e.getClickCount() == 1) {
                     Object o = node.getUserObject();
@@ -114,11 +117,12 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     boolean isSelected = !(node.isSelected());
                     node.setSelected(isSelected);
                     if (node.getSelectionMode() == CheckNode.DIG_IN_SELECTION) {
-                        if (isSelected)
+                        if (isSelected) {
                             tree.expandPath(path);
-                        else
+                        } else {
                             tree.collapsePath(path);
-                    } 
+                        }
+                    }
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
@@ -131,8 +135,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         tree.revalidate();
                         tree.repaint();
                     }
-                }
-                // double click, open the document
+                } // double click, open the document
                 else if (e.getClickCount() == 2 && chRect.contains(p) == false) {
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
@@ -140,12 +143,12 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         if (o instanceof RefactoringElement) {
                             findInSource(node);
                         }
-                    }
-                    else {
-                        if (tree.isCollapsed(row))
+                    } else {
+                        if (tree.isCollapsed(row)) {
                             tree.expandRow(row);
-                        else
+                        } else {
                             tree.collapseRow(row);
+                        }
                     }
                 } else if (e.getClickCount() == 1 && chRect.contains(p) == false) {
                     Object o = node.getUserObject();
@@ -159,34 +162,42 @@ class CheckNodeListener implements MouseListener, KeyListener {
             }
         }
     }
-    
+
     public void keyTyped(KeyEvent e) {
     }
-    
+
     public void keyReleased(KeyEvent e) {
         // Enter key was pressed, find the reference in document
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+        int keyCode = e.getKeyCode();
+        if (keyCode == KeyEvent.VK_ENTER) {
             JTree tree = (JTree) e.getSource();
             TreePath path = tree.getSelectionPath();
             if (path != null) {
                 CheckNode node = (CheckNode) path.getLastPathComponent();
                 findInSource(node);
             }
+        } else if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
+            JTree tree = (JTree) e.getSource();
+            TreePath path = tree.getSelectionPath();
+            if (path != null) {
+                CheckNode node = (CheckNode) path.getLastPathComponent();
+                openDiff(node);
+            }
         }
     }
-    
+
     public void mouseEntered(MouseEvent e) {
     }
-    
+
     public void mouseExited(MouseEvent e) {
     }
-    
+
     public void mousePressed(MouseEvent e) {
     }
-    
+
     public void mouseReleased(MouseEvent e) {
     }
-    
+
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == ' ') {
             JTree tree = (JTree) e.getSource();
@@ -198,26 +209,58 @@ class CheckNodeListener implements MouseListener, KeyListener {
             }
         }
     }
-    
+
     static void findInSource(CheckNode node) {
         Object o = node.getUserObject();
         if (o instanceof TreeElement) {
-            o = ((TreeElement)o).getUserObject();
+            o = ((TreeElement) o).getUserObject();
             if (o instanceof RefactoringElement) {
                 APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).openInEditor();
             }
         }
     }
-    
+
     static void openDiff(CheckNode node) {
         Object o = node.getUserObject();
         if (o instanceof TreeElement) {
-            o = ((TreeElement)o).getUserObject();
+            o = ((TreeElement) o).getUserObject();
             if (o instanceof RefactoringElement) {
                 APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).showPreview();
             }
         }
     }
-    
 
+    static void selectNextPrev(final boolean next, boolean isQuery, JTree tree) {
+        int[] rows = tree.getSelectionRows();
+        int newRow = rows == null || rows.length == 0 ? 0 : rows[0];
+        int maxcount = tree.getRowCount();
+        CheckNode node;
+        do {
+            if (next) {
+                newRow++;
+                if (newRow >= maxcount) {
+                    newRow = 0;
+                }
+            } else {
+                newRow--;
+                if (newRow < 0) {
+                    newRow = maxcount - 1;
+                }
+            }
+            TreePath path = tree.getPathForRow(newRow);
+            node = (CheckNode) path.getLastPathComponent();
+            if (!node.isLeaf()) {
+                tree.expandRow(newRow);
+                maxcount = tree.getRowCount();
+            }
+        } while (!node.isLeaf());
+        tree.setSelectionRow(newRow);
+        tree.scrollRowToVisible(newRow);
+        if (isQuery) {
+            CheckNodeListener.findInSource(node);
+        } else {
+            CheckNodeListener.openDiff(node);
+        }
+    }
 } // end CheckNodeListener
+

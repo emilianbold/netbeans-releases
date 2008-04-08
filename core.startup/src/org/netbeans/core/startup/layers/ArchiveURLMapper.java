@@ -67,7 +67,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 public class ArchiveURLMapper extends URLMapper {
-
+    private static boolean warningAlreadyReported = false;
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
     private static Map<File,SoftReference<JarFileSystem>> mountRoots = new HashMap<File,SoftReference<JarFileSystem>>();
@@ -137,7 +137,12 @@ public class ArchiveURLMapper extends URLMapper {
                 } catch (IOException e) {                    
                     // Can easily happen if the JAR file is corrupt etc,
                     // it is better for user to log localized message than to dump stack
-                    ModuleLayeredFileSystem.err.log(Level.WARNING, null, e);
+                    if (warningAlreadyReported) {
+                        ModuleLayeredFileSystem.err.log(Level.INFO, null, e);
+                    } else {
+                        ModuleLayeredFileSystem.err.log(Level.WARNING, null, e);
+                        warningAlreadyReported = true;
+                    }
                 }
                 catch (URISyntaxException e) {
                     Exceptions.printStackTrace(e);

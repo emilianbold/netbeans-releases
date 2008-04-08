@@ -114,7 +114,6 @@ public final class ExclusiveAccess {
 
         public boolean cancel() {
             if (task.cancel()) {
-                task.waitFinished();
                 return true;
             }
             return false;

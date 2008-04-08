@@ -47,16 +47,50 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://api.flickr.com/"
-               url="/org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrWadl.xml">
+               api-doc="http://www.flickr.com/services/api/"
+               url="org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrWadl.xml">
     
-    <description>Picture Service</description>
-    <display-name>Picture</display-name>
+    <description>Photo Service</description>
+    <display-name>Photo Service</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/flickr/resources/flickr16.png</icon16>
         <group name="Flickr"/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp">
+                <artifact id="FlickrAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticatorDesktop.java"/>
+                <artifact id="FlickrAuthenticator" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticator.java"/>
+                <artifact id="FlickrAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FlickrLogin.java"/>
+                <artifact id="FlickrAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FlickrCallback.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="Templates/SaaSServices/sessionkey.properties">
+            <session-key api-id="api_key" session-id="auth_token" sig-id="api_sig">
+                <sign id="sig">
+                    <params>
+                        <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
+                        <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
+                    </params>
+                </sign>
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="FlickrAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="FlickrAuthenticator"/>
+                            <template type="login" href="FlickrAuthenticatorLogin"/>
+                            <template type="callback" href="FlickrAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
+            </session-key>
+        </authentication>
+        
     </saas-metadata>
     
     <!-- Process all methods in the wadl !-->

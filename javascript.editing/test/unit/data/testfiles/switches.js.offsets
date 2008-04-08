@@ -1,0 +1,35 @@
+Missing position for node SCRIPT[0:0]:SWITCH[1:6]:CASE[2:8]:BLOCK[0:0]:BLOCK
+Missing position for node SCRIPT[0:0]:SWITCH[1:6]:TARGET[0:0]:TARGET
+Missing position for node SCRIPT[0:0]:SWITCH[20:0]:DEFAULT[24:4]:BLOCK[0:0]:BLOCK
+Missing position for node SCRIPT[0:0]:SWITCH[20:0]:TARGET[0:0]:TARGET
+
+<SCRIPT>
+      <SWITCH>switch (<NAME>tagName</NAME>) {
+        <CASE>case <STRING>'THEAD'</STRING,CASE>:
+        <CASE>case <STRING>'TBODY'</STRING>:
+          <BLOCK,EXPR_RESULT,SETPROP,NAME>div</NAME>.<STRING>innerHTML</STRING> = <ADD,ADD,STRING>'<table><tbody>'</STRING> +  <CALL,NAME>html</NAME>.<GETPROP,STRING>stripScripts</STRING,GETPROP>()</CALL,ADD> + <STRING>'</tbody></table>'</STRING,ADD,SETPROP,EXPR_RESULT>;
+          <EXPR_RESULT,SETNAME,BINDNAME>depth</BINDNAME> = <NUMBER>2</NUMBER,SETNAME,EXPR_RESULT>;
+          <BREAK>break</BREAK,BLOCK,CASE>;
+        <CASE>case <STRING>'TR'</STRING>:
+          <BLOCK,EXPR_RESULT,SETPROP,NAME>div</NAME>.<STRING>innerHTML</STRING> = <ADD,ADD,STRING>'<table><tbody><tr>'</STRING> +  <CALL,NAME>html</NAME>.<GETPROP,STRING>stripScripts</STRING,GETPROP>()</CALL,ADD> + <STRING>'</tr></tbody></table>'</STRING,ADD,SETPROP,EXPR_RESULT>;
+          <EXPR_RESULT,SETNAME,BINDNAME>depth</BINDNAME> = <NUMBER>3</NUMBER,SETNAME,EXPR_RESULT>;
+          <BREAK>break</BREAK,BLOCK,CASE>;
+        <CASE>case <STRING>'TD'</STRING>:
+          <BLOCK,EXPR_RESULT,SETPROP,NAME>div</NAME>.<STRING>innerHTML</STRING> = <ADD,ADD,STRING>'<table><tbody><tr><td>'</STRING> +  <CALL,NAME>html</NAME>.<GETPROP,STRING>stripScripts</STRING,GETPROP>()</CALL,ADD> + <STRING>'</td></tr></tbody></table>'</STRING,ADD,SETPROP,EXPR_RESULT>;
+          <EXPR_RESULT,SETNAME,BINDNAME>depth</BINDNAME> = <NUMBER>4</NUMBER,SETNAME,EXPR_RESULT,BLOCK,CASE>;
+        <DEFAULT>default:
+          <BLOCK,EXPR_RESULT,CALL,NAME>defaulthere</NAME>()</CALL,EXPR_RESULT,BLOCK,DEFAULT>;
+      }</SWITCH>
+
+
+// Empty default
+<SWITCH>switch (<NAME>tagName</NAME>) {
+    <CASE>case <STRING>'foo'</STRING>: <BLOCK,BLOCK>{
+        <EXPR_RESULT,CALL,NAME>foo</NAME>()</CALL,EXPR_RESULT>;
+    }</BLOCK,BLOCK,CASE>
+    <DEFAULT>default</DEFAULT>:
+    <CASE>case <STRING>'whatever'</STRING>: <BLOCK,BLOCK>{
+        <BREAK>break</BREAK>;
+    }</BLOCK,BLOCK,CASE>
+}</SWITCH,SCRIPT>
+

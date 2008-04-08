@@ -75,8 +75,7 @@ NodeActionsProvider, TableModel {
     
     
     public CallStackModel (ContextProvider contextProvider) {
-        debugger = (AntDebugger) contextProvider.lookupFirst 
-            (null, AntDebugger.class);
+        debugger = contextProvider.lookupFirst(null, AntDebugger.class);
     }
     
     

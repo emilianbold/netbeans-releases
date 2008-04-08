@@ -167,7 +167,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemSuiteComponentProject() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -217,7 +217,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemLocalizedNames() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -291,7 +291,7 @@ public class LayerUtilsTest extends LayerTestBase {
             TestBase.createJar(new File(new File(new File(platformDir, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, new Manifest());
             NbPlatform.addPlatform("testplatform", platformDir, "Test Platform");
             File suiteDir = new File(getWorkDir(), "testSuite");
-            SuiteProjectGenerator.createSuiteProject(suiteDir, "testplatform");
+            SuiteProjectGenerator.createSuiteProject(suiteDir, "testplatform", false);
             File moduleDir = new File(suiteDir, "testModule");
             NbModuleProjectGenerator.createSuiteComponentModule(
                     moduleDir,
@@ -309,12 +309,12 @@ public class LayerUtilsTest extends LayerTestBase {
     }
     
     public void testSystemFilesystemNetBeansOrgProject() throws Exception {
-        FileObject nbcvsroot = FileUtil.toFileObject(new File(System.getProperty("test.nbcvsroot")));
-        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbcvsroot.getFileObject("image"));
+        FileObject nbroot = FileUtil.toFileObject(new File(System.getProperty("test.nbroot")));
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("image"));
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
-        FileObject docbook = nbcvsroot.getFileObject("contrib/docbook");
+        FileObject docbook = nbroot.getFileObject("contrib/docbook");
         if (docbook == null) {
             System.err.println("Skipping part of testSystemFilesystemNetBeansOrgProject since contrib is not checked out");
             return;

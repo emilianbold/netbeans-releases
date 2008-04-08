@@ -92,21 +92,28 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments) {
         List<ExpressionTree> arguments = new ArrayList();
         ParameterInfo[] pi = refactoring.getParameterInfo();
-        for (int i=0; i<pi.length; i++) {
+        for (int i = 0; i < pi.length; i++) {
             int originalIndex = pi[i].getOriginalIndex();
             ExpressionTree vt;
-            if (originalIndex <0) {
+            if (originalIndex < 0) {
                 String value = pi[i].getDefaultValue();
                 SourcePositions pos[] = new SourcePositions[1];
                 vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
             } else {
-                vt = currentArguments.get(pi[i].getOriginalIndex());
+                if (i == pi.length - 1 && pi[i].getType().endsWith("...")) { // NOI18N
+                    // last param is vararg, so copy all remaining arguments
+                    for (int j = originalIndex; j < currentArguments.size(); j++) {
+                        arguments.add(currentArguments.get(j));
+                    }
+                    break;
+                } else {
+                    vt = currentArguments.get(originalIndex);
+                }
             }
             arguments.add(vt);
         }
         return arguments;
     }
-    
 
     public Tree visitMethodInvocation(MethodInvocationTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {

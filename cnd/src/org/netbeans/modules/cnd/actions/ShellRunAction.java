@@ -41,19 +41,30 @@
 
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.LifecycleManager;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -90,7 +101,7 @@ public class ShellRunAction extends NodeAction {
         
         for (int i = 0; i < activatedNodes.length; i++)
             performAction(activatedNodes[i]);
-    }
+        }
 
     public HelpCtx getHelpCtx () {
 	return HelpCtx.DEFAULT_HELP; // FIXUP ???
@@ -100,6 +111,23 @@ public class ShellRunAction extends NodeAction {
 	ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
+        
+        CompilerSet cs = null;
+        String csdirs = ""; // NOI18N
+        String dcsn = CppSettings.getDefault().getCompilerSetName();
+        if (dcsn != null && dcsn.length() > 0) {
+            cs = CompilerSetManager.getDefault().getCompilerSet(dcsn);
+            if (cs != null) {
+                csdirs = cs.getDirectory();
+                if (cs.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                    // Also add msys to path. Thet's where sh, mkdir, ... are.
+                    String msysBase = CppUtils.getMSysBase();
+                    if (msysBase != null && msysBase.length() > 0) {
+                        csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                    }
+                }
+            }
+        }
         
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
@@ -150,18 +178,91 @@ public class ShellRunAction extends NodeAction {
         }
        
         // Execute the makefile
-        String[] envp = { Path.getPathName() + '=' + CppSettings.getDefault().getPath() };
-        try {
-            new NativeExecutor(
+        String[] envp = { Path.getPathName() + '=' + Path.getPathAsString() + File.pathSeparatorChar + csdirs};
+            NativeExecutor nativeExecutor = new NativeExecutor(
                 buildDir.getPath(),
                 shellCommand,
                 argsFlat.toString(),
                 envp,
                 tabName,
                 "Run", // NOI18N
-                true).execute();
-        } catch (IOException ioe) {
-        }    
+                false,
+                true);
+            new ShellExecuter(nativeExecutor).execute();
+    }
+    
+    class ShellExecuter implements ExecutionListener {
+        private NativeExecutor nativeExecutor = null;
+        private ExecutorTask executorTask = null;
+        private ProgressHandle progressHandle = null;
+
+        public ShellExecuter(NativeExecutor nativeExecutor) {
+            this.nativeExecutor = nativeExecutor;
+            nativeExecutor.addExecutionListener(this);
+            progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
+        }
+        
+        public void execute() {
+            try {
+                executorTask = nativeExecutor.execute();
+            } catch (IOException ioe) {
+            } 
+        }
+        
+        public void executionFinished(int rc) {
+            progressHandle.finish();
+        }
+
+        public void executionStarted() {
+            progressHandle.start();
+        }
+
+        public ExecutorTask getExecutorTask() {
+            return executorTask;
+        }
+    }
+    
+    private static final class StopAction extends AbstractAction {
+        ShellExecuter shellExecutor;
+
+        public StopAction(ShellExecuter shellExecutor) {
+            this.shellExecutor = shellExecutor;
+        }
+
+//        @Override
+//        public Object getValue(String key) {
+//            if (key.equals(Action.SMALL_ICON)) {
+//                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
+//            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
+//                return getString("TargetExecutor.StopAction.stop");
+//            } else {
+//                return super.getValue(key);
+//            }
+//        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled())
+                return;
+            setEnabled(false);
+            if (shellExecutor.getExecutorTask() != null) {
+                shellExecutor.getExecutorTask().stop();
+            }
+        }
+    }
+    
+    private ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
+        ProgressHandle handle = ProgressHandleFactory.createHandle(nativeExecutor.getTabeName(), new Cancellable() {
+            public boolean cancel() {
+                sa.actionPerformed(null);
+                return true;
+            }
+        }, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                nativeExecutor.getTab().select();
+            }
+        });
+        handle.setInitialDelay(0);
+        return handle;
     }
         
     protected final static String getString(String key) {

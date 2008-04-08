@@ -58,8 +58,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.*;
 import javax.swing.*;
 import java.awt.event.*;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -79,16 +78,22 @@ import org.openide.windows.TopComponent;
  */
 public final class OpenAction extends AbstractAction {
     
-    private ElementHandle<? extends Element> elementHandle;   
+    private ElementHandle elementHandle;   
     private FileObject fileObject;
+    private long start;
       
-    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject ) {
+    public OpenAction(ElementHandle elementHandle, FileObject fileObject, long start) {
         this.elementHandle = elementHandle;
         this.fileObject = fileObject;
+        this.start = start;
         putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N
     }
     
     public void actionPerformed (ActionEvent ev) {
+        if (fileObject != null && elementHandle == null) {
+            UiUtils.open(fileObject, (int)start);
+            return;
+        }
         ElementHandle handle = elementHandle;
         try {
             DataObject activeFile = DataObject.find(fileObject);

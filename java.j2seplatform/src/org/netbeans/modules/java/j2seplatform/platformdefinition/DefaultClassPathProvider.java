@@ -91,9 +91,9 @@ public class DefaultClassPathProvider implements ClassPathProvider {
 
     private static final int TYPE_CLASS = 2;
 
-    private /*WeakHash*/Map/*<FileObject,WeakReference<FileObject>>*/ sourceRootsCache = new WeakHashMap ();
-    private /*WeakHash*/Map/*<FileObject,WeakReference<ClassPath>>*/ sourceClasPathsCache = new WeakHashMap();
-    private Reference/*<ClassPath>*/ compiledClassPath;    
+    private /*WeakHash*/Map<FileObject,WeakReference<FileObject>> sourceRootsCache = new WeakHashMap<FileObject,WeakReference<FileObject>>();
+    private /*WeakHash*/Map<FileObject,WeakReference<ClassPath>> sourceClasPathsCache = new WeakHashMap<FileObject,WeakReference<ClassPath>>();
+    private Reference<ClassPath> compiledClassPath;    
     
     /** Creates a new instance of DefaultClassPathProvider */
     public DefaultClassPathProvider() {
@@ -134,9 +134,9 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             else if (ClassPath.COMPILE.equals(type)) {
                 synchronized (this) {
                     ClassPath cp = null;
-                    if (this.compiledClassPath == null || (cp = (ClassPath)this.compiledClassPath.get()) == null) {
+                    if (this.compiledClassPath == null || (cp = this.compiledClassPath.get()) == null) {
                         cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
-                        this.compiledClassPath = new WeakReference (cp);
+                        this.compiledClassPath = new WeakReference<ClassPath> (cp);
                     }
                     return cp;
                 }
@@ -191,23 +191,23 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             }
             else if (ClassPath.EXECUTE.equals(type)) {
                 ClassPath cp = null;
-                Reference ref = (Reference) this.sourceRootsCache.get (file);
+                Reference<FileObject> foRef = this.sourceRootsCache.get (file);
                 FileObject execRoot = null;
-                if (ref == null || (execRoot = (FileObject)ref.get()) == null ) {
+                if (foRef == null || (execRoot = foRef.get()) == null ) {
                     execRoot = getRootForFile (file, TYPE_CLASS);
                     if (execRoot == null) {
                         return null;
                     }
-                    this.sourceRootsCache.put (file, new WeakReference(execRoot));
+                    this.sourceRootsCache.put (file, new WeakReference<FileObject>(execRoot));
                 }
                 if (!execRoot.isValid()) {
                     this.sourceClasPathsCache.remove (execRoot);
                 }
                 else {
-                    ref = (Reference) this.sourceClasPathsCache.get(execRoot);
-                    if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+                    Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
+                    if (cpRef == null || (cp = cpRef.get()) == null ) {
                         cp = ClassPathSupport.createClassPath(new FileObject[] {execRoot});
-                        this.sourceClasPathsCache.put (execRoot, new WeakReference(cp));
+                        this.sourceClasPathsCache.put (execRoot, new WeakReference<ClassPath>(cp));
                     }
                     return cp;
                 }
@@ -229,13 +229,13 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             packageRoot = fo.getParent();
         }
         else {
-            List elements = new ArrayList ();
+            List<String> elements = new ArrayList<String> ();
             for (StringTokenizer tk = new StringTokenizer(pkg,"."); tk.hasMoreTokens();) {
-                elements.add(tk.nextElement());
+                elements.add(tk.nextToken());
             }
             FileObject tmp = fo;
             for (int i=elements.size()-1; i>=0; i--) {
-                String name = (String)elements.get(i);
+                String name = elements.get(i);
                 tmp = tmp.getParent();
                 if (tmp == null || !tmp.getName().equals(name)) {
                     tmp = fo;
@@ -575,8 +575,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     for (Iterator<ClassPath> it = paths.iterator(); it.hasNext();) {
                         ClassPath cp =  it.next();
                         try {
-                            for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
-                                ClassPath.Entry entry = (ClassPath.Entry) eit.next();
+                            for (ClassPath.Entry entry : cp.entries()) {
                                 roots.add (entry.getURL());
                             }                    
                         } catch (RecursionException e) {/*Recover from recursion*/}

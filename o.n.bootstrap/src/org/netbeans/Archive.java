@@ -119,6 +119,10 @@ class Archive implements Stamps.Updater {
         gathering = true;
     }
 
+    final boolean isActive() {
+        return active;
+    }
+
     /**
      * Sweep through the master buffer and remember all the entries
      */

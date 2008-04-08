@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/ape.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : Ape
   class-ig : ape
@@ -57,7 +53,6 @@ Indexed:
   method : test_sorting(coll)
   method : warning(message,crumb_key)
   method : write_mark(mark)
-  source : <TESTURL>/ape.rb
 
 Not Indexed:
   attrs : |CLASS|

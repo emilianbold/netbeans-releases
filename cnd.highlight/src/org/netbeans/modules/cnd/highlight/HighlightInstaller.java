@@ -41,24 +41,24 @@
 
 package org.netbeans.modules.cnd.highlight;
 
+import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.highlight.error.*;
-import org.openide.modules.ModuleInstall;
 
 /**
  *
  * @author Alexander Simon
  */
-public class HighlightInstaller extends ModuleInstall {
-    
-    @Override
-    public void restored() {
-        BadgeProviderUpdater.getInstance().startup();
-	super.restored();
-    }
+public class HighlightInstaller implements CsmModelStateListener {
 
-    @Override
-    public void uninstalled() {
-        BadgeProviderUpdater.getInstance().shutdown();
-	super.uninstalled();
+    public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
+	switch( newState ) {
+	    case ON:
+		BadgeProviderUpdater.getInstance().startup();
+		break;
+	    case CLOSING:
+		BadgeProviderUpdater.getInstance().shutdown();
+		break;
+	}
     }
 }

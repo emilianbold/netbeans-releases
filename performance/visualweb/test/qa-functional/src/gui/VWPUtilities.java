@@ -43,9 +43,17 @@ package gui;
 
 import gui.window.WebFormDesignerOperator;
 
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 
 /**
  * Utilities for Performance tests, workarrounds, often used methods, ...
@@ -53,7 +61,8 @@ import org.netbeans.jellytools.nodes.Node;
  * @author  mmirilovic@netbeans.org
  */
 public class VWPUtilities extends gui.Utilities{
-
+    private static final String menuItemName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_Fix_Missing_Server_Action");
+    private static final String dialogName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "LBL_Resolve_Missing_Server_Title");
     /**
      * open jsp file from project and return WebFormDesigner
      * @param projectName name of the project
@@ -70,5 +79,44 @@ public class VWPUtilities extends gui.Utilities{
         return surface;
     }
     
-    
+    public static void verifyAndResolveMissingWebServer(String projectName, String serverName) {
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+             
+        if(!isServerMissingMenuAvaialable(projectName)) {
+            return;
+        }
+        
+        projectNode.performPopupActionNoBlock(menuItemName);
+        
+        NbDialogOperator missingServerDialog = new NbDialogOperator(dialogName);
+        JListOperator serversList = new JListOperator(missingServerDialog);
+        //serversList.selectItem(serverName);
+        serversList.selectItem(0);
+        missingServerDialog.ok();
+        
+    }
+    private static boolean isServerMissingMenuAvaialable(String projectName) {
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        try {
+            projectNode.verifyPopup(menuItemName);
+        } catch(JemmyException jex) {
+            return false;
+        }
+        return true;
+    }
+    // Usage: VWPUtilities.invokePTO();
+    public static ProjectsTabOperator invokePTO() {
+        ProjectsTabOperator testOp = null;
+        try {
+            testOp = new ProjectsTabOperator();
+        } catch (TimeoutExpiredException tex) {
+            MainWindowOperator mv = MainWindowOperator.getDefault();
+            JMenuBarOperator menuBar = mv.menuBar();
+            //menuBar.pushMenu("Window|Projects");
+            JMenuItemOperator item = menuBar.showMenuItem("Window|Projects");
+            item.clickMouse();
+            testOp = new ProjectsTabOperator();
+        }       
+        return testOp;
+    }    
 }

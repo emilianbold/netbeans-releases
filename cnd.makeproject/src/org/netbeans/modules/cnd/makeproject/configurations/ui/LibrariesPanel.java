@@ -296,6 +296,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 	    if (libName.endsWith(".so") || // NOI18N
                 libName.endsWith(".dll") || // NOI18N
                 libName.endsWith(".dylib") || // NOI18N
+                libName.endsWith(".lib") || // NOI18N
                 libName.endsWith(".a")) { // NOI18N
                 int i = libName.lastIndexOf('.');
                 libName = libName.substring(0, i);

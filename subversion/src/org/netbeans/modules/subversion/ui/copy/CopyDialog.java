@@ -72,7 +72,7 @@ public abstract class CopyDialog {
 
     private Map<String, JComboBox> urlComboBoxes;
     
-    public CopyDialog(JPanel panel, String title, String okLabel) {                
+    CopyDialog(JPanel panel, String title, String okLabel) {                
         this.panel = panel;
         dialogDescriptor = new DialogDescriptor(panel, title); 
         
@@ -116,15 +116,16 @@ public abstract class CopyDialog {
         return panel;
     }       
     
-    public boolean showDialog() {                        
+    boolean showDialog() {                        
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyDialog.class, "CTL_Title"));                     // NOI18N        
+        
         dialog.setVisible(true);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyDialog.class, "CTL_Title"));                     // NOI18N
         boolean ret = dialogDescriptor.getValue()==okButton;
         if(ret) {
             storeValidValues();
         }
-        return ret;       
+        return ret;        
     }        
     
     private void storeValidValues() {

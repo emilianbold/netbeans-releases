@@ -396,6 +396,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.script.project</friend>
@@ -409,6 +410,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.xml.wsdl.ui.view</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.view.treeeditor</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.wizard</package>
+                <package>org.netbeans.modules.xml.wsdl.ui.wsdl.util</package>
             </friend-packages>
         </data>
     </configuration>

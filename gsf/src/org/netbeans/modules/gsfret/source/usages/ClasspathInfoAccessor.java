@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.gsfret.source.usages;
 
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -59,7 +60,6 @@ public abstract class ClasspathInfoAccessor {
 
     static {
         try {
-            //Class.forName("org.netbeans.api.gsfpath.source.ClasspathInfo",true,ClasspathInfoAccessor.class.getClassLoader());
             Class.forName("org.netbeans.napi.gsfret.source.ClasspathInfo",true,ClasspathInfoAccessor.class.getClassLoader());
         } catch (ClassNotFoundException cnfe) {
             ErrorManager.getDefault().notify(cnfe);

@@ -62,7 +62,7 @@ public class JBIComponentConfigurationMBeanAttributeInfo
         this.descriptor = descriptor;
     }
 
-    public JBIComponentConfigurationDescriptor getDescriptor() {
+    public JBIComponentConfigurationDescriptor getConfigurationDescriptor() {
         return descriptor;
     }
     

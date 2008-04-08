@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2008 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -13,7 +13,7 @@
 
 <body>
 <h2>Setting Up Dynamic Page Navigation for Visual Web JSF Pages</h2>
-<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+<p><small><a href="#seealso">See Also</a></small></p>
 <p>With dynamic page navigation, the application determines at runtime which page a 
 specific component opens. The page that you navigate from is called the source 
 page. The page that you navigate to is called the destination page. For dynamic navigation, 
@@ -22,9 +22,13 @@ up a user's record, and if the user is an administrator, go to the Administrator
 <p>To set dynamic navigation,  you create the pages, and then you create the connectors, and then you code 
 the conditional statement. </p>
 <p><b>To create the pages:</b></p>
-	<ul>
-	  <li>If the destination pages are already created, skip to the next step. Otherwise, in the <a href="../../ui_elements/editors/about_navigation_editor.html">Page Flow editor</a>, right-click and choose New Page to create each page. </li>
-</ul>
+	<ol>
+	  <li>If the destination pages are already created, skip to the next section. Otherwise, in the <a href="../../ui_elements/editors/about_navigation_editor.html">Page Flow editor</a>, right-click and choose New File.</li>
+	   <li>In the New File wizard, select JavaServer Faces as the category and Visual Web JSF Page as the file type. Click Next.</li>
+	   <li>Enter the name of the new Visual Web JSF page and click Finish.<br>
+	     The new page appears in the Page Flow editor.
+	   </li>
+</ol>
 	<p><b>To create the connectors:</b></p>
   	<ol>
     <li>In the Page Flow editor, drag  new connectors from the page&nbsp;to each destination page.
@@ -73,14 +77,7 @@ the conditional statement. </p>
 <dd><a href="../../ui_elements/editors/about_navigation_editor.html">About the Page Flow Editor</a></dd>
 
 </dl>
-<dl>
-<dt><a name="tutorials">Tutorials</a></dt>
 
-<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-      <param name="content" value="http://www.netbeans.org/kb/60/web/pagenav.html">
-      <param name="text" value="Setting Up Page Navigation"></object>
-</dd>
-</dl>
 
 <hr>
 <!-- Start Customer Feedback Link -->

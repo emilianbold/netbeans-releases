@@ -18,9 +18,12 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.bpel.model.api.Activity;
@@ -50,6 +53,22 @@ public class GoToAction extends BpelNodeAction {
     };
 
     public GoToAction() {
+    }
+
+    public static KeyStroke getKeyStroke(Class<? extends BpelNodeAction> clazz) {
+        if (clazz == null) {
+            return null;
+        }
+        SystemAction action = SystemAction.get(clazz);
+        KeyStroke key = null;
+        if (action != null) {
+            Object keyObj = action.getValue(ACCELERATOR_KEY);
+            if (keyObj instanceof KeyStroke) {
+                key = (KeyStroke)keyObj;
+            }
+        }
+
+        return key;
     }
 
     public final String getBundleName() {

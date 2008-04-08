@@ -92,7 +92,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
         initComponents();
     }
 
-    public Listener getListener() {
+    Listener getListener() {
         return listener;
     }
 
@@ -126,7 +126,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lConflict, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+                    .add(lConflict, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lShortcut)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -144,6 +144,9 @@ public class ShortcutsDialog extends javax.swing.JPanel {
                 .add(lConflict)
                 .addContainerGap(41, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShortcutsDialog.class, "AN_ShortcutsDialog")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShortcutsDialog.class, "AD_ShortcutsDialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

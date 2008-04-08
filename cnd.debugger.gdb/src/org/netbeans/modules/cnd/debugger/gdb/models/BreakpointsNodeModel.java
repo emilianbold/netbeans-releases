@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.util.Vector;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 
 import org.openide.util.NbBundle;
@@ -52,6 +53,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 
 /**
  * @author   Jan Jancura and Gordon Prieur
@@ -60,8 +62,17 @@ public class BreakpointsNodeModel implements NodeModel {
 
     public static final String BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint"; // NOI18N
+    public static final String DISABLED_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint"; // NOI18N
     public static final String LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint"; // NOI18N
+    public static final String DISABLED_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint"; // NOI18N
+    public static final String LINE_CONDITIONAL_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint"; // NOI18N
+    public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint"; // NOI18N
+    
 
     private Vector listeners = new Vector();
 
@@ -124,6 +135,10 @@ public class BreakpointsNodeModel implements NodeModel {
 			"CTL_Function_Breakpoint", b.getFunctionName())); // NOI18N
 		}
             }
+        } else if (o instanceof AddressBreakpoint) {
+            AddressBreakpoint b = (AddressBreakpoint)o;
+            return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N
+                    b.getAddress()));
         } else {
             throw new UnknownTypeException(o);
         }
@@ -149,16 +164,39 @@ public class BreakpointsNodeModel implements NodeModel {
                 return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Function_Breakpoint", // NOI18N
                         className, b.getFunctionName());
             }
+        } else if (o instanceof AddressBreakpoint) {
+            return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N
+                    EditorContextBridge.getFileName((AddressBreakpoint) o),
+                    ((AddressBreakpoint) o).getAddress()); // NOI18N
         } else {
             throw new UnknownTypeException(o);
         }
     }
     
     public String getIconBase(Object o) throws UnknownTypeException {
-        if (o instanceof LineBreakpoint) {
-            return LINE_BREAKPOINT;
+        boolean disabled = !((Breakpoint) o).isEnabled();
+        if (o instanceof LineBreakpoint || o instanceof AddressBreakpoint) {
+            String condition = ((GdbBreakpoint) o).getCondition();
+            boolean conditional = condition != null && condition.trim().length() > 0;
+            if (disabled) {
+                if (conditional) {
+                    return DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                } else {
+                    return DISABLED_LINE_BREAKPOINT;
+                }
+            } else {
+                if (conditional) {
+                    return LINE_CONDITIONAL_BREAKPOINT;
+                } else {
+                    return LINE_BREAKPOINT;
+                }
+            }
         } else if (o instanceof FunctionBreakpoint) {
-            return BREAKPOINT;
+            if (disabled) {
+                return DISABLED_BREAKPOINT;
+            } else {
+                return BREAKPOINT;
+            }
         } else {
             throw new UnknownTypeException (o);
         }

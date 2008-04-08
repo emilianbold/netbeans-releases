@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
@@ -56,6 +58,8 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
     private static final String RESOURCE_PATH = "nbres:/org/netbeans/modules/j2ee/ddloaders/catalog/resources/"; //NO18N 
     
     private List<SchemaInfo> schemas = new ArrayList<SchemaInfo>();
+    
+    private static final Logger LOGGER = Logger.getLogger(EnterpriseCatalog.class.getName());
     
     public EnterpriseCatalog() {
         initialize();
@@ -115,13 +119,25 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
     }
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        // additional logging for #127276
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Resolving entity [publicId: '" + publicId + "', systemId: '" + systemId + "']");
+        }
         if (systemId == null){
             return null;
         }
         for (SchemaInfo each : schemas){
             if (systemId.endsWith(each.getSchemaName())){
+                // additional logging for #127276
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Got resource: " + each.getResourcePath());
+                }
                 return new InputSource(each.getResourcePath());
             }
+        }
+        // additional logging for #127276
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "No resource found for publicId: " + publicId);
         }
         return null;
     }

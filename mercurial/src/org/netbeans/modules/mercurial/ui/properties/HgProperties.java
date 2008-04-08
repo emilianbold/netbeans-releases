@@ -85,9 +85,9 @@ import org.openide.NotifyDescriptor;
  */
 public class HgProperties implements ListSelectionListener {
     
-    private static final String HGPROPNAME_USERNAME = "username"; // NOI18N
-    private static final String HGPROPNAME_DEFAULT_PULL = "default-pull"; // NOI18N
-    private static final String HGPROPNAME_DEFAULT_PUSH = "default-push"; // NOI18N
+    public static final String HGPROPNAME_USERNAME = "username"; // NOI18N
+    public static final String HGPROPNAME_DEFAULT_PULL = "default-pull"; // NOI18N
+    public static final String HGPROPNAME_DEFAULT_PUSH = "default-push"; // NOI18N
 
     private PropertiesPanel panel;
     private File root;
@@ -95,6 +95,7 @@ public class HgProperties implements ListSelectionListener {
     private HgProgressSupport support;
     private File loadedValueFile;
     private Font fontTextArea;
+    private HgPropertiesNode[] initHgProps;
     
     /** Creates a new instance of HgProperties */
     public HgProperties(PropertiesPanel panel, PropertiesTable propTable, File root) {
@@ -134,6 +135,7 @@ public class HgProperties implements ListSelectionListener {
                 protected void perform() {
                     Properties props = HgModuleConfig.getDefault().getProperties(root);
                     HgPropertiesNode[] hgProps = new HgPropertiesNode[props.size()];
+                    initHgProps = new HgPropertiesNode[props.size()];
                     int i = 0;
 
                     for (Enumeration e = props.propertyNames(); e.hasMoreElements() ; ) {
@@ -141,6 +143,7 @@ public class HgProperties implements ListSelectionListener {
                         String tmp = props.getProperty(name);
                         String value = tmp != null ? tmp : ""; // NOI18N
                         hgProps[i] = new HgPropertiesNode(name, value);
+                        initHgProps[i] = new HgPropertiesNode(name, value);
                         i++;
                      }
                      propTable.setNodes(hgProps);
@@ -157,14 +160,21 @@ public class HgProperties implements ListSelectionListener {
         try {
             support = new HgProgressSupport() {
                 protected void perform() {
-                    HgModuleConfig.getDefault().clearProperties(root, "paths"); // NOI18N
-                    HgModuleConfig.getDefault().removeProperty(root, "ui", HGPROPNAME_USERNAME); // NOI18N
                     HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
                     for (int i = 0; i < hgPropertiesNodes.length; i++) {
                         String hgPropertyName = hgPropertiesNodes[i].getName();
                         String hgPropertyValue = hgPropertiesNodes[i].getValue();
-                        if (hgPropertyValue.trim().length() > 0 ) {
-                            HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                        boolean bPropChanged = !(initHgProps[i].getValue()).equals(hgPropertyValue);
+                        if (bPropChanged && hgPropertyValue.trim().length() >= 0 ) {
+                            if (hgPropertyName.equals(HGPROPNAME_USERNAME) &&
+                                    !HgModuleConfig.getDefault().isUserNameValid(hgPropertyValue)) {
+                                JOptionPane.showMessageDialog(null,
+                                        NbBundle.getMessage(HgProperties.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
+                                        NbBundle.getMessage(HgProperties.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
+                                        JOptionPane.WARNING_MESSAGE);
+                            }else{
+                                HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                            }
                         }
                     }
                     HgRepositoryContextCache.resetPullDefault();
@@ -178,6 +188,14 @@ public class HgProperties implements ListSelectionListener {
     }
 
     private int lastIndex = -1;
+    
+    
+    public void updateLastSelection () {
+        HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
+        if (lastIndex >= 0) {
+            hgPropertiesNodes[lastIndex].setValue(getPropertyValue());
+        }
+    }
 
     public void valueChanged (ListSelectionEvent e) {
         int index = propTable.getTable().getSelectedRow();

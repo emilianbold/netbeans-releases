@@ -400,7 +400,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }                    
 
     private void onUpdateButton() {
-        UpdateAction.update(context, null);
+        UpdateAction.update(context);
     }
     
     private void onCommitButton() {

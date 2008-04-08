@@ -1012,8 +1012,8 @@ public class SymbolClassReader extends JavadocClassReader {
     }
 
     //for tests:
-    protected @Override void includeClassFile(PackageSymbol p, JavaFileObject file) {
-        super.includeClassFile(p, file);
+    protected @Override void includeClassFile(PackageSymbol p, JavaFileObject file, String binaryName) {
+        super.includeClassFile(p, file, binaryName);
     }
 
 }

@@ -251,7 +251,7 @@ public abstract class TagBasedLexerFormatter {
                     }
                     
                     // Mark blocks of embedded language
-                    if (tokenSequence.embedded() != null) {
+                    if (tokenSequence.embedded() != null && !isWSToken(tokenSequence.token())) {
                         int firstLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset());
                         int lastLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset() + getTxtLengthWithoutWhitespaceSuffix(tokenSequence.token().text()));
 
@@ -695,7 +695,11 @@ public abstract class TagBasedLexerFormatter {
             }
 
             Integer dotPos = (Integer) doc.getProperty(TransferData.ORG_CARET_OFFSET_DOCPROPERTY);
-            assert dotPos != null;
+            //assert dotPos != null;
+            if(dotPos == null) {
+                dotPos = context.caretOffset();
+            }
+            
             int origDotPos = dotPos.intValue() - 1; // dotPos - "\n".length()
             
             if (indexWithinCurrentLanguage(doc, origDotPos - 1)) {

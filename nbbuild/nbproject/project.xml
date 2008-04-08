@@ -167,7 +167,7 @@ made subject to such option by the copyright holder.
                     </action>
                     <action>
                         <label>Clean Everything</label>
-                        <target>real-clean</target>
+                        <target>hg-clean</target>
                     </action>
                     <separator/>
                     <ide-action name="run"/>
@@ -200,7 +200,7 @@ made subject to such option by the copyright holder.
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath mode="compile">${ant.home}/lib/ant.jar:${nb_all}/javahelp/external/jh-2.0_05.jar</classpath>
+                <classpath mode="compile">${ant.core.lib}:${nb_all}/javahelp/external/jh-2.0_05.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>nbantext.jar</built-to>
@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
             <compilation-unit>
                 <package-root>test/unit/src</package-root>
                 <unit-tests/>
-                <classpath mode="compile">../junit/external/junit-3.8.2.jar:netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar:../o.apache.tools.ant.module/external/lib/ant.jar:nbantext.jar</classpath>
+                <classpath mode="compile">../junit/external/junit-3.8.2.jar:netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/test/unit/classes</built-to>
                 <source-level>1.5</source-level>

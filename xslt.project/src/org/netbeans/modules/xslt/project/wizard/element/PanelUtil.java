@@ -42,38 +42,22 @@ package org.netbeans.modules.xslt.project.wizard.element;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
 import java.util.StringTokenizer;
 
-import org.openide.cookies.SaveCookie;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 
-import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
-import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 
-import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
-import org.netbeans.modules.xml.catalogsupport.util.ProjectVisitor;
-import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -168,4 +152,12 @@ final class PanelUtil {
         return false;
     }
   }
+
+    public static WSDLModel getWSDLModel(FileObject file) {
+        if (file == null) {
+            return null;
+        }
+        ModelSource source = Utilities.getModelSource(file, file.canWrite());
+        return WSDLModelFactory.getDefault().getModel(source);
+    }
 }

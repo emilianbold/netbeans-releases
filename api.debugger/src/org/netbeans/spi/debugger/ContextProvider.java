@@ -58,7 +58,7 @@ public interface ContextProvider {
      * @param service a type of service to look for
      * @return list of services of given type
      */
-    public abstract List lookup (String folder, Class service);
+    <T> List<? extends T> lookup(String folder, Class<T> service);
 
     /**
      * Returns one service of given type from given folder.
@@ -67,6 +67,6 @@ public interface ContextProvider {
      * @param service a type of service to look for
      * @return ne service of given type
      */
-    public abstract Object lookupFirst (String folder, Class service);
+    <T> T lookupFirst(String folder, Class<T> service);
 }
 

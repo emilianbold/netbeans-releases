@@ -86,7 +86,7 @@ public class CsmIncludeCompletionQuery {
             addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
             if (showAll) {
                 for (String usrPath : usrPaths) {
-                    addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
+                    addFolderItems(usrPath, usrPath, childSubDir, false, false, true, substitutionOffset);
                 }
                 for (String sysPath : sysPaths) {
                     addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
@@ -99,7 +99,7 @@ public class CsmIncludeCompletionQuery {
             }
             if (showAll) {
                 for (String usrPath : usrPaths) {
-                    addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
+                    addFolderItems(usrPath, usrPath, childSubDir, false, false, true, substitutionOffset);
                 }
                 addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
                 addParentFolder(substitutionOffset, childSubDir, true);

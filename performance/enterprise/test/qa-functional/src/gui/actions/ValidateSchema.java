@@ -46,6 +46,7 @@ import gui.EPUtilities;
 
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -100,7 +101,8 @@ public class ValidateSchema extends org.netbeans.performance.test.utilities.Perf
     }
     
     protected void shutdown() {
-        log("::shutdown");
+        log("::shutdown");        
+        new TopComponentOperator("fields.xsd").getFocus(); // workaround issue 120762
         new CloseAllDocumentsAction().perform();
     }
     

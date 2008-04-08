@@ -176,7 +176,9 @@ class ExternalDomProviderCache {
         while (it.hasNext()) {
             URL url = it.next();
             JsfForm web = get(url);
-            if ((web != null) && (web.getJspDom() != null)) {
+            // XXX #128283 Possible NPE.
+//            if ((web != null) && (web.getJspDom() != null)) {
+            if (web != null && web.isValid() && web.getJspDom() != null) {
                 // Flush styles as well
 //                    CssLookup.refreshEffectiveStyles(web.getDom());
                 CssProvider.getEngineService().refreshStylesForDocument(web.getJspDom());

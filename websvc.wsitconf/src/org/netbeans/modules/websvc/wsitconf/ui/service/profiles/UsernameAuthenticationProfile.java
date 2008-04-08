@@ -130,12 +130,14 @@ public class UsernameAuthenticationProfile extends ProfileBase
         String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(storeAlias)) {
-//            if (Util.isTomcat(p)) {
-                if ((Util.getDefaultPassword(p).equals(storePasswd)) && 
-                    (Util.getStoreLocation(p, false, false).equals(storeLoc))) {
+            String defPassword = Util.getDefaultPassword(p);
+            String defLocation = Util.getStoreLocation(p, false, false);
+            if ((defPassword != null) && (defLocation != null)) {
+                if ((defPassword.equals(storePasswd)) && 
+                    (defLocation.equals(storeLoc))) {
                         return true;
                 }
-//            }
+            }
         }
         return false;
     }
@@ -190,12 +192,14 @@ public class UsernameAuthenticationProfile extends ProfileBase
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
             if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
-//                if (Util.isTomcat(p)) {
-                    if ((Util.getDefaultPassword(p).equals(trustPasswd)) && 
-                       (Util.getStoreLocation(p, true, true).equals(trustLoc))) {
-                          return true;
+                String defPassword = Util.getDefaultPassword(p);
+                String defLocation = Util.getStoreLocation(p, true, true);
+                if ((defPassword != null) && (defLocation != null)) {
+                    if ((defPassword.equals(trustPasswd)) && 
+                        (defLocation.equals(trustLoc))) {
+                            return true;
                     }
-//                }
+                }
             }
         }
         return false;

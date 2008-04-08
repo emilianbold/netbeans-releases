@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable, validation, tokens" executor="ide" name="Tokens Test">
+    <testbag testattribs="tokens" executor="ide" name="Tokens Test">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/TokensTest.class"/>   

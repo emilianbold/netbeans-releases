@@ -107,10 +107,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         // {folder} variable setting
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
-        Subversion.getInstance().refreshAllAnnotations();
-        
-        // connection
-        repository.storeRecentUrls();
+        Subversion.getInstance().refreshAllAnnotations();        
     }
     
     public void cancel() {
@@ -176,7 +173,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onManageConnClick() {
         boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class), true);
-        if(!ok) {
+        if(ok) {            
+            repository.storeRecentUrls();
+        } else {    
             repository.refreshUrlHistory();
         }
     }

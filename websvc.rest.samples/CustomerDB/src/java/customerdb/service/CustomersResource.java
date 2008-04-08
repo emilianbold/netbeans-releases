@@ -48,11 +48,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
-import javax.ws.rs.UriParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import customerdb.converter.CustomersConverter;
 import customerdb.converter.CustomerConverter;
@@ -60,12 +60,12 @@ import customerdb.converter.CustomerConverter;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 @Path("/customers/")
 public class CustomersResource {
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of CustomersResource */
@@ -127,7 +127,7 @@ public class CustomersResource {
      * @return an instance of CustomerResource
      */
     @Path("{customerId}/")
-    public CustomerResource getCustomerResource(@UriParam("customerId")
+    public CustomerResource getCustomerResource(@PathParam("customerId")
     Integer id) {
         return new CustomerResource(id, context);
     }

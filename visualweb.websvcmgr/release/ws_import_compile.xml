@@ -47,19 +47,19 @@ made subject to such option by the copyright holder.
         run-wscompile - runs the wscompile ant task for the JAX-RPC proxy client
         run-wsimport - runs the wsimport ant task for the JAX-WS proxy client
         
-        Creates the directories ${websvc.home}/${serviceName}/jaxrpc.
+        Creates the directories ${websvc.home}/${serviceDirName}/jaxrpc.
         Creates build and src directories.
         Uses "wscompile" to compile the WSDL and place all generated .class and .java files into  build and src directories respectively.
         Creates the "jar" file from the ".class" files.
         Deletes "build" and "src" directories.
         
-        Creates the directories ${websvc.home}/${serviceName}/jaxws.
+        Creates the directories ${websvc.home}/${serviceDirName}/jaxws.
         Creates build and src directories.
         Uses "wsimport" to compile the WSDL and place all generated .class and .java files into  build and src directories respectively.
         Creates the "jar" file from the ".class" files.
         Deletes "build" and "src" directories.
         
-        Copies the wsdl file into ${websvc.home}/${serviceName}/websvc.
+        Copies the wsdl file into ${websvc.home}/${serviceDirName}/websvc.
         
     </description>
     
@@ -74,13 +74,13 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="-init-wscompile" depends="-init-user">
-        <property name="jxrpc.base" value="${websvc.home}/${serviceName}/jaxrpc"/>
+        <property name="jxrpc.base" value="${websvc.home}/${serviceDirName}/jaxrpc"/>
         <mkdir dir="${jxrpc.base}/build"/>
         <mkdir dir="${jxrpc.base}/src"/>
     </target>
     
     <target name="-init-wsimport" depends="-init-user">
-        <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
+        <property name="jaxws.base" value="${websvc.home}/${serviceDirName}/jaxws"/>
         <mkdir dir="${jaxws.base}/build"/>
         <mkdir dir="${jaxws.base}/src"/>
         <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
     <!-- Visual web designer w/s consumer targets -->
     
     <target name="jaxrpc-dt-compile" depends="-init-user">
-        <property name="jxrpc.base" value="${websvc.home}/${serviceName}/jaxrpc"/>
+        <property name="jxrpc.base" value="${websvc.home}/${serviceDirName}/jaxrpc"/>
         
         <mkdir dir="${jxrpc.base}/build"/>
         <javac srcdir="${jxrpc.base}/src" 
@@ -207,7 +207,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="jaxws-dt-compile" depends="-init-user">
-        <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
+        <property name="jaxws.base" value="${websvc.home}/${serviceDirName}/jaxws"/>
         
         <mkdir dir="${jaxws.base}/build"/>
         <!-- Add the .wsdl file to the web service. The wsimport tool uses an

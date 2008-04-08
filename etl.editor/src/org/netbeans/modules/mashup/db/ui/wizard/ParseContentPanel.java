@@ -93,7 +93,6 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import jxl.Cell;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -106,7 +105,7 @@ import org.openide.util.HelpCtx;
  */
 public class ParseContentPanel implements PropertyChangeListener, VetoableChangeListener, WizardDescriptor.Panel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(ParseContentPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ParseContentPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static final String LOG_CATEGORY = ParseContentPanel.class.getName();
     /* Map of current parse properties (prior to displaying panel) */
@@ -193,9 +192,11 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             }
 
             panel.removeAll();
-            String nbBundle1 = mLoc.t("PRSR001: Supply the following information required to parse this file.");
-            JLabel instr = new JLabel(Localizer.parse(nbBundle1));
+            String nbBundle1 = mLoc.t("BUND217: Supply the following information required to parse this file.");
+            JLabel instr = new JLabel(nbBundle1.substring(15));
+            instr.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
             instr.setAlignmentX(Component.LEFT_ALIGNMENT);
+            instr.setDisplayedMnemonic(nbBundle1.substring(15).charAt(0));
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.FIRST_LINE_START;
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -383,9 +384,9 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     private JComponent getPreviewPanel(WizardDescriptor wd) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-        String nbBundle2 = mLoc.t("PRSR001: Preview of file");
+        String nbBundle2 = mLoc.t("BUND218: Preview of file");
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(Localizer.parse(nbBundle2)), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+                BorderFactory.createTitledBorder(nbBundle2.substring(15)), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         panel.setPreferredSize(new Dimension(150, 100));
         JLabel lbl = new JLabel("");
         GridBagConstraints gbc = new GridBagConstraints();
@@ -469,7 +470,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                 spreadSheetData.close();
             }
         } catch (Exception ioe) {
-            mLogger.errorNoloc(mLoc.t("PRSR074: Failed to read and parse the file{0}", LOG_CATEGORY), ioe);
+            mLogger.errorNoloc(mLoc.t("EDIT074: Failed to read and parse the file{0}", LOG_CATEGORY), ioe);
         } finally {
             if (br != null) {
                 try {

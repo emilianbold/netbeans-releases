@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.bpel.debugger.ui.execution;
 
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
@@ -33,27 +35,40 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class ProcessExecutionExpansionModel implements TreeExpansionModel {
     
+    private List<Object> expandedNodes = new LinkedList<Object>();
+    private List<Object> collapsedNodes = new LinkedList<Object>();
+    
     /**{@inheritDoc}*/
     public boolean isExpanded(
             final Object object) throws UnknownTypeException {
-        if (object instanceof PemEntity) {
-            final PemEntity pemEntity = (PemEntity) object;
-            
-            if (pemEntity.getState() == PemEntity.State.STARTED) {
+        synchronized (this) {
+            if (expandedNodes.contains(object)) {
                 return true;
             }
             
-            final PemEntity lastStarted = 
-                    pemEntity.getModel().getLastStartedEntity();
-            if ((lastStarted != null) && lastStarted.isInTree(pemEntity)) {
-                return true;
+            if (collapsedNodes.contains(object)) {
+                return false;
             }
             
-            return false;
-        } 
-        
-        if (object instanceof PsmEntity) {
-            return false;
+            if (object instanceof PemEntity) {
+                final PemEntity pemEntity = (PemEntity) object;
+                
+                if (pemEntity.getState() == PemEntity.State.STARTED) {
+                    return true;
+                }
+                
+                final PemEntity lastStarted = 
+                        pemEntity.getModel().getLastStartedEntity();
+                if ((lastStarted != null) && lastStarted.isInTree(pemEntity)) {
+                    return true;
+                }
+                
+                return false;
+            } 
+
+            if (object instanceof PsmEntity) {
+                return false;
+            }
         }
         
         throw new UnknownTypeException(object);
@@ -61,11 +76,17 @@ public class ProcessExecutionExpansionModel implements TreeExpansionModel {
     
     /**{@inheritDoc}*/
     public void nodeExpanded(Object object) {
-        // does nothing
+        synchronized (this) {
+            expandedNodes.add(object);
+            collapsedNodes.remove(object);
+        }
     }
 
     /**{@inheritDoc}*/
     public void nodeCollapsed(Object object) {
-        // does nothing
+        synchronized (this) {
+            expandedNodes.remove(object);
+            collapsedNodes.add(object);
+        }
     }
 }

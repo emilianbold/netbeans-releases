@@ -41,15 +41,52 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.RenameAction;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * To rename a web service group
  */
 public class RenameGroupAction extends RenameAction {
     
-    protected void performAction(Node[] activatedNodes) {
-        //TODO review oringinal
+    protected boolean isEnabled(Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
+            return g != null && g.isUserDefined();
+        }
+        return false;
+    }
+    
+    @Override
+    protected void performAction(Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            SaasGroup group = nodes[0].getLookup().lookup(SaasGroup.class);
+            if (group == null) {
+                return;
+            }
+
+            Node n = nodes[0];
+            NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                    NbBundle.getMessage(RenameAction.class, "CTL_RenameLabel"),
+                    NbBundle.getMessage(RenameAction.class, "CTL_RenameTitle"));
+            dlg.setInputText(n.getName());
+            if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
+                String name = dlg.getInputText().trim();
+                if (group.getParent().getChildGroup(name) != null) {
+                    String msg = NbBundle.getMessage(RenameGroupAction.class, "MSG_DuplicateGroupName");
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
+                SaasServicesModel.getInstance().renameGroup(group, name);
+                n.setName(name);
+            }
+        }
     }
 }

@@ -117,21 +117,24 @@ public final class Deployment {
                 String msg = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer");
                 throw new DeploymentException(msg);
             }
-            
-            JDBCDriverDeployer jdbcDriverDeployer = server.getServerInstance().getJDBCDriverDeployer();
-            
-            // Currently it is not possible to select target to which modules will 
-            // be deployed. Lets use the first one.
-            ServerTarget targets[] = serverInstance.getTargets();
-            if (targets.length > 0) {
-                Target target = targets[0].getTarget();
-                Set<Datasource> moduleDatasources = jmp.getModuleDatasources();
-                if (moduleDatasources.size() > 0 && jdbcDriverDeployer != null
-                        && jdbcDriverDeployer.supportsDeployJDBCDrivers(target)) {
-                    ProgressObject po = jdbcDriverDeployer.deployJDBCDrivers(target, moduleDatasources);
-                    ProgressObjectUtil.trackProgressObject(progress, po, Long.MAX_VALUE);
+
+            // Only call getTargets() if we really need to.
+            Set<Datasource> moduleDatasources = jmp.getModuleDatasources();
+            if(moduleDatasources != null && moduleDatasources.size() > 0) {
+                JDBCDriverDeployer jdbcDriverDeployer = server.getServerInstance().getJDBCDriverDeployer();
+                if(jdbcDriverDeployer != null) {
+                    // Currently it is not possible to select target to which modules will 
+                    // be deployed. Lets use the first one.
+                    ServerTarget targets[] = serverInstance.getTargets();
+                    if (targets.length > 0) {
+                        Target target = targets[0].getTarget();
+                        if (jdbcDriverDeployer.supportsDeployJDBCDrivers(target)) {
+                            ProgressObject po = jdbcDriverDeployer.deployJDBCDrivers(target, moduleDatasources);
+                            ProgressObjectUtil.trackProgressObject(progress, po, Long.MAX_VALUE);
+                        }
+                    }
                 }
-            }
+            }            
             
             boolean serverReady = false;
             TargetServer targetserver = new TargetServer(deploymentTarget);

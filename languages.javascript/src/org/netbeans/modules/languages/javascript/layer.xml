@@ -192,17 +192,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
-                <folder name="FoldManager">
-                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
-                </folder>
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
-                </folder>
-                <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
-                </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="JSON.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 </file>

@@ -40,13 +40,8 @@
 
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationProvider;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatformEnum;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.openide.util.NbBundle;
-import java.text.MessageFormat;
-
 
 /**
  *

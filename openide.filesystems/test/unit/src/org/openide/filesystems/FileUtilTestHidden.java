@@ -258,17 +258,21 @@ public class FileUtilTestHidden extends TestBaseHid {
         assertTrue(FileUtil.isParentOf(root, fileObjects[0]));        
         assertTrue(FileUtil.isParentOf(fileObjects[0], fileObjects[1]));
         assertTrue(FileUtil.isParentOf(fileObjects[1], fileObjects[2]));        
-                
-        testedFS.addFileChangeListener(new FileChangeAdapter() {
+        final FileChangeListener fcl = new FileChangeAdapter() {
             public void fileDeleted(FileEvent fe) {
                 FileObject file = fe.getFile();
                 assertNotNull(file.getPath(),file.getParent());
                 assertTrue(file.getPath(), FileUtil.isParentOf(root, file));
                 events.add(fe);
             }
-        });
-        fileObjects[1].delete();      
-        assertTrue (events.size() > 0);        
+        };
+        try {
+            testedFS.addFileChangeListener(fcl);
+            fileObjects[1].delete();                                
+            assertTrue(events.size() > 0);
+        } finally {
+            testedFS.removeFileChangeListener(fcl);
+        }        
     }
     
     public void testGetFileDisplayName ()  throws Exception {        

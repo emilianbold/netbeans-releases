@@ -44,6 +44,7 @@ package prepare;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -64,18 +65,24 @@ import org.netbeans.jemmy.operators.Operator;
 
 import junit.framework.Test;
 
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 import org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase;
-
 
 /**
  * Prepare user directory for complex measurements (startup time and memory consumption) of IDE with opened project and 10 files.
  * Open 10 java files and shut down ide.
  * Created user directory will be used to measure startup time and memory consumption of IDE with opened files.
  *
- * @author mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
     
@@ -103,6 +110,8 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
         suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeMemoryToolbar"));
+        //FIXME: Remove manual addition of Application Server
+        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("addApplicationServer"));
         suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("openProjects"));
         suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("openFiles"));
         suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("saveStatus"));
@@ -114,6 +123,45 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
 //        err = System.out;
         err = getLog();
         log = getRef();
+    }
+    
+    public void addApplicationServer() {
+        // FIXME: Make a call of the following method
+//        Utilities.addApplicationServer();
+       String appServerPath = System.getProperty("com.sun.aas.installRoot");
+        
+        if (appServerPath == null) {
+            throw new Error("Can't add application server. com.sun.aas.installRoot property is not set.");
+        }
+
+        String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
+        String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
+        String glassFishV2ListItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.Bundle", "LBL_GlassFishV2");
+        String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
+        String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
+
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
+        JTreeOperator runtimeTree = rto.tree();
+        
+        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
+        
+        TreePath path = runtimeTree.findPath("Servers");
+        runtimeTree.selectPath(path);
+        
+        new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
+       
+        NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+        
+        new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV2ListItem);
+        
+        new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
+        
+        new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
+        
+        new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+        
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
     }
     
     /**
@@ -180,6 +228,8 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
             ProjectSupport.waitScanFinished();
             ProjectSupport.openProject(projectsLocation + "TravelReservationServiceApplication");
             ProjectSupport.waitScanFinished();
+            // TODO: Remove this workaround: closing all modals
+            closeAllModal();
         }catch(Exception exc){
             test_failed = true;
             fail(exc);

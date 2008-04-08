@@ -1,0 +1,3 @@
+org.netbeans.modules.websvc.saas.codegen.java.JaxWsFlavorProvider
+org.netbeans.modules.websvc.saas.codegen.java.JaxRsFlavorProvider
+org.netbeans.modules.websvc.saas.codegen.java.CustomFlavorProvider

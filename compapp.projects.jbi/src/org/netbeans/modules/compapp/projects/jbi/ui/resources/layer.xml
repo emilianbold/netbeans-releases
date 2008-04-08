@@ -59,9 +59,6 @@ made subject to such option by the copyright holder.
     
     <folder name="org-netbeans-modules-compapp-projects-jbi">
         <file name="portmap.xml" url="portmap.xml"/>
-    </folder>
-    
-    <folder name="org-netbeans-modules-compapp-projects-jbi">
         <file name="project.casa" url="project.casa"/>
     </folder>
     

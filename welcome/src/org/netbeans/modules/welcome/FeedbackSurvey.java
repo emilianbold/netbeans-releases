@@ -37,9 +37,11 @@ import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -143,15 +145,28 @@ final class FeedbackSurvey {
         
         NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.QUESTION_MESSAGE);
         nd.setTitle(tit);
-        Object[] buttons = { yes, later, never };
+        //Object[] buttons = { yes, later, never };
+        JButton yesButton = new JButton();
+        yesButton.getAccessibleContext().setAccessibleDescription( 
+                NbBundle.getMessage(FeedbackSurvey.class, "ACSD_FeedbackSurvey_Yes"));
+        Mnemonics.setLocalizedText(yesButton, yes);
+        JButton laterButton = new JButton();
+        laterButton.getAccessibleContext().setAccessibleDescription( 
+                NbBundle.getMessage(FeedbackSurvey.class, "ACSD_FeedbackSurvey_Later"));
+        Mnemonics.setLocalizedText(laterButton, later);
+        JButton neverButton = new JButton();
+        neverButton.getAccessibleContext().setAccessibleDescription( 
+                NbBundle.getMessage(FeedbackSurvey.class, "ACSD_FeedbackSurvey_Never"));
+        Mnemonics.setLocalizedText(neverButton, never);
+        Object[] buttons = { yesButton, laterButton, neverButton };
         nd.setOptions(buttons);
         Object res = DialogDisplayer.getDefault().notify(nd);
         
-        if (res == yes) {
+        if (res == yesButton) {
             HtmlBrowser.URLDisplayer.getDefault().showURL(whereTo);
             return true;
         } else {
-            if( res == never ) {
+            if( res == neverButton ) {
                 Preferences prefs = NbPreferences.forModule(FeedbackSurvey.class);
                 prefs.putInt("feedback.survey.show.count", (int)bundledInt("MSG_FeedbackSurvey_AskTimes")); // NOI18N
             }

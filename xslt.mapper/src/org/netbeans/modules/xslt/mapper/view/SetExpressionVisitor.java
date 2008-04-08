@@ -18,12 +18,9 @@
  */
 package org.netbeans.modules.xslt.mapper.view;
 
-import java.util.List;
-import org.netbeans.modules.xml.xpath.AbstractXPathModelHelper;
-import org.netbeans.modules.xml.xpath.XPathException;
 import org.netbeans.modules.xml.xpath.XPathExpression;
-import org.netbeans.modules.xml.xpath.XPathModel;
 import org.netbeans.modules.xslt.model.Attribute;
+import org.netbeans.modules.xslt.model.CopyOf;
 import org.netbeans.modules.xslt.model.Element;
 import org.netbeans.modules.xslt.model.ForEach;
 import org.netbeans.modules.xslt.model.If;
@@ -67,6 +64,11 @@ public class SetExpressionVisitor extends XslVisitorAdapter{
     public void visit(If iff) {
         iff.setTest(getExpressionString());
     }
+    
+    public void visit(CopyOf cof){
+        cof.setSelect(getExpressionString());
+    }
+    
     
     public void visit(Attribute attribute) {
         handleElementOrAttribute(attribute);

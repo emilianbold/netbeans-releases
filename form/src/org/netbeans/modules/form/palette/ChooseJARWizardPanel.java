@@ -116,6 +116,8 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
                         cs.fireChange();
                 }
             });
+
+            fileChooser.getAccessibleContext().setAccessibleDescription(PaletteUtils.getBundleString("CTL_SelectJAR_Step")); // NOI18N
         }
 
         return fileChooser;

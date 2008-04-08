@@ -45,17 +45,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultListModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectPropertiesTest;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -159,7 +162,7 @@ public class ApplicationImplTest extends NbTestCase {
                 Application application = metadata.getRoot();
                 
                 // test application
-                int size = earProject.getProjectProperties().getJarContentAdditional().size();
+                int size = EarProjectProperties.getJarContentAdditional(earProject).size();
                 assertSame("application should contains exactly " + size + " modules", size, application.sizeModule());
                 return application;
             }
@@ -177,58 +180,6 @@ public class ApplicationImplTest extends NbTestCase {
     /**
      * <ul>
      * Test for:
-     * <li>Application should always contain the same number of modules as EAR project</li>
-     * </ul>
-     * @throws Exception if any error occurs.
-     */
-    public void testGetApplicationModules() throws Exception {
-        
-        // test model
-        getModel().runReadAction(new MetadataModelAction<ApplicationMetadata, Void>() {
-            public Void run(ApplicationMetadata metadata) {
-                Application application = metadata.getRoot();
-                
-                // test application
-                int size = earProject.getProjectProperties().getJarContentAdditional().size();
-                assertSame("application should contains exactly " + size + " modules", size, application.sizeModule());
-
-                return null;
-            }
-        });
-        
-        // remove ejb module
-        EarProjectProperties earProjectProperties = earProject.getProjectProperties();
-        List<VisualClassPathItem> modules = new ArrayList<VisualClassPathItem>();
-        modules.addAll(earProjectProperties.getJarContentAdditional());
-        VisualClassPathItem ejb = getEjb(earProjectProperties.getJarContentAdditional());
-        assertNotNull("ejb module should exist", ejb);
-        modules.remove(ejb);
-        earProjectProperties.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, modules);
-        earProjectProperties.store();
-
-        // just to be sure that ejb module was removed
-        EditableProperties ep = TestUtil.loadProjectProperties(earProject.getProjectDirectory());
-        String ejbReferenceValue = ep.getProperty(EJB_REFERENCE_EXPECTED_KEY);
-        assertNull("ejb reference should not exist", ejbReferenceValue);
-        
-        // test model
-        getModel().runReadAction(new MetadataModelAction<ApplicationMetadata, Void>() {
-            public Void run(ApplicationMetadata metadata) {
-                Application application = metadata.getRoot();
-                
-                // test application
-                int size = earProject.getProjectProperties().getJarContentAdditional().size();
-                assertSame("application should contains exactly " + size + " modules", size, application.sizeModule());
-
-                return null;
-            }
-        });
-        
-    }
-    
-    /**
-     * <ul>
-     * Test for:
      * <li>Application should always be appropriate for EAR project</li>
      * </ul>
      * <ol>
@@ -241,18 +192,16 @@ public class ApplicationImplTest extends NbTestCase {
      */
     public void testChangesInEAR() throws Exception {
         
-        EarProjectProperties earProjectProperties = earProject.getProjectProperties();
-        VisualClassPathItem ejb = getEjb(earProjectProperties.getJarContentAdditional());
-        assertEquals("ejb path should be ok", EJB_NAME + ".jar", ejb.getCompletePathInArchive());
+        ClassPathSupport.Item ejb = getEjb(EarProjectProperties.getJarContentAdditional(earProject));
+        assertEquals("ejb path should be ok", EJB_NAME + ".jar", EarProjectProperties.getCompletePathInArchive(earProject, ejb));
         
         // change ejb
         final String otherPath = "otherPath";
-        List<VisualClassPathItem> modules = new ArrayList<VisualClassPathItem>();
-        modules.addAll(earProjectProperties.getJarContentAdditional());
+        List<ClassPathSupport.Item> modules = new ArrayList<ClassPathSupport.Item>();
+        modules.addAll(EarProjectProperties.getJarContentAdditional(earProject));
         ejb = getEjb(modules);
-        ejb.setPathInEAR(otherPath);
-        earProjectProperties.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, modules);
-        earProjectProperties.store();
+        ejb.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, otherPath);
+        EarProjectPropertiesTest.putProperty(earProject, EarProjectProperties.JAR_CONTENT_ADDITIONAL, modules, EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
         
         // test model
         getModel().runReadAction(new MetadataModelAction<ApplicationMetadata, Void>() {
@@ -271,10 +220,10 @@ public class ApplicationImplTest extends NbTestCase {
         return earProject.getAppModule().getMetadataModel();
     }
     
-    private VisualClassPathItem getEjb(List<VisualClassPathItem> modules) {
-        for (VisualClassPathItem vcpi : modules) {
-            if (vcpi.getRaw().indexOf(EJB_REFERENCE_EXPECTED_KEY) != -1
-                    && EJB_REFERENCE_EXPECTED_VALUE.endsWith(vcpi.getEvaluated())) {
+    private ClassPathSupport.Item getEjb(List<ClassPathSupport.Item> modules) {
+        for (ClassPathSupport.Item vcpi : modules) {
+            if (vcpi.getReference().indexOf(EJB_REFERENCE_EXPECTED_KEY) != -1
+                    /*&& EJB_REFERENCE_EXPECTED_VALUE.endsWith(vcpi.getEvaluated())*/) {
                 return vcpi;
             }
         }

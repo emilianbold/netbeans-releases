@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,20 +45,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.gsf.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 
 /**
- *
  * @author Tor Norbye
  */
 public class StructureAnalyzerTest extends RubyTestBase {
@@ -67,16 +65,6 @@ public class StructureAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
     private void annotate(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure) {
         for (StructureItem element : structure) {
             for (int i = 0; i < indent; i++) {
@@ -92,7 +80,7 @@ public class StructureAnalyzerTest extends RubyTestBase {
             sb.append(":");
             sb.append("\n");
             List<? extends StructureItem> children = element.getNestedItems();
-            if (children != null && children.size() > 0) {
+            if (children != null && !children.isEmpty()) {
                 List<? extends StructureItem> c = new ArrayList<StructureItem>(children);
                 // Sort children to make tests more stable
                 Collections.sort(c, new Comparator<StructureItem>() {
@@ -132,13 +120,12 @@ public class StructureAnalyzerTest extends RubyTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                // TODO escaped
+            public void appendText(String text, int fromInclusive, int toExclusive) {
                 sb.append("ESCAPED{");
-                sb.append(text);
+                sb.append(text, fromInclusive, toExclusive);
                 sb.append("}");
             }
-
+            
             @Override
             public void name(ElementKind kind, boolean start) {
                 if (start) {
@@ -224,8 +211,8 @@ public class StructureAnalyzerTest extends RubyTestBase {
     
     private void checkAttributes(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
-        RubyParseResult rbr = (RubyParseResult)info.getParserResult();
-        StructureAnalyzer.AnalysisResult ar = rbr.getStructure();
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        StructureAnalyzer.AnalysisResult ar = rpr.getStructure();
         Map<AstClassElement, Set<AstAttributeElement>> attributes = ar.getAttributes();
         
         StringBuilder sb = new StringBuilder();
@@ -355,6 +342,51 @@ public class StructureAnalyzerTest extends RubyTestBase {
 
     public void testFolds5() throws Exception {
         checkFolds("testfiles/unused.rb");
+    }
+
+    public void testRubyStructureItemEqualsAndHashCode() throws Exception {
+        CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCode.rb");
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+
+        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        assertEquals("two methods", 3, structures.size());
+        StructureItem twoParams = structures.get(0);
+        StructureItem oneParamA = structures.get(1);
+        StructureItem oneParamB = structures.get(2);
+        assertFalse("not equals", twoParams.equals(oneParamA));
+        assertFalse("not same hashCode (first: " + twoParams.hashCode() + ", second: " + oneParamA.hashCode() + ')',
+                twoParams.hashCode() == oneParamA.hashCode());
+        assertFalse("not equals", oneParamA.equals(oneParamB));
+        assertEquals("same hashCode - we consider just arity", oneParamA.hashCode(), oneParamB.hashCode());
+    }
+    
+    public void testRubyStructureItemEqualsAndHashCodeForOptionalParams() throws Exception { // #131134
+        CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCodeForOptionalParams.rb");
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+
+        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        assertEquals("two methods", 2, structures.size());
+        StructureItem first = structures.get(0);
+        StructureItem second = structures.get(1);
+        assertFalse("not equals", first.equals(second));
+        assertFalse("not same hashCode (first: " + first.hashCode() + ", second: " + second.hashCode() + ')',
+                first.hashCode() == second.hashCode());
+    }
+
+    public void testRubyStructureItemNotEqualsStaticVsInstance() throws Exception { // #115782
+        CompilationInfo info = getInfo("testfiles/testRubyStructureItemNotEqualsStaticVsInstance.rb");
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+
+        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        assertEquals("one class", 1, structures.size());
+        StructureItem clazz = structures.get(0);
+        assertEquals("Foo class", ElementKind.CLASS, clazz.getKind());
+        List<?extends StructureItem> clazzChildrens = clazz.getNestedItems();
+        assertEquals("two methods", 2, clazzChildrens.size());
+        StructureItem first = clazzChildrens.get(0);
+        StructureItem second = clazzChildrens.get(1);
+        assertFalse("not equals", second.equals(first));
+        assertEquals("same hashCode", first.hashCode(), second.hashCode());
     }
 
 }

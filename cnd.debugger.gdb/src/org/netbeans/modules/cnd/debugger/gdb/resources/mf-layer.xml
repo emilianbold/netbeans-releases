@@ -43,6 +43,12 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
+    <folder name="Actions">
+        <folder name="Debug">
+            <file name="org-netbeans-modules-cnd-debugger-gdb-actions-DisassemblyAction.instance"/>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-c++">
@@ -107,6 +113,35 @@ made subject to such option by the copyright holder.
                      
                 </folder>
             </folder>
+            
+            <folder name="x-asm">
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-cnd-debugger-gdb-disassembly-DisToolTipAnnotation.instance"/>
+                </folder>
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1852"/>
+                    </file>
+                    
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/> 
+                        <attr name="position" intvalue="1426"/>
+                    </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/> 
+                        <attr name="position" intvalue="1710"/>
+                    </file> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
+                        <attr name="position" intvalue="1568"/>
+                    </file> 
+                </folder>
+            </folder>
         </folder>
         
         <folder name="AnnotationTypes">
@@ -115,9 +150,12 @@ made subject to such option by the copyright holder.
             <file name="CondFuncBreakpoint.xml" url="CondFuncBreakpoint.xml"/>
             <file name="DisabledCondFuncBreakpoint.xml" url="DisabledCondFuncBreakpoint.xml"/>
             <!-- <file name="PC_anyBP.xml" url="PC_anyBP.xml"/> -->
+            <file name="AddressBreakpoint.xml" url="AddressBreakpoint.xml"/>
+            <file name="DisabledAddressBreakpoint.xml" url="DisabledAddressBreakpoint.xml"/>
+            <file name="CondAddrBreakpoint.xml" url="CondAddrBreakpoint.xml"/>
+            <file name="DisabledCondAddrBreakpoint.xml" url="DisabledCondAddrBreakpoint.xml"/>
         </folder>
     </folder>
-    
     
     <!-- Main menu -->
     <folder name="Menu">
@@ -222,6 +260,18 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2500"/>
             </file>
         </folder>
+        <folder name="Window">
+            <folder name="Debug">
+                <file name="org-netbeans-modules-cnd-debugger-gdb-actions-DisassemblyAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-actions-DisassemblyAction.instance"/>
+                    <attr name="position" intvalue="950"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-debugger-gdb-actions-RegistersAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance"/>
+                    <attr name="position" intvalue="951"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     
     <folder name="Shortcuts">
@@ -298,4 +348,16 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="RegistersTopComponent.settings" url="RegistersTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="debugger">
+                <file name="RegistersTopComponent.wstcref" url="RegistersTopComponentWstcref.xml">
+                    <attr name="position" intvalue="1200"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

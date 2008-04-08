@@ -79,6 +79,7 @@ public class OpenHugeWebPackProject extends org.netbeans.performance.test.utilit
         WAIT_AFTER_OPEN=20000;
     }
     
+    @Override
     public void initialize(){
         log("::initialize::");
     }
@@ -95,6 +96,7 @@ public class OpenHugeWebPackProject extends org.netbeans.performance.test.utilit
         return null;
     }
     
+    @Override
     public void close(){
         log("::close");
         ProjectSupport.closeProject(projectName);

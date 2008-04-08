@@ -1,6 +1,6 @@
 #!/bin/sh
-ant -f nbbuild/build.xml hg-clean || exit
-#ant -f nbbuild/build.xml checkout || exit
-ant -f nbbuild/build.xml build-nozip || exit
+ant hg-clean || exit
+#ant checkout || exit
+ant build-nozip || exit
 ant -f xtest/build.xml || exit
-ant -f nbbuild/build.xml -Dtest.fail.on.error=false build-test-dist
+ant -Dtest.fail.on.error=false build-test-dist

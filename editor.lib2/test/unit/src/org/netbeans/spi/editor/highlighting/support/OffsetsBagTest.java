@@ -80,6 +80,18 @@ public class OffsetsBagTest extends NbTestCase {
         assertEquals("Sequence was not cleared", 0, hs.getMarks().size());
     }
 
+    public void testRemoveBeyondEnd() throws Exception {
+        Document doc = new PlainDocument();
+        doc.insertString(0, "0123456789", null);
+        OffsetsBag hs = new OffsetsBag(doc);
+        hs.addHighlight(0, 5, EMPTY);
+        hs.addHighlight(6, 8, EMPTY);
+        assertEquals("Sequence size", 4, hs.getMarks().size());
+        hs.removeHighlights(0, 11, false);
+        hs.clear();
+        assertEquals("Sequence was not cleared", 0, hs.getMarks().size());
+    }
+
     public void testAddLeftOverlap() {
         OffsetsBag hs = new OffsetsBag(doc);
         SimpleAttributeSet attribsA = new SimpleAttributeSet();

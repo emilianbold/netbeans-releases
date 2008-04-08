@@ -64,8 +64,10 @@ import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtilsTestUtil2;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
@@ -74,6 +76,7 @@ import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -88,7 +91,6 @@ import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
@@ -137,6 +139,7 @@ public class CompletionTestBase extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        GlobalSourcePathTestUtil.setUseLibraries (false);
         XMLFileSystem system = new XMLFileSystem();
         system.setXmlUrls(new URL[] {
             JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml"),
@@ -152,18 +155,26 @@ public class CompletionTestBase extends NbTestCase {
             mgr.createUsagesQuery(entry.getURL(), true);
         }
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
-        for (ClassPath.Entry entry : bootPath.entries()) {
-            final URL url = entry.getURL();
-            final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
-                public Void run() throws IOException, InterruptedException {
-                    BinaryAnalyser ba = cii.getBinaryAnalyser();            
-                    ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
-                    ba.finish();
-                    return null;
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, ClassPathSupport.createClassPath(new URL[0]), sourcePath);
+        assertNotNull(cpInfo);
+        final JavaSource js = JavaSource.create(cpInfo);
+        assertNotNull(js);
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {                
+                for (ClassPath.Entry entry : bootPath.entries()) {
+                    final URL url = entry.getURL();
+                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
+                    ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                        public Void run() throws IOException, InterruptedException {
+                            BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                            ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
+                            ba.finish();
+                            return null;
+                        }
+                    });            
                 }
-            });            
-        }                
+            }
+        }, true);                        
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
                 if (type == ClassPath.SOURCE)
@@ -221,7 +232,10 @@ public class CompletionTestBase extends NbTestCase {
         }
         out.close();
         
-        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + goldenFileName);
+        String version = System.getProperty("java.specification.version");
+        version = "1.5".equals(version) ? "" : version + "/";
+        
+        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName);
         File diffFile = new File(getWorkDir(), getName() + ".diff");        
         assertFile(output, goldenFile, diffFile);
         

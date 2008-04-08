@@ -107,6 +107,20 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Add ability to remove a database connection</summary>
+            <version major="1" minor="25"/>
+            <date day="26" month="2" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                Add the ability to remove a database connection from the Database
+                Explorer connection list
+            </description>
+            <issue number="128502"/>
+        </change>
+
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Made Database Explorer API stable</summary>
             <version major="1" minor="24"/>
             <date day="1" month="11" year="2007"/>

@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Arrays;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.AncestorEvent;
@@ -74,17 +75,17 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
     private String[] sortByColumns;
     
     /** Creates a new instance of PropertiesTable */
-    public PropertiesTable(String[] columns, String[] sortByColumns) {
-        init(columns, null);
+    public PropertiesTable(JLabel label, String[] columns, String[] sortByColumns) {
+        init(label, columns, null);
         this.sortByColumns = sortByColumns;
         setSortingStatus();
     }
     
-    public PropertiesTable(String[] columns, TableSorter sorter) {
-        init(columns, sorter);
+    public PropertiesTable(JLabel label, String[] columns, TableSorter sorter) {
+        init(label, columns, sorter);
     } 
     
-    private void init(String[] columns, TableSorter sorter) {
+    private void init(JLabel label, String[] columns, TableSorter sorter) {
         tableModel = new PropertiesTableModel(columns);
         tableModel.addTableModelListener(this);
         if(sorter == null) {
@@ -102,6 +103,7 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         component.setPreferredSize(new Dimension(340, 150));
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PropertiesTable.class, "ACSD_PropertiesTable")); // NOI18N        
+        label.setLabelFor(table);
         setColumns(columns);
     }
     

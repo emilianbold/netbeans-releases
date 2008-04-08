@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,19 +43,46 @@
 package org.netbeans.modules.i18n.java;
 
 
-import java.lang.reflect.Modifier;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.InfoPanel;
 import org.netbeans.modules.i18n.I18nString;
@@ -74,6 +101,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.MapFormat;
 import org.openide.util.Lookup;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -86,7 +114,9 @@ import org.openide.util.NbBundle;
 public class JavaI18nSupport extends I18nSupport {
 
     /** Modifiers of field which are going to be internbationalized (default is private static final). */
-    protected int modifiers = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;
+    protected Set<Modifier> modifiers = EnumSet.of(Modifier.PRIVATE,
+                                                   Modifier.STATIC,
+                                                   Modifier.FINAL);
 
     /** Identifier of field element pointing to field which defines resource bundle in the source. */
     protected String identifier;
@@ -362,12 +392,12 @@ public class JavaI18nSupport extends I18nSupport {
     }
 
     /** Getter for modifiers. */
-    public int getModifiers() {
+    public Set<Modifier> getModifiers() {
         return modifiers;
     }
     
     /** Setter for modifiers. */
-    public void setModifiers(int modifiers) {
+    public void setModifiers(Set<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
     
@@ -440,38 +470,178 @@ public class JavaI18nSupport extends I18nSupport {
         
         identifier = name;
     }
+
+    /**
+     * Task that adds a field to the internationalized Java source file.
+     */
+    private final class AddFieldTask implements Task<WorkingCopy> {
+
+        /** name of the field to be added */
+        private final String fieldName;
+
+        AddFieldTask(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public void run(WorkingCopy workingCopy) throws Exception {
+            final TypeElement sourceClassElem = getClass(workingCopy);
+            if (sourceClassElem == null) {
+                return;
+            }
+
+            List<? extends javax.lang.model.element.Element> classMembers
+                    = sourceClassElem.getEnclosedElements();
+            List<? extends VariableElement> fields
+                    = ElementFilter.fieldsIn(classMembers);
+            if (containsField(fields, fieldName)) {
+                return;
+            }
+
+            int targetPosition = findTargetPosition(classMembers, fields);
+
+            final TreeMaker treeMaker = workingCopy.getTreeMaker();
+            final Elements elements = workingCopy.getElements();
+            final Trees trees = workingCopy.getTrees();
+            final TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
+
+            TypeElement resourceBundleTypeElem = elements.getTypeElement(
+                                            "java.util.ResourceBundle");//NOI18N
+            assert resourceBundleTypeElem != null;
+
+            ExpressionTree fieldDefaultValue
+                    = treeUtilities.parseVariableInitializer(getInitString(),
+                                                             new SourcePositions[1]);
+            TreePath classTreePath = trees.getPath(sourceClassElem);
+            Scope classScope = trees.getScope(classTreePath);
+            if (classScope != null) {
+                treeUtilities.attributeTree(fieldDefaultValue, classScope);
+            }
+
+            VariableTree field = treeMaker.Variable(
+                    treeMaker.Modifiers(modifiers),
+                    fieldName,
+                    treeMaker.QualIdent(resourceBundleTypeElem),
+                    GeneratorUtilities.get(workingCopy).importFQNs(fieldDefaultValue));
+
+            ClassTree oldClassTree = (ClassTree) classTreePath.getLeaf();
+            ClassTree newClassTree = (targetPosition != -1) 
+                                     ? treeMaker.insertClassMember(oldClassTree, targetPosition, field)
+                                     : treeMaker.addClassMember(oldClassTree, field);
+            workingCopy.rewrite(oldClassTree, newClassTree);
+        }
+
+        /**
+         * Finds the target position within the source class element.
+         * In the current implementation, the target position is just below
+         * the last static field of the class; if there is no static field
+         * in the class, the target position is the top of the class.
+         * 
+         * @param  classMembers  list of all members of the class
+         * @param  fields  list of the fields in the class
+         * @return  target position ({@code 0}-based) of the field,
+         *          or {@code -1} if the field should be added to the end
+         *          of the class
+         */
+        private int findTargetPosition(
+                List<? extends javax.lang.model.element.Element> classMembers,
+                List<? extends VariableElement> fields) {
+            if (fields.isEmpty()) {
+                return 0;
+            }
+
+            int target = 0;
+            boolean skippingStaticFields = false;
+            Iterator<? extends javax.lang.model.element.Element> membersIt
+                    = classMembers.iterator();
+            for (int index = 0; membersIt.hasNext(); index++) {
+                javax.lang.model.element.Element member = membersIt.next();
+                ElementKind kind = member.getKind();
+                if (kind.isField()
+                        && (kind != ElementKind.ENUM_CONSTANT)
+                        && member.getModifiers().contains(Modifier.STATIC)) {
+                    /* it is a static field - skip it! */
+                    skippingStaticFields = true;
+                } else if (skippingStaticFields) {
+                    /* we were skipping all static fields - until now */
+                    skippingStaticFields = false;
+                    target = index;
+                }
+            }
+
+            return !skippingStaticFields ? target : -1;
+        }
+
+        /**
+         * Finds a main top-level class or a nested class element
+         * for {@code sourceDataObject} which should be initialized.
+         */
+        private TypeElement getClass(WorkingCopy workingCopy)
+                                                            throws IOException {
+            workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+
+            final String preferredName = sourceDataObject.getName();
+            TypeElement firstPublicNestedClass = null;
+            
+            List<? extends TypeElement> topClasses = workingCopy.getTopLevelElements();
+            for (TypeElement topElement : topClasses) {
+                ElementKind elementKind = topElement.getKind();
+                if (!elementKind.isClass()) {
+                    continue;
+                }
+
+                if (topElement.getSimpleName().contentEquals(preferredName)) {
+                    return topElement;
+                }
+
+                if ((firstPublicNestedClass == null)
+                        && topElement.getModifiers().contains(Modifier.PUBLIC)) {
+                    firstPublicNestedClass = topElement;
+                }
+            }
+
+            return firstPublicNestedClass;
+        }
+
+        /**
+         * Checks whether the given class contains a field of the given name.
+         * 
+         * @param  clazz  class that should be searched
+         * @param  fieldName  name of the field
+         * @return  {@code true} if the class contains such a field,
+         *          {@code false} otherwise
+         */
+        private boolean containsField(List<? extends VariableElement> fields,
+                                      String fieldName) {
+            if (!fields.isEmpty()) {
+                for (VariableElement field : fields) {
+                    if (field.getSimpleName().contentEquals(fieldName)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     
-    /** Helper method. Creates a new field in java source hierarchy. 
-     * @param javaI18nSupport which holds info about going-to-be created field element
-     * @param sourceDataObject object to which source will be new field added,
-     * the object have to have <code>SourceCookie</code>
-     * @see org.openide.cookies.SourceCookie */
+    }
+    
+    /**
+     * Creates a new field which holds a reference to the resource holder
+     * (resource bundle). The field is added to the internationalized file.
+     */
     private void createField() {
-//        // Check if we have to generate field.
-//        if(!isGenerateField())
-//            return;
-//
-//        ClassElement sourceClass = getSourceClassElement();
-//
-//        if(sourceClass.getField(Identifier.create(getIdentifier())) != null)
-//            // Field with such identifer exsit already, do nothing.
-//            return;
-//        
-//        try {
-//            FieldElement newField = new FieldElement();
-//            newField.setName(Identifier.create(getIdentifier()));
-//            newField.setModifiers(getModifiers());
-//            newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
-//            newField.setInitValue(getInitString());
-//            
-//            if(sourceClass != null)
-//                // Trying to add new field.
-//                sourceClass.addField(newField);
-//        } catch(SourceException se) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, se);
-//        } catch(NullPointerException npe) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
-//        }
+        // Check if we have to generate field.
+        if (!isGenerateField()) {
+            return;
+        }
+
+        final JavaSource javaSource = JavaSource.forDocument(document);
+        try {
+            ModificationResult result
+                    = javaSource.runModificationTask(new AddFieldTask(getIdentifier()));
+            result.commit();
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
     }
 
     /** 
@@ -503,29 +673,6 @@ public class JavaI18nSupport extends I18nSupport {
         return MapFormat.format(initJavaFormat, map);
         
     }
-    
-    /** Helper method. Finds main top-level class element for <code>sourceDataObject</code> which should be initialized. */
-//    private ClassElement getSourceClassElement() {
-//        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
-//        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
-//        
-//        if(sourceClass != null)
-//            return sourceClass;
-//        
-//        ClassElement[] classes = sourceElem.getClasses();
-//        
-//        // find source class
-//        for(int i=0; i<classes.length; i++) {
-//            int modifs = classes[i].getModifiers();
-//            if(classes[i].isClass() && Modifier.isPublic(modifs)) {
-//                sourceClass = classes[i];
-//                break;
-//            }
-//        }
-//        
-//        return sourceClass;
-//    }
-    
     
     /** Finder which search hard coded strings in java sources. */
     public static class JavaI18nFinder implements I18nFinder {
@@ -930,16 +1077,59 @@ public class JavaI18nSupport extends I18nSupport {
          *   or if if string is non-internationalized and <code>i18nSearch</code> flag is <code>false</code> */
         protected boolean isSearchedString(String partHardLine, String hardString) {
             String lineToMatch = UtilConvert.unicodesToChars(partHardLine);
-            
+
+            Boolean regexpTestResult;
             Exception ex = null;
             try {
                 String regexp = createRegularExpression(hardString);
-                return Pattern.compile(regexp).matcher(lineToMatch).find()
-                       == i18nSearch;
+                regexpTestResult = (Pattern.compile(regexp).matcher(lineToMatch).find()
+                                    == i18nSearch);     //auto-boxing
             } catch (ParseException ex1) {
                 ex = ex1;
+                regexpTestResult = null;
             } catch (PatternSyntaxException ex2) {
                 ex = ex2;
+                regexpTestResult = null;
+            }
+            if (Boolean.FALSE.equals(regexpTestResult)) {
+                /*
+                 * the string is an identifier of a bundle or a key
+                 * of a bundle entry
+                 */
+                return false;
+            }
+
+            final AnnotationDetector annotationDetector
+                    = new AnnotationDetector(currentStringStart);
+            try {
+                boolean firstTry = true;
+                do {
+                    if (!firstTry) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException exInterrupted) {
+                            Exceptions.printStackTrace(exInterrupted);
+                            //but still continue
+                        }
+                    }
+                    annotationDetector.reset();
+                    JavaSource.forDocument(document).runUserActionTask(
+                                                            annotationDetector,
+                                                            true);
+                    firstTry = false;
+                } while (annotationDetector.wasCancelled());
+            } catch (IOException ioEx) {
+                Exceptions.printStackTrace(ioEx);
+            }
+            if (annotationDetector.wasAnnotationDetected()) {
+                /* the string is within an annotation */
+                return false;
+            }
+
+            if (regexpTestResult != null) {
+                /* both tests passed */
+                assert regexpTestResult.equals(Boolean.TRUE);
+                return true;
             }
 
             /*
@@ -997,6 +1187,83 @@ public class JavaI18nSupport extends I18nSupport {
             return Translator.translateRegexp(regexpForm, map);
         }
 
+        /**
+         * Task that determines whether there is a Java annotation at the given
+         * cursor position. It is made for the situation that it is known that
+         * there is a string literal at the given cursor position and the goal
+         * is to check whether that string literal is a part of an annotation.
+         * It may not work in cases that there is e.g. a numeric constant
+         * at the current cursor position.
+         * 
+         * @author  Marian Petras
+         */
+        static final class AnnotationDetector implements CancellableTask<CompilationController> {
+            
+            private final int caretPosition;
+            private volatile boolean cancelled;
+            private boolean annotationDetected = false;
+            
+            private AnnotationDetector(int caretPosition) {
+                this.caretPosition = caretPosition;
+            }
+
+            void reset() {
+                cancelled = false;
+                annotationDetected = false;
+            }
+        
+            public void run(CompilationController controller) throws IOException {
+                if (cancelled) {
+                    return;
+                }
+
+                controller.toPhase(Phase.RESOLVED); //cursor position needed
+                if (cancelled) {
+                    return;
+                }
+
+                TreePath treePath = controller.getTreeUtilities()
+                                              .pathFor(caretPosition);
+                if (treePath == null) {
+                    return;
+                }
+                Tree.Kind kind = treePath.getLeaf().getKind();
+                if (kind == Tree.Kind.STRING_LITERAL) {
+                    if ((treePath = treePath.getParentPath()) == null) {
+                        return;
+                    }
+                    kind = treePath.getLeaf().getKind();
+                }
+                if (kind == Tree.Kind.NEW_ARRAY) {
+                    if ((treePath = treePath.getParentPath()) == null) {
+                        return;
+                    }
+                    kind = treePath.getLeaf().getKind();
+                }
+                if (kind == Tree.Kind.ASSIGNMENT) {
+                    if ((treePath = treePath.getParentPath()) == null) {
+                        return;
+                    }
+                    kind = treePath.getLeaf().getKind();
+                }
+
+                annotationDetected = (kind == Tree.Kind.ANNOTATION);
+            }
+            
+            public void cancel() {
+                cancelled = true;
+            }
+
+            boolean wasCancelled() {
+                return cancelled;
+            }
+            
+            boolean wasAnnotationDetected() {
+                return annotationDetected;
+            }
+
+        }
+    
     } // End of JavaI18nFinder nested class.
     
     

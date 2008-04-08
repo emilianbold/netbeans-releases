@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -47,6 +47,7 @@ import java.util.List;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.DataEditorSupport;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -56,10 +57,11 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
-import org.netbeans.modules.bpel.validation.core.Outcome;
+import org.netbeans.modules.bpel.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.validation.core.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -90,7 +92,8 @@ public final class QuickFixAction extends IconAction {
     io.select();
 
     out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix_started")); // NOI18N
-    doQuickFix(getQuickFixes(getBpelModel(getSelectedNode())), out);
+//    doQuickFix(getQuickFixes(getBpelModel(getSelectedNode())), out); // todo r
+    doQuickFix(getQuickFixes(getSelectedNode()), out);
     out.println();
     out.print(i18n(QuickFixAction.class,"MSG_Quick_Fix_finished")); // NOI18N
   }
@@ -109,7 +112,7 @@ public final class QuickFixAction extends IconAction {
       out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", quickFix.getDescription())); // NOI18N
     }
   }
-
+/* todo r
   private BpelModel getBpelModel(Node node) {
     DataObject data = getDataObject(node);
 
@@ -130,10 +133,40 @@ public final class QuickFixAction extends IconAction {
     List<ResultItem> result = validation.getValidationResult();
 
     for (ResultItem item : result) {
-      if ( !(item instanceof Outcome)) {
+      if ( !(item instanceof QuickFixable)) {
         continue;
       }
-      QuickFix quickFix = ((Outcome) item).getQuickFix();
+      QuickFix quickFix = ((QuickFixable) item).getQuickFix();
+
+      if (quickFix != null) {
+        quickFixes.add(quickFix);
+      }
+    }
+    return quickFixes;
+  }
+*/
+  private List<QuickFix> getQuickFixes(Node node) {
+    List<QuickFix> quickFixes = new ArrayList<QuickFix>();
+
+    if (node == null) {
+      return quickFixes;
+    }
+//out("MODE: " + node);
+    if (myValidationController == null) {
+      BPELDataEditorSupport support = (BPELDataEditorSupport) node.getLookup().lookup(DataEditorSupport.class);
+      myValidationController = support.getValidationController();
+    }
+    if (myValidationController == null) {
+//out("CONTROLLER is NULL");
+      return quickFixes;
+    }
+    List<ResultItem> result = myValidationController.getValidationResult();
+
+    for (ResultItem item : result) {
+      if ( !(item instanceof QuickFixable)) {
+        continue;
+      }
+      QuickFix quickFix = ((QuickFixable) item).getQuickFix();
 
       if (quickFix != null) {
         quickFixes.add(quickFix);

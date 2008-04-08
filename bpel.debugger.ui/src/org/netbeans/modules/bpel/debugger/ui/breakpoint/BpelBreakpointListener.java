@@ -106,12 +106,14 @@ public class BpelBreakpointListener extends DebuggerManagerAdapter {
             final String xpath, 
             final int lineNumber) {
         
+        final String realUrl = url.replace("\\", "/");
+        
         final Iterator iterator = 
                 myBreakpointToAnnotation.keySet().iterator ();
         while (iterator.hasNext()) {
-            final LineBreakpoint lb = (LineBreakpoint) iterator.next ();
+            final LineBreakpoint lb = (LineBreakpoint) iterator.next();
             
-            if (!lb.getURL ().equals (url)) {
+            if (!lb.getURL().equals(realUrl)) {
                 continue;
             }
             

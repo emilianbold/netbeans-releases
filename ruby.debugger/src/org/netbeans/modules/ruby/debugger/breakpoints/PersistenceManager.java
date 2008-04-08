@@ -50,9 +50,6 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.ruby.debugger.Util;
 
-/**
- * @author Martin Krauskopf
- */
 public final class PersistenceManager extends DebuggerManagerAdapter {
     
     private static final String RUBY_PROPERTY = "ruby"; // NOI18N

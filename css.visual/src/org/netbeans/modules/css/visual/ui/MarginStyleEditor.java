@@ -48,10 +48,10 @@
 package org.netbeans.modules.css.visual.ui;
 
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.model.CssRuleContent;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.awt.BorderLayout;
 import java.awt.FontMetrics;
-import org.netbeans.modules.css.model.CssRuleContent;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

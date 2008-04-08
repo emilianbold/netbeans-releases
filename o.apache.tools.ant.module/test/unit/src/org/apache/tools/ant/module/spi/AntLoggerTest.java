@@ -192,6 +192,16 @@ public class AntLoggerTest extends NbTestCase {
         run(testdirFO.getFileObject("trivial.xml"), null, AntEvent.LOG_VERBOSE);
         // see TestLogger.taskStarted for details
     }
+
+    public void testReferences() throws Exception {
+        LOGGER.interestedInSessionFlag = true;
+        LOGGER.interestedInAllScriptsFlag = true;
+        LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
+        FileObject rxml = testdirFO.getFileObject("reference.xml");
+        run(rxml);
+        assertEquals(FileUtil.toFile(rxml).getAbsolutePath(), LOGGER.referenceValue);
+        assertTrue(LOGGER.hasReference);
+    }
     
     /**
      * Sample logger which collects results.
@@ -211,6 +221,8 @@ public class AntLoggerTest extends NbTestCase {
         /** Format of each: "taskname:level:message" */
         private List<String> messages;
         private boolean antEventDetailsOK;
+        private String referenceValue;
+        private boolean hasReference;
         
         public TestLogger() {}
         
@@ -226,6 +238,8 @@ public class AntLoggerTest extends NbTestCase {
             targetsStarted = new ArrayList<String>();
             messages = new ArrayList<String>();
             antEventDetailsOK = false;
+            referenceValue = null;
+            hasReference = false;
             halt = false;
         }
         
@@ -276,6 +290,12 @@ public class AntLoggerTest extends NbTestCase {
         }
         
         @Override
+        public void targetFinished(AntEvent event) {
+            referenceValue = event.getProperty("p");
+            hasReference = event.getPropertyNames().contains("p");
+        }
+
+        @Override
         public synchronized void messageLogged(AntEvent event) {
             String toadd = "" + event.getLogLevel() + ":" + event.getMessage();
             String taskname = event.getTaskName();
@@ -304,7 +324,7 @@ public class AntLoggerTest extends NbTestCase {
             if (halt && event.getTaskName().equals("touch")) {
                 try {
                     Thread t = new Thread() {
-                        public void run() {
+                        public @Override void run() {
                             synchronized (TestLogger.this) {
                                 assertEquals("${foobie}", event.evaluate("${foobie}"));
                                 TestLogger.this.notify();

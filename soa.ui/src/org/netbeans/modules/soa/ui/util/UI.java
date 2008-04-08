@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -46,11 +46,13 @@ import java.awt.Insets;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Event;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Stack;
 
 import javax.swing.Action;
 import javax.swing.AbstractAction;
@@ -98,11 +100,17 @@ public final class UI {
   }
 
   public static boolean isCtrl(int modifiers) {
-    return isModifier(modifiers, KeyEvent.CTRL_MASK);
+    return
+      isModifier(modifiers, KeyEvent.CTRL_MASK) ||
+      isModifier(modifiers, KeyEvent.META_MASK);
   }
 
   private static boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
+  }
+
+  public static MyComboBox createComboBox(Object [] items) {
+    return new MyComboBox(items);
   }
 
   public static JLabel createLabel(String message) {
@@ -111,14 +119,22 @@ public final class UI {
     return label;
   }
 
-  public static JRadioButton createRadioButton(String message) {
+  public static JRadioButton createRadioButton(String text, String toolTip) {
     JRadioButton button = new JRadioButton();
-    Mnemonics.setLocalizedText(button, message);
+    Mnemonics.setLocalizedText(button, text);
+    button.setText(cutMnemonicAndAmpersand(text));
+    button.setToolTipText(toolTip);
     return button;
   }
 
   public static JButton createButton(Action action) {
-    return (JButton) createAbstractButton(new JButton(), action);
+    JButton button = (JButton) createAbstractButton(new JButton(), action);
+    Object name = action.getValue(Action.NAME);
+
+    if (name == null) {
+      setButtonSize(button);
+    }
+    return button;
   }
 
   public static JCheckBox createCheckBox(Action action) {
@@ -208,6 +224,19 @@ public final class UI {
     text.setLineWrap(true);
     text.setWrapStyleWord(true);
     return text;
+  }
+
+  public static void a11y(Component component, String a11y) {
+      a11y(component, a11y, a11y);
+  }
+
+  public static void a11y(Component component, String a11yN, String a11yD) {
+    if (a11yN != null) {  
+        component.getAccessibleContext().setAccessibleName(a11yN);
+    }
+    if (a11yD != null) {
+        component.getAccessibleContext().setAccessibleDescription(a11yD);
+    }
   }
 
   public static String i18n(Class clazz, String key) {
@@ -331,6 +360,15 @@ public final class UI {
     }
   }
 
+  public static double getDouble(String value) {
+    try {
+      return Double.parseDouble(value);
+    }
+    catch (NumberFormatException e) {
+      return -1.0;
+    }
+  }
+
   public static int round(double value) {
     return (int) Math.ceil(value);
   }
@@ -372,11 +410,10 @@ public final class UI {
     return (DataObject) node.getLookup().lookup(DataObject.class);
   }
 
-  public static void setImageSize(JButton button) {
-    final Dimension IMAGE_BUTTON_SIZE = new Dimension(24, 24);
-    button.setMaximumSize(IMAGE_BUTTON_SIZE);
-    button.setMinimumSize(IMAGE_BUTTON_SIZE);
-    button.setPreferredSize(IMAGE_BUTTON_SIZE);
+  private static void setButtonSize(JButton button) {
+    button.setMaximumSize(BUTTON_SIZE);
+    button.setMinimumSize(BUTTON_SIZE);
+    button.setPreferredSize(BUTTON_SIZE);
   }
 
   public static JComponent getResizable(JPanel panel) {
@@ -393,16 +430,130 @@ public final class UI {
     return p;
   }
 
+
+  public static String removeHtml(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = replace(value, "<b>", "'"); // NOI18N
+    value = replace(value, "</b>", "'"); // NOI18N
+    value = replace(value, "&nbsp;", " "); // NOI18N
+    
+    return value;
+  }
+
+  public static String getHtml(String value) {
+    return "<html>" + value + "</html>"; // NOI18N
+  }
+
+  public static void startTimeln() {
+    tim();
+    startTime();
+  }
+  public static void startTime() {
+    ourTimes.push(System.currentTimeMillis());
+  }
+
+  public static void endTime(Object object) {
+    long currentTime = System.currentTimeMillis();
+    tim(object + ": " + ((currentTime - ourTimes.pop()) / MILLIS) + " sec."); // NOI18N
+  }
+
+  public static void tim() {
+    if (ENABLE_TIM) {
+      System.out.println();
+    }
+  }
+
+  public static void tim(Object object) {
+    if (ENABLE_TIM) {
+      System.out.println("*** " + object); // NOI18N
+    }
+  }
+  
+  public static void log() {
+    if (ENABLE_LOG) {
+      System.out.println();
+    }
+  }
+
+  public static void log(Object object) {
+    if (ENABLE_LOG) {
+      System.out.println("*** " + object); // NOI18N
+    }
+  }
+
+  public static void stackTrace() {
+    stackTrace(null);
+  }
+
+  public static void stackTrace(Object object) {
+    out();
+    out();
+
+    if (object != null) {
+      out(object);
+    }
+    new Exception("!!!").printStackTrace(); // NOI18N
+  }
+
   public static void out() {
-    if (ENABLED) {
+    if (ENABLE_OUT) {
       System.out.println();
     }
   }
 
   public static void out(Object object) {
-    if (ENABLED) {
+    if (ENABLE_OUT) {
       System.out.println("*** " + object); // NOI18N
     }
+  }
+
+  // ------------------------------------------------
+  public static class MyComboBox extends JComboBox {
+    public MyComboBox(Object [] items) {
+      super(items);
+      init();
+    }
+
+    @Override
+    public boolean selectWithKeyChar(char key)
+    {
+      processKey(key);
+      setSelectedIndex(myIndex);
+      return true;
+    }
+
+    public void init() {
+//out();
+//out("init");
+      myIndex = 0;
+      myPrefix = ""; // NOI18N
+    }
+
+    private void processKey(char key) {
+//out("select: '" + key);
+      if (((int) key) == Event.BACK_SPACE) {
+        init();
+        return;
+      }
+      myPrefix += key;
+      myPrefix = myPrefix.toLowerCase();
+
+//out("prefix: " + myPrefix);
+      for (int i=myIndex; i < getItemCount(); i++) {
+        String item = getItemAt(i).toString().toLowerCase();
+//out("  see: " + item);
+
+        if (item.startsWith(myPrefix)) {
+          myIndex = i;
+          return;
+        }
+      }
+    }
+
+    private int myIndex;
+    private String myPrefix;
   }
 
   // -------------------------------------------------------------
@@ -412,6 +563,20 @@ public final class UI {
       super(name, icon);
       putValue(SHORT_DESCRIPTION, toolTip);
     }
+
+    protected final Node getLastNode() {
+      Node node = getSelectedNode();
+
+      if (node == null) {
+        node = myLastNode;
+      }
+      else {
+        myLastNode = node;
+      }
+      return node;
+    }
+  
+    private Node myLastNode;
   }
 
   // ---------------------------------------------------------------
@@ -649,15 +814,27 @@ public final class UI {
     });
   }
 
-  public static final int TINY_INSET = 2;
-  public static final int SMALL_INSET = 7;
-  public static final int MEDIUM_INSET = 11;
+  private static Stack<Long> ourTimes = new Stack<Long>();
+
+  public static final int TINY_INSET = 2; // the 3-rd Fibonacci number
+  public static final int SMALL_INSET = 8; // the 6-th Fibonacci number
+  public static final int MEDIUM_INSET = 13; // the 7-th Fibonacci number
+
+  private static final double MILLIS = 1000.0;
+  private static final Dimension BUTTON_SIZE = new Dimension(24, 24);
 
   public static final String UH = System.getProperty("user.home"); // NOI18N
   public static final String LS = System.getProperty("line.separator"); // NOI18N
   public static final String FS = System.getProperty("file.separator"); // NOI18N
 
   private static final Border CORNER_BORDER = new CornerBorder();
-  private static final String LOG_PROPERTY = "org.netbeans.modules.log.out"; // NOI18N
-  private static final boolean ENABLED = System.getProperty(LOG_PROPERTY) != null;
+
+  private static final boolean ENABLE_LOG =
+    System.getProperty("org.netbeans.modules.log") != null; // NOI18N
+  
+  private static final boolean ENABLE_OUT =
+    System.getProperty("org.netbeans.modules.out") != null; // NOI18N
+
+  private static final boolean ENABLE_TIM =
+    System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
 }

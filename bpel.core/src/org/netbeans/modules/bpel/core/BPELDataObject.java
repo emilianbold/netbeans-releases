@@ -93,21 +93,32 @@ public class BPELDataObject extends MultiDataObject {
         return new HelpCtx(BPELDataObject.class);
     }
     
+    public void addSaveCookie(SaveCookie cookie){
+        getCookieSet().add(cookie);
+    }
+
+    public void removeSaveCookie(){
+        Node.Cookie cookie = getCookie(SaveCookie.class);
+        if (cookie != null) {
+            getCookieSet().remove(cookie);
+        }
+    }
+
     @Override
     public void setModified( boolean modified )
     {
         super.setModified(modified);
         if (modified) {
             getCookieSet().add(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().add(getSaveCookie());
-            }
+//            if ( isLookupInit.get() ) {
+//                myServices.get().add(getSaveCookie());
+//            }
         }
         else {
             getCookieSet().remove(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().remove( getSaveCookie());
-            }
+//            if ( isLookupInit.get() ) {
+//                myServices.get().remove( getSaveCookie());
+//            }
         }
     }
 
@@ -157,6 +168,8 @@ public class BPELDataObject extends MultiDataObject {
 ////                    new BPELValidationController(getEditorSupport().getBpelModel())
                     }));
 
+            list.add(getCookieSet().getLookup());// 125540
+            
             // add lazy initialization
             InstanceContent.Convertor<Class, Object> conv =
                     new InstanceContent.Convertor<Class, Object>() {
@@ -198,9 +211,9 @@ public class BPELDataObject extends MultiDataObject {
              * Services are used for push/pop SaveCookie in lookup. This allow to work
              * "Save" action on diagram.
              */ 
-            myServices.compareAndSet( null, new InstanceContent() );
-            myServices.get().add( new Empty() );                      // FIX for #IZ78702
-            list.add(new AbstractLookup(myServices.get()));
+//            myServices.compareAndSet( null, new InstanceContent() );
+//            myServices.get().add( new Empty() );                      // FIX for #IZ78702
+//            list.add(new AbstractLookup(myServices.get()));
 
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
@@ -290,14 +303,14 @@ public class BPELDataObject extends MultiDataObject {
         private BPELDataEditorSupport myEditorSupport;
     }
 
-    private static class Empty {
-        
-    }
+//    private static class Empty {
+//        
+//    }
     
     private transient BPELDataEditorSupport myEditorSupport;
     private transient AtomicReference<Lookup> myLookup = 
         new AtomicReference<Lookup>();
-    private transient AtomicReference<InstanceContent> myServices = 
-        new AtomicReference<InstanceContent>();
+//    private transient AtomicReference<InstanceContent> myServices = 
+//        new AtomicReference<InstanceContent>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
 }

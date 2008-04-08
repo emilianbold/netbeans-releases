@@ -43,6 +43,7 @@
 package org.netbeans.modules.uml.ui.addins.diagramcreator;
 
 import java.awt.event.ActionEvent;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -862,7 +863,6 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
                    if (newDiagram != null )
                    {
                        newDiagram.setIsDirty(true);
-                       newDiagram.save();
                    }
                }
            }
@@ -889,7 +889,6 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
       // Fixed issue 96119. 
       // Set the diagram dirty to force autosave.
       retObj.setIsDirty(true);
-      retObj.save();
       return retObj;
    }
 
@@ -1363,19 +1362,31 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
       {
          ETList <ITreeItem> items = null;
          Iterator<IElement> iter = pElements.iterator();
-          while (iter.hasNext()) 
-          {
-              items = pProjectTreeModel.findNodes(iter.next());
-              if (items != null) 
-              {
-                  int count = items.size();
-                  for (int i = 0; i < count; i++) 
-                  {
-                      ITreeItem item = items.get(i);  
-                      pProjectTreeModel.fireItemExpanding(item);
-                  }
-              }
-          }
+         HashSet<ITreeItem> parents = new HashSet<ITreeItem>();
+         while (iter.hasNext()) 
+         {
+             items = pProjectTreeModel.findNodes(iter.next());
+             if (items != null) 
+             {
+                 int count = items.size();
+                 for (int i = 0; i < count; i++) 
+                 {
+                     ITreeItem item = items.get(i);  
+                     if (item != null) 
+                     {
+                         ITreeItem parent = item.getParentItem();
+                         if (! parents.contains(parent))
+                         {
+                             pProjectTreeModel.fireItemExpanding(item);
+                             if (parent != null) 
+                             {  
+                                 parents.add(parent);
+                             }
+                         }
+                     }
+                 }
+             }
+         }
       }
    }
 

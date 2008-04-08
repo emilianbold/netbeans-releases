@@ -43,7 +43,6 @@ package org.netbeans.modules.web.project.ui.wizards;
 
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -51,19 +50,13 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
@@ -71,12 +64,17 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -85,16 +83,23 @@ import org.netbeans.modules.web.project.ui.FoldersListSettings;
 public class ImportWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
 
-    private String moduleLoc;
+    private ProjectImportLocationWizardPanel projectLocationWizardPanel;
     
     /** Create a new wizard iterator. */
     public ImportWebProjectWizardIterator () {}
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ImportWebProjectWizardIterator.ThePanel(),
+            projectLocationWizardPanel = new ProjectImportLocationWizardPanel(J2eeModule.WAR, 
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step1"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_LocationSrcDesc"), true),
+            new ProjectServerWizardPanel(J2eeModule.WAR, 
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step2"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
+                    true, false, true, false, true, false),
             new PanelSourceFolders.Panel()
         };
     }
@@ -102,6 +107,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Step1"), //NOI18N
+            NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
             NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Step2") //NOI18N
         };
     }
@@ -117,21 +123,21 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         
         Set resultSet = new HashSet();
         
-        File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
         
-        File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
+        File dirSrcF = (File) wiz.getProperty (ProjectImportLocationWizardPanel.SOURCE_ROOT);
         
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
-        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
+        String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
+        String contextPath = (String) wiz.getProperty(ProjectServerWizardPanel.CONTEXT_PATH);
         String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
         File[] sourceFolders = (File[]) wiz.getProperty(WizardProperties.JAVA_ROOT);
         File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
-        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
+        String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
+        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         String webInfFolder = (String) wiz.getProperty(WizardProperties.WEBINF_FOLDER);
         
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
@@ -166,7 +172,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
             j2eeLevel = WebModule.J2EE_14_LEVEL;
         }
 
-        String buildfile = getBuildfile();
+        String buildfile = projectLocationWizardPanel.getBuildFile();
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(dirF);
@@ -179,9 +185,12 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setJavaEEVersion(j2eeLevel);
         createData.setServerInstanceID(serverInstanceID);
         createData.setBuildfile(buildfile);
-        createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
-        createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));       
+        createData.setJavaPlatformName((String) wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM));
+        createData.setSourceLevel((String) wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL));       
         createData.setWebInfFolder(webInf);
+        
+        createData.setLibrariesDefinition(SharabilityUtility.getLibraryLocation((String)wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
+        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
         
         WebProjectUtilities.importProject(createData);       
         handle.progress(2);
@@ -190,7 +199,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         
         resultSet.add(dir);
         
-        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        Project earProject = (Project) wiz.getProperty(ProjectServerWizardPanel.EAR_APPLICATION);
         WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdWebProject != null) {
             Ear ear = Ear.getEar(earProject.getProjectDirectory());
@@ -204,28 +213,16 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         if (wm != null) //should not be null
             wm.setContextPath(contextPath);
 
-        Integer index = (Integer) wiz.getProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX);
-        if (index != null) {
-            FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
-        }
-        wiz.putProperty(WizardProperties.NAME, null); // reset project name
+        wiz.putProperty(ProjectLocationWizardPanel.NAME, null); // reset project name
 
         //remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
 
         handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
         
         return resultSet;
     }
     
-    private String getBuildfile() {
-        return buildfileName;
-    }
-    
-    private void setBuildfile(String name) {
-        buildfileName = name;
-    }
-
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
@@ -285,95 +282,4 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
 
-    public final class ThePanel implements WizardDescriptor.ValidatingPanel {
-
-        private ImportLocationVisual panel;
-        private WizardDescriptor wizardDescriptor;
-        
-        private ThePanel () {
-        }
-        
-        public java.awt.Component getComponent () {
-            if (panel == null) {
-                panel = new ImportLocationVisual (this);
-            }
-            return panel;
-        }
-        
-        public HelpCtx getHelp() {
-            return new HelpCtx(ThePanel.class);
-        }
-
-        public boolean isValid () {
-            getComponent();
-            return panel.valid(wizardDescriptor);
-        }
-        
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
-        public void addChangeListener(ChangeListener l) {
-            changeSupport.addChangeListener(l);
-        }
-        public void removeChangeListener(ChangeListener l) {
-            changeSupport.removeChangeListener(l);
-        }
-        protected void fireChangeEvent() {
-            changeSupport.fireChange();
-        }
-        public void readSettings (Object settings) {
-            wizardDescriptor = (WizardDescriptor) settings;        
-            panel.read(wizardDescriptor);
-
-            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-            // this name is used in NewProjectWizard to modify the title
-            Object substitute = ((JComponent) panel).getClientProperty("NewProjectWizard_Title"); //NOI18N
-            if (substitute != null)
-                wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); //NOI18N
-        }
-        
-        public void storeSettings (Object settings) {
-            WizardDescriptor d = (WizardDescriptor) settings;
-            panel.store(d);
-            ((WizardDescriptor) d).putProperty ("NewProjectWizard_Title", null); //NOI18N
-            
-            moduleLoc = panel.moduleLocationTextField.getText().trim();
-        }
-
-        public void validate() throws WizardValidationException {
-            File dirF = new File(panel.projectLocationTextField.getText());
-            if (!new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists()) {
-                setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
-            } else {
-                File buildFile = new File(dirF, getBuildfile());
-                if (buildFile.exists()) {
-                    JButton ok = createButton(
-                            "LBL_IW_Buildfile_OK", "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic", //NOI18N
-                            "LBL_IW_BuildFileDialog_OK_LabelMnemonic"); //NOI18N
-                    JButton cancel = createButton(
-                            "LBL_IW_Buildfile_Cancel", "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic", //NOI18N
-                            "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic"); //NOI18N
-                    final ImportBuildfile ibf = new ImportBuildfile(buildFile, ok);
-                    DialogDescriptor descriptor = new DialogDescriptor(ibf,
-                            NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildfileTitle"), //NOI18N
-                            true, new Object[]{ok, cancel}, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
-                            null, null);
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-                    dialog.setVisible(true);
-                    if (descriptor.getValue() != ok) {
-                        throw new WizardValidationException(panel.projectLocationTextField, "", "");
-                    }
-                    setBuildfile(ibf.getBuildName());
-                }
-            }
-        }
-
-        private JButton createButton(String labelId, String labelMnemonicId, String mnemonicId) {
-            JButton button = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, labelId));
-            button.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(ImportWebProjectWizardIterator.class, labelMnemonicId));
-            button.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, mnemonicId).charAt(0));
-            return button;
-        }
-
-    }
-    
 }

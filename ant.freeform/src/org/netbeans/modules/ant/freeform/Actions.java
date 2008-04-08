@@ -324,7 +324,10 @@ public final class Actions implements ActionProvider {
             script = "build.xml"; // NOI18N
         }
         String scriptLocation = project.evaluator().evaluate(script);
-        FileObject scriptFile = project.helper().resolveFileObject(scriptLocation);
+        FileObject scriptFile = null;
+        if (scriptLocation != null)  {
+            scriptFile = project.helper().resolveFileObject(scriptLocation);
+        }
         if (scriptFile == null) {
             //#57011: if the script does not exist, show a warning:
             NotifyDescriptor nd = new NotifyDescriptor.Message(MessageFormat.format(NbBundle.getMessage(Actions.class, "LBL_ScriptFileNotFoundError"), new Object[] {scriptLocation}), NotifyDescriptor.ERROR_MESSAGE);

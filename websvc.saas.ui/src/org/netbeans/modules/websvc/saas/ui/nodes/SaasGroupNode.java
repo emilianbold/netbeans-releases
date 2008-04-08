@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
@@ -65,18 +64,37 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.Utilities; 
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
- * A second level node representing Group of Web Services
- * @author Winston Prakash
+ * Node representing Group of Web Services
+ * @author nam
  */
-public class SaasGroupNode extends AbstractNode implements Node.Cookie {
+public class SaasGroupNode extends AbstractNode {
     private final SaasGroup group;
 
     public SaasGroupNode(SaasGroup group) {
-        super(new SaasGroupNodeChildren(group));
+        this(group, new InstanceContent());
+    }
+    
+    protected SaasGroupNode(SaasGroup group, InstanceContent content) {
+        super(new SaasGroupNodeChildren(group), new AbstractLookup(content));
         this.group = group;
-        setName(group.getName());
+        content.add(group);
+    }    
+
+    @Override
+    public String getName() {
+        return group.getName();
+    }
+    
+    @Override
+    public void setName(String name){
+        if (group.isUserDefined()) {
+            super.setName(name);
+            group.setName(name);
+        }
     }
     
     @Override
@@ -95,8 +113,20 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
         return null;
     }
 
+    private Image vendorIcon = null;
+    private Image getVendorIcon(int type) {
+        if (vendorIcon == null && group.getServices().size() > 0) {
+            vendorIcon = SaasUtil.loadIcon(group, type);
+        }
+        return vendorIcon;
+    }
+    
     @Override
     public Image getIcon(int type){
+        Image icon = getVendorIcon(type);
+        if (icon != null) {
+            return icon;
+        }
         Image standardFolderImage = getUserDirFolderImage(type);
         if (standardFolderImage != null) {
             return standardFolderImage;
@@ -106,29 +136,20 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public Image getOpenedIcon(int type){
+        Image icon = getVendorIcon(type);
+        if (icon != null) {
+            return icon;
+        }
         Image standardFolderImage = getUserDirFolderImage(type);
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
         return Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
     }
-    
-    @Override
-    public void setName(String name){
-        if (group.isUserDefined()) {
-            super.setName(name);
-            group.setName(name);
-        }
-    }
-    
+
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         actions.add(SystemAction.get(AddServiceAction.class));
         actions.add(SystemAction.get(AddGroupAction.class));
         actions.add(SystemAction.get(DeleteGroupAction.class));

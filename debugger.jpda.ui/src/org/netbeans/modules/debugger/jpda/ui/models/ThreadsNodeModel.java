@@ -45,6 +45,10 @@ import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -56,6 +60,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -83,14 +88,13 @@ public class ThreadsNodeModel implements NodeModel {
     private JPDADebugger debugger;
     private Session session;
     private Vector listeners = new Vector ();
+    private Set<Object> currentNodes = new HashSet<Object>();
     
     
     public ThreadsNodeModel (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (null, JPDADebugger.class);
-        session = (Session) lookupProvider.
-            lookupFirst (null, Session.class);
-        new Listener (this, debugger);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        new Listener (this, debugger, currentNodes);
     }
     
     public String getDisplayName (Object o) throws UnknownTypeException {
@@ -99,26 +103,40 @@ public class ThreadsNodeModel implements NodeModel {
                 ("CTL_ThreadsModel_Column_Name_Name");
         } else
         if (o instanceof JPDAThread) {
-            if (debugger.getCurrentThread () == o)
+            if (debugger.getCurrentThread () == o) {
+                synchronized(currentNodes) {
+                    currentNodes.add(o);
+                }
                 return BoldVariablesTableModelFilterFirst.toHTML (
                     ((JPDAThread) o).getName (),
                     true,
                     false,
                     null
                 );
-            else
+            } else {
+                synchronized(currentNodes) {
+                    currentNodes.remove(o);
+                }
                 return ((JPDAThread) o).getName ();
+            }
         } else
         if (o instanceof JPDAThreadGroup) {
-            if (isCurrent ((JPDAThreadGroup) o))
+            if (isCurrent ((JPDAThreadGroup) o)) {
+                synchronized(currentNodes) {
+                    currentNodes.add(o);
+                }
                 return BoldVariablesTableModelFilterFirst.toHTML (
                     ((JPDAThreadGroup) o).getName (),
                     true,
                     false,
                     null
                 );
-            else
+            } else {
+                synchronized(currentNodes) {
+                    currentNodes.remove(o);
+                }
                 return ((JPDAThreadGroup) o).getName ();
+            }
         } else 
         throw new UnknownTypeException (o);
     }
@@ -244,6 +262,17 @@ public class ThreadsNodeModel implements NodeModel {
             ((ModelListener) v.get (i)).modelChanged (null);
     }
     
+    private void fireNodeChanged (Object node) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+                ModelEvent.NodeChanged.ICON_MASK |
+                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK);
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (event);
+    }
+    
     private boolean isCurrent (JPDAThreadGroup tg) {
         JPDAThread t = debugger.getCurrentThread ();
         if (t == null)
@@ -267,13 +296,16 @@ public class ThreadsNodeModel implements NodeModel {
         
         private WeakReference ref;
         private JPDADebugger debugger;
+        Set<Object> currentNodes;
         
         private Listener (
             ThreadsNodeModel rm,
-            JPDADebugger debugger
+            JPDADebugger debugger,
+            Set<Object> currentNodes
         ) {
             ref = new WeakReference (rm);
             this.debugger = debugger;
+            this.currentNodes = currentNodes;
             debugger.addPropertyChangeListener (
                 debugger.PROP_CURRENT_THREAD,
                 this
@@ -294,7 +326,22 @@ public class ThreadsNodeModel implements NodeModel {
         public void propertyChange (PropertyChangeEvent e) {
             ThreadsNodeModel rm = getModel ();
             if (rm == null) return;
-            rm.fireTreeChanged ();
+            List nodes;
+            synchronized(currentNodes) {
+                nodes = new ArrayList(currentNodes);
+            }
+            JPDAThread t = debugger.getCurrentThread();
+            if (t != null) {
+                nodes.add(t);
+                JPDAThreadGroup tg = t.getParentThreadGroup();
+                while (tg != null) {
+                    nodes.add(tg);
+                    tg = tg.getParentThreadGroup();
+                }
+            }
+            for (Object node : nodes) {
+                rm.fireNodeChanged (node);
+            }
         }
     }
 }

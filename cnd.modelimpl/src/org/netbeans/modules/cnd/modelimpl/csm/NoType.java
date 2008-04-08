@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 
 /**
@@ -116,6 +118,18 @@ public class NoType implements CsmType {
 
     public CsmClassifier getClassifier() {
         return null;
+    }
+
+    public List<CsmType> getInstantiationParams() {
+        return Collections.emptyList();
+    }
+
+    public boolean isInstantiation() {
+        return false;
+    }
+
+    public CharSequence getClassifierText() {
+        return "";
     }
 
     public int getArrayDepth() {

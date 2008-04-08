@@ -153,8 +153,4 @@ public class EnterpriseApplicationNode extends AppserverMgmtApplicationsNode {
         return children;
     }
     
-    protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.ENTERPRISE_APPLICATION);        
-    }
-    
 }

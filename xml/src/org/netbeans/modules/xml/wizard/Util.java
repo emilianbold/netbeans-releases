@@ -361,11 +361,13 @@ public class Util extends AbstractUtil {
         
         StringBuffer relString = new StringBuffer();
         for (int i = count; i < relativeToPathStack.size(); i++) {
-             relString.append(".."+File.separator);
+            //hard code to front slash otherwise code completion doesnt work
+             relString.append(".."+"/");
         }
         // now back down to the file
         for (int i = count; i <filePathStack.size()-1; i++) {
-            relString.append(((File)filePathStack.get(i)).getName()+File.separator);
+            //hard code to front slash otherwise code completion doesnt work
+            relString.append(((File)filePathStack.get(i)).getName()+"/");
         }
             relString.append(((File)filePathStack.get(filePathStack.size()-1)).getName());
         // just to test

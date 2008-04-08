@@ -84,7 +84,7 @@ class ApplicationConfigurationsPropertySupport extends AbstractTabularPropertySu
 
         JBIComponentConfigurationDescriptor descriptor =
                 (info instanceof JBIComponentConfigurationMBeanAttributeInfo) ? 
-                    ((JBIComponentConfigurationMBeanAttributeInfo) info).getDescriptor() : null;
+                    ((JBIComponentConfigurationMBeanAttributeInfo) info).getConfigurationDescriptor() : null;
 
         return new ApplicationConfigurationsEditor(
                 tableLabelText, tableLabelDescription, getTabularType(),

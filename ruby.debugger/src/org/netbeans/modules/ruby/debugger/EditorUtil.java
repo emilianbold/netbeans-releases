@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,44 +56,29 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.text.Annotatable;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.windows.TopComponent;
 
-/**
- * @author Martin Krauskopf
- */
 public final class EditorUtil {
     
-    private static DebuggerAnnotation[] currentLineDA;
+    private EditorUtil() {}
     
-    public static boolean contains(final Object currentLine, final Line line) {
-        if (currentLine == null) return false;
-        final Annotatable[] annotables = (Annotatable[]) currentLine;
-        for (Annotatable ann : annotables) {
-            if (ann.equals(line)) {
-                return true;
-            }
-            if (ann instanceof Line.Part && ((Line.Part) ann).getLine().equals(line)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static DebuggerAnnotation createCurrentLineAnnotation(final Annotatable annotable) {
-        String annType = (annotable instanceof Line.Part)
-                ? DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE2
-                : DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE2;
-        return new DebuggerAnnotation(annType, annotable);
-    }
+    private static DebuggerAnnotation currentLineDA;
     
-    public static void removeAnnotation(DebuggerAnnotation[] annotations) {
-        for (DebuggerAnnotation annotation : annotations) {
-            annotation.detach();
-        }
-    }
+//    public static boolean contains(final Object currentLine, final Line line) {
+//        if (currentLine == null) return false;
+//        final Annotatable[] annotables = (Annotatable[]) currentLine;
+//        for (Annotatable ann : annotables) {
+//            if (ann.equals(line)) {
+//                return true;
+//            }
+//            if (ann instanceof Line.Part && ((Line.Part) ann).getLine().equals(line)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Make line in the editor current - shows the line and colorizes it
@@ -103,39 +88,16 @@ public final class EditorUtil {
      * @see unmarkCurrent()
      */
     static void markCurrent(final String filePath, final int lineNumber) {
-        markCurrent(getLine(filePath, lineNumber));
+        markCurrent(getLineAnnotable(filePath, lineNumber));
     }
     
-    private static void markCurrent(final Object line) {
+    private static void markCurrent(final Line line) {
         unmarkCurrent();
         if (line == null) {
             return;
         }
-        currentLineDA = createDebuggerAnnotation(line,
-                DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE,
-                DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE);
+        currentLineDA = new DebuggerAnnotation(DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE, line);
         showLine(line, true);
-    }
-    
-    public static DebuggerAnnotation[] createDebuggerAnnotation(final Object line,
-            final String lineAnnotation, final String partAnnotation) {
-        Annotatable[] annotables = (Annotatable[]) line;
-        DebuggerAnnotation[] annotations = new DebuggerAnnotation[annotables.length];
-        
-        // first line with icon in gutter
-        String annType = (partAnnotation != null && annotables[0] instanceof Line.Part) ? partAnnotation : lineAnnotation;
-        annotations[0] = new DebuggerAnnotation(annType, annotables[0]);
-        
-        // other lines
-        for (int i = 1; i < annotables.length; i++) {
-            annotations[i] = createCurrentLineAnnotation(annotables[i]);
-        }
-        return annotations;
-    }
-    
-    public static DebuggerAnnotation[] createDebuggerAnnotation(final Object line,
-            final String lineAnnotation) {
-        return createDebuggerAnnotation(line, lineAnnotation, null);
     }
     
     /**
@@ -144,32 +106,32 @@ public final class EditorUtil {
      */
     static void unmarkCurrent() {
         if (currentLineDA != null) {
-            removeAnnotation(currentLineDA);
+            currentLineDA.detach();
             currentLineDA = null;
         }
     }
     
-    public static Object getLine(final String filePath, final int lineNumber) {
-        Annotatable[] annotables = null;
-        
+    public static Line getLineAnnotable(final String filePath, final int lineNumber) {
+        return getLine(filePath, lineNumber);
+    }
+
+    public static Line getLine(final String filePath, final int lineNumber) {
         if (filePath == null || lineNumber < 0) {
             return null;
         }
-        
+
         File file = new File(filePath);
         FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObject == null) {
             Util.info("Cannot resolve \"" + filePath + '"');
             return null;
         }
-        
+
         LineCookie lineCookie = getLineCookie(fileObject);
         assert lineCookie != null;
-        Line line = lineCookie.getLineSet().getCurrent(lineNumber);
-        annotables = new Annotatable[] { line };
-        return annotables;
+        return lineCookie.getLineSet().getCurrent(lineNumber);
     }
-    
+
     public static LineCookie getLineCookie(final FileObject fo) {
         LineCookie result = null;
         try {
@@ -183,18 +145,9 @@ public final class EditorUtil {
         return result;
     }
     
-    public static void showLine(final Object line, final boolean toFront) {
-        if (line == null) {
+    public static void showLine(final Line lineToShow, final boolean toFront) {
+        if (lineToShow == null) {
             return;
-        }
-        Annotatable[] a = (Annotatable[]) line;
-        final Line lineToShow;
-        if (a[0] instanceof Line) {
-            lineToShow = ((Line) a[0]);
-        } else if (a[0] instanceof Line.Part) {
-            lineToShow = ((Line.Part) a[0]).getLine();
-        } else {
-            throw new RuntimeException("Cannot cast to neither Line nor Line.Part: " + a[0]); // NOI18N
         }
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -203,7 +156,7 @@ public final class EditorUtil {
         });
     }
     
-    public static void showLine(final Object line) {
+    public static void showLine(final Line line) {
         showLine(line, false);
     }
     

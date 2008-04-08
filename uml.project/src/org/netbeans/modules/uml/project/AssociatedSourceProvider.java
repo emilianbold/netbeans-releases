@@ -44,8 +44,10 @@ import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
 import org.netbeans.modules.uml.project.ui.common.ReferencedJavaProjectModel;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -110,6 +112,31 @@ public class AssociatedSourceProvider
         
         else
             return proj;
+    }
+    
+    public Project getCodeGenTargetProject()
+    {        
+        UMLProjectProperties props = umlProj.getUMLProjectProperties();
+        String path = props.getCodeGenFolderLocation();
+        
+        if (path == null) 
+        {
+            return null;
+        }
+        FileObject fo;
+        try
+        {
+            fo = FileUtil.toFileObject(new File(new File(path).getCanonicalPath()));
+        }       
+        catch (IOException ex)
+        {
+            return null;
+        }
+        if (fo != null) 
+        {
+            return FileOwnerQuery.getOwner(fo);
+        }
+        return null;
     }
     
     public File[] getCompileDependencies()

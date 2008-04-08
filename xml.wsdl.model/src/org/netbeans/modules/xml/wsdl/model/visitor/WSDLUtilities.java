@@ -44,13 +44,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openide.filesystems.FileObject;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Import;
 
 /**
@@ -93,13 +89,5 @@ public class WSDLUtilities {
         continue;
       }
     }
-  }
-
-  public static WSDLModel getWSDLModel(FileObject file) {
-    if (file == null) {
-      return null;
-    }
-    ModelSource source = Utilities.getModelSource(file, file.canWrite());
-    return WSDLModelFactory.getDefault().getModel(source);
   }
 }

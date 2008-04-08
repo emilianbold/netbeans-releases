@@ -45,7 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.php.doc.DocumentationRegistry;
 import org.netbeans.modules.php.doc.FunctionDoc;
 import org.netbeans.modules.php.model.Constant;

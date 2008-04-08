@@ -42,8 +42,11 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,19 +54,20 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -75,6 +79,12 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.spring.api.Action;
+import org.netbeans.modules.spring.api.beans.model.Location;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
@@ -120,6 +130,21 @@ public final class SpringXMLConfigEditorUtils {
     private SpringXMLConfigEditorUtils() {
     }
     
+    public static Map<String, String> getTagAttributes(Node node) {
+        NamedNodeMap namedNodeMap = node.getAttributes();
+        if(namedNodeMap == null || namedNodeMap.getLength() == 0) {
+            return Collections.<String, String>emptyMap();
+        }
+        
+        Map<String, String> attribs = new HashMap<String, String>();
+        for(int i = 0; i < namedNodeMap.getLength(); i++) {
+            Node attribNode = namedNodeMap.item(i);
+            attribs.put(attribNode.getNodeName(), attribNode.getNodeValue());
+        }
+        
+        return Collections.unmodifiableMap(attribs);
+    }
+    
     public static String getBeanPropertySetterName(String property) {
         char[] buffer = property.toCharArray();
         buffer[0] = Character.toUpperCase(buffer[0]);
@@ -139,16 +164,64 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
     
-    public static ElementHandle<TypeElement> findClassElementByBinaryName(String binaryName, JavaSource js) {
-        Set<ElementHandle<TypeElement>> handles = js.getClasspathInfo().getClassIndex().getDeclaredTypes("", 
-                NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
-        for (ElementHandle<TypeElement> eh : handles) {
-            if (eh.getBinaryName().equals(binaryName)) {
-                return eh;
+    public static TypeElement findClassElementByBinaryName(final String binaryName, CompilationController cc) {
+        if (!binaryName.contains("$")) { // NOI18N
+            // fast search based on fqn
+            return cc.getElements().getTypeElement(binaryName);
+        } else {
+            // get containing package
+            String packageName = ""; // NOI18N
+            int dotIndex = binaryName.lastIndexOf("."); // NOI18N
+            if (dotIndex != -1) {
+                packageName = binaryName.substring(0, dotIndex);
             }
+            PackageElement packElem = cc.getElements().getPackageElement(packageName);
+            if (packElem == null) {
+                return null;
+            }
+
+            // scan for element matching the binaryName
+            return new BinaryNameTypeScanner().visit(packElem, binaryName);
+        }
+    }
+    
+    private static class BinaryNameTypeScanner extends SimpleElementVisitor6<TypeElement, String> {
+
+        @Override
+        public TypeElement visitPackage(PackageElement packElem, String binaryName) {
+            for(Element e : packElem.getEnclosedElements()) {
+                if(e.getKind().isClass()) {
+                    TypeElement ret = e.accept(this, binaryName);
+                    if(ret != null) {
+                        return ret;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        @Override
+        public TypeElement visitType(TypeElement typeElement, String binaryName) {
+            String bName = ElementUtilities.getBinaryName(typeElement);
+            if(binaryName.equals(bName)) {
+                return typeElement;
+            } else if(binaryName.startsWith(bName)) {
+                for(Element child : typeElement.getEnclosedElements()) {
+                    if(!child.getKind().isClass()) {
+                        continue;
+                    }
+                    
+                    TypeElement retVal = child.accept(this, binaryName);
+                    if(retVal != null) {
+                        return retVal;
+                    }
+                }
+            }
+            
+            return null;
         }
         
-        return null;
     }
 
     public static Node getBean(Node tag) {
@@ -185,8 +258,7 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
 
-    public static JavaSource getJavaSource(Document doc) {
-        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
+    public static JavaSource getJavaSource(FileObject fileObject) {
         if (fileObject == null) {
             return null;
         }
@@ -202,19 +274,19 @@ public final class SpringXMLConfigEditorUtils {
         }
         return null;
     }
+    
+    public static JavaSource getJavaSource(Document doc) {
+        return getJavaSource(NbEditorUtilities.getFileObject(doc));
+    }
 
-    public static void findAndOpenJavaClass(final String classBinaryName, Document doc) {
-        final JavaSource js = getJavaSource(doc);
+    public static void findAndOpenJavaClass(final String classBinaryName, FileObject fileObject) {
+        final JavaSource js = getJavaSource(fileObject);
         if (js != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         boolean opened = false;
-                        ElementHandle<TypeElement> eh = findClassElementByBinaryName(classBinaryName, js);
-                        TypeElement element = null;
-                        if(eh != null) {
-                            element = eh.resolve(cc);
-                        }
+                        TypeElement element = findClassElementByBinaryName(classBinaryName, cc);
                         if (element != null) {
                             opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
@@ -230,9 +302,9 @@ public final class SpringXMLConfigEditorUtils {
         }
     }
 
-    public static ElementHandle<ExecutableElement> findMethod(Document doc, final String classBinName,
+    public static ElementHandle<ExecutableElement> findMethod(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        JavaSource js = getJavaSource(doc);
+        JavaSource js = getJavaSource(fileObject);
         if (js != null) {
             try {
                 MethodFinder methodFinder = new MethodFinder(classBinName, methodName, argCount, publicFlag, staticFlag);
@@ -256,18 +328,18 @@ public final class SpringXMLConfigEditorUtils {
      * @param publicFlag YES if the method is public, NO if not, DONT_CARE if caller doesn't care
      * @param staticFlag YES if the method is static, NO if not, DONT_CARE if caller doesn't care
      */
-    public static void openMethodInEditor(Document doc, final String classBinName,
+    public static void openMethodInEditor(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        if (classBinName == null || methodName == null || doc == null) {
+        if (classBinName == null || methodName == null || fileObject == null) {
             return;
         }
 
-        final JavaSource js = getJavaSource(doc);
+        final JavaSource js = getJavaSource(fileObject);
         if (js == null) {
             return;
         }
 
-        final ElementHandle<ExecutableElement> eh = findMethod(doc, classBinName, methodName, argCount, publicFlag, staticFlag);
+        final ElementHandle<ExecutableElement> eh = findMethod(fileObject, classBinName, methodName, argCount, publicFlag, staticFlag);
         if (eh != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
@@ -391,11 +463,7 @@ public final class SpringXMLConfigEditorUtils {
 
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.ELEMENTS_RESOLVED);
-            ElementHandle<TypeElement> eh = findClassElementByBinaryName(classBinName, cc.getJavaSource());
-            if(eh == null) {
-                return;
-            }
-            TypeElement element = eh.resolve(cc);
+            TypeElement element = findClassElementByBinaryName(classBinName, cc);
             while (element != null) {
                 List<ExecutableElement> methods = ElementFilter.methodsIn(element.getEnclosedElements());
                 for (ExecutableElement method : methods) {
@@ -450,5 +518,205 @@ public final class SpringXMLConfigEditorUtils {
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
         }
+    }
+    
+    public static SpringBean getMergedBean(SpringBean origBean, FileObject fileObject) {
+        if(origBean == null) {
+            return null;
+        }
+        
+        if(origBean.getParent() == null) {
+            return origBean;
+        }
+        
+        ModelBasedSpringBean logicalBean = new ModelBasedSpringBean(origBean, fileObject);
+        return getMergedBean(logicalBean, fileObject);
+    }
+    
+    public static SpringBean getMergedBean(Map<String, String> beanAttribs, FileObject fileObject) {
+
+        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanAttribs);
+        if (!StringUtils.hasText(logicalBean.getParent())) {
+            return logicalBean;
+        }
+
+        return getMergedBean(logicalBean, fileObject);
+    }
+    
+    private static SpringBean getMergedBean(MutableSpringBean startBean, FileObject fileObject) {
+        final MutableSpringBean[] logicalBean = { startBean };
+        SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
+        if (model == null) {
+            return null;
+        }
+
+        try {
+            model.runReadAction(new Action<SpringBeans>() {
+
+                public void run(SpringBeans springBeans) {
+                    String currParent = logicalBean[0].getParent();
+                    Set<SpringBean> walkedBeans = new HashSet<SpringBean>();
+                    while (currParent != null && (logicalBean[0].getClassName() == null 
+                            || logicalBean[0].getFactoryBean() == null || logicalBean[0].getFactoryMethod() == null)) {
+                        SpringBean currBean = springBeans.findBean(currParent);
+                        if (walkedBeans.contains(currBean)) {
+                            // circular dep. nullify everything
+                            logicalBean[0] = null;
+                            break;
+                        }
+
+                        if (logicalBean[0].getClassName() == null) {
+                            logicalBean[0].setClassName(currBean.getClassName());
+                        }
+                        if (logicalBean[0].getFactoryBean() == null) {
+                            logicalBean[0].setFactoryBean(currBean.getFactoryBean());
+                        }
+                        if (logicalBean[0].getFactoryMethod() == null) {
+                            logicalBean[0].setFactoryMethod(currBean.getFactoryMethod());
+                        }
+
+                        walkedBeans.add(currBean);
+                        currParent = currBean.getParent();
+                    }
+                }
+            });
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            logicalBean[0] = null;
+        }
+        
+        return logicalBean[0];
+    }
+    
+    private static interface MutableSpringBean extends SpringBean {
+        void setClassName(String className);
+        void setFactoryBean(String factoryBean);
+        void setFactoryMethod(String factoryMethod);
+    }
+    
+    private static class ModelBasedSpringBean implements MutableSpringBean {
+        private String className;
+        private String factoryBean;
+        private String factoryMethod;
+        private String parent;
+        private String id;
+        private List<String> names;
+        private Location location;
+
+        public ModelBasedSpringBean(SpringBean springBean, FileObject fileObject) {
+            this.className = springBean.getClassName();
+            this.factoryBean = springBean.getFactoryBean();
+            this.factoryMethod = springBean.getFactoryMethod();
+            this.parent = springBean.getParent();
+            this.id = springBean.getId();
+            this.location = springBean.getLocation();
+            this.names = springBean.getNames();
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public List<String> getNames() {
+            return names;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+        
+        public String getParent() {
+            return parent;
+        }
+
+        public String getFactoryBean() {
+            return factoryBean;
+        }
+
+        public void setFactoryBean(String factoryBean) {
+            this.factoryBean = factoryBean;
+        }
+        
+        public String getFactoryMethod() {
+            return factoryMethod;
+        }
+
+        public void setFactoryMethod(String factoryMethod) {
+            this.factoryMethod = factoryMethod;
+        }
+
+        public Location getLocation() {
+            return location;
+        }
+        
+    }
+    
+    private static class NodeBasedSpringBean implements MutableSpringBean {
+
+        private String className;
+        private String factoryBean;
+        private String factoryMethod;
+        private String parent;
+        private String id;
+        private List<String> names;
+
+        public NodeBasedSpringBean(Map<String, String> beanAttribs) {
+            this.className = beanAttribs.get("class"); // NOI18N
+            this.factoryBean = beanAttribs.get("factory-bean"); // NOI18N
+            this.factoryMethod = beanAttribs.get("factory-method"); // NOI18N
+            this.parent = beanAttribs.get("parent"); // NOI18N
+            this.id = beanAttribs.get("id"); // NOI18N
+            
+            if(beanAttribs.get("name") == null) { // NOI18N
+                this.names = Collections.<String>emptyList();
+            }
+            this.names = StringUtils.tokenize(beanAttribs.get("name"), BEAN_NAME_DELIMITERS); // NOI18N
+        }
+        
+        public String getId() {
+            return this.id;
+        }
+
+        public List<String> getNames() {
+            return names;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+        
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public String getParent() {
+            return this.parent;
+        }
+
+        public String getFactoryBean() {
+            return this.factoryBean;
+        }
+
+        public void setFactoryBean(String factoryBean) {
+            this.factoryBean = factoryBean;
+        }
+        
+        public String getFactoryMethod() {
+            return this.factoryMethod;
+        }
+
+        public void setFactoryMethod(String factoryMethod) {
+            this.factoryMethod = factoryMethod;
+        }
+        
+        public Location getLocation() {
+            // Logical bean cannot have a location
+            throw new UnsupportedOperationException();
+        }
+        
     }
 }

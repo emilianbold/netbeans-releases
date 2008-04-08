@@ -5,12 +5,14 @@ import java.util.List;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.ModelConstants;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.w3c.dom.Element;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 
 public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
 
@@ -81,4 +83,16 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
 		return null;
 	}
 
+    public List<Import> getImports() {
+        List<Import> children = getChildren(Import.class);
+        return children;
+    }
+
+    public String getTargetNamespace() {
+    	return getAttribute(ATTR_TARGETNAMESPACE);
+    }
+    
+    public void setTargetNamespace(String targetNamespace) {
+    	setAttribute(TARGETNAMESPACE_PROPERTY, ATTR_TARGETNAMESPACE, targetNamespace);
+    }
 }

@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.xml.text.indent;
 
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 

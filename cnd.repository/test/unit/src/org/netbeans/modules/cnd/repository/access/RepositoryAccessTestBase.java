@@ -42,13 +42,18 @@
 package org.netbeans.modules.cnd.repository.access;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
  * Common ancestor for tests that just access repository in different combinations,
@@ -58,10 +63,8 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  * 
  * @author Vladimir Kvashin
  */
-public class RepositoryAccessTestBase  extends BaseTestCase {
+public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 
-    private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-    
     public RepositoryAccessTestBase(String testName) {
 	super(testName);
     }
@@ -73,51 +76,6 @@ public class RepositoryAccessTestBase  extends BaseTestCase {
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
 
-    @Override
-    protected void setUp() throws Exception {
-	super.setUp();
-	DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
-	    public void exception(Throwable thr) {
-		thr.printStackTrace();
-		exceptions.add(thr);
-	    }
-	};
-	DiagnosticExceptoins.setHook(hook);	
-    }
-    
-    /** 
-     * Registers an exception.
-     * The idea is to process an exception that occurs in main thread
-     * in the same way as exceptions that occur in code model threads
-     */
-    protected void registerException(Throwable thr) {
-	exceptions.add(thr);
-    }
-    
-    /** Asserts that no exceptions occur in code model threads */
-    protected void assertNoExceptions() throws Exception {
-	assertEmpty(exceptions);
-    }
-    
-    private void assertEmpty(Collection<Throwable> errors) throws Exception {
-	// the idea here was to somehow make JUnit infrastructure
-	// display all caught exceptions;
-	// but I don't yet know how to;
-	// so for the time being we just throw 1-st one
-	if (!errors.isEmpty()) {
-	    for (Throwable thr : errors) {
-		if (thr instanceof Exception) {
-		    throw (Exception) thr;
-		} 
-		else if( thr instanceof Error ) {
-		    throw (Error) thr;
-		} else {
-		    throw new Exception(thr);
-		}
-	    }
-	}
-    }
-    
     protected String getBriefClassName() {
 	String name = getClass().getName();
 	int pos = name.lastIndexOf('.');
@@ -128,6 +86,24 @@ public class RepositoryAccessTestBase  extends BaseTestCase {
 	for( CsmProject lib : project.getLibraries() ) {
 	    lib.waitParse();
 	}
+    }
+    
+    protected static ProjectBase createExtraProject(TraceModelBase traceModel, File projectRoot, String name) {
+	return createExtraProject(traceModel, Collections.singletonList(projectRoot), name);
+    }
+    
+    protected static ProjectBase createExtraProject(TraceModelBase traceModel, List<File> files, String name) {
+	NativeProject nativeProject = NativeProjectProvider.createProject(name, files, 
+		Collections.<String>emptyList(), Collections.<String>emptyList(), 
+                Collections.<String>emptyList(), Collections.<String>emptyList(), true);
+	ProjectBase result = traceModel.getModel().addProject(nativeProject, name, true); // NOI18N
+	return result;
+    }
+    
+    protected static void writeFile(File file, String text) throws IOException {
+        PrintWriter writer = new PrintWriter(new FileOutputStream(file));
+        writer.append(text);
+        writer.close();
     }
     
 }

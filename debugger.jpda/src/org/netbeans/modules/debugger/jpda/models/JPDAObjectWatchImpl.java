@@ -43,17 +43,20 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
 
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -155,37 +158,55 @@ ObjectVariable {
         
         // 2) try to set as a local variable value
         try {
-            LocalVariable local = frame.getStackFrame ().visibleVariableByName 
-                (getExpression ());
-            if (local != null)
-                try {
-                    frame.getStackFrame ().setValue (local, value);
-                    return;
-                } catch (InvalidTypeException ex) {
-                    throw new InvalidExpressionException (ex);
-                } catch (ClassNotLoadedException ex) {
-                    throw new InvalidExpressionException (ex);
+            LocalVariable local = frame.getLocalVariable(getExpression ());
+            if (local != null) {
+                if (local instanceof Local) {
+                    ((Local) local).setValue(value);
+                } else {
+                    ((ObjectLocalVariable) local).setValue(value);
                 }
+                return;
+            }
         } catch (AbsentInformationException ex) {
             // no local variable visible in this case
         }
         
         // 3) try tu set as a field
-        ObjectReference thisObject = frame.getStackFrame ().thisObject ();
-        if (thisObject == null)
-            throw new InvalidExpressionException 
-                ("Can not set value to expression.");
-        Field field = thisObject.referenceType ().fieldByName 
-            (getExpression ());
-        if (field == null)
-            throw new InvalidExpressionException 
-                ("Can not set value to expression.");
-        try {
-            thisObject.setValue (field, value);
-        } catch (InvalidTypeException ex) {
-            throw new InvalidExpressionException (ex);
-        } catch (ClassNotLoadedException ex) {
-            throw new InvalidExpressionException (ex);
+        ReferenceType clazz = frame.getStackFrame().location().declaringType();
+        Field field = clazz.fieldByName(getExpression());
+        if (field == null) {
+            throw new InvalidExpressionException (
+                NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
+        }
+        if (field.isStatic()) {
+            if (clazz instanceof ClassType) {
+                try {
+                    ((ClassType) clazz).setValue(field, value);
+                } catch (InvalidTypeException ex) {
+                    throw new InvalidExpressionException (ex);
+                } catch (ClassNotLoadedException ex) {
+                    throw new InvalidExpressionException (ex);
+                } catch (IllegalArgumentException iaex) {
+                    throw new InvalidExpressionException (iaex);
+                }
+            } else {
+                throw new InvalidExpressionException (
+                    NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
+            }
+        } else {
+            ObjectReference thisObject = frame.getStackFrame ().thisObject ();
+            if (thisObject == null) {
+                throw new InvalidExpressionException ("no instance context.");
+            }
+            try {
+                thisObject.setValue (field, value);
+            } catch (InvalidTypeException ex) {
+                throw new InvalidExpressionException (ex);
+            } catch (ClassNotLoadedException ex) {
+                throw new InvalidExpressionException (ex);
+            } catch (IllegalArgumentException iaex) {
+                throw new InvalidExpressionException (iaex);
+            }
         }
     }
     

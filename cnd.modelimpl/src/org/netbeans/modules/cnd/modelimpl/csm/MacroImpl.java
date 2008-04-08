@@ -149,8 +149,8 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         retValue.append(getName());
         if (getParameters() != null) {
             retValue.append("["); // NOI18N
-            for (Iterator it = getParameters().iterator(); it.hasNext();) {
-                String param = (String) it.next();
+            for (Iterator<? extends CharSequence> it = getParameters().iterator(); it.hasNext();) {
+                CharSequence param = it.next();
                 retValue.append(param);
                 if (it.hasNext()) {
                     retValue.append(", "); // NOI18N

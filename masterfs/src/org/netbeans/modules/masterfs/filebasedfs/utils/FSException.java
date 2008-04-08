@@ -45,9 +45,9 @@ import java.util.MissingResourceException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 
 import java.io.IOException;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 
 /**
  * Copy/pasted from org.openide.filesystems
@@ -89,7 +89,7 @@ public final class FSException extends IOException {
          second one waits for resource and has FileObject*/
         String format = null;
         try{
-            format = NbBundle.getBundle("org.netbeans.modules.masterfs.filebasedfs.Bundle", java.util.Locale.getDefault(), FileBasedFileSystem.class.getClassLoader()).getString(res);//NOI18N                        
+            format = NbBundle.getBundle("org.netbeans.modules.masterfs.filebasedfs.Bundle", java.util.Locale.getDefault(), FileObjectFactory.class.getClassLoader()).getString(res);//NOI18N                        
         } catch (MissingResourceException mex) {
             if (format == null) {
                 NbBundle.getBundle("org.openide.filesystems.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()).getString(res);//NOI18N    

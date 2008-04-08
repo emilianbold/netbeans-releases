@@ -38,6 +38,8 @@ package org.netbeans.installer.wizard.components.panels.netbeans;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.LinkedList;
@@ -49,12 +51,16 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
+import org.netbeans.modules.reglib.BrowserSupport;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_WITH_WARNINGS;
 import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_INSTALL;
@@ -147,7 +153,10 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
         private NbiTextPane messagePaneInstall;
         private NbiTextPane messagePaneUninstall;
         private NbiTextPane messagePaneNetBeans;
-        
+        private NbiTextPane messagePaneRegistration;                                 
+        private NbiCheckBox checkBoxRegistration;                                    
+        private NbiPanel spacer;
+
         public NbPostInstallSummaryPanelSwingUi(
                 final NbPostInstallSummaryPanel component,
                 final SwingContainer container) {
@@ -239,6 +248,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             
             messagePaneNetBeans.setContentType(DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE);
             messagePaneNetBeans.setText("");
+            boolean nbInstalled = false;
             for (Product product: products) {
                 if (product.getUid().equals("nb-base")) {
                     if (SystemUtils.isWindows()) {
@@ -248,10 +258,62 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     } else {
                         messagePaneNetBeans.setText(DEFAULT_MESSAGE_NETBEANS_TEXT_UNIX);
                     }
+                    nbInstalled = true;
                     break;
                 }
             }
+            // initialize registration components
+            List<Product> toRegister = new LinkedList<Product>();
+            for (Product product : products) {
+                final String uid = product.getUid();
+                if (uid.equals("nb-base") || uid.equals("jdk") || uid.equals("glassfish") || uid.equals("sjsas")) {
+                    toRegister.add(product);
+                }
+            }
+            boolean registrationEnabled = 
+                    nbInstalled            && // if NetBeans is among installed products
+                    !toRegister.isEmpty()  && // if anything to register
+                    !SystemUtils.isMacOS() && // no support on mac
+                    Boolean.getBoolean(ALLOW_SERVICETAG_REGISTRATION_PROPERTY) && //system property is defined
+                    (BrowserSupport.isSupported() ||                   // if JDK6 supports browser or
+                    SystemUtils.isWindows() ||                         // on windows we can find browser in registry or
+                    NbRegistrationAction.getUnixBrowser() != null);    // on unix we can found it in some predefined locations
             
+            if (!registrationEnabled) {
+                messagePaneRegistration.setVisible(false);
+                checkBoxRegistration.setVisible(false);
+                spacer.setVisible(false);
+                checkBoxRegistration.setSelected(false);
+                System.setProperty(ALLOW_SERVICETAG_REGISTRATION_PROPERTY, "" + false);
+            } else {
+                String productsString = StringUtils.EMPTY_STRING;
+                for (Product product : toRegister) {
+                    final String uid = product.getUid();
+                    String name = StringUtils.EMPTY_STRING;
+                    if (uid.equals("nb-base")) {
+                        name = DEFAULT_MESSAGE_REGISTRATION_NETBEANS;
+                    } else if (uid.equals("jdk")) {
+                        name = DEFAULT_MESSAGE_REGISTRATION_JDK;
+                    } else if (uid.equals("glassfish")) {
+                        name = DEFAULT_MESSAGE_REGISTRATION_GLASSFISH;
+                    } else if (uid.equals("sjsas")) {
+                        name = DEFAULT_MESSAGE_REGISTRATION_APPSERVER;
+                    }
+                    if (productsString.equals(StringUtils.EMPTY_STRING)) {
+                        productsString = name;
+                    } else {
+                        productsString = StringUtils.format(DEFAULT_MESSAGE_REGISTRATION_CONCAT, productsString, name);
+                    }
+                }
+                messagePaneRegistration.setContentType(DEFAULT_MESSAGE_REGISTRATION_CONTENT_TYPE);
+                messagePaneRegistration.setText(StringUtils.format(DEFAULT_MESSAGE_REGISTRATION_TEXT, productsString));
+                checkBoxRegistration.setText(StringUtils.format(DEFAULT_MESSAGE_REGISTRATION_CHECKBOX, productsString));
+                // be default - it is checked
+                checkBoxRegistration.doClick();
+                // do not show message about starting the IDE and plugin manager in case of registration 
+                messagePaneNetBeans.setVisible(false);
+            }
+
             products.clear();
             
             products.addAll(registry.getProducts(UNINSTALLED_SUCCESSFULLY));
@@ -281,6 +343,22 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             
             // messagePaneNetBeans ///////////////////////////////////////////////////
             messagePaneNetBeans = new NbiTextPane();
+
+            // messagePaneRegistration
+            messagePaneRegistration = new NbiTextPane();
+
+            //checkBoxRegistration
+            checkBoxRegistration = new NbiCheckBox();
+            checkBoxRegistration.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    System.setProperty(ALLOW_SERVICETAG_REGISTRATION_PROPERTY,
+                            "" + checkBoxRegistration.isSelected());
+                }
+            });
+
+            // spacer
+            spacer = new NbiPanel();
             
             // this /////////////////////////////////////////////////////////////////
             add(messagePaneInstall, new GridBagConstraints(
@@ -307,10 +385,33 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 11, 11),       // padding
                     0, 0));                           // padx, pady - ???
-            
+            add(messagePaneRegistration, new GridBagConstraints(
+                    0, 3, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(11, 11, 11, 11), // padding
+                    0, 0));                           // padx, pady - ???
+            add(checkBoxRegistration, new GridBagConstraints(
+                    0, 4, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(0, 11, 11, 11), // padding
+                    0, 0));                           // padx, pady - ???
+            add(spacer, new GridBagConstraints(
+                    0, 5, // x, y
+                    1, 1, // width, height
+                    1.0, 10.0, // weight-x, weight-y
+                    GridBagConstraints.CENTER, // anchor
+                    GridBagConstraints.BOTH, // fill
+                    new Insets(0, 11, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
             if (container instanceof SwingFrameContainer) {
-                final SwingFrameContainer sfс = (SwingFrameContainer) container;
-                sfс.addWindowListener(new WindowAdapter() {
+                final SwingFrameContainer sfc = (SwingFrameContainer) container;
+                sfc.addWindowListener(new WindowAdapter() {
                     @Override
                     public void windowClosing(WindowEvent event) {
                         SwingUi currentUi = component.getWizardUi().getSwingUi(container);
@@ -321,7 +422,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                                     container.getNextButton().isVisible() && // next button is visible
                                     container.getNextButton().isEnabled()) { // and enabled                                                                
                                 currentUi.evaluateNextButtonClick();
-                                sfс.removeWindowListener(this);
+                                sfc.removeWindowListener(this);
                             }
                         }
                     }
@@ -411,7 +512,33 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE = 
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.netbeans.content.type"); // NOI18N
-    
+    public static final String DEFAULT_MESSAGE_REGISTRATION_TEXT =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_NETBEANS =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.netbeans"); // NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_GLASSFISH =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.glassfish"); // NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_APPSERVER =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.appserver"); // NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_JDK =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.jdk"); // NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_CONCAT =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.concat");//NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_CHECKBOX =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.checkbox"); // NOI18N
+    public static final String DEFAULT_MESSAGE_REGISTRATION_CONTENT_TYPE =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.registration.content.type");//NOI18N    
+    public static final String ALLOW_SERVICETAG_REGISTRATION_PROPERTY =
+            "servicetag.allow.register";
+
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
             NbPostInstallSummaryPanel.class,
             "NPoISP.title"); // NOI18N

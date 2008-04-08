@@ -43,6 +43,12 @@
 package org.netbeans.modules.uml.core.support.umlsupport;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import org.netbeans.modules.uml.core.support.UMLLogger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -234,13 +240,37 @@ public class FileSysManip
 		return retStr;
 	}
    
-   public static boolean copyFile(String fromFile, String toFile)
+   public static boolean copyFile1(String fromFile, String toFile)
    {
    		boolean copySuccess = false;
    		File from = new File(fromFile);
    		File to = new File(toFile);
    		copySuccess = from.renameTo(to);
    		return copySuccess;
+   }
+   
+   public static boolean copyFile(String fromFile, String toFile)
+   {
+       boolean copySuccess = false;
+       if ( fromFile != null && toFile != null)
+       {
+            try {
+                FileObject fromFO = FileUtil.toFileObject(new File(fromFile));
+                FileObject toFO = FileUtil.createData(new File(toFile));
+                if ( fromFO != null) {
+                    FileObject copiedFO = FileUtil.copyFile(fromFO, 
+                            toFO.getParent(), toFO.getName(), toFO.getExt());
+                    if (copiedFO != null)
+                    {
+                        fromFO.delete();
+                        copySuccess = true;
+                    }
+                }
+            } catch (IOException ex) {
+                UMLLogger.logException(ex, Level.WARNING);
+            }
+       }
+       return copySuccess;
    }
    /**
 	* Adds a backslash to the path

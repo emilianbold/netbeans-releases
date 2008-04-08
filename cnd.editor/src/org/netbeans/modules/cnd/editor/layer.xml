@@ -3,17 +3,29 @@
 <filesystem>
     <folder name="OptionsDialog"> 
         <folder name="CPlusPlus">
-            <file name="CEditorOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController$CEditorOptionsPanelController"/>
+            <file name="EditorOptionsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="400"/>
             </file>
-            <file name="CppEditorOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController$CppEditorOptionsPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                <attr name="position" intvalue="401"/>
-            </file>
+            <folder name="FormatterPreviewExamples">
+                <attr name="position" intvalue="2000"/>
+                <file name="SAMPLE_Spaces.cpp" url="resources/cplusplus/SAMPLE_Spaces.cpp"/>
+                <file name="SAMPLE_Spaces.c" url="resources/cplusplus/SAMPLE_Spaces.c"/>
+                <file name="SAMPLE_BlankLines.cpp" url="resources/cplusplus/SAMPLE_BlankLines.cpp"/>
+                <file name="SAMPLE_BlankLines.c" url="resources/cplusplus/SAMPLE_BlankLines.c"/>
+                <file name="SAMPLE_AlignBraces.cpp" url="resources/cplusplus/SAMPLE_AlignBraces.cpp"/>
+                <file name="SAMPLE_AlignBraces.c" url="resources/cplusplus/SAMPLE_AlignBraces.c"/>
+                <file name="SAMPLE_TabsIndents.cpp" url="resources/cplusplus/SAMPLE_TabsIndents.cpp"/>
+                <file name="SAMPLE_TabsIndents.c" url="resources/cplusplus/SAMPLE_TabsIndents.c"/>
+            </folder>     
         </folder>     
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-c++" url="resources/cplusplus/CCExample"/>
+                <file name="x-c" url="resources/cplusplus/CExample"/>
+            </folder>
+        </folder>
     </folder>
 
     <folder name="Editors">
@@ -25,6 +37,8 @@
                 <file name="Settings.settings" url="resources/CCOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="FontsColors">
@@ -104,9 +118,11 @@
             <folder name="x-c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 
-                <file name="Settings.settings" url="resources/COptions.settings"/>
-                <file name="EditorKit.instance">
+                 <file name="Settings.settings" url="resources/COptions.settings"/>
+                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="FontsColors">
@@ -199,4 +215,20 @@
             </file>
         </folder> <!-- IndentEngine -->
     </folder>	<!-- Services -->
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-c">
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
+                </file>
+            </folder>
+            <folder name="x-c++">
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

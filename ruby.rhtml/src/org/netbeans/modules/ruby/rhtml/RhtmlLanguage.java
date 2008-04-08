@@ -41,23 +41,26 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
-import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-public class RhtmlLanguage implements GsfLanguage {
+
+public class RhtmlLanguage extends RubyLanguage {
     public RhtmlLanguage() {
     }
 
-    public String getLineCommentPrefix() {
-        return RubyUtils.getLineCommentPrefix();
-    }
-
-    public boolean isIdentifierChar(char c) {
-        return RubyUtils.isIdentifierChar(c);
-    }
-
+    @Override
     public Language getLexerLanguage() {
         return RhtmlTokenId.language();
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return "RHTML";
+    }
+    
+    @Override
+    public String getPreferredExtension() {
+        return "erb"; // NOI18N
     }
 }

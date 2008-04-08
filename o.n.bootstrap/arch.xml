@@ -582,15 +582,6 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="org.netbeans.core.startup.specialResource" category="friend">
-                    <p>
-                        Contains comma separated list of package prefixes regarded as "special resource". Packages
-                        that are special resource can be split among several jars. Otherwise it is not allowed
-                        by the NetBeans module system to have one package present in more jars.
-                    </p>
-                </api>
-            </li>
-            <li>
                 <api type="export" group="property" name="org.netbeans.core.systemfilesystem.custom" category="friend">
                     <p>
                         Contains class name of a class that can serve as provider of the writable layer of the

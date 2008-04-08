@@ -70,6 +70,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.logging.Level;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.db.sql.visualeditor.QueryEditorUILogger;
 
@@ -1177,7 +1178,14 @@ public class QueryBuilder extends TopComponent
                         }
     
                     } catch ( SQLException e) {
-                        reportDatabaseError(e); // NOI18N
+                        if ( isUnsupportedFeature(e)) {
+                            Log.getLogger().log(Level.FINE, null, e);
+                            String msg = NbBundle.getMessage(QueryBuilder.class,
+                                    "PARAMETERS_NOT_SUPPORTED");
+                            reportProcessingError(msg);
+                        } else {
+                            reportDatabaseError(e); // NOI18N
+                        }
                         canExecute = false ;
 
                     }
@@ -1588,20 +1596,27 @@ public class QueryBuilder extends TopComponent
 //    }
 
 
-    private void reportDatabaseError(SQLException e) {
-
-        Log.getLogger().finest("Error occurred when trying to retrieve table information: " + e); // NOI18N
-
-        String msg = 
-            ((e.getErrorCode() == 17023) ||      // Oracle "Unsupported feature" error
-	     ("S1C00".equals(e.getSQLState())))  // MySQL "Optional feature not supported" error
-	    ? NbBundle.getMessage(QueryBuilder.class, "UNSUPPORTED_FEATURE")
-	    : e.getLocalizedMessage();
-
+    private boolean isUnsupportedFeature(SQLException e) {
+        return e.getErrorCode() == 17023 ||      // Oracle "Unsupported feature" error
+	     "S1C00".equals(e.getSQLState());  // MySQL "Optional feature not supported" error
+    }
+    
+    private void reportProcessingError(String msg) {
         // NbBundle.getMessage(QueryBuilder.class, key);
         String title = NbBundle.getMessage(QueryBuilder.class, "PROCESSING_ERROR");
 
-        JOptionPane.showMessageDialog( this, msg + "\n\n", title, JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, msg + "\n\n", title, JOptionPane.ERROR_MESSAGE );        
+    }
+    private void reportDatabaseError(SQLException e) {
+
+        Log.getLogger().log(Level.FINE, null, e);
+        
+        String msg = isUnsupportedFeature(e)
+	    ? NbBundle.getMessage(QueryBuilder.class, "UNSUPPORTED_FEATURE")
+	    : e.getLocalizedMessage();
+        
+        reportProcessingError(msg);
+
         /*
         ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
         csp.configureDisplay(sqlStatement.getConnectionInfo(), false, e.getLocalizedMessage(),  "", 0, false ) ;

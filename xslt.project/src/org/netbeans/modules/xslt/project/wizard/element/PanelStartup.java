@@ -48,6 +48,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import javax.swing.JTextArea;
 import org.netbeans.api.project.Project;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -93,7 +94,8 @@ final class PanelStartup<T> extends Panel<T> {
     // (o) Request-Reply Service
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myTransformation = createRadioButton(i18n("LBL_Service")); // NOI18N
+    myTransformation = createRadioButton(i18n("LBL_Service"), i18n("TLT_Service")); // NOI18N
+    myTransformation.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_Service"));
     panel.add(myTransformation, c);
     group.add(myTransformation);
 
@@ -101,12 +103,15 @@ final class PanelStartup<T> extends Panel<T> {
     c.gridy++;
     c.insets = new Insets(
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
-    panel.add(createTextArea(TEXT_WIDTH, i18n("LBL_Service_Text")),c);//NOI18N
+    JTextArea serviceText = createTextArea(TEXT_WIDTH, i18n("LBL_Service_Text"));
+    a11y(serviceText, "ACSN_LBL_Service_Text", "ACSD_LBL_Service_Text");
+    panel.add(serviceText,c);//NOI18N
 
     // (o) Proxy Service
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myProxy = createRadioButton(i18n("LBL_Bridge")); // NOI18N
+    myProxy = createRadioButton(i18n("LBL_Bridge"), i18n("TLT_Bridge")); // NOI18N
+    myProxy.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_Bridge"));
     panel.add(myProxy, c);
     group.add(myProxy);
 
@@ -116,10 +121,13 @@ final class PanelStartup<T> extends Panel<T> {
     c.gridy++;
     c.insets = new Insets(
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
-    panel.add(createTextArea(TEXT_WIDTH, i18n("LBL_Bridge_Text")), c); // NOI18N
+    JTextArea bridgeText = createTextArea(TEXT_WIDTH, i18n("LBL_Bridge_Text"));
+    a11y(bridgeText, "ACSN_LBL_Bridge_Text", "ACSD_LBL_Bridge_Text");
+    panel.add(bridgeText, c); // NOI18N
 
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.blue));
     mainPanel.add(panel, cc);
+    mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewXsltService"));
   }
 
   private Panel<T> myTransformationPanel;

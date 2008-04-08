@@ -50,6 +50,8 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * View menu action that shows/hides textual Versioning annotations.
@@ -60,6 +62,17 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
 
     private JCheckBoxMenuItem [] menuItems;
     
+    public ShowTextAnnotationsAction() {
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName()) ) {
+                    menuItems = null;
+                    createItems();
+                }
+            }
+        });
+    }
+
     public JComponent[] getMenuPresenters() {
         createItems();
         updateState();
@@ -68,7 +81,7 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
 
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         updateState();
-        return items;
+        return menuItems;
     }
     
     private void updateState() {

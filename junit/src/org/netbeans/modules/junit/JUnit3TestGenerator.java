@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -305,14 +305,6 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                                          clsMap,
                                          workingCopy);
         }
-    }
-    
-    /**
-     */
-    @Override
-    protected String createTestMethodName(String smName) {
-        return "test"                                                   //NOI18N
-               + smName.substring(0,1).toUpperCase() + smName.substring(1);
     }
     
     /**

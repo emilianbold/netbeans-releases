@@ -85,7 +85,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
             String platformName, String sourceLevel) throws IOException {
         NewEarProjectWizardIterator.testableInstantiate(prjDirF, name,
                 j2eeLevel, serverInstanceID, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null);
     }
     
     /**
@@ -133,7 +133,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeLevel, serverInstanceID, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         FileObject testEAFO = FileUtil.toFileObject(new File(getWorkDir(), "testEA"));
@@ -161,7 +161,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeLevel, serverInstanceID, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         File testEA = new File(getWorkDir(), "testEA");
@@ -193,7 +193,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeLevel, serverInstanceID, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         File testEA = new File(getWorkDir(), "testEA");

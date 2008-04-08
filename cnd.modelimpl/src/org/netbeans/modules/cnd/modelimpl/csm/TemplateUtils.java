@@ -42,6 +42,14 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -63,6 +71,13 @@ public class TemplateUtils {
 		break;
 	    }
 	}
+	return sb.toString();
+    }
+    
+    // in class our parser skips LESSTHAN symbols in templates...
+    public static String getClassSpecializationSuffix(AST qIdToken) {
+	StringBuilder sb  = new StringBuilder();
+        addSpecializationSuffix(qIdToken.getFirstChild(), sb);
 	return sb.toString();
     }
     
@@ -110,5 +125,65 @@ public class TemplateUtils {
 	    }
 	}
 	return false;
+    }
+    
+    public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmTemplate template) {
+        assert (ast != null && ast.getType() == CPPTokenTypes.LITERAL_template);
+        List<CsmTemplateParameter> res = new ArrayList();
+        for (AST child = ast.getFirstChild(); child != null; child = child.getNextSibling()) {
+            switch (child.getType()) {
+                case CPPTokenTypes.LITERAL_typename:
+                    break;
+                case CPPTokenTypes.LITERAL_class:
+                    break;
+                case CPPTokenTypes.ID:
+                    // now create parameter
+                    res.add(new TemplateParameterImpl(child.getText()));
+                    break;
+                case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
+                    // now create parameter
+                    for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
+                        switch (paramChild.getType()) {
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                                AST typeName = paramChild.getFirstChild();
+                                if (typeName != null) {
+                                    res.add(new TemplateParameterImpl(typeName.getText()));
+                                }
+                                break;
+                        }
+                    }
+                    break;
+            }
+        }
+        return res;
+    }
+    
+    public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
+        if (!(type instanceof TypeImpl)) {
+            return type;
+        }
+        
+        // first check scope
+        if (CsmKindUtilities.isTemplate(scope)) {
+            List<CsmTemplateParameter> params = ((CsmTemplate)scope).getTemplateParameters();
+            if (!params.isEmpty()) {
+                String classifierText = ((TypeImpl)type).getClassifierText().toString();
+                for (CsmTemplateParameter param : params) {
+                    if (param.getName().toString().equals(classifierText)) {
+                        return new TemplateParameterTypeImpl(type, param);
+                    }
+                }
+            }
+        }
+        
+        // then check class or super class
+        if (scope instanceof ClassImpl) {
+            return checkTemplateType(type, ((ClassImpl)scope).getScope());
+        } else if (scope instanceof CsmMethod) {
+            return checkTemplateType(type, ((CsmMethod)scope).getContainingClass());
+        }
+        
+        return type;
     }
 }

@@ -37,6 +37,7 @@ public final class ProcessExecutionColumnModel_XPath extends AbstractColumn {
         myName = "CTL_Column_XPath"; // NOI18N
         myTooltip = "CTL_Column_XPath_Tooltip"; // NOI18N
         myType = String.class;
+        mySortable = false;
     }
     
     @Override

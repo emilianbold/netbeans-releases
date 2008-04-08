@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -47,7 +47,6 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
-import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
@@ -103,29 +102,12 @@ public final class Engine extends SearchEngine.Adapter {
   }
 
   private boolean checkName(Component component) {
-    if (anyName()) {
-      return true;
-    }
-    if ( !(component instanceof Named)) {
-      return false;
-    }
-    return accepts(((Named) component).getName());
-  }
+    String name = ""; // NOI18N
 
-  private boolean anyName() {
-    String text = myOption.getText();
-    SearchMatch match = myOption.getSearchMatch();
-
-    if (match == SearchMatch.PATTERN && text.equals("*")) { // NOI18N
-      return true;
+    if (component instanceof Named) {
+      name = ((Named) component).getName();
     }
-    if (match == SearchMatch.REGULAR_EXPRESSION && text.equals("\\.*")) { // NOI18N
-      return true;
-    }
-    if (match == null && text.equals("")) { // NOI18N
-      return true;
-    }
-    return false;
+    return accepts(name);
   }
 
   public boolean accepts(Object source) {

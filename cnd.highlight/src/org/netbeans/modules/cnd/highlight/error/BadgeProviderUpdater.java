@@ -42,7 +42,7 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 
@@ -60,15 +60,15 @@ public class BadgeProviderUpdater implements CsmModelListener, CsmProgressListen
 
     /** Creates a new instance of HighlightProvider */
     private BadgeProviderUpdater() {
-        CsmModelAccessor.getModel().addModelListener(this);
-        CsmModelAccessor.getModel().addProgressListener(this);
+        CsmListeners.getDefault().addModelListener(this);
+        CsmListeners.getDefault().addProgressListener(this);
     }
 
     public void startup() {
     }
 
     public void shutdown() {
-        CsmModelAccessor.getModel().removeModelListener(this);
+        CsmListeners.getDefault().removeModelListener(this);
         BadgeProvider.getInstance().removeAllProjects();
     }
 

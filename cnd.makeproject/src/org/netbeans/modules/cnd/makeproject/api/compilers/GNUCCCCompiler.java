@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -59,7 +60,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
 
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
-    private boolean saveOK = true;
     
     public GNUCCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(flavor, kind, name, displayName, path);
@@ -73,6 +73,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         }
         systemIncludeDirectoriesList = new PersistentList(values);
         normalizePaths(systemIncludeDirectoriesList);
+        saveSystemIncludesAndDefines();
         return true;
     }
     
@@ -83,6 +84,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             return false;
         }
         systemPreprocessorSymbolsList = new PersistentList(values);
+        saveSystemIncludesAndDefines();
         return true;
     }
     
@@ -106,9 +108,9 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     
     @Override
     public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null && saveOK)
+        if (systemIncludeDirectoriesList != null)
             systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        if (systemPreprocessorSymbolsList != null && saveOK)
+        if (systemPreprocessorSymbolsList != null)
             systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
@@ -136,18 +138,17 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             path = getDefaultPath();
         }
         try {
-            getSystemIncludesAndDefines(path + getCompilerStderrCommand(), false);
-            getSystemIncludesAndDefines(path + getCompilerStdoutCommand(), true);
+            getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
+            getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStdoutCommand(), true);
             // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
             if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
                 systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
             }
-            saveOK = true;
+            saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            saveOK = false;
         }
     }
     

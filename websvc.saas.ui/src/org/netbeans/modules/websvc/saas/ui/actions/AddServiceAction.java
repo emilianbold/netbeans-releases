@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,16 +41,23 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.openide.nodes.FilterNode;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.ui.wizards.AddWebServiceDlg;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
-import org.netbeans.modules.websvc.saas.ui.wizards.AddWebServiceDlg;
 
+/**
+ * 
+ * @author  nam
+ */
 public class AddServiceAction extends NodeAction {
     
-    protected boolean enable(org.openide.nodes.Node[] node) {
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
+            return g != null;
+        }
         return true;
     }
     
@@ -63,43 +70,18 @@ public class AddServiceAction extends NodeAction {
     }
     
     protected void performAction(Node[] nodes) {
-        Node invokingNode = nodes[0];
-        String groupId = null;
-        
-        //TODO:nam integrate
-        /*if (invokingNode instanceof FilterNode) {
-            Node root = invokingNode.getCookie(WebServicesRootNode.class);
-            Node group = invokingNode.getCookie(WebServiceGroupNode.class);
-            if(root != null){
-                WebServicesRootNode rootNode = (WebServicesRootNode)root;
-                groupId = rootNode.getWebServiceGroup().getId();
-            }else if(group != null){
-                WebServiceGroupNode groupNode = (WebServiceGroupNode)group;
-                groupId = groupNode.getWebServiceGroup().getId();
-            }
-        }else {
-            if(invokingNode instanceof WebServicesRootNode){
-                WebServicesRootNode rootNode = (WebServicesRootNode)invokingNode;
-                groupId = rootNode.getWebServiceGroup().getId();
-            }else if(invokingNode instanceof WebServiceGroupNode){
-                WebServiceGroupNode groupNode = (WebServiceGroupNode)invokingNode;
-                groupId = groupNode.getWebServiceGroup().getId();
-            }
+        if (nodes == null || nodes.length != 1) {
+            return;
         }
-        
-        if (groupId != null) {
-            AddWebServiceDlg dlg = new AddWebServiceDlg(groupId);
-            dlg.displayDialog();
-        }else {
-            AddWebServiceDlg dlg = new AddWebServiceDlg();
-            dlg.displayDialog();
-        }*/
-                
-        return;
-        
+
+        SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
+        if (g == null) {
+            throw new IllegalArgumentException("Node has no SaasGroup in lookup");
+        }
+
+        new AddWebServiceDlg(g).displayDialog();
     }
     
-    /** @return <code>false</code> to be performed in event dispatch thread */
     protected boolean asynchronous() {
         return false;
     }

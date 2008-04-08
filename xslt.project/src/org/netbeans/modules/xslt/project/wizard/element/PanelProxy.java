@@ -163,6 +163,7 @@ final class PanelProxy<T> extends Panel<T> {
 
     update();
     mainPanel.add(panel, cc);
+    mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewBridgeService3"));   
   }
 
   @Override
@@ -240,6 +241,7 @@ final class PanelProxy<T> extends Panel<T> {
     myRequestBox.setSelected(true);
 
     myRequestText = new JTextField();
+    a11y(myRequestText, "ACSN_LBL_Transform_Request", "ACSD_LBL_Transform_Request"); // NOI18N
     myRequestFile = new JTextField(fileName);
     myRequestFileBrowseButton = createBrowseButton(myRequestFile);
 
@@ -255,10 +257,12 @@ final class PanelProxy<T> extends Panel<T> {
         }
       }
     );
+    a11y(myReplyBox, "ACSN_LBL_Transform_Reply", "ACSD_LBL_Transform_Reply"); // NOI18N
     myReplyBox.setEnabled(true);
     myReplyBox.setSelected(false);
 
     myReplyText = new JTextField();
+    a11y(myReplyText, "ACSN_LBL_Transform_Reply", "ACSD_LBL_Transform_Reply"); // NOI18N
     myReplyFile = new JTextField(fileName);
     myReplyFileBrowseButton = createBrowseButton(myReplyFile, "LBL_Browse2");
 
@@ -299,7 +303,10 @@ final class PanelProxy<T> extends Panel<T> {
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, SMALL_INSET);
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
-    panel.add(createLabel(i18n("LBL_XSL_File")), c); // NOI18N
+    JLabel label = createLabel(i18n(getNextXslFileLabel()));
+    a11y(label, "ACSN_LBL_XSL_File", "ACSD_LBL_XSL_File"); // NOI18N
+    label.setLabelFor(file);
+    panel.add(label, c); // NOI18N
 
     // file
     c.gridwidth = 1;
@@ -316,6 +323,12 @@ final class PanelProxy<T> extends Panel<T> {
     return panel;
   }
 
+  private String getNextXslFileLabel() {
+    myXslFileUsagesCounter++;
+    return myXslFileUsagesCounter > 1 ? "LBL_XSL_File3" : "LBL_XSL_File" ; // NOI18N
+  }
+  
+  private int myXslFileUsagesCounter = 0;
   private PanelOperation<T> myOperationImplement;
   private PanelOperation<T> myOperationCall;
   private JCheckBox myRequestBox; 

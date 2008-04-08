@@ -64,7 +64,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -123,11 +122,15 @@ public class LibraryTest extends JellyTestCase {
         WizardUtils.createNewProject("Enterprise", "Enterprise Application");
         NewProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
-        JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, 1);
-        jcbo.setSelected(false);
-        jcbo = new JCheckBoxOperator(npnlso, 2);
-        jcbo.setSelected(false);
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
+        //Create EJB Module:
+        String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
+        JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
+        jcbo.setSelected(false);
+        //Create Web Application Module:
+        moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreatWebAppModule");
+        jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
+        jcbo.setSelected(false);
         npnlso.finish();
         //add modules to j2ee app
         addJ2eeModule(pto, appName, ejbName);
@@ -228,8 +231,9 @@ public class LibraryTest extends JellyTestCase {
         Node node = new Node(pto.getProjectRootNode(moduleName), "Libraries");
         node.performPopupActionNoBlock("Add Library...");
         NbDialogOperator ndo = new NbDialogOperator("Add Library");
-        JListOperator jlo = new JListOperator(ndo);
-        jlo.selectItem(libName);
+        new EventTool().waitNoEvent(1000);
+        JTreeOperator jto = new JTreeOperator(ndo);
+        jto.selectPath(jto.findPath("Global Libraries|" + libName));
         new JButtonOperator(ndo, "Add Library").push();
     }
     

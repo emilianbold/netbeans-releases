@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties;
 
+import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -72,7 +73,8 @@ public class NamespaceEditor extends PropertyEditorSupport
     private final static String EMPTY = Constants.EMPTY_STRING;
     
     //private PropertyQName mPropertySupport;
-    private BaseCasaProperty<QName> mPropertySupport;
+//    private BaseCasaProperty<QName> mPropertySupport;
+    private boolean mWritable;
     private String mPropertyName;
     private QName mInitialURI;
     private Collection<PrefixNamespacePair> mURIs;
@@ -82,11 +84,13 @@ public class NamespaceEditor extends PropertyEditorSupport
     
     
     public NamespaceEditor(
-            BaseCasaProperty<QName> propertySupport, 
+//            BaseCasaProperty<QName> propertySupport, 
             CasaWrapperModel model, 
             QName initialQName, 
-            String propertyName) {
-        mPropertySupport = propertySupport;
+            String propertyName,
+            boolean writable) {
+//        mPropertySupport = propertySupport;
+        mWritable = writable;
         mPropertyName = propertyName;
         mOptions = new ArrayList<Option>();
         mInitialURI = initialQName;
@@ -142,7 +146,7 @@ public class NamespaceEditor extends PropertyEditorSupport
                 mInitialURI, 
                 mURIs, 
                 mOptions);
-        panel.setEditable(mPropertySupport.canWrite());
+        panel.setEditable(mWritable); //mPropertySupport.canWrite());
         final DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(NamespaceEditor.class, "LBL_QNAME_Editor"), // NOI18N
@@ -167,7 +171,7 @@ public class NamespaceEditor extends PropertyEditorSupport
         }
         );
         
-        if (mPropertySupport.canWrite()) {
+        if (mWritable) {
             // enable/disable the dlg ok button depending selection
             panel.addPropertyChangeListener( new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {

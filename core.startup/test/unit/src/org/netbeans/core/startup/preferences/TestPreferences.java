@@ -225,7 +225,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         final Object sync = getEventQueueSync();
         Preferences pref = getPreferencesNode();
         assertNotNull(pref);
-        final List l = new ArrayList();
+        final List<Object> l = new ArrayList<Object>();
         assertNull(pref.get("key1", null));
         PreferenceChangeListener pl = new PreferenceChangeListener(){
             public void preferenceChange(PreferenceChangeEvent evt) {

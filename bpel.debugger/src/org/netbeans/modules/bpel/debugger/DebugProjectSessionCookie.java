@@ -42,7 +42,7 @@ public class DebugProjectSessionCookie implements SessionCookie {
         if (mySessionId != null) {
             return mySessionId;
         } else {
-            Map params = (Map)myContextProvider.lookupFirst(null, Map.class);
+            Map params = myContextProvider.lookupFirst(null, Map.class);
             if (params != null) {
                 String projectBaseDir = (String)params.get("projectBaseDir");
                 if (projectBaseDir != null) {
@@ -52,7 +52,7 @@ public class DebugProjectSessionCookie implements SessionCookie {
             }
 
             //some deffensive logic
-            Session session = (Session)myContextProvider.lookupFirst(null, Session.class);
+            Session session = myContextProvider.lookupFirst(null, Session.class);
             mySessionId = session.getName();
             return mySessionId;
         }

@@ -72,8 +72,6 @@ public class KeySequenceInputPanel extends javax.swing.JPanel {
     public KeySequenceInputPanel() {
         initComponents ();
         
-        
-        keySequenceLabel.setDisplayedMnemonic(bundle.getString("LBL_KSIP_Sequence_Mnemonic").charAt(0)); // NOI18N
         keySequenceInputField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LBL_KSIP_Sequence")); // NOI18N
         getAccessibleContext().setAccessibleName(bundle.getString("MSP_AddTitle")); // NOI18N
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_KSIP")); // NOI18N
@@ -127,7 +125,7 @@ public class KeySequenceInputPanel extends javax.swing.JPanel {
     /**
      * Visual part and event handling:
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -135,11 +133,11 @@ public class KeySequenceInputPanel extends javax.swing.JPanel {
         keySequenceInputField = new javax.swing.JTextField();
         collisionLabel = new javax.swing.JTextArea();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         keySequenceLabel.setLabelFor(keySequenceInputField);
-        keySequenceLabel.setText(bundle.getString( "LBL_KSIP_Sequence" ));
+        org.openide.awt.Mnemonics.setLocalizedText(keySequenceLabel, bundle.getString( "LBL_KSIP_Sequence" ));
         keySequenceLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 8));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -159,7 +157,6 @@ public class KeySequenceInputPanel extends javax.swing.JPanel {
                 keySequenceInputFieldKeyReleased(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -185,7 +182,6 @@ public class KeySequenceInputPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(collisionLabel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void keySequenceInputFieldKeyTyped (java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keySequenceInputFieldKeyTyped

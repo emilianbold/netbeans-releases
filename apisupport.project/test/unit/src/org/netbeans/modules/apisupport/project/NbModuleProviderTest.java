@@ -58,8 +58,8 @@ public class NbModuleProviderTest extends TestBase {
     }
 
     public void testNbModuleProvider() throws Exception {
-        FileObject dir = nbCVSRoot().getFileObject("java/project");
-        assertNotNull("have java/project checked out", dir);
+        FileObject dir = nbRoot().getFileObject("java.project");
+        assertNotNull("have java.project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         NbModuleProvider nmtp = (NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class);
         assertNotNull("has NbModuleProvider", nmtp);

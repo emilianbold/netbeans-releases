@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.source;
 
+import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
 import java.util.Collection;
@@ -87,7 +88,11 @@ public abstract class JavaSourceAccessor {
     
     protected abstract void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, JavaSource.Priority priority);
         
-    public abstract JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel);
+    public final JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel) {
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, null);
+    }
+    
+    public abstract JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, ClassNamesForFileOraculum cnih);
     
     
     /**

@@ -114,10 +114,26 @@ public class PkgMake extends Task {
                     Iterator it = filesets.iterator();
                     while (it.hasNext()) {
                         FileSet fs = (FileSet)it.next();
-                        DirectoryScanner ds = fs.getDirectoryScanner(project);
+                        DirectoryScanner ds = null;
+                        try {
+                            ds = fs.getDirectoryScanner(project);
+                        } catch (Exception e){
+                            //log(" ignored, pointing to non existing file");
+                        }
+                        if (ds == null){ //folder does not exist (resources folder likely)
+                            log("Directory scanner == null, skipping", Project.MSG_DEBUG);
+                            continue;
+                        }
+                        log("Directory scanner: " + ds, Project.MSG_DEBUG);
                         File basedir = ds.getBasedir();
+                        log("Base dir: " + basedir, Project.MSG_DEBUG);
                         String[] files = ds.getIncludedFiles();
                         for (int i = 0; i < files.length; i++){
+                            File f = new File(basedir, files[i]);
+                            if (!f.exists()){
+                                log(files[i] + " ignored, pointing to non existing file");
+                                continue;
+                            }
                             //does the icon goes to \Private as well?
                             if (files[i].toLowerCase().endsWith("dll")){
                                 newFileContent.append("\"" + files[i] + "\" - \"!:\\sys\\bin\\" +  files[i] + "\"\r\n");  

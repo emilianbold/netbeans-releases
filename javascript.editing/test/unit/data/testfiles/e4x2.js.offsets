@@ -1,0 +1,39 @@
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[0:0]:SETNAME[0:0]:NEW[0:8]:NAME[0:0]:NAME
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[11:0]:SETNAME[11:0]:NEW[11:6]:NAME[0:0]:NAME
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[27:0]:SETNAME[27:0]:NEW[27:5]:NAME[0:0]:NAME
+Missing position for node SCRIPT[0:0]:VAR[31:0]:NAME[31:4]:NEW[31:7]:NAME[0:0]:NAME
+
+<SCRIPT,EXPR_RESULT,SETNAME,BINDNAME>people</BINDNAME> =<NEW,STRING> <</NEW,SETNAME,EXPR_RESULT>people>
+<person id="1">
+<name>Moe</name>
+</person>
+<person id="2">
+<name>Larry</name>
+</person>
+</people</STRING>>
+
+<VAR>var <NAME>order = new <NEW,NAME>XML</NAME>()</NEW,NAME,VAR>
+
+<EXPR_RESULT,SETNAME,BINDNAME>order</BINDNAME>=<NEW,STRING><</NEW,SETNAME,EXPR_RESULT>order id="555">
+<date>2005-08-01</date>
+<customer>
+  <firstname>John</firstname>
+  <lastname>Johnson</lastname>
+</customer>
+<item>
+  <name>Maxilaku</name>
+  <qty>5</qty>
+  <price>155.00</price>
+</item>
+</order></STRING>
+    
+
+ 
+
+<EXPR_RESULT,SETNAME,BINDNAME>doc</BINDNAME> =<NEW,STRING> <</NEW,SETNAME,EXPR_RESULT>a><b c="1"/><b c="2"/></a</STRING>>;
+
+// Split XML strings:
+<VAR>var <NAME>num = <NUMBER>36</NUMBER,NAME,VAR>;
+<VAR>var <NAME>p =<NEW,ADD,ADD,STRING> <paul><age</STRING>>{<ESCXMLTEXT,NAME>num</NAME,ESCXMLTEXT,ADD>}<STRING></NEW,NAME,VAR,SCRIPT></age></paul></STRING,ADD>
+
+

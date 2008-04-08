@@ -102,6 +102,7 @@ public class RegisterExternalHook extends Task {
             }
         } catch (IOException x) {
             log("Could not verify Hg configuration: " + x, Project.MSG_WARN);
+            // XXX if running on Windows, hg.cmd will not work; might instead try: cmd /c hg showconfig
         }
         File[] repos = {
             root,

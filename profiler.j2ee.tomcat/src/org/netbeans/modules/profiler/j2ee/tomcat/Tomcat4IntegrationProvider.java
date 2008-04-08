@@ -40,14 +40,7 @@
 
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationProvider;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatformEnum;
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.Properties;
-
+import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 
 /**
  *

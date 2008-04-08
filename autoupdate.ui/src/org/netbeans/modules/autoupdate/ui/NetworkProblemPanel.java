@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -82,6 +82,9 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         } else {
             taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_ErrorText")); // NOI18N
         }
+        for (JButton b : buttons) {
+            b.getAccessibleContext ().setAccessibleDescription (b.getText ());
+        }
     }
     
     /** This method is called from within the constructor to
@@ -108,6 +111,8 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taTitle.setOpaque(false);
         taTitle.setPreferredSize(new java.awt.Dimension(100, 40));
         spTitle.setViewportView(taTitle);
+        taTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taTitle_ACN")); // NOI18N
+        taTitle.getAccessibleContext().setAccessibleDescription(problem);
 
         spMessage.setBorder(null);
 
@@ -118,6 +123,8 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taMessage.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         taMessage.setOpaque(false);
         spMessage.setViewportView(taMessage);
+        taMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage")); // NOI18N
+        taMessage.getAccessibleContext().setAccessibleDescription(problem);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -133,6 +140,8 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_ACD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

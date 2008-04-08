@@ -69,7 +69,7 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
             this.setDefaultRenderer(Boolean.class, new MyBooleanRenderer());
             final JTableHeader header = this.getTableHeader();
             header.setReorderingAllowed(false);
-            header.setResizingAllowed(false);
+            header.setResizingAllowed(true);
         }
     }
 
@@ -185,7 +185,8 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] tcolumnNames = { "Select", "Column Name" };
+        private final String[] tcolumnNames = { NbBundle.getMessage(ChosenColumnPanel.class, "LBL_SEL"), 
+            NbBundle.getMessage(ChosenColumnPanel.class, "LBL_COL_NAME") };
 
         private List rowList;
 
@@ -493,7 +494,7 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         this.metaDataTColumn.setModel(myMod);
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
@@ -501,8 +502,6 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
 
     public void addColumnTable(final List testList) {
         this.metaDataTColumn = new MetaTColumnComponent();
-        this.metaDataTColumn.setFont(JDBCTableColumnDisplayable.FONT_TABLE_COLUMNS);
-        this.metaDataTColumn.getTableHeader().setFont(JDBCTableColumnDisplayable.FONT_TABLE_HEADER);
         final MyTColumnModel myModel = new MyTColumnModel(testList);
         this.metaDataTColumn.setModel(myModel);
         this.setLayout(new BorderLayout());
@@ -511,7 +510,7 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         this.setMaximumSize(new Dimension(150, 150));
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);

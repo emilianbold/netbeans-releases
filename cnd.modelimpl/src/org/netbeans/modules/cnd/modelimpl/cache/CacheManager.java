@@ -43,8 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.cache;
 
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -60,11 +59,8 @@ public final class CacheManager implements CsmModelListener {
     private static CacheManager singleton = new CacheManager();
     private CacheManagerImpl impl;
     private CacheManager() {
-        impl = new CacheManagerImpl();      
-        CsmModel model = CsmModelAccessor.getModel();
-        if( model != null ) {
-            model.addModelListener(this);
-        }           
+        impl = new CacheManagerImpl();
+	CsmListeners.getDefault().addModelListener(this);
     }
     
     /**

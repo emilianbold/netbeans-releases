@@ -44,15 +44,12 @@ package org.netbeans.modules.project.ui.actions;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.Actions;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
@@ -72,6 +69,7 @@ public final class FileCommandAction extends ProjectAction {
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
+    @Override
     protected void refresh( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
@@ -85,13 +83,12 @@ public final class FileCommandAction extends ProjectAction {
             presenterName = ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
         }
         
-        setLocalizedTextToMenuPresented(presenterName);
-        
+        putValue("menuText", presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
+    @Override
     protected void actionPerformed( Lookup context ) {
-                
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
         if ( projects.length == 1 ) {            
@@ -102,8 +99,8 @@ public final class FileCommandAction extends ProjectAction {
     }
     
 
+    @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
-        
         return new FileCommandAction( getCommand(), getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
     }
 

@@ -58,10 +58,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,8 +80,6 @@ import org.openide.util.Utilities;
  * Class which handles gem interactions - executing gem, installing, uninstalling, etc.
  *
  * @todo Use the new ExecutionService to do process management.
- *
- * @author Tor Norbye
  */
 public final class GemManager {
 
@@ -97,10 +97,8 @@ public final class GemManager {
      */
     private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
     
-    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
-
-    private static boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
-    private static boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
+    private static final boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
+    private static final boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
 
     /**
      * Extension of files containing gems specification residing in {@link
@@ -143,10 +141,10 @@ public final class GemManager {
         if (Utilities.isMac() && "/usr/bin/ruby".equals(platform.getInterpreter())) { // NOI18N
             String version = System.getProperty("os.version"); // NOI18N
             if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
-                return NbBundle.getMessage(GemAction.class, "GemMissingMac");
+                return NbBundle.getMessage(GemManager.class, "GemMissingMac");
             }
         }
-        return NbBundle.getMessage(GemAction.class, "GemMissing");
+        return NbBundle.getMessage(GemManager.class, "GemMissing");
     }
     
     /**
@@ -163,7 +161,7 @@ public final class GemManager {
         String gemHomePath = getGemHome();
         if (gemHomePath == null) {
             // edge case, misconfiguration? gem tool is installed but repository is not found
-            return NbBundle.getMessage(GemAction.class, "CannotFindGemRepository");
+            return NbBundle.getMessage(GemManager.class, "CannotFindGemRepository");
         }
 
         File gemHome = new File(gemHomePath);
@@ -176,17 +174,31 @@ public final class GemManager {
         return null;
     }
 
+    boolean isGemHomeWritable() {
+        return getGemHomeF().canWrite();
+    }
+    
     private boolean checkGemHomePermissions() {
-        if (!getGemHomeF().canWrite()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(GemAction.class, "GemNotWritable", getGemHome()),
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            return false;
+        if (!isGemHomeWritable()) {
+            String gksu = Util.findOnPath("gksu"); // NOI18N
+            if (gksu == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
+                        NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                return false;
+            }
         }
         return true;
     }
 
+    /** Initialize/creates empty Gem Repository. */
+    public static void initializeRepository(File gemRepo) throws IOException {
+        if (!gemRepo.exists()) {
+            gemRepo.mkdirs();
+        }
+        initializeRepository(FileUtil.toFileObject(gemRepo));
+    }
     /** Initialize/creates empty Gem Repository. */
     public static void initializeRepository(FileObject gemRepo) throws IOException {
         for (String dir : TOP_LEVEL_REPO_DIRS) {
@@ -252,10 +264,6 @@ public final class GemManager {
         }
         if (result) {
             storeGemPath(gemPath);
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
-                prefs.setUseClassicDebugger(platform, false);
-            }
         }
         return result;
     }
@@ -348,13 +356,34 @@ public final class GemManager {
      */
     public boolean isGemInstalled(final String gemName, final String version) {
         String currVersion = getVersion(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
+        return isRightVersion(currVersion, version, false);
     }
 
-    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+    /**
+     * Checks whether the installed version matches.
+     * 
+     * @param gemName cf. {@link #isGemInstalled(String, String)}
+     * @param version cf. {@link #isGemInstalled(String, String)}
+     * @param exact whether exact match should be performed. If <tt>false</tt>,
+     * equal or greater matches. If <tt>true</tt>, only exact version matches.
+     * @return whether the installed version matches
+     */
+    public boolean isGemInstalledForPlatform(final String gemName, final String version, final boolean exact) {
         String currVersion = getVersionForPlatform(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
-        
+        return isRightVersion(currVersion, version, exact);
+    }
+    
+    private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
+        boolean isInstalled = false;
+        if (currVersion != null) {
+            int result = GemManager.compareGemVersions(version, currVersion);
+            isInstalled = exact ? result == 0 : result <= 0;
+        }
+        return isInstalled;
+    }
+    
+    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+        return isGemInstalledForPlatform(gemName, version, false);
     }
     
     public String getVersion(String gemName) {
@@ -367,7 +396,7 @@ public final class GemManager {
 
         Map<String, File> highestVersion = gemFiles.get(gemName);
 
-        if ((highestVersion == null) || (highestVersion.size() == 0)) {
+        if (highestVersion == null || highestVersion.isEmpty()) {
             return null;
         }
 
@@ -384,7 +413,7 @@ public final class GemManager {
 
         Map<String, File> versionsToSpecs = gemFiles.get(gemName);
 
-        if ((versionsToSpecs == null) || (versionsToSpecs.size() == 0)) {
+        if (versionsToSpecs == null || versionsToSpecs.isEmpty()) {
             return null;
         }
 
@@ -398,8 +427,8 @@ public final class GemManager {
             }
 
             // special hack for fast debugger
-            if (specName.startsWith("ruby-debug-base-")) {
-                boolean forJavaPlaf = specName.endsWith("-java.gemspec");
+            if (specName.startsWith("ruby-debug-base-")) { // NOI18N
+                boolean forJavaPlaf = specName.endsWith("-java.gemspec"); // NOI18N
                 if (platform.isJRuby() && !forJavaPlaf) {
                     continue;
                 }
@@ -422,16 +451,16 @@ public final class GemManager {
         }
         
         if (gemFiles == null) {
-            LOGGER.log(level, "No gems found, gemFiles is null");
+            LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
         
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems.");
+        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
         for (String key : gemFiles.keySet()) {
             Map<String, File> value = gemFiles.get(key);
-            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):");
+            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):"); // NOI18N
             for (String version : value.keySet()) {
-                LOGGER.log(level, version + " at " + value.get(version));
+                LOGGER.log(level, version + " at " + value.get(version)); // NOI18N
             }
         }
     }
@@ -721,14 +750,13 @@ public final class GemManager {
      * @param gem Gem description for the gem to be installed. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
+     * @param rdoc If true, generate rdoc as part of the installation
+     * @param ri If true, generate ri data as part of the installation
+     * @param version If non null, install the specified version rather than the latest remote version
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
-     * @param rdoc If true, generate rdoc as part of the installation
-     * @param ri If true, generate ri data as part of the installation
-     * @param version If non null, install the specified version rather than the latest remote version
      */
     public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
             String version, boolean includeDeps, boolean asynchronous,
@@ -747,14 +775,41 @@ public final class GemManager {
             return ok;
         }
     }
-    
+
+    /**
+     * Install the given gem.
+     *
+     * @param gem gem file to be installed (e.g. /path/to/rake-0.8.1.gem)
+     * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
+     *   a possible cursor change, etc.
+     * @param rdoc If true, generate rdoc as part of the installation
+     * @param ri If true, generate ri data as part of the installation
+     * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
+     *    in a background thread. A progress bar and message will be displayed (along with the option to view the
+     *    gem output). If the exit code is normal, the completion task will be run at the end.
+     * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
+     */
+    boolean installLocal(File gem, GemPanel parent, boolean rdoc, boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+        if (!checkGemHomePermissions()) {
+            return false;
+        }
+        GemRunner gemRunner = new GemRunner(platform);
+        if (asynchronous) {
+            gemRunner.installLocalAsynchronously(gem, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
+            return false;
+        } else {
+            boolean ok = gemRunner.installLocal(gem, rdoc, ri);
+            resetLocal();
+            return ok;
+        }
+    }
+
     /**
      * Uninstall the given gem.
      *
      * @param gem Gem description for the gem to be uninstalled. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
@@ -777,56 +832,44 @@ public final class GemManager {
     }
     
     /**
-     * Update the given gem, or all gems if gem == null
-     *
-     * @param gem Gem description for the gem to be uninstalled. Only the name is relevant. If null, all installed gems
-     *    will be updated.
+     * Updates the given gems, or all gems if <code>gems == null</code>.
+     * 
+     * @param gems the Gem descriptions for the gems to be updated. Only the names are relevant. 
+     * If <code>null</code>, all installed gems will be updated.
+     * @param rdoc specifies whether RDoc documentation should be generated.
+     * @param ri specifies whether RI documentation should be generated.
+     * @param includeDependencies specifies whether the required dependent gems should be updated.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
+     * @return true if the update was performed synchronously and was successful, false otherwise.
      */
     public boolean update(Gem[] gems, Component parent, boolean rdoc,
-            boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+            boolean ri, boolean includeDependencies, boolean asynchronous, 
+            Runnable asyncCompletionTask) {
+        
         if (!checkGemHomePermissions()) {
             return false;
         }
         List<String> gemNames = gems == null ? null : mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            gemRunner.updateAsynchronously(gemNames, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
+            gemRunner.updateAsynchronously(gemNames, rdoc, ri, includeDependencies, 
+                    resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = gemRunner.update(gemNames, rdoc, ri);
+            boolean ok = gemRunner.update(gemNames, rdoc, ri, includeDependencies);
             resetLocal();
             return ok;
         }
     }
 
-    public String getAutoTest() {
-        return platform.findExecutable("autotest"); // NOI18N
-    }
-
-    public boolean isValidAutoTest(boolean warn) {
-        String autoTest = getAutoTest();
-        boolean valid = (autoTest != null) && new File(autoTest).exists();
-
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "autotest");
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-
-        return valid;
-    }
-
     /**
      * Return path to the <em>gem</em> tool if it does exist.
-     *
+     * 
      * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
      *         found.
      */
@@ -881,14 +924,7 @@ public final class GemManager {
     public boolean isValidRake(boolean warn) {
         String rakePath = getRake();
         boolean valid = (rakePath != null) && new File(rakePath).exists();
-
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "rake");
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-
+        possiblyNotifyUser(warn, valid, "rake"); // NOI18N
         return valid;
     }
 
@@ -902,15 +938,28 @@ public final class GemManager {
     public boolean isValidRails(boolean warn) {
         String railsPath = getRails();
         boolean valid = (railsPath != null) && new File(railsPath).exists();
+        possiblyNotifyUser(warn, valid, "rails"); // NOI18N
+        return valid;
+    }
 
+    public String getAutoTest() {
+        return platform.findExecutable("autotest"); // NOI18N
+    }
+
+    public boolean isValidAutoTest(boolean warn) {
+        String autoTest = getAutoTest();
+        boolean valid = (autoTest != null) && new File(autoTest).exists();
+        possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
+        return valid;
+    }
+
+    private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "rails");
+            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, platform.getLabel());
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
-
-        return valid;
     }
 
     /** Return other load path URLs (than the gem ones returned by {@link #getGemUrls} to add for the platform
@@ -988,7 +1037,7 @@ public final class GemManager {
             // Install gems.
             if (!SKIP_INDEX_GEMS) {
                 initGemList();
-                if (PREINDEXING) {
+                if (RubyPlatformManager.PREINDEXING) {
                     String gemDir = getGemHome();
                     File specDir = new File(gemDir, "gems"); // NOI18N
 
@@ -1049,7 +1098,8 @@ public final class GemManager {
             // Register boot roots. This is a bit of a hack.
             // I need to find a better way to distinguish source directories
             // from boot (library, gems, etc.) directories at the scanning and indexing end.
-            ClassIndexManager mgr = ClassIndexManager.getDefault();
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
+            ClassIndexManager mgr = ClassIndexManager.get(language);
             List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
             roots.addAll(gemUrls.values());
             roots.addAll(nonGemUrls);
@@ -1081,7 +1131,7 @@ public final class GemManager {
     }
 
     static boolean isValidGemHome(final File gemHomeF) {
-        Parameters.notNull("gemHomeF", gemHomeF);
+        Parameters.notNull("gemHomeF", gemHomeF); // NOI18N
         boolean valid = gemHomeF.isDirectory();
         for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
             String dir = TOP_LEVEL_REPO_DIRS[i];
@@ -1094,10 +1144,12 @@ public final class GemManager {
     }
 
     public static void adjustEnvironment(final RubyPlatform platform, final Map<String, String> env) {
-        String gemHome = adjustGemPath(platform.getGemManager().getGemHome());
-        String gemPath = adjustGemPath(platform.getInfo().getGemPath());
-        env.put("GEM_HOME", gemHome); // NOI18N
-        env.put("GEM_PATH", gemPath); // NOI18N
+        if (platform.hasRubyGemsInstalled()) {
+            String gemHome = adjustGemPath(platform.getGemManager().getGemHome());
+            String gemPath = adjustGemPath(platform.getInfo().getGemPath());
+            env.put("GEM_HOME", gemHome); // NOI18N
+            env.put("GEM_PATH", gemPath); // NOI18N
+        }
     }
 
     private static String adjustGemPath(final String origPath) {

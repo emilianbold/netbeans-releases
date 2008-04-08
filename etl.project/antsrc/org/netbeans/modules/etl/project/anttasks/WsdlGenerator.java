@@ -81,8 +81,8 @@ import com.sun.sql.framework.utils.RuntimeAttribute;
 import java.util.HashMap;
 import javax.wsdl.Message;
 import javax.wsdl.Part;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
+
 
 /**
  * This class generates an ETL WSDL file given an ETL engine file name
@@ -96,7 +96,7 @@ public class WsdlGenerator {
     private String wsdlLocation;
     private Definition def;
     private File engineFile;
-    private static transient final Logger mLogger = LogUtil.getLogger(WsdlGenerator.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(WsdlGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     static {
@@ -202,7 +202,7 @@ public class WsdlGenerator {
             sink.flush();
             sink.close();
         } catch (Exception e) {
-            mLogger.infoNoloc(mLoc.t("PRSR015: Exception{0}", e.getMessage()));
+            mLogger.infoNoloc(mLoc.t("PRJS015: Exception{0}", e.getMessage()));
             throw new WsdlGenerateException(e);
         }
 
@@ -472,7 +472,7 @@ public class WsdlGenerator {
             String wsdlURI = u.getFile().indexOf(".jar") > 0 ? "jar:" + u.getFile() : u.getFile();
             def = reader.readWSDL(wsdlURI);
         } catch (WSDLException e) {
-            mLogger.infoNoloc(mLoc.t("PRSR016: Exception{0}", e.getMessage()));
+            mLogger.infoNoloc(mLoc.t("PRJS016: Exception{0}", e.getMessage()));
             throw new WsdlGenerateException(e);
         }
         return def;
@@ -488,7 +488,7 @@ public class WsdlGenerator {
             try {
                 factory = WSDLFactory.newInstance();
             } catch (WSDLException e) {
-                mLogger.infoNoloc(mLoc.t("PRSR017: Exception{0}", e.getMessage()));
+                mLogger.infoNoloc(mLoc.t("PRJS017: Exception{0}", e.getMessage()));
             }
         }
     }

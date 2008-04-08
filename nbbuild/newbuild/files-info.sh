@@ -53,6 +53,7 @@ else
             type md5 >> /dev/null 2>&1
             if [ 0 -eq $? ] ; then
                 alg=`type -p md5`
+                alg="$alg -q"
             fi
         fi
     fi

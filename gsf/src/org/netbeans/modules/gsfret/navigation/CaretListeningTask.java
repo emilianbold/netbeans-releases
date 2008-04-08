@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.gsfret.navigation;
 
-import org.netbeans.api.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 

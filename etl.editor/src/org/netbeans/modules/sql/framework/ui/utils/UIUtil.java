@@ -109,6 +109,7 @@ public abstract class UIUtil {
 
        public void actionPerformed(ActionEvent actionEvent) {
            dialog.setVisible(false);
+           dialog.getAccessibleContext().setAccessibleDescription("This dialog provides all UI related functionality");
        }
    }
 

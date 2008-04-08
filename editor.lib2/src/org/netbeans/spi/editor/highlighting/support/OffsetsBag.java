@@ -389,6 +389,19 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                     changeStart = marks.get(startIdx).getOffset();
                 }
                 if (changeEnd == Integer.MIN_VALUE) {
+                    if (endIdx >= marks.size()) { // Logging for #117403
+                        if (LOG.isLoggable(Level.INFO)) {
+                            String logMsg = "Too high endIdx=" + endIdx + // NOI18N
+                                    ", marks.size()=" + marks.size() + // NOI18N
+                                    ", startIdx=" + startIdx + // NOI18N
+                                    ", startOffset=" + startOffset + ", endOffset=" + endOffset + // NOI18N
+                                    ", changeStart=" + changeStart + // NOI18N
+                                    ", document.getLength()=" + document.getLength() + // NOI18N
+                                    ", lastMark=" + marks.get(marks.size() - 1); // NOI18N
+                            LOG.log(Level.INFO, logMsg, new Exception());
+                        }
+                        endIdx = marks.size() - 1; // Fix the index so that exc. does not occur
+                    }
                     changeEnd = marks.get(endIdx).getOffset();
                 }
                 marks.remove(startIdx, endIdx - startIdx + 1);
@@ -629,8 +642,14 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         public void setAttributes(AttributeSet attribs) {
             this.attribs = attribs;
         }
+
+        @Override
+        public String toString() {
+            return "offset=" + getOffset() + ", attribs=" + attribs; // NOI81N
+        }
+        
     } // End of Mark class
-    
+
     private final class Seq implements HighlightsSequence {
 
         private long version;

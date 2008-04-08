@@ -43,15 +43,16 @@ package org.netbeans.modules.spring.beans.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
+import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupport;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
@@ -75,8 +76,10 @@ public class SpringConfigModelController {
 
     private FileListener fileListener;
 
-    // Encapsulates the current access to the model.
-    private Access currentAccess;
+    // Encapsulates the current read access to the model.
+    private ConfigModelSpringBeans readAccess;
+    // Encapsulates the current read access to the model.
+    private boolean writeAccess;
 
     /**
      * Creates a new instance. A factory method is needed in order to avoid
@@ -99,12 +102,35 @@ public class SpringConfigModelController {
         fileListener = new FileListener();
         synchronized (file2Controller) {
             for (File file : configFileGroup.getFiles()) {
-                // FileObject fo = FileUtil.toFileObject(file);
-                file2Controller.put(file, new SpringConfigFileModelController(file));
+                file2Controller.put(file, new SpringConfigFileModelController(file, new ConfigFileSpringBeanSource()));
                 FileChangeSupport.DEFAULT.addListener(fileListener, file);
             }
         }
         EditorListener.getInstance().register(this);
+    }
+
+    ConfigFileGroup getConfigFileGroup() {
+        return configFileGroup;
+    }
+
+    private void notifyFileChanged(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return;
+        }
+        notifyFileChanged(fo, file);
+    }
+
+    private void notifyFileDeleted(File file) {
+        // XXX probably in order to support repeatable read, we should remove
+        // the controller under exclusive access
+    }
+
+    void notifyFileChanged(FileObject fo, File file) {
+        SpringConfigFileModelController fileController = file2Controller.get(file);
+        if (fileController != null) {
+            fileController.notifyChange(fo);
+        }
     }
 
     /**
@@ -131,83 +157,89 @@ public class SpringConfigModelController {
     private void runReadAction0(final Action<SpringBeans> action) throws Exception {
         ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
             public Void call() throws IOException {
-                // Handle reentrant access.
-                boolean firstEntry = (currentAccess == null);
-                if (firstEntry) {
-                    currentAccess = new Access();
+                if (writeAccess) {
+                    throw new IllegalStateException("Already in write access.");
                 }
-                action.run(new ConfigModelSpringBeans(currentAccess));
-                if (firstEntry) {
-                    currentAccess = null;
+                // Handle reentrant access.
+                boolean firstEntry = (readAccess == null);
+                try {
+                    if (firstEntry) {
+                        readAccess = new ConfigModelSpringBeans(computeSpringBeanSources(null));
+                    }
+                    action.run(readAccess);
+                } finally {
+                    if (firstEntry) {
+                        readAccess = null;
+                    }
                 }
                 return null;
             }
         });
     }
 
-    ConfigFileGroup getConfigFileGroup() {
-        return configFileGroup;
-    }
-
-    private void notifyFileChanged(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) {
-            return;
-        }
-        notifyFileChanged(fo, file);
-    }
-
-    private void notifyFileDeleted(File file) {
-        // XXX probably in order to support repeatable read, we should not remove
-        // the controller under exclusive access
-    }
-
-    void notifyFileChanged(FileObject fo, File file) {
-        SpringConfigFileModelController fileController = file2Controller.get(file);
-        if (fileController != null) {
-            fileController.notifyChange(fo);
+    public void runDocumentAction(Action<DocumentAccess> action) throws IOException {
+        try {
+            runDocumentAction0(action);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            } else if (e instanceof IOException) {
+                throw (IOException)e;
+            } else {
+                IOException ioe = new IOException(e.getMessage());
+                throw (IOException)ioe.initCause(e);
+            }
         }
     }
 
-    /**
-     * Encapsulates one access to the model. Makes sure the config files are up to date.
-     * All methods should be called run under exclusive access.
-     */
-    public final class Access {
+    private void runDocumentAction0(final Action<DocumentAccess> action) throws Exception {
+        ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
+            public Void call() throws IOException {
+                if (readAccess != null) {
+                    throw new IllegalStateException("Already in read access.");
+                }
+                if (writeAccess) {
+                    throw new IllegalStateException("Reentrant write access not supported");
+                }
+                writeAccess = true;
+                try {
+                    synchronized (file2Controller) {
+                        for (File currentFile : file2Controller.keySet()) {
+                            Map<File, SpringBeanSource> beanSources = computeSpringBeanSources(currentFile);
+                            SpringConfigFileModelController controller = file2Controller.get(currentFile);
+                            LockedDocument lockedDoc = controller.getLockedDocument();
+                            if (lockedDoc != null) {
+                                lockedDoc.lock();
+                                try {
+                                    beanSources.put(currentFile, lockedDoc.getBeanSource());
+                                    ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
+                                    DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
+                                    action.run(docAccess);
+                                } finally {
+                                    lockedDoc.unlock();
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    writeAccess = false;
+                }
+                return null;
+            }
+        });
+    }
 
-        public Access() throws IOException {
-            ensureUpToDate();
-        }
-
-        private void ensureUpToDate() throws IOException {
-            synchronized (file2Controller) {
-                for (SpringConfigFileModelController controller : file2Controller.values()) {
-                    controller.makeUpToDate();
+    private Map<File, SpringBeanSource> computeSpringBeanSources(File skip) throws IOException {
+        Map<File, SpringBeanSource> result = new HashMap<File, SpringBeanSource>();
+        synchronized (file2Controller) {
+            for (Map.Entry<File, SpringConfigFileModelController> entry : file2Controller.entrySet()) {
+                File currentFile = entry.getKey();
+                if (!currentFile.equals(skip)) {
+                    result.put(entry.getKey(), entry.getValue().getUpToDateBeanSource());
                 }
             }
         }
-
-        public SpringBeanSource getBeanSource(File file) {
-            SpringConfigFileModelController fileModelController = file2Controller.get(file);
-            if (fileModelController != null) {
-                return fileModelController.getBeanSource();
-            }
-            return null;
-        }
-
-        public List<SpringBeanSource> getBeanSources() {
-            List<SpringBeanSource> result = new ArrayList<SpringBeanSource>();
-            synchronized (file2Controller) {
-                for (SpringConfigFileModelController fileModelController : file2Controller.values()) {
-                    result.add(fileModelController.getBeanSource());
-                }
-            }
-            return result;
-        }
-
-        public boolean isValid() {
-            return ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        }
+        return result;
     }
 
     /**

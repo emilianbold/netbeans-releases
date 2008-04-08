@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  * @author Nickolay Dalmatov
  */
 class IndexedStorageFile extends FileStorage {
+    
     final private File dataFile;
     final private File indexFile;
     final private FileStatistics fileStatistics;
@@ -118,7 +119,7 @@ class IndexedStorageFile extends FileStorage {
         } 
     }
     
-    public Persistent get(final Key key) throws IOException {
+    public Persistent read(final Key key) throws IOException {
         Persistent object = null;
         
         final ChunkInfo chunkInfo = index.get(key);
@@ -368,7 +369,7 @@ class IndexedStorageFile extends FileStorage {
         }
     }
 
-    public boolean maintenance(long timeout) throws IOException {
+    public boolean defragment(long timeout) throws IOException {
         return false;
     }
 

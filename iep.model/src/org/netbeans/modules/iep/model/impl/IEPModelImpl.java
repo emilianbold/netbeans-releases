@@ -27,6 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 
 
+import java.util.StringTokenizer;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
@@ -43,6 +49,7 @@ import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -250,4 +257,45 @@ public class IEPModelImpl extends IEPModel {
     	
     	return list;
     }
+
+    @Override
+    public String getQualifiedName() {
+        String qualifiedName = null;
+        
+        FileObject iepFile = getModelSource().getLookup().lookup(FileObject.class);
+        if(iepFile != null) {
+            Project project = FileOwnerQuery.getOwner(iepFile);
+            if(project != null) {
+                Sources sources = ProjectUtils.getSources(project);
+                if(sources != null) {
+                    //SourceGroup[] sg = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                    SourceGroup[] sg = sources.getSourceGroups("BIZPRO");
+                    
+                    if(sg != null) {
+                        for(int i =0; i < sg.length; i++) {
+                            FileObject rootFolder = sg[i].getRootFolder();
+                            if(FileUtil.isParentOf(rootFolder, iepFile)) {
+                                qualifiedName = FileUtil.getRelativePath(rootFolder, iepFile);
+                                break;
+                            }
+                        }
+                        
+                    }
+                }
+            }
+        }
+        
+        if(qualifiedName != null) {
+            int dotIndex = qualifiedName.lastIndexOf(".");
+            if(dotIndex != -1) {
+                qualifiedName = qualifiedName.substring(0, dotIndex) + "_" + qualifiedName.substring(dotIndex +1, qualifiedName.length());
+            }
+            
+            qualifiedName = qualifiedName.replaceAll("/", ".");
+        }
+        
+        return qualifiedName;
+    }
+    
+    
 }

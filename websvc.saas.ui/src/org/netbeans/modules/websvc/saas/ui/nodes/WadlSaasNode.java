@@ -41,52 +41,39 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.ui.actions.DeleteServiceAction;
-import org.netbeans.modules.websvc.saas.ui.actions.RefreshServiceAction;
-import org.netbeans.modules.websvc.saas.ui.actions.ViewApiDocAction;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWadlAction;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
-import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasNode extends AbstractNode {
-    private WadlSaas wadlSaas;
+public class WadlSaasNode extends SaasNode {
     
     public WadlSaasNode(WadlSaas wadlSaas) {
         this(wadlSaas, new InstanceContent());
-        this.wadlSaas = wadlSaas;
     }
 
     public WadlSaasNode(WadlSaas wadlSaas, InstanceContent content) {
-        super(new WadlSaasNodeChildren(wadlSaas));
-        this.wadlSaas = wadlSaas;
+        super(new WadlSaasNodeChildren(wadlSaas), new AbstractLookup(content), wadlSaas);
         content.add(wadlSaas);
     }
 
     @Override
-    public String getDisplayName() {
-        return wadlSaas.getDisplayName();
-    }
-    
-    @Override
-    public String getShortDescription() {
-        return wadlSaas.getDescription();
+    public WadlSaas getSaas() {
+        return (WadlSaas) super.getSaas();
     }
     
     private static final java.awt.Image SERVICE_BADGE =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/restservice.png" ); //NOI18N
     
-    @Override
-    public java.awt.Image getIcon(int type) {
+    public Image getGenericIcon(int type) {
         return SERVICE_BADGE;
     }
     
@@ -102,16 +89,8 @@ public class WadlSaasNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
-        actions.add(SystemAction.get(ViewApiDocAction.class));
+        List<Action> actions = new ArrayList<Action>(Arrays.asList(super.getActions(context)));
         actions.add(SystemAction.get(ViewWadlAction.class));
-        actions.add(SystemAction.get(DeleteServiceAction.class));
-        actions.add(SystemAction.get(RefreshServiceAction.class));
 
         return actions.toArray(new Action[actions.size()]);
     }

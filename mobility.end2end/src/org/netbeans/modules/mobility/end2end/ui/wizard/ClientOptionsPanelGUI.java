@@ -172,7 +172,7 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
     }
     
     public String getTargetName() {
-        return normalizedString( clientNameTextField.getText());
+        return clientNameTextField.getText().trim();
     }
     
     public boolean isGenerateStubs() {
@@ -475,16 +475,7 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
             packageName = ""; // NOI18N
         return packageName.replace( '.', '/' ); // NOI18N;
     }
-    
-    private static String normalizedString( String text ) {
-        if (text == null)
-            return null;
-        text = text.trim();
-        if (text.length() <= 0)
-            return null;
-        return text;
-    }
-    
+        
     /**
      *
      */

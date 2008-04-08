@@ -141,8 +141,8 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.api.server</package>
                 <!-- FUTURE
-                <package>org.netbeans.api.server.output</package>
-                <package>org.netbeans.api.server.properties</package> -->
+                <package>org.netbeans.api.server.output</package> -->
+                <package>org.netbeans.api.server.properties</package>
                 <package>org.netbeans.spi.server</package>
             </public-packages>
         </data>

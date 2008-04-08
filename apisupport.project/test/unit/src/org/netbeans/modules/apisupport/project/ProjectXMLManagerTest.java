@@ -108,7 +108,7 @@ public class ProjectXMLManagerTest extends TestBase {
     
     private ProjectXMLManager createXercesPXM() throws IOException {
         NbModuleProject xercesPrj = (NbModuleProject) ProjectManager.getDefault().
-                findProject(nbCVSRoot().getFileObject("libs/xerces"));
+                findProject(nbRoot().getFileObject("libs.xerces"));
         return new ProjectXMLManager(xercesPrj);
     }
     

@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /** Session visually represents one process or application. It should
@@ -134,7 +135,7 @@ import java.util.List;
  *
  * @author Jan Jancura
  */
-public final class Session {
+public final class Session implements ContextProvider {
     
     /** Name of property for current language. */
     public static final String PROP_CURRENT_LANGUAGE = "currentLanguage";
@@ -252,7 +253,7 @@ public final class Session {
      * @param service a type of service to look for
      * @return list of services of given type
      */
-    public List lookup (String folder, Class service) {
+    public <T> List<? extends T> lookup(String folder, Class<T> service) {
         return lookup.lookup (folder, service);
     }
     
@@ -262,7 +263,7 @@ public final class Session {
      * @param service a type of service to look for
      * @return ne service of given type
      */
-    public Object lookupFirst (String folder, Class service) {
+    public <T> T lookupFirst(String folder, Class<T> service) {
         return lookup.lookupFirst (folder, service);
     }
     

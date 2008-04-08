@@ -71,8 +71,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     
     public MakeCallerCurrentActionProvider (ContextProvider lookupProvider) {
         super (
-            (JPDADebugger) lookupProvider.lookupFirst 
-                (null, JPDADebugger.class)
+            lookupProvider.lookupFirst(null, JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
         getDebuggerImpl ().addPropertyChangeListener 

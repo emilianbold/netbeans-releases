@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;

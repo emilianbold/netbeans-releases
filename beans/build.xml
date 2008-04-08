@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-            <exclude name="**/beaninfo/*.java"/>
+            <exclude name="**/beaninfo/BiSuperClass.java"/>
         </javac>
         <!-- Sanity check: -->
         <pathconvert pathsep=":" property="class.files.in.src">

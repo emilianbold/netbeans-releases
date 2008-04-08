@@ -41,19 +41,19 @@
             <xs:import namespace="http://www.opentravel.org/OTA/2003/05" schemaLocation="OTA_TravelItinerary.xsd"/>
         </xs:schema>
     </types>
-    
+
     <message name="ReserveAirlineIn">
-        <part name="itinerary" element="ota:TravelItinerary" />
+        <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
 
     <message name="CancelAirlineIn">
         <part name="itinerary" element="ota:ItineraryRef"/>
     </message>
-    
+
     <message name="CancelAirlineOut">
         <part name="succeeded" element="ota:CancellationStatus"/>
     </message>
-    
+
     <message name="AirlineReservedIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
@@ -67,13 +67,13 @@
             <output message="tns:CancelAirlineOut"/>
         </operation>
     </portType>
-    
+
     <portType name="AirlineReservationCallbackPortType">
         <operation name="airlineReserved">
             <input message="tns:AirlineReservedIn"/>
         </operation>
     </portType>
-    
+
     <binding name="AirlineReservationSoapBinding" type="tns:AirlineReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveAirline">
@@ -92,8 +92,7 @@
             </output>
         </operation>
     </binding>
-    
-    
+
     <binding name="AirlineReservationCallbackSoapBinding" type="tns:AirlineReservationCallbackPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="airlineReserved">
@@ -101,21 +100,21 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>                
+        </operation>
     </binding>
-    
+
     <service name="AirlineReservationSoapService">
         <port name="AirlineReservationSoapHttpPort" binding="tns:AirlineReservationSoapBinding">
             <soap:address location="http://localhost:8080/webservice/AirlineReservationService"/>
         </port>
     </service>
-    
+
     <plnk:partnerLinkType name="AirlineReservationPartnerLinkType">
         <plnk:role name="AirlineReservationServiceRole"
                    portType="tns:AirlineReservationPortType">
         </plnk:role>
         <plnk:role name="AirlineReservationCallbackServiceRole"
                    portType="tns:AirlineReservationCallbackPortType">
-        </plnk:role>                
+        </plnk:role>
     </plnk:partnerLinkType>
 </definitions>

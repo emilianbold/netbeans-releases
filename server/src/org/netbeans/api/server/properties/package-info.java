@@ -40,5 +40,6 @@
 /**
  * Support API for persistence of server instance properties.
  * @see org.netbeans.api.server.properties.InstancePropertiesManager
+ * @since 1.1
  */
 package org.netbeans.api.server.properties;

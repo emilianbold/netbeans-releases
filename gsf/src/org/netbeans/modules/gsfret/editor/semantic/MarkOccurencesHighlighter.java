@@ -41,29 +41,26 @@
 package org.netbeans.modules.gsfret.editor.semantic;
 
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.CaretEvent;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.OccurrencesFinder;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.CompilationUnitTree;
-//import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -144,10 +141,21 @@ public class MarkOccurencesHighlighter implements CancellableTask<CompilationInf
     Set<Highlight> processImpl(CompilationInfo info, Document doc, int caretPosition) {
         Set<Highlight> localUsages = null;
 
-        // Allow language plugins to do their own analysis too
-        Parser parser = info.getParser();
-        if (parser != null) {
-            OccurrencesFinder task = parser.getMarkOccurrencesTask(caretPosition);
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument)doc, caretPosition);
+        Language language = null;
+        for (Language l : list) {
+            if (l.getOccurrencesFinder() != null) {
+                language = l;
+                break;
+            }
+        }
+
+        if (language != null) {
+            OccurrencesFinder finder = language.getOccurrencesFinder();
+            assert finder != null;
+        
+            finder.setCaretPosition(caretPosition);
+            OccurrencesFinder task = finder;
             if (task != null) {
                 try {
                     task.run(info);
@@ -169,7 +177,6 @@ public class MarkOccurencesHighlighter implements CancellableTask<CompilationInf
                         ColoringAttributes colors = highlights.get(range);
                         //Collection<ColoringAttributes> c = EnumSet.copyOf(set);
                         Collection<ColoringAttributes> c = Collections.singletonList(colors);
-                        Language language = info.getLanguage();
                         Highlight h = Utilities.createHighlight(language, doc, range.getStart(), range.getEnd(), c, null);
 
                         if (h != null) {
@@ -267,7 +274,6 @@ public class MarkOccurencesHighlighter implements CancellableTask<CompilationInf
         canceled = true;
         
         if (exitDetector != null) {
-System.err.println("need to cancel exit detector!");            
 //            exitDetector.cancel();
         }
 //        if (localUsages != null) {

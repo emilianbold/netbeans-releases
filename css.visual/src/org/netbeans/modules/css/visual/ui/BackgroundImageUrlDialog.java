@@ -43,7 +43,6 @@
  * BackgroundImageUrlDialog.java
  * Created on November 5, 2004, 5:08 PM
  */
-
 package org.netbeans.modules.css.visual.ui;
 
 import java.util.logging.Level;
@@ -55,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+//import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -65,78 +65,128 @@ import org.openide.util.NbBundle;
  * @version 1.0
  */
 public class BackgroundImageUrlDialog { //extends URLPanel{
-    
+
     private static final Logger LOGGER = Logger.getLogger(BackgroundImageUrlDialog.class.getName());
-    
-    private FileObject base;
-    
-    public BackgroundImageUrlDialog(FileObject base) {
+    private File base;
+
+    public BackgroundImageUrlDialog(File base) {
         this.base = base;
     }
-    
     private String imageUrl = null;
-    private FileFilter imgFilter = new ImageFilter() ;
-    
+    private FileFilter imgFilter = new ImageFilter();
+
     // XXX Get URL also not just local file
-    public boolean show(Component parent){
+    public boolean show(Component parent) {
         boolean retValue = false;
         JFileChooser fileChooser = Utilities.getJFileChooser();
-        File currDir = null;
-        try{
-            currDir = FileUtil.toFile(base).getParentFile();
-            if (currDir == null) currDir = new File(System.getProperty("user.home")); //NOI18N
-            if (currDir != null ) fileChooser.setCurrentDirectory(currDir);
-            fileChooser.addChoosableFileFilter(new ImageFilter()) ;
-            if ( fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-                File imageFile = fileChooser.getSelectedFile();
-                File newImageFile = new File(currDir, imageFile.getName());
-                if (!(imageFile.equals(imageFile) && newImageFile.exists())) {
+        try {
+            //try to find a web module for the edited css
+            
+//            WebModule webModule = WebModule.getWebModule(base);
+//            FileObject webModuleDocumentBase = webModule == null ? null : webModule.getDocumentBase();
+            FileObject webModuleDocumentBase = null;
+            
+            //identify a starting directory for the file chooser
+            FileObject currDir = FileUtil.toFileObject(base);
 
-                    FileObject imageFO = FileUtil.toFileObject(imageFile);
-                    if (imageFO == null) {
-                        //should not happen with Master FS
-                        //assert imageFile != null;
-                        LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + imageFile.toURL()));
-                        return false;
-                    }
-
-                    FileObject currDirFO = FileUtil.toFileObject(currDir);
-                    if (currDirFO == null) {
-                        //should not happen with Master FS
-                        //assert imageFile != null;
-                        LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + currDir.toURL()));
-                        return false;
-                    }
-
-                    FileObject newImageFO = imageFO.copy(currDirFO, imageFO.getName(), imageFO.getExt());
-                    imageUrl = newImageFO.getNameExt();
-                } else {
-                    imageUrl = newImageFile.getName();
-                }
-                StringBuffer sb = new StringBuffer();
-                int len = imageUrl.length();
-                for (int i = 0; i < len; i++) {
-                    char chr =  imageUrl.charAt(i);
-                    if (chr == ' '){
-                        sb.append("%20");
-                    }else{
-                        sb.append(chr);
-                    }
-                }
-                imageUrl = sb.toString();
-                retValue = true;
-                
+            if (currDir != null) {
+                fileChooser.setCurrentDirectory(FileUtil.toFile(currDir));
             }
-        } catch (IOException exc){
+
+            fileChooser.addChoosableFileFilter(new ImageFilter());
+            if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+                File imageFile = fileChooser.getSelectedFile();
+                FileObject imageFO = FileUtil.toFileObject(imageFile);
+                if (imageFO == null) {
+                    //should not happen with Master FS
+                    //assert imageFile != null;
+                    LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + imageFile.toURL()));
+                    return false;
+                }
+                FileObject imageFolder = imageFO.getParent();
+
+                //count relative path to the base dir
+                //check if we do not overlap the web module root is thre is any
+                //if we are out of the web module, copy the file to the css file
+                //directory
+
+                //assert webModuleDocumentBase is parent/ancestor of base
+                
+                String path = null;
+                FileObject dir = currDir;
+                int level = 0;
+                do {
+                    level++;
+                    
+                    dir = dir.getParent();
+                    
+                    if(dir == null) {
+                        break;
+                    }
+                    
+                    path = FileUtil.getRelativePath(dir, imageFolder);
+                    
+                    if(dir.equals(webModuleDocumentBase)) {
+                        //we reached the web module document base boundary
+                        //use relative path to this point
+                        if(path == null) {
+                            //the file is out of webmodule, copy it inside
+                            FileUtil.copyFile(imageFO, currDir, imageFO.getName(), imageFO.getExt());
+                            imageUrl = imageFO.getNameExt();
+                            return true;
+                        } //else just continue trying to find the relative path
+                    }
+                } while(path == null);
+                
+                if(path == null) {
+                    //shoutldn't happen - a common path should always exist !?!?!
+                    return false;
+                }
+
+                StringBuilder pathBuilder = new StringBuilder();
+                pathBuilder.append(makePrefix(level));
+                pathBuilder.append(path);
+                if(path.length() > 0) {
+                    pathBuilder.append('/');
+                }
+                pathBuilder.append(imageFO.getNameExt());
+                imageUrl = encodeURL(pathBuilder.toString());
+                
+                retValue = true;
+
+            }
+        } catch (IOException exc) {
             LOGGER.log(Level.WARNING, null, exc);
         }
         return retValue;
     }
-    
-    public String getImageUrl(){
-        return imageUrl;
+
+    private String makePrefix(int level) {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < level; i++) {
+            sb.append("../");
+        }
+        return sb.toString();
     }
     
+    private String encodeURL(String imageUrl) {
+        StringBuffer sb = new StringBuffer();
+        int len = imageUrl.length();
+        for (int i = 0; i < len; i++) {
+            char chr = imageUrl.charAt(i);
+            if (chr == ' ') {
+                sb.append("%20");
+            } else {
+                sb.append(chr);
+            }
+        }
+        return sb.toString();
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
     public static class ImageFilter extends FileFilter {
         //Accept all directories and image files.
         public boolean accept(File f) {
@@ -146,15 +196,15 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
             String extension = null;
             String s = f.getName();
             int i = s.lastIndexOf('.');
-            
-            if (i > 0 &&  i < s.length() - 1) {
-                extension = s.substring(i+1).toLowerCase();
+
+            if (i > 0 && i < s.length() - 1) {
+                extension = s.substring(i + 1).toLowerCase();
             }
-            
+
             if (extension != null) {
                 if (extension.toLowerCase().equals("gif") || //NOI18N
                         extension.toLowerCase().equals("jpg") || //NOI18N
-                        extension.toLowerCase().equals("png") ) { //NOI18N
+                        extension.toLowerCase().equals("png")) { //NOI18N
                     return true;
                 } else {
                     return false;
@@ -162,11 +212,10 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
             }
             return false;
         }
-        
+
         //The description of this filter
         public String getDescription() {
             return NbBundle.getMessage(BackgroundImageUrlDialog.class, "IMAGE_FILTER"); //NOI18N
         }
     }
-    
 }

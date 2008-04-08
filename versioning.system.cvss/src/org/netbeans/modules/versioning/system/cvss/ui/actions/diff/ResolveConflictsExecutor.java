@@ -63,6 +63,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.diff.MergeVisualizer;
+import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
 
@@ -86,7 +87,6 @@ public class ResolveConflictsExecutor {
     private String rightFileRevision = null;
 
     public void exec(File file) {
-        assert SwingUtilities.isEventDispatchThread();
         MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found."); // NOI18N
@@ -145,6 +145,8 @@ public class ResolveConflictsExecutor {
         final StreamSource s1;
         final StreamSource s2;
         Charset encoding = FileEncodingQuery.getEncoding(fo);
+        Utils.associateEncoding(file, f1);
+        Utils.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
@@ -152,14 +154,18 @@ public class ResolveConflictsExecutor {
                                                               originalRightFileRevision,
                                                               fo, lock, encoding);
 
-        try {
-            Component c = merge.createView(diffs, s1, s2, result);
-            if (c instanceof TopComponent) {
-                ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run() {
+                try {
+                    Component c = merge.createView(diffs, s1, s2, result);
+                    if (c instanceof TopComponent) {
+                        ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+                    }
+                } catch (IOException ioex) {
+                    org.openide.ErrorManager.getDefault().notify(ioex);
+                }
             }
-        } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
-        }
+        });
     }
 
     /**

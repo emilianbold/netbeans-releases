@@ -174,8 +174,8 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>de.genomatix.graphmlsupport</friend>
                 <friend>de.genomatix.jasperreporteditor</friend>
-                <friend>org.netbeans.modules.e2e.end2end</friend>
-                <friend>org.netbeans.modules.e2e.jsr172</friend>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
+                <friend>org.netbeans.modules.mobility.jsr172</friend>
                 <friend>org.netbeans.modules.hibernate</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>

@@ -80,7 +80,7 @@ public abstract class AbstractAsmModel implements AsmModel {
     }
     
     private static <T> void splitAndAdd(String name, T value, Map<String, T> mapa) {                  
-         for (String el : name.split(";"))
+         for (String el : name.split(";")) // NOI18N
              mapa.put(el, value);
     }
 }

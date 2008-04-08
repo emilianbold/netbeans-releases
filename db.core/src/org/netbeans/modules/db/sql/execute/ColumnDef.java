@@ -50,9 +50,15 @@ package org.netbeans.modules.db.sql.execute;
 public class ColumnDef {
 
     /**
-     * The column name.
+     * The physical column name.
      */
     private String name;
+    
+    /** 
+     * The label for the column, which may be different from the name
+     * if aliases are used
+     */
+    private String label;
 
     /**
      * Whether we can write to this column.
@@ -66,12 +72,17 @@ public class ColumnDef {
      */
     private Class clazz;
 
-    public ColumnDef(String name, boolean writable, Class clazz) {
+    public ColumnDef(String name, String label, boolean writable, Class clazz) {
+        this.label = label;
         this.name = name;
         this.writable = writable;
         this.clazz = clazz;
     }
 
+    public String getLabel() {
+        return label;
+    }
+    
     public String getName() {
         return name;
     }

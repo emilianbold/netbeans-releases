@@ -20,6 +20,8 @@
 
 package org.netbeans.modules.bpel.debugger.bdiclient.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,6 +36,7 @@ import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessInstanceRef;
 import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef;
+import org.netbeans.modules.bpel.debuggerbdi.rmi.api.VirtualBPELEngine;
 
 /**
  * Model for maintaining the list of process instances.
@@ -150,8 +153,42 @@ public class ProcessInstancesModelImpl implements ProcessInstancesModel {
             final String bpelFile, 
             final String uri) {
         
-        final ProcessInstanceImpl processInstance = 
+        ProcessInstanceImpl processInstance = 
                 myProcessInstances.get(processInstanceId);
+        
+        // If no instance with this id is registered -- we should register 
+        // it (apply for the BPELProcessInstanceRef). If it's not 
+        // available -- ignore the event altogether.
+        if (processInstance == null) {
+            final VirtualBPELEngine engine = 
+                    myDebugger.getBDIDebugger().getVirtualBPELEngine();
+                        
+            for (String procId: engine.allDeployedBPELs()) {
+                final BPELProcessRef processRef = 
+                        engine.getBPELProcess(procId);
+                
+                getProcess(processRef);
+                
+                final List<String> ids = 
+                        Arrays.asList(processRef.allProcessInstanceIDs());
+                
+                if (ids.contains(processInstanceId)) {
+                    final BPELProcessInstanceRef instanceRef = 
+                            processRef.getProcessInstance(processInstanceId);
+                            
+                    processInstanceStarted(instanceRef);
+                    break;
+                }
+            }
+            
+            processInstance = myProcessInstances.get(processInstanceId);
+            
+            // If it's still null -- ignore the event
+            if (processInstance == null) {
+                return null;
+            }
+        }
+        
         final BDIDebugFrame frame = 
                 processInstance.addFrame(id, parentFrameId);
         

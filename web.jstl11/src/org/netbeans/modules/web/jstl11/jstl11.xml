@@ -55,4 +55,10 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
     </volume>
+    <volume>
+        <type>maven-pom</type>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <resource>http://repo1.maven.org/maven2/javax/servlet/jstl/1.1.2/jstl-1.1.2.pom</resource>
+        <resource>http://repo1.maven.org/maven2/taglibs/standard/1.1.2/standard-1.1.2.pom</resource>
+    </volume>
 </library>

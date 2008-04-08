@@ -44,6 +44,8 @@ package org.netbeans.modules.uml.ui.addins.diagramcreator;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -65,6 +67,9 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * @author sumitabhk
@@ -72,6 +77,7 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
  */
 public class StubDiagramCreator implements IStubDiagramCreator
 {
+        private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.ui");
 
 	/**
 	 * 
@@ -147,20 +153,14 @@ public class StubDiagramCreator implements IStubDiagramCreator
 	 */
 	public void createStubETLDFile(String sDiagramFullFilename)
 	{
-		String tempETLDFilename = FileSysManip.ensureExtension(sDiagramFullFilename, FileExtensions.DIAGRAM_LAYOUT_EXT);
-		File file = new File(tempETLDFilename);
-		if (!file.exists())
-		{
-			try
-			{
-				file.createNewFile();
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+        try {
+            String tempETLDFilename = FileSysManip.ensureExtension(sDiagramFullFilename, FileExtensions.DIAGRAM_LAYOUT_EXT);
+            File file = new File(tempETLDFilename);
+            FileUtil.createData(file);
+            } catch (IOException ex) {
+                String mesg = ex.getMessage();
+                logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
+            }
 	}
 
 	/**
@@ -248,7 +248,7 @@ public class StubDiagramCreator implements IStubDiagramCreator
 		retObj = new ProductArchiveImpl();
 		if (pNamespace != null)
 		{
-         retObj.save( bsDiagramFullFilename );
+                        retObj.save( bsDiagramFullFilename );
          
 			String spaceXMIID = pNamespace.getXMIID();
 			String spaceTopId = pNamespace.getTopLevelId();

@@ -50,7 +50,6 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import junit.framework.TestResult;
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 import org.openide.util.NbPreferences;
 
 /** Tests HTTP Proxy settings.
@@ -80,20 +79,19 @@ public class HttpSettingsTest extends NbTestCase {
         super (name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run (new NbTestSuite (HttpSettingsTest.class));
-    }
-    
+    @Override
     public void run (final TestResult result) {
         //just initialize Preferences before code NbTestCase
         Preferences.userRoot ();                        
         super.run (result);
     }
     
+    @Override
     protected int timeOut () {
         return 20 * 1000;
     }
     
+    @Override
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("http.nonProxyHosts", NETBEANS_ORG + ',' + NETBEANS_ORG);
@@ -253,6 +251,9 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testNonProxy () throws InterruptedException {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         assertEquals ("The ProxySettings takes as same value as System properties in initial.", System.getProperty ("http.nonProxyHosts"), ProxySettings.getNonProxyHosts ());
         
         // change value in ProxySettings
@@ -353,6 +354,9 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testAutoDetectSillySetProxy () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         sillySetUp ();
         synchronized (sync) {
             if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
@@ -368,6 +372,9 @@ public class HttpSettingsTest extends NbTestCase {
     }    
     
     public void testSwitchAutoAndManualMode () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         setUpAutoDirect ();
         
         // ensure auto detect mode

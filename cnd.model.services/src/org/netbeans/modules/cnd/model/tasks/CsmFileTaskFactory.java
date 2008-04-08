@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -71,8 +71,8 @@ public abstract class CsmFileTaskFactory {
     private final ModelListener modelListener = new ModelListener();
 
     protected CsmFileTaskFactory() {
-        CsmModelAccessor.getModel().addProgressListener(progressListener);
-        CsmModelAccessor.getModel().addModelListener(modelListener);
+        CsmListeners.getDefault().addProgressListener(progressListener);
+        CsmListeners.getDefault().addModelListener(modelListener);
     }
 
     protected abstract PhaseRunner createTask(FileObject fo);

@@ -41,27 +41,13 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-import javax.swing.KeyStroke;
-
-
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 
 /**
-* Default settings values for Fortran.
-*
-*/
-
+ * Default settings values for Fortran.
+ */
 public class FSettingsDefaults extends ExtSettingsDefaults {
-
-    public static final Boolean defaultFortranWordMatchMatchCase = Boolean.TRUE;
-
-    // Formatting
-    public static final Boolean defaultFormatSpaceAfterComma = Boolean.TRUE;
-    public static final Boolean defaultFreeFormat = Boolean.TRUE;
-
     //maximum nmber of columns allowed in a line
     public static final int maximumTextWidth = 132;    //for f95
 
@@ -69,26 +55,10 @@ public class FSettingsDefaults extends ExtSettingsDefaults {
 	= new Acceptor() {
 		public boolean accept(char ch) {
 		    switch (ch) {
-		    case '\n':
+		    case '\n': //NOI18N
 			return true;
 		    }
 		    return false;
 		}
 	    };
-
-
-    // DO WE NEED IT?
-    public static final String defaultWordMatchStaticWords
-	= "Exception IntrospectionException FileNotFoundException IOException" //NOI18N
-	+ " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
-	+ " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
-	+ " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
-
-    public static final MultiKeyBinding[] defaultKeyBindings
-	= new MultiKeyBinding[] {
-	    new MultiKeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_F, 
-				InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK ),
-				BaseKit.formatAction)
-		};
-
 }//FSettingsDefaults

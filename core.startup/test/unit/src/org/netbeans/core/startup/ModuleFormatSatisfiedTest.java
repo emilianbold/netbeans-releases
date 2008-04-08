@@ -75,7 +75,7 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         man.getMainAttributes ().putValue ("OpenIDE-Module", "org.test.FormatDependency/1");
         
         
-        String req = "org.openide.modules.ModuleFormat1";
+        String req = "org.openide.modules.ModuleFormat1, org.openide.modules.ModuleFormat2";
         
         man.getMainAttributes ().putValue ("OpenIDE-Module-Requires", req);
         

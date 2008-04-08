@@ -46,20 +46,20 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
-        <change id="one-drive-one-instance-of-filesystem-on-windows">
+        <change id="added-canWrite-friend-contract-for-versioning-systems">
             <api name="masterfs"/>
-            <summary>One drive == one instance of filesystem on windows</summary>
-            <version major="2" minor="13"/>
-            <date day="8" month="1" year="2008"/>
-            <author login="rmatous"/>
-            <compatibility binary="compatible" source="compatible" semantic="incompatible"/>
+            <summary><code>ProvidedExtensions.canWrite</code> was added.</summary>
+            <version major="2" minor="14"/>
+            <date day="20" month="3" year="2008"/>
+            <author login="msandor"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
-                For every individual drive on windows now exists one filesystem. Every
-                instance of filesystem is created on demand. Before this change there was
-                one filesystem with virtual root containing all reachable drives as its
-                children.
+                <p>
+                    <code>ProvidedExtensions.canWrite</code> which is called when
+                    <code>MasterFileSystem</code> queries the <code>FileObject</code> for writability.
+                </p>                
             </description>
-            <issue number="123542"/>
+            <issue number="130044"/>
         </change>                        
         
         <change id="fileobject-instances-are-not-issued-after-external-changes">

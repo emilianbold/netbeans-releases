@@ -1040,6 +1040,7 @@ public class MultiDataObject extends DataObject {
         * @param newFile
         */
         final void changeFile (FileObject newFile) {
+            assert newFile != null : "NPE for " + file;
             if (newFile.equals (file)) {
                 return;
             }

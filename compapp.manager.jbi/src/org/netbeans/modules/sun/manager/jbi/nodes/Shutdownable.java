@@ -50,5 +50,5 @@ public interface Shutdownable {
 
     public void shutdown(boolean force);
 
-    public boolean canShutdown();
+    public boolean canShutdown(boolean force);
 }

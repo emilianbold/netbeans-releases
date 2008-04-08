@@ -47,7 +47,7 @@ import java.util.Map;
 
 /**
  * Event for model change notifications
- * @author vk155633
+ * @author Vladimir Kvashin 
  */
 public abstract class CsmChangeEvent extends EventObject {
 
@@ -73,3 +73,4 @@ public abstract class CsmChangeEvent extends EventObject {
     
     public abstract Collection<CsmNamespace> getRemovedNamespaces();
 }
+

@@ -102,6 +102,7 @@ final class PanelWSDL<T> extends Panel<T> {
     myWebService.createPanel(panel, c);
 
     mainPanel.add(panel, cc);
+    mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewRRService2"));
   }
 
   @Override

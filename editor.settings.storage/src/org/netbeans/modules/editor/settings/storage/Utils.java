@@ -300,12 +300,12 @@ public class Utils {
         }
     }
     
-    public static void load(FileObject fo, StorageReader handler) {
+    public static void load(FileObject fo, StorageReader handler, boolean validate) {
         assert fo != null : "Settings file must not be null"; //NOI18N
+        assert handler != null : "StorageReader can't be null"; //NOI18N
         
-        SpiPackageAccessor.get().storageReaderSetProcessedFile(handler, fo);
         try {
-            XMLReader reader = XMLUtil.createXMLReader(true);
+            XMLReader reader = XMLUtil.createXMLReader(validate);
             reader.setEntityResolver(EntityCatalog.getDefault());
             reader.setContentHandler(handler);
             reader.setErrorHandler(handler);
@@ -319,8 +319,6 @@ public class Utils {
             }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Invalid or corrupted file: " + fo.getPath(), ex); //NOI18N
-        } finally {
-            SpiPackageAccessor.get().storageReaderSetProcessedFile(handler, null);
         }
     }
 }

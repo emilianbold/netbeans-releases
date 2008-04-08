@@ -48,6 +48,7 @@ import java.util.*;
 import java.io.File;
 import java.awt.BorderLayout;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
@@ -56,6 +57,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 public class SearchHistoryTopComponent extends TopComponent implements DiffSetupSource {
 
     private SearchHistoryPanel shp;
+    private SearchCriteriaPanel scp;
 
     public SearchHistoryTopComponent() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
@@ -84,35 +86,41 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     
     public void searchOut() {  
         shp.setOutSearch();
-        shp.executeSearch();
-        shp.setSearchCriteria(false);
+        scp.setTo("");
     }
 
     public void searchIncoming() {  
         shp.setIncomingSearch();
-        shp.executeSearch();
-        shp.setSearchCriteria(false);
+        scp.setTo("");
     }
 
     private void initComponents(String repositoryUrl, File localRoot, long revision) {
         setLayout(new BorderLayout());
-        SearchCriteriaPanel scp = new SearchCriteriaPanel(repositoryUrl);
+        scp = new SearchCriteriaPanel(repositoryUrl);
         scp.setFrom(Long.toString(revision));
         scp.setTo(Long.toString(revision));
         shp = new SearchHistoryPanel(repositoryUrl, localRoot, scp);
         add(shp);
-    }
+        }
 
     private void initComponents(File[] roots, String commitMessage, String username, Date from, Date to) {
         setLayout(new BorderLayout());
-        SearchCriteriaPanel scp = new SearchCriteriaPanel(roots);
+        scp = new SearchCriteriaPanel(roots);
         scp.setCommitMessage(commitMessage);
         scp.setUsername(username);
-        if (from != null) scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
-        if (to != null) scp.setTo(SearchExecutor.simpleDateFormat.format(to));
+        if (from != null){ 
+            scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
+        }else{
+            scp.setFrom(HgUtils.getLastWeeksDateStr());
+        }
+        if (to != null){
+            scp.setTo(SearchExecutor.simpleDateFormat.format(to));
+        }else{
+            scp.setTo(HgUtils.getTodaysDateStr());
+        }
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);
-    }
+        }
 
     public int getPersistenceType(){
        return TopComponent.PERSISTENCE_NEVER;

@@ -736,7 +736,7 @@ public class DatabaseConnection implements DBConnection {
     public void selectInExplorer() {
         String nodeName = null;
         try {
-            nodeName = findConnectionNodeInfo(getName()).getNode().getName();
+            nodeName = findConnectionNodeInfo(getName()).getName();
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
             return;
@@ -843,6 +843,11 @@ public class DatabaseConnection implements DBConnection {
         }
                 
         for (int i = 0; i < nodes.length; i++) {
+            // Skip nodes registered by node providers
+            if ( ! (nodes[i] instanceof DatabaseNode) ) {
+                continue;
+            }
+            
             DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
             if (info == null) {
                 continue;

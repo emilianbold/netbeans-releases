@@ -28,6 +28,8 @@ import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.IsAtomicAttribute;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.bpel.model.xam.BpelTypesEnum;
@@ -268,5 +270,21 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
     
     private static AtomicReference<Attribute[]> myAttributes = 
         new AtomicReference<Attribute[]>();
+
+    public TBoolean isAtomic() {
+        return getBooleanAttribute(new IsAtomicAttribute());
+    }
+
+    public void setAtomic(TBoolean value) {
+        writeLock();
+        try {
+            IsAtomicAttribute newAttr = new IsAtomicAttribute();
+            newAttr.setOwner(this);
+            newAttr.registerNsPrefix();
+            setBpelAttribute(newAttr, value);
+        } finally {
+            writeUnlock();
+        }
+    }
     
 }

@@ -48,7 +48,7 @@ LDLIBSOPTIONS=
 
 # Clean Targets
 .clean-conf:
-	cd . && make -f Makefile clean
+	cd . && make -f Makefile distclean
 
 # Subprojects
 .clean-subprojects:

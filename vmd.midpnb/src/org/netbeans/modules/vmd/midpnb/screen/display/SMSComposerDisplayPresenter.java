@@ -89,7 +89,18 @@ public class SMSComposerDisplayPresenter extends DisplayableDisplayPresenter {
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         Collection<ScreenPropertyDescriptor> desciptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
-        desciptors.addAll(Arrays.asList(new ScreenPropertyDescriptor(getComponent(), smsView.messageLabel, new ScreenStringPropertyEditor(SMSComposerCD.PROP_MESSAGE_LABEL, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), smsView.messageTextrArea, new ScreenTextAreaPropertyEditor(SMSComposerCD.PROP_MESSAGE)), new ScreenPropertyDescriptor(getComponent(), smsView.phoneNumberLabel, new ScreenStringPropertyEditor(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), smsView.phoneNumberTextField, new ScreenStringPropertyEditor(SMSComposerCD.PROP_PHONE_NUMBER, JTextField.CENTER))));
+        desciptors.addAll(Arrays.asList(new ScreenPropertyDescriptor(getComponent(),
+                                        smsView.messageLabel,
+                                        new ScreenStringPropertyEditor(SMSComposerCD.PROP_MESSAGE_LABEL, JTextField.CENTER)),
+                                        new ScreenPropertyDescriptor(getComponent(),
+                                        smsView.messageTextrArea,
+                                        new ScreenTextAreaPropertyEditor(SMSComposerCD.PROP_MESSAGE)),
+                                        new ScreenPropertyDescriptor(getComponent(),
+                                        smsView.phoneNumberLabel,
+                                        new ScreenStringPropertyEditor(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL, JTextField.CENTER)),
+                                        new ScreenPropertyDescriptor(getComponent(),
+                                        smsView.phoneNumberTextField,
+                                        new ScreenStringPropertyEditor(SMSComposerCD.PROP_PHONE_NUMBER, JTextField.CENTER))));
         return desciptors;
     }
 

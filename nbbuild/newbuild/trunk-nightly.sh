@@ -53,9 +53,15 @@ fi
 #
 ###################################################################
 
-if [ ! -z $BUILD_ID ]; then
+if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
+    if [ -n "${TESTING_SCRIPT}" ]; then
+        cd $NB_ALL
+        TIP_REV=`hg tip --template "{node}"`
+        ssh $TESTING_SCRIPT $TIP_REV
+        cd $DIRNAME
+    fi
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
@@ -67,7 +73,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-if [ ! -z $BUILD_ID ]; then
+if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old

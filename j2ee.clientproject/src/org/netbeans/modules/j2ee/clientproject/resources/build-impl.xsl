@@ -47,7 +47,8 @@ made subject to such option by the copyright holder.
                 xmlns:carproject="http://www.netbeans.org/ns/car-project/1"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
-                exclude-result-prefixes="xalan p projdeps projdeps2">
+                xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
+                exclude-result-prefixes="xalan p projdeps projdeps2 libs">
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     
@@ -106,8 +107,33 @@ made subject to such option by the copyright holder.
                 <property file="nbproject/private/private.properties"/>
             </target>
             
+            <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
+                <target name="-init-libraries" depends="-pre-init,-init-private">
+                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
+                        <property name="libraries.{position()}.path" location="{.}"/>
+                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
+                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
+                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
+                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
+                        </pathconvert>
+                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
+                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
+                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties">
+                            <filterchain>
+                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                            </filterchain>
+                        </loadproperties>
+                        <loadproperties srcfile="${{libraries.{position()}.path}}">
+                            <filterchain>
+                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                            </filterchain>
+                        </loadproperties>
+                    </xsl:for-each>
+                </target>
+            </xsl:if>
+            
             <target name="-init-user">
-                <xsl:attribute name="depends">-pre-init,-init-private</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>                
                 <property file="${{user.properties.file}}"/>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
@@ -116,12 +142,12 @@ made subject to such option by the copyright holder.
             </target>
             
             <target name="-init-project">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
             
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                     <carproject:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <carproject:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
@@ -152,7 +178,14 @@ made subject to such option by the copyright holder.
                     <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
-                    <fail if="platform.invalid">Platform is not correctly set up</fail>
+  <fail if="platform.invalid">
+ The J2SE Platform is not correctly set up.
+ Your active platform is: ${platform.active}, but the corresponding property "platforms.${platform.active}.home" is not found in the project's properties files. 
+ Either open the project in the IDE and setup the Platform with the same name or add it manually.
+ For example like this:
+     ant -Duser.properties.file=&lt;path_to_property_file&gt; jar (where you put the property "platforms.${platform.active}.home" in a .properties file)
+  or ant -Dplatforms.${platform.active}.home=&lt;path_to_JDK_home&gt; jar (where no properties file is used) 
+  </fail>
                 </xsl:if>
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:test-roots"/>
@@ -238,7 +271,7 @@ made subject to such option by the copyright holder.
             </target>
             
             <target name="-init-check">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
@@ -257,6 +290,13 @@ made subject to such option by the copyright holder.
                 <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
+                <fail unless="j2ee.platform.classpath">
+The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
+Either open the project in the IDE and assign the server or setup the server classpath manually.
+For example like this:
+   ant -Duser.properties.file=&lt;path_to_property_file&gt; (where you put the property "j2ee.platform.classpath" in a .properties file)
+or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties file is used)
+                </fail>                
             </target>
             
             <target name="-init-macrodef-property">
@@ -1320,7 +1360,7 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
                     </xsl:if>                                                        
                     <classpath>
-                        <path path="${{javac.classpath}}"/>
+                        <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
                     </classpath>
                     <sourcepath>
                         <xsl:call-template name="createPathElements">

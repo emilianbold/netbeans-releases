@@ -82,7 +82,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ritesh Adval
@@ -91,7 +91,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(GroupByView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(GroupByView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class ButtonActionListener implements ActionListener {
@@ -201,7 +201,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                 try {
                     conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
                 } catch (CloneNotSupportedException ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR200: error cloning the condition {0}", LOG_CATEGORY), ex);
+                    mLogger.errorNoloc(mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY), ex);
                     return;
                 }
 
@@ -217,7 +217,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                         warnForInvalidCondition();
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR201: Error finding root predicate from text condition{0}from joinview table.", text), ex);
+                    mLogger.errorNoloc(mLoc.t("EDIT201: Error finding root predicate from text condition{0}from joinview table.", text), ex);
                     warnForInvalidCondition();
                 }
 
@@ -229,7 +229,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
             ConditionBuilderView builderView = ConditionBuilderUtil.getHavingConditionBuilderView(targetTable, editor);
 
             DialogDescriptor dd = new DialogDescriptor(builderView, "Having Condition", true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
-
+            
             if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
                 SQLCondition cond = (SQLCondition) builderView.getPropertyValue();
                 if (cond != null) {
@@ -240,9 +240,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         }
 
         private void warnForInvalidCondition() {
-            String nbBundle1 = mLoc.t("PRSR001: The condition is not valid.Make sure you correct it.");
+            String nbBundle1 = mLoc.t("BUND484: The condition is not valid.Make sure you correct it.");
             DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(Localizer.parse(nbBundle1),
+                    new NotifyDescriptor.Message(nbBundle1.substring(15),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
     }
@@ -430,6 +430,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
+        String nbBundle1 = mLoc.t("BUND491: Available Group By Columns");
         mainPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Available Group By Columns"),
                 BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         this.add(mainPanel, c);
@@ -448,7 +449,10 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         mainPanel.add(addButtonPanel, BorderLayout.SOUTH);
 
         // add button
-        JButton addButton = new JButton("Add Column/Expression");
+        String nbBundle30 = mLoc.t("BUND485: Add Column/Expression");
+        JButton addButton = new JButton(nbBundle30.substring(15));
+        addButton.getAccessibleContext().setAccessibleName(nbBundle30.substring(15));
+        addButton.setMnemonic(nbBundle30.substring(15).charAt(0));
         addButton.setToolTipText("<html> <table border=0 cellspacing=0 cellpadding=0 ><tr> <td>When target column is added, <br>the mapped expression/column <br>will be used in group by clause</td></tr></table>");
         addButton.setActionCommand("ADD");
         addButton.addActionListener(aListener);
@@ -470,7 +474,10 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         orderOrRemoveSelectedColumn.add(removeButtonPanel, BorderLayout.SOUTH);
 
         // remove selected column button
-        JButton removeButton = new JButton("Remove");
+        String nbBundle31 = mLoc.t("BUND152: Remove");
+        JButton removeButton = new JButton(nbBundle31.substring(15));
+        removeButton.setMnemonic(nbBundle31.substring(15).charAt(0));
+        removeButton.getAccessibleContext().setAccessibleName(nbBundle31.substring(15));
         removeButton.setActionCommand("REMOVE");
         removeButton.addActionListener(aListener);
         removeButtonPanel.add(removeButton);
@@ -497,7 +504,10 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         havingPanel.add(havingText);
 
         // having button
-        JButton havingButton = new JButton("Having...");
+        String nbBundle32 = mLoc.t("BUND487: Having...");
+        JButton havingButton = new JButton(nbBundle32.substring(15));
+        havingButton.setMnemonic(nbBundle32.substring(15).charAt(0));
+        havingButton.getAccessibleContext().setAccessibleName(nbBundle32.substring(15));
         havingButton.setActionCommand("Having");
         havingButton.addActionListener(aListener);
         havingPanel.add(havingButton);

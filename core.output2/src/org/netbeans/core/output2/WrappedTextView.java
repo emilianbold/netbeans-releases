@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -371,7 +371,6 @@ public class WrappedTextView extends View {
             doc.getLines().toLogicalLineIndex(ln, charsPerLine);
 
             int firstline = ln[0];
-            int count = (lineCount - firstline);
             g.setColor (comp.getForeground());
             Segment seg = SwingUtilities.isEventDispatchThread() ? SEGMENT : new Segment();
 
@@ -380,9 +379,9 @@ public class WrappedTextView extends View {
             int y = (clip.y - (clip.y % charHeight()) + charHeight());
             
             try {
-                for (int i=0; i < count; i++) {
-                    int lineStart = doc.getLineStart(i + firstline);
-                    int lineEnd = doc.getLineEnd (i + firstline);
+                for (int i = firstline; i < lineCount; i++) {
+                    int lineStart = doc.getLineStart(i);
+                    int lineEnd = doc.getLineEnd (i);
                     int length = lineEnd - lineStart;
 
                     g.setColor(getColorForLocation(lineStart, doc, true)); //XXX should not always be 'true'
@@ -394,16 +393,16 @@ public class WrappedTextView extends View {
                     //#104307
                     int logicalLines = seg.count <= charsPerLine ? 1 :  1 + (charsPerLine == 0 ? length : (length / charsPerLine));
 
-                    int currLogicalLine = 0;
-
-                    if (i == 0 && logicalLines > 0) {
+                    int currLogicalLine = (i == firstline && logicalLines > 0 && ln[1] > 0 )? ln[1] : 0;
+                    /*if (i == 0 && logicalLines > 0) {
                         while (ln[1] > currLogicalLine) {
                             //Fast forward through logical lines above the first one we want
                             //to paint, but do redraw the arrow so we don't erase it
                             currLogicalLine++;
                             drawArrow (g, y - ((logicalLines - currLogicalLine) * charHeight()), currLogicalLine == ln[1]);
                         }
-                    }
+                    }*/
+                    
                     //Iterate all the logicalLines lines
                     for (; currLogicalLine < logicalLines; currLogicalLine++) {
                         int charpos = currLogicalLine * charsPerLine;
@@ -416,9 +415,9 @@ public class WrappedTextView extends View {
                             underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
                         }
                         y += charHeight();
-                    }
-                    if (y > clip.y + clip.height || i + firstline == lineCount -1) {
-                        break;
+                        if (y > clip.y + clip.height) {
+                            return;
+                        }
                     }
                 }
             } catch (BadLocationException e) {
@@ -611,7 +610,7 @@ public class WrappedTextView extends View {
 
             int result = wraps > 0 ?
                 Math.min(od.getLineEnd(logicalLine) - 1, lineStart + (ln[1] * charsPerLine) + column)
-                : lineStart + column;
+                : Math.min(lineStart + column, lineLength - 1);
             result = Math.min (od.getLength(), result);
             return result;
 /*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +

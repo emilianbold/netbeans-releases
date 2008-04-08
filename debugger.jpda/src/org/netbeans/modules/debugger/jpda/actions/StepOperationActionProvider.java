@@ -51,7 +51,6 @@ import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
@@ -70,15 +69,13 @@ public class StepOperationActionProvider extends ActionsProviderSupport
     
     
     public StepOperationActionProvider (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (null, JPDADebugger.class);
-        session = (Session) lookupProvider.lookupFirst 
-                (null, Session.class);
-        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
     }
     
     private void destroy () {
-        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        debugger.removePropertyChangeListener (JPDADebugger.PROP_STATE, this);
     }
     
     static ActionsManager getCurrentActionsManager () {
@@ -107,10 +104,10 @@ public class StepOperationActionProvider extends ActionsProviderSupport
         setEnabled (
             ActionsManager.ACTION_STEP_OPERATION,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == debugger.STATE_STOPPED)  &&
+            (debugger.getState () == JPDADebugger.STATE_STOPPED)  &&
             (debugger.getCurrentThread () != null)
         );
-        if (debugger.getState () == debugger.STATE_DISCONNECTED) 
+        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) 
             destroy ();
     }
     
@@ -139,7 +136,7 @@ public class StepOperationActionProvider extends ActionsProviderSupport
             setEnabled (
                 ActionsManager.ACTION_STEP_OPERATION,
                 enabled &&
-                (debugger.getState () == debugger.STATE_STOPPED)  &&
+                (debugger.getState () == JPDADebugger.STATE_STOPPED)  &&
                 (debugger.getCurrentThread () != null)
             );
         }

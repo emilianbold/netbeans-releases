@@ -206,9 +206,10 @@ public class ExpressionPool {
         Location startLocation;
         int startlocline = 0;
         int endlocline;
+        int firstLine = allLocations.get(0).lineNumber(language);
         do {
             startLocation = getLocationOfLine(allLocations, language, startLine - startlocline++);
-        } while (startLocation == null);
+        } while (startLocation == null && (startLine - (startlocline - 1)) >= firstLine);
         if (endLine > startLine - (startlocline - 1)) {
             endlocline = 0;
         } else {

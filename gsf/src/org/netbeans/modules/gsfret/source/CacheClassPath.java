@@ -49,14 +49,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsfret.source.parsing.FileObjects;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.usages.Index;
-import org.netbeans.spi.gsfpath.classpath.ClassPathFactory;
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,7 +120,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 //for (ClassPath.Entry entry : entries) {
                 //    this.cache.add (ClassPathSupport.createResource(entry.getURL()));
                 //}
-                for (URL url : ClassIndexManager.getDefault().getBootRoots()) {
+                for (URL url : ClassIndexManager.getAllBootRoots()) {
                     this.cache.add (ClassPathSupport.createResource(url));
                 }
             }
@@ -135,18 +136,18 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                         sourceUrls = new URL[] {url};
                     }
                     if (sourceUrls != null) {
-                        for (URL sourceUrl : sourceUrls) {
-                            try {
-                                File cacheFolder = Index.getClassFolder(sourceUrl);
-                                URL cacheUrl = cacheFolder.toURI().toURL();
-                                if (!cacheFolder.exists()) {                                
-                                    cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
-                                }
-                                this.cache.add(ClassPathSupport.createResource(cacheUrl));
-                            } catch (IOException ioe) {
-                                ErrorManager.getDefault().notify(ioe);
-                            }
-                        }
+//                        for (URL sourceUrl : sourceUrls) {
+//                            try {
+//                                File cacheFolder = Index.getClassFolder(language, sourceUrl);
+//                                URL cacheUrl = cacheFolder.toURI().toURL();
+//                                if (!cacheFolder.exists()) {                                
+//                                    cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
+//                                }
+//                                this.cache.add(ClassPathSupport.createResource(cacheUrl));
+//                            } catch (IOException ioe) {
+//                                ErrorManager.getDefault().notify(ioe);
+//                            }
+//                        }
                     } else {
                         if (FileObjects.JAR.equals(url.getProtocol())) {
                             URL foo = FileUtil.getArchiveFile(url);
@@ -169,12 +170,12 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                                 }
                             }
                         }
-                        try {
-                            File sigs = Index.getClassFolder(url);
-                            this.cache.add (ClassPathSupport.createResource(sigs.toURI().toURL()));
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
+//                        try {
+//                            File sigs = Index.getClassFolder(language, url);
+//                            this.cache.add (ClassPathSupport.createResource(sigs.toURI().toURL()));
+//                        } catch (IOException ioe) {
+//                            Exceptions.printStackTrace(ioe);
+//                        }
                         this.cache.add (ClassPathSupport.createResource(url));
                     }
                 }

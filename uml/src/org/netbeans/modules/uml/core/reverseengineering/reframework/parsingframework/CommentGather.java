@@ -190,7 +190,7 @@ public class CommentGather implements ICommentGather
 		    }
 		}   
 		if (cached1 != null && processCached ) {
-		    comment = cached1.getText() + comment;
+		    comment = cleanseComment(cached1.getText(), cached1.getType()) + comment;
 		    startLine = cached1.getLine();
 		    startColumn = cached1.getColumn();
 		    startPos = cached1.getPosition();
@@ -202,7 +202,7 @@ public class CommentGather implements ICommentGather
 		}
 
 		if (processAsUsually) {
-		    comment = pHiddenToken.getText() + comment;
+		    comment = cleanseComment(pHiddenToken.getText(), pHiddenToken.getType()) + comment;
 		    startLine = pHiddenToken.getLine();
 		    startColumn = pHiddenToken.getColumn();
 		    startPos = pHiddenToken.getPosition();
@@ -259,6 +259,23 @@ public class CommentGather implements ICommentGather
     {
         // TODO Auto-generated method stub
         return m_SLCOMMENT;
+    }
+
+    protected String cleanseComment(String comment, int type)
+    {
+        if(comment == null || comment.trim().length() == 0) 
+            return comment;
+
+        
+        if (type == getSingleLineType()) 
+        {
+            return comment.replaceAll("^\\s*//\\s?", "");
+        } 
+        else 
+        {
+            return comment.replaceAll("/\\*\\s*|\\*/|\\*\\s?", "");            
+        }
+
     }
 
     /**
@@ -377,7 +394,7 @@ public class CommentGather implements ICommentGather
         int lengthMarker      = -1;
 
 	for (int i = 0; i < pHiddenTokens.length; i++) {
-	    commentMarker = pHiddenTokens[i].getText() + commentMarker;
+	    commentMarker = cleanseComment(pHiddenTokens[i].getText(), pHiddenTokens[i].getType()) + commentMarker;
 	    startLineMarker   = pHiddenTokens[i].getLine();
 	    startColumnMarker = pHiddenTokens[i].getColumn();
 	    startPosMarker    = pHiddenTokens[i].getPosition();

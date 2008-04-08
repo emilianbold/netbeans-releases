@@ -41,44 +41,31 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
+import org.netbeans.modules.spring.beans.completion.completors.InitDestroyMethodCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.PNamespaceBeanRefCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.ResourceCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.PropertyCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.FactoryMethodCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.JavaClassCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.GenericCompletorFactory;
+import org.netbeans.modules.spring.beans.completion.completors.BeansRefCompletorFactory;
+import org.netbeans.modules.spring.beans.completion.completors.AttributeValueCompletorFactory;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementScanner6;
-import javax.swing.text.Document;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.api.beans.model.SpringBeans;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.editor.Property;
+import org.netbeans.modules.spring.beans.editor.PropertyFinder;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -103,6 +90,7 @@ public final class CompletionManager {
     private static final String ENTRY_TAG = "entry"; // NOI18N
     private static final String PROPERTY_TAG = "property"; // NOI18N
     private static final String LOOKUP_METHOD_TAG = "lookup-method"; // NOI18N
+    private static final String REPLACED_METHOD_TAG = "replaced-method";  // NOI18N
     private static final String DEPENDS_ON_ATTRIB = "depends-on"; // NOI18N
     private static final String PARENT_ATTRIB = "parent"; // NOI18N
     private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
@@ -129,7 +117,9 @@ public final class CompletionManager {
     private static final String LOCAL_ATTRIB = "local"; // NOI18N
     private static final String KEY_REF_ATTRIB = "key-ref"; // NOI18N
     private static final String VALUE_REF_ATTRIB = "value-ref"; // NOI18N
-    private static Map<String, Completor> completors = new HashMap<String, Completor>();
+    private static final String REPLACER_ATTRIB = "replacer";  // NOI18N
+    private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N
+    private static Map<String, CompletorFactory> completorFactories = new HashMap<String, CompletorFactory>();
 
     private CompletionManager() {
         setupCompletors();
@@ -137,31 +127,44 @@ public final class CompletionManager {
 
     private void setupCompletors() {
 
-        String[] autowireItems = new String[]{
+        String[] defaultAutoWireItems = new String[]{
             "no", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_no"), // NOI18N
             "byName", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byName"), // NOI18N
             "byType", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byType"), // NOI18N
             "constructor", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_constructor"), // NOI18N
             "autodetect", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_autodetect") // NOI18N
         };
-        AttributeValueCompletor completor = new AttributeValueCompletor(autowireItems);
-        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
-        registerCompletor(BEANS_TAG, DEFAULT_AUTOWIRE_ATTRIB, completor);
-
+        AttributeValueCompletorFactory completorFactory = new AttributeValueCompletorFactory(defaultAutoWireItems);
+        registerCompletorFactory(BEANS_TAG, DEFAULT_AUTOWIRE_ATTRIB, completorFactory);
+        
+        String[] autoWireItems = new String[defaultAutoWireItems.length + 2];
+        System.arraycopy(defaultAutoWireItems, 0, autoWireItems, 0, defaultAutoWireItems.length);
+        autoWireItems[defaultAutoWireItems.length] = "default"; // NOI18N
+        autoWireItems[defaultAutoWireItems.length + 1] = null; // XXX: Documentation
+        completorFactory = new AttributeValueCompletorFactory(autoWireItems);
+        registerCompletorFactory(BEAN_TAG, AUTOWIRE_ATTRIB, completorFactory);
+        
         String[] defaultLazyInitItems = new String[]{
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
-        completor = new AttributeValueCompletor(defaultLazyInitItems);
-        registerCompletor(BEANS_TAG, DEFAULT_LAZY_INIT_ATTRIB, completor);
-        registerCompletor(BEAN_TAG, LAZY_INIT_ATTRIB, completor);
+        completorFactory = new AttributeValueCompletorFactory(defaultLazyInitItems);
+        registerCompletorFactory(BEANS_TAG, DEFAULT_LAZY_INIT_ATTRIB, completorFactory);
+        
+        String[] lazyInitItems = new String[] {
+            defaultLazyInitItems[0], defaultLazyInitItems[1],
+            defaultLazyInitItems[2], defaultLazyInitItems[3],
+            "default", null // XXX: Documentation // NOI18N
+        };
+        completorFactory = new AttributeValueCompletorFactory(lazyInitItems);
+        registerCompletorFactory(BEAN_TAG, LAZY_INIT_ATTRIB, completorFactory);
         
         String[] defaultMergeItems = new String[] {
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
-        completor = new AttributeValueCompletor(defaultMergeItems);
-        registerCompletor(BEANS_TAG, DEFAULT_MERGE_ATTRIB, completor);
+        completorFactory = new AttributeValueCompletorFactory(defaultMergeItems);
+        registerCompletorFactory(BEANS_TAG, DEFAULT_MERGE_ATTRIB, completorFactory);
         
         String[] defaultDepCheckItems = new String[] {
             "none", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_none"), // NOI18N
@@ -169,62 +172,85 @@ public final class CompletionManager {
             "objects", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_objects"), // NOI18N
             "all", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_all"), // NOI18N
         };
-        completor = new AttributeValueCompletor(defaultDepCheckItems);
-        registerCompletor(BEANS_TAG, DEFAULT_DEPENDENCY_CHECK_ATTRIB, completor);
-        registerCompletor(BEAN_TAG, DEPENDENCY_CHECK_ATTRIB, completor);
+        completorFactory = new AttributeValueCompletorFactory(defaultDepCheckItems);
+        registerCompletorFactory(BEANS_TAG, DEFAULT_DEPENDENCY_CHECK_ATTRIB, completorFactory);
+
+        String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
+        depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
+        depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
+        completorFactory = new AttributeValueCompletorFactory(depCheckItems);
+        registerCompletorFactory(BEAN_TAG, DEPENDENCY_CHECK_ATTRIB, completorFactory);
         
         String[] abstractItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
         };
-        completor = new AttributeValueCompletor(abstractItems);
-        registerCompletor(BEAN_TAG, ABSTRACT_ATTRIB, completor);
+        completorFactory = new AttributeValueCompletorFactory(abstractItems);
+        registerCompletorFactory(BEAN_TAG, ABSTRACT_ATTRIB, completorFactory);
         
         String[] autowireCandidateItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
-        completor = new AttributeValueCompletor(autowireCandidateItems);
-        registerCompletor(BEAN_TAG, AUTOWIRE_CANDIDATE_ATTRIB, completor);
+        completorFactory = new AttributeValueCompletorFactory(autowireCandidateItems);
+        registerCompletorFactory(BEAN_TAG, AUTOWIRE_CANDIDATE_ATTRIB, completorFactory);
         
         String[] mergeItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
-        completor = new AttributeValueCompletor(mergeItems);
-        registerCompletor(LIST_TAG, MERGE_ATTRIB, completor);
-        registerCompletor(SET_TAG, MERGE_ATTRIB, completor);
-        registerCompletor(MAP_TAG, MERGE_ATTRIB, completor);
-        registerCompletor(PROPS_TAG, MERGE_ATTRIB, completor);
+        completorFactory = new AttributeValueCompletorFactory(mergeItems);
+        registerCompletorFactory(LIST_TAG, MERGE_ATTRIB, completorFactory);
+        registerCompletorFactory(SET_TAG, MERGE_ATTRIB, completorFactory);
+        registerCompletorFactory(MAP_TAG, MERGE_ATTRIB, completorFactory);
+        registerCompletorFactory(PROPS_TAG, MERGE_ATTRIB, completorFactory);
         
-        ResourceCompletor resourceCompletor = new ResourceCompletor();
-        registerCompletor(IMPORT_TAG, RESOURCE_ATTRIB, resourceCompletor);
+        registerCompletorFactory(IMPORT_TAG, RESOURCE_ATTRIB, new GenericCompletorFactory(ResourceCompletor.class));
 
-        JavaClassCompletor javaClassCompletor = new JavaClassCompletor();
-        registerCompletor(BEAN_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(LIST_TAG, VALUE_TYPE_ATTRIB, javaClassCompletor);
-        registerCompletor(MAP_TAG, VALUE_TYPE_ATTRIB, javaClassCompletor);
-        registerCompletor(MAP_TAG, KEY_TYPE_ATTRIB, javaClassCompletor);
-        registerCompletor(SET_TAG, VALUE_TYPE_ATTRIB, javaClassCompletor);
-        registerCompletor(VALUE_TAG, TYPE_ATTRIB, javaClassCompletor);
-        registerCompletor(CONSTRUCTOR_ARG_TAG, TYPE_ATTRIB, javaClassCompletor);
+        GenericCompletorFactory javaClassCompletorFactory = new GenericCompletorFactory(JavaClassCompletor.class);
+        registerCompletorFactory(BEAN_TAG, CLASS_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(LIST_TAG, VALUE_TYPE_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(MAP_TAG, VALUE_TYPE_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(MAP_TAG, KEY_TYPE_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(SET_TAG, VALUE_TYPE_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(VALUE_TAG, TYPE_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(CONSTRUCTOR_ARG_TAG, TYPE_ATTRIB, javaClassCompletorFactory);
         
-        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
-        registerCompletor(ALIAS_TAG, NAME_ATTRIB, beansRefCompletor);
-        registerCompletor(BEAN_TAG, PARENT_ATTRIB, beansRefCompletor);
-        registerCompletor(BEAN_TAG, DEPENDS_ON_ATTRIB, beansRefCompletor);
-        registerCompletor(BEAN_TAG, FACTORY_BEAN_ATTRIB, beansRefCompletor);
-        registerCompletor(CONSTRUCTOR_ARG_TAG, REF_ATTRIB, beansRefCompletor);
-        registerCompletor(REF_TAG, BEAN_ATTRIB, beansRefCompletor);
-        registerCompletor(IDREF_TAG, BEAN_ATTRIB, beansRefCompletor);
-        registerCompletor(ENTRY_TAG, KEY_REF_ATTRIB, beansRefCompletor);
-        registerCompletor(ENTRY_TAG, VALUE_REF_ATTRIB, beansRefCompletor);
-        registerCompletor(PROPERTY_TAG, REF_ATTRIB, beansRefCompletor);
-        registerCompletor(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefCompletor);
+        BeansRefCompletorFactory beansRefCompletorFactory = new BeansRefCompletorFactory(true);
+        registerCompletorFactory(ALIAS_TAG, NAME_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(BEAN_TAG, PARENT_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(BEAN_TAG, DEPENDS_ON_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(BEAN_TAG, FACTORY_BEAN_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(CONSTRUCTOR_ARG_TAG, REF_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(REF_TAG, BEAN_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(IDREF_TAG, BEAN_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(ENTRY_TAG, KEY_REF_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(ENTRY_TAG, VALUE_REF_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(PROPERTY_TAG, REF_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(REPLACED_METHOD_TAG, REPLACER_ATTRIB, beansRefCompletorFactory);
         
-        beansRefCompletor = new BeansRefCompletor(false);
-        registerCompletor(REF_TAG, LOCAL_ATTRIB, beansRefCompletor);
-        registerCompletor(IDREF_TAG, LOCAL_ATTRIB, beansRefCompletor);
+        beansRefCompletorFactory = new BeansRefCompletorFactory(false);
+        registerCompletorFactory(REF_TAG, LOCAL_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(IDREF_TAG, LOCAL_ATTRIB, beansRefCompletorFactory);
+        
+        GenericCompletorFactory javaMethodCompletorFactory = new GenericCompletorFactory(InitDestroyMethodCompletor.class);
+        registerCompletorFactory(BEAN_TAG, INIT_METHOD_ATTRIB, javaMethodCompletorFactory);
+        registerCompletorFactory(BEAN_TAG, DESTROY_METHOD_ATTRIB, javaMethodCompletorFactory);
+        registerCompletorFactory(LOOKUP_METHOD_TAG, NAME_ATTRIB, javaMethodCompletorFactory);
+        registerCompletorFactory(REPLACED_METHOD_TAG, NAME_ATTRIB, javaMethodCompletorFactory);
+        
+        javaMethodCompletorFactory = new GenericCompletorFactory(FactoryMethodCompletor.class);
+        registerCompletorFactory(BEAN_TAG, FACTORY_METHOD_ATTRIB, javaMethodCompletorFactory);
+        
+        GenericCompletorFactory propertyCompletorFactory = new GenericCompletorFactory(PropertyCompletor.class);
+        registerCompletorFactory(PROPERTY_TAG, NAME_ATTRIB, propertyCompletorFactory);
+        
+        GenericCompletorFactory pNamespaceBeanRefCompletorFactory 
+                = new GenericCompletorFactory(PNamespaceBeanRefCompletor.class);
+        registerCompletorFactory(BEAN_TAG, null, pNamespaceBeanRefCompletorFactory);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -237,8 +263,9 @@ public final class CompletionManager {
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
 
-        Completor completor = locateCompletor(tagName, attribName);
-        if (completor != null) {
+        CompletorFactory completorFactory = locateCompletorFactory(tagName, attribName);
+        if (completorFactory != null) {
+            Completor completor = completorFactory.createCompletor();
             resultSet.addAllItems(completor.doCompletion(context));
             if(completor.getAnchorOffset() != -1) {
                 resultSet.setAnchorOffset(completor.getAnchorOffset());
@@ -246,32 +273,66 @@ public final class CompletionManager {
         }
     }
 
-    public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
-        // TBD
+    public void completeAttributes(final CompletionResultSet resultSet, final CompletionContext context) {
+        String tagName = context.getTag().getNodeName();
+        if(tagName.equals(BEAN_TAG) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
+            try {
+                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
+                if (js == null) {
+                    return;
+                }
+
+                final String typedPrefix = context.getTypedPrefix();
+                final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
+                final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()), 
+                                context.getFileObject()).findImplementationClass();
+                        if (className == null) {
+                            return;
+                        }
+                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        if (te == null) {
+                            return;
+                        }
+                        ElementUtilities eu = cc.getElementUtilities();
+                        Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
+                        for (Property prop : props) {
+                            if(prop.getSetter() == null) {
+                                continue;
+                            } 
+                            String attribName = pNamespacePrefix + ":" + prop.getName(); // NOI18N
+                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                        attribName, prop);
+                                resultSet.addItem(item);
+                            }
+                            attribName += "-ref"; // NOI18N
+                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                        attribName, prop); // NOI18N
+                                resultSet.addItem(refItem);
+                            }
+                        }
+                    }
+                }, true);
+                
+                resultSet.setAnchorOffset(substitutionOffset);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
         // TBD
     }
 
-    private static abstract class Completor {
-
-        private int anchorOffset = -1;
-        
-        public abstract List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context);
-
-        protected void setAnchorOffset(int anchorOffset) {
-            this.anchorOffset = anchorOffset;
-        } 
-        
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-    }
-
-    private void registerCompletor(String tagName, String attribName,
-            Completor completor) {
-        completors.put(createRegisteredName(tagName, attribName), completor);
+    private void registerCompletorFactory(String tagName, String attribName,
+            CompletorFactory completorFactory) {
+        completorFactories.put(createRegisteredName(tagName, attribName), completorFactory);
     }
 
     private static String createRegisteredName(String nodeName, String attributeName) {
@@ -292,314 +353,22 @@ public final class CompletionManager {
         return builder.toString();
     }
 
-    private Completor locateCompletor(String nodeName, String attributeName) {
+    private CompletorFactory locateCompletorFactory(String nodeName, String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
-        if (completors.containsKey(key)) {
-            return completors.get(key);
+        if (completorFactories.containsKey(key)) {
+            return completorFactories.get(key);
+        }
+        
+        key = createRegisteredName(nodeName, null);
+        if(completorFactories.containsKey(key)) {
+            return completorFactories.get(key);
         }
 
         key = createRegisteredName("*", attributeName); // NOI18N
-        if (completors.containsKey(key)) {
-            return completors.get(key);
+        if (completorFactories.containsKey(key)) {
+            return completorFactories.get(key);
         }
 
         return null;
-    }
-
-    private static class BeansRefCompletor extends Completor {
-
-        final private boolean includeGlobal;
-
-        public BeansRefCompletor(boolean includeGlobal) {
-            this.includeGlobal = includeGlobal;
-        }
-
-        @Override
-        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-            Document doc = context.getDocument();
-            final FileObject fo = NbEditorUtilities.getFileObject(doc);
-            if (fo == null) {
-                return Collections.emptyList();
-            }
-            SpringConfigModel model = SpringConfigModel.forFileObject(fo);
-            if (model == null) {
-                return Collections.emptyList();
-            }
-            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            final String prefix = context.getTypedPrefix();
-       
-            final List<String> cNames = new ArrayList<String>();
-            // get current bean parameters
-            if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "id")) { // NOI18N
-                String cId = SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "id"); // NOI18N
-                cNames.add(cId);
-            }
-            if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
-                List<String> names = StringUtils.tokenize(
-                        SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
-                        SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
-                cNames.addAll(names);
-            }
-            
-            try {
-                model.runReadAction(new Action<SpringBeans>() {
-
-                    public void run(SpringBeans sb) {
-                        List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
-                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
-                        for(String beanName : name2Bean.keySet()) {
-                            if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
-                                continue;
-                            }
-                            SpringBean bean = name2Bean.get(beanName);
-                            SpringXMLConfigCompletionItem item = 
-                                    SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1, 
-                                    beanName, bean, fo);
-                            results.add(item);
-                        }
-                    }
-
-                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
-                        Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
-                        for (SpringBean bean : beans) {
-                            String beanId = bean.getId();
-                            if (beanId != null) {
-                                name2Bean.put(beanId, bean);
-                            }
-                            if (addNames) {
-                                List<String> beanNames = bean.getNames();
-                                for (String beanName : beanNames) {
-                                    name2Bean.put(beanName, bean);
-                                }
-                            }
-                        }
-
-                        return name2Bean;
-                    }
-                });
-                
-                setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-
-            return results;
-        }
-    }
-    
-    /**
-     * A simple completor for general attribute value items
-     * 
-     * Takes an array of strings, the even elements being the display text of the items
-     * and the odd ones being the corresponding documentation of the items
-     * 
-     */
-    private static class AttributeValueCompletor extends Completor {
-
-        private String[] itemTextAndDocs;
-
-        public AttributeValueCompletor(String[] itemTextAndDocs) {
-            this.itemTextAndDocs = itemTextAndDocs;
-        }
-
-        public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
-            List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-
-            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars)) {
-                    SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                    results.add(item);
-                }
-            }
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            return results;
-        }
-    }
-
-    private static class JavaClassCompletor extends Completor {
-
-        public JavaClassCompletor() {
-        }
-
-        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            try {
-                Document doc = context.getDocument();
-                final String typedChars = context.getTypedPrefix();
-
-                JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
-                if (js == null) {
-                    return Collections.emptyList();
-                }
-
-                if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
-                    doNormalJavaCompletion(js, results, typedChars, context.getCurrentToken().getOffset() + 1);
-                } else { // Switch to smart class path completion
-                    doSmartJavaCompletion(js, results, typedChars, context.getCurrentToken().getOffset() + 1);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return results;
-        }
-
-        private void doNormalJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
-                final String typedPrefix, final int substitutionOffset) throws IOException {
-            js.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
-                    int index = substitutionOffset;
-                    String packName = typedPrefix;
-                    int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
-                    if (dotIndex != -1) {
-                        index += (dotIndex + 1);  // NOI18N
-                        packName = typedPrefix.substring(0, dotIndex);
-                    }
-                    addPackages(ci, results, typedPrefix, index);
-
-                    PackageElement pkgElem = cc.getElements().getPackageElement(packName);
-                    if (pkgElem == null) {
-                        return;
-                    }
-                    
-                    // get this as well as non-static inner classes
-                    List<TypeElement> tes = new TypeScanner().scan(pkgElem);
-                    for (TypeElement te : tes) {
-                        if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
-                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
-                            results.add(item);
-                        }
-                    }
-
-                    setAnchorOffset(index);
-                }
-            }, true);
-        }
-        
-        private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
-                final String typedPrefix, final int substitutionOffset) throws IOException {
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
-                    // add packages
-                    addPackages(ci, results, typedPrefix, substitutionOffset);
-                    
-                    // add classes 
-                    Set<ElementHandle<TypeElement>> matchingTypes = ci.getDeclaredTypes(typedPrefix, 
-                            NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
-                    for (ElementHandle<TypeElement> eh : matchingTypes) {
-                        if (eh.getKind() == ElementKind.CLASS) {
-                            TypeElement typeElement = eh.resolve(cc);
-                            if (typeElement != null && isAccessibleClass(typeElement)) {
-                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
-                                results.add(item);
-                            }
-                        }
-                    }
-                }
-            }, true);
-            
-            setAnchorOffset(substitutionOffset);
-        }
-        
-        private static boolean isAccessibleClass(TypeElement te) {
-            NestingKind nestingKind = te.getNestingKind();
-            return (nestingKind == NestingKind.TOP_LEVEL) 
-                    || (nestingKind == NestingKind.MEMBER && te.getModifiers().contains(Modifier.STATIC));
-        }
-        
-        private void addPackages(ClassIndex ci, List<SpringXMLConfigCompletionItem> results, String typedPrefix, int substitutionOffset) {
-            Set<String> packages = ci.getPackageNames(typedPrefix, true, EnumSet.allOf(SearchScope.class));
-            for (String pkg : packages) {
-                if (pkg.length() > 0) {
-                    SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPackageItem(substitutionOffset, pkg, false);
-                    results.add(item);
-                }
-            }
-        }
-        
-        private static final class TypeScanner extends ElementScanner6<List<TypeElement>, Void> {
-
-            public TypeScanner() {
-                super(new ArrayList<TypeElement>());
-            }
-            
-            @Override
-            public List<TypeElement> visitType(TypeElement typeElement, Void arg) {
-                if(typeElement.getKind() == ElementKind.CLASS && isAccessibleClass(typeElement)) {
-                    DEFAULT_VALUE.add(typeElement);
-                }
-                return super.visitType(typeElement, arg);
-            }
-            
-        }
-    }
-
-    private static class ResourceCompletor extends Completor {
-
-        public ResourceCompletor() {
-        }
-
-        public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
-            List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            Document doc = context.getDocument();
-            FileObject fileObject = NbEditorUtilities.getFileObject(doc).getParent();
-            String typedChars = context.getTypedPrefix();
-
-            int lastSlashIndex = typedChars.lastIndexOf("/"); // NOI18N
-            String prefix = typedChars;
-
-            if (lastSlashIndex != -1) {
-                String pathStr = typedChars.substring(0, typedChars.lastIndexOf("/")); // NOI18N
-                fileObject = fileObject.getFileObject(pathStr);
-                if (lastSlashIndex != typedChars.length() - 1) {
-                    prefix = typedChars.substring(Math.min(typedChars.lastIndexOf("/") + 1, // NOI18N
-                            typedChars.length() - 1));
-                } else {
-                    prefix = "";
-                }
-            }
-
-            if (fileObject == null) {
-                return Collections.emptyList();
-            }
-
-            if (prefix == null) {
-                prefix = "";
-            }
-
-            
-            Enumeration<? extends FileObject> folders = fileObject.getFolders(false);
-            while (folders.hasMoreElements()) {
-                FileObject fo = folders.nextElement();
-                if (fo.getName().startsWith(prefix)) {
-                    results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
-                            fo));
-                }
-            }
-
-
-            Enumeration<? extends FileObject> files = fileObject.getData(false);
-            while (files.hasMoreElements()) {
-                FileObject fo = files.nextElement();
-                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals(SpringXMLConfigDataLoader.REQUIRED_MIME)) {
-                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
-                }
-            }
-
-            setAnchorOffset(context.getCaretOffset() - prefix.length());
-            
-            return results;
-        }
     }
 }

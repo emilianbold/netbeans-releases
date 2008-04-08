@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
@@ -35,4 +35,5 @@ Microsystems, Inc. All Rights Reserved.
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
     -->
     <bind key="AS-F6" actionName="run-focused-spec"/>
+    <bind key="AS-F5" actionName="debug-focused-test"/>
 </bindings>

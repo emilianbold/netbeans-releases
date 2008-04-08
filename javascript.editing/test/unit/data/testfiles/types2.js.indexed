@@ -1,0 +1,20 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/types2.js
+
+
+
+Document 1
+Indexed:
+  base : insertbeeefore;Axt.Template;insertBeeefore;|DOCUMENTED|PRIVATE|FUNCTION|DEPRECATED|;el:Mixed,values:Object|Array,returnElement:Boolean;0;1f;;HTMLElement|Axt.Element;
+  base : mycall;;mycall;|GLOBAL|;;0;;;;
+  base : template;Axt;Template;|CONSTRUCTOR|;;0;;;;
+  base : usage;Axt.Template;usage;|DOCUMENTED|FUNCTION|NODOC|;;0;2a3;;void;
+  clz : Template;|CONSTRUCTOR|;;0;;;;
+  fqn : axt.template.insertbeeefore;;Axt.Template.insertBeeefore;|DOCUMENTED|PRIVATE|FUNCTION|DEPRECATED|;el:Mixed,values:Object|Array,returnElement:Boolean;0;1f;;HTMLElement|Axt.Element;
+  fqn : axt.template.usage;;Axt.Template.usage;|DOCUMENTED|FUNCTION|NODOC|;;0;2a3;;void;
+  fqn : axt.template;;Axt.Template;|CONSTRUCTOR|;;0;;;;
+  fqn : mycall;;mycall;|GLOBAL|;;0;;;;
+
+Not Indexed:

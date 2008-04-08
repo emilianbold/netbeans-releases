@@ -45,7 +45,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemListener;
 
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -130,7 +129,7 @@ public class JDBCWizardTablePanel extends JPanel {
             final JTableHeader header = this.getTableHeader();
 
             header.setReorderingAllowed(false);
-            header.setResizingAllowed(false);
+            header.setResizingAllowed(true);
         }
     }
 
@@ -438,14 +437,14 @@ public class JDBCWizardTablePanel extends JPanel {
 
         ColumnDialog columnDisplayDialog = null;
 
-        protected String title = "Columns";
+        protected String title = NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_COLS");
         
         RowDataWrapper takes;
         public ColumnAction(final RowDataWrapper takes) {
         	this.takes = takes;
         	columnDisplayDialog = new ColumnDialog(new JDialog(), true);
         	this.columnDisplayDialog.setAlwaysOnTop(true);
-            this.columnDisplayDialog.setResizable(false);
+            this.columnDisplayDialog.setResizable(true);
             this.columnDisplayDialog.setEnabled(true);
             this.columnDisplayDialog.setFocusable(true);
         }
@@ -485,10 +484,10 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         public void initializeColumn() {
             this.columnDisplayDialog.setTitle(this.title);
-            this.correspInsertCol.setName("Insert");
-            this.correspUpdateCol.setName("Update");
-            this.correspChosenCol.setName("Find");//
-            this.correspPolledCol.setName("PollRecords");
+            this.correspInsertCol.setName(NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_INS"));
+            this.correspUpdateCol.setName(NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_UPDT"));
+            this.correspChosenCol.setName(NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_FIND"));//
+            this.correspPolledCol.setName(NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_POLL"));
             
             this.myTabpane = new JTabbedPane();
             this.myTabpane.add(this.correspInsertCol);
@@ -538,12 +537,12 @@ public class JDBCWizardTablePanel extends JPanel {
                 cnt++;
             }
             this.columnDisplayDialog.dispose();
-            this.title = "Columns";
+            this.title = NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_COLS");
         }
 
         public void okAction() {
             this.columnDisplayDialog.dispose();
-            this.title = "Columns";
+            this.title = NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_COLS");
         }
         
         public void selectAllAction(int index){
@@ -644,7 +643,9 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] columnNames = { "Select", "Table Name", "Properties" };
+        private final String[] columnNames = { NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_SEL"), 
+            NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_TAB_NAME"), 
+            NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP") };
 
         private List rowList;
 
@@ -870,12 +871,6 @@ public class JDBCWizardTablePanel extends JPanel {
         }
     }
 
-    /* font selection for column data in table body */
-    private static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 10);
-
-    /* font selection for column headers in table body */
-    private static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 10);
-
     private JPanel headerPnl;
 
     /* table to display meta data */
@@ -944,17 +939,19 @@ public class JDBCWizardTablePanel extends JPanel {
     public void resetTable(final List tableNameList) {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
-        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advanced.."));
-        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
+        this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
+                .setCellRenderer(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
+        this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
+                .setCellEditor(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
         
         final TableColumn columnAdv = this.metaDataTable.getColumnModel().getColumn(2);
-        columnAdv.setResizable(false);
+        columnAdv.setResizable(true);
         columnAdv.setMinWidth(60);
         columnAdv.setPreferredWidth(80);
         columnAdv.setMaxWidth(100);
@@ -965,19 +962,19 @@ public class JDBCWizardTablePanel extends JPanel {
      */
     public void addTable(final List testList) {
         this.metaDataTable = new MetaTableComponent();
-        this.metaDataTable.setFont(JDBCWizardTablePanel.FONT_TABLE_COLUMNS);
-        this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
-        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advacned.."));
-        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
+        this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
+                .setCellRenderer(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
+        this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
+                .setCellEditor(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
         this.setPreferredSize(new Dimension(100, 100));
         this.setMaximumSize(new Dimension(150, 150));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(40);
         column.setMaxWidth(80);

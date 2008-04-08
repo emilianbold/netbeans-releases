@@ -21,20 +21,15 @@ package org.netbeans.modules.bpel.properties;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.bpel.properties.Constants.StandardImportType;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import java.util.StringTokenizer;
-import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -43,7 +38,6 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
@@ -54,16 +48,12 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
-import org.openide.DialogDescriptor;
-import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
@@ -74,9 +64,9 @@ import org.openide.util.Lookup;
  */
 public class Util {
     
-    public static final String FORWARD_SLASH = "/";
-    public static final String UP_REL_FOLDER = "../";
-    public static final String CUR_REL_FOLDER = "./";
+    public static final String FORWARD_SLASH = "/"; //NOI18N
+    public static final String UP_REL_FOLDER = "../"; //NOI18N
+    public static final String CUR_REL_FOLDER = "./"; //NOI18N
     // too light - very difficult to see
     //    private static String GRAY_COLOR = "!controlShadow";
     
@@ -147,42 +137,6 @@ public class Util {
         }
         
         return fromRelativePathPart.append(toRelativePathPart).toString();
-    }
-    
-    public static void activateInlineMnemonics(Container owner) {
-        for (Component comp : owner.getComponents()) {
-            if (comp instanceof JLabel) {
-                JLabel label = (JLabel)comp;
-                Mnemonics.setLocalizedText(label, label.getText());
-            } else if (comp instanceof AbstractButton) {
-                AbstractButton button = (AbstractButton)comp;
-                Mnemonics.setLocalizedText(button, button.getText());
-            } else if (comp instanceof Container) {
-                activateInlineMnemonics((Container)comp);
-            }
-        }
-    }
-    
-    public static void fireHelpContextChange(Component comp, HelpCtx newHelpCtx) {
-        Container parent = comp.getParent();
-        if (parent != null) {
-            PropertyChangeEvent event = new PropertyChangeEvent(
-                    comp, DialogDescriptor.PROP_HELP_CTX,
-                    null, newHelpCtx);
-            //
-            // notify all parents that the help context is changed
-            while (true) {
-                if (parent instanceof PropertyChangeListener) {
-                    ((PropertyChangeListener) parent).propertyChange(event);
-                }
-                //
-                Container newParent = parent.getParent();
-                if (newParent == null || newParent == parent) {
-                    break;
-                }
-                parent = newParent;
-            }
-        }
     }
     
     public static String getAccentedString(String message) {

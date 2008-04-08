@@ -106,8 +106,7 @@ public class JPDAReload extends Task {
         if (debuggerEngine == null) {
             throw new BuildException ("No debugging sessions was found.");
         }
-        JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst 
-            (null, JPDADebugger.class);
+        JPDADebugger debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) {
             throw new BuildException("Current debugger is not JPDA one.");
         }
@@ -122,8 +121,7 @@ public class JPDAReload extends Task {
         
         FileUtils fileUtils = FileUtils.newFileUtils ();
         Map map = new HashMap ();
-        EditorContext editorContext = (EditorContext) DebuggerManager.
-            getDebuggerManager ().lookupFirst (null, EditorContext.class);
+        EditorContext editorContext = DebuggerManager.getDebuggerManager().lookupFirst(null, EditorContext.class);
 
         Iterator it = filesets.iterator ();
         while (it.hasNext ()) {

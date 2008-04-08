@@ -41,6 +41,11 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.text.ParseException;
 import java.util.jar.JarEntry;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -50,10 +55,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +75,7 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -83,6 +91,7 @@ import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterDispatcher;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
@@ -92,6 +101,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -116,7 +126,9 @@ public class Utilities {
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
     
-    
+    private static final String USER_KS_KEY = "userKS";
+    private static final String USER_KS_FILE_NAME = "user.ks";
+    private static final String KS_USER_PASSWORD = "open4user";
     private static Lookup.Result<KeyStoreProvider> result;
     private static Logger err = null;
     private static ModuleManager mgr = null;
@@ -425,12 +437,12 @@ public class Utilities {
         return getModuleInstance(uUnit.getCodeName(), null); // XXX
     }
     
-    public static Module toModule(String codeNameBase, String specificationVersion) {
+    public static Module toModule(String codeNameBase, SpecificationVersion specificationVersion) {
         return getModuleInstance(codeNameBase, specificationVersion);
     }
     
     public static Module toModule (ModuleInfo info) {
-        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ().toString ());
+        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ());
     }
     
     public static boolean isFixed (ModuleInfo info) {
@@ -649,7 +661,7 @@ public class Utilities {
             final Set<Dependency> deps = ((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ();
             final Collection<ModuleInfo> extendedModules = getInstalledModules ();
             extendedModules.addAll (infos);
-            final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
+            Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
             
             // go up and find affected modules
@@ -663,7 +675,15 @@ public class Utilities {
             }
             Collection<Dependency> byToken = takeRecommendsRequiresNeeds (primaryAndRequiredElementDeps);
             if (! byToken.isEmpty ()) {
-                retval.addAll (checkUpdateTokenProvider (byToken));
+                Collection<UpdateElement> newModules = checkUpdateTokenProvider (byToken);
+                retval.addAll (newModules);
+                Set<Dependency> newDeps = new HashSet<Dependency> ();
+                for (UpdateElement newEl : newModules) {
+                    UpdateElementImpl newElImpl = Trampoline.API.impl (newEl);
+                    newDeps.addAll (((ModuleUpdateElementImpl) newElImpl).getModuleInfo ().getDependencies ());
+                }
+                brokenDeps = DependencyChecker.findBrokenDependencies (newDeps, extendedModules);
+                retval.addAll (findRequiredModules (brokenDeps, extendedModules));
             }
             // go up and find affected modules again
             retval = findAffectedModules (retval);
@@ -836,7 +856,7 @@ public class Utilities {
         return infos;
     }
     
-    private static Module getModuleInstance(String codeNameBase, String specificationVersion) {
+    private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
         if (mgr == null) {
             mgr = Main.getModuleSystem().getManager();
         }
@@ -848,7 +868,10 @@ public class Utilities {
             if (m == null) {
                 return null;
             } else {
-                return m.getSpecificationVersion ().compareTo (new SpecificationVersion (specificationVersion)) >= 0 ? m : null;
+                if (m.getSpecificationVersion () == null) {
+                    return null;
+                }
+                return m.getSpecificationVersion ().compareTo (specificationVersion) >= 0 ? m : null;
             }
         }
     }
@@ -878,20 +901,24 @@ public class Utilities {
         Document document = null;
         InputStream is;
         try {
-            is = new FileInputStream (moduleUpdateTracking);
+            is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
             if (is != null) {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            getLogger ().log (Level.WARNING, null, saxe);
+            getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
             return null;
         } catch (IOException ioe) {
-            getLogger ().log (Level.WARNING, null, ioe);
+            getLogger ().log (Level.INFO, "IOException when reading " + moduleUpdateTracking, ioe);
+            return null;
         }
 
         assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
+        if (document.getDocumentElement () == null) {
+            return null;
+        }
         return getModuleElement (document.getDocumentElement ());
     }
     
@@ -1025,4 +1052,181 @@ public class Utilities {
             return DATE_FORMAT.parse(date);
         }
     }    
+    
+    public static boolean canWriteInCluster (File cluster) {
+        assert cluster != null : "dir cannot be null";
+        if (cluster == null || ! cluster.exists () || ! cluster.isDirectory ()) {
+            getLogger ().log (Level.INFO, "Nonexistent cluster " + cluster);
+            return cluster.canWrite ();
+        }
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (cluster.canWrite () && cluster.canRead () && org.openide.util.Utilities.isWindows ()) {
+            File trackings = new File (cluster, UpdateTracking.TRACKING_FILE_NAME);
+            if (trackings.exists () && trackings.isDirectory ()) {
+                for (File f : trackings.listFiles ()) {
+                    if (f.exists () && f.isFile ()) {
+                        getLogger ().log (Level.FINE, "Can write into " + cluster + "? " + canWrite (f));
+                        return canWrite (f);
+                    }
+                }
+            }
+        }
+        getLogger ().log (Level.FINE, "Can write into " + cluster + "? " + cluster.canWrite ());
+        return cluster.canWrite ();
+    }
+    
+    public static boolean canWrite (File f) {
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (org.openide.util.Utilities.isWindows ()) {
+            FileWriter fw = null;
+            try {
+                fw = new FileWriter (f, true);
+            } catch (IOException ioe) {
+                // just check of write permission
+                getLogger ().log (Level.FINE, f + " has no write permission", ioe);
+                return false;
+            } finally {
+                try {
+                    if (fw != null) {
+                        fw.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+            getLogger ().log (Level.FINE, f + " has write permission");
+            return true;
+        } else {
+            return f.canWrite ();
+        }
+    }
+    
+    public static KeyStore loadKeyStore () {
+        String fileName = getPreferences ().get (USER_KS_KEY, null);
+        if (fileName == null) {
+            return null;
+        } else {
+            InputStream is = null;
+            KeyStore ks = null;
+            try {
+                File f = new File (getCacheDirectory (), fileName);
+                assert f.exists () : f + " exists.";
+                is = new BufferedInputStream (new FileInputStream (f));
+                ks = KeyStore.getInstance (KeyStore.getDefaultType ());
+                ks.load (is, KS_USER_PASSWORD.toCharArray ());
+            } catch (IOException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (NoSuchAlgorithmException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (CertificateException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+            return ks;
+        }
+    }
+    
+    private static void storeKeyStore (KeyStore ks) {
+        OutputStream os = null;
+        try {
+            File f = new File (getCacheDirectory (), USER_KS_FILE_NAME);
+            os = new BufferedOutputStream (new FileOutputStream (f));
+            ks.store (os, KS_USER_PASSWORD.toCharArray ());
+            getPreferences ().put (USER_KS_KEY, USER_KS_FILE_NAME);
+        } catch (KeyStoreException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (IOException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (NoSuchAlgorithmException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (CertificateException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } finally {
+                try {
+                    if (os != null) {
+                        os.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+    }
+    
+    public static void addCertificates (Collection<Certificate> certs) {
+        KeyStore ks = loadKeyStore ();
+        if (ks == null) {
+            try {
+                ks = KeyStore.getInstance (KeyStore.getDefaultType ());
+                ks.load (null, KS_USER_PASSWORD.toCharArray ());
+            } catch (IOException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (NoSuchAlgorithmException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (CertificateException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            }
+        }
+
+        for (Certificate c : certs) {
+            
+            try {
+                // don't add certificate twice
+                if (ks.getCertificateAlias (c) != null) {
+                    continue;
+                }
+
+                // Find free alias name
+                String alias = null;
+                for (int i = 0; i < 9999; i++) {
+                    alias = "genAlias" + i; // NOI18N
+                    if (! ks.containsAlias (alias)) {
+                        break;
+                    }
+                }
+                if (alias == null) {
+                    getLogger ().log (Level.INFO, "Too many certificates with " + c);
+                }
+
+                ks.setCertificateEntry (alias, c);
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            }
+            
+        }
+        
+        storeKeyStore (ks);
+    }
+
+    private static File getCacheDirectory () {
+        File cacheDir = null;
+        String userDir = System.getProperty ("netbeans.user"); // NOI18N
+        if (userDir != null) {
+            cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
+        } else {
+            File dir = FileUtil.toFile (Repository.getDefault ().getDefaultFileSystem ().getRoot());
+            cacheDir = new File (dir, "catalogcache"); // NOI18N
+        }
+        cacheDir.mkdirs();
+        return cacheDir;
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.root ().node ("/org/netbeans/modules/autoupdate"); // NOI18N
+    }    
+    
 }

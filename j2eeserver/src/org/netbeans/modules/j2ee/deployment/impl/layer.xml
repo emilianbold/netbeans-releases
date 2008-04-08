@@ -43,6 +43,17 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="LibraryTypeProviders">
+            <file name="j2eeshared_library_provider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider.create"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Servers">
         <folder name="J2EEWrapper">
             <file name="ServerInstanceProviderLookup.instance">

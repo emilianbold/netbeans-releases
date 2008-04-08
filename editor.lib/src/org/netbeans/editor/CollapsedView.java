@@ -174,18 +174,16 @@ import org.netbeans.editor.view.spi.LockView;
     }
     
     public void paint(Graphics g, Shape allocation){
-        Rectangle allocRect = allocation.getBounds();
+        Rectangle r = allocation.getBounds();
+
         g.setColor(getBackColor());
-        int x = allocRect.x+2;
-        int y = allocRect.y;
-        int width = allocRect.width-1;
-        int height = allocRect.height-1;
-        g.fillRect(x, y, width, height);
-        g.setColor(getForeColor());
-        g.setFont(getColoringFont());
-        g.drawRect(x, y, width, height);
+        g.fillRect(r.x, r.y, r.width, r.height);
         
-        g.drawString(foldDescription, x + MARGIN_WIDTH, y + getEditorUI().getLineAscent()-1);
+        g.setColor(getForeColor());
+        g.drawRect(r.x, r.y, r.width - 1, r.height - 1);
+        
+        g.setFont(getColoringFont());
+        g.drawString(foldDescription, r.x + MARGIN_WIDTH, r.y + getEditorUI().getLineAscent() - 1);
     }
     
     public int getNextVisualPositionFrom(int pos, Position.Bias b, Shape a, 

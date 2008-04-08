@@ -104,7 +104,8 @@ made subject to such option by the copyright holder.
     <bind actionName="find-previous" key="S-F3"/>
     <bind actionName="fix-imports" key="OS-F"/>
     <bind actionName="format" key="CO-BACK_SLASH"/>
-    <bind actionName="goto" key="O-G"/>
+    <bind actionName="goto" key="O-G$G"/>
+    <bind actionName="goto" key="O-G$O-G"/>
     <bind actionName="goto-declaration" key="O-PERIOD"/>
     <bind actionName="goto-declaration" key="CO-G"/>
     <bind actionName="in-place-refactoring" key="D-R"/>

@@ -77,6 +77,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.game.dialog.AbstractImagePreviewComponent;
 import org.netbeans.modules.vmd.game.dialog.FullImageGridPreview;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
+import org.netbeans.modules.vmd.game.model.CodeUtils;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -147,7 +148,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         jSeparator2 = new javax.swing.JSeparator();
 
         labelImageFile.setLabelFor(listImageFileName);
-        labelImageFile.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelImageFile, org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
 
         listImageFileName.setModel(this.getImageListModel());
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -171,10 +172,15 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonImportImages))
         );
+
+        labelImageFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImage.accessible.name")); // NOI18N
+        labelImageFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImage.accessible.description")); // NOI18N
+        buttonImportImages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.buttonImportImages.accessible.name")); // NOI18N
+        buttonImportImages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.buttonImportImages.accessible.description")); // NOI18N
 
         labelImagePreview.setLabelFor(panelImage);
         labelImagePreview.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelAdjustTileSize.txt")); // NOI18N
@@ -204,12 +210,12 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                         .add(labelTileWidth)
                         .add(40, 40, 40)
                         .add(labelTileHeight)
-                        .addContainerGap(196, Short.MAX_VALUE))
+                        .addContainerGap(217, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
                                 .add(labelImagePreview)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 220, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE)
                                 .add(checkBoxZoom))
                             .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
                             .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
@@ -234,13 +240,22 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                     .add(labelTileWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
+        labelImagePreview.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelAdjustTileSize.accessible.name")); // NOI18N
+        labelImagePreview.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelAdjustTileSize.accessible.description")); // NOI18N
+        sliderWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.sliderWidth.accessible.name")); // NOI18N
+        sliderWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.sliderWidth.accessible.description")); // NOI18N
+        sliderHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.sliderHeight.accessible.name")); // NOI18N
+        sliderHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.sliderHeight.accessible.description")); // NOI18N
+        checkBoxZoom.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelZoom.accessible.name")); // NOI18N
+        checkBoxZoom.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelZoom.accessible.description")); // NOI18N
+
         labelError.setForeground(new java.awt.Color(255, 0, 0));
 
         org.jdesktop.layout.GroupLayout panelErrorLayout = new org.jdesktop.layout.GroupLayout(panelError);
         panelError.setLayout(panelErrorLayout);
         panelErrorLayout.setHorizontalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 696, Short.MAX_VALUE)
         );
         panelErrorLayout.setVerticalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -250,7 +265,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         );
 
         labelLayerName.setLabelFor(fieldLayerName);
-        labelLayerName.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSpriteName.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelLayerName, org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSpriteName.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelLayerInfoLayout = new org.jdesktop.layout.GroupLayout(panelLayerInfo);
         panelLayerInfo.setLayout(panelLayerInfoLayout);
@@ -259,7 +274,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelLayerInfoLayout.createSequentialGroup()
                 .add(labelLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
+                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE))
         );
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -270,6 +285,9 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                     .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        labelLayerName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSpriteName.accessible.name")); // NOI18N
+        labelLayerName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSpriteName.accessible.description")); // NOI18N
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
@@ -282,7 +300,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 696, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(panelCustomizer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -300,7 +318,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
@@ -597,6 +615,30 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		else if (this.listImageFileName.getSelectedValue() == null) {
 			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImgFile.txt");
 		}
+        else {
+            Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
+            URL imageURL = null;
+            try {
+                imageURL = entry.getKey().getURL();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            String relativeResourcePath = entry.getValue();
+
+            assert (imageURL != null);
+            assert (relativeResourcePath != null);
+
+            String imgName = CodeUtils.getIdealImageName(relativeResourcePath);
+            
+            List<String> derivedImageNames = GlobalRepository.deriveUsedNames(imgName);
+            for (String derivedName : derivedImageNames) {
+                if (derivedName.equals(this.fieldLayerName.getText())) {
+                    errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.imgFileSameAsLayerName.txt");
+                }                
+            }
+
+        }
 		return errMsg;
 	}
 	
@@ -612,21 +654,22 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		private void handleImageSelectionChange() {
 			SpriteDialog.this.sliderWidth.setEnabled(true);
 			SpriteDialog.this.sliderHeight.setEnabled(true);
+			String errMsg = null;
+            
+            errMsg = SpriteDialog.this.getFieldLayerNameError();
+            try {
+                SpriteDialog.this.loadImagePreview();
+            } catch (MalformedURLException e) {
+                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
+                e.printStackTrace();
+            } catch (IllegalArgumentException iae) {
+                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
+                iae.printStackTrace();
+            }
 			
-			String errMsg = SpriteDialog.this.getFieldImageFileNameError();
-			if (errMsg == null) {
-				errMsg = SpriteDialog.this.getFieldLayerNameError();
-				try {
-					SpriteDialog.this.loadImagePreview();
-				} catch (MalformedURLException e) {
-					errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
-					e.printStackTrace();
-				} catch (IllegalArgumentException iae) {
-					errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
-					iae.printStackTrace();
-				}					
-					
-			}
+            if (errMsg == null) {
+                errMsg = SpriteDialog.this.getFieldImageFileNameError();
+            }
 			
 			if (errMsg != null) {
 				SpriteDialog.this.labelError.setText(errMsg);
@@ -712,14 +755,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 				ex.printStackTrace();
             }
 		}
-//		else if (e.getSource() == this.checkBoxShowTiles) {			
-//		}
 	}
-	
-	private void handleCheckBoxShowTiles() {
 		
-	}
-	
 	private void handleImportImagesButton() throws IOException {
 		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png"); // NOI18N
 		assert inImgPlatformTiles != null;

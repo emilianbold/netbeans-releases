@@ -536,6 +536,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.outline</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
+                <friend>org.netbeans.modules.visualweb.removebindings</friend>
                 <package>org.netbeans.modules.visualweb.insync</package>
                 <package>org.netbeans.modules.visualweb.insync.action</package>
                 <package>org.netbeans.modules.visualweb.insync.beans</package>

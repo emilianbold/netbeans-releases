@@ -45,7 +45,13 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Window;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -62,9 +68,11 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.core.actions.HTMLViewAction;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -125,7 +133,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         copyright.setBorder(null);
         copyright.setContentType("text/html");
         copyright.setEditable(false);
-        copyright.setText(org.openide.util.NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_Copyright")); // NOI18N
+        copyright.setText(getCopyrightText());
         copyright.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 copyrightMouseClicked(evt);
@@ -157,7 +165,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -336,4 +344,65 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         }
     }
      
+    private static String getCopyrightText () {
+        
+        String copyrighttext = org.openide.util.NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_Copyright"); // NOI18N
+        
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject licenseFolder = fs.findResource("About/Licenses");   // NOI18N
+        if (licenseFolder != null) {
+            FileObject[] foArray = licenseFolder.getChildren();
+            if (foArray.length > 0) {
+                String curLicense;
+                boolean isSomeLicense = false;
+                StringWriter sw = new StringWriter();
+                for (int i = 0; i < foArray.length; i++) {
+                    curLicense = loadLicenseText(foArray[i]);
+                    if (curLicense != null) {
+                        sw.write("<br>" + MessageFormat.format( // NOI18N
+                            NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_AddOnCopyright"), // NOI18N
+                            new Object[] { curLicense }));
+                        isSomeLicense = true;
+                    }
+                }
+                if (isSomeLicense) {
+                    copyrighttext += sw.toString();
+                }
+            }
+        }
+        
+        return copyrighttext;
+    }
+    
+    /** Tries to load text stored in given file object.
+     *
+     * @param fo File object to retrieve text from
+     * @return String containing text from the file, or null if file can't be found
+     * or some kind of I/O error appeared.
+     */
+    private static String loadLicenseText (FileObject fo) {
+        
+        InputStream is = null;
+        try {
+            is = fo.getInputStream();
+        } catch (FileNotFoundException ex) {
+            // license file not found
+            return null;
+        }
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        StringWriter result = new StringWriter();
+        int curChar;
+        try {
+            // reading content of license file
+            while ((curChar = in.read()) != -1) {
+                result.write(curChar);
+            }
+        } catch (IOException ex) {
+            // don't return anything if any problem during read
+            return null;
+        }
+
+        return result.toString();
+    }
 }

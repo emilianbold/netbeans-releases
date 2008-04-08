@@ -26,7 +26,8 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.NamespaceSpec;
 import org.netbeans.modules.bpel.properties.Constants;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -37,7 +38,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,6 +57,7 @@ public class ImportNode extends BpelNode<Import> {
         return NodeType.IMPORT;
     }
     
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         //
@@ -81,6 +82,7 @@ public class ImportNode extends BpelNode<Import> {
         return sheet;
     }
     
+    @Override
     public String getNameImpl() {
         Import imprt = getReference();
         if (imprt == null) {
@@ -129,10 +131,12 @@ public class ImportNode extends BpelNode<Import> {
 //                ); 
 //    }
     
+    @Override
     public Component getCustomizer() {
         return null;
     }
     
+    @Override
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
@@ -143,12 +147,14 @@ public class ImportNode extends BpelNode<Import> {
         };
     }
     
+    @Override
     public boolean canCopy() {
         //  Fix for 86843: Do not allow DnD this node.
         // Turn back
         return true;
     }
 
+    @Override
     public boolean canCut() {
         return false;
     }
@@ -201,7 +207,7 @@ public class ImportNode extends BpelNode<Import> {
     private String getRelativePath(Import imprt) {
         assert imprt != null;
         FileObject ifo = ResolverUtility.getImportedFileObject(imprt);
-        Project modelProject = ResolverUtility.safeGetProject(imprt.getBpelModel());
+        Project modelProject = Utils.safeGetProject(imprt.getBpelModel());
         return ResolverUtility.safeGetRelativePath(ifo, modelProject);
     }
     

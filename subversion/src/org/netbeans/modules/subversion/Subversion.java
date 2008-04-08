@@ -392,12 +392,13 @@ public class Subversion {
                 try {
                     SvnClient client = getClient(false);
                     
-                    List<String> patterns = client.getIgnoredPatterns(parent);
                     List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
-                    // merge global ignores and ignore patterns
-                    for (Iterator<String> it = gignores.iterator(); it.hasNext(); patterns.add(it.next()));
-
-                    if(SvnUtils.getMatchinIgnoreParterns(patterns,name, true).size() > 0) {
+                    if(SvnUtils.getMatchinIgnoreParterns(gignores, name, true).size() > 0) {
+                        // no need to read the ignored property -> its already set in ignore patterns 
+                        return true;
+                    }                    
+                    List<String> patterns = client.getIgnoredPatterns(parent);                    
+                    if(SvnUtils.getMatchinIgnoreParterns(patterns, name, true).size() > 0) {
                         return true;
                     }
                     

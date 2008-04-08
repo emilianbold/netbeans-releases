@@ -25,7 +25,9 @@ import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OutputOperatorComponent;
@@ -80,6 +82,11 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
     public OutputOperatorComponent createOutputOperator(IEPModel model) {
     	return new OutputOperatorComponentImpl(model);
     }
+
+    public InvokeStreamOperatorComponent createInvokeStreamOperator(IEPModel model) {
+        return new InvokeStreamOperatorComponentImpl(model);
+    }
+    
     
     public LinkComponent createLink(IEPModel model) {
     	return new LinkComponentImpl(model);
@@ -89,16 +96,21 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
         return new PropertyImpl(model);
     }
 
-	public SchemaComponent createSchema(IEPModel model) {
-		return new SchemaComponentImpl(model);
-	}
+    public Import createImport(IEPModel model) {
+        return new ImportImpl(model);
+    }
+    
+    
+    public SchemaComponent createSchema(IEPModel model) {
+            return new SchemaComponentImpl(model);
+    }
 
-	public SchemaAttribute createSchemaAttribute(IEPModel model) {
-		return new SchemaAttributeImpl(model);
-	}
+    public SchemaAttribute createSchemaAttribute(IEPModel model) {
+            return new SchemaAttributeImpl(model);
+    }
 
-	public Documentation createDocumentation(IEPModel model) {
-		return new DocumentationImpl(model);
-	}
+    public Documentation createDocumentation(IEPModel model) {
+            return new DocumentationImpl(model);
+    }
 	
 }

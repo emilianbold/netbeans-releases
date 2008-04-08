@@ -43,7 +43,7 @@ package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source.Priority;
 import org.netbeans.modules.gsf.LanguageRegistry;

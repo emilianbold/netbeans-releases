@@ -45,13 +45,14 @@ import java.util.*;
 
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Completable;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.netbeans.modules.gsfret.editor.completion.GsfCompletionProvider;
 import org.openide.util.Exceptions;
 
 
@@ -121,11 +122,8 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
     private String delegatedResolve(int caretOffset, String name, String variable, Map params) {
         try {
             if (initParsing()) {
-                if (cInfo.getLanguage().getParser() == null) {
-                    return null;
-                }
 
-                Completable completer = cInfo.getLanguage().getCompletionProvider();
+                Completable completer = GsfCompletionProvider.getCompletable(cInfo, caretOffset);
 
                 if (completer == null) {
                     return null;

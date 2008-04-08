@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Lex all files in the ruby distribution to make sure there are no problems
@@ -67,7 +68,7 @@ public class RubyLexAllTest extends RubyTestBase {
 
         // indent each one
         for (FileObject fo : files) {
-            //System.out.println("Formatting file " /*+ count*/ + " : " + FileUtil.getFileDisplayName(fo));
+            System.out.println("Formatting file " /*+ count*/ + " : " + FileUtil.getFileDisplayName(fo));
             
             // check that we end up at indentation level 0
             BaseDocument doc = getDocument(fo);

@@ -39,81 +39,80 @@
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
              xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:res="http://localhost/BluePrint5/Reservation">
     <import location="Reservation.wsdl" namespace="http://localhost/BluePrint5/Reservation"/>
+    
     <types>
         <xsd:schema targetNamespace="http://localhost/BluePrint5/AirLineReservation">
             <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
         </xsd:schema>
-    </types> 
+    </types>
+    
     <message name="CarReservation">
-        <part name="reserveCarPart"
-              element="ns:reserve"></part>
+        <part name="reserveCarPart" element="ns:reserve"></part>
     </message>
+    
     <message name="CarReservationStatus">
-        <part name="status"
-              element="ns:reserveStatus"></part>
+        <part name="status" element="ns:reserveStatus"></part>
     </message>
+    
     <portType name="CarReservationPortType">
         <operation name="reserveCar">
-            <input name="reserveMesg"
-                   message="tns:CarReservation"></input>
+            <input name="reserveMesg" message="tns:CarReservation"></input>
         </operation>
     </portType>
+    
     <portType name="CarStatusPortType">
         <operation name="sendCarStatus">
-            <input name="statusMesg"
-                   message="tns:CarReservationStatus"></input>
+            <input name="statusMesg" message="tns:CarReservationStatus"></input>
         </operation>
     </portType>
-    <binding name="CarReservationBinding"
-             type="tns:CarReservationPortType">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <binding name="CarReservationBinding" type="tns:CarReservationPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveCar">
             <soap:operation style="document"/>
             <input name="reserveMesg">
-                <soap:body parts="reserveCarPart"
-                           use="literal"/>
+                <soap:body parts="reserveCarPart" use="literal"/>
             </input>
         </operation>
     </binding>
-    <binding name="CarReservationStatusBinding"
-             type="tns:CarStatusPortType">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+    
+    <binding name="CarReservationStatusBinding" type="tns:CarStatusPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="sendCarStatus">
             <soap:operation style="document"/>
             <input name="statusMesg">
-                <soap:body parts="status"
-                           use="literal"/>
+                <soap:body parts="status" use="literal"/>
             </input>
         </operation>
     </binding>
+    
     <service name="CarService">
-        <port name="CarServicePort"
-              binding="tns:CarReservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/CarService/ServiceLocation"/>
+        <port name="CarServicePort" binding="tns:CarReservationBinding">
+            <soap:address location="http://localhost:18181/wsdl/CarService/ServiceLocation"/>
         </port>
     </service>
+    
     <service name="CarStatusService">
-        <port name="CarStatusServicePort"
-              binding="tns:CarReservationStatusBinding">
-            <soap:address location="http://localhost:12100/wsdl/CarStatusService/ServiceLocation"/>
+        <port name="CarStatusServicePort" binding="tns:CarReservationStatusBinding">
+            <soap:address location="http://localhost:18181/wsdl/CarStatusService/ServiceLocation"/>
         </port>
-    </service>       
+    </service>
     
     <plink:partnerLinkType name="CarReservationPLinkType">
-        <plink:role portType="tns:CarReservationPortType"
-                    name="reservingRole"></plink:role>
+        <plink:role portType="tns:CarReservationPortType" name="reservingRole"></plink:role>
     </plink:partnerLinkType>
+    
     <plink:partnerLinkType name="CarReservStatusPLinkType">
-        <plink:role portType="tns:CarStatusPortType"
-                    name="statusReceivingRole"></plink:role>
+        <plink:role portType="tns:CarStatusPortType" name="statusReceivingRole"></plink:role>
     </plink:partnerLinkType>
+    
     <bpws:propertyAlias part="status"
                         propertyName="res:reservationID"
                         messageType="tns:CarReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="car" type="xsd:decimal"/>
+    
+    <bpws:property name="car" type="ns:reserveType"/>
+    
     <bpws:propertyAlias propertyName="tns:car" messageType="tns:CarReservation" part="reserveCarPart"/>
 </definitions>

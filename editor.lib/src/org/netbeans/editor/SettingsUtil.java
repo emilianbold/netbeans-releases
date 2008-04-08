@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.KitsTracker;
 
 /**
 * Utility methods for managing settings
@@ -357,7 +358,7 @@ public class SettingsUtil {
         boolean printingSet, 
         boolean evaluateEvaluators
     ) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         Map<String, Coloring> cm = ColoringMap.get(mimeType).getMap();
         return new HashMap<String, Coloring>(cm);
     }

@@ -191,7 +191,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         if(children.size() < InstanceDesignerPanel.EXPAND_BY_DEFAULT_LIMIT){
             addAllChildren(children) ;
         }else{
-            RequestProcessor.getDefault().post(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     addAllChildren(children) ;
                 }
@@ -200,9 +200,9 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
     }
     
     private void addAllChildren(List<? extends AXIComponent> children){
-        initProgress(children);
+        //initProgress(children);
         for(final AXIComponent axiComp: children){
-            showProgress();
+            //showProgress();
             visitorResult = null;
             axiComp.accept(ContainerPanel.this);
             final Component compToAdd = visitorResult;
@@ -215,7 +215,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         }
         adjustChildrenPanelSize();
         revalidate();
-        finishProgress();
+        //finishProgress();
     }
     
     
@@ -405,14 +405,6 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
     
     
     public void adjustChildrenPanelSize() {
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run() {
-                doAdjustChildrenPanelSize();
-            }
-        });
-    }
-    
-    private void doAdjustChildrenPanelSize() {
         int width = 0;
         int height = 0;
         int indent = getChildrenIndent();
@@ -461,15 +453,13 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
     public Dimension _getMinimumSize() {
         int width = 0;
         int height = 0;
-        synchronized(this) {
-            for(Component child: this.getComponents()){
-                if(!child.isVisible())
-                    break;
-                Dimension dim = child.getPreferredSize();
-                height += dim.getHeight();
-                int thisW = dim.width ;
-                width = width < thisW ? thisW : width;
-            }
+        for(Component child: this.getComponents()){
+            if(!child.isVisible())
+                break;
+            Dimension dim = child.getPreferredSize();
+            height += dim.getHeight();
+            int thisW = dim.width ;
+            width = width < thisW ? thisW : width;
         }
         return new Dimension(width, height);
     }

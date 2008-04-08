@@ -100,19 +100,21 @@ public class RetoucheCommit implements Transaction {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }
         }
+        boolean localStored = false;
         if (newFiles!=null) {
             for (File f:newFiles) {
                 try {
                     FileObject fo = FileUtil.toFileObject(f);
                     if (!newFilesStored) {
                         ids.add(BackupFacility.getDefault().backup(fo));
-                        newFilesStored = true;
+                        localStored = true;
                     }
                     fo.delete();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            newFilesStored |= localStored;
         }
     }
 }

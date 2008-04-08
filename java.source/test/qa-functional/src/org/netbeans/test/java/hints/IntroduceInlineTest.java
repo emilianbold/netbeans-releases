@@ -39,21 +39,9 @@
 
 package org.netbeans.test.java.hints;
 
-import java.awt.Container;
-import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JCheckBox;
-import javax.swing.SwingUtilities;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JSplitPaneOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
@@ -68,16 +56,7 @@ public class IntroduceInlineTest extends HintsTestCase {
     public void testIntroduceInline() {
         String file = "Inline";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);        
-        OptionsOperator oo = OptionsOperator.invoke();
-        oo.selectCategory("Java Code");        
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
-        jtpo.selectPage("Hints");
-        JSplitPaneOperator jspo = new JSplitPaneOperator(oo);       
-        JTreeOperator jto = new JTreeOperator(jtpo);
-        selectHintNode(jto,"errors","Create Local Variable");                
-        JCheckBoxOperator chbox1 = new JCheckBoxOperator(new ContainerOperator((Container)jspo.getRightComponent()),"Create Local Variable In Place");
-        chBoxSetSelected(chbox1, true);
-        oo.ok();
+        setInPlaceCreation(true);
         new EventTool().waitNoEvent(2000);
         editor = new EditorOperator(file);
 	editor.setCaretPosition(8,1);
@@ -90,17 +69,8 @@ public class IntroduceInlineTest extends HintsTestCase {
     
     public void testNotInline() {
         String file = "Inline";
-	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);        
-        OptionsOperator oo = OptionsOperator.invoke();
-        oo.selectCategory("Java Code");        
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
-        jtpo.selectPage("Hints");
-        JSplitPaneOperator jspo = new JSplitPaneOperator(oo);       
-        JTreeOperator jto = new JTreeOperator(jtpo);
-        selectHintNode(jto,"errors","Create Local Variable");                
-        JCheckBoxOperator chbox1 = new JCheckBoxOperator(new ContainerOperator((Container)jspo.getRightComponent()),"Create Local Variable In Place");
-        chBoxSetSelected(chbox1, false);
-        oo.ok();
+	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);                
+        setInPlaceCreation(false);
         new EventTool().waitNoEvent(2000);
         editor = new EditorOperator(file);
 	editor.setCaretPosition(8,1);
@@ -116,16 +86,7 @@ public class IntroduceInlineTest extends HintsTestCase {
     public void testNotInlineSuper() {
         String file = "Inline";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);        
-        OptionsOperator oo = OptionsOperator.invoke();
-        oo.selectCategory("Java Code");        
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
-        jtpo.selectPage("Hints");
-        JSplitPaneOperator jspo = new JSplitPaneOperator(oo);       
-        JTreeOperator jto = new JTreeOperator(jtpo);
-        selectHintNode(jto,"errors","Create Local Variable");                
-        JCheckBoxOperator chbox1 = new JCheckBoxOperator(new ContainerOperator((Container)jspo.getRightComponent()),"Create Local Variable In Place" );        
-        chBoxSetSelected(chbox1,false);
-        oo.ok();
+        setInPlaceCreation(false);
         new EventTool().waitNoEvent(2000);
         editor = new EditorOperator(file);
 	editor.setCaretPosition(15,1);

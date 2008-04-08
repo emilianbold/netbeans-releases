@@ -16,7 +16,7 @@
     <string>APPL</string>
     
     <key>CFBundleShortVersionString</key>
-    <string>0.1</string>
+    <string>${app.version}</string>
     
     <key>CFBundleSignature</key>
     <string>????</string>

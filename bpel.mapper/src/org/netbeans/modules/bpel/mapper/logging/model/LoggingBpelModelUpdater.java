@@ -18,19 +18,25 @@
  */
 package org.netbeans.modules.bpel.mapper.logging.model;
 
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
 import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.model.GraphInfoCollector;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.AlertLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Location;
@@ -38,6 +44,9 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
+import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * 
@@ -105,30 +114,38 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
     }
 
     private void updateExtensileElements(TreePath rightTreePath,
-            ExtensibleElements extensibleElement) 
+            ExtensibleElements extensibleElement) throws Exception 
     {
+        assert extensibleElement != null;
 
         //
         // Do common preparations
         //
-        Graph graph = getMapperModel().graphRequired(rightTreePath);
+        Graph graph = getMapperModel().graphRequired(rightTreePath);        
         //
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         BpelModel bpelModel = extensibleElement.getBpelModel();
         
-        //
-        //
-        // Create BPEL ForEach structures
-        //
-        Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
+        Trace trace = null;
+        // 125695
+        // remove trace if there is not content
+        if (graph.isEmpty()) {
+            trace = getTrace(extensibleElement, false);
+            if (trace == null) {
+                return;
+            }
+            removeEmptyGraph(trace, rightTreePath);
+            return;
+        }
 
-        Expression bpelExpr = null;
-
-        Trace trace = getTrace(extensibleElement);
+        trace = trace == null ? getTrace(extensibleElement) : trace;
         if (trace == null) {
             return;
         }
-        
+
+        Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
+        From bpelExpr = null;
+
         if (rightTreeDO instanceof LogItem) {
             LogLevel level = ((LogItem)rightTreeDO).getLevel();
             Location location = ((LogItem)rightTreeDO).getLocation();
@@ -178,21 +195,84 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         }
         //
         // Populate 
-        populateContentHolder(bpelExpr, graphInfo);
+        Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+
+        updateFrom(graph, typeCastCollector, bpelExpr);
+        
+//        populateContentHolder(bpelExpr, graphInfo, typeCastCollector);
+        registerTypeCasts(extensibleElement, typeCastCollector, true);
+    }
+
+    // todo m
+    private void removeEmptyGraph(Trace trace, TreePath rightTreePath ) {
+        assert trace != null;
+        assert rightTreePath != null;
+        
+        Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
+
+        if (rightTreeDO instanceof LogItem) {
+            LogLevel level = ((LogItem)rightTreeDO).getLevel();
+            Location location = ((LogItem)rightTreeDO).getLocation();
+            Log rightLog = findLog(trace, location, level);
+            if (rightLog != null) {
+                trace.remove(rightLog);
+            }
+        } else if (rightTreeDO instanceof AlertItem) {
+            AlertLevel level = ((AlertItem)rightTreeDO).getLevel();
+            Location location = ((AlertItem)rightTreeDO).getLocation();
+            Alert rightAlert = findAlert(trace, location, level);
+            if (rightAlert != null) {
+                trace.remove(rightAlert);
+            }
+        }
+
+        List<BpelEntity> traceChildren = trace.getChildren();
+        if (traceChildren == null || traceChildren.isEmpty()) {
+            BpelContainer parent = trace.getParent();
+            if (parent != null) {
+                parent.remove(trace);
+            }
+        }
+        getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
     }
     
     private Trace getTrace(ExtensibleElements extensibleElement) {
+        return getTrace(extensibleElement, true);
+    }
+
+    private Trace getTrace(ExtensibleElements extensibleElement, boolean create) {
         List<Trace> traces = extensibleElement.getChildren(Trace.class);
         if (traces != null && traces.size() > 0) {
             return traces.get(0);
         } 
 
+        if (!create) {
+            return null;
+        }
+        
         BpelModel bpelModel = extensibleElement.getBpelModel();
+        if (bpelModel == null) {
+            return null;
+        }
+//        Process process = bpelModel.getProcess();
+//        try {
+//            System.out.println("going to add namespace context");
+//            process.getNamespaceContext().
+//                    addNamespace(Trace.LOGGING_NAMESPACE_URI);
+//        } catch (InvalidNamespaceException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//
+//        try {
+//            bpelModel.sync();
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ex);
+//        }
+        
         Trace newTrace = bpelModel.getBuilder().createExtensionEntity(Trace.class);
         extensibleElement.addExtensionEntity(Trace.class, newTrace);
         traces = extensibleElement.getChildren(Trace.class);
-        
-            
+
         return traces != null && traces.size() > 0 ? traces.get(0) : null;
     }
 }

@@ -41,6 +41,7 @@
 package org.netbeans.modules.etl.project.anttasks;
 
 import java.io.File;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
 
 public class ChooseLocationDialog extends javax.swing.JDialog {
@@ -89,10 +90,11 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         panel.setPreferredSize(new java.awt.Dimension(500, 150));
         panel.setLayout(new java.awt.GridBagLayout());
 
-        objDefnLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        objDefnLabel.setText("EView Object Definition");
+        objDefnLabel.setText("Master Index Object Definition");
         objDefnLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-        objDefnLabel.setPreferredSize(new java.awt.Dimension(130, 25));
+        objDefnLabel.setMaximumSize(new java.awt.Dimension(150, 25));
+        objDefnLabel.setMinimumSize(new java.awt.Dimension(150, 25));
+        objDefnLabel.setPreferredSize(new java.awt.Dimension(150, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -108,9 +110,10 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
         panel.add(dbLocationTextField, gridBagConstraints);
 
-        dbLocationLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         dbLocationLabel.setText("Staging Database Location");
-        dbLocationLabel.setPreferredSize(new java.awt.Dimension(130, 25));
+        dbLocationLabel.setMaximumSize(new java.awt.Dimension(150, 25));
+        dbLocationLabel.setMinimumSize(new java.awt.Dimension(150, 25));
+        dbLocationLabel.setPreferredSize(new java.awt.Dimension(150, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -157,9 +160,10 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
         panel.add(dbNameTextField, gridBagConstraints);
 
-        dbLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         dbLabel.setText("Database Name");
-        dbLabel.setPreferredSize(new java.awt.Dimension(130, 25));
+        dbLabel.setMaximumSize(new java.awt.Dimension(150, 25));
+        dbLabel.setMinimumSize(new java.awt.Dimension(150, 25));
+        dbLabel.setPreferredSize(new java.awt.Dimension(150, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -193,7 +197,9 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
     private void objDefnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_objDefnActionPerformed
         JFileChooser chooser = new JFileChooser();
         //chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.addChoosableFileFilter(new FileFilter());
+        FileFilter currentFilter = chooser.getFileFilter();
+        chooser.addChoosableFileFilter(new Filter(new String[] {".xml"}));
+        chooser.setFileFilter(currentFilter);
         int value = chooser.showOpenDialog(this);
         if (value == JFileChooser.APPROVE_OPTION) {
             objDefnTextField.setText(chooser.getSelectedFile().toString());//getCurrentDirectory().toString());
@@ -230,15 +236,15 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
     public String getDBLocation() {
         return dbLocn;
     }
-    
-    private void setDBName(String str){
+
+    private void setDBName(String str) {
         this.dbName = str;
     }
 
-    public String getDBName(){
+    public String getDBName() {
         return dbName;
     }
-            
+
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         this.dispose();
         System.exit(0);
@@ -249,6 +255,8 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         String str = objDefnTextField.getText();
         if(str.endsWith("object.xml")){
           str = str.replace("object.xml", "");          
+        }else{
+            System.out.println("Choose object.xml");
         }
         setObjectDefinition(str);
         setDBName(dbNameTextField.getText());
@@ -274,11 +282,29 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
             }
         });
     }*/
-    class FileFilter extends javax.swing.filechooser.FileFilter {
+    class Filter extends javax.swing.filechooser.FileFilter {
+        private String[] extensions;
+        public Filter(String[] extensions) {            
+            this.extensions = new String[extensions.length];
+            for (int i = 0; i < extensions.length; i++) {
+                this.extensions[i] = extensions[i].toUpperCase();
+            }
+        }
+        
          @Override
         public boolean accept(File file) {
-            String filename = file.getName();
-            return filename.endsWith(".xml");
+            //String filename = file.getName();
+            //return filename.endsWith(".xml");
+             if (file.isDirectory()) {
+                return true;
+            }
+            for (int i = 0; i < extensions.length; i++) {
+                if (file.getName().toUpperCase().endsWith(extensions[i])) {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         public String getDescription() {
             return "*.xml";

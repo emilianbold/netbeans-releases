@@ -76,17 +76,24 @@ public class VWPMeasureActions  {
 	suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment for VWP project"));
         suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP page for VWP project"));
 
-        suite.addTest(new gui.window.DatabaseTableDrop("measureTime","Database table drop on Table time")); 
+
         //TODO Disabled because throws exception. See bugid #99202      
-        suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
 	suite.addTest(new ComponentAddTest("testAddButtonComponent","Adding Button Component"));
 	suite.addTest(new ComponentAddTest("testAddListboxComponent","Adding Listbox Component"));
+        suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
+        
+        suite.addTest(new gui.window.DatabaseTableDrop("measureTime","Database table drop on Table time"));         
         
         //suite.addTest(new CreateWebPackProjectSBS("testCreateWebPackProject","Create Visual Web Project SBS"));
         
-        suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
-        suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
+//        suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
+//        suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
+//        
+//        suite.addTest(new CleanAndBuildProject("testCleanAndBuildSingleOpenedPageProject","CnB project with single opened page"));
+//        suite.addTest(new CleanAndBuildProject("testCleanAndBuildMultipleOpenedPagesProject","CnB project with two opened pages"));
         
+        suite.addTest(new PageSwitchTest("testPageSwitch"));
+        suite.addTest(new ViewSwitchTest("doMeasurement","Test view switch time"));
         suite.addTest(new CreateWebPackProject("testCreateWebPackProject","Create Visual Web Project"));        
         
         return suite;

@@ -58,7 +58,7 @@ final class PanelWSDLs<T> extends Panel<T> {
   PanelWSDLs(Project project, Panel<T> parent) {
     super(project, parent);
     myWebServiceImplement = new PanelWebService<T>(project, parent);
-    myWebServiceCall = new PanelWebService<T>(project, parent);
+    myWebServiceCall = new PanelWebService<T>(project, parent, i18n("LBL_Web_Service_File2")); // NOI18N
  }
 
   @Override
@@ -111,6 +111,7 @@ final class PanelWSDLs<T> extends Panel<T> {
     myWebServiceCall.createPanel(panel, c);
 
     mainPanel.add(panel, cc);
+    mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewBridgeService2"));
   }
 
   private Panel<T> myWebServiceImplement;

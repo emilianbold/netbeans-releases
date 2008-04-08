@@ -3,5 +3,4 @@ OpenIDE-Module: org.netbeans.modules.mobility.project
 OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/project/Bundle.properties
-OpenIDE-Module-Install: org/netbeans/modules/mobility/project/J2MEProjectModuleInstall.class
 AutoUpdate-Show-In-Client: false

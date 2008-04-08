@@ -91,7 +91,7 @@ public class CommentHandlerService implements CommentHandler {
         }
     }
     
-    public CommentSet getComments(Tree tree) {
+    public CommentSetImpl getComments(Tree tree) {
         synchronized (map) {
             CommentSetImpl cs = map.get(tree);
             if (cs == null) {
@@ -113,7 +113,6 @@ public class CommentHandlerService implements CommentHandler {
                 CommentSetImpl to = map.get(toTree);
                 if (to == null) {
                     to = (CommentSetImpl)from.clone();
-                    to.setTree(toTree);
                     map.put(toTree, to);
                 } 
                 else {

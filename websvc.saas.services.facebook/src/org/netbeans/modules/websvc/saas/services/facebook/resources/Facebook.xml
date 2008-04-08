@@ -45,18 +45,83 @@
                xmlns:tns="http://xml.netbeans.org/websvc/saas/component/1.0/facebook"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+               ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://api.facebook.com"
-               url="/org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookWadl.xml">
+               api-doc="http://wiki.developers.facebook.com/index.php/API"
+               url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookWadl.xml">
     
-    <description>Facebook Service</description>
-    <display-name>Facebook</display-name>
+    <description>Social Networking Service</description>
+    <display-name>Social Networking Service</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/facebook/resources/facebook16.png</icon16>
         <group name="Facebook"/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp">
+                <artifact id="FacebookAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FacebookAuthenticatorDesktop.java"/>
+                <artifact id="FacebookAuthenticator" type="template"
+                    url="Templates/SaaSServices/FacebookAuthenticator.java"/>
+                <artifact id="FacebookAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FacebookLogin.java"/>
+                <artifact id="FacebookAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FacebookCallback.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="Templates/SaaSServices/sessionkey.properties">
+            <session-key api-id="api_key" session-id="session_key" sig-id="sig">
+                <sign id="sig">
+                    <params>
+                        <param name="call_id" type="time" required="true"/>
+                        <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
+                        <param id="session_key={session_key}" name="session_key" type="string" required="true"/>
+                    </params>
+                </sign>
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="FacebookAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="FacebookAuthenticator"/>
+                            <template type="login" href="FacebookAuthenticatorLogin"/>
+                            <template type="callback" href="FacebookAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
+                <!-- <authenticator>
+                    <use-generator>
+                    <login>
+                        <sign id="sig">
+                            <params>
+                                <param name="method" type="string" required="true"/>
+                                <param name="v" type="string" required="true" default="1.0"/>
+                                <param name="api_key" type="string" required="true"/>
+                                <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
+                            </params>
+                        </sign>
+                        <method id="sessionKey={session_key},secret={secret}" name="login" href="#facebook.auth_getSession"/>
+                    </login>
+                    <token id="auth_token">
+                        <sign id="sig">
+                            <params>
+                                <param name="method" type="string" required="true"/>
+                                <param name="v" type="string" required="true" default="1.0"/>
+                                <param name="api_key" type="string" required="true"/>
+                            </params>
+                        </sign>
+                        <method id="auth_token={auth_createToken_response}" name="getToken" href="#facebook.auth_createToken"/>
+                        <prompt>
+                            <desktop url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v}&amp;auth_token={auth_token}"/>
+                            <web url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v:1.0}"/>
+                        </prompt>
+                    </token>
+                    <logout/>
+                    </use-generator>
+                </authenticator>-->
+            </session-key>
+        </authentication>
+        
     </saas-metadata>
     
     <!-- Process all methods in the wadl !-->

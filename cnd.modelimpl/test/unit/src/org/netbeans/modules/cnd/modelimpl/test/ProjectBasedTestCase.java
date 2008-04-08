@@ -49,6 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
@@ -183,6 +184,10 @@ public abstract class ProjectBasedTestCase extends BaseTestCase {
         }
     }     
     
+    protected CsmProject getProject() {
+        return projectHelper.getProject();
+    }
+    
     protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
         FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
         assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
@@ -199,4 +204,10 @@ public abstract class ProjectBasedTestCase extends BaseTestCase {
         return csmFile;
     }
 
+    protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {
+        BaseDocument doc = getBaseDocument(testSourceFile);
+        assert doc != null;
+        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);  
+        return offset;
+    }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,9 +45,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.jsp.tagext.PageData;
-
-import org.openide.ErrorManager;
 
 import org.apache.jasper.JasperException;
 
@@ -57,6 +57,8 @@ import org.apache.jasper.JasperException;
  * @author Petr Jiricka
  */
 public class NbValidator {
+    
+    private static final Logger LOGGER = Logger.getLogger(NbValidator.class.getName());
 
     private static Method validateXmlViewM;
     private static Field bufF;
@@ -67,23 +69,20 @@ public class NbValidator {
     
     private static void initReflection() {
         try {
-            validateXmlViewM = Validator.class.getDeclaredMethod("validateXmlView", new Class[] {PageData.class, Compiler.class});
+            validateXmlViewM = Validator.class.getDeclaredMethod("validateXmlView", new Class[] {PageData.class, Compiler.class}); // NOI18N
             validateXmlViewM.setAccessible(true);
-            bufF = PageDataImpl.class.getDeclaredField("buf");
+            bufF = PageDataImpl.class.getDeclaredField("buf"); // NOI18N
             bufF.setAccessible(true);
-        }
-        catch (NoSuchMethodException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        catch (NoSuchFieldException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (NoSuchMethodException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (NoSuchFieldException e) {
+            LOGGER.log(Level.INFO, null, e);
         }
     }
     
     /** Returns the XML view of the page.
      */
-    public static String validate(Compiler compiler,
-				Node.Nodes page) throws JasperException {
+    public static String validate(Compiler compiler, Node.Nodes page) throws JasperException {
 
 	/*
 	 * Visit the page/tag directives first, as they are global to the page
@@ -95,18 +94,18 @@ public class NbValidator {
 	PageInfo pageInfo = compiler.getPageInfo();
 	String contentType = pageInfo.getContentType();
 
-	if (contentType == null || contentType.indexOf("charset=") < 0) {
+	if (contentType == null || contentType.indexOf("charset=") < 0) { // NOI18N
 	    boolean isXml = page.getRoot().isXmlSyntax();
 	    String defaultType;
 	    if (contentType == null) {
-		defaultType = isXml? "text/xml": "text/html";
+		defaultType = isXml? "text/xml": "text/html"; // NOI18N
 	    } else {
 		defaultType = contentType;
 	    }
 
 	    String charset = null;
 	    if (isXml) {
-		charset = "UTF-8";
+		charset = "UTF-8"; // NOI18N
 	    } else {
 		if (!page.getRoot().isDefaultPageEncoding()) {
 		    charset = page.getRoot().getPageEncoding();
@@ -114,7 +113,7 @@ public class NbValidator {
 	    }
 
 	    if (charset != null) {
-		pageInfo.setContentType(defaultType + ";charset=" + charset);
+		pageInfo.setContentType(defaultType + ";charset=" + charset); // NOI18N
 	    } else {
 		pageInfo.setContentType(defaultType);
 	    }
@@ -146,24 +145,17 @@ public class NbValidator {
             
             StringBuffer buf = (StringBuffer)bufF.get(pdi);
             return buf.toString();
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e.getMessage());
-        }
-        catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             Throwable target = e.getTargetException();
             if (target instanceof JasperException) {
                 throw (JasperException)target;
-            }
-            else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } else {
+                LOGGER.log(Level.INFO, null, e);
                 throw new JasperException(e.getMessage());
             }
         }
-
     }
-
-
-    
 }

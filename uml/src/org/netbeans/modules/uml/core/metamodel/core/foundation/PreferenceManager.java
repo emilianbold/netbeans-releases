@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 import org.dom4j.Document;
@@ -157,15 +156,7 @@ public class PreferenceManager implements IPreferenceManager
     {
         if (m_PrefDoc != null)
         {
-            try
-            {
-                XMLManip.save(m_PrefDoc, fileName);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                // TODO: Handle this exception.
-            }
+            XMLManip.save(m_PrefDoc, fileName);
         }
     }
 

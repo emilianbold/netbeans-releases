@@ -78,7 +78,7 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
     @SuppressWarnings("unchecked")
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
         
-        if (kitClass == kitClass) {
+        if (this.kitClass == kitClass) {
             SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                 new TokenContext[] { CCTokenContext.context });
 

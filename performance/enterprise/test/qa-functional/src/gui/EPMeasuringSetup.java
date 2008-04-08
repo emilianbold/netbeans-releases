@@ -49,7 +49,7 @@ import org.netbeans.junit.NbTestSuite;
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class EPMeasuringSetup extends NbTestSuite {
 
@@ -66,6 +66,8 @@ public class EPMeasuringSetup extends NbTestSuite {
         
 //TODO no tomcat - see issue 101104        suite.addTest(new EnterpriseSetupTest("openWebProject"));
 
+        // FIXME: Remove this workaround of manual App Server addition
+        suite.addTest(new EnterpriseSetupTest("addApplicationServer"));
         suite.addTest(new EnterpriseSetupTest("openReservationPartnerServicesProject"));
         suite.addTest(new EnterpriseSetupTest("openTravelReservationServiceProject"));
         suite.addTest(new EnterpriseSetupTest("openTravelReservationServiceApplicationProject"));
@@ -74,7 +76,7 @@ public class EPMeasuringSetup extends NbTestSuite {
         suite.addTest(new EnterpriseSetupTest("openBPELTestProject"));
         
         suite.addTest(new EnterpriseSetupTest("closeAllDocuments"));
-        
+                
         return suite;
     }
     

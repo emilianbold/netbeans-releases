@@ -65,7 +65,7 @@ public class CasaDataObject extends MultiDataObject {
     
     static final long serialVersionUID = 7527025549386876556L;
     
-    public static final String CASA_ICON_BASE_WITH_EXT = "org/netbeans/modules/compapp/casaeditor/resources/casa16.gif"; // NOI18N
+    public static final String CASA_ICON_BASE_WITH_EXT = "org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"; // NOI18N
     
     private transient CasaDataEditorSupport editorSupport;
     
@@ -88,7 +88,7 @@ public class CasaDataObject extends MultiDataObject {
         set.add(editorSupport);
         getCookieSet().add(mBuildCookie);
     }
-           
+               
     public CasaDataEditorSupport getEditorSupport() {
         return editorSupport;
     }

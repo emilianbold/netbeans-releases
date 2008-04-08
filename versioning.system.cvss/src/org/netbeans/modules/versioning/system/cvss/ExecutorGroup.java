@@ -251,6 +251,10 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         return cancelled;
     }
 
+    public boolean isFailed() {
+        return failed;
+    }
+
     /**
      * User cancel comming from Progress UI.
      * Must not be called by internals.

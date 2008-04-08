@@ -144,7 +144,7 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
     }
     
     static public Element createElementNS(JSFConfigModel model,JSFConfigQNames jsfqname) {
-        return model.getDocument().createElementNS(jsfqname.getQName(model.getVersion()).getNamespaceURI(), jsfqname.getQualifiedName(model.getVersion()));
+        return model.getDocument().createElementNS(model.getRootComponent().getPeer().getNamespaceURI(), jsfqname.getQualifiedName(model.getVersion()));
     }
     
     private class SortingItem implements Comparable<SortingItem>{

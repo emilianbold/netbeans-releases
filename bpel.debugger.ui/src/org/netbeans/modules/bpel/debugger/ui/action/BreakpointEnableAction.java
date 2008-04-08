@@ -148,9 +148,7 @@ public class BreakpointEnableAction extends BooleanStateAction {
     
     private BpelBreakpointListener getBreakpointAnnotationListener () {
         if (myBreakpointAnnotationListener == null) {
-            myBreakpointAnnotationListener = (BpelBreakpointListener) 
-                    DebuggerManager.getDebuggerManager ().lookupFirst 
-                    (null, BpelBreakpointListener.class);
+            myBreakpointAnnotationListener = DebuggerManager.getDebuggerManager().lookupFirst(null, BpelBreakpointListener.class);
         }
         return myBreakpointAnnotationListener;
     }

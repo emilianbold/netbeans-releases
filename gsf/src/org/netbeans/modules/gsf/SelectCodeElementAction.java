@@ -50,13 +50,16 @@ import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -68,6 +71,8 @@ import org.openide.util.NbBundle;
  * @author Miloslav Metelka, Jan Pokorsky
  */
 public final class SelectCodeElementAction extends BaseAction {
+    public static final String selectNextElementAction = "select-element-next"; //NOI18N
+    public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
 
     private boolean selectNext;
 
@@ -195,10 +200,22 @@ public final class SelectCodeElementAction extends BaseAction {
             }
         }
         
+        private BracketCompletion getBracketCompletion(Document doc, int offset) {
+            BaseDocument baseDoc = (BaseDocument)doc;
+            List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+            for (Language l : list) {
+                if (l.getBracketCompletion() != null) {
+                    return l.getBracketCompletion();
+                }
+            }
+
+            return null;
+        }
+        
         private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
-            Language language = ci.getLanguage();
-            if (language.getBracketCompletion() != null) {
-                List<OffsetRange> ranges = language.getBracketCompletion().findLogicalRanges(ci, target.getCaretPosition());
+            BracketCompletion bc = getBracketCompletion(target.getDocument(), target.getCaretPosition());
+            if (bc != null) {
+                List<OffsetRange> ranges = bc.findLogicalRanges(ci, target.getCaretPosition());
                 SelectionInfo[] result = new SelectionInfo[ranges.size()];
                 for (int i = 0; i < ranges.size(); i++) {
                     OffsetRange range = ranges.get(i);

@@ -93,12 +93,12 @@ public abstract class XMLBaseInstruction implements Instruction {
 
     @Override
     public String toString() {
-        return name + " " + description; 
+        return name + " " + description; // NOI18N
     }
     
     protected void setProperty(String name, String value) {
         try {            
-            String t = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);                        
+            String t = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1); // NOI18N
             Method m = this.getClass().getMethod(t, String.class);                        
             m.invoke(this, value);            
         } catch (Exception ex) {

@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2008 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -13,7 +13,7 @@
 <body>
 
 <h2>JSF 1.2 Alert Component</h2>
-<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small>
+<p><small><a href="#seealso">See Also  </a></small>
 
 <p>The Alert component <img src="../../../images/bh_alert_icon.gif" alt="Alert component icon">&nbsp;enables the  display of an alert message directly on the page. An alert message consists
 of an icon depicting the type of alert (information, warning,
@@ -48,7 +48,13 @@ of an icon depicting the type of alert (information, warning,
 			<li> <b>Edit  action Event Handler.</b> Code the action event handler, the method that is called when the user clicks a hyperlink that was added to the detail section by setting the <code>urlText</code> property in the Properties window. This method determines which page or resource to open based on specified conditions. The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>alert-id</code></i><code>_action</code>, where <i>alert-id</i> is the value of the Alert component's <code>id</code> property. </li>
 			<li><b>Bind to Data. </b>Dynamically set the summary text. The text comes from the object or data provider you specify, such as a column of a database table. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
 			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind  properties of the component in addition to the <code>summary</code> property to other objects or bean properties that update this component's properties automatically.</li>
-		    <li><b>Align</b>. If you have multiple components selected, you can specify how they align with one another. If only the current component is selected, you can choose whether the component aligns with (snaps to) the background grid when you move it around.</li>
+		    <li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li>
+			<li><b>Align</b>. If you have multiple components selected, you can specify how they align with one another. If only the current component is selected, you can choose whether the component aligns with (snaps to) the background grid when you move it around.</li>
 		    <li> <b>Preview in Browser</b>. See how the page renders in the default web browser for your system. </li>
     </ul>
   </li>
@@ -64,21 +70,7 @@ of an icon depicting the type of alert (information, warning,
 	
 	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
 </dl>
-<dl>     <dt>
-         <a name="tutorials">Tutorials</a>
-      </dt>
-      <dd>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="content" value="http://www.netbeans.org/kb/60/web/about_components.html">
-          <param name="text" value="Delving Into Components"></object>
-      </dd>
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
-</dl>
+
 <hr>
 <!-- Start Customer Feedback Link -->
 <!-- <p><b>Comments or questions?</b><br>

@@ -1422,7 +1422,7 @@ public class BindingDesignSupport {
         }
     }
 
-    private static String capitalize(String title) {
+    public static String capitalize(String title) {
         StringBuilder builder = new StringBuilder(title);
         boolean lastWasUpper = false;
         for (int i = 0; i < builder.length(); i++) {

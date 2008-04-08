@@ -54,18 +54,24 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
 
+/**
+ * Property editor for KeyStroke.
+ * 
+ * @author Jan Stola
+ */
 public class KeyStrokeEditor extends PropertyEditorSupport
         implements XMLPropertyEditor, NamedPropertyEditor {
     private String TXT_CTRL;
     private String TXT_ALT;
     private String TXT_SHIFT;
+    private String TXT_META;
 
     public KeyStrokeEditor() {
-        ResourceBundle bundle =
-            org.openide.util.NbBundle.getBundle(KeyStrokeEditor.class);
+        ResourceBundle bundle = org.openide.util.NbBundle.getBundle(KeyStrokeEditor.class);
         TXT_CTRL = bundle.getString("CTL_CtrlAsText"); // NOI18N
         TXT_SHIFT = bundle.getString("CTL_ShiftAsText"); // NOI18N
         TXT_ALT = bundle.getString("CTL_AltAsText"); // NOI18N
+        TXT_META = bundle.getString("CTL_MetaAsText"); // NOI18N
     }
 
     @Override
@@ -75,7 +81,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         StringBuffer modsText = new StringBuffer();
 
         if (0 !=(mods
-                 &(InputEvent.ALT_MASK | InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK))) {
+                 &(InputEvent.ALT_MASK | InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK | InputEvent.META_MASK))) {
             if (0 !=(mods & InputEvent.ALT_MASK))
                 modsText.append("java.awt.event.InputEvent.ALT_MASK"); // NOI18N
             if (0 !=(mods & InputEvent.SHIFT_MASK)) {
@@ -87,6 +93,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 if (modsText.length() > 0)
                     modsText.append(" | "); // NOI18N
                 modsText.append("java.awt.event.InputEvent.CTRL_MASK"); // NOI18N
+            }
+            if (0 !=(mods & InputEvent.META_MASK)) {
+                if (modsText.length() > 0)
+                    modsText.append(" | "); // NOI18N
+                modsText.append("java.awt.event.InputEvent.META_MASK"); // NOI18N
             }
         }
         else
@@ -110,10 +121,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         }
 
         KeyStroke key = keyStrokeFromString(text, true);
-        if (key == null)
+        if (key == null) {
             throw new IllegalArgumentException("Unrecognized key: " + text); // NOI18N
-        else
+        } else {
             setValue(key);
+        }
     }
 
     private static String getVirtualkeyName(int keycode) {
@@ -148,15 +160,18 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         String alt = i18ned ? TXT_ALT : "Alt"; // NOI18N
         String shift = i18ned ? TXT_SHIFT : "Shift"; // NOI18N
         String ctrl = i18ned ? TXT_CTRL : "Ctrl"; // NOI18N
+        String meta = i18ned ? TXT_META : "Meta"; // NOI18N
 
         while (st.hasMoreTokens() &&(token = st.nextToken()) != null) {
-            if (alt.equalsIgnoreCase(token))
+            if (alt.equalsIgnoreCase(token)) {
                 mods |= InputEvent.ALT_MASK;
-            else if (shift.equalsIgnoreCase(token))
+            } else if (shift.equalsIgnoreCase(token)) {
                 mods |= InputEvent.SHIFT_MASK;
-            else if (ctrl.equalsIgnoreCase(token))
+            } else if (ctrl.equalsIgnoreCase(token)) {
                 mods |= InputEvent.CTRL_MASK;
-            else {
+            } else if (meta.equalsIgnoreCase(token)) {
+                mods |= InputEvent.META_MASK;
+            } else {
                 String keycodeName = "VK_" + token.toUpperCase(); // NOI18N
                 try {
                     keycode = KeyEvent.class.getField(keycodeName).getInt(KeyEvent.class);
@@ -166,22 +181,24 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 }
             }
         }
-        if (keycode != 0)
+        if (keycode != 0) {
             return KeyStroke.getKeyStroke(keycode, mods);
-        else
+        } else {
             return null;
+        }
     }
 
     private String keyStrokeAsString(KeyStroke key, boolean i18ned) {
         String alt = i18ned ? TXT_ALT : "Alt"; // NOI18N
         String shift = i18ned ? TXT_SHIFT : "Shift"; // NOI18N
         String ctrl = i18ned ? TXT_CTRL : "Ctrl"; // NOI18N
+        String meta = i18ned ? TXT_META : "Meta"; //NOI18N
 
         StringBuffer buf = new StringBuffer();
         int mods = key.getModifiers();
         int modMasks[] = { InputEvent.SHIFT_MASK, InputEvent.CTRL_MASK,
-                           InputEvent.ALT_MASK, };
-        String modMaskStrings[] = { shift, ctrl, alt, };
+                           InputEvent.ALT_MASK, InputEvent.META_MASK };
+        String modMaskStrings[] = { shift, ctrl, alt, meta};
 
         for (int i = 0; i < modMasks.length; i++) {
             if ((mods & modMasks[i]) != 0) {
@@ -254,7 +271,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     private class CustomEditor extends JPanel
     {
         private KeyGrabberField _keyGrabber;
-        private JCheckBox _ctrl, _alt, _shift;
+        private JCheckBox _ctrl, _alt, _shift, _meta;
         private JComboBox _virtualKey;
 
         CustomEditor() {
@@ -305,6 +322,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             _shift.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_ShiftKey")); // NOI18N
             panel.add(_shift);
+            _meta = new JCheckBox();
+            Mnemonics.setLocalizedText(_meta, bundle.getString("CTL_Meta")); // NOI18N
+            _meta.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACSD_MetaKey")); // NOI18N
+            panel.add(_meta);
             virtualKeyLabel.setLabelFor(_virtualKey);
             
             gbc = new GridBagConstraints();
@@ -394,6 +416,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             _ctrl.addItemListener(il);
             _alt.addItemListener(il);
             _shift.addItemListener(il);
+            _meta.addItemListener(il);
         }
 
         java.awt.Component getKeyGrabber() {
@@ -404,6 +427,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             _ctrl.setSelected(0 !=(InputEvent.CTRL_MASK & key.getModifiers()));
             _alt.setSelected(0 !=(InputEvent.ALT_MASK & key.getModifiers()));
             _shift.setSelected(0 !=(InputEvent.SHIFT_MASK & key.getModifiers()));
+            _meta.setSelected(0 !=(InputEvent.META_MASK & key.getModifiers()));
 
             int keycode = key.getKeyCode();
             String keyName = getVirtualkeyName(keycode);
@@ -431,6 +455,8 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                     mods |= InputEvent.SHIFT_MASK;
                 if (_alt.isSelected())
                     mods |= InputEvent.ALT_MASK;
+                if (_meta.isSelected())
+                    mods |= InputEvent.META_MASK;
 
                 setValue(KeyStroke.getKeyStroke(keycode, mods));
                 _keyGrabber.setText(getAsText());
@@ -452,7 +478,8 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                     int keycode = e.getKeyCode();
                     if (keycode != KeyEvent.VK_CONTROL
                         && keycode != KeyEvent.VK_ALT
-                        && keycode != KeyEvent.VK_SHIFT) {
+                        && keycode != KeyEvent.VK_SHIFT
+                        && keycode != KeyEvent.VK_META) {
                         KeyStroke key = KeyStroke.getKeyStroke(keycode, e.getModifiers());
                         setKeyStroke(key);
                     }

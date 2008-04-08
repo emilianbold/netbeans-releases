@@ -43,7 +43,6 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -69,18 +68,22 @@ public final class J2SEAntLogger extends AntLogger {
         return session.getVerbosity() <= AntEvent.LOG_INFO;
     }
     
-    private static boolean isJ2SEProject(File dir) {
+    private static boolean isJ2SEProject(final File dir) {
+        return getJ2SEProject(dir) != null;
+    }
+    
+    private static J2SEProject getJ2SEProject(File dir) {
         FileObject projdir = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
         try {
             Project proj = ProjectManager.getDefault().findProject(projdir);
             if (proj != null) {
                 // Check if it is a J2SEProject.
-                return proj.getLookup().lookup(J2SEProject.class) != null;
+                return proj.getLookup().lookup(J2SEProject.class);
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        return false;
+        return null;
     }
     
     public boolean interestedInScript(File script, AntSession session) {
@@ -95,10 +98,15 @@ public final class J2SEAntLogger extends AntLogger {
         }
         // #43968: messages from subprojects are sent in AntEvent that has script 
         // name build.xml and we are interested in those messages too
-        else if (script.getName().equals("build.xml")) { // NOI18N
+        else {
             File parent = script.getParentFile();
-            if (parent != null && parent.canRead()) {
-                return isJ2SEProject(parent);
+            if (parent != null && parent.canRead()) {                
+                J2SEProject project = getJ2SEProject(parent);
+                if (project != null) {
+                    final String mainBuildScript = J2SEProjectUtil.getBuildXmlName(project);
+                    assert mainBuildScript != null;
+                    return script.getName().equals(mainBuildScript);
+                }
             }
         }
         // Was not a J2SEProject's nbproject/build-impl.xml; ignore it.

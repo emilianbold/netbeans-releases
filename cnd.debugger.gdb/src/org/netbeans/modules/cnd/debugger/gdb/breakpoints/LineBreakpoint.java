@@ -41,6 +41,22 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.WeakListeners;
+
 /**
  * Notifies about line breakpoint events.
  *
@@ -63,8 +79,7 @@ public class LineBreakpoint extends GdbBreakpoint {
      * @return a new breakpoint for given parameters
      */
     public static LineBreakpoint create(String url, int lineNumber) {
-        LineBreakpoint b = new LineBreakpointComparable();
-        b.setURL(url);
+        LineBreakpoint b = new LineBreakpointComparable(url);
         b.setLineNumber(lineNumber);
         return b;
     }
@@ -79,9 +94,22 @@ public class LineBreakpoint extends GdbBreakpoint {
         return "LineBreakpoint " + getURL() + " : " + getLineNumber(); // NOI18N
     }
     
-    private static class LineBreakpointComparable extends LineBreakpoint implements Comparable {
+    private static class LineBreakpointComparable extends LineBreakpoint
+            implements Comparable, FileChangeListener, ChangeListener {
         
-        public LineBreakpointComparable() {
+       // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
+       private FileObject fo;
+       
+       public LineBreakpointComparable(String url) {
+           setURL(url);
+            try {
+                fo = URLMapper.findFileObject(new URL(getURL()));
+                if (fo != null) {
+                    fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
+                }
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
         
         public int compareTo(Object o) {
@@ -96,6 +124,40 @@ public class LineBreakpoint extends GdbBreakpoint {
                 }
             } else {
                 return -1;
+            }
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        public void fileChanged(FileEvent fe) {
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(this);
+            fo = null;
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            try {
+                this.setURL(((FileObject) fe.getSource()).getURL().toString());
+            } catch (FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+    
+        public void stateChanged(ChangeEvent chev) {
+            Object source = chev.getSource();
+            if (source instanceof Breakpoint.VALIDITY) {
+                setValidity((Breakpoint.VALIDITY) source, chev.toString());
+            } else {
+                throw new UnsupportedOperationException(chev.toString());
             }
         }
     }

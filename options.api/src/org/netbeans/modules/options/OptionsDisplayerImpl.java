@@ -118,7 +118,7 @@ public class OptionsDisplayerImpl {
             Object[] options = new Object[2];            
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
             options[1] = isMac ? bOK : DialogDescriptor.CANCEL_OPTION;
-            descriptor = new DialogDescriptor(optionsPanel,title,modal,options,DialogDescriptor.OK_OPTION,DialogDescriptor.DEFAULT_ALIGN, null, null);
+            descriptor = new DialogDescriptor(optionsPanel,title,modal,options,DialogDescriptor.OK_OPTION,DialogDescriptor.DEFAULT_ALIGN, null, null, false);
             descriptor.setAdditionalOptions(new Object[] {bClassic});
             descriptor.setHelpCtx(optionsPanel.getHelpCtx());
             OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bClassic);
@@ -213,13 +213,13 @@ public class OptionsDisplayerImpl {
                 Dialog d = dialog;
                 dialog = null;
                 if (optionsPanel.isChanged ()) {
-                    Confirmation descriptor = new Confirmation (
+                    Confirmation confirmationDescriptor = new Confirmation (
                         loc ("CTL_Some_values_changed"), 
                         NotifyDescriptor.YES_NO_CANCEL_OPTION,
                         NotifyDescriptor.QUESTION_MESSAGE
                     );
                     Object result = DialogDisplayer.getDefault ().
-                        notify (descriptor);
+                        notify (confirmationDescriptor);
                     if (result == NotifyDescriptor.YES_OPTION) {
                         optionsPanel.save ();
                         d.dispose ();                        

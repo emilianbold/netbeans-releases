@@ -433,6 +433,7 @@ import org.openide.util.WeakListeners;
     }
      
     private void invokeDamageRange(final int startOffset, final int endOffset) {
+//        LOG.log(Level.INFO, "invokeDamageRange: [" + startOffset + ", " + endOffset + "]", new Exception());
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 setNextActivityChangeOffset(0);

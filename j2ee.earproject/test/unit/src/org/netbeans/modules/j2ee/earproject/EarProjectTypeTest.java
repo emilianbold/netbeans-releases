@@ -67,7 +67,7 @@ public final class EarProjectTypeTest extends NbTestCase {
     
     public void testCreateProject() throws Exception {
         File prjDirF = new File(getWorkDir(), "EarProjectTypeTest.testCreatProject");
-        prjDirF.mkdirs();
+        FileUtil.createFolder(prjDirF);
         FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
         AntProjectHelper tmp = ProjectGenerator.createProject(prjDirFO, prjType.getType());
         prjType.createProject(tmp);

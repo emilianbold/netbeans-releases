@@ -53,6 +53,6 @@ made subject to such option by the copyright holder.
 
     <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
 
-    <compiler name="unit-compiler" antfile="../../../../nbbuild/templates/xtest-unit.xml" target="default-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="../../nbbuild/templates/xtest-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>

@@ -41,13 +41,10 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -55,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.codegen.ClientStubsGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -126,7 +124,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
             generatorTask = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     ProgressHandle pHandle = dialog.getProgressHandle();
-                    pHandle.start();
+                    //pHandle.start();
                     
                     try {
                         if(isProjectSelected) {
@@ -137,17 +135,17 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                             result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile, createJmaki, overwrite).generate(pHandle));
                         }
                     } catch(Exception iox) {
-                        Logger.getLogger(getClass().getName()).log(Level.INFO, "instantiate", iox);
+                        Exceptions.printStackTrace(iox);
                     } finally {
                         dialog.close();
-                        pHandle.finish();
+                        //pHandle.finish();
                     }
                 }
             });
             generatorTask.schedule(50);
             dialog.open();
         } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "instantiate", ex);
+            Exceptions.printStackTrace(ex);
         }
         return result;
     }

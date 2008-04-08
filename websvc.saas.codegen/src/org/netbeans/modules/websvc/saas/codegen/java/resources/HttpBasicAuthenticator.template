@@ -1,0 +1,48 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import java.io.IOException;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.util.Properties;
+
+/**
+ *
+ * @author __USER__
+ */
+public class __NAME__ extends Authenticator {
+    private String username;
+    
+    private String password;
+    
+    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+
+    public __NAME__(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+    
+    public __NAME__() throws IOException {
+        Properties props = new Properties();
+        props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+        username = props.getProperty("username");
+        password = props.getProperty("password");
+
+        if (username == null || username.length() == 0 || 
+            password == null || password.length() == 0) {
+            throw new IOException("Please specify your username and password in the "  + PROP_FILE + " file.");
+        }
+    }
+    
+    protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(username, password.toCharArray());
+    }
+}

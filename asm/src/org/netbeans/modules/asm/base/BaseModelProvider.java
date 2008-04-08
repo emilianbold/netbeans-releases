@@ -84,7 +84,7 @@ public abstract class BaseModelProvider implements AsmModelProvider {
         }
         catch(Exception ex) {
             Logger.getLogger(this.getClass().getName()).
-                log(Level.WARNING, "Can't load xml model", ex);
+                log(Level.WARNING, "Can't load xml model", ex); // NOI18N
 
             return EmptyModel.getInstance();
         }
@@ -95,7 +95,7 @@ public abstract class BaseModelProvider implements AsmModelProvider {
               }
               catch(Exception ex) {
                  Logger.getLogger(this.getClass().getName()).
-                    log(Level.WARNING, "Can't load xml model", ex);
+                    log(Level.WARNING, "Can't load xml model", ex); // NOI18N
 
                  return EmptyModel.getInstance();
               }

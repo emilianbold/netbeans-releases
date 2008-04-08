@@ -74,8 +74,8 @@ public class ShowHideClassViewAction extends CallableSystemAction {
         TopComponent tc = ClassViewTopComponent.findDefault();
         if (!tc.isOpened()) {
             tc.open();
-            Preferences ps = NbPreferences.forModule(ShowHideClassViewAction.class);
-            ps.putBoolean("ClassViewWasOpened", true); // NOI18N
+            Preferences ps = NbPreferences.forModule(ClassViewTopComponent.class);
+            ps.putBoolean(ClassViewTopComponent.OPENED_PREFERENCE, true); // NOI18N
         }
         tc.requestActive();
     }

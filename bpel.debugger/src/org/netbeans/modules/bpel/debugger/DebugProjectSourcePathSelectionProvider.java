@@ -47,7 +47,7 @@ public class DebugProjectSourcePathSelectionProvider implements SourcePathSelect
 
     public boolean isSelected(String path) {
         if (mySubprojectsBaseDirs == null) {
-            Map params = (Map)myContextProvider.lookupFirst(null, Map.class);
+            Map params = myContextProvider.lookupFirst(null, Map.class);
             if (params != null) {
                 String projectBaseDir = (String)params.get("projectBaseDir");
                 if (projectBaseDir != null) {

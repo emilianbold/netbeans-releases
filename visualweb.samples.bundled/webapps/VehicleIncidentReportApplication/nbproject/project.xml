@@ -40,7 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.web.project</type>
     <configuration>
@@ -53,7 +52,7 @@ made subject to such option by the copyright holder.
                     <file>${libs.jsf12-support.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
-                <library files="7">
+                <library files="5">
                     <file>${libs.woodstock-components.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>

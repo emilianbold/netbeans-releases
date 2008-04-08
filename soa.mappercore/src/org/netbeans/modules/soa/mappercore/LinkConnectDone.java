@@ -66,7 +66,8 @@ public class LinkConnectDone extends MapperKeyboardAction {
     
     public void actionPerformed(ActionEvent e) {
         LinkTool linkTool = canvas.getLinkTool();
-        if (linkTool == null) { 
+        if (linkTool == null || !linkTool.isActive()) {
+            canvas.getRightTree().getActionEscape().actionPerformed(e);
             return; 
         }
         linkTool.done();

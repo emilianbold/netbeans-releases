@@ -48,14 +48,13 @@ import javax.xml.namespace.QName;
  */
 public interface CasaEndpoint extends ReferenceableCasaComponent {
     
-    public static final String NAME_PROPERTY = "name";                      // NOI18N
-    public static final String IS_CONSUME_PROPERTY = "is-consume";          // NOI18N
     public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name";    // NOI18N
     public static final String INTERFACE_NAME_PROPERTY = "interface-name";  // NOI18N
     public static final String SERVICE_NAME_PROPERTY = "service-name";      // NOI18N
-    
-//    boolean isConsumes();
-    
+    public static final String DISPLAY_NAME_PROPERTY = "display-name"; // NOI18N
+    public static final String PROCESS_NAME_PROPERTY = "process-name"; // NOI18N
+    public static final String FILE_PATH_PROPERTY = "file-path"; // NOI18N
+        
     /**
      * Gets the endpoint name (which serves the ID purpose in the CASA document).
      * For example: "endpoint1", "endpoint2", ...
@@ -78,4 +77,8 @@ public interface CasaEndpoint extends ReferenceableCasaComponent {
     
     QName getServiceQName();
     void setServiceQName(QName qname);
+    
+    String getDisplayName();
+    String getProcessName();
+    String getFilePath();
 }

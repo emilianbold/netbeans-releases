@@ -44,7 +44,6 @@ package org.netbeans.modules.palette;
 
 import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.util.*;
 
 /**

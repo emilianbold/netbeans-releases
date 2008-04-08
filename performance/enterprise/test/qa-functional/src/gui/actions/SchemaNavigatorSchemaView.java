@@ -57,7 +57,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
  */
 public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private Node processNode, schemaNode;
+    private Node processNode, schemaNode, anotherSchemaNode;
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaView(String testName) {
@@ -77,6 +77,7 @@ public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.ut
         processNode.select();
         
         schemaNode = new Node(processNode, "fields.xsd");
+        anotherSchemaNode = new Node(processNode, "batch.xsd");
     }
     
     public void prepare() {
@@ -93,7 +94,9 @@ public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.ut
     
     @Override
     public void close() {
-        processNode.select();
+        anotherSchemaNode.select();
+        JComboBoxOperator combo = new JComboBoxOperator(new TopComponentOperator("Navigator")); // NOI18N
+        combo.selectItem("Design View"); // NOI18N
         new EventTool().waitNoEvent(1000);
     }
     

@@ -144,7 +144,12 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
         
     }
-    
+
+    public void testToString() {
+        String txt = lookup.toString();
+        assertNotNull("Something is there", txt);
+        assertTrue("Something2: " + txt, txt.length() > 0);
+    }
 
 
     /** Tests ordering of items in the lookup.

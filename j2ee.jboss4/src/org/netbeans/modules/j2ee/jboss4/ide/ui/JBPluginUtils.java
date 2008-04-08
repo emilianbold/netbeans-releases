@@ -69,8 +69,14 @@ import org.w3c.dom.NodeList;
  */
 public class JBPluginUtils {
 
-    public static final String SERVER_XML = File.separator + "deploy" + File.separator +
+    public static final String SERVER_4_XML = File.separator + "deploy" + File.separator +
                 "jbossweb-tomcat55.sar" + File.separator + "server.xml";
+
+    public static final String SERVER_4_2_XML = File.separator + "deploy" + File.separator +
+                "jboss-web.deployer" + File.separator + "server.xml";
+
+    public static final String SERVER_5_XML = File.separator + "deployers" + File.separator +
+                "jbossweb.deployer" + File.separator + "server.xml";
 
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
@@ -371,13 +377,21 @@ public class JBPluginUtils {
         //todo: get real deploy path
     }
 
-    public static String getHTTPConnectorPort(String domainDir){
-        String defaultPort = "8080";
-        String serverXml = domainDir + SERVER_XML; //NOI18N
+    public static String getHTTPConnectorPort(String domainDir) {
+        String defaultPort = "8080"; // NOI18N
 
-        File serverXmlFile = new File(serverXml);
-        if(!serverXmlFile.exists()){
-            return defaultPort;
+        /*
+         * Following block is trying to solve different server versions.
+         */
+        File serverXmlFile = new File(domainDir + SERVER_4_XML);
+        if (!serverXmlFile.exists()) {
+            serverXmlFile = new File(domainDir + SERVER_4_2_XML);
+            if (!serverXmlFile.exists()) {
+                serverXmlFile = new File(domainDir + SERVER_5_XML);
+                if (!serverXmlFile.exists()) {
+                    return defaultPort;
+                }
+            }
         }
 
         InputStream inputStream = null;

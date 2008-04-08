@@ -45,16 +45,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.gsf.Completable;
-import org.netbeans.api.gsf.BracketCompletion;
-import org.netbeans.api.gsf.DeclarationFinder;
-import org.netbeans.api.gsf.Formatter;
-import org.netbeans.api.gsf.InstantRenamer;
-import org.netbeans.api.gsf.Indexer;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.GsfLanguage;
-import org.netbeans.api.gsf.HintsProvider;
-import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 import org.openide.ErrorManager;
@@ -68,11 +70,10 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Tor Norbye
  */
 public class DefaultLanguage implements Language {
-    private String displayName;
+    private ColoringManager coloringManager;
     private String iconBase;
     private String mime;
     private boolean useCustomEditorKit;
-    private List<String> extensions;
     private List<Action> actions;
     private GsfLanguage language;
     private Parser parser;
@@ -85,6 +86,8 @@ public class DefaultLanguage implements Language {
     private StructureScanner structure;
     private HintsProvider hintsProvider;;
     //private PaletteController palette;
+    private OccurrencesFinder occurrences;
+    private SemanticAnalyzer semantic;
     private FileObject parserFile;
     private FileObject languageFile;
     private FileObject completionProviderFile;
@@ -96,7 +99,9 @@ public class DefaultLanguage implements Language {
     private FileObject structureFile;
     private FileObject hintsProviderFile;
     private FileObject paletteFile;
-    private ColoringManager coloringManager;
+    private FileObject semanticFile;
+    private FileObject occurrencesFile;
+    
     
     /** Creates a new instance of DefaultLanguage */
     public DefaultLanguage(String mime) {
@@ -104,14 +109,12 @@ public class DefaultLanguage implements Language {
     }
 
     /** For testing purposes only!*/
-    public DefaultLanguage(String displayName, String iconBase, String mime, List<String> extensions, List<Action> actions,
+    public DefaultLanguage(String iconBase, String mime, List<Action> actions,
             GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
             DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketCompletion, Indexer indexer,
             StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
-        this.displayName = displayName;
         this.iconBase = iconBase;
         this.mime = mime;
-        this.extensions = extensions;
         this.actions = actions;
         this.language = gsfLanguage;
         this.parser = parser;
@@ -136,11 +139,7 @@ public class DefaultLanguage implements Language {
     }
     
     public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        return getGsfLanguage().getDisplayName();
     }
 
     public String getIconBase() {
@@ -157,14 +156,6 @@ public class DefaultLanguage implements Language {
 
     public void setMimeType(String mime) {
         this.mime = mime;
-    }
-
-    public String[] getExtensions() {
-        if (extensions != null) {
-            return extensions.toArray(new String[extensions.size()]);
-        } else {
-            return new String[0];
-        }
     }
 
     public Action[] getEditorActions() {
@@ -222,20 +213,6 @@ public class DefaultLanguage implements Language {
         actions.add(action);
     }
     
-    public void addExtension(String extension) {
-        if (extension == null || extension.length() == 0 || extension.startsWith(".")) {
-            throw new IllegalArgumentException("Extension should be a nonzero string not starting with a dot");
-        }
-        
-        if (extensions == null) {
-            extensions = new ArrayList<String>();
-        }
-        
-        assert extension.equals(extension.toLowerCase());
-
-        extensions.add(extension);
-    }
-
     // XXX This is crying out for generics!
     private Object createInstance(FileObject file) {
         assert file.getExt().equals("instance"); // NOI18N
@@ -256,7 +233,7 @@ public class DefaultLanguage implements Language {
     
     @Override
     public String toString() {
-        return mime + ":" + displayName;
+        return mime + ":" + getDisplayName();
     }
 
     public Completable getCompletionProvider() {
@@ -413,5 +390,35 @@ public class DefaultLanguage implements Language {
     
     public boolean hasFormatter() {
         return this.formatterFile != null;
+    }
+
+    public OccurrencesFinder getOccurrencesFinder() {
+        if (occurrences == null && occurrencesFile != null) {
+            occurrences = (OccurrencesFinder)createInstance(occurrencesFile);
+            if (occurrences == null) {
+                // Don't keep trying
+                occurrencesFile = null;
+            }
+        }
+        return occurrences;
+    }
+
+    public void setOccurrencesFinderFile(FileObject occurrencesFile) {
+        this.occurrencesFile = occurrencesFile;
+    }
+    
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        if (semantic == null && semanticFile != null) {
+            semantic = (SemanticAnalyzer)createInstance(semanticFile);
+            if (semantic == null) {
+                // Don't keep trying
+                semanticFile = null;
+            }
+        }
+        return semantic;
+    }
+
+    public void setSemanticAnalyzer(FileObject semanticFile) {
+        this.semanticFile = semanticFile;
     }
 }

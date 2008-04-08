@@ -65,9 +65,11 @@ public final class CndOptionsPanel extends JPanel {
 	for (int i = 0; i < comps.length; i++) {
 	    comps[i].getComponent(null).setBorder(new EmptyBorder(8, 8, 8, 8));
             name = NbBundle.getMessage(comps[i].getClass(), comps[i].getComponent(null).getName());
-            mnem = NbBundle.getMessage(comps[i].getClass(), comps[i].getComponent(null).getName() + "_Mnemonic").charAt(0); // NOI18N
 	    tabbedPane.addTab(name, comps[i].getComponent(null));
-	    tabbedPane.setMnemonicAt(i, mnem);
+            // it's impossible to support unique mnemonics for tabs due to expansive growth of options panes and their's content.
+            // So lets remove them at all as most NetBeans components did. (IZ127911)
+            // mnem = NbBundle.getMessage(comps[i].getClass(), comps[i].getComponent(null).getName() + "_Mnemonic").charAt(0); // NOI18N
+	    // tabbedPane.setMnemonicAt(i, mnem);
 	}      
         
         setLayout(new BorderLayout());

@@ -114,7 +114,7 @@ public enum RhtmlTokenId implements TokenId {
                                   LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case HTML:
-                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, false);
+                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                 case RUBY_EXPR:
                 case RUBY:
                     return LanguageEmbedding.create(RubyTokenId.language(), 0, 0, false);

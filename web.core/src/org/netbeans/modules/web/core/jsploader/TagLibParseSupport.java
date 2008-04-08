@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.filesystems.FileObject;
@@ -163,14 +164,14 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     }
 
     /** Sets the dirty flag - if the document was modified after last parsing. */
-    void setDocumentDirty(boolean b) {
+    public void setDocumentDirty(boolean b) {
         //synchronized (parseResultLock) {
             documentDirty = b;
         //}
     }
 
     /** Tests the documentDirty flag. */
-    boolean isDocumentDirty() {
+    public boolean isDocumentDirty() {
         return documentDirty;
     }
 
@@ -178,7 +179,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     * and parsing is not running yet.
       @return parsing task so caller may listen on its completion.
     */
-    Task autoParse() {
+    public Task autoParse() {
         //do not parse if it is not necessary
         //this is the BaseJspEditorSupport optimalization since the autoParse causes the webmodule
         //to be reparsed even if it has already been reparsed.
@@ -264,11 +265,16 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
             }
             JspParserAPI.JspOpenInfo info = (JspParserAPI.JspOpenInfo)jspOpenInfoRef.get(timestamp);
             if (info == null) {
-                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), useEditor);
+                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, getWebModule(jspFile), useEditor);
                 jspOpenInfoRef.put(info, timestamp);
             }
             return info;
         }
+    }
+    
+    public OpenInfo getOpenInfo(boolean preferCurrent, boolean useEditor) {
+        JspOpenInfo delegate = getCachedOpenInfo(preferCurrent, useEditor);
+        return OpenInfo.create(delegate.isXmlSyntax(), delegate.getEncoding());
     }
     
     public JspParserAPI.ParseResult getCachedParseResult(boolean successfulOnly, boolean preferCurrent) {
@@ -354,7 +360,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                 
                 getJSPColoringData(false).parsingStarted();
                 
-                locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
+                locResult = parser.analyzePage(jspFile, getWebModule(jspFile), JspParserAPI.ERROR_IGNORE);
                 assert locResult != null;
                 
                 synchronized (TagLibParseSupport.this.parseResultLock) {
@@ -442,5 +448,4 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         }
 
     }
-
 }

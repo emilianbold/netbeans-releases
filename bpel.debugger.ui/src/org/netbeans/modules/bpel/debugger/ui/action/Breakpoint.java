@@ -35,6 +35,8 @@ import org.netbeans.modules.bpel.debugger.api.breakpoints.LineBreakpoint;
 import org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelBreakpointListener;
 import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
 import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.BpelNodeTypedAction;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
@@ -87,9 +89,52 @@ public class Breakpoint extends ActionsProviderSupport
     public void propertyChange(
             final PropertyChangeEvent event) {
         
-        setEnabled(
-                ActionsManager.ACTION_TOGGLE_BREAKPOINT, 
-                EditorUtil.getCurrentLine() != null);
+        final TopComponent activeTc = 
+                WindowManager.getDefault().getRegistry().getActivated();
+        final MultiViewHandler mvh = 
+                MultiViews.findMultiViewHandler(activeTc);
+        
+        final TopComponent navigatorTc = 
+                WindowManager.getDefault().findTopComponent("navigatorTC");
+        
+        String currentViewName = null;
+        
+        if (mvh != null) {
+            final MultiViewPerspective mvp = mvh.getSelectedPerspective();
+            
+            if (mvp != null) {
+                currentViewName = mvp.preferredID();
+            }
+        }
+        
+        boolean enabled;
+        if ((activeTc != null) && (activeTc.equals(navigatorTc))) {
+            enabled = true;
+        } else {
+            enabled = (EditorUtil.getCurrentLine() != null) &&
+                    ("orch-designer".equals(currentViewName) || 
+                    "bpelsource".equals(currentViewName));
+                    
+            if (enabled && "orch-designer".equals(currentViewName)) {
+                final Node node = getCurrentNode();
+
+                final javax.swing.Action[] actions = node.getActions(true);
+                if (actions != null) {
+                    enabled = false;
+
+                    for (javax.swing.Action action: actions) {
+                        if ((action instanceof BpelNodeTypedAction) && 
+                                ((BpelNodeTypedAction) action).getType() == ActionType.TOGGLE_BREAKPOINT) {
+                            enabled = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+        }
+        
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
     }
     
     // Private /////////////////////////////////////////////////////////////////
@@ -126,6 +171,12 @@ public class Breakpoint extends ActionsProviderSupport
             
             bpelEntityId = bpelEntity.getUID();
             lineNumber = ModelUtil.getLineNumber(bpelEntityId);
+            
+            final int translatedLineNumber = EditorContextBridge.
+                    translateBreakpointLine(url, lineNumber);
+            if ((translatedLineNumber != -1)) {
+                lineNumber = translatedLineNumber;
+            }
         } else {
             lineNumber = EditorUtil.getLineNumber(node);
             
@@ -222,9 +273,7 @@ public class Breakpoint extends ActionsProviderSupport
     
     private BpelBreakpointListener getBreakpointAnnotationListener() {
         if (myBreakpointAnnotationListener == null) {
-            myBreakpointAnnotationListener = (BpelBreakpointListener) 
-                    DebuggerManager.getDebuggerManager().lookupFirst 
-                    (null, BpelBreakpointListener.class);
+            myBreakpointAnnotationListener = DebuggerManager.getDebuggerManager().lookupFirst(null, BpelBreakpointListener.class);
         }
         
         return myBreakpointAnnotationListener;

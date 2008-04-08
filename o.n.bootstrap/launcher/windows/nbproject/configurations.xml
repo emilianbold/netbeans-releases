@@ -23,7 +23,7 @@
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>make -f Makefile testinst</buildCommand>
-          <cleanCommand>make -f Makefile clean</cleanCommand>
+          <cleanCommand>make -f Makefile distclean</cleanCommand>
           <executablePath>nbexec.exe</executablePath>
         </makeTool>
         <requiredProjects>

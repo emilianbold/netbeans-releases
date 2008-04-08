@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author mkleint
  */
 public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
@@ -59,7 +58,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
     private static final String BUILD = "Build"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
     
-    private String name;
+    private final String name;
     
     /** Creates a new instance of RubyCompositePanelProvider */
     public RubyCompositePanelProvider(String name) {
@@ -67,7 +66,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
     }
 
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
+        ResourceBundle bundle = NbBundle.getBundle(RubyCompositePanelProvider.class );
         ProjectCustomizer.Category toReturn = null;
         if (SOURCES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(

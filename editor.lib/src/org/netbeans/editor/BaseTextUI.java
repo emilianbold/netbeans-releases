@@ -71,6 +71,8 @@ import org.netbeans.editor.view.spi.LockView;
 public class BaseTextUI extends BasicTextUI
     implements PropertyChangeListener, DocumentListener, SettingsChangeListener {
 
+    /* package */ static final String PROP_DEFAULT_CARET_BLINK_RATE = "nbeditor-default-swing-caret-blink-rate"; //NOI18N
+    
     /** Extended UI */
     private EditorUI editorUI;
 
@@ -234,13 +236,18 @@ public class BaseTextUI extends BasicTextUI
         BaseKit kit = (BaseKit)getEditorKit(component);
         ViewFactory vf = kit.getViewFactory();
         // Create and attach caret
+        Caret defaultCaret = component.getCaret();
         Caret caret = kit.createCaret();
         component.setCaretColor(Color.black); // will be changed by settings later
         component.setCaret(caret);
+        component.putClientProperty(PROP_DEFAULT_CARET_BLINK_RATE, defaultCaret.getBlinkRate());
         
         // assign blink rate
         int br = SettingsUtil.getInteger(Utilities.getKitClass(component), SettingsNames.CARET_BLINK_RATE,
         SettingsDefaults.defaultCaretBlinkRate.intValue());
+        if (br == -1) {
+            br = defaultCaret.getBlinkRate();
+        }
         caret.setBlinkRate(br);
 
         // Create document

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -170,8 +171,6 @@ final class ClassMap {
                             Element methodElement = trees.getElement(methodTreePath);
                             for (AnnotationMirror annMirror : methodElement.getAnnotationMirrors()) {
                                 Element annElem = annMirror.getAnnotationType().asElement();
-                                assert annElem.getKind() == ElementKind.ANNOTATION_TYPE;
-                                assert annElem instanceof TypeElement;
                                 String fullName = ((TypeElement) annElem).getQualifiedName().toString();
                                 if (fullName.startsWith(JUNIT4_PKG_PREFIX)) {
                                     String shortName = fullName.substring(JUNIT4_PKG_PREFIX.length());
@@ -515,6 +514,27 @@ final class ClassMap {
         shiftPositions(index + 1, -1);
     }
     
+    /**
+     * Returns names of all no-argument methods.
+     * 
+     * @return  list of names of no-argument methods
+     *          in the order of the methods in the source code
+     */
+    List<String> getNoArgMethods() {
+        if (!containsMethods()) {
+            return Collections.<String>emptyList();
+        }
+
+        List<String> result = new ArrayList<String>(signatures.size());
+        for (String signature : signatures) {
+            if (signature.startsWith("! ")) {                           //NOI18N
+                result.add(signature.substring(2));
+            }
+        }
+        return result.isEmpty() ? Collections.<String>emptyList()
+                                : result;
+    }
+
     /**
      */
     int size() {

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.awt.*;
 import java.util.concurrent.*;
 import javax.swing.*;
@@ -69,7 +71,6 @@ public class DefineCorrelationAction extends BpelNodeAction {
         return NbBundle.getMessage(getClass(), "CTL_DefineCorrelationAction"); // NOI18N
     }
     
-    @Override
     public ActionType getType() {
         return ActionType.DEFINE_CORRELATION;
     }

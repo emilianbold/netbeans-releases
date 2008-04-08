@@ -101,6 +101,7 @@ public class DownloadInstallationDataAction extends WizardAction {
     }
     
     public void execute() {
+        LogManager.logEntry("getting all installation data");
         final Registry registry = Registry.getInstance();
         final List<Product> products = registry.getProductsToInstall();
         final int percentageChunk = Progress.COMPLETE / products.size();
@@ -172,6 +173,7 @@ public class DownloadInstallationDataAction extends WizardAction {
                 LogManager.log(ErrorLevel.ERROR, error);
             }
         }
+        LogManager.logExit("... finished getting of the installation data");
     }
     
     public void cancel() {

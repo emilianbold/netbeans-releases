@@ -161,7 +161,7 @@ new platform P2 by building S1 + P1. Here's what you need to do in brief:
 
     <target name="create-platform" depends="build-zip">
         <mkdir dir="${p2}"/>
-        <unzip src="dist/${app.name}.zip" dest="${p2}"/>
+        <unzip src="${dist.dir}/${app.name}.zip" dest="${p2}"/>
     </target>
 
 where S1/nbproject/project.properties or S1/nbproject/private/private.properties
@@ -174,7 +174,7 @@ so you can either move the unpacked files up one dir, or use the dir p2/s1name
 as the actual platform location.
 
 As of NetBeans 6.0, you may simply run the 'create-platform' target in your suite's
-build.xml, which will create a platform in dist/${app.name}.
+build.xml, which will create a platform in ${dist.dir}/${app.name}.
 
 3. Now configure S2 to use P2 as its platform. If an absolute path, you can use
 the Platform Manager, else for relative paths see the preceding section.
@@ -495,11 +495,6 @@ In order for the IDE to recognize references to those classes defined in the
 <extra-compilation-unit>, you may also need add/modify your module's cp.extra
 property to include the value specified in the <package-root> element.
 
-If you export some API (declared in <public-packages> or <friend-packages>) and
-wish to be able to build Javadoc, just specify
-
-    <javadoc/>
-
 PROPERTIES WHICH MAY BE DEFINED IN YOUR project.properties
 ----------------------------------------------------------
 
@@ -757,6 +752,9 @@ interdependent modules can be published to users at once on an update center.
 
 src.dir - "src", module source directory. Avoid overriding.
 
+test.timeout [since 6.1] - timeout (in msec) for unit tests, default 600000 (10
+minutes). A test running longer than this will be halted.
+
 test.unit.cp.extra - any additional classpath you might need to compile your
 unit tests. If left empty, you can compile against JUnit; the NB test extensions
 in nbjunit.jar; your module; and anything your module compiled against (since
@@ -996,6 +994,8 @@ excluded by ${disabled.clusters} (if used) or by modules from clusters not inclu
 in ${enabled.clusters}. Since 5.0u1, should be stored in platform.properties,
 not project.properties.
 
+dist.dir - directory (if not 'dist') to place the final application in. Since 6.1.
+
 modules - list of contained modules. Path format; entries resolved against the
 suite directory as needed.
 
@@ -1047,6 +1047,8 @@ profile - used from inside the NetBeans IDE to profile the entire suite
 run - start application for testing.
 
 run-jnlp - executes your JNLP application (currently from local files)
+
+test - run all module unit tests.
 
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 

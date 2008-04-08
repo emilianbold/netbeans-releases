@@ -103,7 +103,13 @@ public class ElementNode extends AbstractNode {
                    
     @Override
     public java.lang.String getDisplayName() {
-        return description.name;
+        if (description.name != null) {
+            return description.name;
+        }
+        if (description.fileObject != null) {
+            return description.fileObject.getNameExt();
+        }
+        return null;
     }
             
     @Override

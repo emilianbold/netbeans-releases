@@ -68,7 +68,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class CustomizerProviderImpl implements CustomizerProvider {
     
-    private final Project project;
+    private final EarProject project;
     private final AntProjectHelper antProjectHelper;   
     private final ReferenceHelper refHelper;
     private final AntBasedProjectType abpt;
@@ -77,7 +77,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-j2ee-earproject/Customizer"; //NO18N
      
-    public CustomizerProviderImpl(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper, AntBasedProjectType abpt) {
+    public CustomizerProviderImpl(EarProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper, AntBasedProjectType abpt) {
         this.project = project;
         this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
@@ -99,7 +99,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            EarProjectProperties uiProperties = new EarProjectProperties((EarProject) project, refHelper, abpt);
+            EarProjectProperties uiProperties = project.getProjectProperties();
             Lookup context = Lookups.fixed(new Object[] {
                 project,
                 uiProperties,

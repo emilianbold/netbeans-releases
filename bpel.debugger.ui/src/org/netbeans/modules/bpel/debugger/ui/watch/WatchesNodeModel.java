@@ -48,8 +48,7 @@ public class WatchesNodeModel implements NodeModel, Constants {
             final ContextProvider contextProvider) {
         
         myContextProvider = contextProvider;
-        myDebugger = (BpelDebugger) 
-                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myHelper = new VariablesUtil(myDebugger);
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,8 +58,6 @@ import org.netbeans.modules.ruby.railsprojects.Generator;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
@@ -70,7 +68,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -80,7 +77,7 @@ import org.openide.util.lookup.ProxyLookup;
 // XXX need unit test
 
 /**
- * (Copied from Java Project Source (org.netbeans.spi.gsfpath.project.support.ui)
+ * (Copied from Java Project Source (org.netbeans.modules.gsfpath.spi.project.support.ui)
  * Displays a package root in a tree.
  * @see "#42151"
  * @author Jesse Glick
@@ -112,9 +109,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         this.generator = generator;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
-
-    static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/modules/ruby/railsprojects/ui/packageBadge.gif" ); // NOI18N
     
+    private final static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/packageBadge.gif"); // NOI18N
+
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);
@@ -172,16 +169,15 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     
     @Override
     public Action[] getActions(boolean context) {
-        Action[] result = initActions();
-        return result;
+        return initActions(context);
     }
 
     // From ActionFilterNode
     private Action[] actionCache;
     
-    private Action[] initActions () {
+    private Action[] initActions (boolean context) {
         if (actionCache == null) {
-            Action[] existing = super.getActions();
+            Action[] existing = super.getActions(context);
             Action[] additional;
             if (generator == Generator.NONE) {
                 additional = new Action[] { CommonProjectActions.newFileAction(), null }; // null: separator
@@ -302,27 +298,10 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         @Override
         protected Node copyNode(final Node originalNode) {
             DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+            return (dobj instanceof DataFolder)
+                    ? new FilterNode(originalNode, new PackageFilterChildren(originalNode))
+                    : super.copyNode(originalNode);
         }
-    }
-    
-    private static final class PackageFilterNode extends FilterNode {
-        
-        public PackageFilterNode (final Node origNode) {
-            super (origNode, new PackageFilterChildren (origNode));
-        }
-        
-        @Override
-        public void setName (final String name) {
-            if (Utilities.isJavaIdentifier (name)) {
-                super.setName (name);
-            }
-            else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
-                    NbBundle.getMessage(TreeRootNode.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
-            }
-        }                
-        
     }
     
 }

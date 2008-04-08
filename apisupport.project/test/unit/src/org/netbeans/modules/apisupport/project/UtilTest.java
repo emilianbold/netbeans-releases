@@ -85,8 +85,8 @@ public class UtilTest extends TestBase {
     }
     
     public void testFindLocalizedBundleInfoFromNetBeansOrgModule() throws Exception {
-        FileObject dir = nbCVSRoot().getFileObject("apisupport/project");
-        assertNotNull("have apisupport/project checked out", dir);
+        FileObject dir = nbRoot().getFileObject("apisupport.project");
+        assertNotNull("have apisupport.project checked out", dir);
         NbModuleProject apisupport = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
         LocalizedBundleInfo info = Util.findLocalizedBundleInfo(
                 apisupport.getSourceDirectory(), apisupport.getManifest());
@@ -94,7 +94,7 @@ public class UtilTest extends TestBase {
     }
     
     public void testFindLocalizedBundleInfoFromSourceDirectory() throws Exception {
-        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file("apisupport/project"));
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file("apisupport.project"));
         assertApiSupportInfo(info);
     }
     
@@ -229,7 +229,7 @@ public class UtilTest extends TestBase {
         
         NbModuleProject project = generateStandaloneModule("module1");
         NbPlatform platform = project.getPlatform(false);
-        URL oneModuleDocURL = Util.urlForDir(oneModuleDoc);
+        URL oneModuleDocURL = FileUtil.urlForArchiveOrDir(oneModuleDoc);
         platform.addJavadocRoot(oneModuleDocURL);
         ModuleDependency md = new ModuleDependency(project.getModuleList().getEntry(project.getCodeNameBase()));
         
@@ -242,7 +242,7 @@ public class UtilTest extends TestBase {
         index = new File(moduleDoc, "index.html");
         assertTrue(index.createNewFile());
         
-        platform.addJavadocRoot(Util.urlForDir(nbDoc));
+        platform.addJavadocRoot(FileUtil.urlForArchiveOrDir(nbDoc));
         platform.removeJavadocRoots(new URL[] {oneModuleDocURL});
         url = Util.findJavadoc(md, platform);
         assertNotNull("url was found", url);

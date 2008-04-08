@@ -78,8 +78,7 @@ implements PropertyChangeListener {
     }
     
     public ToggleBreakpointActionProvider (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (null, JPDADebugger.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }

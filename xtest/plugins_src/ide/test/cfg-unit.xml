@@ -56,6 +56,14 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
+    <testbag testattribs="stable" executor="jvm" name="BlacklistedClassesHandler">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/BlacklistedClassesHandlerTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <!-- Test netbeans.javacore.noscan=true property. -->
     <testbag testattribs="stable" executor="ide-noscan" name="XTest IDE Plugin - NoScan">
         <testset dir="unit/src">

@@ -73,9 +73,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
-import org.netbeans.modules.websvc.saas.WsdlServiceProxyDescriptor;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
+import org.netbeans.modules.websvc.saas.util.TypeUtil;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
@@ -97,7 +98,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private Dialog dialog;
     private DialogDescriptor dlg = null;
     private String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
-    private final JavaMethod method;
     /**
      * The runtimeClassLoader should be used when running the web service client.  This classloader
      * only includes the necessary runtime jars for JAX-RPC to run.  The classloader does NOT have a
@@ -109,19 +109,17 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     
     private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
-    private SaasServices wsData;
-    public String portName;
-    private WsdlPort port;
+    private final WsdlSaas wsData;
+    private final WsdlPort port;
+    private final JavaMethod method;
     private MethodTask methodTask;
     
     /** Creates new form TestWebServiceMethodDlg */
-    public TestWebServiceMethodDlg(SaasServices inWSData,  JavaMethod inMethod, WsdlPort inPort) {
-        this.method = inMethod;
-        wsData = inWSData;
-        port = inPort;
-        portName = inPort.getName();
-        //TODO:nam
-        //assert wsData.getJaxWsDescriptor() != null;
+    public TestWebServiceMethodDlg(WsdlSaasMethod saasMethod) {
+        method = saasMethod.getJavaMethod();
+        wsData = saasMethod.getSaas();
+        port = saasMethod.getWsdlPort();
+        assert wsData.getWsdlData().getJaxWsDescriptor() != null;
         
         initComponents();
         myInitComponents();
@@ -146,9 +144,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             try {
                 List<URL> urlList = null;
                 
-                urlList = ManagerUtil.buildClasspath(null, true); // NOI18N
+                urlList = TypeUtil.buildClasspath(null, true); // NOI18N
                 
-                WsdlServiceProxyDescriptor descriptor = null;//TODO:nam wsData.getJaxWsDescriptor();
+                WsdlServiceProxyDescriptor descriptor = wsData.getWsdlData().getJaxWsDescriptor();
                 for (WsdlServiceProxyDescriptor.JarEntry entry : descriptor.getJars()) {
                     if (entry.getType().equals(WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE)) {
                         File jarFile = new File(descriptor.getXmlDescriptorFile().getParent(), entry.getName());
@@ -189,10 +187,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             return null;
         }
-    }
-    
-    public SaasServices getWebServiceData() {
-        return this.wsData;
     }
     
     public void displayDialog(){
@@ -263,87 +257,78 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         lblResults = new javax.swing.JLabel();
         scrollPaneResults = new javax.swing.JScrollPane();
 
-        setToolTipText("");
+        setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.main.ACC_desc")); // NOI18N
         setPreferredSize(new java.awt.Dimension(600, 450));
         setLayout(new java.awt.BorderLayout());
 
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.jsplintPane1.ACC_desc")); // NOI18N
 
         pnlParameter.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 5, 12));
         pnlParameter.setLayout(new java.awt.BorderLayout());
 
+        pnlLabel.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.pnlLabel.ACC_desc")); // NOI18N
         pnlLabel.setLayout(new java.awt.GridLayout(2, 0));
 
         lblTitle.setFont(lblTitle.getFont().deriveFont(lblTitle.getFont().getStyle() | java.awt.Font.BOLD, lblTitle.getFont().getSize()-2));
         lblTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblTitle.setText(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEB_SERVICE_METHOD")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblTitle, org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEB_SERVICE_METHOD")); // NOI18N
+        lblTitle.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.lblTitle.ACC_desc")); // NOI18N
         pnlLabel.add(lblTitle);
-        lblTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.lblTitle.ACC_name")); // NOI18N
-        lblTitle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.lblTitle.ACC_desc")); // NOI18N
 
         lblParameters.setFont(lblParameters.getFont().deriveFont(lblParameters.getFont().getSize()-4f));
         lblParameters.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblParameters.setText(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEBSVC_INSTRUCTIONS")); // NOI18N
-        lblParameters.setToolTipText(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.jLabel1.tooltip")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblParameters, org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEBSVC_INSTRUCTIONS")); // NOI18N
+        lblParameters.setToolTipText(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.jLabel1.ACC_desc")); // NOI18N
         pnlLabel.add(lblParameters);
-        lblParameters.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.jLabel1.ACC_name")); // NOI18N
-        lblParameters.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.jLabel1.ACC_desc")); // NOI18N
 
         pnlParameter.add(pnlLabel, java.awt.BorderLayout.NORTH);
         pnlLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnlLabel.ACC_name")); // NOI18N
-        pnlLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnlLabel.ACC_desc")); // NOI18N
 
-        scrollPaneParameter.setToolTipText("");
+        scrollPaneParameter.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.scrollPaneParameter.ACC_desc")); // NOI18N
         pnlParameter.add(scrollPaneParameter, java.awt.BorderLayout.CENTER);
         scrollPaneParameter.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.scrollPaneParameter.ACC_name")); // NOI18N
-        scrollPaneParameter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.scrollPaneParameter.ACC_desc")); // NOI18N
 
-        btnSubmit.setMnemonic(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.btnSubmit.ACC_mnemonic").charAt(0));
-        btnSubmit.setText(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "BUTTON_SUBMIT")); // NOI18N
-        btnSubmit.setToolTipText("");
+        btnPanel.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.btnPanel.ACC_desc")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnSubmit, org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "BUTTON_SUBMIT")); // NOI18N
+        btnSubmit.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.btnSubmit.ACC_desc")); // NOI18N
         btnSubmit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSubmitActionPerformed(evt);
             }
         });
         btnPanel.add(btnSubmit);
-        btnSubmit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.btnSubmit.ACC_name")); // NOI18N
-        btnSubmit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.btnSubmit.ACC_desc")); // NOI18N
 
         pnlParameter.add(btnPanel, java.awt.BorderLayout.SOUTH);
         btnPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.btnPanel.ACC_name")); // NOI18N
-        btnPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.btnPanel.ACC_desc")); // NOI18N
 
         jSplitPane1.setLeftComponent(pnlParameter);
-        pnlParameter.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnlParameter.ACC_name")); // NOI18N
-        pnlParameter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnlParameter.ACC_desc")); // NOI18N
+        pnlParameter.getAccessibleContext().setAccessibleName("null");
+        pnlParameter.getAccessibleContext().setAccessibleDescription("null");
 
         pnlResults.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 12, 5, 12));
+        pnlResults.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.pnResults.ACC_desc")); // NOI18N
         pnlResults.setLayout(new java.awt.BorderLayout(0, 5));
 
         lblResults.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        lblResults.setText(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "RESULTS")); // NOI18N
-        lblResults.setToolTipText("");
+        lblResults.setLabelFor(scrollPaneResults);
+        org.openide.awt.Mnemonics.setLocalizedText(lblResults, org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "RESULTS")); // NOI18N
+        lblResults.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.lblResults.ACC_desc")); // NOI18N
         pnlResults.add(lblResults, java.awt.BorderLayout.NORTH);
-        lblResults.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.lblResults.ACC_name")); // NOI18N
-        lblResults.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.lblResults.ACC_desc")); // NOI18N
 
-        scrollPaneResults.setToolTipText("");
+        scrollPaneResults.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.scrollPaneResults.ACC_desc")); // NOI18N
         pnlResults.add(scrollPaneResults, java.awt.BorderLayout.CENTER);
         scrollPaneResults.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.scrollPaneResults.ACC_name")); // NOI18N
-        scrollPaneResults.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.scrollPaneResults.ACC_desc")); // NOI18N
 
         jSplitPane1.setRightComponent(pnlResults);
         pnlResults.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnResults.ACC_name")); // NOI18N
-        pnlResults.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnResults.ACC_desc")); // NOI18N
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
         jSplitPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.jsplintPane1.ACC_name")); // NOI18N
-        jSplitPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.jsplintPane1.ACC_desc")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.main.ACC_name")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.main.ACC_desc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
@@ -381,7 +366,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * specify the wrapper client class name for this method.
          */
-        String clientClassName = null; //TODO:nam wsData.getWsdlService().getJavaName();
+        String clientClassName = wsData.getWsdlModel().getJavaName();
         
         /**
          * Fix for Bug: 6217545
@@ -706,8 +691,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
              */
             Object returnObject=null;
             try {
-                returnObject = null; //TODO:nam ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData, port);
-            } catch(Exception wsre) { //TODO:nam WebServiceReflectionException wsre) {
+                returnObject = ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData.getWsdlData(), port);
+            } catch (Exception wsre) {
                 if(!cancelled) {
                     Throwable exception = wsre;
                     if (wsre.getCause() instanceof java.lang.reflect.InvocationTargetException) {

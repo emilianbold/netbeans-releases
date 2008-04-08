@@ -118,8 +118,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         
         
         debuggerImpl.setStarting ();
-        final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
-            lookupFirst (null, AbstractDICookie.class);
+        final AbstractDICookie cookie = lookupProvider.lookupFirst(null, AbstractDICookie.class);
         doStartDebugger(cookie);
         if (startVerbose)
             System.out.println ("\nS StartActionProvider." +
@@ -144,8 +143,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         }
         
         
-        final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
-            lookupFirst (null, AbstractDICookie.class);
+        final AbstractDICookie cookie = lookupProvider.lookupFirst(null, AbstractDICookie.class);
         
         if (startVerbose)
             System.out.println ("\nS StartActionProvider." +
@@ -238,7 +236,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                 );
             debuggerImpl.setException (exception);
             // kill the session that did not start properly
-            final Session session = (Session) lookupProvider.lookupFirst(null, Session.class);
+            final Session session = lookupProvider.lookupFirst(null, Session.class);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     // Kill it in a separate thread so that the startup sequence can be finished.

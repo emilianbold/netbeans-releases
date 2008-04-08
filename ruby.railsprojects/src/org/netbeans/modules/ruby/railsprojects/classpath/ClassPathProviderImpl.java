@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,15 +45,15 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.railsprojects.classpath.SourcePathImplementation;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.spi.gsfpath.classpath.ClassPathFactory;
-import org.netbeans.spi.gsfpath.classpath.ClassPathProvider;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -94,7 +94,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
+        FileObject fo = this.dirCache.get (propname);
         if (fo == null ||  !fo.isValid()) {
             String prop = evaluator.getProperty(propname);
             if (prop != null) {

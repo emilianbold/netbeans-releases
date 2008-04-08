@@ -160,7 +160,7 @@ public final class CompletionUtilities {
         if (icon != null) {
             // The image of the ImageIcon should already be loaded
             // so no ImageObserver should be necessary
-            boolean done = g.drawImage(icon.getImage(), BEFORE_ICON_GAP, 0, null);
+            boolean done = g.drawImage(icon.getImage(), BEFORE_ICON_GAP, (height - icon.getIconHeight()) /2, null);
             assert (done);
         }
         int iconWidth = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP;

@@ -52,6 +52,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import java.io.File;
 
@@ -84,15 +85,19 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         }
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < fileNodes.length; i++) {
-            File file = fileNodes[i].getFile();
+            final File file = fileNodes[i].getFile();
             FileInformation info = cache.getStatus(file);
             Entry entry = info.getEntry(file);
             if (entry == null) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(ResolveConflictsAction.class, "MSG_MoveAwayLocalFileConflict", file.getName())));
             } else {
-                ResolveConflictsExecutor rce = new ResolveConflictsExecutor();
-                rce.exec(file);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        ResolveConflictsExecutor rce = new ResolveConflictsExecutor();
+                        rce.exec(file);
+                    }
+                });
             }
         }
     }

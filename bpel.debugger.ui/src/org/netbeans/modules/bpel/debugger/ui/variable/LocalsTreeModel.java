@@ -55,8 +55,7 @@ public class LocalsTreeModel implements TreeModel {
      */
     public LocalsTreeModel(
             final ContextProvider contextProvider) {
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myHelper = new VariablesUtil(myDebugger);
     }
     
@@ -222,5 +221,9 @@ public class LocalsTreeModel implements TreeModel {
     
     static class Dummy {
         // Empty, stub class
+        
+        public String toString() {
+            return "";
+        }
     }
 }

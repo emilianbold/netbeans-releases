@@ -75,8 +75,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     
     private WindowDnDManager windowDragAndDrop;
     
-    private static boolean isHardwareDoubleBuffer = false;
-    
     /** Current location of cursor in over the glass pane,
      * or <code>null</code> in the case there it is not above
      * this component currently. */
@@ -96,7 +94,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         this.observer = wdnd;
         this.informer = wdnd;
         windowDragAndDrop = wdnd;
-        isHardwareDoubleBuffer = !RepaintManager.currentManager(this).isDoubleBufferingEnabled();
         
         setOpaque(false);
     }
@@ -417,7 +414,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
 
         try {
             Point loc = evt.getLocation();
-
             // Checks whetger it is in around center panel area.
             // In that case the drop will be tried later.
             // PENDING unify it.
@@ -435,6 +431,12 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             observer.setDropSuccess(success);
             evt.dropComplete(false);
             //evt.dropComplete(success);
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    windowDragAndDrop.dragFinished();
+                    windowDragAndDrop.dragFinishedEx();
+                }
+            });
         }
     }
     // >> DropTargetListener implementation >>

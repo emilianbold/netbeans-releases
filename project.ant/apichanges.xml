@@ -128,8 +128,7 @@ is the proper place.
                     <code>ReferenceHelper.getLibraryChooserImportHandler</code>,
                     <code>ReferenceHelper.createLibraryReference</code>,
                     <code>ReferenceHelper.getProjectLibraryManager</code>,
-                    <code>ReferenceHelper.findLibrary</code> and
-                    <code>FileChooser.showRelativizeFilePathCustomizer</code>) and
+                    <code>ReferenceHelper.findLibrary</code>) and
                     custom file chooser (<code>FileChooser</code>)
                     provide support for collocated library definitions
                     referred to from Ant-based projects.

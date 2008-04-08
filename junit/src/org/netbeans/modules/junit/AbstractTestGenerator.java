@@ -90,11 +90,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import static javax.lang.model.element.Modifier.ABSTRACT;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.PRIVATE;
-import static javax.lang.model.element.Modifier.PROTECTED;
-import static javax.lang.model.element.Modifier.STATIC;
 import static org.netbeans.modules.junit.TestCreator.ACCESS_MODIFIERS;
 
 /**
@@ -458,18 +453,33 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         tstMembers.addAll(tstMembersOrig);
 
         if (generateMissingInitMembers) {
-            generateMissingInitMembers(tstMembers, clsMap,
+            generateMissingInitMembers(tstMembers,
+                                       clsMap,
                                        workingCopy);
         }
         generateMissingPostInitMethods(tstClassTreePath,
-                                         tstMembers,
-                                         clsMap,
-                                         workingCopy);
+                                       tstMembers,
+                                       clsMap,
+                                       workingCopy);
+
+        /* Generate test method names: */
+        TypeElement tstClassElem
+            = (TypeElement) workingCopy.getTrees().getElement(tstClassTreePath);
+        List<String> testMethodNames
+                = TestMethodNameGenerator.getTestMethodNames(srcMethods,
+                                                             tstClassElem,
+                                                             clsMap.getNoArgMethods(),
+                                                             workingCopy);
+
+        Iterator<ExecutableElement> srcMethodsIt = srcMethods.iterator();
+        Iterator<String> tstMethodNamesIt = testMethodNames.iterator();
 
         Boolean useNoArgConstrutor = null;
-        for (ExecutableElement srcMethod : srcMethods) {
-            String testMethodName = createTestMethodName(
-                                    srcMethod.getSimpleName().toString());
+        while (srcMethodsIt.hasNext()) {
+            assert tstMethodNamesIt.hasNext();
+
+            ExecutableElement srcMethod = srcMethodsIt.next();
+            String testMethodName = tstMethodNamesIt.next();
             int testMethodIndex = clsMap.findNoArgMethod(testMethodName);
             if (testMethodIndex != -1) {
                 continue;       //corresponding test method already exists
@@ -482,12 +492,14 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             MethodTree newTestMethod = generateTestMethod(
                             srcClass,
                             srcMethod,
+                            testMethodName,
                             useNoArgConstrutor.booleanValue(),
                             workingCopy);
 
             tstMembers.add(newTestMethod);
             clsMap.addNoArgMethod(newTestMethod.getName().toString());
         }
+        assert !tstMethodNamesIt.hasNext();
 
         if (tstMembers.size() == tstMembersOrig.size()) {  //no test method added
             return tstClass;
@@ -513,6 +525,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     
     /**
      * Generates test methods for the given source methods.
+     * The created test methods will be put to a newly created test class.
+     * The test class does not exist at the moment this method is called.
      * 
      * @param  srcClass  source class containing the source methods
      * @param  srcMethods  source methods the test methods should be created for
@@ -525,15 +539,31 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             return Collections.<MethodTree>emptyList();
         }
 
+        List<String> testMethodNames
+                = TestMethodNameGenerator.getTestMethodNames(srcMethods,
+                                                             null,
+                                                             null,   //reserved
+                                                             workingCopy);
+
+        Iterator<ExecutableElement> srcMethodsIt = srcMethods.iterator();
+        Iterator<String> tstMethodNamesIt = testMethodNames.iterator();
+
         boolean useNoArgConstrutor = hasAccessibleNoArgConstructor(srcClass);
         List<MethodTree> testMethods = new ArrayList<MethodTree>(srcMethods.size());
-        for (ExecutableElement srcMethod : srcMethods) {
+        while (srcMethodsIt.hasNext()) {
+            assert tstMethodNamesIt.hasNext();
+
+            ExecutableElement srcMethod = srcMethodsIt.next();
+            String testMethodName = tstMethodNamesIt.next();
+
             testMethods.add(
                     generateTestMethod(srcClass,
                                        srcMethod,
+                                       testMethodName,
                                        useNoArgConstrutor,
                                        workingCopy));
         }
+        assert !tstMethodNamesIt.hasNext();
         return testMethods;
     }
 
@@ -552,12 +582,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      */
     protected MethodTree generateTestMethod(TypeElement srcClass,
                                           ExecutableElement srcMethod,
+                                          String testMethodName,
                                           boolean useNoArgConstructor,
                                           WorkingCopy workingCopy) {
         final TreeMaker maker = workingCopy.getTreeMaker();
 
-        String testMethodName = createTestMethodName(
-                                    srcMethod.getSimpleName().toString());
         List<ExpressionTree> throwsList;
         if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
             throwsList = Collections.<ExpressionTree>singletonList(
@@ -587,10 +616,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         return method;
     }
-    
-    /**
-     */
-    protected abstract String createTestMethodName(String smName);
     
     /**
      */

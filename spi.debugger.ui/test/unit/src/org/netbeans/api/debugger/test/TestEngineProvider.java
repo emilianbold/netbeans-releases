@@ -58,7 +58,7 @@ public class TestEngineProvider extends DebuggerEngineProvider {
     private Session                     session;
 
     public TestEngineProvider (ContextProvider s) {
-        session = (Session) s.lookupFirst(null, Session.class);
+        session = s.lookupFirst(null, Session.class);
     }
     
     public String [] getLanguages () {

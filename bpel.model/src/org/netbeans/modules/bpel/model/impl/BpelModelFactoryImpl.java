@@ -27,10 +27,8 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.util.Lookup;
 
 
-
 /**
  * @author ads
- *
  */
 public class BpelModelFactoryImpl extends AbstractModelFactory<BpelModel>
     implements BpelModelFactory

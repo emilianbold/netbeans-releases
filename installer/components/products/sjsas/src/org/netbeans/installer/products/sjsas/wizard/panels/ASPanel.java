@@ -56,6 +56,7 @@ import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -91,6 +92,7 @@ public class ASPanel extends DestinationPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private JdkLocationPanel jdkLocationPanel;
+    private static boolean allPortsOccupied;
     
     public ASPanel() {
         jdkLocationPanel = new JdkLocationPanel();
@@ -172,6 +174,8 @@ public class ASPanel extends DestinationPanel {
         
         setProperty(WARNING_PORT_IN_USE_PROPERTY,
                 DEFAULT_WARNING_PORT_IN_USE);
+        setProperty(WARNING_ASADMIN_FILES_EXIST_PROPERTY,
+                DEFAULT_WARNING_ASADMIN_FILES_EXIST);
         
         setProperty(DEFAULT_USERNAME_PROPERTY,
                 DEFAULT_DEFAULT_USERNAME);
@@ -227,6 +231,75 @@ public class ASPanel extends DestinationPanel {
         }
         
         jdkLocationPanel.initialize();
+
+        //This makes it possible to perform silent installation with emptry state files 
+        //that means that JDK_LOCATION_PROPERTY property is explicitely set to the first location
+        //that fits the requirements
+        //TODO: Investigate the prons&cons and side affects of moving
+        //this code to the end of JdkLocationPanel.initialize() method        
+        File jdkLocation = jdkLocationPanel.getSelectedLocation();        
+        if(jdkLocation!=null && !jdkLocation.getPath().equals(StringUtils.EMPTY_STRING)) {
+            jdkLocationPanel.setLocation(jdkLocation);
+        }
+        final int defaultHttpPort = SystemUtils.getAvailablePort(
+                parseInt(
+                getProperty(DEFAULT_HTTP_PORT_PROPERTY)));
+        final int defaultHttpsPort = SystemUtils.getAvailablePort(
+                parseInt(getProperty(DEFAULT_HTTPS_PORT_PROPERTY)),
+                defaultHttpPort);
+        final int defaultAdminPort = SystemUtils.getAvailablePort(
+                parseInt(getProperty(DEFAULT_ADMIN_PORT_PROPERTY)),
+                defaultHttpPort,
+                defaultHttpsPort);
+        
+        String password = getWizard().getProperty(PASSWORD_PROPERTY);
+        if (password == null) {
+            password = getProperty(DEFAULT_PASSWORD_PROPERTY);
+        }
+        getWizard().setProperty(PASSWORD_PROPERTY, password);
+        
+        String username = getWizard().getProperty(USERNAME_PROPERTY);
+        if (username == null) {
+            username = getProperty(DEFAULT_USERNAME_PROPERTY);
+        }
+        getWizard().setProperty(USERNAME_PROPERTY, username);
+        
+        String httpPort = getWizard().getProperty(HTTP_PORT_PROPERTY);
+        if (httpPort == null) {
+            if (defaultHttpPort != -1) {
+                httpPort = Integer.toString(defaultHttpPort);
+                allPortsOccupied = false;
+            } else {
+                httpPort = StringUtils.EMPTY_STRING;
+                allPortsOccupied = true;
+            }
+        }
+        getWizard().setProperty(HTTP_PORT_PROPERTY, httpPort);
+        
+        String httpsPort = getWizard().getProperty(HTTPS_PORT_PROPERTY);
+        if (httpsPort == null) {
+            if (defaultHttpsPort != -1) {
+                httpsPort = Integer.toString(defaultHttpsPort);
+                allPortsOccupied = false;
+            } else {
+                httpsPort = StringUtils.EMPTY_STRING;
+                allPortsOccupied = true;
+            }
+        }
+        getWizard().setProperty(HTTPS_PORT_PROPERTY, httpsPort);
+        
+        
+        String adminPort = getWizard().getProperty(ADMIN_PORT_PROPERTY);
+        if (adminPort == null) {
+            if (defaultAdminPort != -1) {
+                adminPort = Integer.toString(defaultAdminPort);
+                allPortsOccupied = false;
+            } else {
+                adminPort = StringUtils.EMPTY_STRING;
+                allPortsOccupied = true;
+            }
+        }
+        getWizard().setProperty(ADMIN_PORT_PROPERTY,adminPort);
     }
     
     public JdkLocationPanel getJdkLocationPanel() {
@@ -243,7 +316,7 @@ public class ASPanel extends DestinationPanel {
             
             this.component = component;
         }
-        
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new GlassFishPanelSwingUi(component, container);
@@ -321,37 +394,32 @@ public class ASPanel extends DestinationPanel {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
             }
+
+            final List<File> jdkLocations = jdkLocationPanel.getLocations();                        
+            final List<String> jdkLabels = jdkLocationPanel.getLabels();
             
             final LocationsComboBoxModel model = new LocationsComboBoxModel(
-                    jdkLocationPanel.getLocations(),
-                    jdkLocationPanel.getLabels());
+                    jdkLocations,
+                    jdkLabels);
             
             ((LocationsComboBoxEditor) jdkLocationComboBox.getEditor()).setModel(
                     model);
             jdkLocationComboBox.setModel(
                     model);
             
-            model.setSelectedItem(
-                    jdkLocationPanel.getSelectedLocation().toString());
+            final File selectedLocation = jdkLocationPanel.getSelectedLocation();
+            final int index = jdkLocations.indexOf(selectedLocation);
+            String selectedItem;
+            if(index != -1) {
+                  selectedItem = jdkLabels.get(index);  
+            } else {
+                  selectedItem = selectedLocation.toString();
+            }  
+            model.setSelectedItem(selectedItem);                                                       
             
             browseButton.setText(
                     panel.getProperty(BROWSE_BUTTON_TEXT_PROPERTY));
             
-            final String defaultUsername =
-                    panel.getProperty(DEFAULT_USERNAME_PROPERTY);
-            final String defaultPassword =
-                    panel.getProperty(DEFAULT_PASSWORD_PROPERTY);
-            
-            final int defaultHttpPort = SystemUtils.getAvailablePort(
-                    parseInt(
-                    panel.getProperty(DEFAULT_HTTP_PORT_PROPERTY)));
-            final int defaultHttpsPort = SystemUtils.getAvailablePort(
-                    parseInt(panel.getProperty(DEFAULT_HTTPS_PORT_PROPERTY)),
-                    defaultHttpPort);
-            final int defaultAdminPort = SystemUtils.getAvailablePort(
-                    parseInt(panel.getProperty(DEFAULT_ADMIN_PORT_PROPERTY)),
-                    defaultHttpPort,
-                    defaultHttpsPort);
             
             usernameLabel.setText(
                     panel.getProperty(USERNAME_LABEL_TEXT_PROPERTY));
@@ -365,66 +433,22 @@ public class ASPanel extends DestinationPanel {
                     panel.getProperty(HTTPS_LABEL_TEXT_PROPERTY));
             adminPortLabel.setText(
                     panel.getProperty(ADMIN_LABEL_TEXT_PROPERTY));
+                    
             
-            String username = panel.getWizard().getProperty(
-                    USERNAME_PROPERTY);
-            if (username == null) {
-                username = defaultUsername;
-            }
-            usernameField.setText(username);
-            
-            String password = panel.getWizard().getProperty(
-                    PASSWORD_PROPERTY);
-            if (password == null) {
-                password = defaultPassword;
-            }
-            passwordField.setText(password);
-            repeatPasswordField.setText(password);
+            usernameField.setText(panel.getWizard().getProperty(USERNAME_PROPERTY));
+            passwordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
+            repeatPasswordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
             
             defaultsLabel.setText(StringUtils.format(
                     panel.getProperty(DEFAULTS_LABEL_TEXT_PROPERTY),
-                    defaultUsername,
-                    defaultPassword));
+                    panel.getProperty(DEFAULT_USERNAME_PROPERTY),
+                    panel.getProperty(DEFAULT_PASSWORD_PROPERTY)));
             
-            String httpPort = panel.getWizard().getProperty(
-                    HTTP_PORT_PROPERTY);
-            if (httpPort == null) {
-                if (defaultHttpPort != -1) {
-                    httpPort = Integer.toString(defaultHttpPort);
-                    allPortsOccupied = false;
-                } else {
-                    httpPort = StringUtils.EMPTY_STRING;
-                    allPortsOccupied = true;
-                }
-            }
-            httpPortField.setText(httpPort);
             
-            String httpsPort = panel.getWizard().getProperty(
-                    HTTPS_PORT_PROPERTY);
-            if (httpsPort == null) {
-                if (defaultHttpsPort != -1) {
-                    httpsPort = Integer.toString(defaultHttpsPort);
-                    allPortsOccupied = false;
-                } else {
-                    httpsPort = StringUtils.EMPTY_STRING;
-                    allPortsOccupied = true;
-                }
-            }
-            httpsPortField.setText(httpsPort);
-            
-            String adminPort = panel.getWizard().getProperty(
-                    ADMIN_PORT_PROPERTY);
-            if (adminPort == null) {
-                if (defaultAdminPort != -1) {
-                    adminPort = Integer.toString(defaultAdminPort);
-                    allPortsOccupied = false;
-                } else {
-                    adminPort = StringUtils.EMPTY_STRING;
-                    allPortsOccupied = true;
-                }
-            }
-            adminPortField.setText(adminPort);
-            
+            httpPortField.setText(panel.getWizard().getProperty(HTTP_PORT_PROPERTY));            
+            httpsPortField.setText(panel.getWizard().getProperty(HTTPS_PORT_PROPERTY));            
+            adminPortField.setText(panel.getWizard().getProperty(ADMIN_PORT_PROPERTY));
+                        
             super.initialize();
         }
         
@@ -604,15 +628,28 @@ public class ASPanel extends DestinationPanel {
                         panel.getProperty(ERROR_HTTPS_EQUALS_ADMIN_PROPERTY),
                         httpsPort, adminPort);
             }
+
+            //#128991: Installation not recognized not empty dir for GF
+            File f = FileUtils.eliminateRelativity(getDestinationField().getText().trim());
+            if(FileUtils.exists(f)) {
+                File [] list = f.listFiles();
+                if (list!= null && list.length > 0) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
+                            f.getAbsolutePath());
+                }
+            }
             
             return null;
         }
         
         @Override
         protected String getWarningMessage() {
+            // check whether the selected ports are already in use by any other
+            // installed application server (SJSAS or GlassFish)
             final RegistryFilter filter = new OrFilter(
                     new ProductFilter("glassfish", SystemUtils.getCurrentPlatform()),
-                    new ProductFilter("sjsam", SystemUtils.getCurrentPlatform()));
+                    new ProductFilter("sjsas", SystemUtils.getCurrentPlatform()));
             final List<Product> products =
                     Registry.getInstance().queryProducts(filter);
             
@@ -664,6 +701,18 @@ public class ASPanel extends DestinationPanel {
                 ErrorManager.notifyDebug("Failed to get the port value.", e);
             }
             
+            // check whether the .asadminpass and .asadmintruststore file exist 
+            // in the user's home directory
+            final File asadminpass = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    ".asadminpass");;
+            final File asadmintruststore = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    ".asadmintruststore");
+            if (asadminpass.exists() || asadmintruststore.exists()) {
+                return panel.getProperty(WARNING_ASADMIN_FILES_EXIST_PROPERTY);
+            }
+
             return null;
         }
         
@@ -681,7 +730,7 @@ public class ASPanel extends DestinationPanel {
                 }
                 
                 public void removeUpdate(DocumentEvent e) {
-                    updateErrorMessage();
+                    //updateErrorMessage();
                 }
                 
                 public void changedUpdate(DocumentEvent e) {
@@ -1181,6 +1230,8 @@ public class ASPanel extends DestinationPanel {
     
     public static final String WARNING_PORT_IN_USE_PROPERTY =
             "warning.port.in.use"; // NOI18N
+    public static final String WARNING_ASADMIN_FILES_EXIST_PROPERTY =
+            "warning.asadmin.files.exist"; // NOI18N
     
     public static final String DEFAULT_ERROR_USERNAME_NULL =
             ResourceUtils.getString(ASPanel.class,
@@ -1252,6 +1303,9 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(ASPanel.class,
             "AS.warning.port.in.use"); // NOI18N
+    public static final String DEFAULT_WARNING_ASADMIN_FILES_EXIST = 
+            ResourceUtils.getString(ASPanel.class,
+            "AS.warning.asadmin.files.exist"); // NOI18N
     
     public static final String DEFAULT_MINIMUM_JDK_VERSION =
             ResourceUtils.getString(ASPanel.class,

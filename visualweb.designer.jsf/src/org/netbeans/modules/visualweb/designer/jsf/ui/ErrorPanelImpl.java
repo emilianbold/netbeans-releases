@@ -475,15 +475,15 @@ implements JsfForm.ErrorPanel {
 
                 xercesDom = parser.parse(is2);
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
                 return null;
             } catch (org.xml.sax.SAXException e) {
-                ErrorManager.getDefault().notify(e);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
                 return null;
             } catch (javax.xml.parsers.ParserConfigurationException e) {
-                ErrorManager.getDefault().notify(e);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
                 return null;
             }

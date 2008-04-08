@@ -152,7 +152,7 @@ public final class NamingFactory {
         }
     }
 
-    private static void remove(final FileNaming fNaming, Integer id) {
+    public static void remove(final FileNaming fNaming, Integer id) {
         id = (id != null) ? id : fNaming.getId();         
         Object value = NamingFactory.nameMap.get(id);
         if (value instanceof List) {

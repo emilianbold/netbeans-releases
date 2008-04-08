@@ -233,4 +233,14 @@ public class DefaultCategoryPane extends AbstractCategoryPane {
             return category;
         }
     }
+
+    public void close() {
+        //super.setCategory(null);
+        visualComponent.removeAll();
+        categoryPanel.removeAll();
+        categoryActions.clear();
+        visualComponent = null;
+        categoryPanel = null;
+        categoryActions = null;
+    }
 }

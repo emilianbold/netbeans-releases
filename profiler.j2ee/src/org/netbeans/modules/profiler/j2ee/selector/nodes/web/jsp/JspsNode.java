@@ -43,11 +43,6 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.jsp;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.selector.api.SelectorChildren;
-import org.netbeans.modules.profiler.selector.api.SelectorNode;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.api.nodes.ProjectNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
@@ -56,7 +51,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.tree.TreeNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.ProjectNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 
 
 /**

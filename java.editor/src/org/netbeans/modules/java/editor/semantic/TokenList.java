@@ -97,6 +97,11 @@ public class TokenList {
                 if (cancel.get())
                     return ;
                 
+                if (ts != null && !ts.isValid()) {
+                    cancel.set(true);
+                    return ;
+                }
+                
                 if (topLevelIsJava) {
                     while (ts.offset() < offset) {
                         if (!ts.moveNext())
@@ -165,6 +170,11 @@ public class TokenList {
                 if (cancel.get())
                     return ;
                 
+                if (ts != null && !ts.isValid()) {
+                    cancel.set(true);
+                    return ;
+                }
+                
                 if (ts == null)
                     return ;
                 
@@ -190,6 +200,11 @@ public class TokenList {
                 if (cancel.get())
                     return ;
                 
+                if (ts != null && !ts.isValid()) {
+                    cancel.set(true);
+                    return ;
+                }
+                
                 if (ts == null)
                     return ;
                 
@@ -210,6 +225,11 @@ public class TokenList {
             public void run() {
                 if (cancel.get())
                     return ;
+                
+                if (ts != null && !ts.isValid()) {
+                    cancel.set(true);
+                    return ;
+                }
                 
                 if (ts == null)
                     return ;
@@ -237,6 +257,11 @@ public class TokenList {
             public void run() {
                 if (cancel.get())
                     return ;
+                
+                if (ts != null && !ts.isValid()) {
+                    cancel.set(true);
+                    return ;
+                }
                 
                 if (ts == null)
                     return ;

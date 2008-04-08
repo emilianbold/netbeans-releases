@@ -1041,7 +1041,7 @@ public class ComplibServiceProvider implements ComplibService {
                     + prjComplib.getVersionedTitle());
         } else {
             String libName = deriveUniqueLibraryName(userComplib);
-            Library libDef = LibraryManager.getDefault().getLibrary(libName);
+            Library libDef = JsfProjectUtils.getProjectLibraryManager(project).getLibrary(libName);
             if (libDef != null) {
                 JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });
             }
@@ -1655,7 +1655,7 @@ public class ComplibServiceProvider implements ComplibService {
         LibraryDescriptor libDescriptor = deriveSharedComplibLibraryName(sharedComplib);
         String libName = libDescriptor.getLibName();
 
-        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        Library libDef = JsfProjectUtils.getProjectLibraryManager(project).getLibrary(libName);
         if (libDef != null) {
             // Existing definition so first remove any existing references
             JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });

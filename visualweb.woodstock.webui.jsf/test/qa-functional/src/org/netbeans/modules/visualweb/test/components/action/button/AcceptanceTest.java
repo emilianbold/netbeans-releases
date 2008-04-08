@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.visualweb.test.components.action.button;
 
 import junit.framework.Test;
@@ -50,61 +49,63 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
-import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.visualweb.gravy.Bundle;
+import org.netbeans.modules.visualweb.gravy.RaveTestCase;
+import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
+import org.netbeans.modules.visualweb.gravy.TestUtils;
+import org.netbeans.modules.visualweb.gravy.Util;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.typeLines;
 
 /**
  * @author Sherry Zhou (sherry.zhou@sun.com)
  */
 public class AcceptanceTest extends RaveTestCase {
-    
+
     public String _bundle = ComponentUtils.getBundle();
-    public String _projectServer = Bundle.getStringTrimmed(_bundle,"projectServer");
-    public String _logFileLocation = Bundle.getStringTrimmed(_bundle,"logFile");
+    public String _projectServer = Bundle.getStringTrimmed(_bundle, "projectServer");
+    public String _logFileLocation = Bundle.getStringTrimmed(_bundle, "logFile");
     public String _logFile = System.getProperty("xtest.workdir") + File.separator + _logFileLocation;
-    public String _exception = Bundle.getStringTrimmed(_bundle,"Exception");
-    public String _close = Bundle.getStringTrimmed(_bundle,"close");    
-    public String _run = Bundle.getStringTrimmed(_bundle,"Run");
-    public String _buildSuccess = Bundle.getStringTrimmed(_bundle,"buildSuccess");
-    public String _true = Bundle.getStringTrimmed(_bundle,"true");
+    public String _exception = Bundle.getStringTrimmed(_bundle, "Exception");
+    public String _close = Bundle.getStringTrimmed(_bundle, "close");
+    public String _run = Bundle.getStringTrimmed(_bundle, "Run");
+    public String _buildSuccess = Bundle.getStringTrimmed(_bundle, "buildSuccess");
+    public String _true = Bundle.getStringTrimmed(_bundle, "true");
     public String _projectName = "ButtonAcceptanceTest";
-    public String imageDir= ComponentUtils.getDataDir() +"action" + File.separator  ;
+    public String imageDir = ComponentUtils.getDataDir() + "action" + File.separator;
     public String image1 = imageDir + "orchid1.JPG";
     public String image2 = imageDir + "orchid2.JPG";
-    public static int xButton=50;
-    public static int yButton=50;
-   
+    public static int xButton = 50;
+    public static int yButton = 50;
     //undeployment
     public String _undeploy = Bundle.getStringTrimmed(_bundle, "undeploy");
     public String _refresh = Bundle.getStringTrimmed(_bundle, "refresh");
     public String _serverPath = Bundle.getStringTrimmed(_bundle, "serverPath");
     public String _deploymentPath = Bundle.getStringTrimmed(_bundle, "deploymentPathGlassfish");
     public String _separator = Bundle.getStringTrimmed(_bundle, "separator");
-	public String _reformatCode = Bundle.getStringTrimmed(_bundle,"reformatCode");
-    
-    
+    public String _reformatCode = Bundle.getStringTrimmed(_bundle, "reformatCode");
     public static DesignerPaneOperator designer;
     public static SheetTableOperator sheet;
     public static ServerNavigatorOperator explorer;
-    
-    
+
     public AcceptanceTest(String testName) {
         super(testName);
     }
-    
+
     public static Test suite() {
-        TestSuite suite= new TestSuite();
+        TestSuite suite = new TestSuite();
         suite.addTest(new AcceptanceTest("testCreateProject"));
         suite.addTest(new AcceptanceTest("testAddButton"));
         suite.addTest(new AcceptanceTest("testAddActionEvent"));
@@ -117,19 +118,19 @@ public class AcceptanceTest extends RaveTestCase {
         suite.addTest(new AcceptanceTest("testCheckIDELog"));
         return suite;
     }
-    
+
     /** method called before each testcase
      */
     protected void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
     }
-    
+
     /** method called after each testcase
      */
     protected void tearDown() {
-        System.out.println("########  "+getName()+" Finished #######");
+        System.out.println("########  " + getName() + " Finished #######");
     }
-    
+
     /*
      * Start PE. Delete PointBase travel resource
      */
@@ -147,7 +148,7 @@ public class AcceptanceTest extends RaveTestCase {
             se.deleteResource("jdbc/Travel");
         }
     }
-    
+
     /*
      *   Create new project
      *   And add property val to SessionBean1.java
@@ -155,24 +156,23 @@ public class AcceptanceTest extends RaveTestCase {
     public void testCreateProject() {
         startTest();
         log("**Creating Project");
-	log(System.getProperty("j2eeVersion"));
+        log(System.getProperty("j2eeVersion"));
         //Create Project
         try {
             ComponentUtils.createNewProject(_projectName);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log(">> Project Creation Failed");
             e.printStackTrace();
             log(e.toString());
-            fail();
+            fail(e);
         }
         log("**Done");
         endTest();
     }
-    
+
     /*
      *   Add 2 Buttons. Set their action event handler.
      */
-    
     public void testAddButton() {
         startTest();
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
@@ -180,13 +180,13 @@ public class AcceptanceTest extends RaveTestCase {
         PaletteContainerOperator palette = new PaletteContainerOperator(Bundle.getStringTrimmed(_bundle, "basicPalette"));
         Util.wait(2000);
         palette.dndPaletteComponent(Bundle.getStringTrimmed(_bundle, "basicButton"), designer, new Point(xButton, yButton));
-        
+
         TestUtils.wait(2000);
         Util.saveAllAPICall();
         Util.wait(500);
         endTest();
     }
-    
+
     /*
      * Verify button_action() code is generated
      */
@@ -195,50 +195,29 @@ public class AcceptanceTest extends RaveTestCase {
         log("Open java code editor view by clicking designer and then double clicking on the button ");
         designer.clickMouse(20, 20, 1);
         TestUtils.wait(1000);
-        designer.clickMouse(xButton+5, yButton+5, 2);
+        designer.clickMouse(xButton + 5, yButton + 5, 2);
         TestUtils.wait(1000);
-        String expectedStr = "button1_action()";
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
         JEditorPaneOperator editor = new JEditorPaneOperator(
                 RaveWindowOperator.getDefaultRave(), "public class " + "Page1");
-        
         editor.setVerification(false);
         TestUtils.wait(2000);
         editor.requestFocus();
-        assertFalse("There is no \""+ expectedStr+ "\" string in jsp editor",
-                new org.netbeans.jellytools.EditorOperator("Page1").getText().indexOf(expectedStr)==-1);
-        
+        new SaveAllAction().perform();
+        log("Editor Dump:");
+        log(editor.getText());
+        String expectedStr = "button1_action()";
+        assertTrue("There is no \"" + expectedStr + "\" string in jsp editor",
+                editor.getText().contains(expectedStr));
         editor.requestFocus();
-        editor.pushKey(KeyEvent.VK_UP);
-        editor.pushKey(KeyEvent.VK_UP);
-        editor.pushKey(KeyEvent.VK_UP);
-        editor.typeText("static int lightState; \n");
-        editor.pushKey(KeyEvent.VK_DOWN);
-        editor.pushKey(KeyEvent.VK_DOWN);
-        editor.pushKey(KeyEvent.VK_DOWN);
-		editor.pushKey(KeyEvent.VK_DOWN);
-		editor.typeText("\n");
-        editor.pushKey(KeyEvent.VK_UP);		
-        editor.typeText("switch (++lightState) { \n");
-        editor.typeText("case 4: \n");
-        editor.typeText("lightState = 1; \n");
-        editor.typeText("case 1: \n");
-        editor.typeText("button1.setText(\"Green\");  \n");
-        editor.typeText("break; \n");
-        editor.typeText("case 2: \n");
-        editor.typeText("button1.setText(\"Yellow\"); \n");
-        editor.typeText("break; \n");
-        editor.typeText("case 3: \n");
-        editor.typeText("button1.setText(\"Red\"); \n");
-        editor.typeText("break; \n");
-     //   editor.typeText("} \n");  << The editor will insert this
-        
+        typeLines("log(\"Action Performed\");\n", editor);
         log("Reformat code");
         TestUtils.wait(200);
         editor.clickForPopup();
         new JPopupMenuOperator().pushMenu(_reformatCode);
         TestUtils.wait(200);
-        
+        log("Editor Dump:");
+        log(editor.getText());
         log("Switch back to Designer");
         designer.makeComponentVisible();
         // TestUtils.wait(10000);
@@ -246,7 +225,7 @@ public class AcceptanceTest extends RaveTestCase {
         Util.wait(2000);
         endTest();
     }
-    
+
     /*
      *  Verfiy JPS code. Check for action="#{Page1.button1_action} "
      */
@@ -256,17 +235,17 @@ public class AcceptanceTest extends RaveTestCase {
         designer.switchToJSPSource();
         TestUtils.wait(2000);
         log("Verify action tag  should present in JSP editor");
-        String expectedStr=Bundle.getStringTrimmed(_bundle, "actionTag")+"=\"#{Page1.button1_action}\"";
+        String expectedStr = Bundle.getStringTrimmed(_bundle, "actionTag") + "=\"#{Page1.button1_action}\"";
         log(expectedStr);
         JEditorPaneOperator editor = new JEditorPaneOperator(RaveWindowOperator.getDefaultRave());
-        assertFalse("There is no \""+ expectedStr+ "\" string in jsp editor",
-                editor.getText().indexOf(expectedStr)==-1);
+        assertFalse("There is no \"" + expectedStr + "\" string in jsp editor",
+                editor.getText().indexOf(expectedStr) == -1);
         log("Switch back to Designer");
         designer.makeComponentVisible();
         TestUtils.wait(2000);
         endTest();
     }
-    
+
     /*
      * Change text property via property sheet. verify JSP code
      */
@@ -276,77 +255,79 @@ public class AcceptanceTest extends RaveTestCase {
         designer.clickMouse(xButton, yButton, 1);
         TestUtils.wait(1000);
         sheet = new SheetTableOperator();
-        
+
         //ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyText"), "Stoplight");
         sheet.setButtonValue(Bundle.getStringTrimmed(_bundle, "propertyText"), "Stoplight");
         TestUtils.wait(5000);
-        
+
         log("Switch to JSP page. Verify that the jsp source has been updated");
         // designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
         designer.switchToJSPSource();
         TestUtils.wait(2000);
         String expectedStr = "text=\"Stoplight";
         JEditorPaneOperator editor = new JEditorPaneOperator(RaveWindowOperator.getDefaultRave());
-        assertFalse("There is no \""+ expectedStr+ "\" string in jsp editor",
-                editor.getText().indexOf(expectedStr)==-1);
-        
+        assertFalse("There is no \"" + expectedStr + "\" string in jsp editor",
+                editor.getText().indexOf(expectedStr) == -1);
+
         log("Switch back to Designer");
         designer.makeComponentVisible();
         TestUtils.wait(2000);
         endTest();
     }
-    
-     /*
-      * Change text property in JSP code. verify it from property sheet
-      */
+
+    /*
+     * Change text property in JSP code. verify it from property sheet
+     */
     public void testChangeTextInJSPEditor() {
         startTest();
-        
+
         log("Set button's text in JSP Edtor");
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
         designer.switchToJSPSource();
         TestUtils.wait(1000);
-        
+
         JEditorPaneOperator editor = new JEditorPaneOperator(RaveWindowOperator.getDefaultRave());
         editor.selectText("Stoplight");
         editor.pushKey(KeyEvent.VK_DELETE);
         editor.typeText("Trafficlight");
         TestUtils.wait(200);
-        
+
         log("Switch to designer. Verify that  propertry sheet has been updated");
         designer.makeComponentVisible();
         TestUtils.wait(2000);
-        
+
         sheet = new SheetTableOperator();
         TestUtils.wait(2000);
-        
-        String expectedStr="Trafficlight";
+
+        String expectedStr = "Trafficlight";
         log(sheet.getValue(Bundle.getStringTrimmed(_bundle, "propertyText")));
-        assertFalse("There is no \""+ expectedStr+ "\" string property sheet",
+        assertFalse("There is no \"" + expectedStr + "\" string property sheet",
                 sheet.getValue(Bundle.getStringTrimmed(_bundle, "propertyText")).equals(expectedStr));
-        
+
         TestUtils.wait(500);
         Util.saveAllAPICall();
         TestUtils.wait(1000);
         endTest();
     }
-    
-   /*
+
+    /*
      * Deploy application
      */
     public void testDeploy() {
         startTest();
         //need to wait responce
         Waiter deploymentWaiter = new Waiter(new Waitable() {
+
             public Object actionProduced(Object output) {
-                String text = ((OutputOperator)output).getText();
-                if (text.indexOf(_buildSuccess)!=-1)
+                String text = ((OutputOperator) output).getText();
+                if (text.indexOf(_buildSuccess) != -1) {
                     return _true;
+                }
                 return null;
-               
             }
+
             public String getDescription() {
-                return("Waiting Project Deployed");
+                return ("Waiting Project Deployed");
             }
         });
         log("Deploy from menu");
@@ -357,15 +338,15 @@ public class AcceptanceTest extends RaveTestCase {
         log("wait until " + _buildSuccess);
         try {
             deploymentWaiter.waitAction(outputWindow);
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             log(outputWindow.getText());
             e.printStackTrace();
-            fail("Deployment error: "+e);
+            fail("Deployment error: " + e);
         }
         log("Deployment complete");
         endTest();
     }
-    
+
     public void testCloseProject() {
         startTest();
         Util.saveAllAPICall();
@@ -375,7 +356,7 @@ public class AcceptanceTest extends RaveTestCase {
         TestUtils.wait(5000);
         endTest();
     }
-    
+
     /* Need to undeploy project to finish tests correctly */
     public void testUndeploy() {
         startTest();
@@ -384,19 +365,22 @@ public class AcceptanceTest extends RaveTestCase {
         String serverPath = _serverPath + _projectServer;  //Current deployment server
         String deploymentPath = serverPath + _deploymentPath; //glassfish specific
         String applicationPath = deploymentPath + _separator + _projectName; //project name
-        
+
         // Select the Server Navigator and set the JTreeOperator
         log("get explorer");
         new QueueTool().waitEmpty(100); //??
         explorer.requestFocus();
         JTreeOperator tree = explorer.getTree();
-        try { Thread.sleep(4000); } catch(Exception e) {} // Sleep 4 secs to make sure Server Navigator is in focus
+        try {
+            Thread.sleep(4000);
+        } catch (Exception e) {
+        } // Sleep 4 secs to make sure Server Navigator is in focus
 
         // Need to refresh J2EE AppServer node
         log("refresh");
         explorer.pushPopup(tree, serverPath, _refresh);
         TestUtils.wait(1000);
-        
+
         log("refresh deployment path: " + deploymentPath);
         TestUtils.wait(1000);
         explorer.selectPath(deploymentPath);
@@ -407,13 +391,13 @@ public class AcceptanceTest extends RaveTestCase {
         log("undeploy Path: " + applicationPath);
         explorer.selectPath(applicationPath);
         TestUtils.wait(1000);
-        
+
         log("Push Menu Undeploy...");
         explorer.pushPopup(explorer.getTree(), applicationPath, _undeploy);
         TestUtils.wait(5000);
         endTest();
     }
-    
+
     public void testCheckIDELog() {
         startTest();
         try {
@@ -427,7 +411,6 @@ public class AcceptanceTest extends RaveTestCase {
             fail("Failed to open message.log : " + ioe);
         }
         endTest();
-    }    
-    
+    }
 }
 

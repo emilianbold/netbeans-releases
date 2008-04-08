@@ -194,7 +194,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         editor.addUndoManagerToDocument();
 //        addUndoManager();
         
-        getValidationController().triggerValidation( true );
+        getValidationController().triggerValidation(true);
     }
     
     public void componentClosed() {
@@ -458,7 +458,15 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                         return;
                     }
                     if (event.isLastInAtomic()) {
-                        selectElement(0);
+                        if (!SwingUtilities.isEventDispatchThread()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        selectElement(0);
+                                    }
+                                });
+                        } else {
+                            selectElement(0);
+                        }
                     }
                 }
 
@@ -579,12 +587,14 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         myBpelModelListener = null;
     }
 
+    // TODO m
     private void selectElement(int delay) {
+        assert SwingUtilities.isEventDispatchThread();
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }
         if (myPreviousTask != null && !myPreviousTask.isFinished()
-                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125 439
         {
             myPreviousTask.waitFinished();
             myPreviousTask = null;

@@ -4,6 +4,5 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/makeproject/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/makeproject/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.3
-OpenIDE-Module-Install: org/netbeans/modules/cnd/makeproject/MakeProjectModule.class
 AutoUpdate-Show-In-Client: false
 

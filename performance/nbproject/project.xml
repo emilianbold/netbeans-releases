@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-	    <code-name-base>Performance</code-name-base>
+	    <code-name-base>performance</code-name-base>
             <module-dependencies/>
             <test-dependencies>
               <test-type>

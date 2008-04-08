@@ -144,7 +144,7 @@ public class BuildNumberOpenEsb extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "([0-9_]+)\\.solsparc\\.log"); // NOI18N
+            "Build([0-9_]+)"); // NOI18N
     
     /**
      * Build number property suffix.

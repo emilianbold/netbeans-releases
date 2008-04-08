@@ -42,8 +42,10 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -69,7 +71,7 @@ import org.openide.util.Parameters;
 public final class SpringScope {
 
     // This class is also responsible for creating and maintaining
-    // ad-hoc models for Spring config files (that is, models that are created
+    // single-file models for Spring config files (that is, models that are created
     // for files not included in the config file group). But, in order to make
     // clients' life easier, they can obtain models through SpringConfigModel
     // (which calls back into this class).
@@ -78,7 +80,7 @@ public final class SpringScope {
     private Listener listener;
 
     final Map<ConfigFileGroup, SpringConfigModel> group2Model = new HashMap<ConfigFileGroup, SpringConfigModel>();
-    final Map<FileObject, SpringConfigModel> file2AdHocModel = new HashMap<FileObject, SpringConfigModel>();
+    final Map<FileObject, SpringConfigModel> file2Model = new HashMap<FileObject, SpringConfigModel>();
 
     static {
         SpringScopeAccessor.DEFAULT = new SpringScopeAccessor() {
@@ -133,6 +135,29 @@ public final class SpringScope {
     }
 
     /**
+     * Returns the a list of all known models for all known configuration
+     * files.
+     *
+     * @return the list of models; never null.
+     */
+    public List<SpringConfigModel> getAllFilesConfigModels() {
+        List<File> files = getConfigFileManager().getConfigFiles();
+        List<SpringConfigModel> result = new ArrayList<SpringConfigModel>(files.size());
+        for (File file : files) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                continue;
+            }
+            SpringConfigModel model = getFileConfigModel(fo);
+            if (model == null) {
+                continue;
+            }
+            result.add(model);
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    /**
      * Returns the model of the beans configuration files for the given file
      * (and any related files, if the files belongs to a
      * {@link ConfigFileGroup config file group}).
@@ -150,15 +175,20 @@ public final class SpringScope {
         if (model != null) {
             return model;
         }
-        // Otherwise will need to return an ad-hoc model.
-        return getAdHocConfigModel(configFO);
+        // Otherwise will need to return a single-file model.
+        return getFileConfigModel(configFO);
     }
 
     private SpringConfigModel getGroupConfigModel(File configFile) {
-        ConfigFileGroup group = configFileManager.getConfigFileGroupFor(configFile);
-        if (group == null) {
-            return null;
+        for (ConfigFileGroup group : configFileManager.getConfigFileGroups()) {
+            if (group.containsFile(configFile)) {
+                return getGroupConfigModel(group);
+            }
         }
+        return null;
+    }
+
+    private SpringConfigModel getGroupConfigModel(ConfigFileGroup group) {
         SpringConfigModel model;
         synchronized (this) {
             model = group2Model.get(group);
@@ -170,33 +200,33 @@ public final class SpringScope {
         return model;
     }
 
-    private synchronized SpringConfigModel getAdHocConfigModel(FileObject configFO) {
-        SpringConfigModel adHocModel = file2AdHocModel.get(configFO);
-        if (adHocModel != null) {
-            return adHocModel;
+    private synchronized SpringConfigModel getFileConfigModel(FileObject configFO) {
+        SpringConfigModel model = file2Model.get(configFO);
+        if (model != null) {
+            return model;
         }
         File configFile = FileUtil.toFile(configFO);
         if (configFile == null) {
             // The file is not valid.
             return null;
         }
-        ConfigFileGroup adHocFileGroup = ConfigFileGroup.create(Collections.singletonList(configFile));
-        adHocModel = new SpringConfigModel(adHocFileGroup);
-        file2AdHocModel.put(configFO, adHocModel);
+        ConfigFileGroup singleFileGroup = ConfigFileGroup.create(Collections.singletonList(configFile));
+        model = new SpringConfigModel(singleFileGroup);
+        file2Model.put(configFO, model);
 
         // We need to avoid the race condition between checking if the file is valid
         // and adding the listener.
         configFO.addFileChangeListener(listener);
         if (!configFO.isValid()) {
-            file2AdHocModel.remove(configFO);
+            file2Model.remove(configFO);
             configFO.removeFileChangeListener(listener);
             return null;
         }
-        return adHocModel;
+        return model;
     }
 
     private synchronized void notifyFileDeleted(FileObject file) {
-        file2AdHocModel.remove(file);
+        file2Model.remove(file);
         file.removeFileChangeListener(listener);
     }
 
@@ -205,10 +235,11 @@ public final class SpringScope {
      */
     synchronized void notifyConfigFileManagerChanged() {
         group2Model.clear();
+        file2Model.clear();
     }
 
     /**
-     * Listens on the deletion of config files from which ad-hoc models
+     * Listens on the deletion of config files from which file models
      * were created.
      */
     private final class Listener extends FileChangeAdapter implements ChangeListener {

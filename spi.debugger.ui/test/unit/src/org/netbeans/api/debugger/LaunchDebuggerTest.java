@@ -65,8 +65,13 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         TestDebuggerManagerListener dml = new TestDebuggerManagerListener();
         dm.addDebuggerListener(dml);
 
-        TestLazyDebuggerManagerListener ldml = (TestLazyDebuggerManagerListener) 
-            dm.lookupFirst (null, LazyDebuggerManagerListener.class);
+        TestLazyDebuggerManagerListener ldml = null;
+        for (LazyDebuggerManagerListener _ldml : dm.lookup(null, LazyDebuggerManagerListener.class)) {
+            if (_ldml instanceof TestLazyDebuggerManagerListener) {
+                ldml = (TestLazyDebuggerManagerListener) _ldml;
+                break;
+            }
+        }
         assertNotNull("Lazy debugger manager listener not loaded", ldml);
 
         Map args = new HashMap();
@@ -82,7 +87,7 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         testStartEvents(ldml, engines);
 
         DebuggerEngine debugger = engines[0];
-        DebuggerInfo dic = (DebuggerInfo) debugger.lookupFirst(null, DebuggerInfo.class);
+        DebuggerInfo dic = debugger.lookupFirst(null, DebuggerInfo.class);
         assertSame("Wrong debugger info in engine lookup", dic, di);
         assertTrue("Engine did not start", tdi.hasInfo(ActionsManager.ACTION_START));
 

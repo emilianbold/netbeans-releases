@@ -38,7 +38,7 @@
     <xs:complexType  name="reserveType">
         <xs:sequence>
             <xs:element name="reservationID" type="xs:long"/>
-            <xs:element name="description" type="xs:string" />
+            <xs:element name="description" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
     
@@ -47,9 +47,9 @@
     <xs:complexType name="reserveStatusType">
         <xs:sequence>
             <xs:element name="reservationID" type="xs:long"/>
-            <xs:element name="reservationStatus" type="xs:boolean" />
+            <xs:element name="reservationStatus" type="xs:boolean"/>
         </xs:sequence>
-    </xs:complexType>       
+    </xs:complexType>
     
     <xs:element name="reservationStatusOfAll" type="tns:reservationStatusOfAllType"/>
     

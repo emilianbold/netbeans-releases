@@ -95,7 +95,6 @@ made subject to such option by the copyright holder.
         <echo message="memory update"/>
         <replace file="${netbeans.dest.dir}/etc/netbeans.conf">
             <replacefilter token="-J-Xmx128m" value="-J-Xmx192m"/>
-            <replacefilter token="-J-Xms32m" value="-J-Xms128m"/>
         </replace>
     </target>
     

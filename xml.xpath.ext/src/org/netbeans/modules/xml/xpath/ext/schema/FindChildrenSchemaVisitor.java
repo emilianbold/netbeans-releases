@@ -20,7 +20,6 @@ package org.netbeans.modules.xml.xpath.ext.schema;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.Import;
@@ -38,12 +37,11 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
-import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.netbeans.modules.xml.xam.Component;
 import java.util.Collection;
+import org.netbeans.modules.xml.schema.model.AttributeReference;
 
 /**
  * This schema visitor is inteneded to look for a children elements or attributes 
@@ -73,6 +71,30 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 //out();
 //out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
+    
+    @Override
+    public void visit(ElementReference er) {
+        if (!isAttribute) {
+            String name = fastGetRefName(er.getRef());
+            if (!mySoughtName.equals(name)) {
+                return;
+            }
+            super.visit(er);
+        }
+    }
+    
+    @Override
+    public void visit(AttributeReference ar) {
+        if (isAttribute) {
+            String name = fastGetRefName(ar.getRef());
+            if (!mySoughtName.equals(name)) {
+                return;
+            }
+            super.visit(ar);
+        }
+    }
+    
+    //-----------------------------------------------------------------
     
     public List<SchemaComponent> getFound() {
         return myFound;

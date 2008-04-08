@@ -514,7 +514,8 @@ public class ResultSetTableModelSupport {
             }
 
             ColumnDef column = new ColumnDef(
-                    rsmd.getColumnName(i), 
+                    rsmd.getColumnName(i),
+                    rsmd.getColumnLabel(i),
                     writable,
                     ctd.getColumnClass());
             

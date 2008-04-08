@@ -50,6 +50,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
@@ -234,7 +235,7 @@ public class DeployServiceAssembly extends Task {
 
         try {
             // Make sure the app server is running.
-            JbiManager.startServer(serverInstanceID, false);
+            JbiManager.startServer(serverInstanceID, true);            
         } catch (Exception e) {
             // NPE from command line because of missing repository in the 
             // default lookup. The server needs to be started explicitly
@@ -257,8 +258,10 @@ public class DeployServiceAssembly extends Task {
             userName = serverInstance.getUserName();
             password = serverInstance.getPassword();
 
+            mgmtServiceWrapper.clearServiceAssemblyStatusCache();
             ServiceAssemblyInfo assembly = mgmtServiceWrapper.getServiceAssembly(
-                    serviceAssemblyID, "server");        
+                    serviceAssemblyID, "server");  
+            
             String status = assembly == null ? null : assembly.getState();
             // System.out.println("Current assembly status is " + status);
 
@@ -291,17 +294,41 @@ public class DeployServiceAssembly extends Task {
                     undeployServiceAssembly(deploymentService);
                 } 
                 
-                deployServiceAssembly(deploymentService);
-                startServiceAssembly(mgmtServiceWrapper);                
+                try {
+                    deployServiceAssembly(deploymentService);
+                } catch (BuildException e) {
+                    log("ERROR: Service assembly deployment failed (see error below). Cleaning up...", Project.MSG_ERR);
+                    undeployServiceAssembly(deploymentService);
+                    
+                    Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
+                            GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            serviceAssemblyID, e.getMessage(), false);                    
+                    throw new BuildException((String) processResult[0]);
+                } 
+                
+                try {
+                    startServiceAssembly(mgmtServiceWrapper);
+                } catch (BuildException e) {
+                    log("ERROR: Starting service assembly failed (see error below). Cleaning up... ", Project.MSG_ERR);
+                    
+                    stopServiceAssembly(mgmtServiceWrapper);
+                    shutdownServiceAssembly(mgmtServiceWrapper);
+                    undeployServiceAssembly(deploymentService);
+                    
+                    Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
+                            GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            serviceAssemblyID, e.getMessage(), false);
+                    throw new BuildException((String) processResult[0]);
+                }
             }
         } catch (ManagementRemoteException e) {
             Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
-                    GenericConstants.START_COMPONENT_OPERATION_NAME,
+                    GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
                     serviceAssemblyID, e.getMessage(), false);
             throw new BuildException((String) processResult[0]);
         }             
     }
-    
+        
     private void deployServiceAssembly(DeploymentService adminService) 
             throws BuildException {
         log("[deploy-service-assembly]");

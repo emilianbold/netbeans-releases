@@ -49,8 +49,6 @@ import java.util.*;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.openide.execution.NbClassPath;
 import org.openide.execution.ExecutorTask;
@@ -76,6 +74,7 @@ import org.netbeans.core.NbTopManager;
 * Initializing is lazy - for request. TaskIO.out is an instance of SysPrintStream,
 * that is redirected to OutputWriter that is redirected to a window.
 */
+@SuppressWarnings("deprecation") // createLibraryPath
 public final class
     ExecutionEngine extends org.openide.execution.ExecutionEngine {
 
@@ -122,9 +121,9 @@ public final class
      * @return the instance, or null if none could be found
      */
     public static ExecutionEngine getExecutionEngine() {
-        ExecutionEngine ee = (ExecutionEngine)Lookup.getDefault().lookup(ExecutionEngine.class);
+        ExecutionEngine ee = Lookup.getDefault().lookup(ExecutionEngine.class);
         if (ee != null) return ee;
-        org.openide.execution.ExecutionEngine ee2 = (org.openide.execution.ExecutionEngine)Lookup.getDefault().lookup(org.openide.execution.ExecutionEngine.class);
+        org.openide.execution.ExecutionEngine ee2 = Lookup.getDefault().lookup(org.openide.execution.ExecutionEngine.class);
         if (ee2 instanceof ExecutionEngine) return (ExecutionEngine)ee2;
         return null;
     }
@@ -175,7 +174,7 @@ public final class
     * @return class path to libraries
     */
     protected NbClassPath createLibraryPath() {
-        @SuppressWarnings("unchecked") List<File> l = NbTopManager.getUninitialized().getModuleJars();
+        @SuppressWarnings("unchecked") List<File> l = NbTopManager.getModuleJars();
         return new NbClassPath (l.toArray (new File[l.size ()]));
     }
 
@@ -280,6 +279,7 @@ public final class
             }
         }
 
+        @Override
         public void write(byte[] buff, int off, int len) throws IOException {
             String s = new String (buff, off, len);
             if (std) {
@@ -289,6 +289,7 @@ public final class
             }
         }
 
+        @Override
         public void flush() throws IOException {
             if (std) {
                 getTaskIOs().getOut().flush();
@@ -297,6 +298,7 @@ public final class
             }
         }
 
+        @Override
         public void close() throws IOException {
             if (std) {
                 getTaskIOs().getOut().close();

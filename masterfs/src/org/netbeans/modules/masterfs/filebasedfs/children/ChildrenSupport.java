@@ -206,7 +206,6 @@ public final class ChildrenSupport {
                 final FileInfo fInfo = new FileInfo(childs[i],1);
                 if (fInfo.isConvertibleToFileObject()) {
                     FileNaming child = NamingFactory.fromFile(folderName, childs[i]);
-                    assert child.getParent() == folderName;
                     newChildren.add(child);
                 }
             }

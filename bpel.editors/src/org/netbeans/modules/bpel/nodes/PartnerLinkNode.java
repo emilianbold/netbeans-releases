@@ -37,7 +37,8 @@ import org.netbeans.modules.bpel.properties.props.CustomEditorProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.nodes.actions.DeletePLinkAction;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
@@ -136,7 +137,7 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
             
             Lookup modellookup = plt.getModel().getModelSource().getLookup();
             FileObject modelFo = modellookup.lookup(FileObject.class);
-            Project modelProject = ResolverUtility.safeGetProject(pLink.getBpelModel());
+            Project modelProject = Utils.safeGetProject(pLink.getBpelModel());
             String relativePath = ResolverUtility.safeGetRelativePath(modelFo, modelProject);
             
             return relativePath != null ? relativePath : modelFo.getPath();

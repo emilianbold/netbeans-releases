@@ -30,6 +30,7 @@ import org.netbeans.modules.xml.xpath.ext.metadata.GeneralFunctionMetadata.Funct
 import org.netbeans.modules.xml.xpath.ext.metadata.ResultTypeCalculator;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.netbeans.modules.xml.xpath.ext.metadata.impl.images.IconLoader;
+import org.openide.util.NbBundle;
 
 /**
  * Contains static metadata classes for all XPath Core Functions.
@@ -91,7 +92,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
         
         public String getDisplayName() {
-            return "Last";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Last"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -123,7 +125,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Position";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Position"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -155,7 +158,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Count";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Count"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -182,7 +186,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "ID";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Id"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -209,7 +214,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Local Name";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_LocalName"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -241,7 +247,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "NamespaceUri";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_NamespaceURI"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -273,7 +280,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Name";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Name"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -309,7 +317,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "String";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_String"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -341,7 +350,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Concat";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Concatenation"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -368,7 +378,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Starts With";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_StartsWith"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -396,7 +407,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Contains";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Contains"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -424,7 +436,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Substring Before";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_SubstringBefore"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -452,7 +465,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Substring After";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_SubstringAfter"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -480,7 +494,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Substring";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Substring"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -509,7 +524,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "String Length";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_StringLength"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -540,7 +556,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Normalize Space";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_NormalizeSpace"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -571,7 +588,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Translate";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Translate"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -603,7 +621,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Boolean";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Boolean"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -629,7 +648,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Logical Not";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_LogicalNot"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -655,7 +675,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Logical True";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_LogicalTrue"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -680,7 +701,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Logical False";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_LogicalFalse"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -705,7 +727,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Language";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Language"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -740,7 +763,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Number";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Number"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -771,7 +795,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Sum";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Sum"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -797,7 +822,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Floor";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Floor"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -823,7 +849,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Ceiling";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Ceiling"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -849,7 +876,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Round";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Round"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -879,7 +907,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "null";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Null"); // NOI18N
         }
 
         public String getShortDescription() {
@@ -900,7 +929,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
     public static final class KeyFuncMetadata extends CoreFunctionMetadataImpl {
 
         public String getName() {
-            return "key"; // NOI18N
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_Key"); // NOI18N
         }
 
         public String getDisplayName() {
@@ -931,7 +961,8 @@ public abstract class CoreFunctionMetadataImpl implements CoreFunctionMetadata {
         }
 
         public String getDisplayName() {
-            return "Format Number";
+            return NbBundle.getMessage(CoreFunctionMetadataImpl.class, 
+                            "DN_FormatNumber"); // NOI18N
         }
 
         public String getShortDescription() {

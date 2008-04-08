@@ -47,10 +47,14 @@
 package org.netbeans.modules.xml.wsdl.ui.view;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
+
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
@@ -62,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class BindingOperationView extends javax.swing.JPanel {
 
+    public static final String ENABLE_OK = "ENABLE_OK";
     private Operation mSelectedOperation;
     private Collection<Operation> mOperations;
     private Object[] mSelectedOperations;
@@ -129,6 +134,7 @@ public class BindingOperationView extends javax.swing.JPanel {
         JList list = (JList) evt.getSource();
         if (!list.getValueIsAdjusting()) {
             mSelectedOperations = jList1.getSelectedValues();
+            validateAll();
         }
     }//GEN-LAST:event_jList1ValueChanged
 
@@ -152,15 +158,26 @@ public class BindingOperationView extends javax.swing.JPanel {
         if (mOperations != null) {
             PortType portType = (PortType) mOperations.iterator().next().getParent();
             List<Operation> overloadedOperations = Utility.getOverloadedOperations(portType);
-
+            Set<String> overloadedOperationsSignatures = new HashSet<String>();
+            boolean ambiguousOverloadingerror = false;
+            for (Operation overloadedOperation : overloadedOperations) {
+                String opSig = Utility.getOperationSignature(overloadedOperation);
+                if (!overloadedOperationsSignatures.contains(opSig)) {
+                    overloadedOperationsSignatures.add(opSig);
+                } else {
+                    ambiguousOverloadingerror = true;
+                    break;
+                }
+            }
+            
             Vector<OperationDelegate> listData = new Vector<OperationDelegate>(mOperations.size());
             for (Operation operation : mOperations) {
                 boolean isOverloaded = overloadedOperations.contains(operation);
                 OperationDelegate opD = new OperationDelegate(operation, isOverloaded);
                 listData.add(opD);
             }
-
-            if (!overloadedOperations.isEmpty()) {
+            
+            if (ambiguousOverloadingerror) {
                 commonMessagePanel1.setErrorMessage(NbBundle.getMessage(BindingOperationView.class, "MSG_ImproperlyOverloadedOperations"));
             }
             return listData;
@@ -170,15 +187,18 @@ public class BindingOperationView extends javax.swing.JPanel {
     }
 
     private void validateAll() {
-        if (!commonMessagePanel1.isStateValid()) {
-            firePropertyChange("ENABLE_OK", true, false);
-        }
+        boolean valid = isStateValid();
+        firePropertyChange(ENABLE_OK, !valid, valid);
     }
     
     @Override
     public void addNotify() {
         super.addNotify();
         validateAll();
+    }
+    
+    public boolean isStateValid() {
+        return commonMessagePanel1.isStateValid() && mSelectedOperations != null && mSelectedOperations.length > 0;
     }
     
     private class OperationDelegate {

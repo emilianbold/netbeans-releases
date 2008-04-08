@@ -265,9 +265,9 @@ public final class TestUtil extends ProxyLookup {
         String oldNbUser = System.getProperty("netbeans.user"); // NOI18N
         File workDir = test.getWorkDir();
         File systemDir = new File(workDir, "ud/system"); // NOI18N
-        new File(systemDir, "J2EE/InstalledServers").mkdirs(); // NOI18N
-        new File(systemDir, "J2EE/DeploymentPlugins").mkdirs(); // NOI18N
-        new File(workDir, "nb").mkdirs(); // NOI18N
+        FileUtil.createFolder(new File(systemDir, "J2EE/InstalledServers"));
+        FileUtil.createFolder(new File(systemDir, "J2EE/DeploymentPlugins"));
+        FileUtil.createFolder(new File(workDir, "nb"));
         System.setProperty("netbeans.home", new File(workDir, "nb").getAbsolutePath()); // NOI18N
         System.setProperty("netbeans.user", new File(workDir, "ud").getAbsolutePath()); // NOI18N
         TestUtil.setLookup(new Object[] {new Repo(test), new TestPlatformProvider()});
@@ -305,9 +305,9 @@ public final class TestUtil extends ProxyLookup {
                 byte data[] = new byte[BUFFER];
                 File entryFile = new File(destDir, entry.getName());
                 if (entry.isDirectory()) {
-                    entryFile.mkdirs();
+                    FileUtil.createFolder(entryFile);
                 } else {
-                    entryFile.getParentFile().mkdirs();
+                    FileUtil.createFolder(entryFile.getParentFile());
                     FileOutputStream fos = new FileOutputStream(entryFile);
                     dest = new BufferedOutputStream(fos, BUFFER);
                     int count;
@@ -506,7 +506,7 @@ public final class TestUtil extends ProxyLookup {
         private static FileSystem mksystem(NbTestCase t) throws Exception {
             LocalFileSystem lfs = new LocalFileSystem();
             File systemDir = new File(t.getWorkDir(), "ud/system");
-            systemDir.mkdirs();
+            FileUtil.createFolder(systemDir);
             lfs.setRootDirectory(systemDir);
             lfs.setReadOnly(false);
             List<FileSystem> layers = new ArrayList<FileSystem>();
@@ -553,7 +553,7 @@ public final class TestUtil extends ProxyLookup {
             if (from.getName().equals("CVS")) {
                 return;
             }
-            to.mkdir();
+            FileUtil.createFolder(to);
             String[] kids = from.list();
             for (int i = 0; i < kids.length; i++) {
                 doCopy(new File(from, kids[i]), new File(to, kids[i]));

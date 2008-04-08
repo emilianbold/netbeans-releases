@@ -1,0 +1,702 @@
+options {
+    TRACK_TOKENS = true; 
+	IGNORE_CASE = true;
+	STATIC = false;
+//    UNICODE_INPUT = false;
+    USER_CHAR_STREAM = true;
+}
+
+PARSER_BEGIN(CSSParser)
+
+package org.netbeans.modules.css.parser;
+
+import java.util.*;
+
+public class CSSParser {
+
+    private ArrayList errors = new ArrayList();
+
+    public CSSParser() {
+       this((CharStream) null);
+    }
+
+    public List errors() {
+        return errors;
+    }
+
+}
+
+PARSER_END(CSSParser)
+
+//TOKEN_MGR_DECLS :
+  
+<DEFAULT> TOKEN :
+{
+    < S: ( " "|"\t"|"\r"|"\n"|"\f" )+ >
+}
+
+<DEFAULT> MORE :
+{
+  < "/*" > : COMMENT
+}
+
+<COMMENT> SKIP :
+{
+  < "*/" > : DEFAULT
+}
+
+<COMMENT> MORE :
+{
+  < ~[] > : COMMENT
+}
+
+<DEFAULT> TOKEN :
+{
+  < LBRACE: "{" >
+| < RBRACE: "}" >
+| < COMMA: "," >
+| < DOT: "." >
+| < SEMICOLON: ";" >
+| < COLON: ":" >
+| < ASTERISK: "*" >
+| < SLASH: "/" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < EQUALS: "=" >
+| < GT: ">" >
+| < LSQUARE: "[" >
+| < RSQUARE: "]" >
+}
+
+<DEFAULT> TOKEN :
+{
+  < HASH: "#" <NAME> >
+}
+
+<DEFAULT> TOKEN :
+{
+  < STRING: <STRING1> | <STRING2> > 
+| < RROUND: ")" >
+}
+
+<DEFAULT> TOKEN :
+{
+  < #URL: ["!","#","$","%","&","*"-"~"] | <NONASCII> | <ESCAPE> >
+| < URI: "url(" ( <S> )* ( <STRING> | ( <URL> )* ) ( <S> )* <RROUND> > 
+}
+
+<DEFAULT> TOKEN :
+{
+  < CDO: "<!--" >
+| < CDC: "-->" >
+| < INCLUDES: "~=" >
+| < DASHMATCH: "|=" >
+| < IMPORT_SYM: "@import" >
+| < PAGE_SYM: "@page" >
+| < MEDIA_SYM: "@media" >
+| < FONT_FACE_SYM: "@font-face" >
+| < CHARSET_SYM: "@charset" >
+| < ATKEYWORD: "@" <IDENT> >
+| < IMPORTANT_SYM: "!" ( <S> )? "important" >
+| < INHERIT: "inherit" >
+| < EMS: <NUM> "em" > 
+| < EXS: <NUM> "ex" > 
+| < LENGTH_PX: <NUM> "px" > 
+| < LENGTH_CM: <NUM> "cm" >
+| < LENGTH_MM: <NUM> "mm" >
+| < LENGTH_IN: <NUM> "in" >
+| < LENGTH_PT: <NUM> "pt" >
+| < LENGTH_PC: <NUM> "pc" >
+| < ANGLE_DEG: <NUM> "deg" >
+| < ANGLE_RAD: <NUM> "rad" >
+| < ANGLE_GRAD: <NUM> "grad" >
+| < TIME_MS: <NUM> "ms" >
+| < TIME_S: <NUM> "s" > 
+| < FREQ_HZ: <NUM> "Hz" >
+| < FREQ_KHZ: <NUM> "kHz" >
+| < DIMEN: <NUM> <IDENT> >
+| < PERCENTAGE: <NUM> "%" >
+| < NUMBER: <NUM> >
+| < RGB: "rgb(" >
+| < FUNCTION: <IDENT> "(" >
+| < IDENT: ( "-" )? <NMSTART> ( <NMCHAR> )* >
+| < #NAME: ( <NMCHAR> )+ >
+| < NUM: ( ["0"-"9"] )+ | ( ["0"-"9"] )* "." ( ["0"-"9"] )+ >
+
+| < UNICODERANGE: "U+" ( <RANGE> | ( <HNUM> "-" <HNUM> ) ) >
+| < #RANGE: <Q16> | <H> ( (<Q15>)? | <H> ( (<Q14>)? | <H> ( (<Q13>)? | <H> ( (<Q12>)? | <H> ( (<Q11>)? | <H> ) ) ) ) ) >
+| < #Q16: "?" | "??" | "???" | "????" | "?????" | "??????" >
+| < #Q15: "?" | "??" | "???" | "????" | "?????" >
+| < #Q14: "?" | "??" | "???" | "????" >
+| < #Q13: "?" | "??" | "???" >
+| < #Q12: "?" | "??" >
+| < #Q11: "?" >
+
+| < #NMSTART: ["_"] | ["a"-"z"] | <NONASCII> | <ESCAPE> >
+| < #NMCHAR: ["_"] | ["a"-"z","0"-"9","-"] | <NONASCII> | <ESCAPE> >
+| < #STRING1: "\"" ( ["\t"," ","!","#","$","%","&","("-"~"] | "\\" <NL> | "\'" | <NONASCII> | <ESCAPE> )* "\"" >
+| < #STRING2: "\'" ( ["\t"," ","!","#","$","%","&","("-"~"] | "\\" <NL> | "\"" | <NONASCII> | <ESCAPE> )* "\'" >
+| < #NONASCII: ["\u0080"-"\uFFFF"] >
+| < #ESCAPE: <UNICODE> | ( "\\" [" "-"~","\u0080"-"\uFFFF"] ) >
+| < #NL: "\n" | "\r\n" | "\r" | "\f" >
+| < #UNICODE: "\\" <HNUM> ( " " | "\t" | "\r" | "\n" | "\f" )? >
+| < #HNUM: <H> | <H><H> | <H><H><H> | <H><H><H><H> | <H><H><H><H><H> | <H><H><H><H><H><H> >
+| < #H: ["0"-"9","a"-"f"] >
+}
+
+<*> TOKEN:
+{
+    < UNKNOWN: ~[] >
+    {
+        System.err.println("Illegal character : " + image.toString());
+    }
+}
+
+SimpleNode styleSheet() :{} {
+  styleSheetRuleList()
+  { return jjtThis; }
+}
+
+void styleSheetRuleList() :{} {
+  ( charsetRule() )?
+  ( <S> | <CDO> | <CDC> )*
+  ( importRule() ( <S> | <CDO> | <CDC> )* )*
+  ( ( styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() ) ( <S> | <CDO> | <CDC> )* )*
+}
+
+//
+// This is used by ASTStyleSheet.insertRule to parse a single rule
+//
+void styleSheetRuleSingle() :{} {
+  ( charsetRule() | importRule() | styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() )
+}
+
+void charsetRule() : {} {
+  <CHARSET_SYM> ( <S> )*
+  <STRING> ( <S> )*
+  <SEMICOLON>
+}
+
+void unknownRule() :{} {
+    <ATKEYWORD>
+    skip()
+}
+
+void importRule() : {} {
+    <IMPORT_SYM> ( <S> )*
+    (<STRING>
+    | <URI> ) ( <S> )*
+    ( mediaList() )?
+    <SEMICOLON>
+}
+
+void mediaRule() : {} {
+        <MEDIA_SYM> ( <S> )*
+        mediaList()
+        <LBRACE> ( <S> )*
+        ( mediaRuleList() )?
+        <RBRACE>
+}
+
+void mediaList() :{} {
+    medium()
+    ( <COMMA> ( <S> )* medium() )*
+}
+
+void mediaRuleList() : {} {
+  ( ( styleRule() | pageRule() | unknownRule() ) ( <S> )* )+ 
+}
+
+void mediaRuleSingle() :
+{
+}
+{
+  ( styleRule() | pageRule() | unknownRule() )
+}
+
+void medium() :
+{
+}
+{
+  <IDENT> ( <S> )* 
+}
+
+void pageRule() :
+{
+    Token t = null;
+    String s = null;
+    boolean start = false;
+}
+{
+        <PAGE_SYM> ( <S> )*
+
+        ( LOOKAHEAD(2) ( t = <IDENT> ( <S> )* ) |
+        ( <IDENT> pseudoPage() ( <S> )* ) |
+        ( pseudoPage() ( <S> )* ) )?
+
+        <LBRACE> ( <S> )*
+        ( declaration() )?
+        ( <SEMICOLON> ( <S> )* ( declaration() )? )*
+        <RBRACE>
+}
+
+//
+// pseudoPage
+//   : ':' IDENT
+//   ;
+//
+void pseudoPage() :
+{
+}
+{
+  <COLON> 
+  <IDENT> 
+}
+
+//
+// font_face
+//   : FONT_FACE_SYM S*
+//     '{' S* declaration [ ';' S* declaration ]* '}' S*
+//   ;
+//
+void fontFaceRule() :
+{
+}
+{
+        <FONT_FACE_SYM> ( <S> )*
+        <LBRACE> ( <S> )* 
+        ( declaration() )?
+        ( <SEMICOLON> ( <S> )* ( declaration() )? )*
+        <RBRACE>
+}
+
+//
+// operator
+//   : '/' S* | ',' S* |
+//   ;
+//
+void operator() :
+{
+}
+{
+  <SLASH> ( <S> )* |  <COMMA> ( <S> )*
+}
+
+//
+// combinator
+//   : '+' S* | '>' S* |
+//   ;
+//
+void combinator() :
+{
+}
+{
+  ( <PLUS> ( <S> )*
+  | <GT> ( <S> )*
+  | <S> ( ( <PLUS> | <GT> ) ( <S> )* )? )
+
+}
+
+//
+// unary_operator
+//   : '-' | '+'
+//   ;
+//
+void unaryOperator() :
+{
+}
+{
+  ( <MINUS> | <PLUS> )
+}
+
+//
+// property
+//   : IDENT S*
+//   ;
+//
+void property() :
+{
+}
+{
+    <IDENT> ( <S> )*
+}
+
+//
+// ruleset
+//   : selector [ ',' S* selector ]*
+//     '{' S* declaration [ ';' S* declaration ]* '}' S*
+//   ;
+//
+
+//TODO marek: resolve the error reporting and recovery in styleRule()
+void styleRule() :
+{
+}
+{
+    try {
+        selectorList()
+        <LBRACE> ( <S> )*
+        ( declaration() )?
+        ( <SEMICOLON> ( <S> )* ( declaration() )? )*
+        <RBRACE>
+    } catch(ParseException e) {
+        reportError(e);
+        error_skipblock();
+}
+}
+
+void selectorList() :
+{
+}
+{
+    try {
+        selector()
+        ( <COMMA> ( <S> )*  selector() )* 
+
+    } catch (ParseException e) {
+        reportError(e);
+    }
+}
+
+//
+// selector
+//   : simple_selector [ combinator simple_selector ]*
+//   ;
+//
+void selector() :
+{
+}
+{
+    try {
+        simpleSelector()
+        ( LOOKAHEAD(2) combinator() simpleSelector() )* ( <S> )*
+    } catch (ParseException e) {
+        reportError(e);
+        skipSelector();
+    }
+}
+
+//
+// simple_selector
+//   : element_name? [ HASH | class | attrib | pseudo ]* S*
+//   ;
+//
+void simpleSelector() :
+{
+}
+{
+    (
+        ( elementName()
+            ( hash()
+            | _class()
+            | attrib()
+            | pseudo()
+            )*
+        )
+        |
+        ( 
+            ( hash()
+            | _class()
+            | attrib()
+            | pseudo()
+            )+
+        )
+    )
+
+}
+
+//
+// class
+//   : '.' IDENT
+//   ;
+//
+void _class() :
+{
+}
+{
+    <DOT> <IDENT>
+}
+
+//
+// element_name
+//   : IDENT | '*'
+//   ;
+//
+void elementName() :
+{
+}
+{
+  <IDENT> | <ASTERISK>
+}
+
+//
+// attrib
+//   : '[' S* IDENT S* [ [ '=' | INCLUDES | DASHMATCH ] S*
+//     [ IDENT | STRING ] S* ]? ']'
+//   ;
+//
+void attrib() :
+{
+}
+{
+    <LSQUARE> ( <S> )*
+    ( <IDENT> ) ( <S> )*
+    (
+        (
+            <EQUALS>
+            |
+            <INCLUDES>
+            |
+            <DASHMATCH>
+        )
+        ( <S> )*
+        (
+            ( <IDENT> )
+            |
+            <STRING> 
+        )
+        ( <S> )*
+    )?
+    <RSQUARE>
+
+}
+
+//
+// pseudo
+//   : ':' [ IDENT | FUNCTION S* IDENT S* ')' ]
+//   ;
+//
+void pseudo() :
+{
+}
+{
+    <COLON>
+    (
+        ( <IDENT> )
+        |
+        (
+            <FUNCTION> ( <S> )*
+            ( <IDENT> ) ( <S> )*
+            <RROUND>
+        )
+    )
+}
+
+void hash() :
+{
+}
+{
+    <HASH>
+}
+
+void styleDeclaration()  :
+{
+}
+{
+	<LBRACE> ( <S> )*
+	( declaration() )?
+	( <SEMICOLON> ( <S> )* ( declaration() )? )*
+	<RBRACE>
+}
+
+//
+// declaration
+//   : property ':' S* expr prio?
+//   |
+//   ;
+//
+void declaration() :
+{
+}
+{
+    try {
+        property()
+        <COLON> ( <S> )*
+        expr()
+        ( prio() )?
+    } catch (ParseException e) {
+        reportError(e);
+        error_skipdecl(); //recovery
+    }
+}
+
+//
+// prio
+//   : IMPORTANT_SYM S*
+//   ;
+//
+void prio() :
+{
+}
+{
+  <IMPORTANT_SYM> ( <S> )*
+}
+
+//
+// expr
+//   : term [ operator term ]*
+//   ;
+//
+// TODO: Deal with the operator
+//
+void expr() :
+{
+}
+{
+   term()
+    ( (  operator() )? term() )*
+}
+
+//
+// term
+//   : unary_operator?
+//     [ NUMBER S* | PERCENTAGE S* | LENGTH S* | EMS S* | EXS S* | ANGLE S* |
+//       TIME S* | FREQ S* | function ]
+//   | STRING S* | IDENT S* | URI S* | RGB S* | UNICODERANGE S* | hexcolor
+//   ;
+//
+void term() :
+{
+}
+{
+    ( unaryOperator() )?
+    (
+        ( <NUMBER>     
+        | <PERCENTAGE>
+        | <LENGTH_PX>
+        | <LENGTH_CM>
+        | <LENGTH_MM>
+        | <LENGTH_IN>
+        | <LENGTH_PT>
+        | <LENGTH_PC>
+        | <EMS>      
+        | <EXS>      
+        | <ANGLE_DEG>
+        | <ANGLE_RAD>
+        | <ANGLE_GRAD>
+        | <TIME_MS>   
+        | <TIME_S>    
+        | <FREQ_HZ>   
+        | <FREQ_KHZ>  
+        | function()
+        )
+    | <STRING>        
+    | <IDENT>        
+    | <URI>         
+    | <UNICODERANGE>
+    | rgb()
+    | hexcolor()
+    | <DIMEN>
+    | <INHERIT>  
+    )
+    ( <S> )*
+}
+
+//
+// function
+//   : FUNCTION S* expr ')' S*
+//   ;
+//
+void function() :
+{
+}
+{
+    <FUNCTION> ( <S> )*
+    expr()
+    <RROUND>
+}
+
+//
+// rgb
+//   : RGB S* expr ')' S*
+//   ;
+//
+void rgb() :
+{
+}
+{
+    <RGB> ( <S> )*
+    expr()
+    <RROUND>
+}
+
+//
+// hexcolor
+//   : HASH S*
+//   ;
+//
+void hexcolor() :
+{
+}
+{
+    <HASH> ( <S> )*
+}
+JAVACODE 
+void reportError(ParseException pe) {
+    errors.add(pe);
+}
+
+JAVACODE
+void skipSelector() {
+    Token t = getToken(1);
+    while (t.kind != COMMA && t.kind != SEMICOLON && t.kind != LBRACE && t.kind != EOF ) {
+        getNextToken();
+        t = getToken(1);
+    }
+}
+
+JAVACODE
+String skip() {
+  StringBuffer sb = new StringBuffer();
+  int nesting = 0;
+  Token t = getToken(0);
+  if (t.image != null) {
+    sb.append(t.image);    
+  }
+  do {
+    t = getNextToken();
+    if (t.kind == EOF)
+      break;
+    sb.append(t.image);
+    if (t.kind == LBRACE)
+      nesting++;
+    else if (t.kind == RBRACE)
+      nesting--;
+    else if (t.kind == SEMICOLON && nesting <= 0)
+      break;
+  }
+  while ((t.kind != RBRACE) || (nesting > 0));
+
+  return sb.toString();
+}
+
+JAVACODE
+void error_skipblock() {
+    ParseException e = generateParseException();
+    //System.err.println( "** error_skipblock **\n" + e.toString() );
+
+  Token t;
+  int nesting = 0;
+  do {
+    t = getNextToken();
+    if( t.kind == LBRACE )
+      nesting++;
+    else if( t.kind == RBRACE )
+      nesting--;
+    else if( t.kind == EOF )
+      break;
+  }
+  while ((t.kind != RBRACE) || (nesting > 0));
+}
+
+JAVACODE
+void error_skipdecl() {
+    ParseException e = generateParseException();
+    //System.err.println("** error_skipdecl **\n" + e.toString());
+
+  Token t = getToken(1);
+  while (t.kind != SEMICOLON && t.kind != RBRACE && t.kind != EOF ) {
+      getNextToken();
+      t = getToken(1);
+  }
+}

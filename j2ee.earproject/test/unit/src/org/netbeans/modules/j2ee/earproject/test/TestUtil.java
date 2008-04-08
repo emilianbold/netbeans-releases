@@ -304,9 +304,9 @@ public final class TestUtil {
                 byte data[] = new byte[BUFFER];
                 File entryFile = new File(destDir, entry.getName());
                 if (entry.isDirectory()) {
-                    entryFile.mkdirs();
+                    FileUtil.createFolder(entryFile);
                 } else {
-                    entryFile.getParentFile().mkdirs();
+                    FileUtil.createFolder(entryFile.getParentFile());
                     FileOutputStream fos = new FileOutputStream(entryFile);
                     dest = new BufferedOutputStream(fos, BUFFER);
                     int count;
@@ -541,7 +541,7 @@ public final class TestUtil {
         private static FileSystem mksystem(NbTestCase t, String... additionalLayers) throws Exception {
             LocalFileSystem lfs = new LocalFileSystem();
             File systemDir = new File(t.getWorkDir(), "ud/system");
-            systemDir.mkdirs();
+            FileUtil.createFolder(systemDir);
             lfs.setRootDirectory(systemDir);
             lfs.setReadOnly(false);
             List<FileSystem> layers = new ArrayList<FileSystem>();

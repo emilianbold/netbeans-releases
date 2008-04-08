@@ -58,6 +58,7 @@ public class EnumMemberStateHandler extends AttributeStateHandler
 {
 
     private String m_Type;
+    private ExpressionStateHandler argumentsHandler;
 
     public EnumMemberStateHandler(String language, String stateName)
     {
@@ -130,6 +131,11 @@ public class EnumMemberStateHandler extends AttributeStateHandler
        {
           retVal = this;
        }
+       else if("Expression List".equals(stateName))
+       {
+          argumentsHandler = new ExpressionStateHandler();
+          retVal = argumentsHandler;
+       }
        else
        {
           retVal = super.createSubStateHandler(stateName, language);
@@ -160,6 +166,7 @@ public class EnumMemberStateHandler extends AttributeStateHandler
         } 
 	else if("Parameter End".equals(tokenType))
 	{
+            addLiteralArgumentsDescriptor();
 	    createTokenDescriptor("Parameter End", pToken);
         } 
 	else if("Body End".equals(tokenType))
@@ -176,5 +183,16 @@ public class EnumMemberStateHandler extends AttributeStateHandler
 	}
     }
 
+    private void addLiteralArgumentsDescriptor() {
+        if (argumentsHandler != null) 
+        {
+            long startPos = argumentsHandler.getStartPosition();
+            long length   = argumentsHandler.getEndPosition() - startPos;
+            createTokenDescriptor("JavaEnumLiteralArguments", -1, -1,
+                                  argumentsHandler.getStartPosition(),
+                                  argumentsHandler.toString(),
+                                  length);
+        }
+    }
 
 }

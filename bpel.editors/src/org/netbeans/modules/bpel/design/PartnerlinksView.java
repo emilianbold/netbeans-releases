@@ -34,6 +34,10 @@ public class PartnerlinksView extends DiagramView {
     public PartnerlinksView(DesignView designView, PartnerRole mode) {
         super(designView);
         this.mode = mode;
+
+        // vlv: print
+        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty(java.lang.Integer.class, mode.getWeight());
     }
 
     public PartnerRole getMode() {
@@ -106,11 +110,6 @@ public class PartnerlinksView extends DiagramView {
             BpelEntity insertAfter = p.getOMReference();
             FBounds bounds = p.getBounds();
             placeHolders.add(new PartnerlinkPlaceholder(this, insertAfter, draggedPattern, contentBounds.getCenterX(),bounds.getMaxY() + 10));
-            
         }
-        
-    
     }
-
-    
 }

@@ -60,9 +60,6 @@ import static org.netbeans.spi.debugger.ui.Constants.WATCH_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID;
 
-/**
- * @author Martin Krauskopf
- */
 public final class WatchesModel extends VariablesModel {
     
     public static final String WATCH =

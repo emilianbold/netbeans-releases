@@ -41,18 +41,11 @@
 package org.netbeans.modules.mercurial.ui.update;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
 import javax.swing.JButton;
-import javax.swing.JRadioButton;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import java.io.File;
 
@@ -120,4 +113,10 @@ public class RevertModifications implements PropertyChangeListener {
         if (panel == null) return null;
         return panel.getSelectedRevision();
     }
+    
+    public boolean isBackupRequested() {
+        if (panel == null) return false;
+        return panel.isBackupRequested();
+    }
+
 }

@@ -10,7 +10,7 @@ import java.beans.*;
 /**
  * @author __USER__
  */
-public class BeanInfoNoIcon extends SimpleBeanInfo {
+public class NoIconBeanInfo extends SimpleBeanInfo {
 
     // Bean descriptor information will be obtained from introspection.//GEN-FIRST:BeanDescriptor
     private static BeanDescriptor beanDescriptor = null;

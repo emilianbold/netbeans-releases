@@ -45,11 +45,10 @@ import org.jruby.ast.InstVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
@@ -58,9 +57,11 @@ import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.TypeAnalyzer;
 import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.Call;
@@ -116,25 +117,25 @@ public class RubyElementCtx {
         while (it.hasNext()) {
             leaf = it.next();
             switch (leaf.nodeId) {
-            case NodeTypes.ARGUMENTNODE:
-            case NodeTypes.LOCALVARNODE:
-            case NodeTypes.LOCALASGNNODE:
-            case NodeTypes.DVARNODE:
-            case NodeTypes.DASGNNODE:
-            case NodeTypes.SYMBOLNODE:
-            case NodeTypes.FCALLNODE:
-            case NodeTypes.VCALLNODE:
-            case NodeTypes.CALLNODE:
-            case NodeTypes.GLOBALVARNODE:
-            case NodeTypes.GLOBALASGNNODE:
-            case NodeTypes.INSTVARNODE:
-            case NodeTypes.INSTASGNNODE:
-            case NodeTypes.CLASSVARNODE:
-            case NodeTypes.CLASSVARASGNNODE:
-            case NodeTypes.CLASSVARDECLNODE:
-            case NodeTypes.COLON2NODE:
-            case NodeTypes.CONSTNODE:
-            case NodeTypes.CONSTDECLNODE:
+            case ARGUMENTNODE:
+            case LOCALVARNODE:
+            case LOCALASGNNODE:
+            case DVARNODE:
+            case DASGNNODE:
+            case SYMBOLNODE:
+            case FCALLNODE:
+            case VCALLNODE:
+            case CALLNODE:
+            case GLOBALVARNODE:
+            case GLOBALASGNNODE:
+            case INSTVARNODE:
+            case INSTASGNNODE:
+            case CLASSVARNODE:
+            case CLASSVARASGNNODE:
+            case CLASSVARDECLNODE:
+            case COLON2NODE:
+            case CONSTNODE:
+            case CONSTDECLNODE:
                 break FindNode;
             }
             if (!it.hasNext()) {
@@ -142,14 +143,14 @@ public class RubyElementCtx {
                 break;
             }
         }
-        Element element = AstElement.create(leaf);
+        Element element = AstElement.create(info, leaf);
 
         initialize(root, leaf, element, info.getFileObject(), info);
     }
 
     /** Create a new element holder representing the given node in the same context as the given existing context */
     public RubyElementCtx(RubyElementCtx ctx, Node node) {
-        Element element = AstElement.create(node);
+        Element element = AstElement.create(info, node);
 
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
@@ -159,7 +160,7 @@ public class RubyElementCtx {
         Node node = AstUtilities.getForeignNode(element, rootRet);
         Node root = rootRet[0];
 
-        Element e = AstElement.create(node);
+        Element e = AstElement.create(info, node);
 
         FileObject fo = element.getFileObject();
         document = RetoucheUtils.getDocument(null, fo);
@@ -199,30 +200,30 @@ public class RubyElementCtx {
     public ElementKind getKind() {
         if (kind == null) {
             switch (node.nodeId) {
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
+            case DEFNNODE:
+            case DEFSNODE:
                 kind = AstUtilities.isConstructorMethod((MethodDefNode)node)
                     ? ElementKind.CONSTRUCTOR : ElementKind.METHOD;
                 break;
-            case NodeTypes.FCALLNODE:
-            case NodeTypes.VCALLNODE:
-            case NodeTypes.CALLNODE:
+            case FCALLNODE:
+            case VCALLNODE:
+            case CALLNODE:
                 kind = ElementKind.METHOD;
                 break;
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
                 kind = ElementKind.CLASS;
                 break;
-            case NodeTypes.MODULENODE:
+            case MODULENODE:
                 kind = ElementKind.MODULE;
                 break;
-            case NodeTypes.LOCALVARNODE:
-            case NodeTypes.LOCALASGNNODE:
-            case NodeTypes.DVARNODE:
-            case NodeTypes.DASGNNODE:
+            case LOCALVARNODE:
+            case LOCALASGNNODE:
+            case DVARNODE:
+            case DASGNNODE:
                 kind = ElementKind.VARIABLE;
                 break;
-            case NodeTypes.ARGUMENTNODE: {
+            case ARGUMENTNODE: {
                 AstPath path = getPath();
 
                 if (path.leafParent() instanceof MethodDefNode) {
@@ -234,7 +235,7 @@ public class RubyElementCtx {
                 }
                 break;
             }
-            case NodeTypes.SYMBOLNODE:
+            case SYMBOLNODE:
                 // Ugh - how do I know what it's referring to - a method? a class? a constant? etc.
                 if (Character.isUpperCase(((SymbolNode)node).getName().charAt(0))) {
                     kind = ElementKind.CLASS; // Or module? Or constants? How do we know?
@@ -243,12 +244,12 @@ public class RubyElementCtx {
                     kind = ElementKind.METHOD;
                 }
                 break;
-            case NodeTypes.ALIASNODE:
+            case ALIASNODE:
                 // XXX ugh - how do I know what the alias is referring to? For now just guess METHOD, the most common usage
                 kind = ElementKind.METHOD;
                 break;
-            case NodeTypes.COLON2NODE:
-            case NodeTypes.CONSTNODE: {
+            case COLON2NODE:
+            case CONSTNODE: {
                 Node n = getPath().leafParent();
 
                 if (n instanceof ClassNode || n instanceof SClassNode) {
@@ -268,18 +269,18 @@ public class RubyElementCtx {
                 }
                 break;
             }
-            case NodeTypes.CONSTDECLNODE:
+            case CONSTDECLNODE:
                 kind = ElementKind.CONSTANT;
                 break;
-            case NodeTypes.GLOBALVARNODE:
-            case NodeTypes.GLOBALASGNNODE:
+            case GLOBALVARNODE:
+            case GLOBALASGNNODE:
                 kind = ElementKind.GLOBAL;
                 break;
-            case NodeTypes.INSTVARNODE:
-            case NodeTypes.INSTASGNNODE:
-            case NodeTypes.CLASSVARNODE:
-            case NodeTypes.CLASSVARASGNNODE:
-            case NodeTypes.CLASSVARDECLNODE:
+            case INSTVARNODE:
+            case INSTASGNNODE:
+            case CLASSVARNODE:
+            case CLASSVARASGNNODE:
+            case CLASSVARDECLNODE:
                 kind = ElementKind.FIELD;
                 break;
             }
@@ -396,7 +397,7 @@ public class RubyElementCtx {
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 
-                    RubyIndex index = RubyIndex.get(info.getIndex());
+                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
                     String fqn = AstUtilities.getFqnName(getPath());
 
                     if ((fqn == null) || (fqn.length() == 0)) {

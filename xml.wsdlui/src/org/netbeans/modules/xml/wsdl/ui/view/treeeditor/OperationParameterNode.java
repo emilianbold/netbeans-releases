@@ -137,22 +137,6 @@ public abstract class OperationParameterNode<T extends OperationParameter> exten
     }
     
     @Override
-    protected void updateDisplayName() {
-        // Need a component connected to a model to work properly.
-        if (isValid()) {
-            // Automatically keep the name in sync for named components.
-            OperationParameter param = getWSDLComponent();
-            String name = param.getAttribute(new StringAttribute(Named.NAME_PROPERTY));
-            // Prevent getting an NPE from ExplorerManager.
-            super.setName(name == null ? "" : name);
-            if (name == null || name.length() == 0) {
-                name = param.getName();
-            }
-            setDisplayName(name);
-        }
-    }
-    
-    @Override
     protected Component getSuperDefinition() {
         NamedComponentReference<Message> messageRef = getWSDLComponent().getMessage();
         if (messageRef != null) {

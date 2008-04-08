@@ -1072,13 +1072,14 @@ public class FormModel
     public FormModelEvent fireEventHandlerAdded(Event event,
                                                 String handler,
                                                 String bodyText,
+                                                String annotationText,
                                                 boolean createdNew)
     {
         t("event handler added: "+handler); // NOI18N
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_ADDED);
-        ev.setEvent(event, handler, bodyText, createdNew);
+        ev.setEvent(event, handler, bodyText, annotationText, createdNew);
         sendEvent(ev);
 
         if (undoRedoRecording && event != null && handler != null)
@@ -1105,7 +1106,7 @@ public class FormModel
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_REMOVED);
-        ev.setEvent(event, handler, null, handlerDeleted);
+        ev.setEvent(event, handler, null, null, handlerDeleted);
         sendEvent(ev);
 
         if (undoRedoRecording && event != null && handler != null)

@@ -1,6 +1,6 @@
     <target name="clean-ricoh" if="ricoh-platform.trigger">
         <delete dir="${{platform.home}}/mnt/sd3/sdk/dsdk/dist/${{ricoh.application.uid}}"/>
         <delete dir="${{build.dir}}/dalp"/>
-        <delete file="${{dist.dir}}/${application.name}.dalp"/>
+        <delete file="${{dist.dir}}/${{application.name}}.dalp"/>
         <delete dir="${{dist.dir}}/lib"/>
     </target>

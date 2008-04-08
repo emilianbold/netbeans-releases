@@ -40,14 +40,14 @@
 
 package org.netbeans.modules.profiler.j2ee.weblogic;
 
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.*;
-import org.netbeans.lib.profiler.common.integration.exceptions.*;
-import org.netbeans.modules.profiler.ui.wizards.framework.steps.NullWizardStep;
-import org.netbeans.modules.profiler.ui.wizards.providers.AbstractIntegrationProvider;
-import org.netbeans.modules.profiler.ui.wizards.providers.IntegrationCategorizer;
 import java.util.ResourceBundle;
-
+import org.netbeans.lib.profiler.common.AttachSettings;
+import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
+import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
+import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
+import org.netbeans.modules.profiler.attach.spi.ModificationException;
+import org.netbeans.modules.profiler.attach.spi.RunException;
+import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
 
 /**
  *

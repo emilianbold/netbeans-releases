@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.CancellableTask;
@@ -45,7 +46,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
 import org.openide.cookies.EditorCookie;
@@ -215,7 +215,7 @@ public class TestMarkOccurrences extends NbTestCase {
             js = openFile("Test.java");
             sleep(2000);
             try {
-                ExtCaret c = (ExtCaret) editorPane.getCaret();
+                Caret c = editorPane.getCaret();
                 c.setDot(66);
                 sleep(2000);
                 c.setDot(272);
@@ -295,7 +295,7 @@ public class TestMarkOccurrences extends NbTestCase {
     }
     
     private void setAndCheck(int pos,SimpleMark[] marks) throws IOException {
-        ExtCaret c = (ExtCaret) editorPane.getCaret();
+        Caret c = editorPane.getCaret();
         c.setDot(pos);
         sleep(2500);
         js.runUserActionTask(new MyTask() ,false);

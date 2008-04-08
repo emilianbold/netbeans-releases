@@ -118,9 +118,9 @@ public class UMLBankAppSampleWizardIterator
         File javaPrjDir = 
             FileUtil.normalizeFile((File)wiz.getProperty("projdir")); // NOI18N
         
-        javaPrjDir.mkdirs();
+        //javaPrjDir.mkdirs();
         FileObject template = Templates.getTemplate(wiz);
-        FileObject javaPrjFO = FileUtil.toFileObject(javaPrjDir);
+        FileObject javaPrjFO = FileUtil.createFolder(javaPrjDir);
         unZipFile(template.getInputStream(), javaPrjFO, false);
         
         renameJavaProjectTokens(javaPrjDir, wiz.getProperty("name").toString()); // NOI18N

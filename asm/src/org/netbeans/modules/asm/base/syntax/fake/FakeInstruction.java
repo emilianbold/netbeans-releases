@@ -51,7 +51,7 @@ import org.netbeans.modules.asm.model.xml.DefaultXMLBaseInstruction;
 
 public class FakeInstruction implements Instruction {        
    
-    private static final String name = "FAKE";
+    private static final String name = "FAKE"; // NOI18N
     
     private static Instruction instr = new FakeInstruction();
     

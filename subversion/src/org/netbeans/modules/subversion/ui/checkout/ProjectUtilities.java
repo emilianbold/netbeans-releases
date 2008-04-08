@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.openide.nodes.Children;
 
 /**
  * Simpliied nb_all/projects/projectui/src/org/netbeans/modules/project/ui/ProjectUtilities.java,
@@ -74,7 +75,7 @@ final class ProjectUtilities {
 
     private static final String ProjectTab_ID_LOGICAL = "projectTabLogical_tc"; // NOI18N
 
-    public static void selectAndExpandProject( final Project p ) {
+    public static void selectAndExpandProject( final Project project ) {
 
         // invoke later to select the being opened project if the focus is outside ProjectTab
         SwingUtilities.invokeLater (new Runnable () {
@@ -82,19 +83,19 @@ final class ProjectUtilities {
             final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
 
             public void run () {
-                Node root = ptLogial.getExplorerManager ().getRootContext ();
-                // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
-                Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );
-                if ( projNode != null ) {
-                    try {
-                        ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
-                    } catch (Exception ignore) {
-                        // may ignore it
+                Node root = ptLogial.getExplorerManager ().getRootContext ();                
+                for(Node projNode : root.getChildren().getNodes()) {
+                    Project p = (Project) projNode.getLookup().lookup(Project.class);
+                    if(p != null && p.getProjectDirectory().equals(project.getProjectDirectory())) {
+                        try {
+                            ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
+                        } catch (Exception ignore) {
+                            // may ignore it
+                        }    
                     }
-                }
+                }                
             }
         });
-
     }
 
     /* Singleton accessor. As ProjectTab is persistent singleton this

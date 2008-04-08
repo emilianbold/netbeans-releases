@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,17 +60,17 @@ public class OptionsImpl implements Options {
     /**
      * Cache for the TLD locations
      */
-    private TldLocationsCache tldLocationsCache = null;
+    private final TldLocationsCache tldLocationsCache;
 
     /**
      * Jsp config information
      */
-    private JspConfig jspConfig = null;
+    private final JspConfig jspConfig;
 
     /**
      * TagPluginManager
      */
-    private TagPluginManager tagPluginManager = null;
+    private final TagPluginManager tagPluginManager;
 
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
@@ -238,6 +238,4 @@ public class OptionsImpl implements Options {
     public boolean getSaveBytecode() {
         throw new UnsupportedOperationException("Not supported yet. getSaveBytecode");
     }
-    
-    
 }

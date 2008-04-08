@@ -44,13 +44,13 @@ import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.selector.api.SelectorChildren;
-import org.netbeans.modules.profiler.selector.api.SelectorNode;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 
 
 /**

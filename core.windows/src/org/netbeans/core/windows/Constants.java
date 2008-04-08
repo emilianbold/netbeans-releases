@@ -105,6 +105,10 @@ public abstract class Constants {
     /** Name of client property (of Boolean type) which says whether the TopComponent is allowed
      * to be docked anywhere (even crossing view-editor border). */
     public static final String TOPCOMPONENT_ALLOW_DOCK_ANYWHERE = "TopComponentAllowDockAnywhere"; // NOI18N
+    
+    /** Name of client property (of Boolean type) which says whether position in model
+     * of the TopComponent which is nonpersistent when closed should be kept. */
+    public static final String KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED = "KeepNonPersistentTCInModelWhenClosed"; // NOI18N
 
     /** Client property to distinguish JWindows/JDialogs used as ui elements
      * for separate modes - floating windows.
@@ -129,13 +133,6 @@ public abstract class Constants {
     /** For view, do not show emty documents area, i.e. when no document is opened. */
     public static final boolean SWITCH_HIDE_EMPTY_DOCUMENT_AREA = Boolean.getBoolean("netbeans.winsys.hideEmptyDocArea"); // NOI18N
     
-    //Issue 39166, OS-X will display a strange gray rectangle while dragging - they
-    //really require an image to be supplied.  Leaving this off for other platforms pending
-    //HIE approval and performance impact evaluation - probably safe for Windows, probably
-    //a big performance hit on Linux.  Appears that XP L&F will not display images even if
-    //supplied.
-    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.winsys.dragimage") || Utilities.isMac();
-   
     /** Allowing complete removal of toolbars. */
     public static final boolean NO_TOOLBARS = Boolean.getBoolean("netbeans.winsys.no_toolbars"); // NOI18N
 

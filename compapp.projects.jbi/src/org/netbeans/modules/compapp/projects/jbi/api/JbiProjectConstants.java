@@ -151,12 +151,17 @@ public class JbiProjectConstants {
     public static final String SU_BUILD_ARTIFACT_RELATIVE_PATH = "build/SEDeployment.jar" ; //NOI18N
     // J2EE add-on...
     public static final String JAVA_EE_SE_COMPONENT_NAME = "sun-javaee-engine" ; // NOI18N
-    public static final String JAVA_EE_EAR_COMPONENT_ARCHIVE = "j2ee_ear_archive"; // NOI18N
+    // Do not use "j2ee_ear_archive" as EJB Jar also has this type and is corresponds to 
+    // Ejb jar built will not have library jars.
+    //public static final String JAVA_EE_EAR_COMPONENT_ARCHIVE = "j2ee_ear_archive"; // NOI18N
+    public static final String EJB_ARCHIVE = "j2ee_archive"; //NOI18N
+    public static final String WEB_ARCHIVE = "war"; //NOI18N
     public static final String JAVA_EE_EAR_ARCHIVE = "ear" ; //NOI18N
     public static final List<String> JAVA_EE_AA_TYPES = new ArrayList<String>();
     static {
         // For both EJB and Web Projects use the same target
-        JbiProjectConstants.JAVA_EE_AA_TYPES.add(JAVA_EE_EAR_COMPONENT_ARCHIVE); 
+        JbiProjectConstants.JAVA_EE_AA_TYPES.add(EJB_ARCHIVE); 
+        JbiProjectConstants.JAVA_EE_AA_TYPES.add(WEB_ARCHIVE); 
         JbiProjectConstants.JAVA_EE_AA_TYPES.add(JAVA_EE_EAR_ARCHIVE);
     } ;
 

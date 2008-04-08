@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -68,7 +68,6 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.ProjectXmlSavedHook;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
@@ -103,24 +102,24 @@ public final class RubyProject implements Project, RakeProjectListener {
     
     private static final Icon Ruby_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png")); // NOI18N
 
-    private final AuxiliaryConfiguration aux;
     private final RakeProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final UpdateHelper updateHelper;
-//    private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
+    
+    static boolean bootRegistered;
     
     RubyProject(RakeProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
-        aux = helper.createAuxiliaryConfiguration();
+        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
-        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
+        this.updateHelper = new UpdateHelper (this, this.helper, aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
 
         lookup = createLookup(aux);
@@ -218,7 +217,6 @@ public final class RubyProject implements Project, RakeProjectListener {
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             // new RubyCustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-            new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new RubySources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new RubySharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
@@ -359,55 +357,11 @@ public final class RubyProject implements Project, RakeProjectListener {
         
     }
 
-    private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-        
-        ProjectXmlSavedHookImpl() {}
-        
-        protected void projectXmlSaved() throws IOException {
-            //May be called by {@link AuxiliaryConfiguration#putConfigurationFragment}
-            //which didn't affect the j2seproject 
-/*
-            if (updateHelper.isCurrent()) {
-                //Refresh build-impl.xml only for j2seproject/2
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    RubyProject.class.getResource("resources/build-impl.xsl"),
-                    false);
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
-                    RubyProject.class.getResource("resources/build.xsl"),
-                    false);
-            }
-*/
-        }
-        
-    }
-    
-    static boolean bootRegistered = false;
-    
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            // Check up on build scripts.
-/*
-            try {
-                if (updateHelper.isCurrent()) {
-                    //Refresh build-impl.xml only for j2seproject/2
-                    genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        RubyProject.class.getResource("resources/build-impl.xsl"),
-                        true);
-                    genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
-                        RubyProject.class.getResource("resources/build.xsl"),
-                        true);
-                }                
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-*/
             // register project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             if (!bootRegistered) {
@@ -415,12 +369,7 @@ public final class RubyProject implements Project, RakeProjectListener {
                 bootRegistered = true;
             }
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            //GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-
             
-            //register updater of main.class
-            //the updater is active only on the opened projects
-
 /*
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
@@ -457,24 +406,17 @@ public final class RubyProject implements Project, RakeProjectListener {
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             //GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            //GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-
-//XXX: to compile workaround            
-//            if (mainClassUpdater != null) {
-//                mainClassUpdater.unregister ();
-//                mainClassUpdater = null;
-//            }
-            
         }
         
     }
         
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        
         RecommendedTemplatesImpl (UpdateHelper helper) {
             this.helper = helper;
         }
         
-        private UpdateHelper helper;
+        private final UpdateHelper helper;
         
         // List of primarily supported templates
         
@@ -489,7 +431,6 @@ public final class RubyProject implements Project, RakeProjectListener {
             "Templates/Ruby/test.rb", // NOI18N
             "Templates/Ruby/class.rb", // NOI18N
             "Templates/Ruby/module.rb", // NOI18N
-            "Templates/Ruby/rakefile.rb", // NOI18N
             "Templates/Ruby/suite.rb", // NOI18N
             "Templates/Ruby/rspec.rb", // NOI18N
         };

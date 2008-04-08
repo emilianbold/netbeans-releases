@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.dd.impl.web;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -62,6 +64,7 @@ import org.xml.sax.*;
  */
 public class WebParseUtils {
   
+    private static final Logger LOGGER = Logger.getLogger(WebParseUtils.class.getName());
     
     /** Parsing just for detecting the version  SAX parser used
      */
@@ -95,6 +98,10 @@ public class WebParseUtils {
             return resolver;
         }
         public InputSource resolveEntity(String publicId, String systemId) {
+            // additional logging for #127276
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Resolving entity [publicId: '" + publicId + "', systemId: '" + systemId + "']");
+            }
             String resource=null;
             // return a proper input source
             if ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN".equals(publicId)) { //NOI18N
@@ -106,7 +113,13 @@ public class WebParseUtils {
             } else if (systemId!=null && systemId.endsWith("web-app_2_5.xsd")) {
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_5.xsd"; //NOI18N
             }
-            if (resource==null) return null;
+            // additional logging for #127276
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Got resource: " + resource);
+            }
+            if (resource==null) {
+                return null;
+            }
             java.net.URL url = this.getClass().getResource(resource);
             return new InputSource(url.toString());
         }

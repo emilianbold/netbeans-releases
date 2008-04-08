@@ -114,6 +114,8 @@ public class SimplifiedJSPServlet {
     private String header = null;
     private StringBuilder scriptlets = new StringBuilder();
     private StringBuilder declarations = new StringBuilder();
+    // keep bean declarations separate to avoid duplicating the declaration, see #130745
+    private String beanDeclarations = null; 
     private boolean processCalled = false;
     private String importStatements = null;
     private int expressionIndex = 1;
@@ -203,9 +205,11 @@ public class SimplifiedJSPServlet {
                 if (blockType == JavaCodeType.EXPRESSION) {
                     // ignore JSP expressions in included files
                     if (!processAsIncluded){
-                        String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
+                        // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
+                        // see issue #116598
+                        String exprPrefix = String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++); //NOI18N
                         newBlockStart += exprPrefix.length();
-                        buff.append(exprPrefix + blockBody + ";\n");
+                        buff.append(exprPrefix + blockBody + ");\n");
                     }
                 } else {
                     buff.append(blockBody + "\n");
@@ -223,7 +227,7 @@ public class SimplifiedJSPServlet {
 
         header = getClassHeader();
         importStatements = createImportStatements();
-        declarations.append("\n" + createBeanVarDeclarations());
+        beanDeclarations = "\n" + createBeanVarDeclarations();
     }
     
     private void processIncludes()  {
@@ -329,7 +333,9 @@ public class SimplifiedJSPServlet {
             
             if (pageInfo.isTagFile()){
                 for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
-                    beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                    if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
+                        beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                    }
                 }
             }
         }
@@ -459,7 +465,10 @@ public class SimplifiedJSPServlet {
             return ""; //NOI18N
         }
         
-        return importStatements + header + declarations + METHOD_HEADER + scriptlets + CLASS_FOOTER;
+        String classBody = importStatements + header + declarations + beanDeclarations 
+                + METHOD_HEADER + scriptlets + CLASS_FOOTER;
+        
+        return classBody;
     }
 
     private CodeBlockData getCodeBlockAtOffset(int offset) {
@@ -528,7 +537,7 @@ public class SimplifiedJSPServlet {
             int newBlockStart = newRelativeBlockStart + header.length() + importStatements.length();
 
             if (getType() != JavaCodeType.DECLARATION) {
-                newBlockStart += declarations.length() + METHOD_HEADER.length();
+                newBlockStart += declarations.length() + beanDeclarations.length() + METHOD_HEADER.length();
             }
 
             return newBlockStart;

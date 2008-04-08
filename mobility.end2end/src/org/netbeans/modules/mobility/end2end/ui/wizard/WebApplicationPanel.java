@@ -705,7 +705,7 @@ final public class WebApplicationPanel extends JPanel
     }
     
     public String isValidServletLocation() {
-        if( getTargetName() == null ) {
+        if( "".equals(getTargetName())) {
             return NbBundle.getMessage( WebApplicationPanel.class, "ERR_File_NoTargetName"); // NOI18N
         }
         
@@ -777,12 +777,7 @@ final public class WebApplicationPanel extends JPanel
     }
     
     public String getTargetName() {
-        final String text = documentNameTextField.getText().trim();
-        
-        if (text.length() == 0) {
-            return null;
-        }
-        return text;
+        return documentNameTextField.getText().trim();
     }
     
     // helper methods copied from project/ui/ProjectUtilities

@@ -64,8 +64,7 @@ public class StartActionProvider extends ActionsProvider {
     
     
     public StartActionProvider (ContextProvider lookupProvider) {
-        debuggerImpl = (TestDebugger) lookupProvider.lookupFirst 
-            (null, TestDebugger.class);
+        debuggerImpl = lookupProvider.lookupFirst(null, TestDebugger.class);
         this.lookupProvider = lookupProvider;
     }
     
@@ -75,8 +74,7 @@ public class StartActionProvider extends ActionsProvider {
     
     public void doAction (Object action) {
         if (debuggerImpl == null) return;
-        final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst
-            (null, TestDICookie.class);
+        final TestDICookie cookie = lookupProvider.lookupFirst(null, TestDICookie.class);
         cookie.addInfo(ActionsManager.ACTION_START);
     }
 

@@ -60,7 +60,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         registerInProject();
     }
 
-    public List<CsmExpression> getInitializerList() {
+    public Collection<CsmExpression> getInitializerList() {
         return Collections.<CsmExpression>emptyList();
     }
         

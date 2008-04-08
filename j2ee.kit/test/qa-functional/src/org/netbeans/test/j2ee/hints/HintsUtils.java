@@ -75,6 +75,7 @@ public abstract class HintsUtils extends NbTestCase {
     private Writer goldenWriter;
     private List<Fix> fixes;
     private List<ErrorDescription> problems;
+    private static boolean firstInvocation = true;
     
     public HintsUtils(String s) {
         super(s);
@@ -82,8 +83,11 @@ public abstract class HintsUtils extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        prepareProject();
-        Thread.sleep(2000);
+        if (firstInvocation){
+            prepareProject();
+            Thread.sleep(2000);
+            firstInvocation = false;
+        }
     }
 
     public abstract void prepareProject();

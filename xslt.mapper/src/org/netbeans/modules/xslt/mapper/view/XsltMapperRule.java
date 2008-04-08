@@ -19,12 +19,10 @@
 package org.netbeans.modules.xslt.mapper.view;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 import org.netbeans.modules.soa.mapper.basicmapper.BasicMapperRule;
 import org.netbeans.modules.soa.mapper.common.IMapperGroupNode;
 import org.netbeans.modules.soa.mapper.common.IMapperLink;
-import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
@@ -52,7 +50,6 @@ public class XsltMapperRule extends BasicMapperRule {
         if (startNode == null || endNode == null) {
             return false;
         }
-        //
         // In case of the start and end nodes are the field nodes
         // then they should be of different types: input and output
         if (startNode instanceof IFieldNode && endNode instanceof IFieldNode) {
@@ -79,20 +76,17 @@ public class XsltMapperRule extends BasicMapperRule {
         if (startNode instanceof IMapperTreeNode &&
             ((IMapperTreeNode) startNode).isDestTreeNode() && 
             startNode.getLinkCount() > 0){
-                return false;
-            
-                
-                    
+            return false;
         }
         if (endNode instanceof IMapperTreeNode &&
             ((IMapperTreeNode) endNode).isDestTreeNode() && 
             endNode.getLinkCount() > 0){
-                return false;
-                    
+            return false;
         }
-
-
-        //
+        if ((startNode instanceof IMapperTreeNode) && (endNode instanceof IFieldNode) &&
+            (endNode.getLinkCount() > 0)) {
+            return false;
+        }
         return !(new CheckCyclicLinks(link).isCycle());
     }
 

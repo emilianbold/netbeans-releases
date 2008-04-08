@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -75,12 +75,25 @@ public final class Find extends SearchControlPanel {
   public Find(List<SearchEngine> engines, Object source, JComponent parent) {
     super();
     bindAction(parent);
-    List<Object> providers = new ArrayList<Object>();
+    myProviders = new ArrayList<Provider>();
 
     for (SearchEngine engine : engines) {
-      providers.add(new Provider(engine, source));
+      myProviders.add(new Provider(engine, source));
     }
-    setProviders(providers);
+    setProviders(myProviders);
+  }
+
+  @Override
+  public void setEnabled(boolean enabled)
+  {
+    super.setEnabled(enabled);
+
+    if (enabled) {
+      return;
+    }
+    for (Provider provider : myProviders) {
+      provider.release();
+    }
   }
 
   @Override
@@ -91,7 +104,7 @@ public final class Find extends SearchControlPanel {
       return;
     }
     for (Object element : myElements) {
-      ((SearchElement) element).highlight(false);
+      ((SearchElement) element).unhighlight();
     }
     myElements = null;
   }
@@ -103,7 +116,7 @@ public final class Find extends SearchControlPanel {
     if ( !(object instanceof SearchElement)) {
       return;
     }
-    ((SearchElement) object).select();
+    ((SearchElement) object).gotoVisual();
   }
 
   private void bindAction(JComponent parent) {
@@ -131,6 +144,10 @@ public final class Find extends SearchControlPanel {
       mySearchEngine = engine;
       mySearchEngine.addSearchListener(this);
       mySource = source;
+    }
+
+    void release() {
+      mySearchEngine.removeSearchListeners();
     }
 
     public String getDisplayName() {
@@ -201,4 +218,5 @@ public final class Find extends SearchControlPanel {
   }
 
   private List<Object> myElements;
+  private List<Provider> myProviders;
 }

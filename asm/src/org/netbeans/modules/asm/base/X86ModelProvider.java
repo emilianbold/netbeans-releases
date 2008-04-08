@@ -56,12 +56,12 @@ public class X86ModelProvider extends BaseModelProvider {
     }
     
     private X86ModelProvider() {   
-        super("amd64.xml");
+        super("amd64.xml"); // NOI18N
     }
                 
     @Override
     public String toString() {
-        return "X86";
+        return "X86"; // NOI18N
     }
 }
 

@@ -36,9 +36,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
@@ -62,7 +60,7 @@ public class HideFieldByVar extends HideField {
     }
 
     @Override
-    protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, Document doc, int[] bounds) {
+    protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, int[] bounds) {
         if (treePath.getLeaf().getKind() != Kind.VARIABLE) {
             return null;
         }
@@ -108,12 +106,9 @@ public class HideFieldByVar extends HideField {
             return null;
         }
 
-        int[] span = Utilities.findIdentifierSpan(
-            treePath, 
-            compilationInfo, 
-            doc
-        );
-        if (span[0] == (-1) || span[1] == (-1)) {
+        int[] span = compilationInfo.getTreeUtilities().findNameSpan(vt);
+        
+        if (span == null) {
             return null;
         }
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(

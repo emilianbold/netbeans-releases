@@ -163,3 +163,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-xml-retriever}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-retriever"/>
 <link href="${javadoc.docs.org-netbeans-modules-server}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-server"/>
 <link href="${javadoc.docs.org-netbeans-modules-websvc-serviceapi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-websvc-serviceapi"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-api-common}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-api-common"/>

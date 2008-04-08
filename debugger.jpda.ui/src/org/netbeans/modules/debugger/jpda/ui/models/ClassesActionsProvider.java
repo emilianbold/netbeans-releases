@@ -79,7 +79,7 @@ public class ClassesActionsProvider implements NodeActionsProvider {
 
     public ClassesActionsProvider (ContextProvider lookupProvider) {
         //debugger = (JPDADebugger) lookupProvider.lookupFirst(null, JPDADebugger.class);
-        tree = (TreeModel) lookupProvider.lookupFirst ("ClassesView", TreeModel.class);
+        tree = lookupProvider.lookupFirst("ClassesView", TreeModel.class);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {

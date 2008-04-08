@@ -21,9 +21,11 @@ package org.netbeans.modules.xml.xpath.ext;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
+import org.openide.ErrorManager;
 
 /**
  * Represents a node test on name.
@@ -58,6 +60,24 @@ public class StepNodeNameTest extends StepNodeTest {
             NamespaceContext nsContext = xPathModel.getNamespaceContext();
             if (nsContext != null) {
                 nsPrefix = nsContext.getPrefix(namespaceURI);
+                //
+                if (nsPrefix == null) {
+                    if (nsContext instanceof ExNamespaceContext) {
+                        try {
+                            nsPrefix = ((ExNamespaceContext) nsContext).
+                                    addNamespace(namespaceURI);
+                        } catch (InvalidNamespaceException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                }
+                //
+                // Log a warning if prefix still not accessible 
+                if (nsPrefix == null) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                            "A prefix has to be declared for the namespace " +
+                            "\"" + namespaceURI + "\""); // NOI18N
+                }
             }
             //
             if (nsPrefix == null || nsPrefix.length() == 0) {

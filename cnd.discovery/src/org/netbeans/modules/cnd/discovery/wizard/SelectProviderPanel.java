@@ -51,6 +51,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -95,7 +96,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             }
         };
         rootFolder.getDocument().addDocumentListener(documentListener);
-        CsmModelAccessor.getModel().addProgressListener(this);
+        CsmListeners.getDefault().addProgressListener(this);
     }
     
     /** This method is called from within the constructor to

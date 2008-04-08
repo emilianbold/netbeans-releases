@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -53,7 +54,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -61,21 +61,13 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
@@ -119,9 +111,12 @@ public final class AddCast implements ErrorRule<Void> {
                     parents = parents.getParentPath();
                 
                 if (parents != null) {
-                    expected = info.getTrees().getTypeMirror(new TreePath(parents, ((MethodTree) parents.getLeaf()).getReturnType()));
-                    found = ((ReturnTree) scope).getExpression();
-                    resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+                    Tree returnTypeTree = ((MethodTree) parents.getLeaf()).getReturnType();
+                    if (returnTypeTree != null) {
+                        expected = info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree));
+                        found = ((ReturnTree) scope).getExpression();
+                        resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+                    }
                 }
             }
             
@@ -172,8 +167,9 @@ public final class AddCast implements ErrorRule<Void> {
         
         if (tm[0] != null) {
             int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);
-            
-            result.add(new AddCastFix(info.getJavaSource(), new HintDisplayNameVisitor(info).scan(expression[0], null), Utilities.getTypeName(tm[0], false).toString(), position, expression[0].getKind().asInterface() == BinaryTree.class));
+            Class interf = expression[0].getKind().asInterface();
+            boolean wrapWithBrackets = interf == BinaryTree.class || interf == ConditionalExpressionTree.class;
+            result.add(new AddCastFix(info.getJavaSource(), new HintDisplayNameVisitor(info).scan(expression[0], null), Utilities.getTypeName(tm[0], false).toString(), position, wrapWithBrackets));
         }
         
         return result;

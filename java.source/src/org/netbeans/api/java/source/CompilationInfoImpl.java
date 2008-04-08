@@ -82,7 +82,7 @@ final class CompilationInfoImpl {
     final JavaFileObject jfo;    
     final JavaSource javaSource;        
     boolean needsRestart;
-    boolean parserCrashed;      //When javac throws an error, the moveToPhase sets this flag to true to prevent the same exception to be rethrown        
+    JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
         
     
     CompilationInfoImpl (final JavaSource javaSource, final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
@@ -315,7 +315,7 @@ final class CompilationInfoImpl {
      */
     synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
-            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(this.jfo));
+            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
     }

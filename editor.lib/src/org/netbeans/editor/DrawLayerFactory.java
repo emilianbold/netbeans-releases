@@ -263,7 +263,7 @@ public class DrawLayerFactory {
                 active = mark.activateLayer;
             } else {
                 JTextComponent c = ctx.getEditorUI().getComponent();
-                active = (c != null) && c.getCaret().isSelectionVisible()
+                active = (c != null) && Utilities.isSelectionShowing(c)
                          && ctx.getFragmentOffset() >= c.getSelectionStart()
                          && ctx.getFragmentOffset() < c.getSelectionEnd();
             }

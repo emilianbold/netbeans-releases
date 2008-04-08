@@ -41,9 +41,14 @@
 package org.netbeans.test.j2ee.hints;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.test.j2ee.lib.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,17 +61,40 @@ import org.openide.loaders.DataObject;
 public class EntityRelations extends HintsUtils {
 
     private File secondFile = null;
-
+    private static final Logger LOG = Logger.getLogger(EntityRelations.class.getName());
     /** Creates a new instance of EntityRelations */
     public EntityRelations(String S) {
         super(S);
     }
 
     public void prepareProject() {
-        ProjectSupport.openProject(new File(getDataDir(), "projects/EntityHintsApp"));
-        ProjectSupport.openProject(new File(getDataDir(), "projects/EntityHintsEJB"));
+        File project1 = new File(getDataDir(), "projects/EntityHintsApp");
+        ProjectSupport.openProject(project1);
+        if (Utils.checkMissingServer(project1.getName())){
+            closeBuildScriptRegeneration();
+        }
+        File project2 = new File(getDataDir(), "projects/EntityHintsEJB");
+        ProjectSupport.openProject(project2);
+        if (Utils.checkMissingServer(project2.getName())){
+            closeBuildScriptRegeneration();
+        }
     }
 
+    private void closeBuildScriptRegeneration() {
+        try {
+            Thread.sleep(5000);
+            String editPropertiesTitle = "Edit Project Properties";
+            while (JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) {
+                NbDialogOperator dialogOperator = new NbDialogOperator(editPropertiesTitle);
+                new JButtonOperator(dialogOperator, "Regenerate").push();
+                LOG.info("Closing buildscript regeneration");
+                Thread.sleep(10000);
+            }
+        } catch (InterruptedException exc) {
+            LOG.log(Level.INFO, "interrupt exception", exc);
+        }
+    }
+    
     private EditorOperator openFile(String fileName) throws Exception {
         secondFile = new File(getDataDir(), fileName);
         DataObject dataObj = DataObject.find(FileUtil.toFileObject(secondFile));

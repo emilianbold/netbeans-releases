@@ -20,7 +20,18 @@
 package org.netbeans.modules.xml.xpath.ext;
 
 /**
- *
+ * A context holder is a component, which can provide type information in term 
+ * of the Schema model component(s). Such information is held in the special 
+ * container - XPathSchemaContext. The schema context can point either 
+ * to the specific schema component or to a set of schema components. 
+ * See more detailed description in the XPathSchemaContext.
+ * 
+ * The schema context can has a bit different meaning for different components.
+ * - for Location Steps it means the schema type of the step. 
+ * - for Location Paths or Expression Paths it means the schema type of the last Step.
+ * - for XPath model it means the context in which the model is defined as a whole.
+ * - for Predicates it means the context in which the predicate is applied.
+ * 
  * @author nk160297
  */
 public interface XPathSchemaContextHolder {

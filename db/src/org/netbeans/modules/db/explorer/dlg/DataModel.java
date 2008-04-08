@@ -232,9 +232,23 @@ public class DataModel extends AbstractTableModel
     */
     public void removeRow(int row)
     {
-        if (row < data.size()) {
-            data.removeElementAt(row);
-            fireTableRowsDeleted(row, row);
+        if ( row >= data.size() ) {
+            return;
         }
+        
+        // Issue 127878 - Remove this row from the primary and unique key 
+        // lists if it's in there (although the unique key list appears
+        // to not be in use at this time -- uniqueness is being enforced
+        // by making it part of an index...)
+        Object column = data.elementAt(row);
+        if ( column != null ) {
+            primaryKeys.remove(column);
+            uniqueKeys.remove(column);
+        }
+
+        data.removeElementAt(row);
+        
+        
+        fireTableRowsDeleted(row, row);
     }
 }

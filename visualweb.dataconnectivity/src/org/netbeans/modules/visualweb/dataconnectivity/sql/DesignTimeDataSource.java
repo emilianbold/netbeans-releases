@@ -103,6 +103,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
     private int          testSQLRowsReturned ;
     private ArrayList    objectChangeListeners;
     private Driver       driver;
+    private Connection   designtimeConnection; 
     private static boolean isConnectionAttempted = false;
     private DatabaseConnection dbConn;    
     private static URL[]  urls;
@@ -236,66 +237,71 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
         }
     }
     
-    public Connection getConnection() throws SQLException {
-        return getConnection(username,password);
+    public synchronized Connection getConnection() throws SQLException {
+        // cache the connection so that it can be reused
+        if (designtimeConnection == null) {
+            designtimeConnection = getConnection(username, password);
+        }
+        return designtimeConnection;
     }
 
-    public Connection getConnection(String username, String password) throws SQLException {
+    public synchronized Connection getConnection(String username, String password) throws SQLException {
+        if (designtimeConnection == null) {
+            Log.getLogger().entering(getClass().getName(), toString() + ".getConnection()", new Object[]{username, password});
+            checkLastConnectFail();
 
-        Log.getLogger().entering(getClass().getName(), toString()+".getConnection()", new Object[] {username, password});
-        checkLastConnectFail() ;
-      
-        DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
-        
-        for (int i=0; i<dbConns.length; i++)
-            if (url.equalsIgnoreCase(dbConns[i].getDatabaseURL())) {
-                dbConn = dbConns[i];
-                url = dbConns[i].getDatabaseURL();
-                break;
+            DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
+
+            for (int i = 0; i < dbConns.length; i++) {
+                if (url.equalsIgnoreCase(dbConns[i].getDatabaseURL())) {
+                    dbConn = dbConns[i];
+                    url = dbConns[i].getDatabaseURL();
+                    break;
+                }
             }
 
-        if (dbConn != null) {
-            JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(dbConn.getDriverClass());
-            urls = jdbcDriver.getURLs();
-            
-            driverClassName = dbConn.getDriverClass();
-            loadDriver();
-        }
-        
-        Properties props = new Properties();
-        if (username != null) {
-            props.put("user", username); // NOI18N
-        }
-        if (password != null) {
-            props.put("password", password); // NOI18N
-        }
+            if (dbConn != null) {
+                JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(dbConn.getDriverClass());
+                urls = jdbcDriver.getURLs();
 
-        /*
-         * It turns out we can't rely on drivers to only throw SQLExceptions.
-         * e.g., see bug #5046309 - Test Connection throws Exception when URL has #PORTNUMBER
-         *       the above throws a NumberFormatException
-         * so let's catch everything and "wrap" any non-SQLException exceptions
-         */
-        try {
-            if (driverClassName.equals(DRIVER_CLASS_NET) && !isConnectionAttempted) {
-                isConnectionAttempted = true;
-                ensureConnection();                  
+                driverClassName = dbConn.getDriverClass();
+                loadDriver();
             }
-            
-            Connection conn = driver.connect(url, props);
+
+            Properties props = new Properties();
+            if (username != null) {
+                props.put("user", username); // NOI18N
+            }
+            if (password != null) {
+                props.put("password", password); // NOI18N
+            }
+
             /*
-             * See Driver.connect spec.  connect is supposed to return null if it realizes
-             * it is not the right driver for the url.  This is #@!$!$@$#@, but we have to
-             * live with it.
+             * It turns out we can't rely on drivers to only throw SQLExceptions.
+             * e.g., see bug #5046309 - Test Connection throws Exception when URL has #PORTNUMBER
+             *       the above throws a NumberFormatException
+             * so let's catch everything and "wrap" any non-SQLException exceptions
              */
-            if (conn == null) {
-                SQLException se =  new SQLException(MessageFormat.format(rb.getString("WRONG_DRIVER_FOR_URL"),
-                    new Object[] { driverClassName, url })); // NOI18N
-                setLastConnectFail( se ) ;
-                throw se ;
-            }
+            try {
+                if (driverClassName.equals(DRIVER_CLASS_NET) && !isConnectionAttempted) {
+                    isConnectionAttempted = true;
+                    ensureConnection();
+                }
 
-            return new DesignTimeConnection(this, conn);
+                Connection conn = driver.connect(url, props);
+                /*
+                 * See Driver.connect spec.  connect is supposed to return null if it realizes
+                 * it is not the right driver for the url.  This is #@!$!$@$#@, but we have to
+                 * live with it.
+                 */
+                if (conn == null) {
+                    SQLException se = new SQLException(MessageFormat.format(rb.getString("WRONG_DRIVER_FOR_URL"),
+                            new Object[]{driverClassName, url                            })); // NOI18N
+                    setLastConnectFail(se);
+                    throw se;
+                }
+
+                designtimeConnection = new DesignTimeConnection(this, conn);
 
         } catch (Exception e) {
             if (e instanceof SQLException) {
@@ -307,6 +313,8 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
             setLastConnectFail(sqlEx);
             throw sqlEx;
         }
+        }
+        return designtimeConnection;
     }
 
     public PrintWriter getLogWriter() throws SQLException {

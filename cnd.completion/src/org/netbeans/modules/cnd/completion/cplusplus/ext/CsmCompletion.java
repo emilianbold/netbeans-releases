@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
 import org.netbeans.editor.ext.Completion;
@@ -321,11 +323,14 @@ abstract public class CsmCompletion extends Completion {
         CsmType type = null;
         if (CsmKindUtilities.isClassifier(obj)) {
             type = CsmCompletion.getType((CsmClassifier)obj, 0);
-        } else if (CsmKindUtilities.isConstructor((CsmFunction)obj)) {
-            CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
-            type = CsmCompletion.getType(cls, 0);                  
         } else if (CsmKindUtilities.isFunction(obj)) {
-            type = ((CsmFunction)obj).getReturnType();
+            CsmFunction fun = (CsmFunction) obj;
+            if (CsmKindUtilities.isConstructor(fun)) {
+                CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
+                type = CsmCompletion.getType(cls, 0);                  
+            } else {
+                type = fun.getReturnType();
+            }
         } else if (CsmKindUtilities.isVariable(obj)) {
             type = ((CsmVariable)obj).getType();
         } else if (CsmKindUtilities.isEnumerator(obj)) {
@@ -839,6 +844,18 @@ abstract public class CsmCompletion extends Completion {
             } else {
                 return clazz;
             }
+        }
+
+        public List<CsmType> getInstantiationParams() {
+            return Collections.emptyList();
+        }
+
+        public boolean isInstantiation() {
+            return false;
+        }
+
+        public CharSequence getClassifierText() {
+            return clazz.getName();
         }
 
         public boolean isPointer() {

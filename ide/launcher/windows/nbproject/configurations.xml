@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="38">
+<configurationDescriptor version="39">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -26,6 +26,8 @@
           <cleanCommand>make -f Makefile clean</cleanCommand>
           <executablePath>netbeans.exe</executablePath>
         </makeTool>
+        <requiredProjects>
+        </requiredProjects>
       </makefileType>
       <item path="Makefile">
         <itemTool>3</itemTool>

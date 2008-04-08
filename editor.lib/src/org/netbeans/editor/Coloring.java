@@ -43,12 +43,12 @@ package org.netbeans.editor;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 import javax.swing.JComponent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 /**
 * Immutable class that stores font and foreground and background colors.
@@ -133,6 +133,11 @@ public final class Coloring implements java.io.Serializable {
     /** Strikethrough line color */
     private Color strikeThroughColor;
 
+    private Color topBorderLineColor;
+    private Color rightBorderLineColor;
+    private Color bottomBorderLineColor;
+    private Color leftBorderLineColor;
+    
     /** Cache holding the [original-font, derived-font] pairs
     * and also original [fore-color, derived-fore-color] pairs.
     * This helps to avoid the repetitive computations of the
@@ -170,6 +175,16 @@ public final class Coloring implements java.io.Serializable {
     /** Construct new coloring */
     public Coloring(Font font, int fontMode, Color foreColor,
     Color backColor, Color underlineColor, Color strikeThroughColor, Color waveUnderlineColor) {
+        this(font, fontMode, foreColor, backColor, underlineColor, strikeThroughColor, waveUnderlineColor, null, null, null, null);
+    }
+    
+    /**
+     * @since 1.22
+     */
+    public Coloring(Font font, int fontMode, Color foreColor,
+        Color backColor, Color underlineColor, Color strikeThroughColor, Color waveUnderlineColor,
+        Color topBorderLineColor, Color rightBorderLineColor, Color bottomBorderLineColor, Color leftBorderLineColor
+    ) {
         font = (fontMode != 0) ? font : null;
         fontMode = (font != null) ? fontMode : FONT_MODE_DEFAULT;
 
@@ -182,6 +197,11 @@ public final class Coloring implements java.io.Serializable {
         this.underlineColor = underlineColor;
         this.strikeThroughColor = strikeThroughColor;
         this.waveUnderlineColor = waveUnderlineColor;
+
+        this.topBorderLineColor = topBorderLineColor;
+        this.rightBorderLineColor = rightBorderLineColor;
+        this.bottomBorderLineColor = bottomBorderLineColor;
+        this.leftBorderLineColor = leftBorderLineColor;
 
         checkCaches();
     }
@@ -238,6 +258,38 @@ public final class Coloring implements java.io.Serializable {
     /** Getter for strikethrough line color */
     public Color getStrikeThroughColor() {
         return strikeThroughColor;
+    }
+
+    /** 
+     * Getter for top border line color 
+     * @since 1.22
+     */
+    public Color getTopBorderLineColor() {
+        return topBorderLineColor;
+    }
+
+    /** 
+     * Getter for right border line color 
+     * @since 1.22
+     */
+    public Color getRightBorderLineColor() {
+        return rightBorderLineColor;
+    }
+
+    /** 
+     * Getter for bottom border line color 
+     * @since 1.22
+     */
+    public Color getBottomBorderLineColor() {
+        return bottomBorderLineColor;
+    }
+
+    /** 
+     * Getter for left border line color 
+     * @since 1.22
+     */
+    public Color getLeftBorderLineColor() {
+        return leftBorderLineColor;
     }
 
     /** Modify the given font according to the font-mode */
@@ -354,6 +406,22 @@ public final class Coloring implements java.io.Serializable {
         if (strikeThroughColor != null) {
             ctx.setStrikeThroughColor(strikeThroughColor);
         }
+
+        if (topBorderLineColor != null) {
+            ctx.setTopBorderLineColor(topBorderLineColor);
+        }
+
+        if (rightBorderLineColor != null) {
+            ctx.setRightBorderLineColor(rightBorderLineColor);
+        }
+
+        if (bottomBorderLineColor != null) {
+            ctx.setBottomBorderLineColor(bottomBorderLineColor);
+        }
+
+        if (leftBorderLineColor != null) {
+            ctx.setLeftBorderLineColor(leftBorderLineColor);
+        }
     }
 
     /** Apply this coloring to component colors/font.
@@ -438,6 +506,10 @@ public final class Coloring implements java.io.Serializable {
         Color newUnderlineColor = c.underlineColor;
         Color newWaveUnderlineColor = c.waveUnderlineColor;
         Color newStrikeThroughColor = c.strikeThroughColor;
+        Color newTopBorderLineColor = c.topBorderLineColor;
+        Color newRightBorderLineColor = c.rightBorderLineColor;
+        Color newBottomBorderLineColor = c.bottomBorderLineColor;
+        Color newLeftBorderLineColor = c.leftBorderLineColor;
 
         // Possibly change font
         if (font != null) {
@@ -513,6 +585,22 @@ public final class Coloring implements java.io.Serializable {
             newStrikeThroughColor = strikeThroughColor;
         }
 
+        if (topBorderLineColor != null) {
+            newTopBorderLineColor = topBorderLineColor;
+        }
+
+        if (rightBorderLineColor != null) {
+            newRightBorderLineColor = rightBorderLineColor;
+        }
+
+        if (bottomBorderLineColor != null) {
+            newBottomBorderLineColor = bottomBorderLineColor;
+        }
+
+        if (leftBorderLineColor != null) {
+            newLeftBorderLineColor = leftBorderLineColor;
+        }
+
         if (c.fontMode != FONT_MODE_DEFAULT
                 || newFont != c.font // currently only equality
                 || newForeColor != c.foreColor // currently only equality
@@ -520,10 +608,15 @@ public final class Coloring implements java.io.Serializable {
                 || newUnderlineColor != c.underlineColor // currently only equality
                 || newWaveUnderlineColor != c.waveUnderlineColor // currently only equality
                 || newStrikeThroughColor != c.strikeThroughColor // currently only equality
+                || newTopBorderLineColor != c.topBorderLineColor // currently only equality
+                || newRightBorderLineColor != c.rightBorderLineColor // currently only equality
+                || newBottomBorderLineColor != c.bottomBorderLineColor // currently only equality
+                || newLeftBorderLineColor != c.leftBorderLineColor // currently only equality
            ) {
             return new Coloring(newFont, newFontMode,
                                 newForeColor, newBackColor,
-                                newUnderlineColor, newStrikeThroughColor, newWaveUnderlineColor
+                                newUnderlineColor, newStrikeThroughColor, newWaveUnderlineColor,
+                                newTopBorderLineColor, newRightBorderLineColor, newBottomBorderLineColor, newLeftBorderLineColor
                                );
         } else {
             return c; // return original coloring
@@ -532,7 +625,7 @@ public final class Coloring implements java.io.Serializable {
     }
 
     /** All font, foreColor and backColor are the same. */
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o instanceof Coloring) {
             Coloring c = (Coloring)o;
             return ((font == null && c.font == null) || (font != null && font.equals(c.font)))
@@ -546,14 +639,36 @@ public final class Coloring implements java.io.Serializable {
                    && ((waveUnderlineColor == null && c.waveUnderlineColor == null)
                        || (waveUnderlineColor != null && waveUnderlineColor.equals(c.waveUnderlineColor)))
                    && ((strikeThroughColor == null && c.strikeThroughColor == null)
-                       || (strikeThroughColor != null
-                           && strikeThroughColor.equals(c.strikeThroughColor)));
+                       || (strikeThroughColor != null && strikeThroughColor.equals(c.strikeThroughColor)))
+                   && ((topBorderLineColor == null && c.topBorderLineColor == null)
+                       || (topBorderLineColor != null && topBorderLineColor.equals(c.topBorderLineColor)))
+                   && ((rightBorderLineColor == null && c.rightBorderLineColor == null)
+                       || (rightBorderLineColor != null && rightBorderLineColor.equals(c.rightBorderLineColor)))
+                   && ((bottomBorderLineColor == null && c.bottomBorderLineColor == null)
+                       || (bottomBorderLineColor != null && bottomBorderLineColor.equals(c.bottomBorderLineColor)))
+                   && ((leftBorderLineColor == null && c.leftBorderLineColor == null)
+                       || (leftBorderLineColor != null && leftBorderLineColor.equals(c.leftBorderLineColor)))
+           ;
         }
         return false;
     }
 
-    public int hashCode() {
-        return font.hashCode() ^ foreColor.hashCode() ^ backColor.hashCode();
+    public @Override int hashCode() {
+        int hash = 0;
+        
+        hash += font != null ? font.hashCode() : 0;
+        hash += fontMode;
+        hash += foreColor != null ? foreColor.hashCode() : 0;
+        hash += backColor != null ? backColor.hashCode() : 0;
+        hash += underlineColor != null ? underlineColor.hashCode() : 0;
+        hash += waveUnderlineColor != null ? waveUnderlineColor.hashCode() : 0;
+        hash += strikeThroughColor != null ? strikeThroughColor.hashCode() : 0;
+        hash += topBorderLineColor != null ? topBorderLineColor.hashCode() : 0;
+        hash += rightBorderLineColor != null ? rightBorderLineColor.hashCode() : 0;
+        hash += bottomBorderLineColor != null ? bottomBorderLineColor.hashCode() : 0;
+        hash += leftBorderLineColor != null ? leftBorderLineColor.hashCode() : 0;
+        
+        return hash;
     }
 
     /** Derive a new coloring by changing the font and leaving
@@ -616,13 +731,18 @@ public final class Coloring implements java.io.Serializable {
         checkCaches();
     }
 
-    public String toString() {
+    public @Override String toString() {
         return "font=" + font + ", fontMode=" + fontMode // NOI18N
                + ", foreColor=" + foreColor // NOI18N
                + ", backColor=" + backColor // NOI18N
                + ", underlineColor=" + underlineColor // NOI18N
                + ", waveUnderlineColor=" + waveUnderlineColor // NOI18N
-               + ", strikeThroughColor=" + strikeThroughColor; // NOI18N
+               + ", strikeThroughColor=" + strikeThroughColor // NOI18N
+               + ", topBorderLineColor=" + topBorderLineColor // NOI18N
+               + ", rightBorderLineColor=" + rightBorderLineColor // NOI18N
+               + ", bottomBorderLineColor=" + bottomBorderLineColor // NOI18N
+               + ", leftBorderLineColor=" + leftBorderLineColor // NOI18N
+       ;
     }
 
     private static final WeakHashMap<AttributeSet, Coloring> colorings = new WeakHashMap<AttributeSet, Coloring>();
@@ -662,7 +782,11 @@ public final class Coloring implements java.io.Serializable {
                     (Color) as.getAttribute(StyleConstants.Background),
                     (Color) as.getAttribute(StyleConstants.Underline),
                     (Color) as.getAttribute(StyleConstants.StrikeThrough),
-                    findWaveUnderlineColorHack(as)
+                    (Color) as.getAttribute(EditorStyleConstants.WaveUnderlineColor),
+                    (Color) as.getAttribute(EditorStyleConstants.TopBorderLineColor),
+                    (Color) as.getAttribute(EditorStyleConstants.RightBorderLineColor),
+                    (Color) as.getAttribute(EditorStyleConstants.BottomBorderLineColor),
+                    (Color) as.getAttribute(EditorStyleConstants.LeftBorderLineColor)
                 );
 
                 colorings.put(as, coloring);
@@ -672,20 +796,6 @@ public final class Coloring implements java.io.Serializable {
         }
     }
 
-    // XXX: This would not be neccessary if we could simply depend on editor/settings.
-    private static Color findWaveUnderlineColorHack(AttributeSet as) {
-        Enumeration<?> names = as.getAttributeNames();
-        
-        while (names.hasMoreElements()) {
-            Object name = names.nextElement();
-            if (name != null && name.toString().equals("wave underline color")) { //NOI18N
-                return (Color) as.getAttribute(name);
-            }
-        }
-        
-        return null;
-    }
-    
     private static Object [] toFont(AttributeSet as) {
         int applyMode = 0;
 

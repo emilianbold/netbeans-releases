@@ -41,34 +41,20 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 
-import java.io.File;
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
-/** First panel in the NewProject wizard. Used for filling in
- * name, and directory of the project.
- *
- * @author Petr Hrebejk
+/**
+ * First panel in the NewProject wizard. Used for filling in name, and directory
+ * of the project.
  */
-public class PanelConfigureProjectVisual extends JPanel {
+public final class PanelConfigureProjectVisual extends JPanel {
 
     private PanelConfigureProject panel;
-        
-    private boolean ignoreProjectDirChanges;
-    
-    private boolean ignoreRakeProjectNameChanges;
-    
-    private boolean noDir = true;
-    
     private SettingsPanel projectLocationPanel;
-    
     private PanelOptionsVisual optionsPanel;
-    
     private int type;
     
     /** Creates new form PanelInitProject */
@@ -83,15 +69,7 @@ public class PanelConfigureProjectVisual extends JPanel {
             jSeparator1.setVisible(true);
             getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
             getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaApp")); // NOI18N
-        }                       
-//        else if (type == NewRubyProjectWizardIterator.TYPE_LIB) {
-//            projectLocationPanel = new PanelProjectLocationVisual( panel, type );
-//            jSeparator1.setVisible (false);
-//            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
-//            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
-//            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaLib")); // NOI18N
-//        }
-        else {
+        } else {
             projectLocationPanel = new PanelProjectLocationExtSrc ( panel );
             jSeparator1.setVisible(true);
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
@@ -130,7 +108,6 @@ public class PanelConfigureProjectVisual extends JPanel {
     void validate (WizardDescriptor d) throws WizardValidationException {
         projectLocationPanel.validate (d);
     }
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -177,9 +154,6 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     }//GEN-END:initComponents
 
-    /** Currently only handles the "Browse..." button
-     */
-           
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel locationContainer;

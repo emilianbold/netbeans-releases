@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableColumnModel;
@@ -37,7 +37,6 @@ import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.properties.editors.controls.BaseTablePanel;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.bpel.properties.editors.controls.QNameTableCellRenderer;
-import org.netbeans.modules.bpel.nodes.CorrelationSetNode;
 import org.netbeans.modules.bpel.nodes.actions.AddPropertyAction;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.editors.controls.ObjectListTableModel;
@@ -45,6 +44,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * This panel consists of the table which shows the list of Correlation
@@ -57,7 +57,6 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
     static final long serialVersionUID = 1L;
     
     private CustomNodeEditor<CorrelationSet> myEditor;
-    private CorrelationSetNode rootNode;
     private TableColumnModel columnModel;
     private MyTableModel tableModel;
     
@@ -136,20 +135,23 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
             return null;
         }
         
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             // isn't supported
         }
         
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
         
+        @Override
         public Class<? extends Object> getColumnClass(int columnIndex) {
             return String.class;
         }
-        
     }
     
+    @Override
     public void createContent() {
         super.createContent();
         //
@@ -166,19 +168,29 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
         Dimension dim = tableView.getPreferredSize();
         dim.setSize(dim.getWidth(), 100d);
         tableView.setPreferredScrollableViewportSize(dim);
-        //
+        
+        tableView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+            getClass(), "A11_DESCRIPTOR_CorrelationSetPropertyTable"));
+        tableView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+            getClass(), "A11_NAME_CorrelationSetPropertyTable"));
+        
         JScrollPane scrollPane = new JScrollPane(tableView,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        //
+        
+        // for meeting of the A11 requirements: JTable should be labeled
+        new JLabel(NbBundle.getMessage(getClass(), 
+            "A11_DESCRIPTOR_CorrelationSetPropertyTable")).setLabelFor(tableView);
         add(scrollPane, BorderLayout.CENTER);
-        //
+
         setTableView(tableView);
     }
     
+    @Override
     protected void doRefresh() {
     }
     
+    @Override
     protected synchronized void addRow(ActionEvent event) {
         CorrelationSet corrSet = myEditor.getEditedObject();
         Set<CorrelationProperty> newCpSet = AddPropertyAction.chooseProperty(
@@ -192,6 +204,7 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
         }
     }
     
+    @Override
     protected synchronized void deleteRowImpl(ActionEvent event) {
         int[] rows2delete = getTableView().getSelectedRows();
         for (int index = rows2delete.length - 1; index >= 0; index--) {
@@ -201,6 +214,7 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
         }
     }
     
+    @Override
     public boolean applyNewValues() {
         CorrelationSet corrSet = myEditor.getEditedObject();
         //
@@ -218,6 +232,7 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
         return true;
     }
     
+    @Override
     public boolean subscribeListeners() {
         //
         // TODO Reimplement
@@ -232,6 +247,7 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
         return true;
     }
     
+    @Override
     public boolean unsubscribeListeners() {
         //
         // TODO reimplement
@@ -251,5 +267,4 @@ public class CSetPropertyTablePanel extends BaseTablePanel {
     public List<CorrelationProperty> getCorrProperties() {
         return tableModel.getRowsList();
     }
-    
 }

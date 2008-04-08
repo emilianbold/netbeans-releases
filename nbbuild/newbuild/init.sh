@@ -46,7 +46,9 @@ if [ -z $DIST_SERVER_PATH ]; then
     DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
 fi
 
-NB_ALL=$BASE_DIR/main
+if [ -z $NB_ALL ]; then
+    NB_ALL=$BASE_DIR/main
+fi
 
 DIST=$BASE_DIR/dist
 LOGS=$DIST/logs
@@ -67,5 +69,6 @@ RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
 NBMS_BUILD_LOC=$LOGS/$BASENAME-build-nbms.log
 SCP_LOG=$LOGS/$BASENAME-scp.log
 MAC_LOG=$LOGS/$BASENAME-native_mac.log
+MAC_LOG_NEW=$LOGS/$BASENAME-native_mac_new.log
 INSTALLER_LOG=$LOGS/$BASENAME-installers.log
 VISUALWEB_SANITY_LOG=$LOGS/$BASENAME-sanity-visualweb.log

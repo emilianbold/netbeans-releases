@@ -43,7 +43,10 @@ package org.netbeans.modules.refactoring.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -53,8 +56,6 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import org.openide.util.Lookup;
-import static org.netbeans.modules.refactoring.java.RetoucheUtils.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
@@ -144,8 +145,23 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                     end = pos[1];
                 }
             } else {
-                start = (int) sp.getStartPosition(unit, ident);
-                end = (int) sp.getEndPosition(unit, ident);
+                TreePath varTreePath = tree.getParentPath();
+                Tree varTree = varTreePath.getLeaf();
+                Trees trees = compiler.getTrees();
+                Element element = trees.getElement(varTreePath);
+                if (varTree.getKind() == Tree.Kind.VARIABLE && element.getKind() == ElementKind.ENUM_CONSTANT) {
+                    int[] pos = treeUtils.findNameSpan((VariableTree)varTree);
+                    if (pos == null) {
+                        //#121084 hotfix
+                        start = end = (int) sp.getStartPosition(unit, varTree);
+                    } else {
+                        start = pos[0];
+                        end = pos[1];
+                    }
+                } else {
+                    start = (int) sp.getStartPosition(unit, ident);
+                    end = (int) sp.getEndPosition(unit, ident);
+                }
             }
         } else if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
             int[] pos = treeUtils.findNameSpan((MemberSelectTree) t);

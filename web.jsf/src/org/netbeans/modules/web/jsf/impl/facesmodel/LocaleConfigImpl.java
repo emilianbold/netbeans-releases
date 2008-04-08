@@ -79,7 +79,7 @@ public class LocaleConfigImpl extends JSFConfigComponentImpl implements LocaleCo
     }
 
     public void setDefaultLocale(DefaultLocale locale) {
-        setChildElementText(DEFAULT_LOCALE, locale.getLocale(), JSFConfigQNames.DEFAULT_LOCALE.getQName(getModel().getVersion()));
+        setChildElementText(DEFAULT_LOCALE, locale.getLocale(), JSFConfigQNames.DEFAULT_LOCALE.getQName(getNamespaceURI()));
     }
 
     public List<SupportedLocale> getSupportedLocales() {

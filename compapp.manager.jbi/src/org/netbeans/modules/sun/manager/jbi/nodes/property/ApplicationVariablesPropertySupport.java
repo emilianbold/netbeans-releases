@@ -77,7 +77,7 @@ class ApplicationVariablesPropertySupport extends AbstractTabularPropertySupport
     public PropertyEditor getPropertyEditor() {
         JBIComponentConfigurationDescriptor descriptor = 
                 (info instanceof JBIComponentConfigurationMBeanAttributeInfo) ? 
-                ((JBIComponentConfigurationMBeanAttributeInfo)info).getDescriptor() : null;
+                ((JBIComponentConfigurationMBeanAttributeInfo)info).getConfigurationDescriptor() : null;
         
         return new EnvironmentVariablesEditor(true, getTabularType(), 
                 descriptor, info.isWritable());

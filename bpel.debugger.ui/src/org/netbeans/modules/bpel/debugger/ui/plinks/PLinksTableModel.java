@@ -59,8 +59,7 @@ public class PLinksTableModel implements TableModel, Constants {
     public PLinksTableModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

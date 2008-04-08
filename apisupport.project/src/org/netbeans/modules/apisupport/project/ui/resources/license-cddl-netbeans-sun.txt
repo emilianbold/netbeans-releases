@@ -3,7 +3,7 @@ ${licenseFirst}
 </#if>
 ${licensePrefix}DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 ${licensePrefix}
-${licensePrefix}Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+${licensePrefix}Copyright ${date?date?string("yyyy")} Sun Microsystems, Inc. All rights reserved.
 ${licensePrefix}
 ${licensePrefix}The contents of this file are subject to the terms of either the GNU
 ${licensePrefix}General Public License Version 2 only ("GPL") or the Common

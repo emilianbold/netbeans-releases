@@ -25,7 +25,7 @@ package org.netbeans.modules.bpel.model.api;
 import java.util.HashMap;
 
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;

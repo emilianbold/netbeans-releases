@@ -1,3 +1,2 @@
 org.netbeans.modules.cnd.debugger.gdb.CurrentThreadAnnotationListener
-org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener
 org.netbeans.modules.cnd.debugger.gdb.breakpoints.PersistenceManager

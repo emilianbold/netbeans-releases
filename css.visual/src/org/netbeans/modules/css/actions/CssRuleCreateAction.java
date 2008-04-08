@@ -60,12 +60,12 @@ import org.netbeans.editor.BaseDocument;
  */
 public class CssRuleCreateAction extends BaseAction{
 
-    public static final String createRuleAction = "create-rule"; // NOI18N
+    public static final String createRuleAction = NbBundle.getMessage(CssRuleCreateAction.class, "Create_Rule"); // NOI18N
     /** Creates a new instance of CssRuleCreateAction */
     public CssRuleCreateAction() {
         super(createRuleAction);
         putValue("helpID", CssRuleCreateAction.class.getName()); // NOI18N
-        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(CssRuleCreateAction.class, "Create_Rule"));
+        putValue(SHORT_DESCRIPTION, createRuleAction);
         putValue(BaseAction.ICON_RESOURCE_PROPERTY, "org/netbeans/modules/css/resources/new_rule.png"); // NOI18N
     }
 

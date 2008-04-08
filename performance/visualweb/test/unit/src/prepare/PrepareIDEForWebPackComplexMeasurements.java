@@ -104,6 +104,7 @@ public class PrepareIDEForWebPackComplexMeasurements  extends org.netbeans.jelly
         return suite;
     }
     
+    @Override
     public void setUp() {
         //        err = System.out;
         err = getLog();

@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 
 /**
@@ -75,7 +75,7 @@ public class ArityTest extends RubyTestBase {
     
     private void checkCallArity(Node root, String methodName, Arity arity) {
         List<Node> nodes = new ArrayList<Node>();
-        AstUtilities.addNodesByType(root, new int[] { NodeTypes.CALLNODE, NodeTypes.VCALLNODE, NodeTypes.FCALLNODE }, nodes);
+        AstUtilities.addNodesByType(root, new NodeType[] { NodeType.CALLNODE, NodeType.VCALLNODE, NodeType.FCALLNODE }, nodes);
         for (Node n : nodes) {
             assertTrue(AstUtilities.isCall(n));
             String name = ((INameNode)n).getName();
@@ -89,7 +89,7 @@ public class ArityTest extends RubyTestBase {
     
     private void checkDefArity(Node root, String methodName, Arity arity) {
         List<Node> nodes = new ArrayList<Node>();
-        AstUtilities.addNodesByType(root, new int[] { NodeTypes.DEFNNODE, NodeTypes.DEFSNODE }, nodes);
+        AstUtilities.addNodesByType(root, new NodeType[] { NodeType.DEFNNODE, NodeType.DEFSNODE }, nodes);
         for (Node n : nodes) {
             String name = ((INameNode)n).getName();
             if (name.equals(methodName)) {

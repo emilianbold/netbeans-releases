@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -82,7 +82,7 @@ public class HierarchyAction extends CallableSystemAction {
 
     @Override
     public boolean isEnabled() {
-        return CsmModelAccessor.getModel().projects().size()>0;
+        return CsmUtilities.isAnyNativeProjectOpened();
     }
     
     @Override

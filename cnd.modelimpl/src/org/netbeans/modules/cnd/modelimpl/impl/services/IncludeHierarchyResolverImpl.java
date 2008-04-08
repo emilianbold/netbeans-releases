@@ -48,11 +48,10 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
@@ -80,7 +79,7 @@ public class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResolver {
             for (CsmFile file : getReferences((ProjectBase)project, referencedFile)){
                 for (CsmInclude include : file.getIncludes()){
                     if (referencedFile.equals(include.getIncludeFile())){
-                        res.add(new RefImpl(include));
+                        res.add(CsmReferenceSupport.createObjectReference(include.getIncludeFile(), include));
                     }
                 }
             }
@@ -95,52 +94,5 @@ public class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResolver {
             res.addAll(dependent.getGraph().getInLinks(referencedFile));
         }
         return res;
-    }
-    
-    private static final class RefImpl extends OffsetableBase implements CsmReference {
-        private final CsmUID<CsmInclude> delegate;
-        
-        private RefImpl(CsmInclude owner) {
-            super(owner.getContainingFile(), owner.getStartOffset(), owner.getEndOffset());
-            delegate = owner.getUID();
-        }
-
-        public CsmObject getReferencedObject() {
-            CsmInclude incl = delegate.getObject();
-            return incl != null ? incl.getIncludeFile() : incl;
-        }
-
-        public CsmObject getOwner() {
-            return delegate.getObject();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final RefImpl other = (RefImpl) obj;
-            if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 97 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public String toString() {
-            return "Include Reference: " + (this.delegate != null ? delegate.toString() : super.getOffsetString()); // NOI18N
-        }
-
-        
     }
 }
