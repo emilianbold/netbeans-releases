@@ -130,7 +130,7 @@ function write_components() {
 			document.write('    <th class="onhover_change left_border"></th>');
 			document.write('    <th class="onhover_change beige left_border"></th>');
 			document.write('    <th class="onhover_change left_border"></th>');
-			document.write('    <th class="onhover_change beige left_border"></th>');
+			//document.write('    <th class="onhover_change beige left_border"></th>');
 			document.write('</tr>');
         }
 

@@ -82,7 +82,6 @@ import org.w3c.dom.Text;
  *
  */
 public class PhpProject implements Project, AntProjectListener {
-
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation()
             + ResourceMarker.PROJECT_ICON));
 
@@ -208,11 +207,15 @@ public class PhpProject implements Project, AntProjectListener {
         return myEvaluator;
     }
 
-    private void initLookup( AuxiliaryConfiguration configuration ) {
+    CopySupport getCopySupport() {
+        return getLookup().lookup(CopySupport.class);
+    }
 
+    private void initLookup( AuxiliaryConfiguration configuration ) {        
         SubprojectProvider provider = getRefHelper().createSubprojectProvider();
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
         myLookup = Lookups.fixed(new Object[] {
+		CopySupport.getInstance(),
                 new Info(),
                 configuration,
                 new PhpXmlSavedHook(),
@@ -311,17 +314,22 @@ public class PhpProject implements Project, AntProjectListener {
         }
     }
     
-    private final class PhpOpenedHook extends ProjectOpenedHook {
-	private CopySupport copySupport = CopySupport.forProject();
+    private final class PhpOpenedHook extends ProjectOpenedHook {	
         protected void projectOpened() {
             ClassPathProviderImpl cpProvider = myLookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-	    copySupport.projectOpened(PhpProject.this);
+	    final CopySupport copySupport = getCopySupport();
+	    if (copySupport != null) {
+		copySupport.projectOpened(PhpProject.this);
+	    }
         }
         
         protected void projectClosed() {
-	    copySupport.projectClosed(PhpProject.this);
+	    final CopySupport copySupport = getCopySupport();
+	    if (copySupport != null) {
+		copySupport.projectClosed(PhpProject.this);
+	    }	    
             try {
                 ProjectManager.getDefault().saveProject( PhpProject.this);
             } catch (IOException e) {

@@ -98,6 +98,12 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
     }
 
     @Override
+    public boolean isSaveRequired() {
+	return true;
+    }
+
+    
+    @Override
     public void setActionFiles(FileObject[] files) {
 	if (getId().equals(DEBUG)) {
 	    if (getProject() != null) {

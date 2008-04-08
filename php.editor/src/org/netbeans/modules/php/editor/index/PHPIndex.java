@@ -54,6 +54,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -176,9 +177,11 @@ public class PHPIndex {
                 String funcName = signature.substring(0, firstSemicolon);
                 
                 if (funcName.toLowerCase().startsWith(name.toLowerCase())) {
-                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            classMap.getPersistentUrl(), funcName, className, 0, this, false);
-
+                    int flags = extractIntValueFromIndexSignature(signature, 3);
+                    
+                    IndexedFunction func = new IndexedFunction(funcName, className,
+                            this, classMap.getPersistentUrl(), signature, flags, ElementKind.METHOD);
+                    
                     functions.add(func);
                 }
             }
@@ -203,10 +206,11 @@ public class PHPIndex {
                 String propName = signature.substring(0, firstSemicolon);
                 
                 if (propName.toLowerCase().startsWith(name.toLowerCase())) {
-                    int offset = extractOffsetFromIndexSignature(signature, 1);
+                    int offset = extractIntValueFromIndexSignature(signature, 1);
+                    int modifiers = extractIntValueFromIndexSignature(signature, 2);
                     
                     IndexedConstant prop = new IndexedConstant(propName, className,
-                            this, classMap.getPersistentUrl(), null, 0, offset);
+                            this, classMap.getPersistentUrl(), null, modifiers, offset);
 
                     properties.add(prop);
                 }
@@ -215,7 +219,7 @@ public class PHPIndex {
         return properties;
     }
     
-    static int extractOffsetFromIndexSignature(String signature, int offsetSection) {
+    static int extractIntValueFromIndexSignature(String signature, int offsetSection) {
         assert offsetSection != 0; // Obtain directly, and logic below (+1) is wrong
         int startIndex = 0;
         
@@ -252,8 +256,8 @@ public class PHPIndex {
                     int firstSemicolon = signature.indexOf(";");
                     String funcName = signature.substring(0, firstSemicolon);
 
-                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            map.getPersistentUrl(), funcName, null, 0, this, false);
+                    IndexedFunction func = new IndexedFunction(funcName, null,
+                            this, map.getPersistentUrl(), signature, 0, ElementKind.METHOD);
 
                     functions.add(func);
                 }
@@ -277,7 +281,7 @@ public class PHPIndex {
 
                 for (String signature : signatures) {
                     String constName = signature.substring(0, signature.indexOf(';'));
-                    int offset = extractOffsetFromIndexSignature(signature, 1);
+                    int offset = extractIntValueFromIndexSignature(signature, 1);
 
                     IndexedConstant constant = new IndexedConstant(constName, null,
                             this, map.getPersistentUrl(), null, 0, offset);
@@ -306,7 +310,7 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     int firstSemicolon = signature.indexOf(";");
                     String className = signature.substring(0, firstSemicolon);
-                    int offset = extractOffsetFromIndexSignature(signature, 1);
+                    int offset = extractIntValueFromIndexSignature(signature, 1);
 
                     IndexedConstant constant = new IndexedConstant(className, null,
                             this, map.getPersistentUrl(), null, 0, offset);
