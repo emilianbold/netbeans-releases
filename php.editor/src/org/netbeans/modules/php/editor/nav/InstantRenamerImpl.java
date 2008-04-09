@@ -37,46 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.parser;
-
-import java.io.File;
-import java.io.FileReader;
-import java.util.Date;
-import java_cup.runtime.Symbol;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
+package org.netbeans.modules.php.editor.nav;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  *
- * @author Petr Pisl
+ * @author Jan Lahoda
  */
-public class ParserPerformanceTest extends NbTestCase {
-    
-    public ParserPerformanceTest(String testName) {
-        super(testName);
-    }            
+public class InstantRenamerImpl implements InstantRenamer {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
+        //XXX: implement me:
+        return true;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
+        return new HashSet<OffsetRange>(OccurrencesFinderImpl.compute(info, caretOffset));
     }
-    
-    // the current time is around 1200 ms
-    public void testBigFile() throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/Subs.php");
-        assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Date start = new Date();
-        Symbol root = parser.parse();
-        Date end = new Date();
-        long time = end.getTime() - start.getTime();
-        System.out.println("Parsing of big files takes: " + time);
-        assertTrue(time < 2500);
-    }
+
 }
