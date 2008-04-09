@@ -46,9 +46,12 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author tomslot
  */
 public class IndexedClass extends IndexedElement {
+    private int offset;
+    
     public IndexedClass(String name, String in, PHPIndex index, String fileUrl,
             String attributes, int flags, int offset){
         super(name, in, index, fileUrl, attributes, flags, ElementKind.GLOBAL);
+        this.offset = offset;
     }
     
     public String getSuperClass(){
@@ -56,4 +59,10 @@ public class IndexedClass extends IndexedElement {
         
         return superClass.length() == 0 ? null : superClass;
     }
+
+    @Override
+    public int getOffset() {
+        return offset;
+    }
+    
 }
