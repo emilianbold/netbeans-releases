@@ -196,8 +196,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         customizerPanel.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName("null");
-        jLabel1.getAccessibleContext().setAccessibleDescription("null");
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerName")); // NOI18N
 
         serverName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -207,8 +207,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         customizerPanel.add(serverName, gridBagConstraints);
-        serverName.getAccessibleContext().setAccessibleName("null");
-        serverName.getAccessibleContext().setAccessibleDescription("null");
+        serverName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerName")); // NOI18N
+        serverName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerName")); // NOI18N
 
         jLabel2.setLabelFor(serverType);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ServerManagerPanel.class, "CTL_ServerType")); // NOI18N
@@ -216,8 +216,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         customizerPanel.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName("null");
-        jLabel2.getAccessibleContext().setAccessibleDescription("null");
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerType")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerType")); // NOI18N
 
         serverType.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -227,8 +227,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         customizerPanel.add(serverType, gridBagConstraints);
-        serverType.getAccessibleContext().setAccessibleName("null");
-        serverType.getAccessibleContext().setAccessibleDescription("null");
+        serverType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerType")); // NOI18N
+        serverType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerType")); // NOI18N
 
         clientPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -280,18 +280,17 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 .addContainerGap())
         );
 
-        serversView.getAccessibleContext().setAccessibleName("null");
-        serversView.getAccessibleContext().setAccessibleDescription("null");
-        addButton.getAccessibleContext().setAccessibleName("null");
-        addButton.getAccessibleContext().setAccessibleDescription("null");
-        removeButton.getAccessibleContext().setAccessibleName("null");
-        removeButton.getAccessibleContext().setAccessibleDescription("null");
-        serversLabel.getAccessibleContext().setAccessibleName("null");
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/server/ui/manager/Bundle"); // NOI18N
-        serversLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ServerList")); // NOI18N
+        serversView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_InstalledServers")); // NOI18N
+        serversView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_InstalledServers")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_AddServer")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_AddServer")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_Remove")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_Remove")); // NOI18N
+        serversLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSN_ServerList")); // NOI18N
+        serversLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSD_ServerList")); // NOI18N
 
-        getAccessibleContext().setAccessibleName("null");
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSN_ServerManager")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSD_ServerManager")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
