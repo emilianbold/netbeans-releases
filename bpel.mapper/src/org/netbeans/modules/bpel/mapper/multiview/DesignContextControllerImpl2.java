@@ -342,6 +342,8 @@ public class DesignContextControllerImpl2
                 
         if (forceReload || !newContext.equals(mContext)) {
             if (forceReload || !newContextEntity.equals(oldContextEntity)) {
+                newContext.getValidationErrMsgBuffer().setLength(0);
+                
                 myMapperStateManager.storeOldEntityContext(mContext);
                 //
                 MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
@@ -520,5 +522,20 @@ public class DesignContextControllerImpl2
                 " \n" + xpathValidationErrMsg);
         }                    
         return (xpathValidationErrMsg);
+    }
+    
+    public static void addErrMessage(StringBuffer errMsgBuffer, 
+        String xpathExpression, String tagName) {
+        if ((errMsgBuffer == null) || (xpathExpression == null) || (tagName == null)) return;
+
+        String 
+            errMsgPattern = NbBundle.getMessage(DesignContextControllerImpl2.class, 
+            "LBL_Bpel_Mapper_Err_Msg_Wrong_XPathExpr_Data"),
+            errMsg = MessageFormat.format(errMsgPattern, new Object[] {tagName,
+                xpathExpression});                
+
+            errMsgBuffer.append((errMsgBuffer.length() > 0) ? 
+                " " + errMsg : errMsg);                
+            errMsgBuffer.append(",\n");
     }
 }

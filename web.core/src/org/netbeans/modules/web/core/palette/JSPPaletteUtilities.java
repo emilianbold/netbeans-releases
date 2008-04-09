@@ -149,16 +149,14 @@ public final class JSPPaletteUtilities {
     }
 
     public static PageInfo.BeanData[] getAllBeans(JTextComponent target) {
-        PageInfo.BeanData[] res = null;
         FileObject fobj = getFileObject(target);
         if (fobj != null) {
             JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(target.getDocument(), fobj, false, true);
-            if (result != null) {
-                res = result.getPageInfo().getBeans();
+            if (result != null && result.getPageInfo() != null) {
+                return result.getPageInfo().getBeans();
             }
         }
-
-        return res;
+        return null;
     }
 
     public static boolean idExists(String id, PageInfo.BeanData[] beanData) {

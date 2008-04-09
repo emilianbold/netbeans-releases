@@ -547,7 +547,6 @@ public class SvnClientExceptionHandler {
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1;                                     // NOI18N
-        // XXX we also have to check for authentication messages from proxy
     }
 
     private static boolean isNoCertificate(String msg) {
