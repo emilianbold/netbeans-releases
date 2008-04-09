@@ -189,6 +189,13 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
                     .addContainerGap(304, Short.MAX_VALUE)))
         );
 
+        axisDeployTf.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.axisDeployTf.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.browseButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        axisUrlTf.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.axisUrlTf.AccessibleContext.accessibleDescription")); // NOI18N
+        cbTomcatManager.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.cbTomcatManager.AccessibleContext.accessibleDescription")); // NOI18N
+        tfTomcatUser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.tfTomcatUser.AccessibleContext.accessibleDescription")); // NOI18N
+        tfTomcatPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.tfTomcatPassword.AccessibleContext.accessibleDescription")); // NOI18N
+
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.deploymentPanel.TabConstraints.tabTitle"), deploymentPanel); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -201,6 +208,8 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
         );
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButton1ActionPerformed

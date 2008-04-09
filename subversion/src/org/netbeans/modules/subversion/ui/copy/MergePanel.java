@@ -144,7 +144,7 @@ public class MergePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void typeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboBoxActionPerformed
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event_typeComboBoxActionPerformed
     
     
