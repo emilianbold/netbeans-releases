@@ -44,7 +44,6 @@ package org.netbeans.modules.java.source.parsing;
 import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
 import java.net.URL;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Enumeration;
@@ -53,11 +52,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -119,44 +116,6 @@ public class ClasspathInfoTest extends NbTestCase {
         assertNotNull( "Classpath Info should be created", ci );
     }
     
-//
-//    public void testParse() throws Exception {
-//        final String TEST_FILE = "samples1/EmptyClass.java";
-//                
-//        JavacInterface ji = JavacInterface.create( bootPath, classPath, null);
-//                
-//        TestUtil.copyFiles( workDir, TEST_FILE );
-//        CompilationUnitTree cu = ji.parse( FileObjects.fileFileObject( new File( workDir, TEST_FILE ) ), null );         
-//        assertNotNull( "Should produce compilation unit.", cu );                
-//    }
-//    
-//    public void testParseString() throws Exception {
-//                        
-//        JavacInterface ji = JavacInterface.create( bootPath, classPath, null);
-//                
-//        CompilationUnitTree cu = ji.parse( FileObjects.memoryFileObject( SOURCE, "MemoryFile.java"), null ); 
-//        assertNotNull( "Should produce compilation unit.", cu );                
-//    }
-//
-//    public void testResolve() {
-//        JavacInterface ji = JavacInterface.create( bootPath, classPath, null);
-//                
-//        CompilationUnitTree cu = ji.parse( FileObjects.memoryFileObject( SOURCE, "MemoryFile.java"), null ); 
-//        assertNotNull( "Should produce compilation unit.", cu );
-//                
-//        ji.resolveElements( cu );
-//                
-//    }
-////
-////    /**
-////     * Test of resolveEnvironment method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-////     */
-////    public void testResolveEnvironment() {
-////        System.out.println("testResolveEnvironment");        
-////        // TODO add your test code below by replacing the default call to fail.
-////        fail("The test case is empty.");
-////    }
-//
     
     public void testGetTypeDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
@@ -202,95 +161,6 @@ public class ClasspathInfoTest extends NbTestCase {
         }
     }
 
-//
-//    /**
-//     * Test of getPackageNames method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetPackageNames() {
-//        System.out.println("testGetPackageNames");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getClassNames method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetClassNames() {
-//        System.out.println("testGetClassNames");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getSourcePositions method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetSourcePositions() {
-//        System.out.println("testGetSourcePositions");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getTypeChecker method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetTypeChecker() {
-//        System.out.println("testGetTypeChecker");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getAttribution method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetAttribution() {
-//        System.out.println("testGetAttribution");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of cleanCaches method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testCleanCaches() {
-//        System.out.println("testCleanCaches");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getClasspath method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetClasspath() {
-//        System.out.println("testGetClasspath");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of createContext method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testCreateContext() {
-//        System.out.println("testCreateContext");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getErrorsFor method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetErrorsFor() {
-//        System.out.println("testGetErrorsFor");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
+
     
 }
