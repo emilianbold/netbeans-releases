@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.properties;
 
-import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.bpel.core.BPELCatalog;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -30,14 +29,10 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
-
 import org.openide.filesystems.FileObject;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -215,5 +210,5 @@ public class ImportRegistrationHelper {
         return false;
     }
 
-    private BpelModel model;
+    private final BpelModel model;
 }
