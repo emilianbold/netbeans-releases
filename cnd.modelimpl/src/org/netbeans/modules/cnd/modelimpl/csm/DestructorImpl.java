@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public final class DestructorImpl extends MethodImpl{
 
-    public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
+    public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         super(ast, cls, visibility, true);
     }
 

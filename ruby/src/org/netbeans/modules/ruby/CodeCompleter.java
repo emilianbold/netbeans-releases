@@ -1297,7 +1297,7 @@ public class CodeCompleter implements Completable {
     }
     
     private static int callLineStart = -1;
-    private static IndexedMethod callMethod;
+    static IndexedMethod callMethod;
 
     /** Compute the current method call at the given offset. Returns false if we're not in a method call. 
      * The argument index is returned in parameterIndexHolder[0] and the method being

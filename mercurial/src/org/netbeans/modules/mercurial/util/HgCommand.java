@@ -216,6 +216,8 @@ public class HgCommand {
     private static final String HG_STRIP_NOBACKUP_CMD = "-n"; // NOI18N
     private static final String HG_STRIP_FORCE_MULTIHEAD_CMD = "-f"; // NOI18N
 
+    private static final String HG_VERIFY_CMD = "verify"; // NOI18N
+
     private static final String HG_VERSION_CMD = "version"; // NOI18N
     private static final String HG_INCOMING_CMD = "incoming"; // NOI18N
     private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
@@ -452,6 +454,22 @@ public class HgCommand {
         List<String> list = exec(command);
         if (list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_STRIP_FAILED"), logger);
+        
+        return list;
+    }
+
+        public static List<String> doVerify(File repository, OutputLogger logger) throws HgException {
+        if (repository == null ) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_VERIFY_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (list.isEmpty())
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_VERIFY_FAILED"), logger);
         
         return list;
     }

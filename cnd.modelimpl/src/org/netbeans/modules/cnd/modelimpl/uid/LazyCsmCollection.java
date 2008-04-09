@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
 
 /**
  * The lazy implementation of the collection 
@@ -96,6 +98,10 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     public Iterator<Tfact> iterator() {
         return allowNullsAndSkip ? new MySafeIterator<Tfact>() : new MyIterator();
+    }
+
+    public Iterator<Tfact> iterator(CsmFilter filter) {
+        return new MySafeIterator<Tfact>(filter);
     }
 
     public Object[] toArray() {
@@ -220,7 +226,13 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         
         private Iterator it;       
         private T next;
+        private CsmFilter filter;
+        
         private MySafeIterator(){
+            this(null);
+        }
+        private MySafeIterator(CsmFilter filter){
+            this.filter = filter;
             it = uids.iterator();
             next = getNextNonNull();
         }
@@ -232,6 +244,10 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             T out = null;
             while (out == null && it.hasNext()) {
                 CsmUID uid = (CsmUID)it.next();
+                if (uid == null ||
+                    (filter != null && !((UIDFilter)filter).accept(uid))){
+                    continue;
+                }
                 out = (T) convertToObject(uid);
             }
             return out;

@@ -271,10 +271,11 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         }
         getETLDataObject().createNodeDelegate();
         DataObjectProvider.activeDataObject = dataObject;
-        GraphView graphView = (GraphView) this.topPanel.getGraphView();
+        //For Navigator
+        /*GraphView graphView = (GraphView) this.topPanel.getGraphView();
         if (null != graphView) {
             graphView.setObserved(graphView);
-        }
+        }*/
     }
 
     @Override

@@ -132,6 +132,15 @@ made subject to such option by the copyright holder.
                                 <include name="**/*.xsd"/>
                             </fileset>
                         </copy>
+                        <xsl:if test="axis2:java-generator/@databindingName = 'xmlbeans'">
+                            <mkdir dir="${{basedir}}/xml-resources/axis2/xmlbeans/lib"/>
+                            <jar destfile="${{basedir}}/xml-resources/axis2/xmlbeans/lib/{$wsname}-XBeans-packaged.jar">
+                                <fileset dir="${{build.dir}}/axis2/resources">
+                                    <exclude name="**/*.wsdl"/>
+                                    <exclude name="**/*.xsd"/>
+                                </fileset>
+                            </jar>                           
+                        </xsl:if>
                     </target>
                     <target name="wsdl2java-refresh-{$wsname}" depends="init">
                         <delete dir="${{build.dir}}/axis2"/>
@@ -153,18 +162,29 @@ made subject to such option by the copyright holder.
                                 <include name="**/*.java"/>
                             </fileset>
                         </copy>
+                        <xsl:if test="axis2:java-generator/@databindingName = 'xmlbeans'">
+                            <mkdir dir="${{basedir}}/xml-resources/axis2/xmlbeans/lib"/>
+                            <jar destfile="${{basedir}}/xml-resources/axis2/xmlbeans/lib/{$wsname}-XBeans-packaged.jar">
+                                <fileset dir="${{build.dir}}/axis2/resources">
+                                    <exclude name="**/*.wsdl"/>
+                                    <exclude name="**/*.xsd"/>
+                                </fileset>
+                            </jar>                           
+                        </xsl:if>
                     </target>          
                 </xsl:if>
                 <xsl:if test="axis2:wsdl-url">
                     <target name="wsdl2java-clean-{$wsname}" depends="init" >
                         <delete file="${{basedir}}/xml-resources/axis2/META-INF/{$wsname}.wsdl"/>
+                        <xsl:if test="axis2:java-generator/@databindingName = 'xmlbeans'">
+                            <delete file = "${{basedir}}/xml-resources/axis2/xmlbeans/lib/{$wsname}-XBeans-packaged.jar"/>
+                        </xsl:if>
                     </target>
                 </xsl:if>
             </xsl:for-each>
             
             <!-- generate aar -->
             <xsl:if test="/axis2:axis2/axis2:service">
-                <xsl:variable name="wsname" select="/axis2:axis2/axis2:service/@name"/>
                 <target name="axis2-aar">
                     <xsl:attribute name="depends">
                         <xsl:text>compile</xsl:text>
@@ -184,7 +204,7 @@ made subject to such option by the copyright holder.
                             </resources>
                         </copy>
                     </xsl:if>
-                    <jar destfile="${{build.dir}}/axis2/WEB-INF/services/{$wsname}.aar">
+                    <jar destfile="${{build.dir}}/axis2/WEB-INF/services/${{ant.project.name}}.aar">
                         <fileset excludes="**/Test.class" dir="${{build.dir}}/classes"/>
                         <fileset dir="${{basedir}}/xml-resources/axis2">
                             <include name="**/*.wsdl"/>
@@ -192,6 +212,11 @@ made subject to such option by the copyright holder.
                             <include name="**/*.xml"/>
                             <include name="**/*.jar"/>
                         </fileset>
+                        <xsl:if test="/axis2:axis2/axis2:service/axis2:java-generator/@databindingName = 'xmlbeans'">
+                            <fileset dir="${{basedir}}/xml-resources/axis2/xmlbeans">
+                                <include name="**/*.jar"/>
+                            </fileset>
+                        </xsl:if>
                     </jar>
                     <xsl:if test="/axis2:axis2/axis2:libraries">
                         <delete dir = "${{basedir}}/xml-resources/axis2/lib"/>

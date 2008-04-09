@@ -38,59 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+/*
+ * EditorToolbarBorder.java
+ *
+ * Created on March 14, 2004, 4:38 AM
+ */
 
-package org.netbeans.modules.j2ee.metadata;
+package org.netbeans.swing.plaf.nimbus;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
 
 /**
- * A simple equivalent of {@link java.beans.PropertyChangeSupport} for
- * {@link ChangeListener}'s.
  *
- * @author Andrei Badea
+ * @author  David Simonek
  */
-public class ChangeSupport {
+public class EditorToolbarBorder extends AbstractBorder {
+    private static final Insets insets = new Insets(0, 0, 1, 0);
 
-    // XXX move to j2ee/utilities or openide/util
-
-    private final Object source;
-    private List<ChangeListener> listeners = Collections.emptyList();
-
-    public ChangeSupport(Object source) {
-        this.source = source;
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+        Color borderC = UIManager.getColor("controlDarkShadow");
+        g.setColor(borderC);
+        g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
     }
 
-    public synchronized void addChangeListener(ChangeListener listener) {
-        List<ChangeListener> newListeners = new LinkedList<ChangeListener>(listeners);
-        newListeners.add(listener);
-        listeners = newListeners;
-    }
-
-    public synchronized void removeChangeListener(ChangeListener listener) {
-        List<ChangeListener> newListeners = new LinkedList<ChangeListener>(listeners);
-        newListeners.remove(listener);
-        listeners = newListeners;
-    }
-
-    public void fireChange() {
-        fireChange(new ChangeEvent(source));
-    }
-
-    public void fireChange(ChangeEvent event) {
-        List<ChangeListener> listenersCopy;
-        synchronized (this) {
-            listenersCopy = listeners;
-        }
-        for (ChangeListener listener : listenersCopy) {
-            listener.stateChanged(event);
-        }
-    }
-
-    public synchronized int getListenerCount() {
-        return listeners.size();
-    }
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return insets;
+    }    
 }

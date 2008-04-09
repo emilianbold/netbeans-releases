@@ -403,7 +403,9 @@ class LuceneIndex extends Index {
             }
         }
         long timeStamp = System.currentTimeMillis();
-        store(documents, create, timeStamp, fileUrl);
+        if (documents != null) {
+            store(documents, create, timeStamp, fileUrl);
+        }
     }    
     
     private void store (List<IndexDocument> d, final boolean create, final long timeStamp, final String filename) throws IOException {        

@@ -69,7 +69,7 @@ public class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 26;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 27;
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
@@ -155,6 +155,10 @@ public class RepositoryUtils {
     
     public static void put(Key key, Persistent obj) {
 	if (key != null) {
+            // A workaround for #131701
+            if( key instanceof FileKey ) {
+                RepositoryAccessor.getRepository().hang(key, obj);
+            }
 	    long time = 0;
 	    int index = 0;
 	    if (TRACE_REPOSITORY_ACCESS) {
