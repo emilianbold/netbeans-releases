@@ -77,6 +77,6 @@ public class ParserPerformanceTest extends NbTestCase {
         Date end = new Date();
         long time = end.getTime() - start.getTime();
         System.out.println("Parsing of big files takes: " + time);
-        assertTrue(time < 1500);
+        assertTrue(time < 2500);
     }
 }
