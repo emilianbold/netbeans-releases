@@ -185,7 +185,6 @@ made subject to such option by the copyright holder.
             
             <!-- generate aar -->
             <xsl:if test="/axis2:axis2/axis2:service">
-                <xsl:variable name="wsname" select="/axis2:axis2/axis2:service/@name"/>
                 <target name="axis2-aar">
                     <xsl:attribute name="depends">
                         <xsl:text>compile</xsl:text>
@@ -205,7 +204,7 @@ made subject to such option by the copyright holder.
                             </resources>
                         </copy>
                     </xsl:if>
-                    <jar destfile="${{build.dir}}/axis2/WEB-INF/services/{$wsname}.aar">
+                    <jar destfile="${{build.dir}}/axis2/WEB-INF/services/${{ant.project.name}}.aar">
                         <fileset excludes="**/Test.class" dir="${{build.dir}}/classes"/>
                         <fileset dir="${{basedir}}/xml-resources/axis2">
                             <include name="**/*.wsdl"/>

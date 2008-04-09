@@ -122,7 +122,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
     // current object under mouse
     private static JGoObject currentObj = null;
     public static JGoObject selectedObject = null;
-    private BirdsEyeView satelliteView;
+    //private BirdsEyeView satelliteView;
     
 
     static {
@@ -140,10 +140,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
         setDropEnabled(true);
         //set default primary and secondary selection colors
         resetSelectionColors();
-        satelliteView = new BirdsEyeView();
+        //satelliteView = new BirdsEyeView();
         //set GraphDocument
         this.setDocument(new GraphDocument());
-        setObserved(this);
+        //setObserved(this); //For Navigator
     }
 
     /**
@@ -526,13 +526,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
 
         //add this node to document
         this.getDocument().addObjectAtTail(jgoObj);
-        satelliteView.getDocument().addObjectAtTail(jgoObj);
+        //satelliteView.getDocument().addObjectAtTail(jgoObj);
 
         //now select this node
         this.getSelection().selectObject(jgoObj);
 
         //and have focus in this view
-        satelliteView.requestFocus();
+        //satelliteView.requestFocus();
         this.requestFocus();
     }
 
@@ -1193,8 +1193,9 @@ public abstract class GraphView extends JGoView implements IGraphView {
     public JGoObject getSelectedObject() {
         return GraphView.selectedObject;
     }
-
-    public void setObserved(JGoView observed) {
+    
+    //For Navigator
+    /*public void setObserved(JGoView observed) {
         satelliteView.setObserved(this);
         satelliteView.requestFocus();
     }
@@ -1205,5 +1206,5 @@ public abstract class GraphView extends JGoView implements IGraphView {
 
     public JGoView getObserved() {
         return satelliteView.getObserved();
-    }
+    }*/
 }
