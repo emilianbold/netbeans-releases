@@ -70,6 +70,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 
 /**
  *
@@ -173,7 +175,8 @@ public class CsmContextUtilities {
     }
     
     private static void getFileLocalMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
-        for (Iterator itFile = file.getMacros().iterator(); itFile.hasNext();) {
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(strPrefix, match, caseSensitive, false);
+        for (Iterator itFile = CsmSelect.getDefault().getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;

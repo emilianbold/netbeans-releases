@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -900,6 +901,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return out;
     }
+
+    public Iterator<CsmMacro> getMacros(CsmFilter filter) {
+        Iterator<CsmMacro> out;
+        try {
+            macrosLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToMacros(macros, filter);
+         } finally {
+            macrosLock.readLock().unlock();
+         }
+         return out;
+    }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
@@ -1082,18 +1094,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (!isValid()) {
             return;
         }
-        Collection<FunctionImplEx> fakes = Collections.<FunctionImplEx>emptySet();
-        
         if (fakeRegistrationUIDs.size() > 0) {
-            fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeRegistrationUIDs);
+            List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
             fakeRegistrationUIDs.clear();
-        }
-	for (FunctionImplEx curElem: fakes) {
-            // Due to lazy list the client should check value on null.
-            if (curElem != null) {
-                curElem.fixFakeRegistration();
+            for( CsmUID<? extends CsmDeclaration> uid : fakes ) {
+                CsmDeclaration curElem = uid.getObject();
+                if (curElem != null) {
+                    if( curElem instanceof FunctionImplEx ) {
+                        ((FunctionImplEx) curElem).fixFakeRegistration();
+                    } else {
+                        DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                    }
+                }
             }
-	}
+        }
     }
     
     public @Override String toString() {
@@ -1316,5 +1330,5 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             name = NameCache.getManager().getString(input.readUTF());
         }
     }
-    
+
 }
