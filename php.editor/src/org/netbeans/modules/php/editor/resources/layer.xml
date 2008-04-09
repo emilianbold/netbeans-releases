@@ -101,6 +101,7 @@
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                 </folder>
                 
+                <!--issue #127161:-->
                 <folder name="Popup">
                     <file name="in-place-refactoring">
                         <attr name="position" intvalue="680" />
@@ -127,6 +128,7 @@
                         <attr name="position" intvalue="780" />
                     </file>
                 </folder>
+                <!--end of issue #127161-->
             </folder>
             <folder name="x-php-doccomment">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
