@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 
 /**
  *
@@ -83,20 +84,21 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
     };
 
     public String[] getPrivilegedTemplates() {
-        if (dirName.startsWith("conf")) {
-            return GROOVY_TEMPLATES;
-        } else if (dirName.startsWith("taglib")) {
-            return GROOVY_FILE;
-        } else if (dirName.startsWith("test")) {
-            return FOLDER_ONLY;
-        } else if (dirName.startsWith("src")) {
-            return FOLDER_ONLY;
-        } else if (dirName.startsWith("views")) {
-            return GSP_TEMPLATES;
-        } else if (dirName.startsWith("web-app")) {
-            return GSP_TEMPLATES;
-        } else {
-            return PROPERTIES_FILE;
+        switch (TreeRootNode.getCategoryForName(dirName)) {
+            case CONFIGURATION:
+                return GROOVY_TEMPLATES;
+            case TAGLIB:
+                return GROOVY_FILE;
+            case TESTS:
+                return FOLDER_ONLY;
+            case SRC:
+                return FOLDER_ONLY;
+            case VIEWS:
+                return GSP_TEMPLATES;
+            case WEBAPP:
+                return GSP_TEMPLATES;
+            default:
+                return PROPERTIES_FILE;
         }
     }
     

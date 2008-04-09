@@ -106,37 +106,48 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 //        LOG.setLevel(Level.FINEST);
 //        LOG.log(Level.FINEST, "Pathname : " + pathName);
 //        LOG.log(Level.FINEST, "Dirname  : " + dirName);
+        
+        category = getCategoryForName(dirName);
 
-        if (dirName.startsWith("conf")) {
-            category = SourceCategory.CONFIGURATION;
-        } else if (dirName.startsWith("controllers")) {
-            category = SourceCategory.CONTROLLERS;
-        } else if (dirName.startsWith("domain")) {
-            category = SourceCategory.DOMAIN;
-        } else if (dirName.startsWith("i18n")) {
-            category = SourceCategory.MESSAGES;
-        } else if (dirName.startsWith("services")) {
-            category = SourceCategory.SERVICES;
-        } else if (dirName.startsWith("taglib")) {
-            category = SourceCategory.TAGLIB;
-        } else if (dirName.startsWith("util")) {
-            category = SourceCategory.UTIL;
-        } else if (dirName.startsWith("lib")) {
-            category = SourceCategory.LIB;
-        } else if (dirName.startsWith("test")) {
-            category = SourceCategory.TESTS;
-        } else if (dirName.startsWith("scripts")) {
-            category = SourceCategory.SCRIPTS;
-        } else if (dirName.startsWith("src")) {
-            category = SourceCategory.SRC;
-        } else if (dirName.startsWith("web-app")) {
-            category = SourceCategory.WEBAPP;
-        } else if (dirName.startsWith("views")) {
-            category = SourceCategory.VIEWS;
-        }
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
     }
+    
+    static SourceCategory getCategoryForName(String dirName){
+        
+        SourceCategory cat = SourceCategory.NONE;
+        
+        if (dirName.startsWith("conf")) {
+            cat = SourceCategory.CONFIGURATION;
+        } else if (dirName.startsWith("controllers")) {
+            cat = SourceCategory.CONTROLLERS;
+        } else if (dirName.startsWith("domain")) {
+            cat = SourceCategory.DOMAIN;
+        } else if (dirName.startsWith("i18n")) {
+            cat = SourceCategory.MESSAGES;
+        } else if (dirName.startsWith("services")) {
+            cat = SourceCategory.SERVICES;
+        } else if (dirName.startsWith("taglib")) {
+            cat = SourceCategory.TAGLIB;
+        } else if (dirName.startsWith("util")) {
+            cat = SourceCategory.UTIL;
+        } else if (dirName.startsWith("lib")) {
+            cat = SourceCategory.LIB;
+        } else if (dirName.startsWith("test")) {
+            cat = SourceCategory.TESTS;
+        } else if (dirName.startsWith("scripts")) {
+            cat = SourceCategory.SCRIPTS;
+        } else if (dirName.startsWith("src")) {
+            cat = SourceCategory.SRC;
+        } else if (dirName.startsWith("web-app")) {
+            cat = SourceCategory.WEBAPP;
+        } else if (dirName.startsWith("views")) {
+            cat = SourceCategory.VIEWS;
+        } 
 
+        return cat;
+    }
+    
+    
     static String getDirName(SourceGroup g){
         // Source Groups always use a slash as file-separator, no matter
         // whether we are dealing with unix or windows:
