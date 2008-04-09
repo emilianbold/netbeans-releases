@@ -83,7 +83,7 @@ public class WrappedTextView extends View {
     /**
      * Precalculated width (in pixels) we are to paint into, the end being the wrap point
      */
-    private int width = -1;
+    private int width = 0;
     /**
      * Flag indicating we need to recalculate metrics before painting
      */
@@ -270,6 +270,9 @@ public class WrappedTextView extends View {
             width = jv.getExtentSize().width - (aa ? 18 : 17);
         } else {
             width = comp.getWidth() - (aa ? 18 : 17);
+        }
+        if (width < 0) {
+            width = 0;
         }
         charsPerLine = width / charWidth;
     }
