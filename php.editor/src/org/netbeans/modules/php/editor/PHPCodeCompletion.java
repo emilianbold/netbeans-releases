@@ -637,7 +637,8 @@ public class PHPCodeCompletion implements Completable {
     }
 
     public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        return null;
+        //TODO: return the info for functions and methods
+        return ParameterInfo.NONE;
     }
 
     private boolean startsWith(String theString, String prefix) {
