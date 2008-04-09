@@ -98,7 +98,7 @@ public class GrailsSources implements Sources {
         } else if ("test".equals(type)) {
             result.add(new Group(projectDir.getFileObject("test"), "Tests", null, null, SourceCategory.VIEWS));
         } else if ("src".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("src"), "Source Packages", null, null, SourceCategory.VIEWS));
+            result.add(new Group(projectDir.getFileObject("src"), "Source Packages", null, null, SourceCategory.SRC));
         } else if ("scripts".equals(type)) {
             result.add(new Group(projectDir.getFileObject("scripts"), "Scripts", null, null, SourceCategory.VIEWS));
         } else {

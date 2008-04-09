@@ -60,7 +60,7 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
         this.dirName =  TreeRootNode.getDirName(g);
     }
     
-    private static final String[] PRIVILEGED_NAMES = new String[] {
+    private static final String[] PROPERTIES_FILE = new String[] {
         "Templates/Other/properties.properties"
     };
     
@@ -84,8 +84,10 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
             return GROOVY_FILE;
         } else if (dirName.startsWith("test")) {
             return FOLDER_ONLY;
+        } else if (dirName.startsWith("src")) {
+            return FOLDER_ONLY;
         } else {
-            return PRIVILEGED_NAMES;
+            return PROPERTIES_FILE;
         }
     }
     
