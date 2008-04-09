@@ -395,7 +395,21 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.tomcat.integration"), // NOI18N
                     e);
         }
-
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            final List<Product> jdks = Registry.getInstance().getProducts("jdk");
+            for (Product jdk : jdks) {
+                // if the IDE was installed in the same session as the jdk, 
+                // we should add jdk`s "product id" to the IDE
+                if (jdk.getStatus().equals(Status.INSTALLED) && jdk.hasStatusChanged()) {
+                    NetBeansUtils.addPackId(installLocation, JDK_PRODUCT_ID);
+                    break;
+                }
+            }
+        } catch  (IOException e) {
+            LogManager.log("Cannot add jdk`s id to netbeans productid file", e);
+        }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -607,7 +621,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         "Java",// NOI18N
         "IDE"// NOI18N
     };
-    
+    public static final String JDK_PRODUCT_ID =
+            "JDK";//NOI18N
     public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
     
