@@ -359,6 +359,34 @@ public class CppLexerBatchTestCase extends TestCase {
         
     }
     
+    public void testLineContinuationAfterSlash() {
+        String text = "\n" + 
+                      "    /\\\n\n" +
+                      "#define /\\\n    \n\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "    ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SLASH, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_LINE, "\\\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DIRECTIVE, "#define /\\\n    \n");
+        
+        TokenSequence<?> ep = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_DEFINE, "define");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.SLASH, "/");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.ESCAPED_LINE, "\\\n");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, "    ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.NEW_LINE, "\n");
+
+        assertFalse("No more tokens", ep.moveNext());
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+    
     private String getAllKeywords() {
         return "asm auto bool break case catch char class const const_cast continue " +
             "default delete do double dynamic_cast else enum finally float for friend goto if " +

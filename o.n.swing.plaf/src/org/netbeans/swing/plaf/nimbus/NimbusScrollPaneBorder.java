@@ -38,53 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.subversion;
-
-import java.io.*;
-import java.util.*;
-import org.netbeans.modules.subversion.util.*;
-
-/**
- * Encapsulates content of .svn/* files that is used to save to-be-deleted metadata.
+/*
+ * MetalScrollPaneBorder.java
  *
- * @author Petr Kuzel
+ * Created on March 14, 2004, 4:33 AM
  */
-public class SvnMetadata  {
 
-    /** Location on disk, a directory. */
-    private File storage;
+package org.netbeans.swing.plaf.nimbus;
 
-    private SvnMetadata() throws IOException {
-        // XXX clean-up on IDE start, shutdown?
-        storage = FileUtils.createTmpFolder("nb_SvnMetadata_");  // NOI18N
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
+
+/** Scroll pane border for Metal look and feel
+ *
+ * @author  Dafe Simonek
+ */
+class NimbusScrollPaneBorder extends AbstractBorder {
+
+    private static final Insets insets = new Insets(1, 1, 2, 2);
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y,
+    int w, int h) {
+        g.translate(x, y);
+
+        Color color = UIManager.getColor("controlShadow");
+        g.setColor(color == null ? Color.darkGray : color);
+        g.drawRect(0, 0, w-2, h-2);
+        color = UIManager.getColor("controlHighlight");
+        g.setColor(color == null ? Color.white : color);
+        g.drawLine(w-1, 1, w-1, h-1);
+        g.drawLine(1, h-1, w-1, h-1);
+
+        g.translate(-x, -y);
     }
 
-    /**
-     * Reads and stores .svn metadata.
-     */ 
-    public static SvnMetadata read(File dir) throws IOException {
-        assert dir.isDirectory();
-
-        SvnMetadata data = new SvnMetadata();
-//        System.err.println("METADATA Saving: " + dir);
-        data.load(dir);
-        return data;
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return insets;
     }
-
-    private void load(File dir) throws IOException {
-        FileUtils.copyDirFiles(dir, storage, true);
-    }
-
-    /** Saves metadata in the given folder, typically named .svn.
-     *
-     * @param dir folder to save to
-     * @throws java.io.IOException 
-     */
-    public void save(File dir) throws IOException {
-//        System.err.println("METADATA Restoring: " + dir);
-        dir.mkdirs();
-        FileUtils.copyDirFiles(storage, dir, true);
-    }
-
 }

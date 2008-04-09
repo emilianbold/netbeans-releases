@@ -44,7 +44,7 @@ CONSOLE="-J-Dnetbeans.logger.console=true"
 DBGPORT=${DBGPORT-5858}
 USERDIR="--userdir /tmp/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
-
+DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
 
 while [ -h "$PRG" ]; do
@@ -81,6 +81,10 @@ do
                 ;;
 	--nocon|--noconsole)
 		CONSOLE=""
+		;;
+	--nodebug|-nodebug)
+		echo "Debug mode OFF"
+		DEBUG=""
 		;;
 	--sdebug|-sdebug)
 		echo "wait to attach debugger on port ${DBGPORT}"
@@ -139,8 +143,10 @@ if [ -z "${CNDDIST}" ]; then
         exit 1;
 fi
 
-#DEBUG_PROFILE=""
-DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y,suspend=${SUSPEND},address=${DBGPORT}"
+
+if [ -n "${DEBUG}" ]; then
+    DEBUG="${DEBUG},suspend=${SUSPEND},address=${DBGPORT}"
+fi
 
 DEFS="-J-Dnetbeans.system_http_proxy=webcache:8080"
 DEFS="${DEFS} ${CONSOLE}"

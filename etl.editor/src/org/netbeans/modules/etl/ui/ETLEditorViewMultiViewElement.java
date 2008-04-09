@@ -271,10 +271,11 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         }
         getETLDataObject().createNodeDelegate();
         DataObjectProvider.activeDataObject = dataObject;
-        GraphView graphView = (GraphView) this.topPanel.getGraphView();
+        //For Navigator
+        /*GraphView graphView = (GraphView) this.topPanel.getGraphView();
         if (null != graphView) {
             graphView.setObserved(graphView);
-        }
+        }*/
     }
 
     @Override
@@ -288,6 +289,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
     @Override
     public void componentShowing() {
+
         super.componentShowing();
         ETLEditorSupport editor = dataObject.getETLEditorSupport();
         UndoRedo.Manager undoRedo = editor.getUndoManager();
