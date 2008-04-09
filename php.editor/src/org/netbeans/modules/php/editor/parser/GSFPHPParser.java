@@ -64,6 +64,7 @@ public class GSFPHPParser implements Parser {
         
         for (ParserFile file : request.files) {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
+            request.listener.started(beginEvent);
             ParserResult result = null;
             try {
                 CharSequence buffer = reader.read(file);
