@@ -65,7 +65,7 @@ public class WsFromJavaGUIPanel1 extends javax.swing.JPanel {
         jCheckBox1 = new javax.swing.JCheckBox();
 
         jCheckBox1.setSelected(true);
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel1.class, "WsFromJavaGUIPanel1.jCheckBox1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel1.class, "WsFromJavaGUIPanel1.jCheckBox1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

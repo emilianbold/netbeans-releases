@@ -90,9 +90,10 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
         tfTomcatPassword = new javax.swing.JPasswordField();
         jLabel6 = new javax.swing.JLabel();
 
-        axisDeployLabel.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.axisDeployLabel.text")); // NOI18N
+        axisDeployLabel.setLabelFor(axisDeployTf);
+        org.openide.awt.Mnemonics.setLocalizedText(axisDeployLabel, org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.axisDeployLabel.text")); // NOI18N
 
-        browseButton1.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.browseButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton1, org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.browseButton1.text")); // NOI18N
         browseButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButton1ActionPerformed(evt);
@@ -101,15 +102,18 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel2.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel3.text")); // NOI18N
+        jLabel3.setLabelFor(axisUrlTf);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel3.text")); // NOI18N
 
-        cbTomcatManager.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.cbTomcatManager.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbTomcatManager, org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.cbTomcatManager.text")); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel4.text")); // NOI18N
+        jLabel4.setLabelFor(tfTomcatUser);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel4.text")); // NOI18N
 
         tfTomcatUser.setEditable(false);
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel5.text")); // NOI18N
+        jLabel5.setLabelFor(tfTomcatPassword);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.jLabel5.text")); // NOI18N
 
         tfTomcatPassword.setEditable(false);
 
@@ -138,14 +142,14 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
                     .add(deploymentPanelLayout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(axisUrlTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)))
+                        .add(axisUrlTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)))
                 .addContainerGap())
             .add(deploymentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(deploymentPanelLayout.createSequentialGroup()
                     .addContainerGap()
                     .add(deploymentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, deploymentPanelLayout.createSequentialGroup()
-                            .add(axisDeployTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                            .add(axisDeployTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(browseButton1))
                         .add(jLabel2)
@@ -171,7 +175,7 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
                 .add(deploymentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(tfTomcatPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5))
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addContainerGap(82, Short.MAX_VALUE))
             .add(deploymentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(deploymentPanelLayout.createSequentialGroup()
                     .add(30, 30, 30)
@@ -182,7 +186,7 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
                         .add(axisDeployTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(jLabel2)
-                    .addContainerGap(289, Short.MAX_VALUE)))
+                    .addContainerGap(304, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "Axis2ConfigurationPanel.deploymentPanel.TabConstraints.tabTitle"), deploymentPanel); // NOI18N
