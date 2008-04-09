@@ -350,7 +350,7 @@ public class CommitAction extends ContextAction {
                     // make a deep refresh to get the not yet notified external changes
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     for(File f : contextFiles) {
-                        SvnUtils.refreshRecursively(f);
+                        cache.refreshRecursively(f);
                     }                        
                     // get all changed files while honoring the flat folder logic
                     File[][] split = Utils.splitFlatOthers(contextFiles);
