@@ -386,6 +386,9 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
 //        System.out.println("~~~ PHP Formatter: " + (indentOnly ? "renidenting" : "reformatting")
 //                + " <" + startOffset + ", " + endOffset + ">");
         
+        // a workaround for issue #131929
+        document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
+        
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
