@@ -779,7 +779,7 @@ public class PHPCodeCompletion implements Completable {
         
         @Override
         public String getInsertPrefix() {
-            return getName() + "(" + getParamsStr() + ")";
+            return getName();
         }
         
         @Override public String getLhsHtml() {
@@ -814,6 +814,11 @@ public class PHPCodeCompletion implements Completable {
             return formatter.getText();
         }
         
+        @Override
+        public List<String> getInsertParams() {
+            return getFunction().getParameters();
+        }
+        
         private String getParamsStr(){
             StringBuilder builder = new StringBuilder();
             Collection<String> parameters = getFunction().getParameters();
@@ -823,7 +828,7 @@ public class PHPCodeCompletion implements Completable {
 
                 while (it.hasNext()) { // && tIt.hasNext()) {
                     String param = it.next();
-                    builder.append("$" + param);
+                    builder.append(param);
 
                     if (it.hasNext()) {
                         builder.append(", "); // NOI18N

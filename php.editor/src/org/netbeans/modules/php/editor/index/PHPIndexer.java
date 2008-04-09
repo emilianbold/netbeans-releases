@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -162,7 +163,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.8"; // NOI18N
+        return "0.2.9"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -349,6 +350,23 @@ public class PHPIndexer implements Indexer {
                     Variable var = (Variable) paramNameExpr;
                     Identifier id = (Identifier) var.getName();
                     paramName = id.getName();
+                    
+                    if (var.isDollared()){
+                        signature.append("$"); //NOI18N
+                    }
+                } else if (paramNameExpr instanceof Reference) {
+                    signature.append("&");
+                    Reference reference = (Reference) paramNameExpr;
+                    
+                    if (reference.getExpression() instanceof Variable) {
+                        Variable var = (Variable) reference.getExpression();
+                        Identifier id = (Identifier) var.getName();
+                        paramName = id.getName();
+
+                        if (var.isDollared()) {
+                            signature.append("$"); //NOI18N
+                        }
+                    }
                 }
 
                 signature.append(paramName);
