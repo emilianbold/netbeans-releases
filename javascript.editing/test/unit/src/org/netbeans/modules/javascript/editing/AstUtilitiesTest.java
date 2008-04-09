@@ -119,5 +119,6 @@ public class AstUtilitiesTest extends JsTestBase {
         }
     }
     
+    
     // TODO add correctness tests too - not just stress tests!
 }
