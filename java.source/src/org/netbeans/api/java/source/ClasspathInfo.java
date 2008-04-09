@@ -351,6 +351,22 @@ public final class ClasspathInfo {
         public ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
                 final boolean backgroundCompilation, final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
             return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
-        }                                
+        }
+
+        @Override
+        public boolean registerVirtualSource(final ClasspathInfo cpInfo, final String fqn, final CharSequence content) throws UnsupportedOperationException {
+            if (cpInfo.memoryFileManager == null) {
+                throw new UnsupportedOperationException ("The ClassPathInfo doesn't support memory JavacFileManager");  //NOI18N
+            }
+            return cpInfo.memoryFileManager.register(fqn, System.currentTimeMillis(), content);
+        }
+
+        @Override
+        public boolean unregisterVirtualSource(final ClasspathInfo cpInfo, final String fqn) throws UnsupportedOperationException {
+            if (cpInfo.memoryFileManager == null) {
+                throw new UnsupportedOperationException();
+            }
+            return cpInfo.memoryFileManager.unregister(fqn);
+        }
     }
 }

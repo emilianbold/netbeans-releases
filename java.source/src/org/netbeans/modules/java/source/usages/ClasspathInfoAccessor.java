@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import com.sun.tools.javac.util.JavacFileManager;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -79,6 +80,26 @@ public abstract class ClasspathInfoAccessor {
     public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);
     
     public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter,
-                                          boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);   
+                                          boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);
+    
+    /**
+     * Registers virtual java source into the memory {@link JavacFileManager}
+     * @param cpInfo {@link ClasspathInfo}
+     * @param fqn under which the source will be bind
+     * @param content of the source
+     * @return true when the binding replaced already bound virtual source
+     * @throws java.lang.UnsupportedOperationException when the {@link ClasspathInfo} doesn't support memory {@link JavacFileManager}
+     */
+    public abstract boolean registerVirtualSource (ClasspathInfo cpInfo, String fqn, CharSequence content) throws UnsupportedOperationException;
+    
+    /**
+     * Unregisters virtual java source from memory {@link JavacFileManager}
+     * @param cpInfo {@link ClasspathInfo}
+     * @param fqn which should be unbind
+     * @return true when the binding was removed
+     * @throws java.lang.UnsupportedOperationException when the {@link ClasspathInfo} doesn't support memory {@link JavacFileManager}
+     */
+    public abstract boolean unregisterVirtualSource (ClasspathInfo cpnfo, String fqn) throws UnsupportedOperationException;
+    
     
 }
