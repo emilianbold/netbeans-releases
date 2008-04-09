@@ -61,7 +61,6 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 class FilesystemHandler extends VCSInterceptor {
         
-    private final Subversion svn;
     private final FileStatusCache   cache;
     
     /**
@@ -75,7 +74,6 @@ class FilesystemHandler extends VCSInterceptor {
     private final Set<File> invalidMetadata = new HashSet<File>(5);
     
     public FilesystemHandler(Subversion svn) {
-        this.svn = svn;
         cache = svn.getStatusCache();
     }
 
@@ -83,12 +81,8 @@ class FilesystemHandler extends VCSInterceptor {
     public boolean beforeDelete(File file) {     
         Subversion.LOG.fine("beforeDelete " + file);
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
-        // calling cache results in SOE, we must check manually
-        if(file.isFile()) {            
-            return hasMetadata(file.getParentFile());
-        } else {
-            return hasMetadata(file);
-        }       
+        // calling cache results in SOE, we must check manually        
+        return hasMetadata(file.getParentFile());
     }
 
     /**
@@ -136,9 +130,9 @@ class FilesystemHandler extends VCSInterceptor {
                     SvnClientExceptionHandler.notifyException(e, false, false);
                 } finally {                    
                     // II. refresh cache
-                    cache.refreshAsync(file);                            
+                        cache.refreshAsync(file);                            
+                    }                     
                 }   
-            }
         });
     }
 
