@@ -105,7 +105,20 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         return delegate.getDisplayName();
     }
     
-    private void changeAttribute(Document doc, String attributeName, String attributeValue) throws BadLocationException {
+
+    /**
+     * Replaces the value of the given attribute with the given value. If the specified
+     * attribute was not found and <code>addAfter</code> is specified, adds the attribute.
+     * @param doc the doc representing a yaml file
+     * @param attributeName the name of the attribute to replace
+     * @param attributeValue the value for the attribute
+     * @param addAfter the name of the attribute after which the specified <code>attributeName</code>
+     * should be created. May be <code>null</code> in which case the attribute is not created 
+     * if it does not exist already. A non-null <code>addAfter</code> has no effect if
+     * the attribute already exists.
+     * @throws javax.swing.text.BadLocationException
+     */
+    private void changeAttribute(Document doc, String attributeName, String attributeValue, String addAfter) throws BadLocationException {
         Parameters.notWhitespace("attributeName", attributeName); //NOI18N
         if (attributeValue == null || "".equals(attributeValue.trim())) {
             // assume the default generated values are preferred
@@ -114,14 +127,18 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         String text = doc.getText(0, doc.getLength());
         int attributeNameIndex = text.indexOf(attributeName);
         if (attributeNameIndex == -1) {
-            // can't do much
-            return;
+            if (addAfter != null) {
+                RailsAdapters.addProperty(doc, attributeName, attributeValue, addAfter);
+            } else {
+                // can't do much
+                return;
+            }
         }
         int attributeNameEndIndex = attributeNameIndex + attributeName.length();
         int attributeValuelength = 0;
         for (int i = attributeNameEndIndex; i < text.length(); i++) {
             if ((text.charAt(i)) == '\n') {
-                break;
+                break;  
             } else {
                 attributeValuelength++;
             }
@@ -140,8 +157,10 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 if (ec != null) {
                     Document doc = ec.openDocument();
                     setDatabase(doc);
-                    changeAttribute(doc, "username:", userName); //NOI18N
-                    changeAttribute(doc, "password:", password); //NOI18N
+                    // see #132383 - need to force the creation of these attributes
+                    // for the javadb adapter
+                    changeAttribute(doc, "username:", userName, "url:"); //NOI18N
+                    changeAttribute(doc, "password:", password, "username:"); //NOI18N
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
                     if (sc != null) {
                         sc.save();
@@ -164,14 +183,14 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         JdbcInfo jdbcInfo = getJdbcInfo();
         if (!jdbc || jdbcInfo == null) {
             // not using jdbc, so just set the database
-            changeAttribute(databaseYml, "database:", database); //NOI18N
+            changeAttribute(databaseYml, "database:", database, null); //NOI18N
             return;
         }
         // use the default database name if none was specified
         String dbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:");
 
         // change the adapter
-        changeAttribute(databaseYml, "adapter:", "jdbc"); //NOI18N
+        changeAttribute(databaseYml, "adapter:", "jdbc", null); //NOI18N
         // add url and driver
         RailsAdapters.addProperty(databaseYml, "url:", jdbcInfo.getURL("localhost", dbName), "adapter:");
         RailsAdapters.addProperty(databaseYml, "driver:", jdbcInfo.getDriverClass(), "adapter:");
