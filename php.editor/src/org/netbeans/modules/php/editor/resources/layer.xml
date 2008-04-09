@@ -70,6 +70,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.indent.PHPBracketCompleter"/>
                 </file>
                 
+                <file name="renamer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.InstantRenamerImpl"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>
