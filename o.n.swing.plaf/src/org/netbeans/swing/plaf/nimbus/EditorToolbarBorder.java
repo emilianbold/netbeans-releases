@@ -38,58 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.timers;
-
-import java.awt.Component;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import org.openide.explorer.view.NodeRenderer;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-
-/** Renderer for various NetBeans objects.
+/*
+ * EditorToolbarBorder.java
  *
- * @author Jaroslav Tulach
+ * Created on March 14, 2004, 4:38 AM
  */
-final class ObjectListRenderer extends DefaultListCellRenderer {
 
-    private NodeRenderer r;
+package org.netbeans.swing.plaf.nimbus;
 
-    ObjectListRenderer() {
-        super();
-        r = new NodeRenderer();
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
+
+/**
+ *
+ * @author  David Simonek
+ */
+public class EditorToolbarBorder extends AbstractBorder {
+    private static final Insets insets = new Insets(0, 0, 1, 0);
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+        Color borderC = UIManager.getColor("controlDarkShadow");
+        g.setColor(borderC);
+        g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
     }
 
     @Override
-    public Component getListCellRendererComponent(JList list, Object wr, int index, boolean isSelected, boolean cellHasFocus) {
-        Object value = ((WeakReference) wr).get();
-        if (value instanceof FileObject) {
-            try {
-                FileObject fo = (FileObject) value;
-                value = DataObject.find(fo);
-            } catch (IOException e) {
-                FileObject fo = (FileObject) value;
-                value = "FO: " + fo;
-            }
-        }
-        
-        if (value instanceof DataObject) {
-            DataObject obj = (DataObject)value;
-            if (obj.isValid()) {
-                value = obj.getNodeDelegate();
-            } else {
-                value = obj.getName();
-            }
-        }
-        
-        if (value instanceof Node) {
-            Node node = (Node)value;
-            return r.getListCellRendererComponent(list, node, index, isSelected, cellHasFocus);
-        }
-
-        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-    }
+    public Insets getBorderInsets(Component c) {
+        return insets;
+    }    
 }

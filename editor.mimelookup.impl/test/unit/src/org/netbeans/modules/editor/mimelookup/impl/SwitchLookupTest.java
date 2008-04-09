@@ -83,6 +83,10 @@ public class SwitchLookupTest extends NbTestCase {
     }
     
     public void testSimple() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/text/x-java/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.sleepForWhile();
 
@@ -101,6 +105,10 @@ public class SwitchLookupTest extends NbTestCase {
     }
     
     public void testAddingMimePath() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         // Create lookup over a non-existing mime path
         Lookup lookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
         Lookup.Result result = lookup.lookupResult(DummySetting.class);
@@ -125,6 +133,10 @@ public class SwitchLookupTest extends NbTestCase {
     }
 
     public void testRemovingMimePath() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         // Create the mime path folders and add some instance
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/text/x-java/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.sleepForWhile();
@@ -156,6 +168,10 @@ public class SwitchLookupTest extends NbTestCase {
     // but instances from higher levels are visible in lower levels
     
     public void testHierarchyInheritance() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         // Create the mime path folders and add some instance
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/text/x-java/");
@@ -177,6 +193,10 @@ public class SwitchLookupTest extends NbTestCase {
     }
 
     public void testHierarchyRootInheritance() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         // Create the mime path folders and add some instance
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/text/x-java/");
         TestUtilities.createFile(getWorkDir(), "Editors/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
@@ -205,6 +225,10 @@ public class SwitchLookupTest extends NbTestCase {
     }
     
     public void testHierarchyLeaks() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         // Create the mime path folders and add some instance
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/");
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/text/x-java/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
@@ -242,6 +266,10 @@ public class SwitchLookupTest extends NbTestCase {
     // test that instances of a class with a Class2LayerFolder provider are really read from the proper folder
     
     public void testReadFromSpecialFolders() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.createFile(getWorkDir(), "Services/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
         TestUtilities.sleepForWhile();
@@ -256,6 +284,10 @@ public class SwitchLookupTest extends NbTestCase {
     // test that adding/removing a Class2LayerFolder provider updates the lookup for its class
     
     public void testChangeInMappers() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.sleepForWhile();
 
