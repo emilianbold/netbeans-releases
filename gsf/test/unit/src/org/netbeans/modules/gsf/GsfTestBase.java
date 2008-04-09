@@ -2036,7 +2036,6 @@ public abstract class GsfTestBase extends NbTestCase {
         List<Object> validNodes = new ArrayList<Object>();
         List<Object> invalidNodes = new ArrayList<Object>();
         Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
-        Map<Object,String> descriptions = new HashMap<Object,String>();
         initializeNodes(info, validNodes, positions, invalidNodes);
 
         BaseDocument doc = (BaseDocument) info.getDocument();
@@ -2097,10 +2096,6 @@ public abstract class GsfTestBase extends NbTestCase {
             list.add(node);
         }
         
-//        Map<Node,OffsetRange> nodes = new HashMap<Node,OffsetRange>(100);
-//        Map<Node,String> descriptions = new HashMap<Node,String>(100);
-//        setRanges(root, starts, ends, nodes, descriptions, (BaseDocument)doc);
-
         // Sort nodes
         for (List<Object> list : starts.values()) {
             Collections.sort(list, FORWARDS_COMPARATOR);
@@ -2109,7 +2104,7 @@ public abstract class GsfTestBase extends NbTestCase {
             Collections.sort(list, BACKWARDS_COMPARATOR);
         }
         
-//        // Include 0-0 nodes first
+        // Include 0-0 nodes first
         List<String> missing = new ArrayList<String>();
         for (Object n : invalidNodes) {
             String desc = describeNode(info, n, true);
@@ -2140,6 +2135,151 @@ public abstract class GsfTestBase extends NbTestCase {
                 for (Object n : ns) {
                     sb.append("</");
                     String desc = describeNode(info, n, false);
+                    assertNotNull(desc);
+                    sb.append(desc);
+                    sb.append(">");
+                }
+            }
+            char c = text.charAt(i);
+            switch (c) {
+            case '&': sb.append("&amp;"); break;
+            case '<': sb.append("&lt;"); break;
+            case '>': sb.append("&gt;"); break;
+            default:
+                sb.append(c);
+            }
+        }
+
+        return sb.toString();
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Type Test
+    ////////////////////////////////////////////////////////////////////////////
+    protected void initializeTypeNodes(CompilationInfo info, List<Object> nodes,
+            Map<Object,OffsetRange> positions, Map<Object,String> types) throws Exception {
+        // Override in your test
+        // Associate type descriptions with a bunch of nodes.
+        // For every node that has an associated type, add position and description information about it.
+        // This will then be used to generate type hints in the source
+    }
+    
+    protected void checkTypes(String relFilePath) throws Exception {
+        checkTypes(relFilePath, null);
+    }
+    
+    protected void checkTypes(String relFilePath, String caretLine) throws Exception {
+        GsfTestCompilationInfo info = getInfo(relFilePath);
+        
+        String text = info.getText();
+        assertNotNull(text);
+
+        int caretOffset = -1;
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue(lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
+            info.setCaretOffset(caretOffset);
+        }
+
+        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        assertNotNull(pr);
+
+        List<Object> nodes = new ArrayList<Object>();
+        Map<Object,String> types = new HashMap<Object,String>();
+        Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
+        initializeTypeNodes(info, nodes, positions, types);
+
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        String annotatedSource = annotateTypes(nodes, positions, types, info);
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".types");
+    }
+    
+    
+    /** Pass the nodes in an in-order traversal order such that it can properly nest
+     * items when they have identical starting or ending endpoints */
+    private String annotateTypes(List<Object> validNodes, Map<Object,OffsetRange> positions,
+            Map<Object,String> types, CompilationInfo info) throws Exception {
+        //
+        StringBuilder sb = new StringBuilder();
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        String text = doc.getText(0, doc.getLength());
+
+        final Map<Object,Integer> traversalNumber = new HashMap<Object,Integer>();
+        int id = 0;
+        for (Object node : validNodes) {
+            traversalNumber.put(node, id++);
+        }
+                
+        Comparator<Object> FORWARDS_COMPARATOR = new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
+                assertTrue(traversalNumber.containsKey(o1));
+                assertTrue(traversalNumber.containsKey(o2));
+                
+                return traversalNumber.get(o1) - traversalNumber.get(o2);
+            }
+        };
+
+        Comparator<Object> BACKWARDS_COMPARATOR = new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
+                assertTrue(traversalNumber.containsKey(o1));
+                assertTrue(traversalNumber.containsKey(o2));
+                
+                return traversalNumber.get(o2) - traversalNumber.get(o1);
+            }
+        };
+        
+        Map<Integer,List<Object>> starts = new HashMap<Integer,List<Object>>(100);
+        Map<Integer,List<Object>> ends = new HashMap<Integer,List<Object>>(100);
+    
+        for (Object node : validNodes) {
+            OffsetRange range = positions.get(node);
+            List<Object> list = starts.get(range.getStart());
+            if (list == null) {
+                list = new ArrayList<Object>();
+                starts.put(range.getStart(), list);
+            }
+            list.add(node);
+            list = ends.get(range.getEnd());
+            if (list == null) {
+                list = new ArrayList<Object>();
+                ends.put(range.getEnd(), list);
+            }
+            list.add(node);
+        }
+        
+        // Sort nodes
+        for (List<Object> list : starts.values()) {
+            Collections.sort(list, FORWARDS_COMPARATOR);
+        }
+        for (List<Object> list : ends.values()) {
+            Collections.sort(list, BACKWARDS_COMPARATOR);
+        }
+        
+        // TODO - include information here about nodes without correct positions
+        
+        for (int i = 0; i < text.length(); i++) {
+            if (starts.containsKey(i)) {
+                List<Object> ns = starts.get(i);
+                for (Object n : ns) {
+                    sb.append("<");
+                    String desc = types.get(n);
+                    //String desc = describeNode(info, n, false);
+                    assertNotNull(desc);
+                    sb.append(desc);
+                    sb.append(">");
+                }
+            }
+            if (ends.containsKey(i)) {
+                List<Object> ns = ends.get(i);
+                for (Object n : ns) {
+                    sb.append("</");
+                    //String desc = describeNode(info, n, false);
+                    String desc = types.get(n);
                     assertNotNull(desc);
                     sb.append(desc);
                     sb.append(">");

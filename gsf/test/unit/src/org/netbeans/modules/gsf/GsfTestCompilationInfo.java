@@ -57,9 +57,11 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     protected Source source;
     protected int caretOffset = -1;
     protected Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
+    protected GsfTestBase test;
     
-    public GsfTestCompilationInfo(FileObject fileObject, BaseDocument doc, String text) throws IOException {
+    public GsfTestCompilationInfo(GsfTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
         super(fileObject);
+        this.test = test;
         this.text = text;
         assert text != null;
         this.doc = doc;
@@ -83,6 +85,7 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     }
 
     public Index getIndex(String mimeType) {
+        test.initializeRegistry();
         ClasspathInfo cpi = source.getClasspathInfo();
         if (cpi != null) {
             return cpi.getClassIndex(mimeType);
@@ -106,7 +109,7 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
         }
     }
 
-    protected abstract String getPreferredMimeType();
+    public abstract String getPreferredMimeType();
     
     @Override
     public abstract ParserResult getEmbeddedResult(String embeddedMimeType, int offset);

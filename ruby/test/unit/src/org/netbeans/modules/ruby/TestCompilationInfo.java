@@ -44,14 +44,11 @@ import org.openide.filesystems.FileObject;
  * @author tor
  */
 class TestCompilationInfo extends GsfTestCompilationInfo {
-    private RubyTestBase test;
-    
     public TestCompilationInfo(RubyTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
-        super(fileObject, doc, text);
-        this.test = test;
+        super(test, fileObject, doc, text);
     }
     
-    protected String getPreferredMimeType() {
+    public String getPreferredMimeType() {
         return RubyMimeResolver.RUBY_MIME_TYPE;
     }
     

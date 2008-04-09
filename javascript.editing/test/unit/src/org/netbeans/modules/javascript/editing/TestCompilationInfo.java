@@ -45,11 +45,8 @@ import org.openide.filesystems.FileObject;
  * @author tor
  */
 class TestCompilationInfo extends GsfTestCompilationInfo {
-    private JsTestBase test;
-    
     public TestCompilationInfo(JsTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
-        super(fileObject, doc, text);
-        this.test = test;
+        super(test, fileObject, doc, text);
     }
     
     @Override
@@ -78,7 +75,7 @@ TranslatedSource translatedSource = null; // TODO
         return embeddedResults.get(embeddedMimeType);
     }
 
-    protected String getPreferredMimeType() {
+    public String getPreferredMimeType() {
         return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 }
