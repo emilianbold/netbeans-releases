@@ -105,6 +105,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         setPreferredSize(MINIMUM_SIZE);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         expandServers(initialInstance);
@@ -295,62 +296,21 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
         Node[] nodes = getExplorerManager().getSelectedNodes();
-        //assert nodes.length != 1 : "Illegal number of selected nodes"; // NOI18N
-        LOGGER.log(Level.FINE, "----Remove");
 
         if (nodes[0] instanceof ServerNode) {
             ServerInstance serverInstance = ((ServerNode) nodes[0]).getServerInstance();
             if (serverInstance.isRemovable()) {
-                LOGGER.log(Level.FINE, "Removing node");
                 serverInstance.remove();
-                LOGGER.log(Level.FINE, "Node removed");
-                LOGGER.log(Level.FINE, "Calling refresh");
                 getChildren().refresh();
-//                new Thread() {
-//
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Thread.sleep(5000);
-//                        } catch (InterruptedException ex) {}
-//                        SwingUtilities.invokeLater(new Runnable() {
-//                            public void run() {
-//                                expandServers(null);
-//                            }
-//                        });
-
-//                    }
-//
-//                }.start();
-                //LOGGER.log(Level.FINE, "Refresh called");
-                LOGGER.log(Level.FINE, "Expanding servers");
                 expandServers(null);
-                //LOGGER.log(Level.FINE, "Servers expanded");
             }
         }
-        LOGGER.log(Level.FINE, "----Remove finish");
     }//GEN-LAST:event_removeServer
 
     private void addServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServer
         final ServerInstance instance = AddServerInstanceWizard.showAddServerInstanceWizard();
         if (instance != null) {
             getChildren().refresh();
-//                new Thread() {
-//
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Thread.sleep(5000);
-//                        } catch (InterruptedException ex) {}
-//                        SwingUtilities.invokeLater(new Runnable() {
-//                            public void run() {
-//                                expandServers(instance);
-//                            }
-//                        });
-//
-//                    }
-//
-//                }.start();
             expandServers(instance);
         }
     }//GEN-LAST:event_addServer
@@ -432,38 +392,31 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     }
 
     private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
-        //btv.expandNode(node);
-
         Children ch = node.getChildren();
-        //LOGGER.log(Level.FINE, "children: " + ch);
 
         // preselect node for the specified server instance
         if (servInst != null && ch == Children.LEAF && node instanceof ServerNode) {
             try {
-                //LOGGER.log(Level.FINE, "preselect server");
                 if (((ServerNode)node).getServerInstance() == servInst) {
                     mgr.setSelectedNodes(new Node[] {node});
                 }
             } catch (PropertyVetoException e) {
-                //Ignore it
-                e.printStackTrace();
+                // Ignore it
+                LOGGER.log(Level.FINE, null, e);
             }
         }
 
         // preselect first server
         if (servInst == null && ch == Children.LEAF && mgr.getSelectedNodes().length == 0) {
             try {
-                //LOGGER.log(Level.FINE, "preselect first");
                 mgr.setSelectedNodes(new Node[] {node});
             } catch (PropertyVetoException e) {
                 //Ignore it
-                e.printStackTrace();
+                LOGGER.log(Level.FINE, null, e);
             }
         }
         Node nodes[] = ch.getNodes( true );
-        //LOGGER.log(Level.FINE, "children nodes: " + nodes.length);
         for ( int i = 0; i < nodes.length; i++ ) {
-            //LOGGER.log(Level.FINE, "child node: " + nodes[i].getDisplayName());
             expandAllNodes( btv, nodes[i], mgr, servInst);
         }
     }
