@@ -18,13 +18,16 @@
  */
 package org.netbeans.modules.xml.xpath.ext.schema;
 
+import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
+import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalGroup;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GroupReference;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
@@ -58,6 +61,21 @@ public class GetNameVisitor extends DefaultSchemaVisitor {
     }
     
     // ----------------------------------------------
+    
+    @Override
+    public void visit(AnyElement any) {
+        mResultName = "Any";
+    }
+    
+    @Override
+    public void visit(GlobalSimpleType gst) {
+        mResultName = gst.getName();
+    }
+    
+    @Override
+    public void visit(GlobalComplexType gt) {
+        mResultName = gt.getName();
+    }
     
     @Override
     public void visit(LocalAttribute la) {
