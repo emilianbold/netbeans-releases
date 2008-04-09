@@ -83,6 +83,10 @@ public class WsFromJavaGUIPanel1 extends javax.swing.JPanel {
                 .add(jCheckBox1)
                 .addContainerGap(270, Short.MAX_VALUE))
         );
+
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel1.class, "WsFromJavaGUIPanel1.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel1.class, "WsFromJavaGUIPanel1.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

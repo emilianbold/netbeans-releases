@@ -126,6 +126,11 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
                     .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(254, Short.MAX_VALUE))
         );
+
+        tfWsdlUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.tfWsdlUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

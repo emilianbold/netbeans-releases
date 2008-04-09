@@ -168,6 +168,14 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                 .add(jLabel2)
                 .addContainerGap(158, Short.MAX_VALUE))
         );
+
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton2.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
