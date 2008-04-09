@@ -243,7 +243,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src,  -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                File f= new File(installRoot + "/modules/" + COMET_JAR_LIB);
+                File f= new File(installRoot + "/modules/" + COMET_JAR_LIB); 
 
                 libraryList.add(f.toURL());
 
