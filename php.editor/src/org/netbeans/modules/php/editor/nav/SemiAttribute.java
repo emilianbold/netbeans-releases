@@ -274,7 +274,7 @@ public class SemiAttribute extends DefaultVisitor {
                 }
 
                 if (ce != null) {
-                    thisEl = ce.enclosedElements.lookup(name, Kind.FUNC);
+                    thisEl = ce.lookup(name, Kind.FUNC);
                 }
             } else {
                 thisEl = lookup(name, Kind.FUNC);
@@ -602,6 +602,20 @@ public class SemiAttribute extends DefaultVisitor {
         
         public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
             super(n, name, k);
+        }
+        
+        public AttributedElement lookup(String name, Kind k) {
+            AttributedElement el = enclosedElements.lookup(name, k);
+
+            if (el != null) {
+                return el;
+            }
+
+            if (superClass != null) {
+                return superClass.lookup(name, k);
+            }
+            
+            return null;
         }
     }
     

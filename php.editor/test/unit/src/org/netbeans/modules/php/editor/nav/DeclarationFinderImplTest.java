@@ -250,6 +250,19 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testGoToinherited() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "class foo {\n" +
+                                         "    ^function test() {}\n" +
+                                         "}\n" +
+                                         "class bar extends foo {\n" +
+                                         "}\n" +
+                                         "$r = new bar();\n" +
+                                         "$r->te|st();" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         
