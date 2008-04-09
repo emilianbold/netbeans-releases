@@ -383,6 +383,7 @@ public class JsPretty {
         } else {
             if (node.getType() == Token.REGEXP && node.getSourceEnd() > ts.offset()) {
                 // skip regexp
+                acceptOffset(node.getSourceStart());
                 ts.move(node.getSourceEnd());
                 ts.moveNext();
                 return;

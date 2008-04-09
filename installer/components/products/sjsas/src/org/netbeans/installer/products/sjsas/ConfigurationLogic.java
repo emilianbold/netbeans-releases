@@ -138,6 +138,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileUtils.modifyFile(new File(directory, SAMPLES_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, BLUEPRINTS_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
+            //ping UC on Tuesdays
+            map.put("never", "TUE");//NOI18N
             FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
 
         } catch (IOException e) {

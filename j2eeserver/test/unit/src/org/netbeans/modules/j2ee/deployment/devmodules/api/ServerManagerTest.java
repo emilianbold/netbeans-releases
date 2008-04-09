@@ -52,15 +52,6 @@ public class ServerManagerTest extends NbTestCase {
         super(name);
     }
     
-    public void testShowCustomizer() throws Exception {
-        try {
-            ServerManager.showCustomizer(null);
-            fail("IllegalThreadStateException should be thrown");
-        } catch (IllegalThreadStateException e) {
-            // expected
-        }
-    }
-    
     public void testShowAddServerInstanceWizard() throws Exception {
         try {
             ServerManager.showAddServerInstanceWizard();

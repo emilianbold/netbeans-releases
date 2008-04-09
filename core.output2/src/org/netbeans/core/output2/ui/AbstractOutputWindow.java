@@ -73,7 +73,6 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         pane.addChangeListener(this);
         pane.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, this);
         setFocusable(true);
-        setBackground(UIManager.getColor("text")); //NOI18N
         toolbar = new JToolBar();
         toolbar.setOrientation(JToolBar.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
