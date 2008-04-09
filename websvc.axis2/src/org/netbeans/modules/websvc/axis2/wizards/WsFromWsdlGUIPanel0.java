@@ -90,9 +90,11 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
         tfWsdlUrl = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(tfWsdlUrl);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.jLabel1.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.text")); // NOI18N
+        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.browseButton.actionCommand")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);

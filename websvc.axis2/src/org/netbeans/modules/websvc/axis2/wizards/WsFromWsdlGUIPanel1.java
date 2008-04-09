@@ -124,22 +124,27 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         jTextArea1 = new javax.swing.JTextArea();
         optionsLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel1.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel2.text")); // NOI18N
+        jLabel2.setLabelFor(jComboBox2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel2.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel3.text")); // NOI18N
+        jLabel3.setLabelFor(jComboBox3);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel3.text")); // NOI18N
 
         jCheckBox1.setSelected(true);
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jCheckBox1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jCheckBox1.text")); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel4.text")); // NOI18N
+        jLabel4.setLabelFor(tfPackageName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jLabel4.text")); // NOI18N
 
         jTextArea2.setColumns(10);
         jTextArea2.setRows(5);
         jScrollPane2.setViewportView(jTextArea2);
 
-        moreOptionsLabel.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.moreOptionsLabel.text")); // NOI18N
+        moreOptionsLabel.setLabelFor(jTextArea2);
+        org.openide.awt.Mnemonics.setLocalizedText(moreOptionsLabel, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.moreOptionsLabel.text")); // NOI18N
 
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
@@ -149,7 +154,8 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         jTextArea1.setOpaque(false);
         jScrollPane1.setViewportView(jTextArea1);
 
-        optionsLabel.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.optionsLabel.text")); // NOI18N
+        optionsLabel.setLabelFor(jTextArea1);
+        org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.optionsLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
