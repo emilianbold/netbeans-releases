@@ -39,12 +39,10 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -57,13 +55,9 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
     private static final long serialVersionUID = -38388194985L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final Color defaultColor;
-    private final Color errorColor;
 
     OptionsPanelVisual(String originalEncoding) {
         initComponents();
-        defaultColor = indexUrlTextField.getForeground();
-        errorColor = UIManager.getColor("nb.errorForeground");
         init(originalEncoding);
     }
 
@@ -97,8 +91,6 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
         encodingLabel = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
         indexFileLabel = new javax.swing.JLabel();
-        indexUrlLabel = new javax.swing.JLabel();
-        indexUrlTextField = new javax.swing.JTextField();
 
         setAsMainCheckBox.setSelected(true);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/wizards/Bundle"); // NOI18N
@@ -117,33 +109,24 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
         indexFileLabel.setLabelFor(indexNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(OptionsPanelVisual.class, "LBL_IndexFile")); // NOI18N
 
-        indexUrlLabel.setLabelFor(indexUrlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexUrlLabel, org.openide.util.NbBundle.getMessage(OptionsPanelVisual.class, "LBL_IndexUrl")); // NOI18N
-
-        indexUrlTextField.setEditable(false);
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(setAsMainCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(indexFileLabel)
-                            .add(indexUrlLabel)
-                            .add(encodingLabel))
-                        .add(12, 12, 12)
+                            .add(encodingLabel)
+                            .add(indexFileLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(0, 0, 0)
-                                .add(encodingComboBox, 0, 193, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                                .add(indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(createIndexCheckBox))
-                            .add(indexUrlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
-                    .add(setAsMainCheckBox))
+                            .add(encodingComboBox, 0, 190, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -151,12 +134,8 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indexFileLabel)
-                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(createIndexCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(indexUrlLabel)
-                    .add(indexUrlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(createIndexCheckBox)
+                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(encodingLabel)
@@ -182,8 +161,6 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexNameTextField;
-    private javax.swing.JLabel indexUrlLabel;
-    private javax.swing.JTextField indexUrlTextField;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -201,11 +178,6 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
 
     void setIndexName(String indexName) {
         indexNameTextField.setText(indexName);
-    }
-
-    void setUrlPreview(String urlPeview, boolean error) {
-        indexUrlTextField.setText(urlPeview);
-        indexUrlTextField.setForeground(error ? errorColor : defaultColor);
     }
 
     Charset getEncoding() {
