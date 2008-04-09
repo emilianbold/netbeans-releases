@@ -36,7 +36,6 @@ import org.netbeans.modules.php.rt.utils.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -55,6 +54,10 @@ public abstract class AbstractCommand implements Command {
         initActionFiles();
     }
 
+    public boolean isSaveRequired() {
+	return false;
+    }
+        
     /**
      * If true, this action should be performed asynchronously in a private thread.
      * If false, it will be performed synchronously as called in the event thread.

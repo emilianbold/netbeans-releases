@@ -95,6 +95,24 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "?>");
     }
     
+    public void testOccurrencesDefines() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "echo \"fff\".test.\"dddd\";\n" +
+                               "define('^test^', 'testttttt');\n" +
+                               "echo \"fff\".^te|st^.\"dddd\";\n" +
+                               "echo \"fff\".^test^.\"dddd\";\n" +
+                               "?>");
+    }
+    
+    public void test132230() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "function a() {\n" +
+                               "    global ^$f^;\n" +
+                               "    ^$|f^['s']();\n" +
+                               "}\n" +
+                               "?>");
+    }
+    
     private void performTestOccurrences(String code) throws Exception {
         int caretOffset = code.replaceAll("\\^", "").indexOf('|');
         String[] split = code.replaceAll("\\|", "").split("\\^");

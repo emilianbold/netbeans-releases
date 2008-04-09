@@ -201,6 +201,25 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testDefines1() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "define(^'test', 'test');\n" +
+                                         "echo \"a\".te|st.\"b\";\n" +
+                                         "?>");
+    }
+    
+    public void testDefines2() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "include \"testa.php\";\n" +
+                                         "echo \"a\".te|st.\"b\";\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "define(^'test', 'test');\n" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         

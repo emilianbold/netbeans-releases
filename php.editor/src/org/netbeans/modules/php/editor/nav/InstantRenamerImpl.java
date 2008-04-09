@@ -37,37 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
-
-import org.netbeans.modules.gsf.api.ElementKind;
+package org.netbeans.modules.php.editor.nav;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  *
- * @author Tor Norbye
+ * @author Jan Lahoda
  */
-public class IndexedPackage extends IndexedElement {
-    
-    IndexedPackage(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
-    }
-    
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
+public class InstantRenamerImpl implements InstantRenamer {
+
+    public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
+        //XXX: implement me:
+        return true;
     }
 
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            signature = sb.toString();
-        }
-
-        return signature;
+    public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
+        return new HashSet<OffsetRange>(OccurrencesFinderImpl.compute(info, caretOffset));
     }
+
 }

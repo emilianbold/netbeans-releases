@@ -72,6 +72,7 @@ public class PhpProjectProperties {
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
     public static final String URL = "url"; // NOI18N
+    public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     // XXX will be replaced with global ide include path
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
@@ -85,6 +86,7 @@ public class PhpProjectProperties {
     private String copySrcFiles;
     private String copySrcTarget;
     private String url;
+    private String indexFile;
     private String encoding;
 
     // CustomizerPhpIncludePath
@@ -154,6 +156,17 @@ public class PhpProjectProperties {
         this.url = url;
     }
 
+    public String getIndexFile() {
+        if (indexFile == null) {
+            indexFile = project.getEvaluator().getProperty(INDEX_FILE);
+        }
+        return indexFile;
+    }
+
+    public void setIndexFile(String indexFile) {
+        this.indexFile = indexFile;
+    }
+
     public DefaultListModel getIncludePathListModel() {
         if (includePathListModel == null) {
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -212,6 +225,9 @@ public class PhpProjectProperties {
         }
         if (url != null) {
             projectProperties.setProperty(URL, url);
+        }
+        if (indexFile != null) {
+            projectProperties.setProperty(INDEX_FILE, indexFile);
         }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);

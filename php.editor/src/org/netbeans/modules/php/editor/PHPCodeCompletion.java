@@ -68,6 +68,7 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -98,6 +99,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -182,7 +184,10 @@ public class PHPCodeCompletion implements Completable {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
-        result.getProgram();
+        
+        if (result.getProgram() == null){
+            return Collections.<CompletionProposal>emptyList();
+        }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
         
@@ -209,9 +214,10 @@ public class PHPCodeCompletion implements Completable {
                 proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
                 break;
             case CLASS_MEMBER:
-                autoCompleteClassMembers(proposals, request);
+                autoCompleteClassMembers(proposals, request, false);
                 break;
             case STATIC_CLASS_MEMBER:
+                autoCompleteClassMembers(proposals, request, true);
                 break;
         }
         
@@ -219,12 +225,13 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedConstant clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
     
-    private void autoCompleteClassMembers(List<CompletionProposal> proposals, CompletionRequest request) {
+    private void autoCompleteClassMembers(List<CompletionProposal> proposals,
+            CompletionRequest request, boolean staticContext) {
         try {
             TokenHierarchy th = TokenHierarchy.get(request.info.getDocument());
             TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
@@ -248,18 +255,24 @@ public class PHPCodeCompletion implements Completable {
                     IndexedConstant var = localVars.toArray(new IndexedConstant[1])[0];
                     String typeName = var.getTypeName();
                     
-                    Collection<IndexedFunction> methods = request.index.getMethods(
+                    Collection<IndexedFunction> methods = request.index.getAllMethods(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
                     for (IndexedFunction method : methods){
-                        proposals.add(new FunctionItem(method, request));
+                        if (staticContext && method.isStatic() 
+                                || !staticContext && !method.isStatic()){
+                            proposals.add(new FunctionItem(method, request));
+                        }
                     }
                     
-                    Collection<IndexedConstant> properties = request.index.getProperties(
+                    Collection<IndexedConstant> properties = request.index.getAllProperties(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
                     for (IndexedConstant prop : properties){
-                        proposals.add(new VariableItem(prop, request));
+                        if (staticContext && prop.isStatic() 
+                                || !staticContext && !prop.isStatic()){
+                            proposals.add(new VariableItem(prop, request));
+                        }
                     }
                 }
             }
@@ -440,8 +453,9 @@ public class PHPCodeCompletion implements Completable {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
             
-            builder.append(String.format("<h1>%s</h1><p><font size=\"-1\">%s</font></p><br><br>", //NOI18N
-                    indexedElement.getName(), indexedElement.getFilenameUrl()));
+            builder.append(String.format("<font size=-1>%s</font>" +
+                    "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
+                    indexedElement.getFilenameUrl(), indexedElement.getName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             
@@ -458,23 +472,27 @@ public class PHPCodeCompletion implements Completable {
                         public void run(CompilationInfo ci) throws Exception {
                             ParserResult presult = ci.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE).iterator().next();
                             Program program = Utils.getRoot(presult.getInfo());
-                            ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
-                            Comment comment = Utils.getCommentForNode(program, node);
                             
-                            if (comment instanceof PHPDocBlock) {
-                                PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
-                                phpDoc.append(pHPDocBlock.getDescription());
-                                
-                                // list PHPDoc tags
-                                // TODO a better support for PHPDoc tags
-                                phpDoc.append("<br><br><table>\n"); //NOI18N
-                                
-                                for (PHPDocTag tag : pHPDocBlock.getTags()){
-                                    phpDoc.append(String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                                            tag.getKind().toString(), tag.getValue()));
+                            if (program != null) {
+                                ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                                Comment comment = Utils.getCommentForNode(program, node);
+
+                                if (comment instanceof PHPDocBlock) {
+                                    PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
+                                    phpDoc.append(pHPDocBlock.getDescription());
+
+                                    // list PHPDoc tags
+                                    // TODO a better support for PHPDoc tags
+                                    phpDoc.append("<br><br><br><table>\n"); //NOI18N
+
+                                    for (PHPDocTag tag : pHPDocBlock.getTags()) {
+                                        phpDoc.append(String.format("<tr><td>%s</td><td>%s</td></tr>\n", //NOI18N
+                                                tag.getKind().toString(), tag.getValue()));
+                                    }
+
+                                    phpDoc.append("</table>\n"); //NOI18N
+
                                 }
-                                
-                                phpDoc.append("</table>\n"); //NOI18N
                             }
 
                         }
@@ -488,8 +506,7 @@ public class PHPCodeCompletion implements Completable {
             if (phpDoc.length() > 0){
                 builder.append(phpDoc);
             } else {
-                //TODO localize me
-                builder.append("PHPDoc not found");
+                builder.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
             }
 
             return builder.toString();
@@ -620,7 +637,8 @@ public class PHPCodeCompletion implements Completable {
     }
 
     public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        return null;
+        //TODO: return the info for functions and methods
+        return ParameterInfo.NONE;
     }
 
     private boolean startsWith(String theString, String prefix) {
@@ -701,11 +719,8 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private class ClassItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
-
-        ClassItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            this.constant = constant;
+        ClassItem(IndexedClass clazz, CompletionRequest request) {
+            super(clazz, request);
         }
 
         @Override

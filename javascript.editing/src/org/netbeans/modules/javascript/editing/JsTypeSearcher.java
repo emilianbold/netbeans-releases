@@ -145,7 +145,7 @@ public class JsTypeSearcher implements TypeSearcher {
         Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
         Set<IndexedElement> elements;
         int dot = textForQuery.lastIndexOf('.');
-        if (dot != -1) {
+        if (dot != -1 && (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX)) {
             String prefix = textForQuery.substring(dot+1);
             String in = textForQuery.substring(0, dot);
             elements = index.getElements(prefix, in, kind, scope, null);

@@ -66,7 +66,7 @@ public class PHPDocCommentParserTest extends TestCase {
         super.tearDown();
     }
 
-    public void testEmpty() {
+    public void testEmpty() throws Exception {
         String comment = " ";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -75,7 +75,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("", block.getDescription());
     }
     
-    public void testEmpty2() {
+    public void testEmpty2() throws Exception {
         String comment = " *     ";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -84,7 +84,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("", block.getDescription());
     }
     
-    public void testDescriptionSimple() {
+    public void testDescriptionSimple() throws Exception {
         String comment = " simple";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -93,7 +93,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("simple", block.getDescription());
     }
     
-    public void testDescriptionOnly() {
+    public void testDescriptionOnly() throws Exception {
         String comment = " * hello this is a * very simple comment \n * and seccond line";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -102,7 +102,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("hello this is a * very simple comment\nand seccond line", block.getDescription());
     }
     
-    public void testNoDescriptionOneTag() {
+    public void testNoDescriptionOneTag() throws Exception {
         String comment = " * @author Petr";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -115,7 +115,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("Petr", tags.get(0).getValue());
     }
     
-    public void testNoDescriptionTwoTags() {
+    public void testNoDescriptionTwoTags() throws Exception {
         String comment = " * @author Petr  \n * @since 1.5";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -130,7 +130,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("1.5", tags.get(1).getValue());
     }
     
-    public void testNoDescriptionThreeTags() {
+    public void testNoDescriptionThreeTags() throws Exception {
         String comment = " * @author Petr  \n *    @since 1.5  \n *      @License mine";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -147,7 +147,7 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("mine", tags.get(2).getValue());
     }
     
-    public void testDescriptionTags() {
+    public void testDescriptionTags() throws Exception {
         String comment = " * hello this is a * very simple comment \n * and seccond line \n  * \n * last line of description\n * @link   http://www.seznam.cz   \n * @author";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
@@ -161,5 +161,13 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("http://www.seznam.cz", tags.get(0).getValue());
         assertEquals(PHPDocTag.Type.AUTHOR, tags.get(1).getKind());
         assertEquals("", tags.get(1).getValue());
+    }
+    
+    public void testDescriptionWithHtml() throws Exception {
+        String comment = "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)";
+        PHPDocCommentParser parser = new PHPDocCommentParser();
+
+        PHPDocBlock block = parser.parse(100, 150, comment);
+        assertNotNull(block);
     }
 }

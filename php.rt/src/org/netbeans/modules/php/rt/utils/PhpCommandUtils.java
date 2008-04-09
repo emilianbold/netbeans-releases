@@ -137,6 +137,20 @@ public class PhpCommandUtils {
         return false;
     }
     
+    public static boolean isInvokedForFolder(){
+        Map<Project, FileObject[]> projectToSrc 
+                = new HashMap<Project, FileObject[]>();
+        
+        FileObject[] files = getActionFiles();
+        for (FileObject fileObject : files) {
+            if (fileObject.isFolder()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    
     public static void saveAll(){
         // suggested by nb team as general approach
         // it seems that this will save files even in other projects.

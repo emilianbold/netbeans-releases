@@ -399,6 +399,14 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testTwoClasses() throws Exception {
         checkIndexer("testfiles/twoclasses.rb");
     }
+
+    public void testRails21Migrations1() throws Exception {
+        checkIndexer("testfiles/migrate/20070403225818_create_posts.rb");
+    }
+
+    public void testRails21Migrations2() throws Exception {
+        checkIndexer("testfiles/migrate/20080403222904_add_names.rb");
+    }
     
     // TODO - test :nodoc: on methods and classes!!!
 }

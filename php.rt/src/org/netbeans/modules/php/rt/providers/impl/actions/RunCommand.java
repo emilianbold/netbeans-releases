@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.rt.providers.impl.AbstractCommandProvider;
 import org.netbeans.modules.php.rt.providers.impl.AbstractProvider;
 import org.netbeans.modules.php.rt.providers.impl.HostImpl;
+import org.netbeans.modules.php.rt.providers.impl.local.LocalHostImpl;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.Host;
@@ -119,7 +120,20 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
     public void setActionFiles(FileObject[] files) {
 	if (getId().equals(RUN)) {
 	    if (getProject() != null) {
-		super.setActionFiles(new FileObject[]{getProject().getProjectDirectory()});
+                Host host = getProvider().findHost("defaultHost");//NOI18N
+                if (host != null) {
+                    String indexFile = (String) host.getProperty(LocalHostImpl.INDEX_FILE);
+                    if (indexFile != null) {
+			FileObject[] sources = getSourceObjects(getProject());
+			FileObject source = (sources != null && sources.length > 0) ? sources[0] : null;
+                        FileObject idxFo = source != null ? source.getFileObject(indexFile) : null;
+                        if (idxFo != null) {
+                            super.setActionFiles(new FileObject[]{idxFo});
+                            return;
+                        }
+                    }
+                }
+                super.setActionFiles(new FileObject[]{getProject().getProjectDirectory()});
 	    }
 	} else {
 	    super.setActionFiles(files);
@@ -138,13 +152,18 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
         return true;
     }
 
+    @Override
+    public boolean isSaveRequired() {
+	return true;
+    }
+
+    
     /* (non-Javadoc)
      * @see java.lang.Runnable#run()
      */
     public void run() {
         refresh();
         
-        saveProject();
         Host host = getHost();
         if (!checkHost(host)) {
             return;
