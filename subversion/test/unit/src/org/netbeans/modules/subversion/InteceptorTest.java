@@ -318,6 +318,44 @@ public class InteceptorTest extends NbTestCase {
         assertFalse(folder2.exists());
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());        
     }
+
+    public void testCreateNewFile() throws IOException, SVNClientException {
+        // init
+        File wc = new File(dataRootDir, "wc");
+        wc.mkdirs();        
+        svnimport(wc);               
+
+        File file = new File(wc, "file");
+        
+        // create
+        FileObject fo = FileUtil.toFileObject(wc);
+        fo.createData(file.getName());
+                                        
+        // test 
+        assertTrue(file.exists());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
+        waitALittleBit();        
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(file));                
+    }
+
+    public void testCreateNewFolder() throws IOException, SVNClientException {
+        // init
+        File wc = new File(dataRootDir, "wc");
+        wc.mkdirs();        
+        svnimport(wc);               
+
+        File folder = new File(wc, "folder");
+        
+        // create
+        FileObject fo = FileUtil.toFileObject(wc);
+        fo.createFolder(folder.getName());
+                                        
+        // test 
+        assertTrue(folder.exists());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());        
+        waitALittleBit();        
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(folder));                
+    }
     
     public void testRecreateDeletedFile() throws IOException, SVNClientException {
         // init
