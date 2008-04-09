@@ -43,11 +43,17 @@ package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.PackageElement;
@@ -65,6 +71,8 @@ import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -159,6 +167,56 @@ public class ClasspathInfoTest extends NbTestCase {
                 assertNotNull( "Declaration for " + packageName + " should not be null.", pd );
             }
         }
+    }
+    
+    
+    private static ClassPath createSourcePath (FileObject testBase) throws IOException {
+        FileObject root = testBase.createFolder("src");        
+        return ClassPathSupport.createClassPath(new FileObject[]{root});
+    }
+    
+    private static FileObject createJavaFile (FileObject root, String path, String content) throws IOException {
+        FileObject fo = FileUtil.createData(root, path);
+        final FileLock lock = fo.lock();
+        try {
+            PrintWriter out = new PrintWriter (new OutputStreamWriter (fo.getOutputStream()));
+            try {
+                out.print(content);
+            } finally {
+                out.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        return fo;
+    }
+    
+    private static void assertEquals (final String[] binNames,
+            final Iterable<JavaFileObject> jfos, final JavacFileManager fm) {
+        final Set<String> bs = new HashSet<String>();
+        bs.addAll(Arrays.asList(binNames));
+        for (JavaFileObject jfo : jfos) {
+            final String bn = fm.inferBinaryName (jfo);
+            assertNotNull(bn);
+            assertTrue(bs.remove(bn));
+        }
+        assertTrue(bs.isEmpty());
+        
+    }
+    
+    public void testMemoryFileManager () throws Exception {
+        final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
+        createJavaFile(scp.getRoots()[0], "org/me/Lib/java", "package org.me;\n class Lib {}\n");
+        final ClasspathInfo cpInfo = ClasspathInfo.create( bootPath, classPath, scp);
+        final JavacFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
+        Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+        assertEquals (new String[] {"org.me.Lib"}, jfos);
+        ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, "org.me.Main", "package org.me;\n class Main{}\n");        
+        jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+        assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos);
+        ClasspathInfoAccessor.getINSTANCE().unregisterVirtualSource(cpInfo, "org.me.Main");
+        jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+        assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
     }
 
 
