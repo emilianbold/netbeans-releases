@@ -134,7 +134,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");
     
-    private static final boolean SINGLE_THREAD_STEPPING = Boolean.getBoolean("netbeans.debugger.singleThreadStepping");
+    private static final boolean SINGLE_THREAD_STEPPING = !Boolean.getBoolean("netbeans.debugger.multiThreadStepping");
 
 
     // variables ...............................................................

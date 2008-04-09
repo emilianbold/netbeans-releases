@@ -263,7 +263,7 @@ public class CallStackTreeModel implements TreeModel {
                     refresh = true;
                 }
             }
-            if (propertyName == JPDAThreadImpl.PROP_SUSPENDED
+            if (propertyName == JPDAThread.PROP_SUSPENDED
                     && Boolean.TRUE.equals(e.getNewValue())) {
                 if (e.getSource() == debugger.getCurrentThread()) {
                     refresh = true;

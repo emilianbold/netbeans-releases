@@ -58,24 +58,29 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
     public final Object[] getChildren (Object o, int from, int to)
     throws UnknownTypeException {
         Object[] ch;
-        synchronized (childrenCache) {
-            //ch = (List) childrenCache.get(o);
-            ChildrenTree cht = childrenCache.get(o);
-            if (cht != null) {
-                ch = cht.getChildren();
-            } else {
-                ch = null;
+        boolean cache = cacheChildrenOf(o);
+        if (cache) {
+            synchronized (childrenCache) {
+                //ch = (List) childrenCache.get(o);
+                ChildrenTree cht = childrenCache.get(o);
+                if (cht != null) {
+                    ch = cht.getChildren();
+                } else {
+                    ch = null;
+                }
             }
-        }
+        } else ch = null;
         if (ch == null) {
             ch = computeChildren(o);
             if (ch == null) {
                 throw new UnknownTypeException (o);
             } else {
-                synchronized (childrenCache) {
-                    ChildrenTree cht = new ChildrenTree(o);
-                    cht.setChildren(ch);
-                    childrenCache.put(o, cht);
+                if (cache) {
+                    synchronized (childrenCache) {
+                        ChildrenTree cht = new ChildrenTree(o);
+                        cht.setChildren(ch);
+                        childrenCache.put(o, cht);
+                    }
                 }
             }
         }
@@ -93,6 +98,10 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
     }
     
     protected abstract Object[] computeChildren(Object node) throws UnknownTypeException;
+    
+    protected boolean cacheChildrenOf(Object node) {
+        return true;
+    }
     
     protected final void recomputeChildren() throws UnknownTypeException {
         synchronized (childrenCache) {

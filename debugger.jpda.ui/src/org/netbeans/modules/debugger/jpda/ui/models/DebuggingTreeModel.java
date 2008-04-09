@@ -40,20 +40,24 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
+import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -61,9 +65,11 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -74,6 +80,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private JPDADebugger debugger;
     private Listener            listener;
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
+    private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -86,6 +93,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
         if (parent instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) parent;
+            watchState(t);
             try {
                 return t.getCallStack();
             } catch (AbsentInformationException aiex) {
@@ -98,6 +106,15 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         throw new UnknownTypeException(parent.toString());
     }
 
+    @Override
+    protected boolean cacheChildrenOf(Object node) {
+        if (node instanceof JPDAThread) {
+            return false;
+        } else {
+            return super.cacheChildrenOf(node);
+        }
+    }
+    
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node instanceof CallStackFrame) {
             return 0;
@@ -265,6 +282,46 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
     }
 
+    
+    private void fireThreadStateChanged (Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.CHILDREN_MASK);
+        for (ModelListener ml : ls) {
+            ml.modelChanged (event);
+        }
+    }
+    
+    private void watchState(JPDAThread t) {
+        synchronized (threadStateListeners) {
+            if (!threadStateListeners.containsKey(t)) {
+                threadStateListeners.put(t, new ThreadStateListener(t));
+            }
+        }
+    }
+    
+    private class ThreadStateListener implements PropertyChangeListener {
+        
+        private Reference<JPDAThread> tr;
+        
+        public ThreadStateListener(JPDAThread t) {
+            this.tr = new WeakReference(t);
+            ((Customizer) t).addPropertyChangeListener(WeakListeners.propertyChange(this, t));
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED));
+            JPDAThread t = tr.get();
+            if (t != null) {
+                fireThreadStateChanged(t);
+            }
+        }
+    }
+    
+    
     
     /**
      * Defines model for one table view column. Can be used together with 

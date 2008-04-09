@@ -76,6 +76,10 @@ public interface JPDAThread {
     /** Thread state constant. */
     public static final int STATE_ZOMBIE = ThreadReference.THREAD_STATUS_ZOMBIE;
 
+    /**
+     * Suspended property of the thread. Fired when isSuspended() changes.
+     */
+    public static final String PROP_SUSPENDED = "suspended";
     /** Property name constant. */
     public static final String PROP_CALLSTACK = "callStack";
     /** Property name constant. */

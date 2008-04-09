@@ -77,11 +77,6 @@ import org.openide.util.NbBundle;
  */
 public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
-    /**
-     * Suspended property of the thread. Fired when isSuspended() changes.
-     */
-    public static final String PROP_SUSPENDED = "suspended";
-    
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
     private boolean             suspended;
