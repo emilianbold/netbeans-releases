@@ -39,51 +39,85 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Container;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.openide.util.Utilities;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 
 /**
  *
  * @author Dan
  */
-public class ClickableIcon extends JPanel implements MouseListener {
+class ClickableIcon extends JLabel implements MouseListener {
 
     private static final int STATE_NORMAL = 0;
     private static final int STATE_FOCUSED = 1;
     private static final int STATE_PRESSED = 2;
     
-    private JLabel label = new JLabel();
-    
-    private ImageIcon normalIcon;
-    private ImageIcon focusedIcon;
-    private ImageIcon pressedIcon;
+    private ImageIcon resumeIcon;
+    private ImageIcon focusedResumeIcon;
+    private ImageIcon pressedResumeIcon;
+    private ImageIcon suspendIcon;
+    private ImageIcon focusedSuspendIcon;
+    private ImageIcon pressedSuspendIcon;
     
     private int state;
+    private boolean isThreadSupended;
+    private JPDAThread jpdaThread;
     
-    ClickableIcon(ImageIcon normal, ImageIcon focused, ImageIcon pressed) {
-        this.normalIcon = normal;
-        this.focusedIcon = focused;
-        this.pressedIcon = pressed;
+    ClickableIcon(ImageIcon normalR, ImageIcon focusedR, ImageIcon pressedR,
+            ImageIcon normalS, ImageIcon focusedS, ImageIcon pressedS, JPDAThread jpdaThread) {
+        this.resumeIcon = normalR;
+        this.focusedResumeIcon = focusedR;
+        this.pressedResumeIcon = pressedR;
         
-        state = STATE_NORMAL;
+        this.suspendIcon = normalS;
+        this.focusedSuspendIcon = focusedS;
+        this.pressedSuspendIcon = pressedS;
         
-        label.setIcon(normal); // [TODO] compute the initial state
-        add(label);
+        isThreadSupended = jpdaThread.isSuspended();
+        this.jpdaThread = jpdaThread;
+    }
+
+    void initializeState() {
+        Rectangle rect = getBounds();
+        Point point = getParent().getMousePosition(true);
+        state = point != null && rect.contains(point) ? STATE_FOCUSED : STATE_NORMAL;
+        changeIcon();
         addMouseListener(this);
     }
     
-    ClickableIcon() {
-        this(new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/debugger/jpda/resources/package.gif")),
-            new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/debugger/jpda/resources/packageOpen.gif")),
-            new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/debugger/jpda/resources/ExprArguments.gif"))
-        );
+    private ImageIcon computeIcon() {
+        ImageIcon icon = null;
+        switch(state) {
+            case STATE_NORMAL:
+                icon = isThreadSupended ? resumeIcon : suspendIcon;
+            break;
+            case STATE_FOCUSED:
+                icon = isThreadSupended ? focusedResumeIcon : focusedSuspendIcon;
+            break;
+            case STATE_PRESSED:
+                icon = isThreadSupended ? pressedResumeIcon : pressedSuspendIcon;
+            break;
+        }
+        return icon;
+    }
+    
+    private void changeIcon() {
+        setIcon(computeIcon());
+    }
+    
+    private void invokeAction() {
+        if (isThreadSupended) {
+            jpdaThread.resume();
+        } else {
+            jpdaThread.suspend();
+        }
+        isThreadSupended = !isThreadSupended;
     }
     
     // **************************************************************************
@@ -94,30 +128,30 @@ public class ClickableIcon extends JPanel implements MouseListener {
     }
 
     public void mousePressed(MouseEvent e) {
-        label.setIcon(pressedIcon);
         state = STATE_PRESSED;
+        changeIcon();
     }
 
     public void mouseReleased(MouseEvent e) {
         if (state == STATE_PRESSED) {
-            label.setIcon(focusedIcon);
             state = STATE_FOCUSED;
+            changeIcon();
+            invokeAction();
         }
     }
 
     public void mouseEntered(MouseEvent e) {
         if ((e.getModifiers() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
-            label.setIcon(pressedIcon);
             state = STATE_PRESSED;
         } else {
-            label.setIcon(focusedIcon);
             state = STATE_FOCUSED;
         }
+        changeIcon();
     }
 
     public void mouseExited(MouseEvent e) {
-        label.setIcon(normalIcon);
         state = STATE_NORMAL;
+        changeIcon();
     }
 
 }

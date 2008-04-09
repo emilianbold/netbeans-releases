@@ -20,18 +20,25 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -45,13 +52,25 @@ import org.openide.windows.WindowManager;
  * @author  Dan
  */
 public class DebuggingView extends TopComponent implements org.openide.util.HelpCtx.Provider,
-       ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener  {
+       ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener {
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
+    private static final int ICON_WIDTH = 16;
     
-    private ExplorerManager manager = new ExplorerManager();
+    transient Color hitsPanelColor = new Color(233, 228, 199); // new Color(255, 255, 153);
+    private transient Color greenBarColor = new Color(189, 230, 170);
+    private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
+    
+    private transient ExplorerManager manager = new ExplorerManager();
     private transient ViewModelListener viewModelListener;
+
+    private transient ImageIcon resumeIcon;
+    private transient ImageIcon focusedResumeIcon;
+    private transient ImageIcon pressedResumeIcon;
+    private transient ImageIcon suspendIcon;
+    private transient ImageIcon focusedSuspendIcon;
+    private transient ImageIcon pressedSuspendIcon;
     
     private DebugTreeView treeView;
     private JPanel treePanel;
@@ -73,10 +92,18 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
         
         initComponents();
+    
+        resumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
+        focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
+        pressedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png"));
+        suspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png"));
+        focusedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png"));
+        pressedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png"));
         
         treeView = new DebugTreeView();
         treeView.setRootVisible(false);
-        //treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+//        treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+//        treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         treePanel = new ZebraPanel(12,12);
         mainPanel.add(treePanel, BorderLayout.CENTER);
@@ -85,7 +112,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treePanel.add(treeView, BorderLayout.CENTER);
         
         tapPanel = new TapPanel();
+        tapPanel.setBackground(hitsPanelColor);
         tapPanel.setOrientation(TapPanel.DOWN);
+        tapPanel.setExpanded(false);
         // tooltip
         KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
@@ -93,20 +122,22 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
         mainPanel.add(tapPanel, BorderLayout.SOUTH);
         
-        infoPanel = new InfoPanel();
+        infoPanel = new InfoPanel(tapPanel);
         tapPanel.add(infoPanel);
         
         manager.addPropertyChangeListener(this);
         treeView.addTreeExpansionListener(this);
+        TreeModel model = treeView.getTree().getModel();
+        model.addTreeModelListener(this);
         
-        Collection<Node> col1 = new ArrayList<Node>();
-        col1.add(new ElemNode("subnode 1", 4));
-        col1.add(new ElemNode("subnode 2", 6));
-        ElemNode rootNode = new ElemNode("root node", new ElemNodeChildren2(col1));
+//        Collection<Node> col1 = new ArrayList<Node>();
+//        col1.add(new ElemNode("subnode 1", 4));
+//        col1.add(new ElemNode("subnode 2", 6));
+//        ElemNode rootNode = new ElemNode("root node", new ElemNodeChildren2(col1));
 
-        sessionComboBox.removeAllItems();
-        sessionComboBox.addItem(rootNode.getDisplayName());
-        manager.setRootContext(rootNode);
+//        sessionComboBox.removeAllItems();
+//        sessionComboBox.addItem(rootNode.getDisplayName());
+//        manager.setRootContext(rootNode);
     }
  
     /** This method is called from within the constructor to
@@ -132,16 +163,17 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         mainPanel.setLayout(new java.awt.BorderLayout());
 
         leftPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
-        leftPanel.setPreferredSize(new java.awt.Dimension(24, 0));
+        leftPanel.setPreferredSize(new java.awt.Dimension(8, 0));
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         mainPanel.add(leftPanel, java.awt.BorderLayout.WEST);
 
         rightPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         rightPanel.setPreferredSize(new java.awt.Dimension(24, 0));
-        rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         mainPanel.add(rightPanel, java.awt.BorderLayout.EAST);
 
         sessionComboBox.setMaximumRowCount(1);
+        sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Java Project" }));
         mainPanel.add(sessionComboBox, java.awt.BorderLayout.NORTH);
 
         mainScrollPane.setViewportView(mainPanel);
@@ -160,8 +192,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     public void setRootContext(Node root) {
         manager.setRootContext(root);
-        sessionComboBox.removeAllItems();
-        sessionComboBox.addItem(root.getDisplayName());
+        refreshView();
     }
     
     public ExplorerManager getExplorerManager() {
@@ -279,6 +310,22 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     public void treeCollapsed(TreeExpansionEvent event) {
         refreshView();
     }
+
+    public void treeNodesChanged(TreeModelEvent e) {
+        refreshView();
+    }
+
+    public void treeNodesInserted(TreeModelEvent e) {
+        refreshView();
+    }
+
+    public void treeNodesRemoved(TreeModelEvent e) {
+        refreshView();
+    }
+
+    public void treeStructureChanged(TreeModelEvent e) {
+        refreshView();
+    }
     
     // **************************************************************************
     // **************************************************************************
@@ -289,25 +336,41 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 leftPanel.removeAll();
                 rightPanel.removeAll();
                 for (TreePath path : treeView.getVisiblePaths()) {
+                    Node node = Visualizer.findNode(path.getLastPathComponent());
+                    JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
+                    
                     JTree tree = treeView.getTree();
                     Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
                     double height = rect.getHeight();
-                    ImageIcon imageIcon = new ImageIcon(Utilities.loadImage(
-                            "org/netbeans/modules/debugger/jpda/resources/debugging.png"));
-                    JLabel label = new JLabel(imageIcon);
-                    label.setBackground(Color.YELLOW);
-                    label.setPreferredSize(new Dimension(imageIcon.getIconWidth(), (int)Math.round(height)));
-                    leftPanel.add(label);
-                    ClickableIcon icon = new ClickableIcon();
                     
+                    JComponent label = new JPanel();
+                    label.setPreferredSize(new Dimension(8, (int)Math.round(height))); // [TODO] width constant
+                    label.setBackground(greenBarColor);
+                    leftPanel.add(label);
+                    
+                    JLabel icon = jpdaThread != null ?
+                        new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
+                        suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
                     // [TODO] put this inside ClicableIcon constructor
-                    icon.setPreferredSize(new Dimension(imageIcon.getIconWidth(), (int)Math.round(height)));
+                    icon.setPreferredSize(new Dimension(ICON_WIDTH, (int)Math.round(height)));
+                    icon.setBackground(treeBackgroundColor);
                     rightPanel.add(icon);
+                    if (icon instanceof ClickableIcon) {
+                        ((ClickableIcon)icon).initializeState();
+                    }
                 }
                 leftPanel.revalidate();
                 leftPanel.repaint();
                 rightPanel.revalidate();
                 rightPanel.repaint();
+                
+                sessionComboBox.removeAllItems();
+                Node root = manager.getRootContext();
+                if (root != null) {
+                    String comboItemText = root.getDisplayName();
+                    sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
+                        comboItemText : "Java Project"); // NOI18N [TODO]
+                }
             }
         });
     }

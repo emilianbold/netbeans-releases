@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Color;
 import java.awt.Dimension;
 
 /**
@@ -47,13 +48,17 @@ import java.awt.Dimension;
  */
 public class InfoPanel extends javax.swing.JPanel {
 
-    private static int UNIT_HEIGHT = 30;
+    private static int UNIT_HEIGHT = 40;
+    
+    private Color hitsPanelColor;
     
     /** Creates new form InfoPanel */
-    public InfoPanel() {
+    public InfoPanel(TapPanel tapPanel) {
+        hitsPanelColor = tapPanel.getBackground();
+        
         initComponents();
         
-        hitsPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
+        hitsPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT - tapPanel.getMinimumHeight()));
         deadlocksPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
         filterPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
     }
@@ -69,23 +74,30 @@ public class InfoPanel extends javax.swing.JPanel {
 
         hitsPanel = new javax.swing.JPanel();
         deadlocksPanel = new javax.swing.JPanel();
+        jSeparator1 = new javax.swing.JSeparator();
         filterPanel = new javax.swing.JPanel();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.BorderLayout());
 
-        hitsPanel.setBackground(new java.awt.Color(255, 255, 163));
+        hitsPanel.setBackground(hitsPanelColor);
         hitsPanel.setPreferredSize(new java.awt.Dimension(0, 20));
         hitsPanel.setLayout(new java.awt.BorderLayout());
         add(hitsPanel, java.awt.BorderLayout.NORTH);
 
-        deadlocksPanel.setBackground(new java.awt.Color(255, 223, 198));
+        deadlocksPanel.setBackground(hitsPanelColor);
         deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 20));
         deadlocksPanel.setLayout(new java.awt.BorderLayout());
+
+        jSeparator1.setBackground(hitsPanelColor);
+        deadlocksPanel.add(jSeparator1, java.awt.BorderLayout.PAGE_START);
+
         add(deadlocksPanel, java.awt.BorderLayout.CENTER);
 
-        filterPanel.setBackground(new java.awt.Color(255, 209, 223));
         filterPanel.setPreferredSize(new java.awt.Dimension(0, 20));
         filterPanel.setLayout(new java.awt.BorderLayout());
+        filterPanel.add(jSeparator2, java.awt.BorderLayout.PAGE_START);
+
         add(filterPanel, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -94,6 +106,8 @@ public class InfoPanel extends javax.swing.JPanel {
     private javax.swing.JPanel deadlocksPanel;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JPanel hitsPanel;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     // End of variables declaration//GEN-END:variables
 
 }
