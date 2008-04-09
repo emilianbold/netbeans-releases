@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -74,12 +73,10 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -153,7 +150,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
         return new LazyMenu(project, debug);
     }
 
-    private static List<RakeTarget> getRakeTargets(Project project) {
+    static List<RakeTarget> getRakeTargets(Project project) {
         try {
             String rakeOutput = readRakeTargets(project);
 
@@ -704,10 +701,6 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
             ProjectInformation info = ProjectUtils.getInformation(project);
 
-            if (info != null) {
-                displayName = info.getDisplayName();
-            }
-
             File pwd = null;
 
             FileObject rakeFile = RakeSupport.findRakeFile(project);
@@ -722,6 +715,12 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
             if (targetName != null && (targetName.equals("test") || targetName.startsWith("test:"))) { // NOI18N
                 rake.setTest(true);
             }
+
+            if (info != null) {
+                displayName = info.getDisplayName();
+            }
+            
+            displayName += " (" + targetName  + ')';
 
             rake.runRake(pwd, rakeFile, displayName, fileLocator, true, debug, targetName);
 

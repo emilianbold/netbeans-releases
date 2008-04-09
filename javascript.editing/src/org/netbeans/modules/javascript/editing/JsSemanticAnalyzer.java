@@ -109,9 +109,14 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         Collection<Node> globalVars = visitor.getGlobalVars(false);
+        OffsetRange sanitizedRange = rpr.getSanitizedRange();
+        boolean checkRange = sanitizedRange != OffsetRange.NONE && sanitizedRange.getLength() == 1;
         for (Node node : globalVars) {
             String s = node.getString();
             OffsetRange range = AstUtilities.getNameRange(node);
+            if (checkRange && range.getEnd() == sanitizedRange.getStart()) {
+                continue;
+            }
             if (Character.isUpperCase(s.charAt(0))) {
                 // A property which mimics a class
                 highlights.put(range, ColoringAttributes.CLASS);

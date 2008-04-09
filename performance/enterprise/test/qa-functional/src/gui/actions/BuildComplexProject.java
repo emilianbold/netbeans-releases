@@ -45,6 +45,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.CleanProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -57,6 +58,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class BuildComplexProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     private String project_name = "TravelReservationServiceApplication";
+    private Node projectNode;
     
     /**
      * Creates a new instance of Build Complex Project
@@ -78,13 +80,23 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
         expectedTime = 10000;
         WAIT_AFTER_OPEN=10000;
     }
+
+    @Override
+    public void close() {
+        super.close();
+        if (projectNode != null) {
+            new CleanProjectAction().performPopup(projectNode);
+            MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
+        }
+        projectNode = null;
+    }
     
     public void prepare(){
 //        new CloseAllDocumentsAction().performAPI();
     }
     
     public ComponentOperator open(){
-        Node projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+        projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         new BuildProjectAction().performPopup(projectNode);
         
         MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N

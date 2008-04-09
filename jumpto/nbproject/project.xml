@@ -156,6 +156,7 @@ Contributor(s): Andrei Badea
                 <friend>org.netbeans.modules.gsf.api</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
+                <friend>org.netbeans.modules.php.editor</friend>
                 <package>org.netbeans.api.jumpto.type</package>
                 <package>org.netbeans.spi.jumpto.type</package>
             </friend-packages>

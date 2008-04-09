@@ -840,6 +840,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     @Override
     public void doLayout() {
         cellRendererPane.setBounds(0, 0, getWidth(), getHeight());
+        inplaceEditor.layoutEditor();
     }
 
     public JLabel getTextRenderer() {

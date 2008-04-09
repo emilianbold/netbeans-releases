@@ -43,26 +43,51 @@ package org.netbeans.modules.bpel.model.api.support;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.openide.ErrorManager;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.03.27
  */
 public class XPathCastResolverImpl implements XPathCastResolver {
-  public XPathCastResolverImpl(List<Cast> casts) {
-    myXPathCasts = new ArrayList<XPathCast>();
 
-    for (Cast cast : casts) {
-      myXPathCasts.add(new XPathCastImpl(cast));
+    public XPathCastResolverImpl(List<Cast> casts) {
+        myXPathCasts = new ArrayList<XPathCast>();
+
+        for (Cast cast : casts) {
+            XPathCastImpl xPathCast = XPathCastImpl.convert(cast);
+            if (xPathCast != null) {
+                myXPathCasts.add(xPathCast);
+            } else {
+                String msg = "An error while processing the cast: path=\"" + 
+                        cast.getPath() + "\" castTo=\"" + 
+                        cast.getType() + "\"";
+                ErrorManager.getDefault().log(ErrorManager.WARNING, msg );
+            }
+        }
     }
-  }
 
-  public List<XPathCast> getXPathCasts() {
-    return myXPathCasts;
-  }
+    public List<XPathCast> getXPathCasts() {
+        return myXPathCasts;
+    }
+    private List<XPathCast> myXPathCasts;
 
-  private List<XPathCast> myXPathCasts;
+    public XPathCast getCast(XPathSchemaContext soughtContext) {
+        if (myXPathCasts == null || myXPathCasts.size() == 0) {
+            return null;
+        }
+        //
+        for (XPathCast xPathCast : myXPathCasts) {
+            XPathSchemaContext sContext = xPathCast.getSchemaContext();
+            if (sContext != null && sContext.equalsChain(soughtContext)) {
+                return xPathCast;
+            }
+        }
+        //
+        return null;
+    }
 }

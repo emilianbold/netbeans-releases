@@ -94,5 +94,16 @@ public class SyntheticTypeCast extends AbstractTypeCast {
         Object result = mItr.next();
         return result;
     }
+
+    /**
+     * This XPath expression is build relative to the variable returned by 
+     * the getBaseVariable() method. It's not absolutely honest way. 
+     * But it can work. 
+     * 
+     * @return
+     */
+    public XPathExpression getPathExpression() {
+        return PathConverter.constructXPath(getBaseVariable(), mItr);
+    }
     
 } 

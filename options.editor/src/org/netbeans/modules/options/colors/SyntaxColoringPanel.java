@@ -457,10 +457,11 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         while (it.hasNext ())
             cbLanguage.addItem (it.next ());
         listen = true;
-        if (lastLanguage != null)
+        if (lastLanguage != null) {
             cbLanguage.setSelectedItem (lastLanguage);
-        if (cbLanguage.getSelectedItem () == null)
+        } else {
             cbLanguage.setSelectedIndex (0);
+        }
     }
     
     public void cancel () {

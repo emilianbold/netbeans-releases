@@ -103,12 +103,17 @@ public class CasaQoSEditAction extends WidgetAction.Adapter {
                 selectedNodes[0] instanceof CasaNode) {
             final CasaNode connectionNode = (CasaNode) selectedNodes[0];
 
+            CasaConnection connection = (CasaConnection) connectionNode.getData();
+            String cEndpointName = connection.getConsumer().get().getEndpointName();
+            String pEndpointName = connection.getProvider().get().getEndpointName();
+            
             final PropertySheetView propertySheetView = new PropertySheetView();
 
             Object[] options = new Object[]{Constants.CLOSE};
             DialogDescriptor descriptor = new DialogDescriptor(
                     propertySheetView,
-                    NbBundle.getMessage(getClass(), "STR_CONFIG_QOS_PROPERTIES"),
+                    NbBundle.getMessage(getClass(), "STR_PROPERTIES", 
+                    cEndpointName + "<->" + pEndpointName),
                     true,
                     options,
                     null,

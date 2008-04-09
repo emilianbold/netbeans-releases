@@ -12,6 +12,7 @@ import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.w3c.dom.Element;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 
 public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
 
@@ -87,4 +88,19 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
         return children;
     }
 
+    public String getTargetNamespace() {
+    	return getAttribute(ATTR_TARGETNAMESPACE);
+    }
+    
+    public void setTargetNamespace(String targetNamespace) {
+    	setAttribute(TARGETNAMESPACE_PROPERTY, ATTR_TARGETNAMESPACE, targetNamespace);
+    }
+    
+    public void setPackageName(String packageName) {
+    	setAttribute(PACKAGENAME_PROPERTY, ATTR_PACKAGENAME, packageName);
+    }
+    
+    public String getPackageName() {
+    	return getAttribute(ATTR_PACKAGENAME);
+    }
 }

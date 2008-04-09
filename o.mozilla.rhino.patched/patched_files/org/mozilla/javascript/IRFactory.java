@@ -132,17 +132,44 @@ final class IRFactory
         //
 
         Node.Jump switchNode = new Node.Jump(Token.SWITCH, expr, lineno);
-        Node block = new Node(Token.BLOCK, switchNode);
-        return block;
+        // <netbeans>
+        // We don't want to rewrite the AST in the way indicate above;
+        // that makes doing AST based formatting for example very tricky
+        // since the Switch node doesn't correspond to the editor region
+        // for the switch.
+        //Node block = new Node(Token.BLOCK, switchNode);
+        //return block;
+        return switchNode;
+        // </netbeans>
     }
 
     /**
      * If caseExpression argument is null it indicate default label.
      */
-    void addSwitchCase(Node switchBlock, Node caseExpression, Node statements)
+    void addSwitchCase(Node switchBlock, Node caseExpression, Node statements
+            // <netbeans>
+            , int caseStart
+            // </netbeans>
+            )
     {
-        if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
-        Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        // <netbeans>
+        // I've modified the switch AST - see createSwitch(). Therefore, this
+        // assertion is no longer valid
+        //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
+        //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        Node.Jump switchNode = (Node.Jump)switchBlock;
+        int start = caseStart;
+        int end;
+        if (statements.hasChildren()) {
+            end = statements.getSourceEnd();
+        } else if (caseExpression != null) {
+            // should add in colon too
+            end = caseExpression.getSourceEnd();
+        } else {
+            // Must be a default:
+            end = caseStart+7; // "default".length()
+        }
+        // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node gotoTarget = Node.newTarget();
@@ -150,17 +177,33 @@ final class IRFactory
             Node.Jump caseNode = new Node.Jump(Token.CASE, caseExpression);
             caseNode.target = gotoTarget;
             switchNode.addChildToBack(caseNode);
+            // <netbeans>
+            caseNode.setSourceBounds(start, end);
+            caseNode.addChildToBack(statements);
+            // </netbeans>
         } else {
             switchNode.setDefault(gotoTarget);
+            // <netbeans>
+            // Put the default statement in its own node
+            Node defaultNode = new Node(Token.DEFAULT, statements);
+            defaultNode.setSourceBounds(caseStart, end);
+            switchNode.addChildToBack(defaultNode);
+            // </netbeans>
         }
-        switchBlock.addChildToBack(gotoTarget);
-        switchBlock.addChildToBack(statements);
+        // <netbeans>
+        //switchBlock.addChildToBack(gotoTarget);
+        //switchBlock.addChildToBack(statements);
+        // </netbeans>
     }
 
     void closeSwitch(Node switchBlock)
     {
-        if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
-        Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        // <netbeans>
+        // I've modified the switch AST - see createSwitch(). 
+        //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
+        //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        Node.Jump switchNode = (Node.Jump)switchBlock;
+        // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node switchBreakTarget = Node.newTarget();
@@ -309,6 +352,11 @@ final class IRFactory
         int t = breakStatement.getType();
         if (t == Token.LOOP || t == Token.LABEL) {
             jumpStatement = (Node.Jump)breakStatement;
+        // <netbeans>
+        // I've modified the AST for switch - see createSwitch()
+        } else if (t == Token.SWITCH) {
+            jumpStatement = (Node.Jump)breakStatement;
+        // </netbeans>
         } else if (t == Token.BLOCK
                    && breakStatement.getFirstChild().getType() == Token.SWITCH)
         {
@@ -607,12 +655,14 @@ final class IRFactory
 
      * ... and a goto to GOTO around these handlers.
      */
+    // <netbeans>
+    /* Remove this whole method and replace it with a simpler one
+     * following this method, which performs no AST transformations etc.
+     //
     Node createTryCatchFinally(Node tryBlock, Node catchBlocks,
                                Node finallyBlock, int lineno)
     {
-        // <netbeans>
         int startOffset = tryBlock.getSourceStart();
-        // </netbeans>
         boolean hasFinally = (finallyBlock != null)
                              && (finallyBlock.getType() != Token.BLOCK
                                  || finallyBlock.hasChildren());
@@ -783,7 +833,44 @@ final class IRFactory
         // </netbeans>
         return handlerBlock;
     }
+    // <netbeans>
+    */
 
+    /**
+     * Similar to createTryCatchFinally but tries to make the AST
+     * simpler to more reflect the source structure and less optimized
+     * for execution (since our forked Rhino never actually executes
+     * the code anyway)
+     * 
+     * Also, this code doesn't do any short circuits removals the way the
+     * Rhino version does.
+     */
+    Node createTryCatchFinally(Node tryBlock, Node catchBlocks,
+                               Node finallyBlock, int lineno)
+    {
+        // <netbeans>
+        int startOffset = tryBlock.getSourceStart();
+        // </netbeans>
+        boolean hasFinally = (finallyBlock != null);
+//                             && (finallyBlock.getType() != Token.BLOCK
+//                                 || finallyBlock.hasChildren());
+
+        boolean hasCatch = catchBlocks.hasChildren();
+
+        Node.Jump pn = new Node.Jump(Token.TRY, tryBlock, lineno);
+
+        pn.addChildToBack(tryBlock);
+        if (hasCatch) {
+            pn.addChildrenToBack(catchBlocks.getFirstChild());
+        }
+        if (hasFinally) {
+            pn.addChildToBack(finallyBlock);
+        }
+            
+        return pn;
+    }
+    // </netbeans>
+    
     /**
      * Throw, Return, Label, Break and Continue are defined in ASTFactory.
      */

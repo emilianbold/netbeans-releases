@@ -378,6 +378,9 @@ public class LockView extends View {
     }
 
     public void paint(Graphics g, Shape allocation) {
+        if (g == null)
+            return; // #131797 - seems like a null graphics could be passed by swing
+
         lock();
         try {
             

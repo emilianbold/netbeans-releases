@@ -29,39 +29,27 @@ if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
     exit 1
 fi
 
-zipmodulclustersdir=$1
+work_dir=$1
 prefix=$2
 buildnumber=$3
 ml_build=$4
-
-instrumentation_options=""
-if [ -n "$5" ] && [ -n "$6" ] && [ -n "$7" ] ; then
-   echo "INFO : INSTRUMENTED BUILD"
-   touch /tmp/nbi_instr.temp
-   rm /tmp/nbi_instr.temp
-   instrumentation_options="-Dinstrument.jars=true -Demma.sh.file=\"$5\" -Demma.txt.file=\"$6\" -Demma.jar.file=\"$7\" -Demma.out.file=/tmp/nbi_instr.temp"
-
-   if [ -n "$8" ] ; then
-	bash_exec="$8"
-   else 
-	bash_exec=/bin/bash
-   fi
-   instrumentation_options="$instrumentation_options  -Dbash.executable=\"$bash_exec\""
-else 
-   echo "INFO : STANDARD BUILD"
+if [ -n "$5" ] ; then
+  nb_locales="$5"
 fi
-
-mlbuild='false'
-if [ 1 -eq $ml_build ] ; then
-    mlbuild='true'
-fi
-
+  
 basename=`dirname "$0"`
 . "$basename"/build-private.sh
 
 cd "$basename"
 chmod -R a+x *.sh
 
-commonname=$zipmodulclustersdir/$prefix-$buildnumber 
+commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
+ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
 
-ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild=$mlbuild -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options
+rm -rf "$basename"/dist_en
+mv -f "$basename"/dist "$basename"/dist_en
+
+if [ 1 -eq $ml_build ] ; then
+commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
+ant -f $basename/build.xml build-all-dmg -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST     
+fi

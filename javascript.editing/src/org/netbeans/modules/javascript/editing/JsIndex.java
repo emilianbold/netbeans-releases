@@ -306,7 +306,7 @@ public class JsIndex {
                                 (signature.charAt(lcname.length()) != ';'))) {
                             continue;
                         }
-                    }
+                    } // TODO - check camel case here too!
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
                     assert map != null;
@@ -349,10 +349,13 @@ public class JsIndex {
                     boolean isFunction = element instanceof IndexedFunction;
                     if (isFunction && !includeMethods) {
                         continue;
+                    } else if (onlyConstructors) {
+                        if (element.getKind() == ElementKind.PROPERTY && funcIn == null && Character.isUpperCase(elementName.charAt(0))) {
+                            element.setKind(ElementKind.CONSTRUCTOR);
+                        } else if (element.getKind() != ElementKind.CONSTRUCTOR) {
+                            continue;
+                        }
                     } else if (!isFunction && !includeProperties) {
-                        continue;
-                    }
-                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
                         continue;
                     }
                     elements.add(element);

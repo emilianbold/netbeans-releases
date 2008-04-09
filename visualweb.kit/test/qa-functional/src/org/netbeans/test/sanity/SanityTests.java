@@ -464,7 +464,7 @@ public class SanityTests extends RaveTestCase {
         }
         
         try {
-            WebConversation conversation = new WebConversation();
+/*            WebConversation conversation = new WebConversation();
             WebResponse response = null;
             //HttpUnitOptions.setExceptionsThrownOnScriptError(false);
             HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
@@ -472,8 +472,8 @@ public class SanityTests extends RaveTestCase {
             
             // Get deployment target prefix from test/data/DefaultDepploymentTargets.propertes.
             // By default, it is http://localhost:8080
-            ApplicationServer  as = (ApplicationServer) IDE.getIDE().getDeploymentTargets().get(0);
-            _requestPrefix=as.requestPrefix;
+*/            ApplicationServer  as = (ApplicationServer) IDE.getIDE().getDeploymentTargets().get(0);
+/*            _requestPrefix=as.requestPrefix;
             log("prefix="+as.requestPrefix);
             
             response = conversation.getResponse(_requestPrefix+_projectName);
@@ -490,7 +490,7 @@ public class SanityTests extends RaveTestCase {
         //step is added
 //            assertFalse("Wrong response after form submit", response.getText().indexOf("Clicked on button")==-1);
 //            //assertFalse("Wrong response after form submit", response.getText().indexOf("Push me")==-1);
-            TestUtils.wait(2000);
+*/            TestUtils.wait(2000);
             ServerNavigatorOperator.showNavigatorOperator().pushPopup(ServerNavigatorOperator.STR_SERVERS_PATH + 
                     as.web_applications_path + "|" + as.app_pref + _projectName, as.APPLICATION_UNDEPLOY);
             TestUtils.wait(1000);

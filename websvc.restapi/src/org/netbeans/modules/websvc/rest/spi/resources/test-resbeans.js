@@ -637,7 +637,10 @@ TestSupport.prototype = {
     },
     
     showViews : function (name) {
-        var c = '';
+        var c = 
+          '<table cellspacing="0" cellpadding="0" border="0" title="" class="Tab1TblNew_sun4">'+
+                '<tbody>'+
+                    '<tr id="tabRow">';
         for(var i in this.viewIds) {
             var vid = this.viewIds[i]['id'];
             var tabMain = document.getElementById(this.viewIds[i]['type']);
@@ -649,7 +652,8 @@ TestSupport.prototype = {
                 tabMain.style.display="none";
             }
         }
-        this.updatepage('tabRow', c);
+        c += '</tr></tbody></table>';
+        this.updatepage('tabTable', c);
     },
 
     monitor : function (xmlHttpReq, param) {
@@ -713,13 +717,7 @@ TestSupport.prototype = {
                     subResources = 'No Sub-Resources available.';
                 this.updatepage('result', '<br/><span class=bld>Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
                     '<span class=bld>Response:</span> '+
-                    '<div class="Tab1Div_sun4">'+
-                        '<table cellspacing="0" cellpadding="0" border="0" title="" class="Tab1TblNew_sun4">'+
-                            '<tbody>'+
-                                '<tr id="tabRow">'+
-                                '</tr>'+
-                            '</tbody>'+
-                        '</table>'+
+                    '<div class="Tab1Div_sun4" id="tabTable">'+
                     '</div>'+
                     '<div class="tabMain">'+
                     '<div id="menu_bottom" class="stab tabsbottom"></div>'+
@@ -1136,7 +1134,7 @@ WADLParser.prototype = {
             return;
         }
         ts.setvisibility('main', 'inherit');
-        ts.updatepage('subheader', '<br/><span class=bld>WADL: </span><a href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
+        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL: </span><a class=MstLnk_sun4 href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
         ts.wadlDoc = ts.xhr.loadXml(rtext);
         if(ts.wadlDoc != null) {                
             this.initTree(ts.wadlDoc);
@@ -1300,12 +1298,11 @@ WADLParser.prototype = {
           if(resources != null) {
               for (i=0;i<resources.length;i++) {
                 str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
-                thisNode = iterator.iterateNext();
               }
           }
         }
         catch (e) {
-          dump( 'Error: Document tree modified during iteration ' + e );
+          ts.debug('evaluateWADLUpdate() err name: [' + e.name + '] message: [' + e.message+']');
         }
         str += '</root>';
         return str;

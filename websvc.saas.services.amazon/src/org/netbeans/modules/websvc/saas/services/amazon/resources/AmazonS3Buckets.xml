@@ -60,7 +60,7 @@
 
         <group name="Amazon"/>
 
-        <authentication profile="SaaSServices/AmazonS3/profile.properties">
+        <authentication profile="Templates/SaaSServices/signedurl.properties">
             <signed-url sig-id="Authorization">
                 <sign id="authorization">
                     <params>

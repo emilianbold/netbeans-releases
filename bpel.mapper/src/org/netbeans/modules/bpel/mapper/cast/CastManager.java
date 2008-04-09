@@ -138,10 +138,13 @@ public class CastManager {
         if (typeCast != null) {
             List<Object> castedCompPath = 
                     PathConverter.constructObjectLocationtList(
-                    typeCast.getXPathExpression());
+                    typeCast.getPathExpression());
             //
-            return addTypeCastImpl(castedCompPath, typeCast);
+            if (castedCompPath != null) {
+                return addTypeCastImpl(castedCompPath, typeCast);
+            }
         }
+        //
         return false;
     }
     
@@ -399,7 +402,7 @@ public class CastManager {
             }
             //
             TypeCast tCast = TypeCast.convert(cast);
-            if (castToUnreg.equals(tCast)) {
+            if (tCast != null && castToUnreg.equals(tCast)) {
                 // The required cast found!
                 casts.removeCast(index);
             }
@@ -462,7 +465,7 @@ public class CastManager {
             }
         }
     }
-    
+
     @Override
     public String toString() {
         return " inLeftTree:" + mInLeftMapperTree + 
@@ -665,6 +668,6 @@ public class CastManager {
             return true;
         }
     }
-    
+
 }
   
