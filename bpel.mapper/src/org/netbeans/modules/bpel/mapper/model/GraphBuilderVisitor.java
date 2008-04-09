@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.mapper.model;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +59,6 @@ import org.netbeans.modules.xml.xpath.ext.metadata.StubExtFunction;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
-import org.openide.util.NbBundle;
 
 /**
  * Populates the Graph object with a complex content by an XPath expression.
@@ -256,18 +254,9 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     protected void connectToLeftTree(XPathExpressionPath path) {
         if ((! connectToLeftTree(FinderListBuilder.build(path))) && 
             (currentBpelDesignContext != null)) {
-            StringBuffer errMsgBuffer = currentBpelDesignContext.getValidationErrMsgBuffer();
-            if (errMsgBuffer == null) return;
-            
-            String 
-                errMsgPattern = NbBundle.getMessage(DesignContextControllerImpl2.class, 
-                "LBL_Bpel_Mapper_Err_Msg_Wrong_XPathExpr_Data"),
-                errMsg = MessageFormat.format(errMsgPattern, new Object[] {"from",
-                    path.getExpressionString()});                
- 
-                errMsgBuffer.append((errMsgBuffer.length() > 0) ? 
-                    " " + errMsg : errMsg);                
-                errMsgBuffer.append(",\n");
+            DesignContextControllerImpl2.addErrMessage(
+                currentBpelDesignContext.getValidationErrMsgBuffer(), 
+                path.getExpressionString(), "from");
         }
     }
 

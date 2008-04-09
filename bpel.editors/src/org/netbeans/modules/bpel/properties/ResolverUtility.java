@@ -150,7 +150,14 @@ public final class ResolverUtility {
      * Could return null
      */ 
     public static FileObject getProjectSource(Lookup lookup) {
-        BpelModel bpelModel = lookup.lookup(BpelModel.class);
+        return getProjectSource(lookup.lookup(BpelModel.class));
+    }
+    
+    /**
+     * Returns projectSource related to the given bpelModel which is in lookup
+     * Could return null
+     */ 
+    public static FileObject getProjectSource(BpelModel bpelModel) {
         if (bpelModel == null) {
             return null;
         }
@@ -174,7 +181,7 @@ public final class ResolverUtility {
         }
         return null;
     }
-    
+
     public static String encodeLocation(String location){
         return location.replace(" ", "%20");
     }
