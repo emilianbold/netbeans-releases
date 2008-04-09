@@ -93,6 +93,8 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
             return FOLDER_ONLY;
         } else if (dirName.startsWith("views")) {
             return GSP_TEMPLATES;
+        } else if (dirName.startsWith("web-app")) {
+            return GSP_TEMPLATES;
         } else {
             return PROPERTIES_FILE;
         }

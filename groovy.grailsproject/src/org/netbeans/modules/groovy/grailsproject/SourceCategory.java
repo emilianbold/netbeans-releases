@@ -44,6 +44,7 @@ public enum SourceCategory {    NONE,
                                 TESTS,
                                 SCRIPTS,
                                 SRC,
+                                WEBAPP,
                                 LIB;
 
 }

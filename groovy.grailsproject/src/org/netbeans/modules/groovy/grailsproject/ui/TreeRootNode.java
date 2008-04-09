@@ -129,6 +129,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             category = SourceCategory.SCRIPTS;
         } else if (dirName.startsWith("src")) {
             category = SourceCategory.SRC;
+        } else if (dirName.startsWith("web-app")) {
+            category = SourceCategory.WEBAPP;
         } else if (dirName.startsWith("views")) {
             category = SourceCategory.VIEWS;
         }
@@ -196,6 +198,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(CommonProjectActions.newFileAction());
                 break;
             case SRC:
+                result.add(CommonProjectActions.newFileAction());
+                break;
+            case WEBAPP:
                 result.add(CommonProjectActions.newFileAction());
                 break;
             case SCRIPTS:
