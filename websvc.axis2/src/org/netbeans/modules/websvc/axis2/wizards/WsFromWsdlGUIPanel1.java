@@ -142,6 +142,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         jTextArea2.setColumns(10);
         jTextArea2.setRows(5);
         jScrollPane2.setViewportView(jTextArea2);
+        jTextArea2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jTextArea2.AccessibleContext.accessibleDescription")); // NOI18N
 
         moreOptionsLabel.setLabelFor(jTextArea2);
         org.openide.awt.Mnemonics.setLocalizedText(moreOptionsLabel, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.moreOptionsLabel.text")); // NOI18N
@@ -153,6 +154,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         jTextArea1.setRows(5);
         jTextArea1.setOpaque(false);
         jScrollPane1.setViewportView(jTextArea1);
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jTextArea1.AccessibleContext.accessibleDescription")); // NOI18N
 
         optionsLabel.setLabelFor(jTextArea1);
         org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.optionsLabel.text")); // NOI18N
@@ -216,6 +218,14 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jComboBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jComboBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        jComboBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jComboBox2.AccessibleContext.accessibleDescription")); // NOI18N
+        jComboBox3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jComboBox3.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        tfPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.tfPackageName.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel1.class, "WsFromWsdlGUIPanel1.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

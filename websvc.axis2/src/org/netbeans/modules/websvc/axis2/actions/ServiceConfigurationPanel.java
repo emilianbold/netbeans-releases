@@ -188,6 +188,17 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
                 .add(cbDefault2)
                 .addContainerGap(17, Short.MAX_VALUE))
         );
+
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField2.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        cbGenerateWsdl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbGenerateWsdl.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField3.AccessibleContext.accessibleDescription")); // NOI18N
+        cbDefault1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault1.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField4.AccessibleContext.accessibleDescription")); // NOI18N
+        cbDefault2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault2.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbGenerateWsdlStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cbGenerateWsdlStateChanged
