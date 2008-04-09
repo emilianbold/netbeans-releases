@@ -174,7 +174,7 @@ public class PHPIndexer implements Indexer {
         private final ParserFile file;
         private String url;
         private final PHPParseResult result;
-        private final BaseDocument doc;
+        //private final BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
         
@@ -183,16 +183,16 @@ public class PHPIndexer implements Indexer {
             this.file = result.getFile();
             this.factory = factory;
 
-            FileObject fo = file.getFileObject();
+            /*FileObject fo = file.getFileObject();
 
             if (fo != null) {
                 this.doc = NbUtilities.getBaseDocument(fo, true);
             } else {
                 this.doc = null;
             }
-
+            */
             try {
-                url = file.getFileObject().getURL().toExternalForm();
+                url = file.getFile().toURI().toURL().toExternalForm();
 
                 // Make relative URLs for urls in the libraries
                 url = PHPIndex.getPreindexUrl(url);
