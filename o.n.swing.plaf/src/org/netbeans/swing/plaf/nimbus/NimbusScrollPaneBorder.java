@@ -38,58 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.timers;
-
-import java.awt.Component;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import org.openide.explorer.view.NodeRenderer;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-
-/** Renderer for various NetBeans objects.
+/*
+ * MetalScrollPaneBorder.java
  *
- * @author Jaroslav Tulach
+ * Created on March 14, 2004, 4:33 AM
  */
-final class ObjectListRenderer extends DefaultListCellRenderer {
 
-    private NodeRenderer r;
+package org.netbeans.swing.plaf.nimbus;
 
-    ObjectListRenderer() {
-        super();
-        r = new NodeRenderer();
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
+
+/** Scroll pane border for Metal look and feel
+ *
+ * @author  Dafe Simonek
+ */
+class NimbusScrollPaneBorder extends AbstractBorder {
+
+    private static final Insets insets = new Insets(1, 1, 2, 2);
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y,
+    int w, int h) {
+        g.translate(x, y);
+
+        Color color = UIManager.getColor("controlShadow");
+        g.setColor(color == null ? Color.darkGray : color);
+        g.drawRect(0, 0, w-2, h-2);
+        color = UIManager.getColor("controlHighlight");
+        g.setColor(color == null ? Color.white : color);
+        g.drawLine(w-1, 1, w-1, h-1);
+        g.drawLine(1, h-1, w-1, h-1);
+
+        g.translate(-x, -y);
     }
 
     @Override
-    public Component getListCellRendererComponent(JList list, Object wr, int index, boolean isSelected, boolean cellHasFocus) {
-        Object value = ((WeakReference) wr).get();
-        if (value instanceof FileObject) {
-            try {
-                FileObject fo = (FileObject) value;
-                value = DataObject.find(fo);
-            } catch (IOException e) {
-                FileObject fo = (FileObject) value;
-                value = "FO: " + fo;
-            }
-        }
-        
-        if (value instanceof DataObject) {
-            DataObject obj = (DataObject)value;
-            if (obj.isValid()) {
-                value = obj.getNodeDelegate();
-            } else {
-                value = obj.getName();
-            }
-        }
-        
-        if (value instanceof Node) {
-            Node node = (Node)value;
-            return r.getListCellRendererComponent(list, node, index, isSelected, cellHasFocus);
-        }
-
-        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+    public Insets getBorderInsets(Component c) {
+        return insets;
     }
 }
