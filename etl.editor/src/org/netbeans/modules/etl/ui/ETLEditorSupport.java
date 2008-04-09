@@ -685,13 +685,13 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-        if (!getEnv().getETLDataObject().isModified()) {
+     //   if (!getEnv().getETLDataObject().isModified()) {
             // Update later to avoid an infinite loop.
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     updateTitles();
                 }
             });
-        }
+    //    }
     }
 }
