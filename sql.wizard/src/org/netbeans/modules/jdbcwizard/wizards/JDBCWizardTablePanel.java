@@ -403,13 +403,13 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     class ColumnAction implements ActionListener {
-        protected JButton okbutton = new JButton("OK");
+        protected JButton okbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_OK"));
 
-        protected JButton cancelbutton = new JButton("Cancel");
+        protected JButton cancelbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_CANCEL"));
         
-        protected JButton selectallbutton = new JButton("Select All");
+        protected JButton selectallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_SELECT_ALL"));
         
-        protected JButton clearallbutton = new JButton("Clear All");
+        protected JButton clearallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_CLEAR_ALL"));
 
         protected JPanel buttonpanel = new JPanel();
 

@@ -90,6 +90,7 @@ public class CppLexer extends CndLexer {
                     switch (read(true)) {
                         case '*': // block or doxygen comment
                             skipComment();
+                            break;
                         case '\r':
                             consumeNewline();
                         // nobreak

@@ -38,38 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+/*
+ * EditorToolbarBorder.java
+ *
+ * Created on March 14, 2004, 4:38 AM
+ */
 
-package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+package org.netbeans.swing.plaf.nimbus;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
 
 /**
- * ServerManagerAction displays server manager.
  *
- * @author  Stepan Herold
+ * @author  David Simonek
  */
-public class ServerManagerAction extends CallableSystemAction {
+public class EditorToolbarBorder extends AbstractBorder {
+    private static final Insets insets = new Insets(0, 0, 1, 0);
 
-    public ServerManagerAction () {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+        Color borderC = UIManager.getColor("controlDarkShadow");
+        g.setColor(borderC);
+        g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
     }
 
-    public void performAction() {
-        ServerManager.showCustomizer(null);
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(ServerManagerAction.class,"CTL_ServerManager"); // NOI18N
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return insets;
+    }    
 }
