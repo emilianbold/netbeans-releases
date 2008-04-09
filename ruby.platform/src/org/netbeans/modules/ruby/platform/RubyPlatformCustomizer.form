@@ -35,7 +35,7 @@
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="autoDetectButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="151" max="32767" attributes="0"/>
+                      <EmptySpace pref="185" max="32767" attributes="0"/>
                       <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -51,7 +51,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="platformsListSP" pref="293" max="32767" attributes="0"/>
+                      <Component id="platformsListSP" pref="289" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
@@ -172,8 +172,8 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="gemHomeValue" alignment="0" pref="416" max="32767" attributes="0"/>
-                              <Component id="gemPathSP" alignment="0" pref="416" max="32767" attributes="1"/>
+                              <Component id="gemHomeValue" alignment="0" pref="450" max="32767" attributes="0"/>
+                              <Component id="gemPathSP" alignment="0" pref="450" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
@@ -182,9 +182,9 @@
                               <Component id="browseGemHome" linkSize="8" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <Component id="plfInterpreterValue" alignment="0" pref="511" max="32767" attributes="0"/>
-                      <Component id="plfNameValue" alignment="0" pref="511" max="32767" attributes="0"/>
-                      <Component id="gemToolValue" alignment="0" pref="511" max="32767" attributes="1"/>
+                      <Component id="plfInterpreterValue" alignment="0" pref="545" max="32767" attributes="0"/>
+                      <Component id="plfNameValue" alignment="0" pref="545" max="32767" attributes="0"/>
+                      <Component id="gemToolValue" alignment="0" pref="545" max="32767" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -406,18 +406,22 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="rubyDebuggerLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="102" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="rubyDebuggerLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="upperSep" pref="297" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="engineLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="engineType" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="installFastDebugger" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="upperSep" pref="510" max="32767" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="engineLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="engineType" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="installFastDebugger" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="178" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
