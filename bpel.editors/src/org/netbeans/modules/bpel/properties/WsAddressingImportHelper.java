@@ -20,7 +20,6 @@ package org.netbeans.modules.bpel.properties;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.core.BPELCatalog;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
@@ -52,9 +51,6 @@ public class WsAddressingImportHelper {
     private BpelModel myModel;
     private ImportRegistrationHelper myImportHelper;
 
-    private static AtomicReference<WsAddressingImportHelper> instanceRef =
-            new AtomicReference<WsAddressingImportHelper>();
-
     private WsAddressingImportHelper(BpelModel bpelModel,
             ImportRegistrationHelper importHelper)
     {
@@ -69,12 +65,7 @@ public class WsAddressingImportHelper {
     public static WsAddressingImportHelper getInstance(BpelModel model,
             ImportRegistrationHelper importHelper)
     {
-        if (model == null || importHelper == null) {
-            return null;
-        }
-        instanceRef.compareAndSet(null, new WsAddressingImportHelper(
-                                         model, importHelper));
-        return instanceRef.get();
+        return new WsAddressingImportHelper(model, importHelper);
     }
 
     public BpelModel getModel() {
