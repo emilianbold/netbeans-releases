@@ -144,7 +144,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
             Token<?extends PHPTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (id == PHPTokenId.PHP_OPENTAG) {
+            if (id == PHPTokenId.PHP_OPENTAG || id == PHPTokenId.PHP_CLASS || id == PHPTokenId.PHP_FUNCTION) {
                 return ts.offset();
             }
         } while (ts.movePrevious());
