@@ -58,6 +58,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -458,6 +459,7 @@ public class SemiAttribute extends DefaultVisitor {
             name2ElementCache = new LinkedList<IndexedElement>();
             name2ElementCache.addAll(index.getFunctions(null, "", NameKind.PREFIX));
             name2ElementCache.addAll(index.getConstants(null, "", NameKind.PREFIX));
+            name2ElementCache.addAll(index.getClasses(null, "", NameKind.PREFIX));
         }
         
         Set<FileObject> files = new HashSet<FileObject>();
@@ -477,8 +479,6 @@ public class SemiAttribute extends DefaultVisitor {
         
         files.remove(null);
         
-        List<IndexedFunction> result = new LinkedList<IndexedFunction>();
-        
         for (IndexedElement f : name2ElementCache) {
             if (files.contains(f.getFileObject())) {
                 Kind k = null;
@@ -489,6 +489,10 @@ public class SemiAttribute extends DefaultVisitor {
                 
                 if (f instanceof IndexedConstant) {
                     k = Kind.CONST;
+                }
+                
+                if (f instanceof IndexedClass) {
+                    k = Kind.CLASS;
                 }
                 
                 if (k != null) {

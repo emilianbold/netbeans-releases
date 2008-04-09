@@ -149,6 +149,23 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testFindDeclarationInOtherFile3() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include \"testa.php\";\n" +
+                                         "$r = new fo|o();\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "include \"testb.php\";\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "^class foo {}\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "class foo {}\n" +
+                                         "?>");
+    }
+    
     public void testFunctionsInGlobalScope1() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -188,7 +205,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
-    public void testShowAllDeclarationsWhenUnknown() throws Exception {
+    public void testShowAllDeclarationsWhenUnknownForFunctions() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
                                          "fo|o();\n" +
@@ -198,6 +215,19 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>",
                                           "<?php\n" +
                                          "^function foo() {}\n" +
+                                         "?>");
+    }
+    
+    public void testShowAllDeclarationsWhenUnknownForClasses() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "$r = new fo|o();\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "^class foo {}\n" +
+                                         "?>",
+                                          "<?php\n" +
+                                         "^class foo {}\n" +
                                          "?>");
     }
     
