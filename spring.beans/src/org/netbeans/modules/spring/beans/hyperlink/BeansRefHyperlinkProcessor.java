@@ -42,7 +42,6 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -66,7 +65,7 @@ public class BeansRefHyperlinkProcessor extends HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        final FileObject fileObject = NbEditorUtilities.getFileObject(env.getDocument());
+        final FileObject fileObject = env.getFileObject();
         if (fileObject == null) {
             return;
         }

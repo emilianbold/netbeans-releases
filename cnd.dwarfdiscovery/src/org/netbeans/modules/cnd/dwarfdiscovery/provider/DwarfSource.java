@@ -363,6 +363,14 @@ public class DwarfSource implements SourceFileProperties{
             if (sourceName.startsWith("/")) { // NOI18N
                 sourceName = getRelativePath(compilePath, sourceName);
             }
+            if (compilePath == null) {
+                if (fullName != null && fullName.lastIndexOf('/')>0) {
+                    int i = fullName.lastIndexOf('/');
+                    compilePath = fullName.substring(0,i);
+                } else {
+                    compilePath = ""; // NOI18N
+                }
+            }
         }
         if (isCPP) {
             language = ItemProperties.LanguageKind.CPP;
@@ -709,7 +717,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         res = new ArrayList<String>();
         File file = new File(fileName);
-        if (file.exists() && file.canRead()){
+        if (file.exists() && file.canRead() && !file.isDirectory()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 while(true){

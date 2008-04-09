@@ -107,7 +107,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
             final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
             final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
-
+            
             AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
                 public void visit(AstNode node) {
@@ -123,12 +123,19 @@ public class HtmlStructureScanner implements StructureScanner {
                                 foldRange.add(new OffsetRange(so, eo));
                             }
                         } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 }
             };
-            AstNodeUtils.visitChildren(root, foldsSearch);
+            
+            //the document is touched during the ast tree visiting, we need to lock it
+            doc.readLock();
+            try {
+                AstNodeUtils.visitChildren(root, foldsSearch);
+            } finally {
+                doc.readUnlock();
+            }
             folds.put("codeblocks", foldRange);
 
             return folds;
@@ -174,27 +181,20 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle;
         }
 
-        //>>> such equals and hashCode implementation
-        //is necessary since the ElementNode class from
-        // gsf navigator requires it
         @Override
         public boolean equals(Object o) {
             if(!(o instanceof HtmlStructureItem)) {
                 return false;
             }
-            
             HtmlStructureItem compared = (HtmlStructureItem)o;
-            
-            return getName().equals(compared.getName())
-                    && getKind() == compared.getKind();
+            return compared.handle.signatureEquals(handle);
         }
         
         @Override
         public int hashCode() {
-            return getName().hashCode() + getKind().hashCode();
-            
+            return handle.node().path().toString().hashCode();
         }
-        //<<<
+
         
         public ElementKind getKind() {
             return ElementKind.TAG;

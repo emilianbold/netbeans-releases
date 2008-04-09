@@ -43,6 +43,8 @@ package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,10 +61,10 @@ public class JsTypeAnalyzerTest extends JsTestBase {
     private JsTypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
         FileObject fo = getTestFile(file);
         BaseDocument doc = getDocument(fo);
-        TestCompilationInfo info = getInfo(fo);
+        GsfTestCompilationInfo info = getInfo(fo);
         Node root = AstUtilities.getRoot(info);
         initializeRegistry();
-        JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
 
         int caretOffset = -1;
         if (caretLine != null) {

@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -40,17 +40,21 @@
  */
 package org.netbeans.modules.bpel.validation.wsdl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
+import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
@@ -66,10 +70,103 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class Validator extends WsdlValidator {
 
   public WSDLVisitor getVisitor() {
-    return new ChildVisitor() {
+//out();
+//out("GET VISITOR");
+    return new DefaultVisitor() {
+      // # 120419
       @Override
-      public void visit(ExtensibilityElement element) {
-//out("WSDL VISIT: " + element);
+      public void visit(Definitions definitions) {
+//out();
+//out("definitions: " + definitions);
+        List<PropertyAlias> aliases = new ArrayList<PropertyAlias>();
+        collectPropertyAliases(definitions, aliases);
+//out("aliases: " + aliases.size());
+
+        for (int i=0; i < aliases.size(); i++) {
+          for (int j=i+1; j < aliases.size(); j++) {
+            if (theSame(aliases.get(i), aliases.get(j))) {
+//out("the same");
+              addError("FIX_Identical_Property_Aliases", aliases.get(i)); // NOI18N
+              addError("FIX_Identical_Property_Aliases", aliases.get(j)); // NOI18N
+            }
+          }
+        }
+        // # 125954
+        visitChildren(definitions);
+      }
+
+      private void visitChildren(Definitions definitions) {
+        Collection<ExtensibilityElement> collection = definitions.getChildren(ExtensibilityElement.class);
+//out("collection: " + elements);
+        Iterator<ExtensibilityElement> iterator = collection.iterator();
+
+        while (iterator.hasNext()) {
+          visitExtensibility(iterator.next());
+        }
+      }
+
+      private boolean theSame(PropertyAlias alias1, PropertyAlias alias2) {
+        if (alias1 == null || alias2 == null) {
+          return false;
+        }
+        return
+          getProperty(alias1) == getProperty(alias2) &&
+          getMessage(alias1) == getMessage(alias2) &&
+          alias1.getPart() == alias2.getPart() &&
+          alias1.getQuery() == alias2.getQuery() &&
+          getGlobalType(alias1) == getGlobalType(alias2) &&
+          getGlobalElement(alias1) == getGlobalElement(alias2);
+      }
+
+      private CorrelationProperty getProperty(PropertyAlias alias) {
+        NamedComponentReference<CorrelationProperty> ref = alias.getPropertyName();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private Message getMessage(PropertyAlias alias) {
+        NamedComponentReference<Message> ref = alias.getMessageType();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private GlobalType getGlobalType(PropertyAlias alias) {
+        NamedComponentReference<GlobalType> ref = alias.getType();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private GlobalElement getGlobalElement(PropertyAlias alias) {
+        NamedComponentReference<GlobalElement> ref = alias.getElement();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private void collectPropertyAliases(WSDLComponent component, List<PropertyAlias> aliases) {
+        if (component instanceof PropertyAlias) {
+          aliases.add((PropertyAlias) component);
+        }
+        List<WSDLComponent> children = component.getChildren();
+
+        for (WSDLComponent child : children) {
+          collectPropertyAliases(child, aliases);
+        }
+      }
+
+      private void visitExtensibility(ExtensibilityElement element) {
+//out("EXT VISIT: " + element);
         if ( !(element instanceof PropertyAlias)) {
           return;
         }
@@ -83,9 +180,10 @@ public final class Validator extends WsdlValidator {
 //out("1");
           return;
         }
-        DocumentComponent query = getQuery(alias);
+        // # 125954
+        DocumentComponent wrongQuery = getWrongQuery(alias);
 
-        if (query != null) {
+        if (wrongQuery != null) {
 //out("2");
           addError("FIX_QUERY_PREFIX", alias); // NOI18N
           return;
@@ -155,7 +253,7 @@ public final class Validator extends WsdlValidator {
         }
         // check
         if (ValidationUtil.getBasedSimpleType(aliasType) != ValidationUtil.getBasedSimpleType(propertyType)) {
-          addWarning("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType)); // NOI18N
+          addWarning("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(propertyType), getTypeName(aliasType)); // NOI18N
 //out("WARNING: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
         }
 //out();
@@ -207,7 +305,7 @@ public final class Validator extends WsdlValidator {
     return null;
   }
 
-  private DocumentComponent getQuery(PropertyAlias alias) {
+  private DocumentComponent getWrongQuery(PropertyAlias alias) {
     List<WSDLComponent> children = alias.getChildren();
 
     for (WSDLComponent child : children) {

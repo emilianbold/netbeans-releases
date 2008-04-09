@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.bpel.mapper.multiview;
 
+import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
+import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -132,6 +134,22 @@ public class BpelDesignContextFactory implements DesignContextFactory {
         Lookup lookup = nodes[0].getLookup();
         BpelDesignContext bpelContext =
                 createBpelDesignContext(bpelEntity, nodes[0], lookup);
+        return bpelContext;
+    }
+
+    public BpelDesignContext getProcessContext(BpelModel currentBpelModel, Lookup lookup) {
+        if (currentBpelModel == null) {
+            return null;
+        }
+
+        BpelEntity bpelEntity = currentBpelModel.getProcess();
+        Node node = null;
+        if (bpelEntity != null) {
+            node = FactoryAccess.getPropertyNodeFactory().createNode(NodeType.PROCESS, bpelEntity, lookup);
+        }
+
+        BpelDesignContext bpelContext =
+                createBpelDesignContext(bpelEntity, node, lookup);
         return bpelContext;
     }
 

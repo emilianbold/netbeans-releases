@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -92,7 +94,7 @@ import org.openide.util.RequestProcessor;
  *   on file timestamps)
  */
 public final class GemPanel extends JPanel implements Runnable {
-
+    
     private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
     
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
@@ -103,6 +105,9 @@ public final class GemPanel extends JPanel implements Runnable {
     
     private GemManager gemManager;
     
+    private final ExecutorService updateTasksQueue;
+    private boolean closed;
+    
     private List<Gem> installedGems;
     private List<Gem> availableGems;
     private List<Gem> newGems;
@@ -110,10 +115,27 @@ public final class GemPanel extends JPanel implements Runnable {
     private boolean gemsModified;
     private boolean fetchingLocal;
     private boolean fetchingRemote;
-    
+
     public GemPanel(String availableFilter) {
+        this(availableFilter, null);
+    }
+
+    /**
+     * Creates a new GemPanel.
+     * 
+     * @param availableFilter the filter to use for displaying gems, e.g. 
+     * <code>"generators$"</code> for displaying only generator gems.
+     * @param preselected the platform that should be preselected in the panel; 
+     * may be <code>null</code> in which case the last selected platform is preselected.
+     */
+    public GemPanel(String availableFilter, RubyPlatform preselected) {
+        updateTasksQueue = Executors.newSingleThreadExecutor();
         initComponents();
-        Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        if (preselected == null) {
+            Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        } else {
+            platforms.setSelectedItem(preselected);
+        }
         
         RubyPlatform selPlatform = getSelectedPlatform();
         if (selPlatform != null) {
@@ -141,15 +163,22 @@ public final class GemPanel extends JPanel implements Runnable {
             }
         });
         updateAsynchronously();
+        
     }
-
+    
     private void updateAsynchronously() {
         RequestProcessor.getDefault().post(this, 300);
     }
 
     public @Override void removeNotify() {
+        closed = true;
+        cancelRunningTasks();
         Util.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
         super.removeNotify();
+    }
+    
+    private void cancelRunningTasks() {
+        updateTasksQueue.shutdown();
     }
     
     public void run() {
@@ -993,7 +1022,7 @@ public final class GemPanel extends JPanel implements Runnable {
 
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
         Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
-        gemManager.update(null, this, false, false, true, completionTask);
+        gemManager.update(null, this, false, false, false, true, completionTask);
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
@@ -1013,7 +1042,7 @@ public final class GemPanel extends JPanel implements Runnable {
         }
         if (!gems.isEmpty()) {
             Runnable completionTask = new GemListRefresher(updatedList, TabIndex.INSTALLED);
-            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, true, completionTask);
+            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, false, true, completionTask);
         }
     }//GEN-LAST:event_updateButtonActionPerformed
 
@@ -1119,42 +1148,42 @@ public final class GemPanel extends JPanel implements Runnable {
      * from the gem manager, otherwise just refilter list.
     */
     private void refreshGemList(final TabIndex tab) {
-        Runnable runner = new Runnable() {
-            public void run() {
-                synchronized(GemPanel.this) {
-                    assert !SwingUtilities.isEventDispatchThread();
-
-                    final List<String> errors = new ArrayList<String>(500);
-                    if (tab == TabIndex.INSTALLED) {
+        Runnable updateTask = new Runnable() {
+            public void run() { // runs one at time
+                final List<String> errors = new ArrayList<String>(500);
+                switch (tab) {
+                    case INSTALLED:
                         installedGems = gemManager.getInstalledGems(errors);
                         fetchingLocal = false;
-                    } else if (tab == TabIndex.NEW) {
+                        break;
+                    case NEW:
                         availableGems = newGems = gemManager.getRemoteGems(errors);
                         fetchingRemote = false;
-                    }
-
-                    // Update UI
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (!errors.isEmpty()) {
-                                showGemErrors(errors);
-                            }
-                            boolean done = notifyGemsUpdated();
-
-                            if (!done) {
-                                // Just filter
-                                updateList(tab, false);
-                            } else if (tab == TabIndex.INSTALLED) {
-                                updateList(tab, true);
-                            }
-                        }
-                    });
+                        break;
+                    default:
+                        throw new AssertionError("Unknown tab: " + tab);
                 }
+                // Update UI
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (closed) {
+                            return;
+                        }
+                        if (!errors.isEmpty()) {
+                            showGemErrors(errors);
+                        }
+                        boolean done = notifyGemsUpdated();
+                        if (!done) {
+                            // Just filter
+                            updateList(tab, false);
+                        } else if (tab == TabIndex.INSTALLED) {
+                            updateList(tab, true);
+                        }
+                    }
+                });
             }
-
         };
-
-        RequestProcessor.getDefault().post(runner, 50);
+        updateTasksQueue.submit(updateTask);
     }
 
     private void showGemErrors(final List<String> errors) {
@@ -1168,34 +1197,34 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private void refreshGemLists() {
-        Runnable runner = new Runnable() {
+        Runnable updateTask = new Runnable() {
             public void run() {
-                synchronized(GemPanel.this) {
-                    assert !SwingUtilities.isEventDispatchThread();
+                assert !SwingUtilities.isEventDispatchThread();
 
-                    final List<String> errors = new  ArrayList<String>();
-                    gemManager.reloadIfNeeded(errors);
-                    installedGems = gemManager.getInstalledGems(errors);
-                    availableGems = gemManager.getRemoteGems(errors);
-                    newGems = availableGems;
-                    fetchingLocal = false;
-                    fetchingRemote = false;
+                final List<String> errors = new ArrayList<String>();
+                gemManager.reloadIfNeeded(errors);
+                installedGems = gemManager.getInstalledGems(errors);
+                availableGems = gemManager.getRemoteGems(errors);
+                newGems = availableGems;
+                fetchingLocal = false;
+                fetchingRemote = false;
 
-                    // Update UI
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (!errors.isEmpty()) {
-                                showGemErrors(errors);
-                            }
-                            notifyGemsUpdated();
-                            updateList(TabIndex.INSTALLED, true);
+                // Update UI
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (closed) {
+                            return;
                         }
-                    });
-                }
+                        if (!errors.isEmpty()) {
+                            showGemErrors(errors);
+                        }
+                        notifyGemsUpdated();
+                        updateList(TabIndex.INSTALLED, true);
+                    }
+                });
             }
         };
-
-        RequestProcessor.getDefault().post(runner, 50);
+        updateTasksQueue.submit(updateTask);
     }
 
     private String getGemFilter(TabIndex tab) {

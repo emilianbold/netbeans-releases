@@ -251,6 +251,7 @@ public class RubyPlatformCustomizer extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        platformsLabel = new javax.swing.JLabel();
         platformsListSP = new javax.swing.JScrollPane();
         platformsList = PlatformComponentFactory.getRubyPlatformsList();
         addButton = new javax.swing.JButton();
@@ -280,6 +281,9 @@ public class RubyPlatformCustomizer extends JPanel {
         engineLabel = new javax.swing.JLabel();
         engineType = new javax.swing.JLabel();
         installFastDebugger = new javax.swing.JButton();
+
+        platformsLabel.setLabelFor(platformsList);
+        org.openide.awt.Mnemonics.setLocalizedText(platformsLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.platformsLabel.text")); // NOI18N
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
@@ -370,16 +374,16 @@ public class RubyPlatformCustomizer extends JPanel {
                 .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(configPanelLayout.createSequentialGroup()
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
-                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
+                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(removeGemPath)
                             .add(addGemPath)
                             .add(browseGemHome)))
-                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
-                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
-                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)))
+                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)))
         );
 
         configPanelLayout.linkSize(new java.awt.Component[] {gemHome, gemTool, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -433,7 +437,7 @@ public class RubyPlatformCustomizer extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(engineLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.engineLabel.text")); // NOI18N
 
-        engineType.setFont(new java.awt.Font("Dialog", 2, 12));
+        engineType.setFont(engineType.getFont().deriveFont((engineType.getFont().getStyle() | java.awt.Font.ITALIC)));
         org.openide.awt.Mnemonics.setLocalizedText(engineType, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.classicDebuggerEngine.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(installFastDebugger, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.installFastDebugger.text")); // NOI18N
@@ -448,16 +452,18 @@ public class RubyPlatformCustomizer extends JPanel {
         debuggerPanelLayout.setHorizontalGroup(
             debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(debuggerPanelLayout.createSequentialGroup()
-                .add(rubyDebuggerLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE))
-            .add(debuggerPanelLayout.createSequentialGroup()
-                .add(engineLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(engineType)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(installFastDebugger)
-                .add(178, 178, 178))
+                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(debuggerPanelLayout.createSequentialGroup()
+                        .add(rubyDebuggerLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                    .add(debuggerPanelLayout.createSequentialGroup()
+                        .add(engineLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(engineType)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(installFastDebugger)))
+                .addContainerGap())
         );
         debuggerPanelLayout.setVerticalGroup(
             debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -483,7 +489,9 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(platformsLabel)
+                            .add(platformsListSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(debuggerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -494,7 +502,7 @@ public class RubyPlatformCustomizer extends JPanel {
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(autoDetectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 151, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 185, Short.MAX_VALUE)
                         .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -502,15 +510,17 @@ public class RubyPlatformCustomizer extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(platformsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                        .add(6, 6, 6))
                     .add(layout.createSequentialGroup()
                         .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
-                        .add(debuggerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(debuggerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(addButton)
@@ -636,6 +646,7 @@ public class RubyPlatformCustomizer extends JPanel {
     private javax.swing.JLabel gemTool;
     private javax.swing.JTextField gemToolValue;
     private javax.swing.JButton installFastDebugger;
+    private javax.swing.JLabel platformsLabel;
     private javax.swing.JList platformsList;
     private javax.swing.JScrollPane platformsListSP;
     private javax.swing.JLabel plfInterpreter;

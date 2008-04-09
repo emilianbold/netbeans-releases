@@ -266,7 +266,7 @@ NodeActionsProviderFilter, Constants {
     }
 
     private Object setValue (Variable var, NumericDisplaySettings settings, String origValue) {
-        if (settings == null) return var.getValue ();
+        if (settings == null) return origValue;
         String type = var.getType ();
         try {
             switch (settings.getDisplayAs ()) {

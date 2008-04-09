@@ -614,7 +614,7 @@ public final class RubyPlatform {
     }
 
     private void checkAndReport(final String gemName, final String gemVersion, final StringBuilder errors) {
-        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion)) {
+        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion));
             errors.append("<br>"); // NOI18N
         }
@@ -714,6 +714,11 @@ public final class RubyPlatform {
     public void setGemHome(File gemHome) {
         assert hasRubyGemsInstalled() : "has RubyGems installed";
         info.setGemHome(gemHome.getAbsolutePath());
+        try {
+            RubyPlatformManager.storePlatform(this);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+        }
         gemManager.reset();
     }
 
@@ -790,7 +795,7 @@ public final class RubyPlatform {
             this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
             this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
             this.platform = props.getProperty(RUBY_PLATFORM);
-            this.gemHome = props.getProperty(GEM_HOME);
+            setGemHome(props.getProperty(GEM_HOME));
             this.gemPath = props.getProperty(GEM_PATH);
             this.gemVersion = props.getProperty(GEM_VERSION);
         }
@@ -803,12 +808,12 @@ public final class RubyPlatform {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.1RC2"; // NOI18N
-            info.patchlevel = "5512"; // NOI18N
-            info.releaseDate = "2008-01-12"; // NOI18N
+            info.jversion = "1.1"; // NOI18N
+            info.patchlevel = "6360"; // NOI18N
+            info.releaseDate = "2008-03-31"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.1RC2", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath(); // NOI18N
@@ -837,8 +842,8 @@ public final class RubyPlatform {
             return "JRuby".equals(kind); // NOI18N
         }
 
-        public void setGemHome(String gemHome) {
-            this.gemHome = gemHome;
+        public final void setGemHome(String gemHome) {
+            this.gemHome = gemHome == null ? null : new File(gemHome).getAbsolutePath();
         }
         
         public String getGemHome() {
@@ -885,5 +890,38 @@ public final class RubyPlatform {
             return "RubyPlatform$Info[GEM_HOME:" + getGemHome() + ", GEM_PATH: " + getGemPath() + "]"; // NOI18N
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Info other = (Info) obj;
+            if (this.kind != other.kind && (this.kind == null || !this.kind.equals(other.kind))) {
+                return false;
+            }
+            if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
+                return false;
+            }
+            if (this.patchlevel != other.patchlevel && (this.patchlevel == null || !this.patchlevel.equals(other.patchlevel))) {
+                return false;
+            }
+            if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 83 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+            hash = 83 * hash + (this.version != null ? this.version.hashCode() : 0);
+            hash = 83 * hash + (this.patchlevel != null ? this.patchlevel.hashCode() : 0);
+            hash = 83 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+            return hash;
+        }
     }
 }

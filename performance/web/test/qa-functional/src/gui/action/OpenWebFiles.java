@@ -47,13 +47,19 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
+
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenWebFiles extends WebPerformanceTestCase {
+public class OpenWebFiles extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;
@@ -96,6 +102,27 @@ public class OpenWebFiles extends WebPerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+        class PhaseHandler extends Handler {
+            
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
+               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+            
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
     
     public void testOpeningWebXmlFile(){
         WAIT_AFTER_OPEN = 1000;
@@ -189,6 +216,7 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
 
     public void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
         //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();
@@ -196,6 +224,7 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         System.out.println("PREPARE: "+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
         

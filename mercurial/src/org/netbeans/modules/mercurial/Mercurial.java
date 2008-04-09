@@ -59,6 +59,7 @@ import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Utilities;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -142,6 +143,14 @@ public class Mercurial {
                         break;
                      } 
                  } 
+            }
+        }else if (Utilities.isWindows()) { // NOI18N
+            String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
+            if (defaultPath == null || defaultPath.length() == 0) {
+                String path = HgUtils.findInUserPath(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE);
+                if (path != null && !path.equals("")) { // NOI18N
+                    HgModuleConfig.getDefault().setExecutableBinaryPath (path); // NOI18N
+                } 
             }
         }
     }
@@ -324,13 +333,16 @@ public class Mercurial {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
+        LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+
+        // We can get status returned as UptoDate instead of LocallyNew
+        // because refreshing of status after creation has been scheduled
+        // but may not have happened yet.
 
         try {
             File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-            if (original == null) {
-                throw new IOException("Unable to get BASE revision of " + workingCopy);
-            }
+            if (original == null) return;
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
             original.delete();
         } catch (IOException e) {
@@ -386,5 +398,9 @@ public class Mercurial {
      */
     public OutputLogger getLogger(String repositoryRoot) {
         return OutputLogger.getLogger(repositoryRoot);
+    }
+
+    public Boolean isRefreshScheduled(File file) {
+        return mercurialInterceptor.isRefreshScheduled(file);
     }
 }

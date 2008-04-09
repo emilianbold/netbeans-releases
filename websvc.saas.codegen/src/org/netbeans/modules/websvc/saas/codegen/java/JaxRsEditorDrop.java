@@ -93,9 +93,11 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
     }
     
     private boolean doHandleTransfer(final JTextComponent targetComponent) {
-        FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
+        final FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
         Method m = method.getWadlMethod();
+        if(m == null)
+            Exceptions.printStackTrace(new IOException("Wadl method not found"));
         final String displayName = m.getName();
         
         targetFO = getTargetFile(targetComponent);
@@ -117,25 +119,17 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = bean.filterParametersByAuth(
                             bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-                    if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
-                        JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
-                                codegen.getSubresourceLocatorUriTemplate(),
-                                bean.getQualifiedClassName(), 
-                                allParams,
-                                codegen.canShowResourceInfo(), showParams);
-
+                    if(!allParams.isEmpty()) {
+                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
+                 
                         DialogDescriptor desc = new DialogDescriptor(panel, 
                                 NbBundle.getMessage(JaxRsEditorDrop.class,
                                 "LBL_CustomizeSaasService", displayName));
                         Object response = DialogDisplayer.getDefault().notify(desc);
 
-                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                            codegen.setSubresourceLocatorName(panel.getMethodName());
-                        } else {
+                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
                             // cancel
                             return;
                         }
@@ -147,11 +141,12 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
                             errors.add(ex);
                     }
-                    try {
-                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
-                    } catch(IOException ex) {//ignore
-                    }
                 } catch (Exception ioe) {
+                    if(ioe.getMessage().equals(Constants.UNSUPPORTED_DROP)) {
+                        Util.showUnsupportedDropMessage(new Object[] {
+                            targetSource.getNameExt(), "Java Client"});
+                        return;
+                    }
                     errors.add(ioe);
                 } finally {
                     dialog.close();

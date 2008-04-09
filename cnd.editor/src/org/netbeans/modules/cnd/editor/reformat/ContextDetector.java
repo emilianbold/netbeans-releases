@@ -54,7 +54,61 @@ public class ContextDetector extends ExtendedTokenSequence {
         super(ts, diffs);
         this.braces = braces;
     }
+    
+    /*package local*/ boolean isStatementContinuation(){
+        Token<CppTokenId> prev = lookPreviousImportant();
+        Token<CppTokenId> next = lookNextImportant();
+        if (prev == null || next == null){
+            return false;
+        }
+        if (next.id() == IDENTIFIER) {
+            if (prev.id() == IDENTIFIER) {
+                return false;
+            } else if (prev.id() == RPAREN) {
+                prev =lookPreviousStatement();
+                if (prev.id() == IDENTIFIER){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
+    /*package local*/ boolean isQuestionColumn(){
+        int index = index();
+        try {
+            int depth = 0;
+            while(movePrevious()) {
+                if (braces.lastStatementStart >= index()){
+                    return false;
+                }
+                switch (token().id()) {
+                    case RPAREN:
+                        depth++;
+                        break;
+                    case LPAREN:
+                        depth--;
+                        if (depth < 0) {
+                            return false;
+                        }
+                        break;
+                    case QUESTION:
+                        if (depth == 0) {
+                            return true;
+                        }
+                    case LBRACE:
+                    case RBRACE:
+                    case SEMICOLON:
+                        return false;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
     /*package local*/ boolean isLikeTemplate(Token<CppTokenId> current){
         int index = index();
         try {
@@ -294,6 +348,65 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case LT:
                     default:
                         return OperatorKind.SEPARATOR;
+                }
+            }
+            if (OPERATOR_CATEGORY.equals(prevCategory)) {
+                switch(previous.id()){
+                    case EQ: //("=", "operator"),
+                    case PLUSEQ: //("+=", "operator"),
+                    case MINUSEQ: //("-=", "operator"),
+                    case STAREQ: //("*=", "operator"),
+                    case SLASHEQ: //("/=", "operator"),
+                    case AMPEQ: //("&=", "operator"),
+                    case BAREQ: //("|=", "operator"),
+                    case CARETEQ: //("^=", "operator"),
+                    case PERCENTEQ: //("%=", "operator"),
+                    case LTLTEQ: //("<<=", "operator"),
+                    case GTGTEQ: //(">>=", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case LT: //("<", "operator"),
+                    case EQEQ: //("==", "operator"),
+                    case LTEQ: //("<=", "operator"),
+                    case GTEQ: //(">=", "operator"),
+                    case NOTEQ: //("!=","operator"),
+                    case AMPAMP: //("&&", "operator"),
+                    case BARBAR: //("||", "operator"),
+                    case SLASH: //("/", "operator"),
+                    case BAR: //("|", "operator"),
+                    case PERCENT: //("%", "operator"),
+                    case LTLT: //("<<", "operator"),
+                    case GTGT: //(">>", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case GT: //(">", "operator"),
+                        switch(current.id()){
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                                return OperatorKind.SEPARATOR;
+                        }
+                        break;
                 }
             }
             if (NUMBER_CATEGORY.equals(prevCategory) ||

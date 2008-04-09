@@ -73,8 +73,8 @@ public class JsIndex {
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
-    static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
-    static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
+    public static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
+    public static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
     
     private static final Set<String> TERMS_FQN = Collections.singleton(JsIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(JsIndexer.FIELD_BASE);
@@ -222,13 +222,18 @@ public class JsIndex {
      */
     public Set<IndexedElement> getElements(String prefix, String type,
             NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
-        return getByFqn(prefix, type, kind, scope, false, context, true, true);
+        return getByFqn(prefix, type, kind, scope, false, context, true, true, false);
     }
 
+    public Set<IndexedElement> getAllElements(String prefix, String type,
+            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
+        return getByFqn(prefix, type, kind, scope, false, context, true, true, true);
+    }
+    
     @SuppressWarnings("unchecked")
     public Set<IndexedFunction> getFunctions(String name, String in, NameKind kind,
         Set<Index.SearchScope> scope, JsParseResult context, boolean includeMethods) {
-        return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, scope, false, context, includeMethods, false);
+        return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, scope, false, context, includeMethods, false, false);
     }
     
     private Set<IndexedElement> getUnknownFunctions(String name, NameKind kind,
@@ -301,7 +306,7 @@ public class JsIndex {
                                 (signature.charAt(lcname.length()) != ';'))) {
                             continue;
                         }
-                    }
+                    } // TODO - check camel case here too!
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
                     assert map != null;
@@ -339,14 +344,18 @@ public class JsIndex {
                         continue;
                     }
                     
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+                    String fqn = null; // Compute lazily
+                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), fqn, elementName, funcIn, inEndIdx, this, false);
                     boolean isFunction = element instanceof IndexedFunction;
                     if (isFunction && !includeMethods) {
                         continue;
+                    } else if (onlyConstructors) {
+                        if (element.getKind() == ElementKind.PROPERTY && funcIn == null && Character.isUpperCase(elementName.charAt(0))) {
+                            element.setKind(ElementKind.CONSTRUCTOR);
+                        } else if (element.getKind() != ElementKind.CONSTRUCTOR) {
+                            continue;
+                        }
                     } else if (!isFunction && !includeProperties) {
-                        continue;
-                    }
-                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
                         continue;
                     }
                     elements.add(element);
@@ -359,7 +368,7 @@ public class JsIndex {
     
     private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
         Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
-        boolean includeMethods, boolean includeProperties) {
+        boolean includeMethods, boolean includeProperties, boolean includeDuplicates) {
         //assert in != null && in.length() > 0;
         
         final Set<SearchResult> result = new HashSet<SearchResult>();
@@ -380,7 +389,7 @@ public class JsIndex {
             //terms = FQN_BASE_LOWER;
         }
 
-        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
+        final Set<IndexedElement> elements = includeDuplicates ? new DuplicateElementSet() : new HashSet<IndexedElement>();
         String searchUrl = null;
         if (context != null) {
             try {
@@ -491,10 +500,10 @@ public class JsIndex {
                                 }
                                 if (type != null && type.length() > 0) {
                                     String pkg = elementName.substring(type.length()+1, nextDot);
-                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
                                 } else {
                                     String pkg = elementName.substring(0, nextDot);
-                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
                                 }
                             } else {
                                 funcIn = elementName.substring(0, lastDot);
@@ -505,7 +514,7 @@ public class JsIndex {
                             elementName = elementName.substring(lastDot+1);
                         }
                         if (element == null) {
-                            element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+                            element = IndexedElement.create(signature, map.getPersistentUrl(), null, elementName, funcIn, inEndIdx, this, false);
                         }
                         boolean isFunction = element instanceof IndexedFunction;
                         if (isFunction && !includeMethods) {

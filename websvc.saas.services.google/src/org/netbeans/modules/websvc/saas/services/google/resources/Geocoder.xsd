@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://earth.google.com/kml/2.0"
+            xmlns:tns="http://earth.google.com/kml/2.0"
+            elementFormDefault="qualified">
+    <xsd:element name="kml">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Response">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="name"/>
+                            <xsd:element name="Status">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="code"/>
+                                        <xsd:element name="request"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="Placemark">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="address"/>
+                                        <xsd:element name="AddressDetails">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="Country">
+                                                        <xsd:complexType>
+                                                            <xsd:sequence>
+                                                                <xsd:element name="CountryNameCode"/>
+                                                                <xsd:element name="AdministrativeArea">
+                                                                    <xsd:complexType>
+                                                                        <xsd:sequence>
+                                                                            <xsd:element name="AdministrativeAreaName"/>
+                                                                            <xsd:element name="SubAdministrativeArea">
+                                                                                <xsd:complexType>
+                                                                                    <xsd:sequence>
+                                                                                        <xsd:element name="SubAdministrativeAreaName"/>
+                                                                                        <xsd:element name="Locality">
+                                                                                            <xsd:complexType>
+                                                                                                <xsd:sequence>
+                                                                                                    <xsd:element name="LocalityName"/>
+                                                                                                    <xsd:element name="Thoroughfare">
+                                                                                                        <xsd:complexType>
+                                                                                                            <xsd:sequence>
+                                                                                                                <xsd:element name="ThoroughfareName"/>
+                                                                                                            </xsd:sequence>
+                                                                                                        </xsd:complexType>
+                                                                                                    </xsd:element>
+                                                                                                    <xsd:element name="PostalCode">
+                                                                                                        <xsd:complexType>
+                                                                                                            <xsd:sequence>
+                                                                                                                <xsd:element name="PostalCodeNumber"/>
+                                                                                                            </xsd:sequence>
+                                                                                                        </xsd:complexType>
+                                                                                                    </xsd:element>
+                                                                                                </xsd:sequence>
+                                                                                            </xsd:complexType>
+                                                                                        </xsd:element>
+                                                                                    </xsd:sequence>
+                                                                                </xsd:complexType>
+                                                                            </xsd:element>
+                                                                        </xsd:sequence>
+                                                                    </xsd:complexType>
+                                                                </xsd:element>
+                                                            </xsd:sequence>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                </xsd:sequence>
+                                                <xsd:attribute name="Accuracy" type="xsd:string"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                        <xsd:element name="Point">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="coordinates"/>
+                                                </xsd:sequence>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

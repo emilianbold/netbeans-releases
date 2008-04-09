@@ -142,7 +142,7 @@ public class CasaWrapperModel extends CasaModel {
     public static final String PROPERTY_SERVICE_UNIT_RENAMED = PROPERTY_PREFIX + "service_unit_renamed";    // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED = PROPERTY_PREFIX + "service_unit_added";   // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
-    private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
+    private static final String COMPAPP_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
     private static final String JBI_SOURCE_DIR = "jbiasa";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
@@ -738,7 +738,7 @@ public class CasaWrapperModel extends CasaModel {
         assert portType != null;
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
 
-        ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
+        ExtensibilityElementTemplateFactory factory = ExtensibilityElementTemplateFactory.getDefault();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
         LocalizedTemplateGroup ltg = null;
@@ -1065,10 +1065,10 @@ public class CasaWrapperModel extends CasaModel {
             QName providesInterfaceQName = endpointRef2.getInterfaceQName();
             if (!consumesInterfaceQName.equals(providesInterfaceQName)) {
                 boolean isFreeEditablePort1 = casaPort1 != null &&
-                        isEditable(casaPort1) &&
+                        isEditable(casaPort1, JBIAttributes.INTERFACE_NAME.getName()) &&
                         getConnections(casaPort1, false).size() == 0; // the flag here doesn't matter
                 boolean isFreeEditablePort2 = casaPort2 != null &&
-                        isEditable(casaPort2) &&
+                        isEditable(casaPort2, JBIAttributes.INTERFACE_NAME.getName()) &&
                         getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter
                 // Two incompatible endpoints are connectable if and only if
                 // at least one is a free editable BC port.
@@ -1082,6 +1082,11 @@ public class CasaWrapperModel extends CasaModel {
         if (!endpoint1Defined && !endpoint2Defined) {
             return NbBundle.getMessage(this.getClass(),
                     "MSG_CANNOT_CONNECT_TWO_UNDEFINED_ENDPOINTS"); // NOI18N
+        }
+        
+        if (endpointRef1.getEndpoint().get() == endpointRef2.getEndpoint().get()) {
+            return NbBundle.getMessage(this.getClass(),
+                    "MSG_CANNOT_CONNECT_SAME_ENDPOINT"); // NOI18N            
         }
 
         return null;
@@ -1434,7 +1439,7 @@ public class CasaWrapperModel extends CasaModel {
 
     private String getRelativePathForCompAppWSDL() {
         String compAppWSDLFileName = getCompAppWSDLFileName();
-        return CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName;
+        return COMPAPP_WSDL_RELATIVE_LOCATION + compAppWSDLFileName;
     }
 
     private String getPortHref(String relativePath, String serviceName, String portName) {
@@ -1453,7 +1458,7 @@ public class CasaWrapperModel extends CasaModel {
         if (jbiProject != null) {
             return JbiProjectHelper.getJbiProjectName(jbiProject) + ".wsdl"; // NOI18N
         } else {
-            return null;
+            return "casa.wsdl"; // NOI18N
         }
     }
 
@@ -2625,7 +2630,7 @@ public class CasaWrapperModel extends CasaModel {
         FileObject casaFO = lookup.lookup(FileObject.class);
         URI uri = null;
         try {
-            uri = new URI(CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName);
+            uri = new URI(getRelativePathForCompAppWSDL());
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
@@ -2767,11 +2772,17 @@ public class CasaWrapperModel extends CasaModel {
             return false;
         }
 
-        // Can't edit internface name when there is visible connection
-        if (JBIAttributes.INTERFACE_NAME.getName().equals(propertyName) &&
-                getConnections(casaPort, false).size() > 0) {
-            return false;
-        }
+        if (JBIAttributes.INTERFACE_NAME.getName().equals(propertyName)) {
+            // Can't edit internface name when there is visible connection
+            if (getConnections(casaPort, false).size() > 0) {
+                return false;
+            }
+            
+            // Can't edit interface name if defined outside of CompApp.wsdl
+            if (!isDefinedInCompAppWSDL(casaPort)) {
+                return false;
+            }
+        }        
 
         return true;
     }
@@ -3492,11 +3503,13 @@ public class CasaWrapperModel extends CasaModel {
      */
     public boolean isWsitEnable(final CasaPort casaPort) {
         Port port = getLinkedWSDLPort(casaPort);
-        Binding binding = port.getBinding().get();
-        for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
-            String exNS = ex.getQName().getNamespaceURI();
-            if (exNS.equals("http://schemas.xmlsoap.org/ws/2004/09/policy")) { // NOI18N
-                return true;
+        if (port != null) {
+            Binding binding = port.getBinding().get();
+            for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
+                String exNS = ex.getQName().getNamespaceURI();
+                if (exNS.equals("http://schemas.xmlsoap.org/ws/2004/09/policy")) { // NOI18N
+                    return true;
+                }
             }
         }
         return false;

@@ -173,6 +173,18 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     }
           
     private Lookup.Result<AsmDataObject> lookupResult;
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        regUsagePanel.closed();
+    }
+
+    @Override
+    protected void componentOpened() {
+        super.componentOpened();
+        regUsagePanel.opened();
+    }
     
     @Override
     public void componentShowing() {        

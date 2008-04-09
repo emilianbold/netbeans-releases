@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -67,18 +68,26 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         super(name);
     }
 
+    @Override
     protected Level logLevel() {
         return Level.FINE;
     }
     
     @Override
     protected void setUp() throws Exception {
+        if (System.getProperty("netbeans.user") == null) {
+            System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getPath());
+        }
+        
         LOG = Logger.getLogger("Test." + getName());
         
         Lookup.getDefault().lookup(ModuleInfo.class);
         assertEquals(MainLookup.class, Lookup.getDefault().getClass());
 
         root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        for (FileObject fo : root.getChildren()) {
+            fo.delete();
+        }
         
         super.setUp();
     }

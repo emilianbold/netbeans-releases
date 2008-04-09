@@ -70,25 +70,32 @@ public final class ProjectImportLocationWizardPanel implements WizardDescriptor.
     private String importLabel;
     private String name;
     private String title;
+    private boolean allowAlternativeBuildXml;
     
     public ProjectImportLocationWizardPanel (Object j2eeModuleType, String name, String title,
-            String defaultNameFormatter, String importLabel) {
+            String defaultNameFormatter, String importLabel, boolean allowAlternativeBuildXml) {
         this.j2eeModuleType = j2eeModuleType;
         this.defaultNameFormatter = defaultNameFormatter;
         this.importLabel = importLabel;
         this.name = name;
         this.title = title;
+        this.allowAlternativeBuildXml = allowAlternativeBuildXml;
+    }
+    
+    public ProjectImportLocationWizardPanel (Object j2eeModuleType, String name, String title,
+            String defaultNameFormatter, String importLabel) {
+        this(j2eeModuleType, name, title, defaultNameFormatter, importLabel, false);
     }
 
     public java.awt.Component getComponent () {
         if (panel == null) {
-            panel = new ProjectImportLocationPanel(j2eeModuleType, name, title, this, defaultNameFormatter, importLabel);
+            panel = new ProjectImportLocationPanel(j2eeModuleType, name, title, this, defaultNameFormatter, importLabel, allowAlternativeBuildXml);
         }
         return panel;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(ProjectImportLocationWizardPanel.class);
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectImportLocationWizardPanel.class, j2eeModuleType));
     }
 
     public boolean isValid () {
@@ -138,7 +145,7 @@ public final class ProjectImportLocationWizardPanel implements WizardDescriptor.
         File dirF = new File(panel.projectLocationTextField.getText());
         if (new File(dirF, getBuildFile()).exists()) {
             File bf = new File(dirF, getBuildFile());
-            if (bf.exists()) {
+            if (bf.exists() && allowAlternativeBuildXml) {
                 JButton ok = createButton(
                         "LBL_IW_Buildfile_OK", "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic", //NOI18N
                         "LBL_IW_BuildFileDialog_OK_LabelMnemonic"); //NOI18N

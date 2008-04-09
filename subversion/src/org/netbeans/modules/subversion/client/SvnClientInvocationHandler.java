@@ -44,10 +44,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
-import java.util.*;
 import java.util.logging.Level;
 import javax.net.ssl.SSLKeyException;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.util.Cancellable;
@@ -60,32 +58,10 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  * @author Tomas Stupka 
  */
 public class SvnClientInvocationHandler implements InvocationHandler {    
-    
-    private static Set<String> remoteMethods = new HashSet<String>();    
-    static {
-        remoteMethods.add("checkout");  // NOI18N
-        remoteMethods.add("commit"); // NOI18N
-        remoteMethods.add("commitAcrossWC"); // NOI18N
-        remoteMethods.add("getList"); // NOI18N
-        remoteMethods.add("getDirEntry"); // NOI18N
-        remoteMethods.add("copy");  // NOI18N
-        remoteMethods.add("remove"); // NOI18N
-        remoteMethods.add("doExport"); // NOI18N
-        remoteMethods.add("doImport"); // NOI18N
-        remoteMethods.add("mkdir"); // NOI18N
-        remoteMethods.add("move"); // NOI18N
-        remoteMethods.add("update"); // NOI18N
-        remoteMethods.add("getLogMessages"); // NOI18N
-        remoteMethods.add("getContent"); // NOI18N
-        remoteMethods.add("setRevProperty"); // NOI18N
-        remoteMethods.add("diff"); // NOI18N
-        remoteMethods.add("annotate"); // NOI18N
-        remoteMethods.add("getInfo"); // NOI18N
-        remoteMethods.add("switchToUrl"); // NOI18N
-        remoteMethods.add("merge"); // NOI18N
-        remoteMethods.add("lock"); // NOI18N
-        remoteMethods.add("unlock"); // NOI18N        
-    }       
+        
+    protected static final String GET_SINGLE_STATUS = "getSingleStatus"; // NOI18N
+    protected static final String GET_STATUS = "getStatus"; // NOI18N
+    protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     
     private static Object semaphor = new Object();        
 
@@ -133,10 +109,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {               
-        
-        String methodName = method.getName();
-        assert noRemoteCallinAWT(methodName, args) : "noRemoteCallinAWT(): " + methodName; // NOI18N
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {                               
 
         try {      
             Object ret = null;        
@@ -147,7 +120,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     ret = invokeMethod(method, args);    
                 }
             }            
-            Subversion.getInstance().getStatusCache().refreshDirtyFileSystems();
             return ret;
         } catch (Exception e) {
             try {
@@ -181,12 +153,23 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
                 } 
                 throw t;
+            } finally {
+                // whatever command was invoked, whatever the result is - 
+                // call refresh for all files notified by the client adapter
+                Subversion.getInstance().getRefreshHandler().refresh();
             }
         }
     }
     
-    protected boolean parallelizable(Method method, Object[] args) {
-        return  SwingUtilities.isEventDispatchThread();
+    private boolean parallelizable(Method method, Object[] args) {
+        return isLocalReadCommand(method, args);
+    }
+    
+    protected boolean isLocalReadCommand(Method method, Object[] args) {
+        String methodName = method.getName();
+        return methodName.equals(GET_SINGLE_STATUS) || 
+               methodName.equals(GET_INFO_FROM_WORKING_COPY) ||  
+               (method.getName().equals(GET_STATUS) && method.getParameterTypes().length == 3);
     }
     
     protected Object invokeMethod(Method proxyMethod, Object[] args)
@@ -247,18 +230,5 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         return eh.handleException();        
     }
     
-   /**
-     * @return false for methods that perform calls over network
-     */
-    protected boolean noRemoteCallinAWT(String methodName, Object[] args) {
-        if(!SwingUtilities.isEventDispatchThread()) {
-            return true;
-        }
-
-        if (remoteMethods.contains(methodName)) {
-            return false;
-        } 
-        return true;
-    }
 }
 

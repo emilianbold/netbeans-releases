@@ -1,0 +1,120 @@
+/*
+ *  PeopleResource
+ *
+ * Created on March 22, 2008, 4:30 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package service;
+
+import entity.Person;
+import java.util.Collection;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import converter.PeopleConverter;
+import converter.PersonConverter;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@Path("/people/")
+public class PeopleResource {
+    @Context
+    private UriInfo context;
+  
+    /** Creates a new instance of PeopleResource */
+    public PeopleResource() {
+    }
+
+    /**
+     * Constructor used for instantiating an instance of dynamic resource.
+     *
+     * @param context HttpContext inherited from the parent resource
+     */
+    public PeopleResource(UriInfo context) {
+        this.context = context;
+    }
+
+    /**
+     * Get method for retrieving a collection of Person instance in XML format.
+     *
+     * @return an instance of PeopleConverter
+     */
+    @GET
+    @ProduceMime({"application/xml", "application/json"})
+    public PeopleConverter get(@QueryParam("start")
+    @DefaultValue("0")
+    int start, @QueryParam("max")
+    @DefaultValue("10")
+    int max) {
+        try {
+            return new PeopleConverter(getEntities(start, max), context.getAbsolutePath());
+        } finally {
+            PersistenceService.getInstance().close();
+        }
+    }
+
+    /**
+     * Post method for creating an instance of Person using XML as the input format.
+     *
+     * @param data an PersonConverter entity that is deserialized from an XML stream
+     * @return an instance of PersonConverter
+     */
+    @POST
+    @ConsumeMime({"application/xml", "application/json"})
+    public Response post(PersonConverter data) {
+        PersistenceService service = PersistenceService.getInstance();
+        try {
+            service.beginTx();
+            Person entity = data.getEntity();
+            createEntity(entity);
+            service.commitTx();
+            return Response.created(context.getAbsolutePath().resolve(entity.getId() + "/")).build();
+        } finally {
+            service.close();
+        }
+    }
+
+    /**
+     * Returns a dynamic instance of PersonResource used for entity navigation.
+     *
+     * @return an instance of PersonResource
+     */
+    @Path("{id}/")
+    public PersonResource getPersonResource(@PathParam("id")
+    String id) {
+        return new PersonResource(id, context);
+    }
+
+    /**
+     * Returns all the entities associated with this resource.
+     *
+     * @return a collection of Person instances
+     */
+    protected Collection<Person> getEntities(int start, int max) {
+        return PersistenceService.getInstance().createQuery("SELECT e FROM Person e").setFirstResult(start).setMaxResults(max).getResultList();
+    }
+
+    /**
+     * Persist the given entity.
+     *
+     * @param entity the entity to persist
+     */
+    protected void createEntity(Person entity) {
+        PersistenceService.getInstance().persistEntity(entity);
+    }
+}

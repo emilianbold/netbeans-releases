@@ -61,6 +61,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -144,7 +145,7 @@ public class JsTypeSearcher implements TypeSearcher {
         Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
         Set<IndexedElement> elements;
         int dot = textForQuery.lastIndexOf('.');
-        if (dot != -1) {
+        if (dot != -1 && (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX)) {
             String prefix = textForQuery.substring(dot+1);
             String in = textForQuery.substring(0, dot);
             elements = index.getElements(prefix, in, kind, scope, null);
@@ -377,6 +378,6 @@ public class JsTypeSearcher implements TypeSearcher {
     }
 
     public String getMimetype() {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 }

@@ -957,6 +957,14 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 return token(HTMLTokenId.BLOCK_COMMENT);
                 
             case ISI_TAG:
+                lexerState = ISP_TAG_X;
+                //test if the tagname is SCRIPT
+                if(SCRIPT.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                    lexerEmbeddingState = ISI_SCRIPT;
+                }
+                if(STYLE.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                    lexerEmbeddingState = ISI_STYLE;
+                }
                 return token(HTMLTokenId.TAG_OPEN);
             case ISI_ENDTAG:
                 return token(HTMLTokenId.TAG_CLOSE);
@@ -982,6 +990,9 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
+                if (attributeName != null && EVENT_HANDLER_NAMES.contains(attributeName)) {
+                    return token(HTMLTokenId.VALUE_JAVASCRIPT);
+                }
                 return token(HTMLTokenId.VALUE);
                 
             case ISI_SGML_DECL:

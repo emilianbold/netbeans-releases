@@ -81,8 +81,15 @@ import org.netbeans.modules.sql.framework.ui.event.SQLLinkEvent;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import javax.swing.event.UndoableEditListener;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
  * Concrete implementation of SQLBuilderModel for use in representing SQL object models.
@@ -104,6 +111,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
 
     // New
     public CollabSQLUIModelImpl(String collaborationName) { // throws BaseException {
+
         this();
         this.sqlDefinition = SQLModelObjectFactory.getInstance().createSQLDefinition(collaborationName);
         sqlDefinition.addSQLObjectListener(this);
@@ -112,6 +120,8 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
     }
 
     public void addObject(SQLObject sqlObject) throws BaseException {
+        //Have to add it first so that it reflects when you switch from the Source and Design View in the first time 
+        //sqlDefinition.addObject(sqlObject);
         super.addObject(sqlObject);
         addObjectIgnoreUndo(sqlObject);
     }
@@ -604,5 +614,78 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
                 this.removeObject(nullLiteral);
             }
         }
+    }
+
+    public void removeComponentListener(ComponentListener cl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addComponentListener(ComponentListener cl) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableEditListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableEditListener(UndoableEditListener uel) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableRefactorListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableRefactorListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sync() throws IOException {
+        //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean inSync() {
+        return true;
+    //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public State getState() {
+        return null;
+    //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isIntransaction() {
+        return true;
+    // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean startTransaction() {
+        return true;
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void endTransaction() {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addChildComponent(Component target, Component child, int index) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeChildComponent(Component child) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ModelSource getModelSource() {
+        return null;
+    // throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -191,19 +191,18 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
         }
         
         for (Item item : classpath) {
-            webModuleLibs.appendChild(createLibraryElement(doc, 
-                CommonProjectUtils.getAntPropertyName( item.getReference() ), item, 
-                antProjectHelper.getProjectDirectory()));
+            webModuleLibs.appendChild(createLibraryElement(antProjectHelper, doc, 
+                CommonProjectUtils.getAntPropertyName( item.getReference() ), item));
         }
 
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
-    private static Element createLibraryElement(Document doc, String pathItem, Item item, FileObject projectFolder) {
+    private static Element createLibraryElement(AntProjectHelper antProjectHelper, Document doc, String pathItem, Item item) {
         Element libraryElement = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_LIBRARY);
         ArrayList<String> files = new ArrayList<String>();
         ArrayList<String> dirs = new ArrayList<String>();
-        ProjectProperties.getFilesForItem(item, files, dirs, projectFolder);
+        ProjectProperties.getFilesForItem(antProjectHelper, item, files, dirs);
         if (files.size() > 0) {
             libraryElement.setAttribute(ATTR_FILES, "" + files.size());
         }

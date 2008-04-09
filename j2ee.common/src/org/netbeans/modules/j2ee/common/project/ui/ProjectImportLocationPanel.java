@@ -79,13 +79,15 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     private String lastModuleLocation = null;
     
     private Object j2eeModuleType;
+    private boolean allowAlternativeBuildXml;
     
     /** Creates new form TestPanel */
     public ProjectImportLocationPanel (Object j2eeModuleType, String name, String title, 
-            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel) {
+            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel, boolean allowAlternativeBuildXml) {
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = nameFormatter;
+        this.allowAlternativeBuildXml = allowAlternativeBuildXml;
         initComponents ();
         jLabelSrcLocationDesc.setText(importLabel);
         currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
@@ -224,6 +226,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 }
                 else if ("build".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (ProjectImportLocationPanel.class,"TXT_BuildFolder");
+                }
+                else if ("build.xml".equals(childName) && !allowAlternativeBuildXml) {    //NOI18N
+                    file = NbBundle.getMessage(ProjectImportLocationPanel.class, "TXT_BuildXML");
                 }
 //                else if ("WEB-INF".equals(childName)) {    //NOI18N
 //                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");
@@ -556,7 +561,23 @@ private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ProjectImportLocationPanel.class);
+        return new HelpCtx(generateHelpID(ProjectImportLocationPanel.class, j2eeModuleType));
+    }
+    
+    static String generateHelpID(Class clazz, Object moduleType) {
+        if (moduleType == J2eeModule.CLIENT) {
+            return clazz.getName()+"_APPCLIENT"; // NOI18N
+        }
+        if (moduleType == J2eeModule.EJB) {
+            return clazz.getName()+"_EJB"; // NOI18N
+        }
+        if (moduleType == J2eeModule.EAR) {
+            return clazz.getName()+"_EAR"; // NOI18N
+        }
+        if (moduleType == J2eeModule.WAR) {
+            return clazz.getName()+"_WAR"; // NOI18N
+        }
+        throw new AssertionError("Unknown module type: "+moduleType); // NOI18N
     }
     
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {

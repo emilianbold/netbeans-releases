@@ -154,7 +154,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle1 = mLoc.t("BUND365: Show SQL");
             String lblShowSql = nbBundle1.substring(15);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
-            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('B', InputEvent.ALT_DOWN_MASK));
+            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
@@ -162,21 +162,22 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle2 = mLoc.t("BUND453: Show Data");
             String lblShowData = nbBundle2.substring(15);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
-            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.ALT_DOWN_MASK));
+            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
 
 
             addSelectVisibleColumnsPopUpMenu(aListener);
-            synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
-            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.ALT_DOWN_MASK));
+            String nbBundle24 = mLoc.t("BUND024: Refresh Metadata");
+            synchroniseItem = new JMenuItem(nbBundle24.substring(15), new ImageIcon(synchroniseImgUrl));
+            synchroniseItem.setMnemonic(nbBundle24.substring(15).charAt(9));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
             String nbBundle3 = mLoc.t("BUND027: Remount");
             String lblRemount = nbBundle3.substring(15);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
-            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.SHIFT_DOWN_MASK));
+            remountItem.setMnemonic(nbBundle3.substring(15).charAt(0));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
@@ -189,14 +190,15 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle4 = mLoc.t("BUND455: Extraction Condition...");
             popUpMenu.addSeparator();
             dataFilterMapItem = new JMenuItem(nbBundle4.substring(15), new ImageIcon(dataFilterImgUrl));
-            dataFilterMapItem.setAccelerator(KeyStroke.getKeyStroke('X',InputEvent.ALT_DOWN_MASK));
+            dataFilterMapItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
+            dataFilterMapItem.setMnemonic(nbBundle4.substring(15).charAt(0));
             dataFilterMapItem.addActionListener(aListener);
             popUpMenu.add(dataFilterMapItem);
 
             // Define data validation action
             String nbBundle5 = mLoc.t("BUND456: Data Validation...");
             dataValidationMapItem = new JMenuItem(nbBundle5.substring(15), new ImageIcon(defineValidationImgUrl));
-            dataValidationMapItem.setAccelerator(KeyStroke.getKeyStroke('Y',InputEvent.ALT_DOWN_MASK));
+            dataValidationMapItem.setMnemonic(nbBundle5.substring(15).charAt(0));
             dataValidationMapItem.addActionListener(aListener);
             popUpMenu.add(dataValidationMapItem);
 
@@ -209,14 +211,14 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle6 = mLoc.t("BUND443: Properties");
             String lblProps = nbBundle6.substring(15);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('Z',InputEvent.SHIFT_DOWN_MASK));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('7',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
 
             // Auto map action
             String nbBundle7 = mLoc.t("BUND458: Auto Map");
             autoMapItem = new JMenuItem(nbBundle7.substring(15), new ImageIcon(autoMapImgUrl));
-            autoMapItem.setAccelerator(KeyStroke.getKeyStroke('A',InputEvent.SHIFT_DOWN_MASK));
+            autoMapItem.setAccelerator(KeyStroke.getKeyStroke('A',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             autoMapItem.addActionListener(aListener);
 
             popUpMenu.addSeparator();

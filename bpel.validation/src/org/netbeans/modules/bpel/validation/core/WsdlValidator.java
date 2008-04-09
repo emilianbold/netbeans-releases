@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -73,21 +73,29 @@ public abstract class WsdlValidator extends CoreValidator {
     if ( !(model instanceof WSDLModel)) {
       return null;
     }
+//out();
+//out("VALIDATE WSDL");
     WSDLModel wsdlModel = (WSDLModel) model;
 
     if (wsdlModel.getState() == Model.State.NOT_WELL_FORMED) {
+//out("11");
       return null;
     }
+//out("22");
     init(validation, type);
 
     if ( !isValidationComplete()) {
+//out("33");
       return null;
     }
     Definitions definitions = wsdlModel.getDefinitions();
-    
+//out("44");
+
     if (definitions == null) {
+//out("55");
       return null;
     }
+//out("66");
     startTime();
     definitions.accept(getVisitor());
     endTime(getDisplayName());

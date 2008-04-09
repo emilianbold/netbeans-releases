@@ -100,9 +100,12 @@ public abstract class BaseProvider implements ElementProvider {
             protected abstract void processProject(CsmProject project, ResultSet result, NameMatcher comparator);
 
             public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
-
                 if( TRACE ) System.err.printf("%s.getElements(%s, %s, %s)\n", getBriefClassName(), project, text, type);
-
+                CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
+                return getElements(csmProject, text, type, first);
+            }            
+            
+            /* package */ Collection<? extends ElementDescriptor> getElements(CsmProject csmProject, String text, SearchType type, boolean first) {
                 NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
                 if( comparator == null ) {
                     return Collections.emptyList();
@@ -112,7 +115,6 @@ public abstract class BaseProvider implements ElementProvider {
                     processedProjects.clear();
                 }
                 ResultSet result = new ResultSetImpl();
-                CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
                 if( csmProject != null ) {
                     // we should check the processed project here:
                     // otherwise when some of the required projects are open,we'll have duplicates
@@ -177,8 +179,15 @@ public abstract class BaseProvider implements ElementProvider {
     
     
     public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
-        cancel();
-	delegate = createDelegate();
+        if( first ) {
+            cancel();
+            delegate = createDelegate();
+        }
+        synchronized (this) {
+            if( delegate == null ) {
+                delegate = createDelegate();
+            }
+        }
         return delegate.getElements(project, text, type, first);
     }
     

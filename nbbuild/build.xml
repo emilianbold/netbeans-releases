@@ -218,7 +218,7 @@ made subject to such option by the copyright holder.
   </target>
 
   <!-- build NBMs for selected modules -->
-  <target name="build-nbms" depends="init">
+  <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />
       <property name="base.nbm.target.dir" location="nbms" />
       
@@ -1319,8 +1319,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
     <mkdir dir="build"/>
-    <property name="l10n.kit" file="build/l10n.zip"/>
+    <property name="l10n.kit" location="build/l10n.zip"/>
+    <property name="nbms.location" location="nbms"/>
     <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}"/>
+  </target>
+  
+  <target name="hg-l10n-kit">
+    <property name="l10n.kit" location="build/l10n.zip"/>
+    <mkdir dir="build"/>
+    <zip destfile="${l10n.kit}">
+        <fileset dir="${nb_all}" includesfile="${nb_all}/installer/l10n.list"/>
+        <fileset dir="${nb_all}" includesfile="${nb_all}/nbi/l10n.list"/>
+    </zip>
   </target>
 
     <target name="clean-untracked-files" depends="bootstrap" description="Removes files from clusters which are not listed as belonging to any NBM.">
@@ -1334,7 +1344,19 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </ducf>
     </target>
 
-  <target name="clean-external">
+  <target name="-cleanall" depends="init-module-list,init-tasks">
+    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
+    <cleanall topdir=".." 
+              modules="${allmodules}" 
+              targetname="clean"
+              resolvedependencies="${resolve.clean.dependencies}"
+              deptargetprefix="all-"
+              failonerror="${stop.when.clean.error}" />
+  </target>
+
+  <target name="clean" depends="hg-clean"/><!-- deprecated -->
+
+  <target name="-clean-external">
     <subant target="clean">
       <fileset dir="..">
         <include name="*/external/build.xml"/>
@@ -1344,7 +1366,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <!-- Use hg-clean instead, which will call this if not in a Hg repo. -->
-  <target name="-real-clean" depends="clean,clean-external">
+  <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
     <echo message="Cleaning old builds..."/>
     <delete>
       <fileset dir=".">
@@ -1357,10 +1379,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
     <delete file="nbantext.jar" quiet="true"/>
     <delete dir="build/antclasses"/>
-  </target>
-
-  <target name="ant-clean">
-    <delete file="nbantext.jar"/>
   </target>
 
   <target name="clean-cluster-flags" unless="do-not-rebuild-clusters">
@@ -1486,21 +1504,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <property name="xtest.debug.address" value="${jpda.address}" />
         <property name="xtest.debug.pause" value="false" />
     </ant>
-  </target>
-
-  <target name="cleanall" depends="init-module-list,init-tasks">
-    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
-    <cleanall topdir=".." 
-              modules="${allmodules}" 
-              targetname="clean"
-              resolvedependencies="${resolve.clean.dependencies}"
-              deptargetprefix="all-"
-              failonerror="${stop.when.clean.error}" />
-  </target>
-
-  <target name="clean" depends="cleanall,localclean"
-          description="Clean out (almost) all build products.">
-    <echo message="Run `ant hg-clean' if desired."/>
   </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
@@ -2016,7 +2019,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="gen-sigtests" depends="sigtests-init">
     <echo message="Generating signature files for ${cluster.config} modules"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}"/>
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+      <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
   </target>
 
   <target name="check-sigtests" depends="sigtests-init">
@@ -2027,6 +2032,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
     
     <concat destfile="${sigtest.output.dir}/all">

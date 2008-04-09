@@ -197,6 +197,8 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                     throw new InvalidExpressionException (ex);
                 } catch (ClassNotLoadedException ex) {
                     throw new InvalidExpressionException (ex);
+                } catch (IllegalArgumentException iaex) {
+                    throw new InvalidExpressionException (iaex);
                 }
             } else {
                 throw new InvalidExpressionException (
@@ -213,12 +215,14 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                 throw new InvalidExpressionException (ex);
             } catch (ClassNotLoadedException ex) {
                 throw new InvalidExpressionException (ex);
+            } catch (IllegalArgumentException iaex) {
+                throw new InvalidExpressionException (iaex);
             }
         }
     }
     
     public String getToStringValue() throws InvalidExpressionException {
-        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger());
+        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger(), 0);
     }
     
     void setException (String exceptionDescription) {

@@ -222,19 +222,19 @@
 ==============================================================
 'size', tokenID=identifier, offset=2741 [72:9/2741-72:13/2745]
 --OWNER:
-    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system'  SCOPE: Stmt  [71:61/2731-81:2/2976]
+    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system.GetModuleCount()'  SCOPE: Stmt  [71:61/2731-81:2/2976]
 --RESOLVED TO:
-    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system'  SCOPE: Stmt  [71:61/2731-81:2/2976]
+    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system.GetModuleCount()'  SCOPE: Stmt  [71:61/2731-81:2/2976]
 ==============================================================
 'system', tokenID=identifier, offset=2748 [72:16/2748-72:22/2754]
 --OWNER:
-    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system'  SCOPE: Stmt  [71:61/2731-81:2/2976]
+    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system.GetModuleCount()'  SCOPE: Stmt  [71:61/2731-81:2/2976]
 --RESOLVED TO:
     VARIABLE system [71:39/2709-71:59/2729] ReferencesTestCase/system.cc  TYPE: const &System TEXT=const System&  [71:39/2709-71:52/2722]  INIT: null  SCOPE: operator << 
 ==============================================================
 'GetModuleCount', tokenID=identifier, offset=2755 [72:23/2755-72:37/2769]
 --OWNER:
-    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system'  SCOPE: Stmt  [71:61/2731-81:2/2976]
+    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system.GetModuleCount()'  SCOPE: Stmt  [71:61/2731-81:2/2976]
 --RESOLVED TO:
     FUNCTION GetModuleCount() const  [60:5/2431-60:32/2458] ReferencesTestCase/system.h
 ==============================================================
@@ -248,7 +248,7 @@
 --OWNER:
     STMT EXPRESSION text='output << "System consists of " << size << " module(s):" << endl << endl'
 --RESOLVED TO:
-    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system'  SCOPE: Stmt  [71:61/2731-81:2/2976]
+    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system.GetModuleCount()'  SCOPE: Stmt  [71:61/2731-81:2/2976]
 ==============================================================
 'endl', tokenID=identifier, offset=2842 [74:65/2842-74:69/2846]
 --OWNER:
@@ -278,7 +278,7 @@
 --OWNER:
      [76:21/2881-76:29/2889] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system'  SCOPE: Stmt  [71:61/2731-81:2/2976]
+    VARIABLE size [72:5/2737-72:40/2772] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [72:5/2737-72:8/2740]  INIT: text='system.GetModuleCount()'  SCOPE: Stmt  [71:61/2731-81:2/2976]
 ==============================================================
 'i', tokenID=identifier, offset=2891 [76:31/2891-76:32/2892]
 --OWNER:

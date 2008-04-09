@@ -40,14 +40,12 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
-import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
@@ -120,7 +118,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
                     Map pfx = root.getPrefixes();
                     int count = 0;
                     while (pfx.get(prefix) != null) {
-                        prefix = "ns" + count;
+                        prefix = "ns" + count;       // NOI18N
                         count++;
                     }
                     root.addPrefix(prefix, namespace);
@@ -171,7 +169,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
                     Map pfx = root.getPrefixes();
                     int count = 0;
                     while (pfx.get(prefix) != null) {
-                        prefix = "ns" + count;
+                        prefix = "ns" + count;       // NOI18N
                         count++;
                     }
                     root.addPrefix(prefix, namespace);
@@ -230,5 +228,10 @@ public class CasaEndpointImpl extends CasaComponentImpl
         
         return new QName(namespaceURI, localPart, prefix);
     }   
+    
+    @Override
+    public String toString() {
+        return getServiceQName() + "." + getEndpointName();
+    }
 
 }

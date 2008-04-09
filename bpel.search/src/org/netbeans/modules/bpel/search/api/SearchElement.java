@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -78,15 +78,19 @@ public interface SearchElement {
   void gotoSource();
 
   /**
-   * Selects element.
+   * Goes to the visual of element.
    */
-  void select();
+  void gotoVisual();
 
   /**
-   * Highlights/unhighlights element.
-   * @param highlighted if true, element is highlighted
+   * Highlights element.
    */
-  void highlight(boolean highlighted);
+  void highlight();
+
+  /**
+   * Unhighlights element.
+   */
+  void unhighlight();
 
   // --------------------------------------------
   public class Adapter implements SearchElement {
@@ -116,17 +120,21 @@ public interface SearchElement {
 
     public void gotoSource() {}
 
-    public void select() {}
+    public void gotoVisual() {}
 
-    public void highlight(boolean highlighted) {}
+    public void highlight() {}
 
-    public String toString() {
+    public void unhighlight() {}
+
+    @Override
+    public String toString()
+    {
       return getName();
     }
 
+    private Icon myIcon;
     private String myName;
     private String myToolTip;
     private SearchElement myParent;
-    private Icon myIcon;
   }
 }

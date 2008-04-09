@@ -46,12 +46,15 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.axis2.WSDLUtils;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -59,6 +62,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -66,16 +70,11 @@ import org.openide.util.RequestProcessor;
  * @author mkuchtiak
  */
 public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<WizardDescriptor>, WizardProperties {
-
-    static final String[] DATA_BINDING = {"ADB", "XML Beans", "JiBX", "none(Axiom)"}; //NOI18N
-    static final String BINDING_ADB="ADB"; //NOI18N
-    static final String BINDING_XML_BEANS="XML Beans"; //NOI18N
-    static final String BINDING_JIBX="JiBX"; //NOI18N
-    static final String BINDING_AXIOM="none(Axiom)"; //NOI18N
     
     private WsFromWsdlGUIPanel1 component;
     private WizardDescriptor wizardDescriptor;
     private Project project;
+    private File wsdlFile;
     
     /** Creates a new instance of WebServiceType */
     public WsFromWsdlPanel1(Project project, WizardDescriptor wizardDescriptor) {
@@ -91,37 +90,38 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
         return component;
     }
     
-    WizardDescriptor getWizardDescriptor() {
-        return wizardDescriptor;
-    }
-    
-    Project getProject() {
-        return project;
-    }
-
     public HelpCtx getHelp() {
-        return new HelpCtx(WsFromJavaPanel0.class);
+        return new HelpCtx(WsFromWsdlPanel1.class);
     }
 
-    public void readSettings(WizardDescriptor settings) {
-        final File wsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
-        if (wsdlFile != null) {
+    public void readSettings(final WizardDescriptor settings) {
+        File newWsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
+        if (newWsdlFile != null && !newWsdlFile.equals(wsdlFile)) {
+            wsdlFile = newWsdlFile;
+            component.setW2JOptions("");
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     FileObject wsdlFo = FileUtil.toFileObject(wsdlFile);
                     WSDLModel wsdlModel = WSDLUtils.getWSDLModel(wsdlFo, true);
                     if (wsdlModel != null) {
+                        settings.putProperty(WizardProperties.PROP_WSDL_NS, WSDLUtils.getTargetNamespace(wsdlModel));
                         Collection<Service> services = WSDLUtils.getServices(wsdlModel);
                         component.setServices(services);
                         if (services != null && services.size()>0) {
                             component.setPorts(WSDLUtils.getPortsForService(services.iterator().next()));
                         }
-                        component.setPackageName(WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace()));
+                        String packageName = WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace());
+                        component.setPackageName(packageName);
+                        component.setW2JOptions("-ss -sd -sn "+component.getServiceName()+
+                                    " -pn "+component.getPortName()+
+                                    " -d " +component.getDatabindingName()+"\n"+
+                                    " -p "+packageName+(component.isSEI() ? " -ssi" : "")
+                        );
                     }
                 }
-                
+
             });
-        }        
+        }
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -130,10 +130,29 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
         settings.putProperty(WizardProperties.PROP_SERVICE_NAME, component.getServiceName());
         settings.putProperty(WizardProperties.PROP_PORT_NAME, component.getPortName());
         settings.putProperty(WizardProperties.PROP_PACKAGE_NAME, component.getPackageName());
+        settings.putProperty(WizardProperties.PROP_WS_TO_JAVA_OPTIONS, component.getW2JMoreOptions());
     }
 
     public boolean isValid() {
+        if ("jibx".equals(component.getDatabindingName()) && !isJiBXRuntime()) { //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+                    NbBundle.getMessage(WsFromWsdlPanel1.class, "MSG_missingJiBX"));
+            return false;
+        }
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
         return component.dataIsValid();
+    }
+    
+    boolean isJiBXRuntime() {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups.length > 0) {
+            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+            if ( cp.findResource("org/jibx/runtime/IBindingFactory.class") != null &&  //NOI18N
+                 cp.findResource("org/jibx/binding/ant/CompileTask.class") != null ) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

@@ -22,6 +22,11 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.openide.ErrorManager;
 
 /**
@@ -31,10 +36,13 @@ import org.openide.ErrorManager;
  */
 public class BpelChangeProcessor implements GraphChangeProcessor {
 
+    private Object mChangeSource;
     private BpelModelUpdater mBpelModelUpdater;
     
-    public BpelChangeProcessor(BpelModelUpdater bpelModelUpdater) {
+    public BpelChangeProcessor(Object source, BpelModelUpdater bpelModelUpdater) {
         assert bpelModelUpdater != null;
+        assert source != null;
+        mChangeSource = source;
         mBpelModelUpdater = bpelModelUpdater;
     }
     
@@ -44,15 +52,52 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
             if (bpelModel == null) {
                 return;
             }
+            
+            processRegisterExtensions(bpelModel);
+            
             bpelModel.invoke(new Callable<Object>() {
                 public Object call() throws Exception {
                     mBpelModelUpdater.updateOnChanges(graphTreePath);
                     return null;
                 }
-            }, this);
+            }, mChangeSource);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    //workaround to fix unsync with source
+    private void processRegisterExtensions(final BpelModel bpelModel) {
+        try {
+            if (bpelModel == null) {
+                return;
+            }
+            
+            bpelModel.invoke(new Callable<Object>() {
+                public Object call() throws Exception {
+                    registerExtensions(bpelModel);
+                    return null;
+                }
+            }, mChangeSource);
+    
+            bpelModel.sync();
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
+    private void registerExtensions(BpelModel bpelModel) throws InvalidNamespaceException {
+        Process process = bpelModel == null ? null : bpelModel.getProcess();
+        if (process == null) {
+            return;
+        }
+        
+        ExNamespaceContext nsContext = process.getNamespaceContext();
+        if (nsContext == null) {
+            return;
+        }
+        nsContext.addNamespace(Trace.LOGGING_NAMESPACE_URI);
+        nsContext.addNamespace(Editor.EDITOR_NAMESPACE_URI);
     }
     
     public void processChanges(final Collection<TreePath> graphTreePathList) {
@@ -61,6 +106,9 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
             if (bpelModel == null) {
                 return;
             }
+            
+            processRegisterExtensions(bpelModel);
+            
             bpelModel.invoke(new Callable<Object>() {
                 public Object call() throws Exception {
                     for (TreePath graphTreePath : graphTreePathList) {
@@ -68,7 +116,7 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
                     }
                     return null;
                 }
-            }, this);
+            }, mChangeSource);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }

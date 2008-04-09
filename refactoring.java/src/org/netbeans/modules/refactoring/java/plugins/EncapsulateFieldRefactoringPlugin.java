@@ -427,12 +427,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             Encapsulator encapsulator = new Encapsulator(
                     Collections.singletonList(desc), desc.p);
             
-            createAndAddElements(
+            Problem problem = createAndAddElements(
                     desc.refs,
                     new TransformTask(encapsulator, desc.fieldHandle),
                     bag, refactoring);
             
-            return encapsulator.getProblem();
+            return problem != null ? problem : encapsulator.getProblem();
         } finally {
             fireProgressListenerStop();
         }
@@ -885,10 +885,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         null);
                 newNode = GeneratorUtilities.get(workingCopy).insertClassMember(newNode == null? node: newNode, setter);
             }
-            if (newNode == null) {
-                node = newNode;
-            }
-            return newNode;
+            
+            return newNode != null ? newNode : node;
         }
         
         private void resolveFieldDeclaration(VariableTree node, EncapsulateDesc desc) {

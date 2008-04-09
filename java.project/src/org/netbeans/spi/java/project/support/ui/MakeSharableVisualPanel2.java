@@ -40,6 +40,7 @@
  */
 package org.netbeans.spi.java.project.support.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -52,6 +53,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -60,6 +62,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
@@ -192,8 +195,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
             }
         });
         TableColumn col2 = tblJars.getColumn("action"); //NOI18N
-        col2.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header2"));
-        col2.sizeWidthToFit();
+        col2.setResizable(true);
 
         JComboBox editorBox = new JComboBox(comboValues);
         editorBox.setEditable(false);
@@ -233,7 +235,25 @@ final class MakeSharableVisualPanel2 extends JPanel {
             }
         });
         tblJars.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // oh well, how to reasonably set the prefered size otherwise?
+        col2.setHeaderRenderer(new XSizer());
+        col2.setHeaderValue("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); //NOI18N
+        col2.sizeWidthToFit();
+        col2.setHeaderRenderer(null);
+        col2.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header2"));
+        
     }
+    
+    private class XSizer extends JLabel implements TableCellRenderer {
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setText("" + value);
+            return this;
+        }
+        
+    }
+            
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -272,7 +292,6 @@ final class MakeSharableVisualPanel2 extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(lblJars)
                 .addContainerGap())
@@ -281,19 +300,20 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 .add(lblDetails)
                 .addContainerGap())
             .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(lblHint)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblJars)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblDetails)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE))
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
         );
 
         lblJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "ACSD_lblJars")); // NOI18N
@@ -313,7 +333,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         try {
             File libraryFile = helper.resolveFile(location);
             File prjDir = FileUtil.toFile(helper.getProjectDirectory());
-            boolean absoluteLibrary = LibrariesSupport.isAbsoluteURL(LibrariesSupport.convertFilePathToURL(location));
+            boolean absoluteLibrary = LibrariesSupport.convertFilePathToURI(location).isAbsolute();
             LibraryManager newmanager = LibraryManager.forLocation(libraryFile.toURI().toURL());
             LibraryManager oldmanager = LibraryManager.getDefault(); //TODO once we support moving from one place to another, change this
             for (String lib : libraries) {

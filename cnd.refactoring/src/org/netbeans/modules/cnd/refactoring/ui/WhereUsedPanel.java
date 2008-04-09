@@ -615,7 +615,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
     private void initFields() {
         this.refObject = getReferencedElement(origObject);
         this.name = getSearchElementName(refObject, this.name);
-        System.err.println("initFields: refObject=" + refObject + "\n");
+        //System.err.println("initFields: refObject=" + refObject + "\n");
     }
     
     private CsmObject getReferencedElement(CsmObject csmObject) {

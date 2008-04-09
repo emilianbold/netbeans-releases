@@ -35,7 +35,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -69,7 +69,7 @@ public final class SourceRootsUi {
                 return false;
             }
             final SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            final SourceGroup[] sourceGroupsPhp = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
+            final SourceGroup[] sourceGroupsPhp = sources.getSourceGroups(PhpProjectProperties.SOURCES_TYPE_PHP);
             final SourceGroup[] groups = new SourceGroup[sourceGroups.length + sourceGroupsPhp.length];
             System.arraycopy(sourceGroups, 0, groups, 0, sourceGroups.length);
             System.arraycopy(sourceGroupsPhp, 0, groups, sourceGroups.length, sourceGroupsPhp.length);

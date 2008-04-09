@@ -171,7 +171,7 @@ public class LeftTree extends JTree implements
     
     @Override
     public String getToolTipText(MouseEvent event) {
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
         
         if (model == null || context == null) {
@@ -210,7 +210,7 @@ public class LeftTree extends JTree implements
  
     public int getCenterY(TreePath treePath) {
         Rectangle bounds = getRowBounds(getRowForPath(treePath));
-
+        
         while (bounds == null) {
             treePath = treePath.getParentPath();
             bounds = getRowBounds(getRowForPath(treePath));
@@ -236,7 +236,7 @@ public class LeftTree extends JTree implements
     }
 
     MapperModel getMapperModel() {
-        return mapper.getModel();
+        return mapper.getFilteredModel();
     }
 
     @Override

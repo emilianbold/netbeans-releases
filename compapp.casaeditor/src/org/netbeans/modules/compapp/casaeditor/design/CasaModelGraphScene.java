@@ -472,14 +472,15 @@ implements PropertyChangeListener, CasaValidationListener {
         
         if (node instanceof CasaPort) {
             CasaPort port = (CasaPort) node;
-            widget = new CasaNodeWidgetBinding(this);
+            String bindingType = mModel.getBindingType(port);
+            widget = new CasaNodeWidgetBinding(this, bindingType);
             CasaModelGraphUtilities.updateNodeProperties(mModel, port, widget);
 
             widget.setEditable(mModel.isEditable(port));
             // only soap binding support WSIT configuration.
-            //if (port.getBindingType().equalsIgnoreCase("SOAP")) { // NOTI18N
-            widget.setWSPolicyAttached(mModel.isEditable(port)); // mModel.isWsitEnable(port));
-            //}
+            if (bindingType.equalsIgnoreCase("SOAP")) { // NOI18N
+                widget.setWSPolicyAttached(mModel.isEditable(port)); // mModel.isWsitEnable(port));
+            }
             widget.initializeGlassLayer(mGlassLayer);
             mBindingRegion.addChild(widget);
             moveAction = mMoveActionBindingRegion;
@@ -726,7 +727,8 @@ implements PropertyChangeListener, CasaValidationListener {
         if (widget instanceof CasaNodeWidgetBinding) {
             CasaNodeWidgetBinding portWidget = (CasaNodeWidgetBinding) widget;
             portWidget.setEditable(mModel.isEditable((CasaPort) node));
-            portWidget.setWSPolicyAttached(mModel.isWsitEnable((CasaPort) node));
+            portWidget.setWSPolicyAttached(mModel.isEditable((CasaPort) node));
+            // portWidget.setWSPolicyAttached(mModel.isWsitEnable((CasaPort) node));
         }
 
         updateSelectionAndRequestFocus(node);

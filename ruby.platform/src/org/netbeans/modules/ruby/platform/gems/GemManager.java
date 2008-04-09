@@ -174,13 +174,20 @@ public final class GemManager {
         return null;
     }
 
+    boolean isGemHomeWritable() {
+        return getGemHomeF().canWrite();
+    }
+    
     private boolean checkGemHomePermissions() {
-        if (!getGemHomeF().canWrite()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            return false;
+        if (!isGemHomeWritable()) {
+            String gksu = Util.findOnPath("gksu"); // NOI18N
+            if (gksu == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
+                        NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                return false;
+            }
         }
         return true;
     }
@@ -349,13 +356,34 @@ public final class GemManager {
      */
     public boolean isGemInstalled(final String gemName, final String version) {
         String currVersion = getVersion(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
+        return isRightVersion(currVersion, version, false);
     }
 
-    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+    /**
+     * Checks whether the installed version matches.
+     * 
+     * @param gemName cf. {@link #isGemInstalled(String, String)}
+     * @param version cf. {@link #isGemInstalled(String, String)}
+     * @param exact whether exact match should be performed. If <tt>false</tt>,
+     * equal or greater matches. If <tt>true</tt>, only exact version matches.
+     * @return whether the installed version matches
+     */
+    public boolean isGemInstalledForPlatform(final String gemName, final String version, final boolean exact) {
         String currVersion = getVersionForPlatform(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
-        
+        return isRightVersion(currVersion, version, exact);
+    }
+    
+    private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
+        boolean isInstalled = false;
+        if (currVersion != null) {
+            int result = GemManager.compareGemVersions(version, currVersion);
+            isInstalled = exact ? result == 0 : result <= 0;
+        }
+        return isInstalled;
+    }
+    
+    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+        return isGemInstalledForPlatform(gemName, version, false);
     }
     
     public String getVersion(String gemName) {
@@ -804,29 +832,36 @@ public final class GemManager {
     }
     
     /**
-     * Update the given gem, or all gems if gem == null
-     *
-     * @param gem Gem description for the gem to be uninstalled. Only the name is relevant. If null, all installed gems
-     *    will be updated.
+     * Updates the given gems, or all gems if <code>gems == null</code>.
+     * 
+     * @param gems the Gem descriptions for the gems to be updated. Only the names are relevant. 
+     * If <code>null</code>, all installed gems will be updated.
+     * @param rdoc specifies whether RDoc documentation should be generated.
+     * @param ri specifies whether RI documentation should be generated.
+     * @param includeDependencies specifies whether the required dependent gems should be updated.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
+     * @return true if the update was performed synchronously and was successful, false otherwise.
      */
     public boolean update(Gem[] gems, Component parent, boolean rdoc,
-            boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+            boolean ri, boolean includeDependencies, boolean asynchronous, 
+            Runnable asyncCompletionTask) {
+        
         if (!checkGemHomePermissions()) {
             return false;
         }
         List<String> gemNames = gems == null ? null : mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            gemRunner.updateAsynchronously(gemNames, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
+            gemRunner.updateAsynchronously(gemNames, rdoc, ri, includeDependencies, 
+                    resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = gemRunner.update(gemNames, rdoc, ri);
+            boolean ok = gemRunner.update(gemNames, rdoc, ri, includeDependencies);
             resetLocal();
             return ok;
         }
@@ -834,7 +869,7 @@ public final class GemManager {
 
     /**
      * Return path to the <em>gem</em> tool if it does exist.
-     *
+     * 
      * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
      *         found.
      */

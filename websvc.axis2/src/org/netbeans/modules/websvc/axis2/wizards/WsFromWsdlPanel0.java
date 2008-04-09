@@ -81,14 +81,14 @@ public class WsFromWsdlPanel0 implements  WizardDescriptor.FinishablePanel<Wizar
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(WsFromJavaPanel0.class);
+        return new HelpCtx(WsFromWsdlPanel0.class);
     }
 
     public void readSettings(WizardDescriptor settings) {
     }
 
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_WSDL_URL, component.getWsdlFile());
+        settings.putProperty(PROP_WSDL_URL, component.getWsdlFile()); 
     }
 
     public boolean isValid() {

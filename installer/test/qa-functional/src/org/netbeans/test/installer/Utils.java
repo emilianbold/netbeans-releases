@@ -363,8 +363,7 @@ public class Utils {
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
 
-        //cuz behaviour of feature list is changed
-        //featureList.pressKey(KeyEvent.VK_SPACE);
+        featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
 
@@ -527,6 +526,7 @@ public class Utils {
 
     public static String constructURL(TestData data) {
         String prefix = System.getProperty("test.installer.url.prefix");
+        String bundleNamePrefix = System.getProperty("test.installer.bundle.name.prefix");
         //String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
 
         
@@ -539,7 +539,7 @@ public class Utils {
 
         String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? "-" + data.getBuildNumber() : "";
         return prefix + "/" + "bundles" + 
-                "/" + "netbeans-trunk-nightly" +  
+                "/" + bundleNamePrefix + 
                 build_number + bundleType + "-" + 
                 data.getPlatformName() + "." + data.getPlatformExt();
     }

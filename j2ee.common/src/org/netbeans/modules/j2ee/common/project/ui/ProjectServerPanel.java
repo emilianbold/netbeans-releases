@@ -70,6 +70,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -191,7 +192,6 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
         j2eeSpecLabel.setText(NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
 
-        j2eeSpecComboBox.setPrototypeDisplayValue("MMMMMMMMM" /* "Java EE 5" */);
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 j2eeSpecComboBoxActionPerformed(evt);
@@ -271,25 +271,25 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                         .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(248, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+                        .add(serverInstanceComboBox, 0, 264, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(addServerButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(serverInstanceComboBox, 0, 264, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addServerButton))))
+                        .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
             .add(layout.createSequentialGroup()
                 .add(mainClassLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(365, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(createEjbCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(createWARCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 179, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(createCarCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 185, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(mainClassLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(createCarCheckBox)
+                        .add(createEjbCheckBox)
+                        .add(createWARCheckBox))
+                    .add(mainClassLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
@@ -333,12 +333,12 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .add(mainClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(createEjbCheckBox)
-                    .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(createEjbCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(createWARCheckBox)
-                    .add(jTextFieldWebAppName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jTextFieldWebAppName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(createWARCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createCarCheckBox)
@@ -436,6 +436,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
 }//GEN-LAST:event_serverLibraryCheckboxActionPerformed
     
     boolean valid(WizardDescriptor wizardDescriptor) {
+        wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, null);
         if (getSelectedServer() == null) {
             String errMsg = NbBundle.getMessage(ProjectServerPanel.class, "MSG_NoServer");
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
@@ -446,7 +447,6 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, ProjectLocationPanel.decorateMessage(
                     NbBundle.getMessage(ProjectServerPanel.class, "PanelSharability.licenseWarning.text")));
         }
-        wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, null);
         if (j2eeModuleType == J2eeModule.EJB) {
             setJ2eeVersionWarning(wizardDescriptor);
         }
@@ -912,4 +912,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         wizard.fireChangeEvent();
     }
     
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectServerPanel.class, j2eeModuleType));
+    }
 }

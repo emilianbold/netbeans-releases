@@ -64,6 +64,7 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
 
 /**
@@ -74,7 +75,7 @@ public class AstUtilities {
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -86,7 +87,7 @@ public class AstUtilities {
     }
 
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -154,11 +155,11 @@ public class AstUtilities {
 //        }
 //
 //        return getRoot(result);
-        return getRoot(info, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        return getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
 
     public static JsParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
 
         if (result == null) {
             return null;
@@ -308,6 +309,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     public static OffsetRange getNameRange(Node node) {
         final int type = node.getType();
         switch (type) {
+        case Token.FUNCTION: {
+            if (node.hasChildren()) {
+                for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                    if (child.getType() == Token.FUNCNAME) {
+                        return getNameRange(child);
+                    }
+                }
+            }
+            
+            return getRange(node);
+        }
         case Token.NAME:
         case Token.BINDNAME:
         case Token.FUNCNAME:
@@ -399,6 +411,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             if (child != null) {
                 if (child.getType() == Token.GETELEM) {
                     child = child.getNext();
+                    if (child == null) {
+                        // Unexpected - but see http://statistics.netbeans.org/analytics/detail.do?id=43998
+                        return "";
+                    }
                 }
                 if (child.getType() == Token.NAME) {
                     return child.getString();
@@ -419,7 +435,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                         return grandChild.getNext().getString();
                     }
                 } else {
-                    assert false : "Unexpected call firstchild - " + child;
+                    // WARNING: I can have something unexpected here, like a HOOK node in the following
+                    // for the conditional -
+                    //  (this.creator ? this.creator : this.defaultCreator)(item, hint);
+                    // not sure how to handle this.
+                    
+                    //assert false : "Unexpected call firstchild - " + child;
                 }
             }
         }
@@ -771,8 +792,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 }
                             }
                         }
+                    } else if (parentType == Token.CALL && parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) {
+                            className = AstUtilities.getJoinedName(first.getNext());
+                        }
                     }
-
                 }
             }
         } else if (parentType == Token.CALL) {
@@ -798,8 +828,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                         extendsName = superName.toString();
                                     }
                                 }
-
                             }
+                        }
+                    } else if (parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) { // NOI18N
+                            className = AstUtilities.getJoinedName(first.getNext());
                         }
                     }
                 }

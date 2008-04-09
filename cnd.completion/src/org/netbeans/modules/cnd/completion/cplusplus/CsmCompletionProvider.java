@@ -88,6 +88,9 @@ public class CsmCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        if (sup == null) {
+            return 0;
+        }
         final int dot = component.getCaret().getDot();
         if (CsmCompletionQuery.checkCondition(sup, dot)) {
             try {
@@ -204,9 +207,14 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
             if (TRACE) System.err.println("adding items " + getTestState());
-            boolean limit = (queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
+            boolean limit = false;
+            if (items.size() > MAX_ITEMS_TO_DISPLAY && queryResult.isSimpleVariableExpression()) {
+                limit = true;
+            }
+//            ((queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression()) 
+//                             || (items.size() > MAX_ITEMS_TO_DISPLAY);
+            resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
             if (!limit) {
-                resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
                 CsmResultItem.setEnableInstantSubstitution(queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
@@ -620,7 +628,7 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         public LastResultItem() {
             super(null, Integer.MAX_VALUE);
-            this.str = NbBundle.getBundle(CsmCompletionProvider.class).getString("last-item-text"); // NOI18N
+            this.str = "" + Query.MAX_ITEMS_TO_DISPLAY + " " + NbBundle.getBundle(CsmCompletionProvider.class).getString("last-item-text"); // NOI18N
         }
 
         public java.awt.Component getPaintComponent(boolean isSelected) {

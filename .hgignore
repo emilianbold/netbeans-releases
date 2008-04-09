@@ -8,7 +8,9 @@ derby\.log
 \.DS_Store$
 \.orig$
 \.rej$
+\.tmp\.$
 \.swp$
+^tags$
 /gensrc$
 \.ant-targets-build\.xml$
 ^hs_err_pid[0-9]*\.log
@@ -121,6 +123,7 @@ derby\.log
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/build-impl\.xml$
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/genfiles\.properties$
 ^jemmy/run$
+^lib.terminalemulator/demosrc/telnet/de$
 ^lexer/gen/build$
 ^mvd/lib$
 ^mvd/graphlib/classes$

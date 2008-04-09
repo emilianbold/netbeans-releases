@@ -84,7 +84,9 @@ import org.openide.util.WeakListeners;
  * This is a dummy class; all methods are static.
  */
 public final class FileUtil extends Object {
-    
+
+    private static final Logger LOG = Logger.getLogger(FileUtil.class.getName());
+
     /** Normal header for ZIP files. */
     private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
     /** Also seems to be used at least in apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/random/modules/ext/stuff.jar; not known why */
@@ -193,7 +195,7 @@ public final class FileUtil extends Object {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
         if (fs != null) {
-            fs.addFileChangeListener(fcl);
+            fs.removeFileChangeListener(fcl);
         }
     }
     
@@ -644,7 +646,7 @@ public final class FileUtil extends Object {
         if (asserts) {
             File normFile = normalizeFile(file);
             if (!file.equals(normFile)) {
-                Logger.getLogger(FileUtil.class.getName()).log(Level.WARNING, null, new IllegalArgumentException(
+                LOG.log(Level.WARNING, null, new IllegalArgumentException(
                 "Parameter file was not " + // NOI18N   
                 "normalized. Was " + file + " instead of " + normFile
                 ));
@@ -1369,7 +1371,7 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            Logger.getAnonymousLogger().severe("Normalization failed on file " + file + ": " + ioe);
+            LOG.warning("Normalization failed on file " + file + ": " + ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();
@@ -1429,9 +1431,7 @@ public final class FileUtil extends Object {
             try {
                 retVal = file.getCanonicalFile();
             } catch (IOException e) {
-                Logger.getAnonymousLogger().severe(
-                    "getCanonicalFile() on file " + file + " failed. " + e.toString()
-                ); // NOI18N
+                LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);
             }
         }
 
@@ -1636,7 +1636,7 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                Logger.getLogger(FileUtil.class.getName()).log(Level.INFO, null, ioe);
+                LOG.log(Level.INFO, null, ioe);
             }
 
             if (b == null) {
@@ -1679,6 +1679,57 @@ public final class FileUtil extends Object {
             int index = urlPath.lastIndexOf('.');
 
             return (index != -1) && (index > urlPath.lastIndexOf('/') + 1);
+        }
+    }
+
+    /**
+     * Convert a file such as would be shown in a classpath entry into a proper folder URL.
+     * If the file looks to represent a directory, a <code>file</code> URL will be created.
+     * If it looks to represent a ZIP archive, a <code>jar</code> URL will be created.
+     * @param entry a file or directory name
+     * @return an appropriate classpath URL which will always end in a slash (<samp>/</samp>),
+     *         or null for an existing file which does not look like a valid archive
+     * @since org.openide.filesystems 7.8
+     */
+    public static URL urlForArchiveOrDir(File entry) {
+        try {
+            URL u = entry.toURI().toURL();
+            if (isArchiveFile(u) || entry.isFile() && entry.length() < 4) {
+                return getArchiveRoot(u);
+            } else if (entry.isDirectory()) {
+                return u;
+            } else if (!entry.exists()) {
+                if (!u.toString().endsWith("/")) {
+                    u = new URL(u + "/"); // NOI18N
+                }
+                return u;
+            } else {
+                return null;
+            }
+        } catch (MalformedURLException x) {
+            assert false : x;
+            return null;
+        }
+    }
+
+    /**
+     * Convert a classpath-type URL to a corresponding file.
+     * If it is a <code>jar</code> URL representing the root folder of a local disk archive,
+     * that archive file will be returned.
+     * If it is a <code>file</code> URL representing a local disk folder,
+     * that folder will be returned.
+     * @param entry a classpath entry or similar URL
+     * @return a corresponding file, or null for e.g. a network URL or non-root JAR folder entry
+     * @since org.openide.filesystems 7.8
+     */
+    public static File archiveOrDirForURL(URL entry) {
+        String u = entry.toString();
+        if (u.startsWith("jar:file:") && u.endsWith("!/")) { // NOI18N
+            return new File(URI.create(u.substring(4, u.length() - 2)));
+        } else if (u.startsWith("file:")) { // NOI18N
+            return new File(URI.create(u));
+        } else {
+            return null;
         }
     }
 

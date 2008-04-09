@@ -127,6 +127,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
+    @Override
     protected boolean notifyModified () {        
         if (!super.notifyModified()) 
             return false;
@@ -138,6 +139,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     }
 
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
 
@@ -199,6 +201,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return (CppEditorSupport)getDataObject().getCookie(CppEditorSupport.class);
         }
@@ -209,6 +212,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link HtmlEditor} for this support
      */
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new CppEditorComponent(this);
     }
@@ -229,6 +233,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         /** Only for externalization */
         public CppEditorComponent () {
             super();
+            initialize();
         }
 
         /** Creates new editor */
@@ -252,25 +257,32 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          *  and this component is preferred one in it. This implementation adds 
          *  performer to the ToggleBreakpointAction.
          */
+        @Override
         protected void componentActivated() {
-	    log.log("CES.componentActivated: Activating " + getShortName() + // NOI18N
-		    " [" + Thread.currentThread().getName() + "]"); // NOI18N
-	    if (activationPerformers != null) {
-		int n = activationPerformers.size();
-		for (int i = 0; i < n; i++) {
-		    CppEditorActivationPerformer a =
-		      (CppEditorActivationPerformer)activationPerformers.get(i);
-		    a.performActivation(this);
-		}
-	    }
-            super.componentActivated();
-	    CppMetaModel.getDefault().scheduleParsing(support.getDocument());
-	    support.attachParsingListener();
+            if (support.getDocument() != null) {
+                log.log("CES.componentActivated: Activating " + getShortName() + // NOI18N
+                        " [" + Thread.currentThread().getName() + "]"); // NOI18N
+                if (activationPerformers != null) {
+                    int n = activationPerformers.size();
+                    for (int i = 0; i < n; i++) {
+                        CppEditorActivationPerformer a =
+                          (CppEditorActivationPerformer)activationPerformers.get(i);
+                        a.performActivation(this);
+                    }
+                }
+                super.componentActivated();
+                CppMetaModel.getDefault().scheduleParsing(support.getDocument());
+                support.attachParsingListener();
+            } else {
+                log.log("CES.componentActivated: Activating without document!!!" + // NOI18N
+                        " [" + Thread.currentThread().getName() + "]"); // NOI18N
+            }
         }
 
 	/* XXX -Debug method. Remove later? */
 	private String getShortName() {
 	    String longname = (String) support.getDocument().getProperty(Document.TitleProperty);
+            longname = longname == null ? "" : longname;
 	    int slash = longname.lastIndexOf(File.separatorChar);
 
 	    if (slash != -1) {
@@ -278,14 +290,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 	    } else {
 		return longname;
 	    }
-	}
-
-	/**
-	 *  Returns Editor pane for private use.
-	 *  @return Editor pane for private use.
-	 */
-	public JEditorPane getEditorPane() {
-	    return pane;
 	}
 
 	/** Return the current line number */
@@ -299,6 +303,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          * This method is called when parent window of this component losts focus,
          * or when this component loses preferrence in the parent window.
          */
+        @Override
         protected void componentDeactivated() {
 	    support.removeParsingListener();
         }
@@ -307,6 +312,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 	 *  When closing last view, also close the document.
          *  @return <code>true</code> if close succeeded
          */
+        @Override
         protected boolean closeLast () {
             if (!super.closeLast())
                 return false;
@@ -320,6 +326,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 	 *  Deserialize this top component.
          *  @param in the stream to deserialize from
          */
+        @Override
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             initialize();

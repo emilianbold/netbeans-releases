@@ -350,7 +350,7 @@ public class CommitAction extends ContextAction {
                     // make a deep refresh to get the not yet notified external changes
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     for(File f : contextFiles) {
-                        SvnUtils.refreshRecursively(f);
+                        cache.refreshRecursively(f);
                     }                        
                     // get all changed files while honoring the flat folder logic
                     File[][] split = Utils.splitFlatOthers(contextFiles);
@@ -511,7 +511,8 @@ public class CommitAction extends ContextAction {
             List<File> removeCandidates = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
-            
+            List<String> excludedCandidates = new ArrayList<String>();
+                        
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             // XXX refactor the olowing loop. there seem to be redundant blocks
             while (it.hasNext()) {
@@ -561,8 +562,13 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
+                } else if (CommitOptions.EXCLUDE == option) {
+                    excludedCandidates.add(node.getFile().getAbsolutePath());
                 }
-            }
+            }            
+            
+            // persist excluded files 
+            SvnModuleConfig.getDefault().addExclusionPaths(excludedCandidates);
             
             // perform adds
             performAdds(client, support, addCandidates);

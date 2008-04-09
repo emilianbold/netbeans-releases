@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyPlatformManagerTest;
 import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.openide.filesystems.FileObject;
@@ -124,6 +125,17 @@ public class GemManagerTest extends RubyTestBase {
         gemManager.removeGemPath(dummyRepo);
         assertEquals("one repositories", 1, gemManager.getRepositories().size());
         assertTrue("one repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) == -1);
+    }
+    
+    public void testSetGemHome() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        String origGemHome = gemManager.getGemHome();
+        File dummyRepo = new File(getWorkDirPath(), "/a");
+        platform.setGemHome(dummyRepo);
+        RubyPlatformManagerTest.resetPlatforms();
+        String newGemHome = RubyPlatformManager.getDefaultPlatform().getGemManager().getGemHome();
+        assertFalse("Gem Home changed", origGemHome.equals(newGemHome));
     }
     
     public void testAddTheSameRepositoryTwice() {
@@ -243,8 +255,9 @@ public class GemManagerTest extends RubyTestBase {
     }
 
     private File getRakeGem() throws IOException {
-        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.7.3.gem");
+        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);
+        assertTrue("rake gem found", rakeGem.isFile());
         return rakeGem;
     }
 

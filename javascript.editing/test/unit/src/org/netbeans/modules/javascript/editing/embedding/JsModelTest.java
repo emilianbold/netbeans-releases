@@ -52,8 +52,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.JsTestBase;
+import org.netbeans.modules.javascript.editing.embedding.JsModel.JsAnalyzerState;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -98,7 +101,7 @@ public class JsModelTest extends JsTestBase {
         StringBuilder buffer = new StringBuilder();
         if (mimeType.equals(HTMLKit.HTML_MIME_TYPE)) {
             doc.putProperty("mimeType", HTMLKit.HTML_MIME_TYPE);
-            model.extractJavaScriptFromHtml(ts, buffer, false);
+            model.extractJavaScriptFromHtml(ts, buffer, new JsAnalyzerState());
         } else if (mimeType.equals(RhtmlTokenId.MIME_TYPE)) {
             doc.putProperty("mimeType", RhtmlTokenId.MIME_TYPE);
             model.extractJavaScriptFromRhtml(ts, buffer);
@@ -148,7 +151,11 @@ public class JsModelTest extends JsTestBase {
         CompilationInfo info = getInfo(rubyFo);
         assertNotNull(info);
         assertNotNull("Parse error on translated source", AstUtilities.getRoot(info));
-        assertTrue(info.getErrors().size() == 0);
+        // Warnings are okay:
+        //assertTrue(info.getErrors().toString(), info.getErrors().size() == 0);
+        for (Error error : info.getErrors()) {
+            assertTrue(error.toString(), error.getSeverity() != Severity.ERROR);
+        }
     }
 
     private static String readFile(NbTestCase test, File f) throws Exception {
@@ -174,5 +181,18 @@ public class JsModelTest extends JsTestBase {
 
     public void testJs124916() throws Exception {
         checkJavaScript(this, "testfiles/embedding/embed124916.erb");
+    }
+
+    public void testYuiSample() throws Exception {
+        checkJavaScript(this, "testfiles/embedding/yuisample.html");
+    }
+
+    public void testConvertScript() throws Exception {
+        checkJavaScript(this, "testfiles/embedding/convertscript.html");
+    }
+
+    public void testSideEffects() throws Exception {
+        // Scenario for 131667 - Overly aggressive "code has no side effects" warning
+        checkJavaScript(this, "testfiles/embedding/sideeffects.html");
     }
 }

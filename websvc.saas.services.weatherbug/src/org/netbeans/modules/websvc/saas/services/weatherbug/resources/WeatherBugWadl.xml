@@ -3,37 +3,118 @@
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-	     xmlns="http://research.sun.com/wadl/2006/10">
-    <grammars/>
-    <resources base="http://api.wxbug.net">	
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:rss="urn:weatherbug:rss">
+    <grammars>
+        <include href="Rss.xsd"/>
+    </grammars>
+    <resources base="http://api.wxbug.net">
         <resource path="getLiveWeatherRSS.aspx">
-            <method name="GET" id="liveWeatherRSS">
-                <doc xml:lang="en">
-                    The LiveWeatherRSS method retrieves weather for a specific U.S. zipcode in either
-                    U.S. customary units  (Farenheit, miles, inches)) or metric units. 
-                    For API documentation, see http://api.wxbug.net/help.html 
-                </doc>
+            <method name="GET" id="getLiveWeatherRSS">
                 <request>
-                    <param name="ACode" type="xsd:string" style="query" required="true">
-                        <doc xml:lang="en">
-                            WeatherBug Application Code, a key you can get by registering 
-                            at http://apireg.weatherbug.com/.
-                        </doc>
-                    </param>
-                    <param name="zipcode" type="xsd:string" style="query" required="true">
-                        <doc xml:lang="en">5-digit ZipCode, U.S. cities only</doc>
-                    </param>
-                    <param name="unittype" type="xsd:string" style="query" required="false">
-                        <doc xml:lang="en">
-                            Optional. Default value is 1. Values are 0 
-                            (US customary units - miles, degrees Farenheit, etc.) or 
-                            1 (metric units - kms, degrees Celsius, etc).
-                        </doc>
-                    </param>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="ZipCode" type="xsd:string" style="query" required="false"/>
+                    <param name="CityCode" type="xsd:string" style="query" required="false"/>
+                    <param name="StationId" type="xsd:string" style="query" required="false"/>
+                    <param name="Latitude" type="xsd:string" style="query" required="false"/>
+                    <param name="Longitude" type="xsd:string" style="query" required="false"/>
+                    <param name="UnitType" type="xsd:string" style="query" required="false"/>
+                    <param name="CityType" type="xsd:string" style="query" required="false"/>
                 </request>
-                <response>                    
+                <response>
+                    <representation mediaType="text/xml" element="rss:rss"/>
                 </response>
             </method>
         </resource>
-    </resources>  
+        <resource path="getLiveCompactWeatherRSS.aspx">
+            <method name="GET" id="getLiveCompactWeatherRSS">
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="ZipCode" type="xsd:string" style="query" required="false"/>
+                    <param name="CityCode" type="xsd:string" style="query" required="false"/>
+                    <param name="StationId" type="xsd:string" style="query" required="false"/>
+                    <param name="Latitude" type="xsd:string" style="query" required="false"/>
+                    <param name="Longitude" type="xsd:string" style="query" required="false"/>
+                    <param name="UnitType" type="xsd:string" style="query" required="false"/>
+                    <param name="CityType" type="xsd:string" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="rss:rss"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="getForecastRSS.aspx">
+            <method name="GET" id="getForecastRSS">
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="ZipCode" type="xsd:string" style="query" required="false"/>
+                    <param name="CityCode" type="xsd:string" style="query" required="false"/>
+                    <param name="Latitude" type="xsd:string" style="query" required="false"/>
+                    <param name="Longitude" type="xsd:string" style="query" required="false"/>
+                    <param name="UnitType" type="xsd:string" style="query" required="false"/>
+                    <param name="CityType" type="xsd:string" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="rss:rss"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="getLocationsXML.aspx">
+            <method name="GET" id="getLocationsXML">
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="SearchString" type="xsd:string" style="query" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="getStationsXML.aspx">
+            <method name="GET" id="getStationsXML">
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="ZipCode" type="xsd:string" style="query" required="false"/>
+                    <param name="CityCode" type="xsd:string" style="query" required="false"/>
+                    <param name="Latitude" type="xsd:string" style="query" required="false"/>
+                    <param name="Longitude" type="xsd:string" style="query" required="false"/>
+                    <param name="UnitType" type="xsd:string" style="query" required="false"/>
+                    <param name="CityType" type="xsd:string" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="getCamerasXML.aspx">
+            <method name="GET" id="getCamerasXML">
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="ZipCode" type="xsd:string" style="query" required="false"/>
+                    <param name="Latitude" type="xsd:string" style="query" required="false"/>
+                    <param name="Longitude" type="xsd:string" style="query" required="false"/>
+                    <param name="UnitType" type="xsd:string" style="query" required="false"/>
+                    <param name="CityType" type="xsd:string" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="getAlertsRSS.aspx">
+            <method name="GET" id="getAlertsRSS">
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true"/>
+                    <param name="ZipCode" type="xsd:string" style="query" required="false"/>
+                    <param name="Latitude" type="xsd:string" style="query" required="false"/>
+                    <param name="Longitude" type="xsd:string" style="query" required="false"/>
+                    <param name="UnitType" type="xsd:string" style="query" required="false"/>
+                    <param name="CityType" type="xsd:string" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="rss:rss"/>
+                </response>
+            </method>
+        </resource>
+    </resources>
 </application>

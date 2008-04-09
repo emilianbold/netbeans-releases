@@ -51,7 +51,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,10 +59,14 @@ import org.netbeans.modules.xml.wsdl.ui.common.Constants;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -81,7 +84,7 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
     
     private String rootFolderNamePrefix;
     
-    private Map elementsMap = new HashMap();
+    private Map<String, WSDLExtensibilityElement> elementsMap = new HashMap<String, WSDLExtensibilityElement>();
     
     private Map<String, XMLSchemaFileInfo> schemasMap = new HashMap<String, XMLSchemaFileInfo>();
     
@@ -89,10 +92,11 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
         this.mRootFolder = rootFolder;
         this.rootFolderNamePrefix = mRootFolder.getName() + "/";
         readAllSchemas();
+        mRootFolder.getPrimaryFile().addFileChangeListener(new WSDLEditorFolderChangeListener());
     }
     
     public WSDLExtensibilityElement getWSDLExtensibilityElement(String name) {
-        WSDLExtensibilityElement element = (WSDLExtensibilityElement) elementsMap.get(name);
+        WSDLExtensibilityElement element = elementsMap.get(name);
         if(element != null) {
             return element;
         }
@@ -109,25 +113,24 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
     }
 
     public InputStream[] getAllExtensionSchemas() {
-        ArrayList extensionSchemas = new ArrayList();
+        ArrayList<InputStream> extensionSchemas = new ArrayList<InputStream>();
         DataObject[] dataObjects = this.mRootFolder.getChildren();
-        for(int i = 0; i < dataObjects.length; i++ ) {
-            DataObject dObj = dataObjects[i];
-            if(!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
+        for (DataObject dObj : dataObjects) {
+            if (!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
                 InputStream in = null;
                 try {
                     in = dObj.getPrimaryFile().getInputStream();
-                } catch(Throwable t) {
+                } catch (Throwable t) {
                     mLogger.log(Level.SEVERE, NbBundle.getMessage(WSDLExtensibilityElementsImpl.class, "ERR_MSG_FAILED_TO_GET_SCHEMA", dObj.getPrimaryFile().getPath()));
                 }
-                
-                if(in != null) {
+
+                if (in != null) {
                     extensionSchemas.add(in);
                 }
             }
         }
         
-        return (InputStream[]) extensionSchemas.toArray( new InputStream[] {});
+        return extensionSchemas.toArray(new InputStream[extensionSchemas.size()]);
     }
     
     public XMLSchemaFileInfo getXMLSchemaFileInfoMatchingFileName(String fileName) {
@@ -137,12 +140,8 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
     
     public XMLSchemaFileInfo getXMLSchemaFileInfo(String namespace) {
         XMLSchemaFileInfo schemaInfo = null;
-
-        Iterator<XMLSchemaFileInfo> it = this.schemasMap.values().iterator();
-        while(it.hasNext()) {
-            XMLSchemaFileInfo info = it.next();
+        for (XMLSchemaFileInfo info : schemasMap.values()) {
             String ns = info.getSchema().getTargetNamespace();
-            //String ns = info.getNamespace();
             if(ns != null && ns.equals(namespace)) {
                 schemaInfo = info;
                 break;
@@ -151,14 +150,17 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
 
         return schemaInfo;
     }
+
+    private void addToSchemaMap(DataObject dObj) {
+        XMLSchemaFileInfo schemaFileInfo = new XMLSchemaFileInfoImpl(dObj);
+        this.schemasMap.put(dObj.getName(), schemaFileInfo);
+    }
         
     private void readAllSchemas() {
         DataObject[] dataObjects = this.mRootFolder.getChildren();
-        for(int i = 0; i < dataObjects.length; i++ ) {
-            DataObject dObj = dataObjects[i];
+        for (DataObject dObj : dataObjects) {
             if(!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
-                XMLSchemaFileInfo schemaFileInfo = new XMLSchemaFileInfoImpl(dObj);
-                this.schemasMap.put(dObj.getName(), schemaFileInfo);
+                addToSchemaMap(dObj);
             }
         }
     }
@@ -166,6 +168,30 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
     public XMLSchemaFileInfo[] getAllXMLSchemaFileInfos() {
         Collection<XMLSchemaFileInfo> infos = schemasMap.values();
         return infos.toArray(new XMLSchemaFileInfo[infos.size()]);
+    }
+    
+    /**
+     * Listens to new installations of wsdl extensions and updates the schema
+     */
+    class WSDLEditorFolderChangeListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            FileObject fo = fe.getFile();
+            if (fo != null && fo.isData() && fo.hasExt(Constants.XSD_EXT)) {
+                try {
+                    DataObject dObj = DataObject.find(fo);
+                    if (dObj != null) {
+                        addToSchemaMap(dObj);
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                        
+            }
+            
+        }
+
     }
     
 }

@@ -331,11 +331,11 @@ public class ActionFactory {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
-                    int dotPos = caret.getDot();
-                    int bolPos = Utilities.getRowStart(target, dotPos);
-                    int eolPos = Utilities.getRowEnd(target, dotPos);
-                    eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
-                    doc.remove(bolPos, eolPos - bolPos);
+                        int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
+                        int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
+                        eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                        doc.remove(bolPos, eolPos - bolPos);
+                        // Caret will be at bolPos due to removal
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
                 } finally {

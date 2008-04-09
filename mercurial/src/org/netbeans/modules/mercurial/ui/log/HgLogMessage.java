@@ -54,10 +54,10 @@ import org.netbeans.modules.mercurial.util.HgUtils;
  * @author jr140578
  */
 public class HgLogMessage {
-    private char mod = 'M';
-    private char add = 'A';
-    private char del = 'R';
-    private char copy = 'C';
+    public static char HgModStatus = 'M';
+    public static char HgAddStatus = 'A';
+    public static char HgDelStatus = 'R';
+    public static char HgCopyStatus = 'C';
     
     private List<HgLogMessageChangedPath> mpaths;
     private List<HgLogMessageChangedPath> apaths;
@@ -91,28 +91,28 @@ public class HgLogMessage {
         if( fm != null && !fm.equals("")){
             splits = fm.split(" ");
             for(String s: splits){
-                this.mpaths.add(new HgLogMessageChangedPath(s, mod));             
+                this.mpaths.add(new HgLogMessageChangedPath(s, HgModStatus));             
                 logCopied(s);
             }
         }
         if( fa != null && !fa.equals("")){
             splits = fa.split(" ");
             for(String s: splits){
-                this.apaths.add(new HgLogMessageChangedPath(s, add));                
+                this.apaths.add(new HgLogMessageChangedPath(s, HgAddStatus));                
                 logCopied(s);
             }
         }
         if( fd != null && !fd.equals("")){
             splits = fd.split(" ");
             for(String s: splits){
-                this.dpaths.add(new HgLogMessageChangedPath(s, del));                
+                this.dpaths.add(new HgLogMessageChangedPath(s, HgDelStatus));                
                 logCopied(s);
             }
         }
         if( fc != null && !fc.equals("")){
             splits = fc.split(" ");
             for(String s: splits){
-                this.cpaths.add(new HgLogMessageChangedPath(s, copy));                
+                this.cpaths.add(new HgLogMessageChangedPath(s, HgCopyStatus));                
                 logCopied(s);
             }
         }

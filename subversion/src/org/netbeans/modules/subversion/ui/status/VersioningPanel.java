@@ -114,7 +114,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         setVersioningComponent(syncTable.getComponent());
         reScheduleRefresh(0);
 
-        // XXX click it in form editor, probbaly requires  Mattisse >=v2
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
         jPanel2.setLayout(new ToolbarLayout());
@@ -316,7 +315,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     private SyncFileNode [] getNodes(Context context, int includeStatus) {
-        SvnFileNode [] fnodes = subversion.getNodes(context, includeStatus);
+        SvnFileNode [] fnodes = SvnUtils.getNodes(context, includeStatus);
         SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
         for (int i = 0; i < fnodes.length; i++) {
             if (Thread.interrupted()) return null;

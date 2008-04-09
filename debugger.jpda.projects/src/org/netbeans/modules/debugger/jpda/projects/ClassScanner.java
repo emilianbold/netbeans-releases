@@ -78,6 +78,9 @@ class ClassScanner extends TreePathScanner<TypeElement, Void> {
     @Override
     public TypeElement visitClass(ClassTree arg0, Void arg1) {
         TypeElement typeElement = (TypeElement) trees.getElement(getCurrentPath());
+        if (typeElement == null) {
+            return super.visitClass(arg0, arg1);
+        }
         String binaryName = elements.getBinaryName(typeElement).toString();
         if (match(binaryName)) {
             return typeElement;

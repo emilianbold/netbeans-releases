@@ -144,6 +144,7 @@ public class CliValidateBpelProjectTask extends Task {
             driver = antTaskClass.getMethod("isFoundErrors", (Class[]) null);
             isErrors = (Boolean) driver.invoke(validateBPELObj, (Object[]) null);
         } catch (Throwable e) {
+            e.printStackTrace();
             throw new BuildException("Exception occured.", e);
         }
         

@@ -34,7 +34,6 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;
@@ -53,7 +52,7 @@ public class EtlproProjectGenerator {
 
     private static transient final Logger mLogger = Logger.getLogger(EtlproProjectGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    private static final String nbBundle1 = mLoc.t("BUND713: collaborations");
+    private static final String nbBundle1 = mLoc.t("BUND713: Collaborations");
     private static final String nbBundle2 = mLoc.t("BUND714: conf");
     private static final String nbBundle3 = mLoc.t("BUND715: setup");
     private static final String nbBundle4 = mLoc.t("BUND716: bpelasa");

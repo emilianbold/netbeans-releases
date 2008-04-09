@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  *
  * @author Vladimir Kvashin
  */
-public class TypeImpl extends OffsetableBase implements CsmType {
+public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeClassifierProvider {
 
     private final byte pointerDepth;
     private final boolean reference;
@@ -153,6 +153,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
+                case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                     return AstUtil.getLastChildRecursively(last);
                 default:
                     last = token;

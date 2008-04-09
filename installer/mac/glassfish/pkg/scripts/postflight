@@ -83,6 +83,9 @@ fi
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/glassfish-v2ur1.pkg" ] ; then
-    rm -rf "/Library/Receipts/glassfish-v2ur1.pkg"
+if [ -d "/Library/Receipts/glassfish-v2ur2.pkg" ] ; then
+    rm -rf "/Library/Receipts/glassfish-v2ur2.pkg"
 fi
+
+#Fix for 132115
+sed -i -e "s/never/TUE/" ./updatecenter/config/config.xml

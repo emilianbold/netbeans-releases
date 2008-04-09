@@ -353,7 +353,19 @@ public class JsAnalyzer implements StructureScanner {
                         if (child.getType() == Token.OBJLITNAME) {
                             Node f = AstUtilities.getLabelledNode(child);
                             if (f != null) {
-                                AstElement js = AstElement.createElement(info, f, child.getString(), className, this);
+                                if (f.getType() == Token.FUNCTION && ((FunctionNode)f).getFunctionName().length() > 0) {
+                                    // This is a function whose name we already know
+                                    // Unusual syntax but yuiloader.html for example has it:
+                                    //    var YAHOO_config = {
+                                    //        listener: function g_mycallback(info) {
+                                    //            g_modules.push(info.name);
+                                    //        }
+                                    //    };
+                                    // Here the function is named both listener: and g_mycallback.
+                                    break;
+                                }
+                                String funcName = child.getString();
+                                AstElement js = AstElement.createElement(info, f, funcName, className, this);
                                 if (js != null) {
                                     checkDocumentation(js);
                                     if (f.getType() != Token.FUNCTION) {
@@ -555,7 +567,7 @@ public class JsAnalyzer implements StructureScanner {
                         currentFunction.nodeType = Node.UNKNOWN_TYPE;
                     } else if (currentFunction.nodeType == null) {
                         currentFunction.nodeType = type;
-                    } else {
+                    } else if (type != null) {
                         if (currentFunction.nodeType.indexOf(type) == -1) {
                             currentFunction.nodeType = currentFunction.nodeType + "|" + type; // NOI18N
                         }
@@ -612,20 +624,23 @@ public class JsAnalyzer implements StructureScanner {
             
             Map<String, String> typeMap = element.getDocProps();
             if (typeMap != null) {
-                String clz = typeMap.get("@class"); // NOI18N
-                if (clz != null) {
-                    int dot = clz.lastIndexOf('.');
-                    if (dot != -1) {
-                        element.in = clz.substring(0, dot);
-                        element.name = clz.substring(dot+1);
-                    } else {
-                        element.name = clz;
-                    }
+// I can't look at @class since for Jsdoc (such as in Woodstock) the @class is just
+// a marker and it may not actually specify the class - it could just be the first
+// word of the class description!                
+//                String clz = typeMap.get("@class"); // NOI18N
+//                if (clz != null) {
+//                    int dot = clz.lastIndexOf('.');
+//                    if (dot != -1) {
+//                        element.in = clz.substring(0, dot);
+//                        element.name = clz.substring(dot+1);
+//                    } else {
+//                        element.name = clz;
+//                    }
                     String s = typeMap.get("@extends"); // NOI18N
                     if (s != null) {
                         addSuperClass(element.name, s);
                     }
-                }
+//                }
                 String namespace = typeMap.get("@namespace"); // NOI18N
                 if (namespace != null) {
                     addNameSpace(element.name, namespace);
@@ -779,6 +794,10 @@ public class JsAnalyzer implements StructureScanner {
                 return false;
             }
 
+            if (isLeaf() != d.isLeaf()) {
+                return false;
+            }
+
             return true;
         }
 
@@ -877,7 +896,7 @@ public class JsAnalyzer implements StructureScanner {
 
             if (element.getType() != null && element.getType() != Node.UNKNOWN_TYPE) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(element.getType());
+                formatter.appendText(JsUtils.normalizeTypeString(element.getType()));
             }
 
             return formatter.getText();

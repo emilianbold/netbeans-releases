@@ -116,27 +116,19 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                         JaxWsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WsdlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (showParams && bean.getInputParameters() != null) {
+                    if (bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
-                        JaxWsCodeSetupPanel panel = new JaxWsCodeSetupPanel(
-                                codegen.getSubresourceLocatorUriTemplate(),
-                                bean.getQualifiedClassName(), 
-                                allParams,
-                                codegen.canShowResourceInfo(), showParams);
+                    if(!allParams.isEmpty()) {
+                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
 
                         DialogDescriptor desc = new DialogDescriptor(panel, 
                                 NbBundle.getMessage(JaxWsEditorDrop.class,
                                 "LBL_CustomizeSaasService", displayName));
                         Object response = DialogDisplayer.getDefault().notify(desc);
 
-                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                            codegen.setSubresourceLocatorName(panel.getMethodName());
-                        } else {
+                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
                             // cancel
                             return;
                         }
@@ -147,10 +139,6 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                     } catch(IOException ex) {
                         if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
                             errors.add(ex);
-                    }
-                    try {
-                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
-                    } catch(IOException ex) {//ignore
                     }
                 } catch (Exception ioe) {
                     errors.add(ioe);

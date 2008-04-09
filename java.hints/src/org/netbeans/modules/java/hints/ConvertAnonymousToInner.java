@@ -328,12 +328,23 @@ public class ConvertAnonymousToInner extends AbstractHint {
         boolean usesNonStaticMembers = new DetectUseOfNonStaticMembers(copy, newClassToConvert).scan(new TreePath(newClassToConvert, nct.getClassBody()), null) == Boolean.TRUE;
                 
         TreePath tp = newClassToConvert;
-        
+
         while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
             tp = tp.getParentPath();
         }
         
         ClassTree target = (ClassTree) tp.getLeaf();
+        Element targetElement = copy.getTrees().getElement(tp);
+
+        boolean isInAnonymousClass = false;
+        TreePath treePath = newClassToConvert.getParentPath();
+        while (treePath != null) {
+            if (treePath.getLeaf().getKind() == Kind.NEW_CLASS) {
+                isInAnonymousClass = true;
+                break;
+            }
+            treePath = treePath.getParentPath();
+        }
         
         TypeMirror superType = copy.getTrees().getTypeMirror(new TreePath(newClassToConvert, nct.getIdentifier()));
         Element superTypeElement = copy.getTrees().getElement(new TreePath(newClassToConvert, nct.getIdentifier()));
@@ -354,7 +365,6 @@ public class ConvertAnonymousToInner extends AbstractHint {
             }
         }
         
-        Element targetElement = copy.getTrees().getElement(tp);
         if (isStaticContext) {
             while (targetElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
                 if (!targetElement.getModifiers().contains(Modifier.STATIC)) {
@@ -372,8 +382,21 @@ public class ConvertAnonymousToInner extends AbstractHint {
         TreePath superConstructorCall = findSuperConstructorCall(newClassToConvert);
         
         boolean isEnclosedByStaticElem = copy.getTrees().getElement(newClassToConvert).getEnclosingElement().getModifiers().contains(Modifier.STATIC);
-        ModifiersTree classModifiers = make.Modifiers((isStaticContext && !usesNonStaticMembers) || isEnclosedByStaticElem ?
-            EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
+        Set<Modifier> modifset = null;
+        if (isInAnonymousClass) {
+            if ((isStaticContext && !usesNonStaticMembers) || isEnclosedByStaticElem) {
+                modifset = EnumSet.of(Modifier.STATIC);
+            } else {
+                modifset = EnumSet.noneOf(Modifier.class);
+            }
+        } else {
+            if ((isStaticContext && !usesNonStaticMembers) || isEnclosedByStaticElem) {
+                modifset = EnumSet.of(Modifier.PRIVATE, Modifier.STATIC);
+            } else {
+                modifset = EnumSet.of(Modifier.PRIVATE);
+            }
+        }
+        ModifiersTree classModifiers = make.Modifiers(modifset);
         
         List<Tree> members = new ArrayList<Tree>();
         List<VariableTree> constrArguments = new ArrayList<VariableTree>();

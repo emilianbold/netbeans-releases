@@ -156,9 +156,9 @@ TestSupport.prototype = {
                 var mimeType = mimeTypes[k];
                 var dispName = this.wdr.getMethodNameForDisplay(mName, mimeType);
                 if(mName == 'GET')
-                    str += "  <option class=MnuJmp_sun4 selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
+                    str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
                 else
-                    str += "  <option class=MnuJmp_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
+                    str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
             }
         }   
         str += "</select></span></td><td width=46/><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>Test</a></td></tr></tbody></table>";
@@ -219,19 +219,19 @@ TestSupport.prototype = {
         var str = '<br/><table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
                             '<span>Choose method to test: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
-        str += "  <option class=MnuJmp_sun4 selected value='GET'>GET</option>";
-        str += "  <option class=MnuJmp_sun4 value='PUT'>PUT</option>";
-        str += "  <option class=MnuJmp_sun4 value='DELETE'>DELETE</option>";
+        str += "  <option class=MnuJmpOpt_sun4 selected value='GET'>GET</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='PUT'>PUT</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='DELETE'>DELETE</option>";
         str += "</select></span></td>";
         str += '<td valign="top"><span id="j_id14"><label for="methodSel" style="padding-left: 6px;" class="LblLev2Txt_sun4">'+
             '<span>MIME: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='mimeSel' class=MnuJmp_sun4 name='mimeSel' onchange='javascript:ts.changeMimeType();'>";
-        str += "  <option class=MnuJmp_sun4 value='application/xml'>application/xml</option>";
-        str += "  <option class=MnuJmp_sun4 value='application/json'>application/json</option>";
-        str += "  <option class=MnuJmp_sun4 value='text/xml'>text/xml</option>";
-        str += "  <option class=MnuJmp_sun4 value='text/plain'>text/plain</option>";
-        str += "  <option class=MnuJmp_sun4 value='text/html'>text/html</option>";
-        str += "  <option class=MnuJmp_sun4 value='image/*'>image/*</option>"; 
+        str += "  <option class=MnuJmpOpt_sun4 value='application/xml'>application/xml</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='application/json'>application/json</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='text/xml'>text/xml</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='text/plain'>text/plain</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='text/html'>text/html</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='image/*'>image/*</option>"; 
         str += "</select></span></td>";
         str += "<td width=30/>"
         str += "<td><span id=j_id14><a class='Btn2_sun4 Btn1Hov_sun4' onclick='ts.addParam()'>Add Parameter</a>";
@@ -245,9 +245,9 @@ TestSupport.prototype = {
             var path = paths[i];
             if(path.indexOf('{') > -1) {
                 var pname = path.substring(1, path.length-1);
-                paramRep += '<td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
                 paramRep += '<span>'+pname+': </span></label></span></td>';
-                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td>';
+                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
             }
         }
         if(paramRep != "") {
@@ -403,7 +403,7 @@ TestSupport.prototype = {
             var pname = paths[i];
             if(pname == '')
                 continue;
-            currPath += '/'+pname;
+            currPath += '/'+pname+'/';
             var ndx = 0;
             var jsmethod = "ts.doShowContent('"+currPath+"')";
             for(var j=0;j<ts.allcat.length;j++) {
@@ -637,7 +637,10 @@ TestSupport.prototype = {
     },
     
     showViews : function (name) {
-        var c = '';
+        var c = 
+          '<table cellspacing="0" cellpadding="0" border="0" title="" class="Tab1TblNew_sun4">'+
+                '<tbody>'+
+                    '<tr id="tabRow">';
         for(var i in this.viewIds) {
             var vid = this.viewIds[i]['id'];
             var tabMain = document.getElementById(this.viewIds[i]['type']);
@@ -649,7 +652,8 @@ TestSupport.prototype = {
                 tabMain.style.display="none";
             }
         }
-        this.updatepage('tabRow', c);
+        c += '</tr></tbody></table>';
+        this.updatepage('tabTable', c);
     },
 
     monitor : function (xmlHttpReq, param) {
@@ -713,13 +717,7 @@ TestSupport.prototype = {
                     subResources = 'No Sub-Resources available.';
                 this.updatepage('result', '<br/><span class=bld>Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
                     '<span class=bld>Response:</span> '+
-                    '<div class="Tab1Div_sun4">'+
-                        '<table cellspacing="0" cellpadding="0" border="0" title="" class="Tab1TblNew_sun4">'+
-                            '<tbody>'+
-                                '<tr id="tabRow">'+
-                                '</tr>'+
-                            '</tbody>'+
-                        '</table>'+
+                    '<div class="Tab1Div_sun4" id="tabTable">'+
                     '</div>'+
                     '<div class="tabMain">'+
                     '<div id="menu_bottom" class="stab tabsbottom"></div>'+
@@ -1120,7 +1118,8 @@ TestSupport.prototype = {
     }
 }
 
-function WADLParser() {    
+function WADLParser() {
+  this.wadlResources = [];
 }
 
 WADLParser.prototype = {
@@ -1135,7 +1134,7 @@ WADLParser.prototype = {
             return;
         }
         ts.setvisibility('main', 'inherit');
-        ts.updatepage('subheader', '<br/><span class=bld>WADL: </span>'+ts.wadlURL);
+        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL: </span><a class=MstLnk_sun4 href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
         ts.wadlDoc = ts.xhr.loadXml(rtext);
         if(ts.wadlDoc != null) {                
             this.initTree(ts.wadlDoc);
@@ -1291,33 +1290,76 @@ WADLParser.prototype = {
         }
         return cName;
     },
-
+    
     evaluateWADLUpdate : function (uri, content) {
-        
-        function nsResolver(prefix) {
-            var ns = {
-                'xmlns' : 'http://research.sun.com/wadl/2006/10'
-            };
-            return ns[prefix] || null;
-        }
-
-        var xmlDoc = ts.xhr.loadXml(content);
-        var iterator = xmlDoc.evaluate('//xmlns:resource', xmlDoc, nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null );
-
         var str = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root>';
         try {
-          var thisNode = iterator.iterateNext();
-          thisNode = iterator.iterateNext();
-          while (thisNode) {
-            str += '<node uri="'+baseURL+ts.getPath(thisNode, '')+'"/>';
-            thisNode = iterator.iterateNext();
-          }	
-          str += '</root>';
+          var resources = this.getAllResourcesFromWadl(content);
+          if(resources != null) {
+              for (i=0;i<resources.length;i++) {
+                str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
+              }
+          }
         }
         catch (e) {
-          dump( 'Error: Document tree modified during iteration ' + e );
+          ts.debug('evaluateWADLUpdate() err name: [' + e.name + '] message: [' + e.message+']');
         }
+        str += '</root>';
         return str;
+    },
+    
+        /*
+        <?xml version="1.0" encoding="UTF-8"?>
+           <application xmlns="http://research.sun.com/wadl/2006/10">
+               <resources base="http://localhost:8080/NewCustomerDB/resources/">
+                   <resource path="/discountCodes/"> 
+        */
+    getAllResourcesFromWadl : function (content) {
+        try {
+            if(content.indexOf("<?xml ") != -1) {
+                var doc2 = ts.xhr.loadXml(content);
+                if(doc2 != null && doc2.documentElement.nodeName == 'parsererror')
+                    return null;
+                container=doc2.documentElement;
+                if(container == null || container.nodeName == 'html')
+                    return null;
+            }
+            if(container != null)
+                return this.findResourcesFromWadl(container);
+        } catch(e) {
+            ts.debug('getAllResourcesFromWadl() err name: [' + e.name + '] message: [' + e.message+"]");
+        }
+
+        return null;
+    },
+    
+    findResourcesFromWadl : function (container) {
+        this.wadlResources = [];
+        this.findResourcesFromWadlRecursively(container);
+        return this.wadlResources;
+    },
+
+    findResourcesFromWadlRecursively : function (refChild) {
+        if(refChild == null)
+            return;
+        var subChilds = refChild.childNodes;
+        if(subChilds == null || subChilds.length == 0)
+            return;
+        var j = 0;
+        for(j=0;j<subChilds.length;j++) {
+            var subChild = subChilds[j];            
+            if(subChild.nodeValue == null) {//DOM Elements only
+                if(subChild.nodeName == 'resource' &&
+                    subChild.attributes != null && subChild.attributes.length > 0 && 
+                      subChild.attributes.getNamedItem('path') != null) {
+                    this.wadlResources.push(subChild);
+                }
+                if(subChild.nodeName == 'resource' ||
+                    subChild.nodeName == 'resources') {
+                  this.findResourcesFromWadlRecursively(subChild);
+                }
+            }
+        }
     },
     
     showCategory : function (category){

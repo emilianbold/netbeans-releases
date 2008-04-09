@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -157,7 +156,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         context  = CsmOffsetResolver.findContext(file, offset);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
-        initResolveMask(context, offset, strPrefix);
+        initResolveMask(context, offset, strPrefix, match);
         this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix);
         resolveContext(context, offset, strPrefix, match);
         return file != null;
@@ -372,13 +371,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         int hideTypes = ~RESOLVE_NONE;
         // do not provide libraries data and global data when just resolve context with empty prefix
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT && strPrefix.length() == 0) {
-            hideTypes &= ~RESOLVE_FILE_LIB_MACROS;
-            hideTypes &= ~RESOLVE_LIB_MACROS;
-            hideTypes &= ~RESOLVE_LIB_CLASSES;
-            hideTypes &= ~RESOLVE_LIB_ENUMERATORS;
-            hideTypes &= ~RESOLVE_LIB_FUNCTIONS;
-            hideTypes &= ~RESOLVE_LIB_NAMESPACES;
-            hideTypes &= ~RESOLVE_LIB_VARIABLES;            
+            hideTypes &= ~RESOLVE_LIB_ELEMENTS;            
             // if not in exact file scope do not provide project globals
             if (!CsmKindUtilities.isFile(context.getLastScope())) {
                 hideTypes &= ~RESOLVE_GLOB_MACROS;
@@ -386,13 +379,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (queryScope == QueryScope.LOCAL_QUERY || queryScope == QueryScope.SMART_QUERY) {
                 // hide all lib context
-                hideTypes &= ~RESOLVE_FILE_LIB_MACROS;
-                hideTypes &= ~RESOLVE_LIB_MACROS;
-                hideTypes &= ~RESOLVE_LIB_CLASSES;
-                hideTypes &= ~RESOLVE_LIB_ENUMERATORS;
-                hideTypes &= ~RESOLVE_LIB_FUNCTIONS;
-                hideTypes &= ~RESOLVE_LIB_NAMESPACES;
-                hideTypes &= ~RESOLVE_LIB_VARIABLES;
+                hideTypes &= ~RESOLVE_LIB_ELEMENTS;
 
                 // hide some project context
                 hideTypes &= ~RESOLVE_GLOB_MACROS;
@@ -649,7 +636,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return false;
     }
     
-    private void updateResolveTypesInFunction(final int offset, final CsmContext context) {
+    private void updateResolveTypesInFunction(final int offset, final CsmContext context, boolean match) {
         
         boolean isInType = CsmContextUtilities.isInType(context, offset);
         if (!isInType) {
@@ -660,20 +647,24 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_CLASS_FIELDS;
             resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
+            resolveTypes |= RESOLVE_LIB_ENUMERATORS;
         }
         if (CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
             if (!isInType) {
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
-                resolveTypes |= RESOLVE_LIB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
                 resolveTypes |= RESOLVE_LIB_FUNCTIONS;
                 resolveTypes |= RESOLVE_CLASS_METHODS;
             }
-            resolveTypes |= RESOLVE_GLOB_NAMESPACES;
-            resolveTypes |= RESOLVE_LIB_CLASSES;
-            resolveTypes |= RESOLVE_LIB_NAMESPACES;
-            resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
+            if(!match) {
+                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_GLOB_VARIABLES;
+                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_CLASS_FIELDS;
+                resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
+            }            
         }
     }
     
@@ -1267,7 +1258,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return dest;
     }    
 
-    private void initResolveMask(final CsmContext context, int offset, final String strPrefix) {
+    private void initResolveMask(final CsmContext context, int offset, final String strPrefix, boolean match) {
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT) {
             if (strPrefix.length() == 0) {
                 resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS;
@@ -1276,19 +1267,24 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
 
             // resolve classes always
-            resolveTypes |= RESOLVE_CLASSES;
             resolveTypes |= RESOLVE_CONTEXT_CLASSES;
+            
+            // namespaces and classes could be everywhere, hide should decide what to disable
+            resolveTypes |= RESOLVE_CLASSES;
+            resolveTypes |= RESOLVE_GLOB_NAMESPACES;
+            resolveTypes |= RESOLVE_LIB_CLASSES;
+            resolveTypes |= RESOLVE_LIB_NAMESPACES;
+            resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;        
             
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
-                updateResolveTypesInFunction(offset, context);
+                updateResolveTypesInFunction(offset, context, match);
             } else if (CsmContextUtilities.getClass(context, false) != null) {
                 // for speed up remember result
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_METHODS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
-                resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
             } else {
                 
                 // resolve global context as well
@@ -1317,7 +1313,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     private Collection<CsmDeclaration> filterDeclarations(Collection<CsmDeclaration> orig, String prefix, boolean match,  CsmDeclaration.Kind[] kinds) {
         LinkedHashSet<CsmDeclaration> out = new LinkedHashSet<CsmDeclaration>(orig.size());
-        contResolver.filterDeclarations(orig.iterator(), out, kinds, prefix, match);
+        contResolver.filterDeclarations(orig.iterator(), out, kinds, prefix, match, false);
         return out;
     }
         

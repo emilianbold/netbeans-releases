@@ -907,6 +907,51 @@ class JavaCodeGenerator extends CodeGenerator {
             + "_" + component.getName(); // NOI18N
     }
 
+    private boolean shouldExpandInitComponents(final int initComponentsOffset) {
+        if (EventQueue.isDispatchThread()) {
+            return shouldExpandInitComponentsInAWT(initComponentsOffset);
+        } else {
+            // We cannot use EQ.invokeAndWait here, see issue 131841
+            // Hence, using a simple fallback
+            return false;
+        }
+    }
+
+    private boolean shouldExpandInitComponentsInAWT(int initComponentsOffset) {
+        boolean expandInitComponents = false;
+        javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
+        if (editorPane != null) {
+            String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
+            FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
+            Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
+            expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
+        }
+        return expandInitComponents;
+    }
+
+    private void expandInitComponents(final int initComponentsOffset) {
+        if (EventQueue.isDispatchThread()) {
+            expandInitComponentsInAWT(initComponentsOffset);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    expandInitComponentsInAWT(initComponentsOffset);
+                }
+            });
+        }
+    }
+
+    private void expandInitComponentsInAWT(int initComponentsOffset) {
+        javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
+        if (editorPane != null) {
+            FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
+            Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
+            if (fold != null) {
+                foldHierarchy.expand(fold);
+            }
+        }
+    }
+
     void regenerateInitComponents() {
         if (!initialized || !canGenerate)
             return;
@@ -940,15 +985,9 @@ class JavaCodeGenerator extends CodeGenerator {
             boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
             if (foldGeneratedCode) {
-                String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
-                javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
-                if (editorPane != null) {
-                    FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
-                    Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
-                    expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
-                }
+                expandInitComponents = shouldExpandInitComponents(initComponentsOffset);
                 writer.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
-                writer.write(foldDescription);
+                writer.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
                 writer.write("\">\n"); // NOI18N
             }
 
@@ -1017,11 +1056,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initComponentsSection.setText(newText);
             
             if (expandInitComponents) {
-                FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
-                Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
-                if (fold != null) {
-                    foldHierarchy.expand(fold);
-                }
+                expandInitComponents(initComponentsOffset);
             }
             clearUndo();
         }
