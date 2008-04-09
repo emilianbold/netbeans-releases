@@ -45,11 +45,11 @@ import org.xml.sax.SAXException;
  */
 public class WsAddressingImportHelper {
 
-    private static String WS_ADDRESSING_FILE_NAME = "addressing"; // NOI18N
-    private static String SCHEMA_EXT = "xsd"; // NOI18N
+    private static final String WS_ADDRESSING_FILE_NAME = "addressing"; // NOI18N
+    private static final String SCHEMA_EXT = "xsd"; // NOI18N
 
-    private BpelModel myModel;
-    private ImportRegistrationHelper myImportHelper;
+    private final BpelModel myModel;
+    private final ImportRegistrationHelper myImportHelper;
 
     private WsAddressingImportHelper(BpelModel bpelModel,
             ImportRegistrationHelper importHelper)
