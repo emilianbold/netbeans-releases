@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.mozilla.javascript.Node;
@@ -153,5 +155,18 @@ public class TypesTest extends JsTestBase {
 
     public void testTypes9() throws Exception {
         checkTypes("testfiles/jmaki-uncompressed.js");
+    }
+    
+    // Make sure we don't bomb out analyzing any of these files
+    // Compute types for lots of files - but don't store the results,
+    // just make sure we don't abort during scanning.
+    public void testStress() throws Exception {
+        for (String file : JAVASCRIPT_TEST_FILES) {
+            CompilationInfo info = getInfo(file);
+            List<Object> nodes = new ArrayList<Object>();
+            Map<Object,String> types = new HashMap<Object,String>();
+            Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
+            initializeTypeNodes(info, nodes, positions, types);
+        }
     }
 }
