@@ -54,7 +54,7 @@ import static org.netbeans.modules.javascript.editing.FmtOptions.*;
  * 
  * @author Dusan Balek
  */
-public final class CodeStyle {
+public /*final*/ class CodeStyle {
     
     private static CodeStyle INSTANCE;
 
@@ -64,7 +64,7 @@ public final class CodeStyle {
     
     private Preferences preferences;
     
-    private CodeStyle(Preferences preferences) {
+    protected CodeStyle(Preferences preferences) {
         this.preferences = preferences;
     }
 

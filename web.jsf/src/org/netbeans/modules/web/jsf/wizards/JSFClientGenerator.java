@@ -60,6 +60,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,7 +121,6 @@ import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.AnnotationInfo;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.TypeInfo;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -1608,13 +1608,27 @@ public class JSFClientGenerator {
                     methodInfo = new MethodInfo("reset", privateModifier, "void", null, new String[]{"boolean"}, new String[]{"resetFirstItem"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
 
-                    TypeInfo asStringType = new TypeInfo("java.util.Map", new String[]{entityClass, "java.lang.String"});
+                    TypeInfo asStringType = new TypeInfo("java.util.Map", new String[]{"java.lang.Object", "java.lang.String"});
                     modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "asString", asStringType, privateModifier, null, null);
 
                     bodyText = "if (asString == null) {\n" +
-                            "asString = new HashMap<" + simpleEntityName + ",String>() {" +
+                            "asString = new HashMap<Object,String>() {" +
                             "@Override\n" +
                             "public String get(Object key) {\n" +
+                            "if (key instanceof Object[]) {\n" +
+                            "Object[] keyAsArray = (Object[])key;\n" +
+                            "if (keyAsArray.length == 0) {\n" +
+                            "return \"(No Items)\";\n" +
+                            "}\n" +
+                            "StringBuffer sb = new StringBuffer();\n" +
+                            "for (int i = 0; i < keyAsArray.length; i++) {\n" +
+                            "if (i > 0) {\n" +
+                            "sb.append(\"<br />\");\n" +
+                            "}\n" +
+                            "sb.append(keyAsArray[i]);\n" +
+                            "}\n" +
+                            "return sb.toString();\n" +
+                            "}\n" +
                             "return new " + simpleConverterName + "().getAsString(FacesContext.getCurrentInstance(), null, (" + simpleEntityName + ")key);\n" +
                             "}\n" +
                             "};\n" +
@@ -1637,7 +1651,7 @@ public class JSFClientGenerator {
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
                             "createSetup();\n" +
-                            "throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
+                            //"throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
                             "}\n";
                     methodInfo = new MethodInfo("validateCreate", publicModifier, "void", null, new String[]{"javax.faces.context.FacesContext", "javax.faces.component.UIComponent", "java.lang.Object"}, new String[]{"facesContext", "component", "value"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
@@ -2242,6 +2256,11 @@ public class JSFClientGenerator {
             return getCodeToPopulatePkField(controller, type, pkAccessorMethod).length() > 0;
         }
         
+        public boolean isRedundantWithPkFields(CompilationController controller, TypeElement type, ExecutableElement relationshipMethod) {
+            EmbeddedPkSupportInfo info = getInfo(controller, type);
+            return info.isRedundantWithPkFields(relationshipMethod);
+        }
+        
         private EmbeddedPkSupportInfo getInfo(CompilationController controller, TypeElement type) {
             EmbeddedPkSupportInfo info = typeToInfo.get(type);
             if (info == null) {
@@ -2255,6 +2274,7 @@ public class JSFClientGenerator {
     private static class EmbeddedPkSupportInfo {
         private TypeElement type;
         private Map<String,ExecutableElement> joinColumnNameToRelationshipMethod = new HashMap<String,ExecutableElement>();
+        private Map<ExecutableElement,List<String>> relationshipMethodToJoinColumnNames = new HashMap<ExecutableElement,List<String>>(); //used only in isRedundantWithPkFields
         private Map<String,String> joinColumnNameToReferencedColumnName = new HashMap<String,String>();
         private Map<String,String> columnNameToAccessorString = new HashMap<String,String>();
         private Map<ExecutableElement,String> pkAccessorMethodToColumnName = new HashMap<ExecutableElement,String>();
@@ -2293,6 +2313,20 @@ public class JSFClientGenerator {
             pkAccessorMethodToPopulationCode.put(pkAccessorMethod, code);
         }
         
+        public boolean isRedundantWithPkFields(ExecutableElement relationshipMethod) {
+            List<String> joinColumnNameList = relationshipMethodToJoinColumnNames.get(relationshipMethod);
+            if (joinColumnNameList == null) {
+                return false;
+            }
+            Collection<String> pkColumnNames = pkAccessorMethodToColumnName.values();
+            for (String columnName : joinColumnNameList) {
+                if (!pkColumnNames.contains(columnName)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
         EmbeddedPkSupportInfo(CompilationController controller, TypeElement type) {
             this.type = type;
             isFieldAccess = JsfForm.isFieldAccess(type);
@@ -2319,7 +2353,7 @@ public class JSFClientGenerator {
                         } else if ( (a == 1 || a == 2) && 
                                 (JsfForm.isAnnotatedWith(f, "javax.persistence.OneToOne") ||
                                 JsfForm.isAnnotatedWith(f, "javax.persistence.ManyToOne")) )  {
-                            //populate joinColumnNameToRelationshipMethod and joinColumnNameToReferencedColumnName
+                            //populate joinColumnNameToRelationshipMethod, relationshipMethodToJoinColumnNames, and joinColumnNameToReferencedColumnName
                             populateJoinColumnNameMaps(method, columnAnnotationFqns[a], columnAnnotation);
                         }
                         else if (a == 3) {
@@ -2375,6 +2409,12 @@ public class JSFClientGenerator {
                     String referencedColumnName = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "referencedColumnName"); //NOI18N
                     joinColumnNameToRelationshipMethod.put(columnName, m);
                     joinColumnNameToReferencedColumnName.put(columnName, referencedColumnName);
+                    List<String> joinColumnNameList = relationshipMethodToJoinColumnNames.get(m);
+                    if (joinColumnNameList == null) {
+                        joinColumnNameList = new ArrayList<String>();
+                        relationshipMethodToJoinColumnNames.put(m, joinColumnNameList);
+                    }
+                    joinColumnNameList.add(columnName);
                 }
             }
         }

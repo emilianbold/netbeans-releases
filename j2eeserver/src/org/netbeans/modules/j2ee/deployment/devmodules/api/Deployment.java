@@ -389,7 +389,7 @@ public final class Deployment {
      * 
      * @param serverInstanceID server instance ID.
      * 
-     * @returns <code>true</code> if the given server instance is running, <code>false</code>
+     * @return <code>true</code> if the given server instance is running, <code>false</code>
      *          otherwise.
      * 
      * @throws  NullPointerException if serverInstanceID is <code>null</code>.

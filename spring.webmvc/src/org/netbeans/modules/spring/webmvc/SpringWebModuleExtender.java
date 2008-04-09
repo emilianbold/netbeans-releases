@@ -297,7 +297,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
             FileObject viewFile;
-            viewFile = updateViewPage("index.jsp", DataFolder.findFolder(jsp), "index"); // NOI18N
+            viewFile = createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index"); // NOI18N
             addFileToOpen(viewFile);
             newFiles.add(FileUtil.toFile(viewFile));
 
@@ -346,15 +346,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName).getPrimaryFile();
-        }
-        
-        private FileObject updateViewPage(String templateName, DataFolder targetDO, String fileName) throws IOException {
-            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
-            DataObject templateDO = DataObject.find(templateFO);
-            Map<String, String> keyPair = new HashMap<String, String>();
-            keyPair.put("welcomeText", NbBundle.getMessage(SpringWebModuleExtender.class, "MSG_WELCOME_PAGE_TEXT")); // NOI18N
-            return templateDO.createFromTemplate(targetDO, fileName, keyPair).getPrimaryFile();
-        }
+        }                
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
             InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName); // NOI18N

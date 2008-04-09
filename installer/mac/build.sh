@@ -60,6 +60,8 @@ cd $progdir
 progdir=`pwd`
 
 dmgname=$basename
+# Remove build number from DMG name
+#dmgname=`echo "$dmgname" | sed "s/-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]//g"`
 
 instrument_build() {
    DIR=$1

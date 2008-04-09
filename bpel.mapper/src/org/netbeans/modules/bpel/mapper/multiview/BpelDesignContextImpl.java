@@ -40,7 +40,8 @@ public class BpelDesignContextImpl implements BpelDesignContext {
     private WeakReference<BpelEntity> mContextEntityRef;
     private String mMessage;
     private VisibilityScope mVisibilityScope;
-    
+    private StringBuffer validationErrMsgBuffer = new StringBuffer();
+
     public BpelDesignContextImpl(BpelEntity contextEntity, 
             BpelEntity graphEntity, BpelEntity selectedEntity, 
             Node node, Lookup lookup) {
@@ -105,6 +106,7 @@ public class BpelDesignContextImpl implements BpelDesignContext {
                 "SelectedEntity: " + mSelectedEntityRef + 
                 " Lookup: " + mLookup; // NOI18N
     }
+    
     @Override
     public boolean equals(Object otherObj) {
         if (otherObj instanceof BpelDesignContext) {
@@ -129,5 +131,9 @@ public class BpelDesignContextImpl implements BpelDesignContext {
             mVisibilityScope = new VisibilityScope(getSelectedEntity());
         }
         return mVisibilityScope;
+    }
+
+    public StringBuffer getValidationErrMsgBuffer() {
+        return validationErrMsgBuffer;
     }
 }

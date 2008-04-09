@@ -261,6 +261,9 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     }
  
     protected String fastGetRefName(NamedComponentReference ref) {
+        if (ref == null) {
+          return null;
+        }
         String refString = ref.getRefString();
         String[] splitRefString = refString.split(":", 2);
         String result = null;
@@ -272,5 +275,4 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
         }
         return result;
     }
-    
 }
