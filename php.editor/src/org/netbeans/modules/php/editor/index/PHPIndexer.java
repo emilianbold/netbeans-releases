@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -86,10 +89,14 @@ import org.openide.util.Exceptions;
  *     as function attributes.
  * @todo There are duplicate elements -- why???
  * 
- * @author Tor Norbye
+ * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndexer implements Indexer {
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    
+    // a workaround for issue #132388
+    private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
+            "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
     
     // I need to be able to search several things:
     // (1) by function root name, e.g. quickly all functions that start
@@ -128,7 +135,7 @@ public class PHPIndexer implements Indexer {
         // Since the mime resolver for PHP is simple -- it's just based on the file extension,
         // we perform the same check here:
         //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
-        if ("php".equals(file.getExtension())) { // NOI18N
+        if (INDEXABLE_EXTENSIONS.contains(file.getExtension().toLowerCase())) {
             return true;
         }
         
@@ -162,7 +169,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.8"; // NOI18N
+        return "0.2.9"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -173,7 +180,7 @@ public class PHPIndexer implements Indexer {
         private final ParserFile file;
         private String url;
         private final PHPParseResult result;
-        private final BaseDocument doc;
+        //private final BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
         
@@ -182,16 +189,16 @@ public class PHPIndexer implements Indexer {
             this.file = result.getFile();
             this.factory = factory;
 
-            FileObject fo = file.getFileObject();
+            /*FileObject fo = file.getFileObject();
 
             if (fo != null) {
                 this.doc = NbUtilities.getBaseDocument(fo, true);
             } else {
                 this.doc = null;
             }
-
+            */
             try {
-                url = file.getFileObject().getURL().toExternalForm();
+                url = file.getFile().toURI().toURL().toExternalForm();
 
                 // Make relative URLs for urls in the libraries
                 url = PHPIndex.getPreindexUrl(url);
@@ -349,6 +356,23 @@ public class PHPIndexer implements Indexer {
                     Variable var = (Variable) paramNameExpr;
                     Identifier id = (Identifier) var.getName();
                     paramName = id.getName();
+                    
+                    if (var.isDollared()){
+                        signature.append("$"); //NOI18N
+                    }
+                } else if (paramNameExpr instanceof Reference) {
+                    signature.append("&");
+                    Reference reference = (Reference) paramNameExpr;
+                    
+                    if (reference.getExpression() instanceof Variable) {
+                        Variable var = (Variable) reference.getExpression();
+                        Identifier id = (Identifier) var.getName();
+                        paramName = id.getName();
+
+                        if (var.isDollared()) {
+                            signature.append("$"); //NOI18N
+                        }
+                    }
                 }
 
                 signature.append(paramName);

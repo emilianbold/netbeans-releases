@@ -58,6 +58,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -273,7 +274,7 @@ public class SemiAttribute extends DefaultVisitor {
                 }
 
                 if (ce != null) {
-                    thisEl = ce.enclosedElements.lookup(name, Kind.FUNC);
+                    thisEl = ce.lookup(name, Kind.FUNC);
                 }
             } else {
                 thisEl = lookup(name, Kind.FUNC);
@@ -458,6 +459,7 @@ public class SemiAttribute extends DefaultVisitor {
             name2ElementCache = new LinkedList<IndexedElement>();
             name2ElementCache.addAll(index.getFunctions(null, "", NameKind.PREFIX));
             name2ElementCache.addAll(index.getConstants(null, "", NameKind.PREFIX));
+            name2ElementCache.addAll(index.getClasses(null, "", NameKind.PREFIX));
         }
         
         Set<FileObject> files = new HashSet<FileObject>();
@@ -477,8 +479,6 @@ public class SemiAttribute extends DefaultVisitor {
         
         files.remove(null);
         
-        List<IndexedFunction> result = new LinkedList<IndexedFunction>();
-        
         for (IndexedElement f : name2ElementCache) {
             if (files.contains(f.getFileObject())) {
                 Kind k = null;
@@ -489,6 +489,10 @@ public class SemiAttribute extends DefaultVisitor {
                 
                 if (f instanceof IndexedConstant) {
                     k = Kind.CONST;
+                }
+                
+                if (f instanceof IndexedClass) {
+                    k = Kind.CLASS;
                 }
                 
                 if (k != null) {
@@ -598,6 +602,20 @@ public class SemiAttribute extends DefaultVisitor {
         
         public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
             super(n, name, k);
+        }
+        
+        public AttributedElement lookup(String name, Kind k) {
+            AttributedElement el = enclosedElements.lookup(name, k);
+
+            if (el != null) {
+                return el;
+            }
+
+            if (superClass != null) {
+                return superClass.lookup(name, k);
+            }
+            
+            return null;
         }
     }
     

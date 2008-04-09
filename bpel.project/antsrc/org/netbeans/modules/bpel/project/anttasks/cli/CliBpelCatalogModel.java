@@ -90,7 +90,7 @@ public class CliBpelCatalogModel implements CatalogModel {
      * Constructor
      */
     public CliBpelCatalogModel() {
-      URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard();
+      URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectCatalogUri();
       if (catalogFileLocPath != null) {
           projectCatalogFileLocation = new File(catalogFileLocPath);
       }

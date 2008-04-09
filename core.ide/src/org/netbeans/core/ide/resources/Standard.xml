@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="Edit" />
     <Toolbar name="Build" />
     <Toolbar name="Debug" visible="false" />
-    <Toolbar name="Memory"/>
+    <Toolbar name="Memory" visible="false" />
     <Toolbar name="Versioning" visible="false" />
   </Row>
 

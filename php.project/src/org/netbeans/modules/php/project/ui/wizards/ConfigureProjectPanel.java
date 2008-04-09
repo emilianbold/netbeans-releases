@@ -135,7 +135,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (indexName != null) {
             optionsPanelVisual.setIndexName(indexName);
         }
-        setUrlPreview(false);
         Boolean setAsMain = isSetAsMain();
         if (setAsMain != null) {
             optionsPanelVisual.setSetAsMain(setAsMain);
@@ -180,7 +179,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             return false;
         }
-        setUrlPreview(false);
         return true;
     }
 
@@ -244,10 +242,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     private String getIndexName() {
         return (String) descriptor.getProperty(INDEX_FILE);
-    }
-    
-    private void setUrlPreview(boolean error) {
-        optionsPanelVisual.setUrlPreview(locationPanelVisual.getUrl() + optionsPanelVisual.getIndexName(), error);
     }
 
     private LocalServer getLocalServer() {
@@ -349,10 +343,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         String url = locationPanelVisual.getUrl();
         if (!Utils.isValidUrl(url)) {
-            setUrlPreview(true);
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");
         } else if (!url.endsWith("/")) { // NOI18N
-            setUrlPreview(true);
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_UrlNotTrailingSlash");
         }
 
@@ -362,7 +354,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private String validateOptions() {
         String indexName = optionsPanelVisual.getIndexName();
         if (!Utils.isValidFileName(indexName)) {
-            setUrlPreview(true);
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalIndexName");
         }
         if (optionsPanelVisual.isCreateIndex()) {

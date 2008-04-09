@@ -237,7 +237,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         File srcDir = getSources(helper);
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        if (srcPath.startsWith("../")) { // NOI18N
+        // # 132319
+        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
