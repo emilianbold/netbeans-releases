@@ -26,19 +26,19 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="localServerComboBox" pref="315" max="32767" attributes="0"/>
+                      <Component id="localServerComboBox" pref="269" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="localServerButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="urlTextField" pref="410" max="32767" attributes="2"/>
+                  <Component id="urlTextField" pref="364" max="32767" attributes="2"/>
                   <Component id="urlInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="0" pref="410" max="32767" attributes="2"/>
+                  <Component id="createdFolderTextField" alignment="0" pref="364" max="32767" attributes="2"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="projectLocationTextField" pref="315" max="32767" attributes="2"/>
+                      <Component id="projectLocationTextField" pref="269" max="32767" attributes="2"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="browseButton" linkSize="1" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <Component id="projectNameTextField" alignment="0" pref="410" max="32767" attributes="2"/>
+                  <Component id="projectNameTextField" alignment="0" pref="364" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
