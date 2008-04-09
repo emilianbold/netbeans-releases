@@ -276,7 +276,7 @@ public class FileStatusCache {
     }
 
     /**
-     * Looks up cacnehed file status.
+     * Looks up cached file status.
      * 
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
