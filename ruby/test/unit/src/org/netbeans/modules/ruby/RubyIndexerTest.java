@@ -41,15 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
@@ -65,30 +57,17 @@ public class RubyIndexerTest extends RubyTestBase {
     }
 
     @Override
+    public Indexer getIndexer() {
+        return new RubyIndexer();
+    }
+    
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        RubyIndex.setClusterUrl("file:/bogus"); // No translation
     }
 
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    private String sortCommaList(String s) {
-        String[] items = s.split(",");
-        Arrays.sort(items);
-        StringBuilder sb = new StringBuilder();
-        for (String item : items) {
-            if (sb.length() > 0) {
-                sb.append(",");
-            }
-            sb.append(item);
-        }
-
-        return sb.toString();
-    }
-    
-    private String prettyPrintValue(String key, String value) {
+    protected String prettyPrintValue(String key, String value) {
         if (value == null) {
             return value;
         }
@@ -126,158 +105,6 @@ public class RubyIndexerTest extends RubyTestBase {
         return value;
     }
 
-    
-    public String prettyPrint(String fileUrl, List<IndexDocument> documents, String localUrl) throws IOException {
-        List<String> nonEmptyDocuments = new ArrayList<String>();
-        List<String> emptyDocuments = new ArrayList<String>();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Delete:");
-        sb.append("  ");
-        sb.append("source");
-        sb.append(" : ");
-        sb.append(fileUrl);
-        sb.append("\n");
-        sb.append("\n");  
-        nonEmptyDocuments.add(sb.toString());
-        
-
-        for (IndexDocument d : documents) {
-            IndexDocumentImpl doc = (IndexDocumentImpl)d;
-        
-            sb = new StringBuilder();
-            
-            if (doc.overrideUrl != null) {
-                sb.append("Override URL: ");
-                sb.append(doc.overrideUrl);
-                sb.append("\n");
-            }
-                            
-            sb.append("Indexed:");
-            sb.append("\n");
-            List<String> strings = new ArrayList<String>();
-
-            List<String> keys = doc.indexedKeys;
-            List<String> values = doc.indexedValues;
-            for (int i = 0, n = keys.size(); i < n; i++) {
-                String key = keys.get(i);
-                String value = values.get(i);
-                strings.add(key + " : " + prettyPrintValue(key, value));
-            }
-            Collections.sort(strings);
-            for (String string : strings) {
-                sb.append("  ");
-                sb.append(string);
-                sb.append("\n");
-            }
-
-            sb.append("\n");
-            sb.append("Not Indexed:");
-            sb.append("\n");
-            strings = new ArrayList<String>();
-            keys = doc.unindexedKeys;
-            values = doc.unindexedValues;
-            for (int i = 0, n = keys.size(); i < n; i++) {
-                String key = keys.get(i);
-                String value = prettyPrintValue(key, values.get(i));
-                if (value.indexOf(',') != -1) {
-                    value = sortCommaList(value);
-                }
-                strings.add(key + " : " + value);
-            }
-
-            Collections.sort(strings);
-            for (String string : strings) {
-                sb.append("  ");
-                sb.append(string);
-                sb.append("\n");
-            }
-
-            String s = sb.toString();
-            if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
-                emptyDocuments.add(s);
-            } else {
-                nonEmptyDocuments.add(s);
-            }
-        }
-
-        Collections.sort(emptyDocuments);
-        Collections.sort(nonEmptyDocuments);
-        sb = new StringBuilder();
-        int documentNumber = 0;
-        for (String s : emptyDocuments) {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            sb.append(s);
-        }
-
-        for (String s : nonEmptyDocuments) {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            sb.append(s);
-        }
-
-
-        return sb.toString().replace(localUrl, "<TESTURL>");
-    }
-        
-        
-    private class IndexDocumentImpl implements IndexDocument {
-        private List<String> indexedKeys = new ArrayList<String>();
-        private List<String> indexedValues = new ArrayList<String>();
-        private List<String> unindexedKeys = new ArrayList<String>();
-        private List<String> unindexedValues = new ArrayList<String>();
-
-        private String overrideUrl;
-
-        IndexDocumentImpl(String overrideUrl) {
-            this.overrideUrl = overrideUrl;
-        }
-
-        public void addPair(String key, String value, boolean indexed) {
-            if (indexed) {
-                indexedKeys.add(key);
-                indexedValues.add(value);
-            } else {
-                unindexedKeys.add(key);
-                unindexedValues.add(value);
-            }
-        }
-    }
-
-    private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
-        public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl(null);
-        }
-
-        public IndexDocument createDocument(int initialPairs, String overrideUrl) {
-            return new IndexDocumentImpl(overrideUrl);
-        }
-    }
-    
-    private void checkIndexer(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        RubyParseResult rpr = AstUtilities.getParseResult(info);
-
-        File rubyFile = new File(getDataDir(), relFilePath);
-        String fileUrl = rubyFile.toURI().toURL().toExternalForm();
-        String localUrl = fileUrl;
-        int index = localUrl.lastIndexOf('/');
-        if (index != -1) {
-            localUrl = localUrl.substring(0, index);
-        }
-        
-        RubyIndexer indexer = new RubyIndexer();
-        RubyIndex.setClusterUrl("file:/bogus"); // No translation
-        IndexDocumentFactory factory = new IndexDocumentFactoryImpl();
-        List<IndexDocument> result = indexer.index(rpr, factory);
-        String annotatedSource = prettyPrint(fileUrl, result, localUrl);
-
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
-    }
-    
     public void testAnalysis2() throws Exception {
         checkIndexer("testfiles/ape.rb");
     }

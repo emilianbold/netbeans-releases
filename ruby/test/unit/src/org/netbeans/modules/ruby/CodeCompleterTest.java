@@ -41,27 +41,16 @@
 
 package org.netbeans.modules.ruby;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.jruby.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Completable.QueryType;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.gsf.api.Completable;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,106 +63,17 @@ public class CodeCompleterTest extends RubyTestBase {
         super(testName);
     }
 
-    private String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Results for " + caretLine + " with queryType=" + type + " and nameKind=" + kind);
-        sb.append("\n");
-
-        // Sort to make test more stable
-        Collections.sort(proposals, new Comparator<CompletionProposal>() {
-
-            public int compare(CompletionProposal p1, CompletionProposal p2) {
-                // Smart items first
-                if (p1.isSmart() != p2.isSmart()) {
-                    return p1.isSmart() ? -1 : 1;
-                }
-
-                if (p1.getKind() != p2.getKind()) {
-                    return p1.getKind().compareTo(p2.getKind());
-                }
-                
-                if (!p1.getLhsHtml().equals(p2.getLhsHtml())) {
-                    return p1.getLhsHtml().compareTo(p2.getLhsHtml());
-                }
-
-                if (!p1.getRhsHtml().equals(p2.getRhsHtml())) {
-                    return p1.getRhsHtml().compareTo(p2.getRhsHtml());
-                }
-
-                // Yuck - tostring comparison of sets!!
-                if (!p1.getModifiers().toString().equals(p2.getModifiers().toString())) {
-                    return p1.getModifiers().toString().compareTo(p2.getModifiers().toString());
-                }
-                
-                return 0;
-            }
-        });
-        
-        boolean isSmart = true;
-        for (CompletionProposal proposal : proposals) {
-            if (isSmart && !proposal.isSmart()) {
-                sb.append("------------------------------------\n");
-                isSmart = false;
-            }
-            
-            String n = proposal.getKind().toString();
-            int MAX_KIND = 10;
-            if (n.length() > MAX_KIND) {
-                sb.append(n.substring(0, MAX_KIND));
-            } else {
-                sb.append(n);
-                for (int i = n.length(); i < MAX_KIND; i++) {
-                    sb.append(" ");
-                }
-            }
-
-            sb.append(" ");
-            
-            n = proposal.getLhsHtml();
-            int MAX_LHS = 30;
-            if (n.length() > MAX_LHS) {
-                sb.append(n.substring(0, MAX_LHS));
-            } else {
-                sb.append(n);
-                for (int i = n.length(); i < MAX_LHS; i++) {
-                    sb.append(" ");
-                }
-            }
-
-            sb.append("  ");
-
-            if (proposal.getModifiers().isEmpty()) {
-                n = "";
-            } else {
-                n = proposal.getModifiers().toString();
-            }
-            int MAX_MOD = 9;
-            if (n.length() > MAX_MOD) {
-                sb.append(n.substring(0, MAX_MOD));
-            } else {
-                sb.append(n);
-                for (int i = n.length(); i < MAX_MOD; i++) {
-                    sb.append(" ");
-                }
-            }
-
-            sb.append("  ");
-            
-            sb.append(proposal.getRhsHtml());
-            sb.append("\n");
-            
-            isSmart = proposal.isSmart();
-        }
-        
-        return sb.toString();
+    @Override
+    protected Completable getCodeCompleter() {
+        return new CodeCompleter();
     }
     
     public void checkCompletion(String file, String caretLine) throws Exception {
-// TODO call TestCompilationInfo.setCaretOffset!        
-        QueryType type = QueryType.COMPLETION;
-        boolean caseSensitive = true;
-        NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
-
+        checkCompletion(file, caretLine, false);
+    }
+    
+    @Override
+    public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
         assertNotNull(jrubyHome);
@@ -185,158 +85,31 @@ public class CodeCompleterTest extends RubyTestBase {
         platform.getGemManager().getNonGemLoadPath();
         Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-        
-        CompilationInfo ci = getInfo(file);
-        String text = ci.getText();
-        assertNotNull(text);
-        
-        int caretOffset = -1;
-        if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
 
-            caretOffset = lineOffset + caretDelta;
-            ((TestCompilationInfo)ci).setCaretOffset(caretOffset);
-        }
-
-        assertNotNull(AstUtilities.getParseResult(ci));
-        assertEquals(0, ci.getErrors().size());
-        
-        CodeCompleter cc = new CodeCompleter();
-        
-        HtmlFormatter formatter = new HtmlFormatter() {
-            private StringBuilder sb = new StringBuilder();
-            
-            @Override
-            public void reset() {
-                sb.setLength(0);
-            }
-
-            @Override
-            public void appendHtml(String html) {
-                sb.append(html);
-            }
-
-            @Override
-            public void appendText(String text, int fromInclusive, int toExclusive) {
-                sb.append(text, fromInclusive, toExclusive);
-            }
-            
-            @Override
-            public void emphasis(boolean start) {
-            }
-
-            @Override
-            public void active(boolean start) {
-            }
-
-            @Override
-            public void name(ElementKind kind, boolean start) {
-            }
-
-            @Override
-            public void parameters(boolean start) {
-            }
-
-            @Override
-            public void type(boolean start) {
-            }
-
-            @Override
-            public void deprecated(boolean start) {
-            }
-
-            @Override
-            public String getText() {
-                return sb.toString();
-            }
-        };
-        boolean upToOffset = type == QueryType.COMPLETION;
-        String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
-        if (prefix == null) {
-            if (prefix == null) {
-                int[] blk =
-                    org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)ci.getDocument(),
-                        caretOffset);
-
-                if (blk != null) {
-                    int start = blk[0];
-
-                    if (start < caretOffset ) {
-                        if (upToOffset) {
-                            prefix = ci.getDocument().getText(start, caretOffset - start);
-                        } else {
-                            prefix = ci.getDocument().getText(start, blk[1]-start);
-                        }
-                    }
-                }
-            }
-        }
-
-        Source js = Source.forFileObject(ci.getFileObject());
-        assertNotNull(js);
-        //ci.getIndex();
-        //index.setDirty(js);
-        js.testUpdateIndex();
         RubyIndex.setClusterUrl("file:/bogus"); // No translation
-        List<CompletionProposal> proposals = cc.complete(ci, caretOffset, prefix, kind, type, caseSensitive, formatter);
         
-        String described = describe(caretLine, kind, type, proposals);
-        assertDescriptionMatches(file, described, true, ".completion");
+        super.checkCompletion(file, caretLine, includeModifiers);
     }
     
-    
-    public void checkPrefix(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
+    @Override
+    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
+        assertNotNull(jrubyHome);
+        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
+        RubyIndexer.setPreindexedDb(preindexed);
+        initializeRegistry();
+        // Force classpath initialization
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        platform.getGemManager().getNonGemLoadPath();
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
 
-        BaseDocument doc = (BaseDocument)info.getDocument();
-        StringBuilder sb = new StringBuilder();
-
-        CodeCompleter completer = new CodeCompleter();
-
-        int index = 0;
-        while (index < doc.getLength()) {
-            int lineStart = index;
-            int lineEnd = Utilities.getRowEnd(doc, index);
-            if (lineEnd == -1) {
-                break;
-            }
-            if (Utilities.getRowFirstNonWhite(doc, index) != -1) {
-                String line = doc.getText(lineStart, lineEnd-lineStart);
-                for (int i = lineStart; i <= lineEnd; i++) {
-                    String prefix = completer.getPrefix(info, i, true); // line.charAt(i)
-                    if (prefix == null) {
-                        continue;
-                    }
-                    String wholePrefix = completer.getPrefix(info, i, false);
-                    assertNotNull(wholePrefix);
-
-                    sb.append(line +"\n");
-                    //sb.append("Offset ");
-                    //sb.append(Integer.toString(i));
-                    //sb.append(" : \"");
-                    for (int j = lineStart; j < i; j++) {
-                        sb.append(' ');
-                    }
-                    sb.append('^');
-                    sb.append(prefix.length() > 0 ? prefix : "\"\"");
-                    sb.append(",");
-                    sb.append(wholePrefix.length() > 0 ? wholePrefix : "\"\"");
-                    sb.append("\n");
-                }
-            }
-            
-            index = lineEnd+1;
-        }
-
-        String annotatedSource = sb.toString();
-
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".prefixes");
+        RubyIndex.setClusterUrl("file:/bogus"); // No translation
+        
+        super.checkComputeMethodCall(file, caretLine, fqn, param, expectSuccess);
     }
-    
+
     public void testPrefix1() throws Exception {
         checkPrefix("testfiles/cc-prefix1.rb");
     }
@@ -460,69 +233,6 @@ public class CodeCompleterTest extends RubyTestBase {
     }
 //    
 //    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
-
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
-        System.setProperty("netbeans.user", getWorkDirPath());
-        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
-        assertNotNull(jrubyHome);
-        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
-        RubyIndexer.setPreindexedDb(preindexed);
-        initializeRegistry();
-        // Force classpath initialization
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        platform.getGemManager().getNonGemLoadPath();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-
-        CodeCompleter cc = new CodeCompleter();
-        TestCompilationInfo info = getInfo(file);
-        String text = info.getText();
-
-        int caretOffset = -1;
-        if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
-            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
-        }
-
-        info.setCaretOffset(caretOffset);
-
-        assertNotNull(text);
-        assertNotNull(AstUtilities.getParseResult(info));
-        Source js = Source.forFileObject(info.getFileObject());
-        assertNotNull(js);
-        //ci.getIndex();
-        //index.setDirty(js);
-        js.testUpdateIndex();
-        
-        Node root = AstUtilities.getRoot(info);
-        IndexedMethod[] methodHolder = new IndexedMethod[1];
-        int[] paramIndexHolder = new int[1];
-        int[] anchorOffsetHolder = new int[1];
-        int lexOffset = caretOffset;
-        int astOffset = caretOffset;
-        boolean ok = CodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
-
-        if (expectSuccess) {
-            assertTrue(ok);
-        } else {
-            return;
-        }
-        IndexedMethod method = methodHolder[0];
-        assertNotNull(method);
-        int index = paramIndexHolder[0];
-        assertTrue(index >= 0);
-        
-        // The index doesn't work right at test time - not sure why
-        // it doesn't have all of the gems...
-        //assertEquals(fqn, method.getFqn());
-        assertEquals(param, method.getParameters().get(index));
-    }
 
     public void testCall1() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.rb", "create_table(^firstarg,  :id => true)",

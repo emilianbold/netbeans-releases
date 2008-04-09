@@ -77,7 +77,12 @@ final class ObjectListRenderer extends DefaultListCellRenderer {
         }
         
         if (value instanceof DataObject) {
-            value = ((DataObject)value).getNodeDelegate();
+            DataObject obj = (DataObject)value;
+            if (obj.isValid()) {
+                value = obj.getNodeDelegate();
+            } else {
+                value = obj.getName();
+            }
         }
         
         if (value instanceof Node) {

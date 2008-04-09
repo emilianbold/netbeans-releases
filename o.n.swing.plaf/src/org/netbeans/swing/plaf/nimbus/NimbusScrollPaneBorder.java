@@ -38,38 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
-
-
-/**
- * ServerManagerAction displays server manager.
+/*
+ * MetalScrollPaneBorder.java
  *
- * @author  Stepan Herold
+ * Created on March 14, 2004, 4:33 AM
  */
-public class ServerManagerAction extends CallableSystemAction {
 
-    public ServerManagerAction () {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+package org.netbeans.swing.plaf.nimbus;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
+
+/** Scroll pane border for Metal look and feel
+ *
+ * @author  Dafe Simonek
+ */
+class NimbusScrollPaneBorder extends AbstractBorder {
+
+    private static final Insets insets = new Insets(1, 1, 2, 2);
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y,
+    int w, int h) {
+        g.translate(x, y);
+
+        Color color = UIManager.getColor("controlShadow");
+        g.setColor(color == null ? Color.darkGray : color);
+        g.drawRect(0, 0, w-2, h-2);
+        color = UIManager.getColor("controlHighlight");
+        g.setColor(color == null ? Color.white : color);
+        g.drawLine(w-1, 1, w-1, h-1);
+        g.drawLine(1, h-1, w-1, h-1);
+
+        g.translate(-x, -y);
     }
 
-    public void performAction() {
-        ServerManager.showCustomizer(null);
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(ServerManagerAction.class,"CTL_ServerManager"); // NOI18N
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return insets;
     }
 }
