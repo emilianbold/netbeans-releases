@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -87,10 +89,14 @@ import org.openide.util.Exceptions;
  *     as function attributes.
  * @todo There are duplicate elements -- why???
  * 
- * @author Tor Norbye
+ * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndexer implements Indexer {
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    
+    // a workaround for issue #132388
+    private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
+            "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
     
     // I need to be able to search several things:
     // (1) by function root name, e.g. quickly all functions that start
@@ -129,7 +135,7 @@ public class PHPIndexer implements Indexer {
         // Since the mime resolver for PHP is simple -- it's just based on the file extension,
         // we perform the same check here:
         //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
-        if ("php".equals(file.getExtension())) { // NOI18N
+        if (INDEXABLE_EXTENSIONS.contains(file.getExtension().toLowerCase())) {
             return true;
         }
         
