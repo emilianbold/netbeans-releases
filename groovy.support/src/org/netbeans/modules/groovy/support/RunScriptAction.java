@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.groovy.support;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.Node;
@@ -68,6 +71,37 @@ public class RunScriptAction extends NodeAction {
             }
         }
     }
+    
+    boolean isCustomScript(DataObject dataObject) {
+        
+        /* we need to figure out whether this is a plain script or
+           some special case, for example a script located in 
+           $PROJECT_HOME/script should be run as a grails target
+           rather than a standalone script. */
+
+        FileObject nodeFile = dataObject.getPrimaryFile();
+        Project project = FileOwnerQuery.getOwner(nodeFile);
+
+        if (project != null) {
+            FileObject parentDir = nodeFile.getParent();
+            if (parentDir.isFolder() && parentDir.getName().equals("scripts")) {
+                FileObject prjDir = project.getProjectDirectory();
+                
+                if (prjDir != null) {
+                    FileObject scriptsDir = prjDir.getFileObject("scripts");
+                    
+                    if (scriptsDir != null) {
+                        if (scriptsDir.getPath().equals(parentDir.getPath())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     
     @Override
     protected boolean asynchronous() {
@@ -99,6 +133,10 @@ public class RunScriptAction extends NodeAction {
         if (dataObject == null) {
             return false;
         }
+        
+        if(isCustomScript(dataObject))
+            return false;
+        
         return "text/x-groovy".equals(dataObject.getPrimaryFile().getMIMEType()); // NOI18N
     }
 
