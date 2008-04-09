@@ -205,6 +205,7 @@ public class PHPCodeCompletion implements Completable {
                 break;
             case HTML:
                 proposals.add(new KeywordItem("<?php", request)); //NOI18N
+                proposals.add(new KeywordItem("<?=", request)); //NOI18N
                 break;
             case CLASS_NAME:
                 autoCompleteClassNames(proposals, request);
