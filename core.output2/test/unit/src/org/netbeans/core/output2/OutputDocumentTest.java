@@ -184,20 +184,9 @@ public class OutputDocumentTest extends NbTestCase {
         assertFalse ("After closing the writer, the document should not expect itself to grow", doc.getLines().isGrowing());
     }
     
-    private static String STATE = "(STATE NOT SET!)";
     public void testWordWrap() {
-        System.out.println("testWordWrap - line data caching ON");
-        STATE = "(CACHED MODE)";
-        AbstractLines.unitTestUseCache(Boolean.TRUE);
+        System.out.println("testWordWrap");
         doTestWordWrap();
-        
-        System.out.println("testWordWrap - line data caching OFF");
-        STATE = "(DYNAMIC MODE)";
-        AbstractLines.unitTestUseCache(Boolean.FALSE);
-//        doTestWordWrap();
-        
-        AbstractLines.unitTestUseCache(null);
-        STATE = "(STATE NOT SET!)";
     }
         
     private void doTestWordWrap() {
@@ -219,17 +208,17 @@ public class OutputDocumentTest extends NbTestCase {
         ow.println (c80);
         
         int val = doc.getLines().getLogicalLineCountAbove(2, 90);
-        assertTrue (STATE + "With three 80 character lines of data, wrapped at 90 characters, there should be 2 lines above line 2, not " + val, val == 2);
+        assertTrue ("With three 80 character lines of data, wrapped at 90 characters, there should be 2 lines above line 2, not " + val, val == 2);
         
         val = doc.getLines().getLogicalLineCountIfWrappedAt(90);
-        assertTrue (STATE + "With three 80 character lines of data, wrapped at 90 characters, the line count should be 3, not " + val, val == 3);
+        assertTrue ("With three 80 character lines of data, wrapped at 90 characters, the line count should be 3, not " + val, val == 3);
         assertTrue (val == ow.getLines().getLineCount());
         
         val = doc.getLines().getLogicalLineCountIfWrappedAt(50);
-        assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, the line count should be 6, not " + val, val == 6);
+        assertTrue ("With three 80 character lines of data, wrapped at 50 characters, the line count should be 6, not " + val, val == 6);
         
         val = doc.getLines().getLogicalLineCountAbove(2, 50);
-        assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, there should be 4 logical lines above 2, not " + val, val == 4);
+        assertTrue ("With three 80 character lines of data, wrapped at 50 characters, there should be 4 logical lines above 2, not " + val, val == 4);
         
         int[] wrapData = new int[] {5, 0, 0};
         doc.getLines().toLogicalLineIndex(wrapData, 50);

@@ -41,16 +41,13 @@
 
 package org.netbeans.modules.ruby;
 
-import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,84 +71,15 @@ public class BracketCompleterTest extends RubyTestBase {
         super(testName);
     }
 
-    private void match(String original) throws BadLocationException {
-        BracketCompleter bc = new BracketCompleter();
-        
-        int caretPos = original.indexOf('^');
-        
-        original = original.substring(0, caretPos) + original.substring(caretPos+1);
-        int matchingCaretPos = original.indexOf('^');
-        assert caretPos < matchingCaretPos;
-        original = original.substring(0, matchingCaretPos) + original.substring(matchingCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        OffsetRange range = bc.findMatching(doc, caretPos);
-        
-        assertNotSame("Didn't find matching token for " + LexUtilities.getToken(doc, caretPos).text().toString(), 
-                OffsetRange.NONE, range);
-        assertEquals("forward match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " +
-                LexUtilities.getToken(doc, matchingCaretPos).text().toString(), 
-                matchingCaretPos, range.getStart());
-        
-        // Perform reverse match
-        range = bc.findMatching(doc, matchingCaretPos);
-        
-        assertNotSame(OffsetRange.NONE, range);
-        assertEquals("reverse match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " + 
-                LexUtilities.getToken(doc, caretPos).text().toString(), 
-                caretPos, range.getStart());
+    @Override
+    protected BracketCompletion getBracketCompletion() {
+        return new BracketCompleter();
     }
     
-    private void insertBreak(String original, String expected) throws BadLocationException {
-        BracketCompleter bc = new BracketCompleter();
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-        int newOffset = bc.beforeBreak(doc, insertOffset, ta);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-            // Indent the new line
-            Formatter formatter = new Formatter();
-            //ParserResult result = parse(fo);
-
-            int startPos = caret.getDot()+1;
-            int endPos = startPos+1;
-
-            //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos);
-            int indent = LexUtilities.getLineIndent(doc, insertOffset+1);
-
-            //bc.afterBreak(doc, insertOffset, caret);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (newOffset != -1) {
-                caret.setDot(newOffset);
-            } else {
-                caret.setDot(insertOffset+1+indent);
-            }
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
+    private void match(String original) throws BadLocationException {
+        super.assertMatches(original);
     }
-
+    
     private void insertChar(String original, char insertText, String expected) throws BadLocationException {
         insertChar(original, insertText, expected, null);
     }
@@ -160,230 +88,17 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar(original, insertText, expected, selection, false);
     }
 
-    private void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BracketCompleter bc = new BracketCompleter();
-
-        BaseDocument doc = getDocument(original);
-        
-        if (codeTemplateMode) {
-            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
-            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);            
-        }
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-        if (selection != null) {
-            int start = original.indexOf(selection);
-            assertTrue(start != -1);
-            assertTrue("Ambiguous selection - multiple occurrences of selection string",
-                    original.indexOf(selection, start+1) == -1);
-            ta.setSelectionStart(start);
-            ta.setSelectionEnd(start+selection.length());
-            assertEquals(selection, ta.getSelectedText());
-        }
-
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        boolean handled = false;
-        try {
-            handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-        if (!handled) {
-            if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
-                insertOffset = ta.getSelectionStart();
-                doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
-                caret.setDot(insertOffset);
-            }
-            doc.insertString(caret.getDot(), ""+insertText, null);
-            caret.setDot(insertOffset+1);
-            bc.afterCharInserted(doc, insertOffset, ta, insertText);
-        }
-        String formatted = doc.getText(0, doc.getLength());
-        assertEquals(expected, formatted);
-        if (finalCaretPos != -1) {
-            assertEquals(finalCaretPos, caret.getDot());
-        }
-    }
-
-    private void deleteChar(String original, String expected) throws BadLocationException {
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BracketCompleter bc = new BracketCompleter();
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        char ch = doc.getChars(dot-1, 1)[0];
-
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.remove(dot - 1, 1);
-            caret.setDot(dot-1);
-            boolean handled = bc.charBackspaced(doc, dot-1, ta, ch);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
-    
-    private void deleteWord(String original, String expected) throws BadLocationException {
+    @Override
+    public void deleteWord(String original, String expected) throws BadLocationException {
         // Try deleting the word not just using the testcase but also surrounded by strings
         // to make sure there's no problem with lexer token directions
-        deleteWordImpl(original, expected);
-        deleteWordImpl(original+"foo", expected+"foo");
-        deleteWordImpl("foo"+original, "foo"+expected);
-        deleteWordImpl(original+"::", expected+"::");
-        deleteWordImpl(original+"::", expected+"::");
+        super.deleteWord(original, expected);
+        super.deleteWord(original+"foo", expected+"foo");
+        super.deleteWord("foo"+original, "foo"+expected);
+        super.deleteWord(original+"::", expected+"::");
+        super.deleteWord(original+"::", expected+"::");
     }
     
-    private void deleteWordImpl(String original, String expected) throws BadLocationException {
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BracketCompleter bc = new BracketCompleter();
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        //REMOVE char ch = doc.getChars(dot-1, 1)[0];
-
-        int begin = bc.getNextWordOffset(doc, dot, true);
-        if (begin == -1) {
-            begin = Utilities.getPreviousWord(ta, dot);
-        }
-        
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.remove(begin, dot-begin);
-            caret.setDot(begin);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
-    
-    private void assertLogicalRange(String source, boolean up, String expected) throws Exception {
-        String BEGIN = "%<%"; // NOI18N
-        String END = "%>%"; // NOI18N
-        int sourceStartPos = source.indexOf(BEGIN);
-        if (sourceStartPos != -1) {
-            source = source.substring(0, sourceStartPos) + source.substring(sourceStartPos+BEGIN.length());
-        }
-        
-        int caretPos = source.indexOf('^');
-        source = source.substring(0, caretPos) + source.substring(caretPos+1);
-
-        int sourceEndPos = source.indexOf(END);
-        if (sourceEndPos != -1) {
-            source = source.substring(0, sourceEndPos) + source.substring(sourceEndPos+END.length());
-        }
-        
-        int expectedStartPos = expected.indexOf(BEGIN);
-        if (expectedStartPos != -1) {
-            expected = expected.substring(0, expectedStartPos) + expected.substring(expectedStartPos+BEGIN.length());
-        }
-
-        int expectedCaretPos = expected.indexOf('^');
-        expected = expected.substring(0, expectedCaretPos) + expected.substring(expectedCaretPos+1);
-        
-        int expectedEndPos = expected.indexOf(END);
-        if (expectedEndPos != -1) {
-            expected = expected.substring(0, expectedEndPos) + expected.substring(expectedEndPos+END.length());
-        }
-
-        assertEquals("Only range markers should differ", source,expected);
-
-        OffsetRange selected = null;
-        
-        BaseDocument doc = getDocument(source);
-        FileObject fileObject = null;
-        CompilationInfo info = new TestCompilationInfo(this, fileObject, doc, source);
-        
-        BracketCompleter completer = new BracketCompleter();
-        List<OffsetRange> ranges = completer.findLogicalRanges(info, caretPos);
-        OffsetRange expectedRange;
-        if (expectedStartPos != -1) {
-            expectedRange = new OffsetRange(expectedStartPos, expectedEndPos);
-        } else {
-            expectedRange = new OffsetRange(expectedCaretPos, expectedCaretPos);
-        }
-
-        if (sourceStartPos != -1) {
-            assert sourceEndPos != -1;
-            selected = new OffsetRange(sourceStartPos, sourceEndPos);            
-
-            for (int i = 0; i < ranges.size(); i++) {
-                if (ranges.get(i).equals(selected)) {
-                    if (up) {
-                        assertTrue(i < ranges.size()-1);
-                        OffsetRange was = ranges.get(i+1);
-                        assertEquals("Wrong selection: expected \"" + 
-                                expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
-                                source.substring(was.getStart(), was.getEnd()) + "\"",
-                                expectedRange, was);
-                        return;
-                    } else {
-                        if (i == 0) {
-                            assertEquals(caretPos, expectedCaretPos);
-                            return;
-                        }
-                        OffsetRange was = ranges.get(i-1);
-                        assertEquals("Wrong selection: expected \"" + 
-                                expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
-                                source.substring(was.getStart(), was.getEnd()) + "\"",
-                                expectedRange, was);
-                        return;
-                    }
-                }
-            }
-            fail("Selection range " + selected + " is not in the range");
-        } else {
-            assert ranges.size() > 0;
-            OffsetRange was = ranges.get(0);
-            assertEquals("Wrong selection: expected \"" + 
-                    expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
-                    source.substring(was.getStart(), was.getEnd()) + "\"",
-                    expectedRange, was);
-            return;
-        }
-    }
-
     public void testInsertX() throws Exception {
         insertChar("c^ass", 'l', "cl^ass");
     }

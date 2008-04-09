@@ -306,7 +306,7 @@ public class JsIndex {
                                 (signature.charAt(lcname.length()) != ';'))) {
                             continue;
                         }
-                    }
+                    } // TODO - check camel case here too!
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
                     assert map != null;
