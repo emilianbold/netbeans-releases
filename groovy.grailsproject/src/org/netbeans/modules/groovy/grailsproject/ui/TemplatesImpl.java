@@ -69,6 +69,11 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
         "Templates/Other/Folder"
     };
 
+    private static final String[] GSP_TEMPLATES = new String[] {
+        "Templates/Groovy/_view.gsp",
+        "Templates/Other/Folder"
+    };
+
     private static final String[] FOLDER_ONLY = new String[] {
         "Templates/Other/Folder"
     };
@@ -86,6 +91,8 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
             return FOLDER_ONLY;
         } else if (dirName.startsWith("src")) {
             return FOLDER_ONLY;
+        } else if (dirName.startsWith("views")) {
+            return GSP_TEMPLATES;
         } else {
             return PROPERTIES_FILE;
         }

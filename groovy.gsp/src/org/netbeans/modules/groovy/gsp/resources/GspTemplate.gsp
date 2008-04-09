@@ -2,21 +2,17 @@
 <#-- You can change the contents of the license inserted into
  #   each template by opening Tools | Templates and editing
  #   Licenses | Default License  -->
-<#assign licenseFirst = "<%#">
-<#assign licensePrefix = "# ">
-<#assign licenseLast = "%>">
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "  ">
+<#assign licenseLast = "-->">
 <#include "../Licenses/license-${project.license}.txt">
 <#-- End of license section; GSP contents follow -->
 
 <html>
   <head>
-    <title>Our books</title>
+    <title>Sample title</title>
   </head>
   <body>
-    <ul>
-      <g:each it="books">
-        <li>${it.title} (${it.author.name})</li>
-      </g:each>
-    </ul>
+    <h1>Sample line</h1>
   </body>
 </html>

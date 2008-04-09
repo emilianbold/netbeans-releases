@@ -214,9 +214,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(new AddLibraryAction((Project)project, "Add Library"));
                 break;
             case VIEWS:
-                // we don't create views on the "Views and Layouts" logical view, but by selecting a Domain Class
-                // and invoking the action in the context-menu of the domain-class.
-                // result.add(new NewArtifactAction(project, SourceCategory.VIEWS, "Create a new View"));
+                /* Usually, you don't directly create views on the "Views and Layouts" logical view, 
+                   but select a Domain Class and invoke the action in the context-menu of the domain-class.
+                   But some users might want to be able to hand-craft what's in the views directory,
+                   therfore we add newFileAction() here (see # 131775, 131777) */
+                
+                result.add(CommonProjectActions.newFileAction());
                 break;
         }
 
