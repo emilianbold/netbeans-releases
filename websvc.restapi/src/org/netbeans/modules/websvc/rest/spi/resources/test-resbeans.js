@@ -1136,7 +1136,7 @@ WADLParser.prototype = {
             return;
         }
         ts.setvisibility('main', 'inherit');
-        ts.updatepage('subheader', '<br/><span class=bld>WADL: </span><a href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
+        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL: </span><a class=MstLnk_sun4 href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
         ts.wadlDoc = ts.xhr.loadXml(rtext);
         if(ts.wadlDoc != null) {                
             this.initTree(ts.wadlDoc);
@@ -1300,12 +1300,11 @@ WADLParser.prototype = {
           if(resources != null) {
               for (i=0;i<resources.length;i++) {
                 str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
-                thisNode = iterator.iterateNext();
               }
           }
         }
         catch (e) {
-          dump( 'Error: Document tree modified during iteration ' + e );
+          ts.debug('evaluateWADLUpdate() err name: [' + e.name + '] message: [' + e.message+']');
         }
         str += '</root>';
         return str;

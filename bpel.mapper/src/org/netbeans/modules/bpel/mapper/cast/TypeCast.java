@@ -68,17 +68,19 @@ public class TypeCast extends AbstractTypeCast {
     public static TypeCast convert(Cast cast) {
         GlobalType castTo = null;
         //
+        SchemaReference<GlobalType> gTypeRef = cast.getType();
         XPathExpression xPathExpr = getExpression(cast);
         //
-        SchemaReference<GlobalType> gTypeRef = cast.getType();
         if (gTypeRef == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, 
                     "Cast To has to be specified");
+            return null;
         } else {
             castTo = gTypeRef.get();
             if (castTo == null) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, 
                         "Unresolved global type: " + gTypeRef.getQName());
+                return null;
             }
         }
         //

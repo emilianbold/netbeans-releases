@@ -51,13 +51,12 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -122,13 +121,9 @@ public class FileStatusCache implements ISVNNotifyListener {
      */
     private final String FILE_STATUS_MAP = DiskMapTurboProvider.ATTR_STATUS_MAP;
 
-    private DiskMapTurboProvider    cacheProvider;
-    
-    private Subversion     svn;
-    
-    private Set<FileSystem> filesystemsToRefresh;
-    
-    private RequestProcessor.Task refreshFilesystemsTask;    
+    private DiskMapTurboProvider        cacheProvider;    
+    private Subversion                  svn;
+    private RefreshTask                 refreshTask = new RefreshTask();
     
     FileStatusCache() {
         this.svn = Subversion.getInstance();
@@ -835,75 +830,102 @@ public class FileStatusCache implements ISVNNotifyListener {
         // boring ISVNNotifyListener event
     }
 
-    public void onNotify(final File path, final SVNNodeKind kind) {
-        // notifications from the svnclientadapter may be caused by a synchronously handled FS event. 
-        // The thing is that we have to prevent reentrant calls on the FS api ...
-        Utils.post(new Runnable() {
-            public void run() {
-                onNotifyImpl(path, kind);
-            }
-        });                        
-    }
-
-    private void onNotifyImpl(File path, SVNNodeKind kind) {
-        if (path == null) {  // on kill
-            return;
+    public void onNotify(File path, SVNNodeKind nodeKind) {
+        notifyChanges(path);
+    }    
+    
+    /**
+     * Asynchronously refreshes the cache and the given files filesystem. 
+     * @param file
+     */
+    public void notifyChanges(File... files) {
+        if(files == null || files.length == 0) {
+            return; 
         }
-
-        // I saw "./"
-        path = FileUtil.normalizeFile(path);
-
-        // ISVNNotifyListener event
-        // invalidate cached status
-        // force event: an updated file changes status from uptodate to uptodate but its entry changes
-        refresh(path, REPOSITORY_STATUS_UNKNOWN, true);
+        for (int i = 0; i < files.length; i++) {
+            if(files[i] != null) { // null on kill
+                files[i] = FileUtil.normalizeFile(files[i]); // I saw "./"    
+            }
+        }
         
-        // collect the filesystems to notify them in SvnClientInvocationHandler about the external change
-        for (;;) {
-            FileObject fo = FileUtil.toFileObject(path);
-            if (fo != null) {
-                try {
-                  Set<FileSystem> filesystems = getFilesystemsToRefresh();
-                  synchronized (filesystems) {
-                    filesystems.add(fo.getFileSystem());
-                  }
-                } catch (FileStateInvalidException e) {
-                    // ignore invalid filesystems
-                }
-                break;
-            } else {
-                path = path.getParentFile();
-                if (path == null) break;
-            }
-        }
-    }
-                
-    public void refreshDirtyFileSystems() {
-        if(refreshFilesystemsTask == null) {
-           RequestProcessor rp = new RequestProcessor();
-           refreshFilesystemsTask = rp.create(new Runnable() {
-                public void run() {
-                    Set<FileSystem> filesystems = getFilesystemsToRefresh();
-                    FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
-                    synchronized (filesystems) {
-                        filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
-                        filesystems.clear();
-                    }
-                    for (int i = 0; i < filesystemsToRefresh.length; i++) {            
-                        // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
-                        filesystemsToRefresh[i].refresh(true);            
-                    }                            
-                }
-           }); 
-        }
-        refreshFilesystemsTask.schedule(200);
+        // notifications from the svnclientadapter may be caused by a synchronously handled FS event.
+        // The thing is that we have to prevent reentrant calls on the FS api ...                
+        refreshTask.add(files);        
     }
     
-    private Set<FileSystem> getFilesystemsToRefresh() {
-        if(filesystemsToRefresh == null) {
-            filesystemsToRefresh = new HashSet<FileSystem>();
+    private class RefreshTask implements Runnable {
+        private RequestProcessor              rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N
+        private final RequestProcessor.Task   task;    
+        private final Set<File>               filesToRefresh = new HashSet<File>();
+
+        public RefreshTask() {
+            task = rp.create(this);
         }
-        return filesystemsToRefresh;
+        
+        public void run() {        
+            File[] fileArray;
+            synchronized(filesToRefresh) {
+                fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                filesToRefresh.clear();
+            }
+            
+            Set<File> parents = new HashSet<File>();
+            for (File f : fileArray) {                
+                File parent = f.getParentFile();
+                if(parent != null) {
+                    parents.add(parent);
+                    Subversion.LOG.fine("scheduling for fs refresh" + parent);
+                }                        
+            }
+
+            // refresh the filesystems first as they have to be notified 
+            // about possible changes in the files layout 
+            // - all given parents and their children will be refreshed
+            if(parents.size() > 0) {
+                FileUtil.refreshFor(parents.toArray(new File[parents.size()]));    
+            }            
+
+            // refresh the cache
+            for(File f : fileArray) {
+                // ISVNNotifyListener event
+                // invalidate cached status
+                // force event: an updated file changes status from uptodate to uptodate but its entry changes
+                refresh(f, REPOSITORY_STATUS_UNKNOWN, true);                        
+            }                
+        }
+        void schedule(int delay) {
+            task.schedule(delay);
+        }
+        void add(File... file) {
+            synchronized(filesToRefresh) {
+                for (File f : file) {
+                    filesToRefresh.add(f);                                        
+                }
+            }
+            schedule(200);
+        }
+    }
+    
+    /**
+     * Refreshes the status for the given file and all its children
+     * 
+     * @param file
+     */
+    public void refreshRecursively(File file) {    
+        refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        File[] files = file.listFiles();
+        if(files != null) {        
+            for (int i = 0; i < files.length; i++) {
+                if(!(SvnUtils.isPartOfSubversionMetadata(files[i]) || 
+                     Subversion.getInstance().isAdministrative(files[i]))) 
+                {
+                    refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    if(files[i].isDirectory()) {                
+                        refreshRecursively(files[i]);                
+                    }                    
+                }
+            }        
+        }        
     }
         
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {

@@ -72,7 +72,7 @@ public class EditDbModelAction extends GraphAction {
     private static transient final Localizer mLoc = Localizer.get();
     public EditDbModelAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND019: Database Properties...");
+        String nbBundle1 = mLoc.t("BUND019: Database Properties");
         this.putValue(Action.NAME,nbBundle1.substring(15));
 
         //action icon

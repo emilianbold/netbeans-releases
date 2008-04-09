@@ -51,4 +51,9 @@ public class RecognizeInstanceObjectsTest extends NamedFSServicesLookupTest{
     public RecognizeInstanceObjectsTest(String name) {
         super(name);
     }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
 }

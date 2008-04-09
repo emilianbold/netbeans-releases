@@ -158,6 +158,17 @@ final class IRFactory
         //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
         //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
         Node.Jump switchNode = (Node.Jump)switchBlock;
+        int start = caseStart;
+        int end;
+        if (statements.hasChildren()) {
+            end = statements.getSourceEnd();
+        } else if (caseExpression != null) {
+            // should add in colon too
+            end = caseExpression.getSourceEnd();
+        } else {
+            // Must be a default:
+            end = caseStart+7; // "default".length()
+        }
         // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
@@ -167,15 +178,22 @@ final class IRFactory
             caseNode.target = gotoTarget;
             switchNode.addChildToBack(caseNode);
             // <netbeans>
-            int start = caseStart;
-            int end = statements.getSourceEnd();
             caseNode.setSourceBounds(start, end);
+            caseNode.addChildToBack(statements);
             // </netbeans>
         } else {
             switchNode.setDefault(gotoTarget);
+            // <netbeans>
+            // Put the default statement in its own node
+            Node defaultNode = new Node(Token.DEFAULT, statements);
+            defaultNode.setSourceBounds(caseStart, end);
+            switchNode.addChildToBack(defaultNode);
+            // </netbeans>
         }
-        switchBlock.addChildToBack(gotoTarget);
-        switchBlock.addChildToBack(statements);
+        // <netbeans>
+        //switchBlock.addChildToBack(gotoTarget);
+        //switchBlock.addChildToBack(statements);
+        // </netbeans>
     }
 
     void closeSwitch(Node switchBlock)
@@ -637,12 +655,14 @@ final class IRFactory
 
      * ... and a goto to GOTO around these handlers.
      */
+    // <netbeans>
+    /* Remove this whole method and replace it with a simpler one
+     * following this method, which performs no AST transformations etc.
+     //
     Node createTryCatchFinally(Node tryBlock, Node catchBlocks,
                                Node finallyBlock, int lineno)
     {
-        // <netbeans>
         int startOffset = tryBlock.getSourceStart();
-        // </netbeans>
         boolean hasFinally = (finallyBlock != null)
                              && (finallyBlock.getType() != Token.BLOCK
                                  || finallyBlock.hasChildren());
@@ -813,7 +833,44 @@ final class IRFactory
         // </netbeans>
         return handlerBlock;
     }
+    // <netbeans>
+    */
 
+    /**
+     * Similar to createTryCatchFinally but tries to make the AST
+     * simpler to more reflect the source structure and less optimized
+     * for execution (since our forked Rhino never actually executes
+     * the code anyway)
+     * 
+     * Also, this code doesn't do any short circuits removals the way the
+     * Rhino version does.
+     */
+    Node createTryCatchFinally(Node tryBlock, Node catchBlocks,
+                               Node finallyBlock, int lineno)
+    {
+        // <netbeans>
+        int startOffset = tryBlock.getSourceStart();
+        // </netbeans>
+        boolean hasFinally = (finallyBlock != null);
+//                             && (finallyBlock.getType() != Token.BLOCK
+//                                 || finallyBlock.hasChildren());
+
+        boolean hasCatch = catchBlocks.hasChildren();
+
+        Node.Jump pn = new Node.Jump(Token.TRY, tryBlock, lineno);
+
+        pn.addChildToBack(tryBlock);
+        if (hasCatch) {
+            pn.addChildrenToBack(catchBlocks.getFirstChild());
+        }
+        if (hasFinally) {
+            pn.addChildToBack(finallyBlock);
+        }
+            
+        return pn;
+    }
+    // </netbeans>
+    
     /**
      * Throw, Return, Label, Break and Continue are defined in ASTFactory.
      */

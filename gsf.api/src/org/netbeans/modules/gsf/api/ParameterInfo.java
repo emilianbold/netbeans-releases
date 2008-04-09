@@ -41,6 +41,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.List;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**
@@ -53,7 +54,7 @@ public class ParameterInfo {
     private int index;
     private int anchorOffset;
 
-    public ParameterInfo(List<String> names, int index, int anchorOffset) {
+    public ParameterInfo(@NonNull List<String> names, int index, int anchorOffset) {
         this.names = names;
         this.index = index;
         this.anchorOffset = anchorOffset;
@@ -62,6 +63,7 @@ public class ParameterInfo {
     /** one list for each parameter; list contains of elements to be shown (e.g. type then name,
      * or just name, or just type, etc.)
      */
+    @NonNull
     public List<String> getNames() {
         return names;
     }
