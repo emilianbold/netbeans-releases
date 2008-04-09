@@ -532,21 +532,8 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     @Override
     public void saveDocument() throws IOException {
         super.saveDocument();
-        Document doc = getDocument();
-        if (doc != null) {
-            try {
-                String testing = doc.getText(0, getDocument().getLength());
-                java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** testing in saveDocument *************** " + testing);
-                doc.remove(0, getDocument().getLength());
-                doc.insertString(0, testing, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
         syncModel();
-        ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
-        //etlDataObject.getModel().setDirty(false);
-        etlDataObject.setModified(false);
+        getDataObject().setModified(false);
     }
 
     @Override
@@ -685,13 +672,11 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-     //   if (!getEnv().getETLDataObject().isModified()) {
             // Update later to avoid an infinite loop.
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     updateTitles();
                 }
             });
-    //    }
     }
 }
