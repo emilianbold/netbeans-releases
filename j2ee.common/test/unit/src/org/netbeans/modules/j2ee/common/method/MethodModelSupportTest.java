@@ -67,10 +67,10 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.source.FakeJavaDataLoaderPool;
-import org.netbeans.modules.j2ee.common.source.RepositoryImpl;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
-import org.netbeans.modules.j2ee.common.source.TestUtilities;
+import org.netbeans.modules.j2ee.common.test.FakeJavaDataLoaderPool;
+import org.netbeans.modules.j2ee.common.test.RepositoryImpl;
+import org.netbeans.modules.j2ee.common.test.TestUtilities;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -114,7 +114,7 @@ public class MethodModelSupportTest extends NbTestCase {
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, method);
                     if (method.getSimpleName().contentEquals("method1")) {
@@ -233,7 +233,8 @@ public class MethodModelSupportTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
                 MethodModel.Variable nonFinalVariable = MethodModelSupport.createVariable(controller, fields.get(0));
                 assertEquals("java.lang.String", nonFinalVariable.getType());

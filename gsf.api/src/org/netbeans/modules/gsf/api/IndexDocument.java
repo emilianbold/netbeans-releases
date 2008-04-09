@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+
 /**
  * An IndexDocument lets you store key,value pairs in the persistent store.
  * 
@@ -54,5 +56,5 @@ public interface IndexDocument {
      *   an indexed field, otherwise with an unindexed field (that cannot be
      *   searched).
      */
-    void addPair(String key, String value, boolean indexed);
+    void addPair(@NonNull String key, @NonNull String value, boolean indexed);
 }

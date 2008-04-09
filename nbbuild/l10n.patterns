@@ -11,6 +11,7 @@
 **/docs/*.jar:**/*.xml
 **/*.jar:**/*.url
 **/defaulttheme*.jar:**/messages.properties
+exclude **/*.jar:**/Bundle_noi18n.properties
 exclude **/batik-mod.jar:
 exclude **/json-*.jar:
 exclude **/tidy-mod.jar:
@@ -25,3 +26,14 @@ exclude **/lucene-core-*.jar:
 exclude **/javac-api-nb-*.jar:
 exclude **/javac-impl-nb-*.jar:
 exclude php1/**:
+exclude **/jbi-admin-common.jar:
+exclude **/JGo5.1.jar:
+exclude **/jersey.jar:
+exclude **/wadl2java.jar:
+exclude **/bdi-1.0.0.jar:
+exclude **/itext-2.0.5.jar:
+exclude **/jxpath1.1.jar:
+exclude **/prefuse-beta.jar:
+exclude **/httpunit-1.6.2.jar:
+exclude **/wsdl4j-1.5.2.zip:
+exclude **/xmlbeans-2.1.0.zip:

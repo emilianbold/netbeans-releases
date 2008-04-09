@@ -484,29 +484,29 @@ final class Tree extends JTree {
   }
 
   private void export(DefaultMutableTreeNode node) {
-    List<List<String>> descriptions = new ArrayList<List<String>>();
-    export(node, descriptions);
-    descriptions.add (null);
+    List<List<String>> items = new ArrayList<List<String>>();
+    export(node, items);
+    items.add(null);
 
     if (myExport == null) {
       myExport = new Export();
     }
-    myExport.show(descriptions, myRoot.toString());
+    myExport.show(items, myRoot.toString());
     requestFocus();
   }
 
-  private void export(DefaultMutableTreeNode node, List<List<String>> descriptions) {
+  private void export(DefaultMutableTreeNode node, List<List<String>> items) {
     if (node.isLeaf()) {
-      List<String> description = new ArrayList<String>();
-      description.add(getDescription(node));
-      description.add(node.toString());
-      descriptions.add(description);
+      List<String> item = new ArrayList<String>();
+      item.add(getDescription(node));
+      item.add(node.toString());
+      items.add(item);
     }
     Enumeration children = node.children();
 
     while (children.hasMoreElements()) {
       DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-      export(child, descriptions);
+      export(child, items);
     }
   }
 

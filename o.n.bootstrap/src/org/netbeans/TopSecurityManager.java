@@ -403,10 +403,35 @@ public class TopSecurityManager extends SecurityManager {
         return;
     }
     
+    public static void install() {
+        System.setSecurityManager(new TopSecurityManager());
+    }
+    static void uninstall() {
+        System.setSecurityManager(null);
+    }
+    
     /** Prohibits to set another SecurityManager */
-    private static void checkSetSecurityManager(Permission perm) {
+    private void checkSetSecurityManager(Permission perm) {
         if (runtimePermissionClass.isInstance(perm)) {
-            if ("setSecurityManager".equals(perm.getName())) { // NOI18N - hardcoded in java.lang
+            if (perm.getName().equals("setSecurityManager")) { // NOI18N - hardcoded in java.lang
+                Class[] arr = getClassContext();
+                boolean seenJava = false;
+                for (int i = 0; i < arr.length; i++) {
+                    if (arr[i].getName().equals("org.netbeans.TopSecurityManager")) { // NOI18N
+                        if (seenJava) {
+                            // if the change of security manager is called from my own
+                            // class or the class loaded by other classloader, then it is likely ok
+                            return;
+                        } else {
+                            continue;
+                        }
+                    }
+                    if (arr[i] != System.class) {
+                        // if there is a non-java class on stack, skip and throw exception
+                        break;
+                    }
+                    seenJava = true;
+                }
                 throw new SecurityException();
             }
         }

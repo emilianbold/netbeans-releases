@@ -44,6 +44,8 @@ package org.netbeans.modules.gsf.api;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -61,14 +63,30 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract interface Indexer {
-    /** Returns true iff this indexer wants to index the given file */
-    boolean isIndexable(ParserFile file);
+    /** 
+     * Returns true iff this indexer wants to index the given file.
+     * <p>
+     * <b>IMPORTANT</b>: You should also return true for files that would normally be indexed
+     * but have been deleted. This will let GSF clean up entries for deleted or renamed
+     * files.  An implication of this is that you should not attempt to check for file
+     * existence during index checking. A more subtle point is that you should <b>NOT</b>
+     * call file.getFileObject() for example in order to get the mime type of the file
+     * object. If you do that for a deleted/renamed file, file.getFileObject() may return
+     * null, or you may get a mimetype of "content/unknown".
+     * <p>
+     * Calling file.getFileObject() is also a bit expensive during startup, since the
+     * IDE is quickly scanning through potentially thousands of files to identify files
+     * that are relevant for indexing. This is done with simple java.io.File objects.
+     * When you call file.getFileObject() during this process, it will have to do a
+     * FileUtil.toFileObject(file) which is not cheap. 
+     */
+    boolean isIndexable(@NonNull ParserFile file);
    
     /** For files that are {@link #isIndexable}, index the given file by
      * operating on the provided {@link Index} using the given {@link ParserResult} to
      * fetch AST information. 
      */
-    List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException;
+    List<IndexDocument> index(@NonNull ParserResult result, @NonNull IndexDocumentFactory factory) throws IOException;
 
     /**
      * This method lets a language filter out project and library paths supplied by the project
@@ -79,9 +97,10 @@ public abstract interface Indexer {
      * This is just a temporary measure (ie NetBeans 6.1) to deal with the fact that gsf path management
      * doesn't properly account for language types. 
      */
-    boolean acceptQueryPath(String url);
+    boolean acceptQueryPath(@NonNull String url);
     
-    String getPersistentUrl(File file);
+    @CheckForNull
+    String getPersistentUrl(@NonNull File file);
     
     /**
      * Return the version stamp of the schema that is currently being stored
@@ -93,6 +112,7 @@ public abstract interface Indexer {
      * 
      * @return The version stamp of the current index.
      */
+    @NonNull
     String getIndexVersion();
     
     /**
@@ -103,6 +123,7 @@ public abstract interface Indexer {
      * @return The indexer name. This does not need to be localized since it is
      * never shown to the user, but should contain filesystem safe characters.
      */
+    @NonNull
     String getIndexerName();
 
     /**
@@ -111,5 +132,6 @@ public abstract interface Indexer {
      * 
      * @return A file object for the preindexed database, or null
      */
+    @CheckForNull
     FileObject getPreindexedDb();
 }

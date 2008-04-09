@@ -172,7 +172,7 @@ public final class DocPositions {
                             token = jdts.token();
                         }
                     }
-                } else if (isFirstLineWS && token.id() == JavadocTokenId.OTHER_TEXT && JavadocCompletionUtils.isWhiteSpace(token)) {
+                } else if (isFirstLineWS && token.id() == JavadocTokenId.OTHER_TEXT && JavadocCompletionUtils.isFirstWhiteSpaceAtFirstLine(token)) {
                     // javadoc content starts with white spaces on first line behind /**
                     // continue
                 } else {
