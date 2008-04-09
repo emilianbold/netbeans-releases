@@ -59,6 +59,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
 import org.netbeans.swing.plaf.winvista.VistaLFCustoms;
 import org.netbeans.swing.plaf.winxp.XPLFCustoms;
@@ -365,7 +366,7 @@ public final class Startup {
         }
         if (result == null) {
             String[] knownLFs = new String[] {
-                    "Metal", "Windows", "Aqua", "GTK" //NOI18N
+                    "Metal", "Windows", "Aqua", "GTK", "Nimbus" //NOI18N
                 };
             switch (Arrays.asList(knownLFs).indexOf(UIManager.getLookAndFeel().getID())) {
                 case 1 :
@@ -387,6 +388,9 @@ public final class Startup {
                     break;
                 case 3 :
                     result = new GtkLFCustoms();
+                    break;
+                case 4 :
+                    result = new NimbusLFCustoms();
                     break;
                 default :
                     // #79401 check if it's XP style LnF, for example jGoodies
