@@ -19,21 +19,16 @@
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="phpInterpreterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="openResultInLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="phpInterpreterLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="phpInterpreterTextField" pref="160" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="openResultInLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="webBrowserCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="outputWindowCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="editorCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
+                          <Component id="webBrowserCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="outputWindowCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="editorCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="phpInterpreterTextField" alignment="0" pref="148" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
@@ -112,19 +107,19 @@
                   <Component id="phpInterpreterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="openResultInLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="outputWindowCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="openResultInLabel" min="-2" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
+                      <Component id="outputWindowCheckBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="webBrowserCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="editorCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
-                      <Component id="debuggingSeparator" min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
+              </Group>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="debuggingSeparator" min="-2" pref="10" max="-2" attributes="0"/>
                   <Component id="debuggingLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
