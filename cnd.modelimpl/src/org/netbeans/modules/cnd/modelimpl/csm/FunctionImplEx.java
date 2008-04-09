@@ -67,11 +67,11 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private boolean qualifiedNameIsFake = false;
     private final CharSequence[] classOrNspNames;
     
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope) {
+    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
     }
     
-    protected  FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register) {
+    protected  FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         super(ast, file, scope, false);
         classOrNspNames = CastUtils.isCast(ast) ? CastUtils.getClassOrNspNames(ast) : initClassOrNspNames(ast);
         if (register) {
