@@ -130,9 +130,11 @@ class FilesystemHandler extends VCSInterceptor {
                     SvnClientExceptionHandler.notifyException(e, false, false);
                 } finally {                    
                     // II. refresh cache
+                    if (!SvnUtils.isPartOfSubversionMetadata(file)) {
                         cache.refreshAsync(file);                            
                     }                     
                 }   
+            }
         });
     }
 
