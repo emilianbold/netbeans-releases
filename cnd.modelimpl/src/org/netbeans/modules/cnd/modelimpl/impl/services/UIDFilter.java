@@ -37,37 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
  *
- * @author Tor Norbye
+ * @author Alexander Simon
  */
-public class IndexedProperty extends IndexedElement {
-    
-    IndexedProperty(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
-    }
-    
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
-    }
-
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            signature = sb.toString();
-        }
-
-        return signature;
-    }
+public interface UIDFilter {
+    boolean accept(CsmUID uid);
 }

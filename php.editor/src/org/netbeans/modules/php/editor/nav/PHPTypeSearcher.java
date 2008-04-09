@@ -56,6 +56,7 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.TypeSearcher;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -88,7 +89,7 @@ public class PHPTypeSearcher implements TypeSearcher {
             String className = textForQuery.substring(0, doubleColon);
             String rest = textForQuery.substring(doubleColon + 2);
             
-            for (IndexedConstant clazz : index.getClasses(null, className, kind)) {
+            for (IndexedClass clazz : index.getClasses(null, className, kind)) {
                 for (IndexedFunction func : index.getMethods(null, clazz.getName(), rest, kind)) {
                     result.add(new PHPTypeDescriptor(func, clazz, helper));
                 }

@@ -858,7 +858,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 String tagName = ((SyntaxElement.Named)elem).getName();
                 //check if the tag has required endtag
                 Element dtdElem = getDTD().getElement(tagName.toUpperCase());
-                if(!((SyntaxElement.Tag)elem).isEmpty() && (dtdElem == null || dtdElem.isEmpty())) {
+                if(!((SyntaxElement.Tag)elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
                     CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
                     l.add(eti);
                 }

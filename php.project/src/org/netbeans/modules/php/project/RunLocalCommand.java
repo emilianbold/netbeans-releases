@@ -359,7 +359,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
         }
 
         if (success && !isCancelled){
-            return tmpFile;
+            return FileUtil.normalizeFile(tmpFile);
         } else {
             return null;
         }
