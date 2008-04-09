@@ -246,7 +246,22 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 return false;
             }
         }
-        Boolean result = true;
+        boolean result = true;
+       
+        if (target instanceof Graph) {
+            //
+            if (!mRightTreeModel.isConnectable(treePath)) {
+                result = false;
+            }
+       
+            //
+            if (((Graph) target).hasOutgoingLinks()) {
+                // The target tree node already has a connected link
+                result = ((Graph) target).getOutgoingLink() == oldLink;
+            }
+      
+        }
+        
         SourcePin oldSource = null;
         TargetPin oldTarget = null;
          if (oldLink != null) {
@@ -256,20 +271,6 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
  //           oldLink.disconnect();
             oldLink.setSource(null);
             oldLink.setTarget(null);
-        }
-       
-        if (target instanceof Graph) {
-       
-            if (!mRightTreeModel.isConnectable(treePath)) {
-                result = false;
-            }
-       
-            //
-            if (((Graph) target).hasOutgoingLinks()) {
-                // The target tree node already has a connected link
-                result = false;
-            }
-       
         }
         //
         if (source instanceof TreeSourcePin) {

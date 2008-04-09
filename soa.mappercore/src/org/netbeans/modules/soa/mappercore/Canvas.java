@@ -155,6 +155,10 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 return str;
             }
         }
+        
+        if (graphItem instanceof Link) {
+            return "Link";
+        }
         return null;
     }
      
