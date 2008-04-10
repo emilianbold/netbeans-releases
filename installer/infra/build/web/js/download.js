@@ -584,13 +584,13 @@ function update() {
     //php_size = Math.ceil(php_size / 1024.0);
 
     if( platform == "zip") {
-       full_size = 154;
-       java_size = 44;
-       javaee_size = 94;
-       javame_size = 55;
-       ruby_size = 35;
-       cnd_size = 22;
-       //php_size = 25;
+       full_size = 157;
+       java_size = 51;
+       javaee_size = 102;
+       javame_size = 61;
+       ruby_size = 40;
+       cnd_size = 27;
+       //php_size = 28;
     } 
 
     if ((platform.indexOf("solaris")!=-1) || (platform.indexOf("macosx")!=-1)) {
