@@ -66,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -239,11 +240,19 @@ public class PHPIndexer implements Indexer {
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
                     if (expressionStatement.getExpression() instanceof Include) {
                         Include include = (Include) expressionStatement.getExpression();
-                        if (include.getExpression() instanceof Scalar) {
-                            Scalar scalar = (Scalar) include.getExpression();
+                        
+                        Expression argExpression = include.getExpression();
+                        
+                        if (argExpression instanceof ParenthesisExpression) {
+                            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
+                            argExpression = parenthesisExpression.getExpression();
+                        }
+
+                        if (argExpression instanceof Scalar) {
+                            Scalar scalar = (Scalar) argExpression;
                             String rawInclude = scalar.getStringValue();
                             String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath , PHPIndex.dequote(rawInclude));
-                            includes.append(incl + ";");
+                            includes.append(incl + ";"); //NOI18N
                         }
                     }
                     
