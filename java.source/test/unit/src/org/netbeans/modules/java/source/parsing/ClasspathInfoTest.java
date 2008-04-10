@@ -179,7 +179,7 @@ public class ClasspathInfoTest extends NbTestCase {
         FileObject fo = FileUtil.createData(root, path);
         final FileLock lock = fo.lock();
         try {
-            PrintWriter out = new PrintWriter (new OutputStreamWriter (fo.getOutputStream()));
+            PrintWriter out = new PrintWriter (new OutputStreamWriter (fo.getOutputStream(lock)));
             try {
                 out.print(content);
             } finally {
@@ -192,11 +192,11 @@ public class ClasspathInfoTest extends NbTestCase {
     }
     
     private static void assertEquals (final String[] binNames,
-            final Iterable<JavaFileObject> jfos, final JavacFileManager fm) {
+            final Iterable<JavaFileObject> jfos, final JavaFileManager fm) {
         final Set<String> bs = new HashSet<String>();
         bs.addAll(Arrays.asList(binNames));
         for (JavaFileObject jfo : jfos) {
-            final String bn = fm.inferBinaryName (jfo);
+            final String bn = fm.inferBinaryName (StandardLocation.SOURCE_PATH, jfo);
             assertNotNull(bn);
             assertTrue(bs.remove(bn));
         }
@@ -206,14 +206,14 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testMemoryFileManager () throws Exception {
         final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
-        createJavaFile(scp.getRoots()[0], "org/me/Lib/java", "package org.me;\n class Lib {}\n");
-        final ClasspathInfo cpInfo = ClasspathInfo.create( bootPath, classPath, scp);
-        final JavacFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
+        createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
+        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true,  true);
+        final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
-        assertEquals (new String[] {"org.me.Lib"}, jfos);
+        assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
         ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, "org.me.Main", "package org.me;\n class Main{}\n");        
         jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
-        assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos);
+        assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos, fm);
         ClasspathInfoAccessor.getINSTANCE().unregisterVirtualSource(cpInfo, "org.me.Main");
         jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
