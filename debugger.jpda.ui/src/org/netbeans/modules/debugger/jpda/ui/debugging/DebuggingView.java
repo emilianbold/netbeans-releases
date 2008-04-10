@@ -34,6 +34,9 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
@@ -76,6 +79,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private JPanel treePanel;
     private TapPanel tapPanel;
     private InfoPanel infoPanel;
+    private JPDADebugger debugger;
     
     /**
      * instance/singleton of this class
@@ -190,7 +194,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private javax.swing.JComboBox sessionComboBox;
     // End of variables declaration//GEN-END:variables
 
-    public void setRootContext(Node root) {
+    public void setRootContext(Node root, DebuggerEngine engine) {
+        if (engine != null) {
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+            this.debugger = debugger;
+            Session session = engine.lookupFirst(null, Session.class);
+            sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { session.getName() }));
+        } else {
+            this.debugger = null;
+            sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { }));
+        }
         manager.setRootContext(root);
         refreshView();
     }

@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Model;
@@ -110,7 +111,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             this
         );
         if (view instanceof DebuggingView) {
-            ((DebuggingView) view).setRootContext(Node.EMPTY);
+            ((DebuggingView) view).setRootContext(Node.EMPTY, null);
         } else {
             Models.setModelsToView (
                 view, 
@@ -166,7 +167,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         
         if (view instanceof DebuggingView) {
             ((DebuggingView) view).setRootContext(
-                    Models.createNodes(Models.createCompoundModel(models)));
+                    Models.createNodes(Models.createCompoundModel(models)),
+                    e);
         } else {
             Models.setModelsToView (
                 view, 
