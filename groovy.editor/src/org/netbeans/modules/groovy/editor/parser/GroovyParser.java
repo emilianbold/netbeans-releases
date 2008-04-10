@@ -536,8 +536,23 @@ public class GroovyParser implements Parser {
                 Message message = errorCollector.getLastError();
                 if (message instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage)message).getCause();
-
-                    offset = AstUtilities.getOffset(context.document, se.getStartLine(), se.getStartColumn());
+                    
+                    // if you have a single line starting with: "$
+                    // SyntaxException.getStartLine() returns 0 instead of 1
+                    // we have to fix this here, before ending our life  
+                    // in an Assertion in AstUtilities.getOffset().
+                    
+                    int line = se.getStartLine();
+                    
+                    if(line < 1 )
+                        line = 1;
+                    
+                    int col = se.getStartColumn();
+                    
+                    if(col < 1 )
+                        col = 1;
+                    
+                    offset = AstUtilities.getOffset(context.document, line, col);
                     errorMessage = se.getMessage();
                     localizedMessage = se.getLocalizedMessage();
                 }
