@@ -104,6 +104,15 @@ public abstract class IndexedElement extends PHPElement {
     public String getName() {
         return name;
     }
+    
+    // used e.g. for online docs
+    public String getDisplayName(){
+        return  getModifiersString() + getName();
+    }
+    
+    public String getModifiersString(){
+        return BodyDeclaration.Modifier.toString(flags);
+    }
 
 
     @Override
@@ -173,77 +182,6 @@ public abstract class IndexedElement extends PHPElement {
         return attributeIndex + 1;
     }
     
-//    int getDocOffset() {
-//        int docOffsetIndex = getAttributeSection(DOC_INDEX);
-//        if (docOffsetIndex != -1) {
-//            int docOffset = IndexedElement.decode(attributes, docOffsetIndex,-1);
-//            return docOffset;
-//        }
-//        return -1;
-//    }
-    
-//    protected List<String> getComments() {
-//        int docOffsetIndex = getAttributeSection(DOC_INDEX);
-//        if (docOffsetIndex != -1) {
-//            int docOffset = IndexedElement.decode(attributes, docOffsetIndex,-1);
-//            if (docOffset == -1) {
-//                return null;
-//            }
-//            try {
-//                BaseDocument doc = (BaseDocument) getDocument();
-//                if (doc == null) {
-//                    return null;
-//                }
-//                if (docOffset < doc.getLength()) {
-//                    //return LexUtilities.gatherDocumentation(null, doc, docOffset);
-//                    OffsetRange range = OffsetRange.NONE;// LexUtilities.getCommentBlock(doc, docOffset, false);
-//                    if (range != OffsetRange.NONE) {
-//                        String comment = doc.getText(range.getStart(), range.getLength());
-//                        String[] lines = comment.split("\n");
-//                        List<String> comments = new ArrayList<String>();
-//                        for (int i = 0, n = lines.length; i < n; i++) {
-//                            String line = lines[i];
-//                            line = line.trim();
-//                            if (i == n-1 && line.endsWith("*/")) {
-//                                line = line.substring(0,line.length()-2);
-//                            }
-//                            if (line.startsWith("/**")) {
-//                                comments.add(line.substring(3));
-//                            } else if (line.startsWith("/*")) {
-//                                comments.add(line.substring(2));
-//                            } else if (line.startsWith("//")) {
-//                                comments.add(line.substring(2));
-//                            } else if (line.startsWith("*")) {
-//                                comments.add(line.substring(1));
-//                            } else {
-//                                comments.add(line);
-//                            }
-//                        }
-//                        return comments;
-//                    }
-//                    return Collections.emptyList();
-//                }
-//            } catch (BadLocationException ex) {
-//                Exceptions.printStackTrace(ex);
-//            } catch (IOException ioe) {
-//                Exceptions.printStackTrace(ioe);
-//                return null;
-//            }
-//        }
-//            
-//        return null;
-//    }
-
-//    public String getType() {
-//        int typeIndex = getAttributeSection(TYPE_INDEX);
-//        int endIndex = attributes.indexOf(';', typeIndex);
-//        if (endIndex > typeIndex) {
-//            return attributes.substring(typeIndex, endIndex);
-//        }
-//        
-//        return null;
-//    }
-
     public void setSmart(boolean smart) {
         this.smart = smart;
     }
@@ -313,7 +251,7 @@ public abstract class IndexedElement extends PHPElement {
     }
     
     public boolean isPublic() {
-        return (flags & BodyDeclaration.Modifier.PUBLIC) == 0;
+        return (flags & BodyDeclaration.Modifier.PUBLIC) != 0;
     }
 
     public boolean isPrivate() {
