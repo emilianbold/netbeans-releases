@@ -236,9 +236,9 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_STRING ||
-                    id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
+                    id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
                     id == PHPTokenId.PHP_HEREDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
@@ -273,9 +273,9 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_STRING ||
-                    id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
+                    id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
                     id == PHPTokenId.PHP_HEREDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can

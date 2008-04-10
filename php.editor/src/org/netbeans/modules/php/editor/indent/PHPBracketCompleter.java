@@ -120,8 +120,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
 
     /** Tokens which indicate that we're within a literal string */
     private final static PHPTokenId [] STRING_TOKENS = {
-        PHPTokenId.PHP_STRING,
-        PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING
+        PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING,
+        PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
     };
 
 //    /** Tokens which indicate that we're within a regexp string */
@@ -592,7 +592,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
                         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
-                        if (ts != null && ts.token().id() != PHPTokenId.PHP_STRING) {
+                        if (ts != null && (!isStringToken(ts.token()) || firstChar == '\"' || firstChar == '\'')) {
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
                             if (selection.length() > 1 && 
@@ -658,7 +658,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             beginTokenId = PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
         } else if (ch == '\'') {
             stringTokens = STRING_TOKENS;
-            beginTokenId = PHPTokenId.PHP_STRING;
+            beginTokenId = PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 //        } else if (id == PHPTokenId.UNKNOWN_TOKEN) {
 //            String text = token.text().toString();
 //
