@@ -255,9 +255,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private String getUrl() {
         String url = (String) descriptor.getProperty(URL);
         if (url == null) {
-            url = "http://localhost/" + getProjectName() + "/"; // NOI18N
+            url = getDefaultUrl();
         }
         return url;
+    }
+
+    private String getDefaultUrl() {
+        return "http://localhost/" + getProjectName() + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
     }
 
     private Boolean isCreateIndex() {
