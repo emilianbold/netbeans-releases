@@ -97,6 +97,8 @@ import org.netbeans.test.xml.cpr.lib.FindUsagesOperator;
 
 import org.netbeans.jemmy.JemmyException;
 
+import javax.swing.text.Caret;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -115,6 +117,25 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "DeleteReferencedSchema",
         //"FindUsages", // TODO : How to find find usages output?
         "ValidateAndBuild",
+        "AddAttribute",
+        "ExploreAttribute",
+        "DeleteAttribute",
+        "UndoRedoAttribute",
+        "AddComplex",
+        "ExploreComplex",
+        "DeleteComplex",
+        "UndoRedoComplex",
+        "AddElement",
+        "ExploreElement",
+        "DeleteElement",
+        "UndoRedoElement",
+        "AddSimple",
+        "ExploreSimple",
+        "DeleteSimple",
+        "UndoRedoSimple",
+
+
+
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -243,7 +264,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       }
     }
 
-    private void ImportReferencedSchemaInternal( )
+    private void ImportReferencedSchemaInternal( boolean bShort )
     {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -305,7 +326,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
       ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
 
-      ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
+      if( !bShort )
+        ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
       ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
 
       // Close
@@ -314,48 +336,51 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         fail( "OK button disabled after clicking in imports." );
       jOk.push( );
 
-      int iResult = 0;
-      for( int i = 0; i <= 1; i++ )
+      if( !bShort )
       {
-        // Check imported files in list
-        opList = opMultiView.getColumnListOperator( 1 );
-
-        // Go to source
-        iIndex = i;//opList.findItemIndex( asImported[ 0 ] );
-        opList.selectItem( iIndex );
-        pt = opList.getClickPoint( iIndex );
-        opList.clickForPopup( pt.x, pt.y );
-
-        // Click Add / Import...
-        popup = new JPopupMenuOperator( );
-        popup.pushMenu( "Go To Source" );
-
-        // Check text
-        String[] asRequiredLines =
+        int iResult = 0;
+        for( int i = 0; i <= 1; i++ )
         {
-          "<xs:import schemaLocation=\"" + MODULE_NAME + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
-          "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
-        };
-        EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
-        int iLineNumber = eoXMLSource.getLineNumber( );
-        String sChoosenLine = eoXMLSource.getText( iLineNumber );
-        for( int j = 0; j < asRequiredLines.length; j++ )
-          if( -1 != sChoosenLine.indexOf( asRequiredLines[ j ] ) )
-            iResult += ( j + 1 );//fail( "Go to source came to unknown line: #" + iLineNumber + ", \"" + sChoosenLine + "\"" );
+          // Check imported files in list
+          opList = opMultiView.getColumnListOperator( 1 );
 
-        // Switch back
-        opMultiView.switchToSchema( );
-        opMultiView.switchToSchemaColumns( );
+          // Go to source
+          iIndex = i;//opList.findItemIndex( asImported[ 0 ] );
+          opList.selectItem( iIndex );
+          pt = opList.getClickPoint( iIndex );
+          opList.clickForPopup( pt.x, pt.y );
+
+          // Click Add / Import...
+          popup = new JPopupMenuOperator( );
+          popup.pushMenu( "Go To Source" );
+
+          // Check text
+          String[] asRequiredLines =
+          {
+           "<xs:import schemaLocation=\"" + MODULE_NAME + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+            "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
+          };
+          EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+          int iLineNumber = eoXMLSource.getLineNumber( );
+          String sChoosenLine = eoXMLSource.getText( iLineNumber );
+          for( int j = 0; j < asRequiredLines.length; j++ )
+            if( -1 != sChoosenLine.indexOf( asRequiredLines[ j ] ) )
+              iResult += ( j + 1 );//fail( "Go to source came to unknown line: #" + iLineNumber + ", \"" + sChoosenLine + "\"" );
+
+          // Switch back
+          opMultiView.switchToSchema( );
+         opMultiView.switchToSchemaColumns( );
+        }
+        if( 3 != iResult )
+          fail( "Go to source works incorrect way, not all elements recognized: " + iResult );
       }
-      if( 3 != iResult )
-        fail( "Go to source works incorrect way, not all elements recognized: " + iResult );
     }
 
     public void ImportReferencedSchema( )
     {
       startTest( );
 
-      ImportReferencedSchemaInternal( );
+      ImportReferencedSchemaInternal( false );
 
       endTest( );
     }
@@ -463,7 +488,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           fail( "Import statement was not removed: \"" + sCompleteCode + "\"" );
       }
 
-      ImportReferencedSchemaInternal( );
+      ImportReferencedSchemaInternal( true );
 
       endTest( );
     }
@@ -517,16 +542,23 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       // "Output - XML Check"
       OutputOperator out = new OutputOperator( );
       String sText = out.getText( );
+
       String[] asIdealOutput =
       {
           "XML validation started.",
           "0 Error(s),  0 Warning(s).",
           "XML validation finished."
       };
+      // wait till stop line will appear
+      while( -1 == sText.indexOf( asIdealOutput[ asIdealOutput.length - 1 ] ) )
+      {
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
+        sText = out.getText( );
+      }
       for( String sChecker : asIdealOutput )
       {
         if( -1 == sText.indexOf( sChecker ) )
-          fail( "Unable to find ideal XML validate output: " + sChecker + "\n" + sText );
+          fail( "Unable to find ideal XML validate output: \"" + sChecker + "\"\n\"" + sText + "\"" );
       }
 
       // Build
@@ -554,6 +586,475 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( "BUILD FAILED" ) )
         fail( "BUILD FAILED mark fopund:\n" + sText + "\n" );
+
+      out.close( );
+
+      endTest( );
+    }
+
+    private boolean HasChild( JTreeOperator tree, TreePath path, String child )
+    {
+      int iCnt = tree.getChildCount( path );
+      for( int i = 0; i < iCnt; i++ )
+      {
+        TreePath subpath = tree.getChildPath( path, i );
+        Object o = subpath.getLastPathComponent( );
+        if( o.toString( ).startsWith( child ) )
+          return true;
+      }
+      return false;
+    }
+
+    private TreePath GetSubPath( JTreeOperator tree, TreePath path, String name )
+    {
+      String[] asPaths = name.split( "\\|" );
+      for( String chunk : asPaths )
+      {
+        int iCnt = tree.getChildCount( path );
+        for( int i = 0; i < iCnt; i++ )
+        {
+          System.out.println( "*** Checking chunk " + chunk );
+          TreePath subpath = tree.getChildPath( path, i );
+          Object o = subpath.getLastPathComponent( );
+          if( o.toString( ).startsWith( chunk ) )
+          {
+            System.out.println( "*** Chunk found" );
+            path = subpath;
+
+            tree.selectPath( path );
+            tree.clickOnPath( path );
+
+            break;
+          }
+        }
+      }
+      return path;
+    }
+
+    private TreePath FindMultiwayPath(
+        JTreeOperator tree,
+        String schema,
+        String name
+      )
+    {
+      // First level is always Referenced schemas
+      TreePath path = tree.findPath( "Referenced Schemas" );
+      System.out.println( "*** Referenced Schemas found" );
+      // Then find path with required subpath (tricky but...)
+      int iChild = tree.getChildCount( path );
+      TreePath subpath = null;
+      for( int i = 0; i < iChild; i++ )
+      {
+        subpath = tree.getChildPath( path, i );
+        if( HasChild( tree, subpath, schema ) )
+        {
+          System.out.println( "*** Correct import found" );
+          return GetSubPath( tree, subpath, name );
+        }
+      }
+      return null;
+    }
+
+    public void AddAttribute( )
+    {
+      startTest( );
+
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Attributes" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Attributes" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Attribute...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add Attribute..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( "Add Attribute" );
+
+      // Use existing type by default
+
+      // Get tree
+      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+      TreePath path = jtree.findPath( "Referenced Schemas|import|Simple Types|StateType" );
+      
+      jtree.selectPath( path );
+      jtree.clickOnPath( path );
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      // Check attribute was added successfully
+      opList = opMultiView.getColumnListOperator( 1 );
+      iIndex = opList.findItemIndex( "newAttribute" );
+      if( -1 == iIndex )
+        fail( "Attribute was not added." );
+
+      endTest( );
+    }
+
+    private boolean CheckSchemaView( String sView )
+    {
+      for( int i = 0; i < 2; i++ )
+      {
+        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
+        JMenuItemOperator menu = bar.showMenuItem("View|Editors|" + sView );
+        boolean bres = menu.isSelected( );
+        bar.closeSubmenus( );
+        if( bres )
+          return true;
+      }
+      return false;
+    }
+
+    public void ExploreAttribute( )
+    {
+      startTest( );
+
+      // Explore added with Go to <> menus
+
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( "newAttribute" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "newAttribute" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click go to definition
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Definition" );
+
+      // Check opened view
+      if( !CheckSchemaView( "Schema" ) )
+        fail( "Go To Definition option for Schema view opened not on schema view." );
+
+      // Check selected schema item
+      SchemaMultiView opMultiViewDef = new SchemaMultiView( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
+      JListOperator opListDef = opMultiViewDef.getColumnListOperator( 1 );
+      if( !opListDef.getSelectedValue( ).toString( ).startsWith( "StateType" ) )
+        fail( "StateType did not selected with Go To Definition option." );
+
+      // Close definition
+      opMultiViewDef.close( );
+
+      // Click go to code
+      opList.clickForPopup( pt.x, pt.y );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( "<xs:attribute name=\"newAttribute\" type=\"ns2:StateType\"/>" ) )
+        fail( "Go To Source feature selected wrong line of code: \"" + sSelectedText + "\"" );
+
+      // Click go to definition
+      JEditorPaneOperator txt = eoXsdCode.txtEditorPane( );
+      Caret crt = txt.getCaret( );
+      pt = crt.getMagicCaretPosition( );
+      eoXsdCode.clickForPopup( pt.x, pt.y );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Definition" );
+
+      // Check opened view
+      if( !CheckSchemaView( "Source" ) )
+        fail( "Go To Definition option for Source view opened not on source view." );
+
+      // Check selected code line
+      EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
+      sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( "<xs:simpleType name=\"StateType\">" ) )
+        fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
+
+      // Close definition
+      eoXsdCodeDef.close( );
+
+      // Click go to schema
+      txt = eoXsdCode.txtEditorPane( );
+      crt = txt.getCaret( );
+      pt = crt.getMagicCaretPosition( );
+      eoXsdCode.clickForPopup( pt.x, pt.y );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Schema" );
+      //try { Thread.sleep( 2000 ); } catch( InterruptedException ex ) { }
+
+      // Check sche,a view opened
+      if( !CheckSchemaView( "Schema" ) )
+        fail( "Go To Schema option for Source view opened not on source view." );
+
+      // Check selected schema item
+      opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+        fail( "Incorrect (no) selection after Go To Schema option." );
+      if( !opList.getSelectedValue( ).toString( ).startsWith( "newAttribute" ) )
+        fail( "newAttribute did not selected with Go To Schema option." );
+
+      endTest( );
+    }
+
+    public void DeleteAttribute( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoAttribute( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddComplex( )
+    {
+      startTest( );
+
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Complex Types" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Complex Types" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Complex Type...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add Complex Type..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( "Add Complex Type" );
+
+      // Use existing definition
+      JRadioButtonOperator jex = new JRadioButtonOperator( jadd, "Use Existing Definition" );
+      jex.setSelected( true );
+
+      // Get tree
+      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+      /*
+      TreePath path = FindMultiwayPath(
+          jtree,
+          "http://xml.netbeans.org/examples/LoanApplication",
+          "Simple Types|StateType"
+        );
+      */
+      TreePath path = jtree.findPath( "Referenced Schemas|import|Complex Types|CarType" );
+      
+      jtree.selectPath( path );
+      jtree.clickOnPath( path );
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      endTest( );
+    }
+
+    public void ExploreComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddElement( )
+    {
+      startTest( );
+
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Elements" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Elements" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Elements...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add Element..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( "Add Element" );
+
+      // Use existing definition
+      JRadioButtonOperator jex = new JRadioButtonOperator( jadd, "Use Existing Type" );
+      jex.setSelected( true );
+
+      // Get tree
+      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+      /*
+      TreePath path = FindMultiwayPath(
+          jtree,
+          "http://xml.netbeans.org/examples/LoanApplication",
+          "Simple Types|StateType"
+        );
+      */
+      TreePath path = jtree.findPath( "Referenced Schemas|import|Complex Types|AddressType" );
+      
+      jtree.selectPath( path );
+      jtree.clickOnPath( path );
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      endTest( );
+    }
+
+    public void ExploreElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddSimple( )
+    {
+      startTest( );
+
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Simple Types" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Simple Types" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Attribute...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add Simple Type..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( "Add Simple Type" );
+
+      // Use default type
+
+      // Get tree
+      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+      /*
+      TreePath path = FindMultiwayPath(
+          jtree,
+          "http://xml.netbeans.org/examples/LoanApplication",
+          "Simple Types|StateType"
+        );
+      */
+      TreePath path = jtree.findPath( "Referenced Schemas|import|Simple Types|LoanType" );
+      
+      jtree.selectPath( path );
+      jtree.clickOnPath( path );
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      endTest( );
+    }
+
+    public void ExploreSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoSimple( )
+    {
+      startTest( );
+
+
 
       endTest( );
     }

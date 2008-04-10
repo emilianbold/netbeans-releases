@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.*;
-import java.util.*;
-import org.netbeans.modules.subversion.util.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
- * Encapsulates content of .svn/* files that is used to save to-be-deleted metadata.
  *
- * @author Petr Kuzel
+ * @author Alexander Simon
  */
-public class SvnMetadata  {
-
-    /** Location on disk, a directory. */
-    private File storage;
-
-    private SvnMetadata() throws IOException {
-        // XXX clean-up on IDE start, shutdown?
-        storage = FileUtils.createTmpFolder("nb_SvnMetadata_");  // NOI18N
+public class AstRendererException extends Exception {
+//    public AstRendererException(String message){
+//        super(message);
+//    }
+    public AstRendererException(FileImpl file, int offset, String message){
+        super("\n"+ // NOI18N
+              file.getAbsolutePath().toString()+
+              ":"+file.getLineColumn(offset)[0]+ // NOI18N
+              ":"+file.getLineColumn(offset)[1]+ // NOI18N
+              ": error: "+ message // NOI18N
+              );
     }
-
-    /**
-     * Reads and stores .svn metadata.
-     */ 
-    public static SvnMetadata read(File dir) throws IOException {
-        assert dir.isDirectory();
-
-        SvnMetadata data = new SvnMetadata();
-//        System.err.println("METADATA Saving: " + dir);
-        data.load(dir);
-        return data;
-    }
-
-    private void load(File dir) throws IOException {
-        FileUtils.copyDirFiles(dir, storage, true);
-    }
-
-    /** Saves metadata in the given folder, typically named .svn.
-     *
-     * @param dir folder to save to
-     * @throws java.io.IOException 
-     */
-    public void save(File dir) throws IOException {
-//        System.err.println("METADATA Restoring: " + dir);
-        dir.mkdirs();
-        FileUtils.copyDirFiles(storage, dir, true);
-    }
-
 }

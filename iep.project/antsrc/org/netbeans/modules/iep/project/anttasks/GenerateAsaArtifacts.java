@@ -110,7 +110,11 @@ public class GenerateAsaArtifacts extends Task {
                 if(modelSource != null) {
                     IEPModel model = IEPModelFactory.getDefault().getModel(modelSource);
 //                  see com.sun.jbi.engine.iep.jbiadapter.IEPSEServiceUnitManager
-                    String ns = NameUtil.makeJavaId(fPath.substring(srcDirPathLen));
+                    //String ns = NameUtil.makeJavaId(fPath.substring(srcDirPathLen));
+                    
+                    //use qualified name
+                    String ns = model.getQualifiedName();
+                    
                     nsList.add(ns);
                     String tns = "ns" + (i + 1);
                     List<PortMapEntry> portMaps = Util.generatePortMapEntryList(model, tns);

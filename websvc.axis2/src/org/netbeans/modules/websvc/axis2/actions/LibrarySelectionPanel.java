@@ -154,12 +154,10 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane1.setViewportView(listAvailable);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/axis2/actions/Bundle"); // NOI18N
-        listAvailable.getAccessibleContext().setAccessibleName(bundle.getString("AvailableEntityClasses")); // NOI18N
         listAvailable.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_AvailableEntityClasses")); // NOI18N
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane2.setViewportView(listSelected);
-        listSelected.getAccessibleContext().setAccessibleName("null");
         listSelected.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_SelectedEntityClasses")); // NOI18N
 
         labelAvailableLibraries.setLabelFor(listAvailable);
@@ -225,13 +223,9 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
                 .addContainerGap(108, Short.MAX_VALUE))
         );
 
-        buttonAdd.getAccessibleContext().setAccessibleName("null");
         buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_AddEntityClass")); // NOI18N
-        buttonRemove.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "RemoveEntityClass")); // NOI18N
         buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_RemoveEntityClass")); // NOI18N
-        buttonAddAll.getAccessibleContext().setAccessibleName("null");
         buttonAddAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_AddAllEntityClasses")); // NOI18N
-        buttonRemoveAll.getAccessibleContext().setAccessibleName("null");
         buttonRemoveAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_RemoveAllEntityClasses")); // NOI18N
 
         labelSelectedLibraries.setLabelFor(listSelected);

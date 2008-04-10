@@ -126,6 +126,27 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         needParseOrphan = ModelSupport.needParseOrphan(platformProject);
     }
     
+    
+    private boolean checkConsistency() {
+        long time = TraceFlags.TIMING ? System.currentTimeMillis() : 0;
+        if( getFileContainer() == null ) {
+            return false;
+        }
+        if( getDeclarationsSorage() == null ) {
+            return false;
+        }
+        if( getGraph() == null ) {
+            return false;
+        }
+        if( getGlobalNamespace() == null ) {
+            return false;
+        }
+        if( TraceFlags.TIMING ) {
+            System.err.printf("Consistency check took %d ms\n", System.currentTimeMillis() - time);
+        }
+        return true;
+    }
+    
     private void setStatus(Status newStatus) {
 	//System.err.printf("CHANGING STATUS %s -> %s for %s (%s)\n", status, newStatus, name, getClass().getName());
 	status = newStatus;
@@ -159,8 +180,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis() - time;
                 System.err.printf("Project %s: loaded. %d ms\n", name, time);
             }
-            
-            return impl;
+            if( impl.checkConsistency() ) {
+                return impl;
+            }
         }
         return null;
     }
@@ -1924,9 +1946,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
-    private Key declarationsSorageKey;
-    private Key fileContainerKey;
-    private Key graphStorageKey;
+    private final Key declarationsSorageKey;
+    private final Key fileContainerKey;
+    private final Key graphStorageKey;
     
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
     

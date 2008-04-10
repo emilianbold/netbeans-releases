@@ -66,7 +66,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     private static final String BPEL_1_1 =
         "http://schemas.xmlsoap.org/ws/2003/03/business-process/";  // NOI18N
 
-    private static final String WS_ADDRESSING =
+    public static final String WS_ADDRESSING =
         "http://schemas.xmlsoap.org/ws/2004/08/addressing";  // NOI18N
     private static final String URL_WS_ADDRESSING =
         "nbres:/org/netbeans/modules/bpel/core/resources/" +        // NOI18N
@@ -116,7 +116,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     private static final String EDITOR_EXT_ID = SCHEMA + EDITOR_EXT;
     private static final String WS_BPEL_SERVICE_REF_ID = 
             SCHEMA + WS_BPEL_SERVICE_REF; 
-    private static final String WS_ADDRESSING_ID = SCHEMA + WS_ADDRESSING;
+    public static final String WS_ADDRESSING_ID = SCHEMA + WS_ADDRESSING;
     
     private static final String URL_BPEL_PLT_1_1 =
         "nbres:/org/netbeans/modules/bpel/core/resources/"          // NOI18N

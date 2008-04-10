@@ -97,13 +97,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_TEMPLATE = 1 << 4;
     private byte flags;
     
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
+    public FunctionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
     }
     
     private static final boolean CHECK_SCOPE = false;
     
-    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
+    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -137,7 +137,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         // set scope, do it in constructor to have final fields
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        assert (this.scopeUID != null || scope == null);
+        boolean assertionCondition = (this.scopeUID != null || scope == null);
+        if (!assertionCondition) {
+            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
+                    "Cannot find function scope."); // NOI18N
+            //assert (this.scopeUID != null || scope == null);
+        }
         this.scopeRef = null;
         
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
@@ -146,7 +151,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         setFlags(FLAGS_CONST, _const);
         returnType = initReturnType(ast, scope);
         initTemplate(ast);
-        
+
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
         if (params == null) {
@@ -204,7 +209,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return ast;
     }
     
-    private void initTemplate(AST node) {
+    private void initTemplate(AST node) throws AstRendererException {
         boolean _template = false, specialization = false;
         switch(node.getType()) {
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
@@ -222,10 +227,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
         if (_template) {
             AST templateNode = node.getFirstChild();
-            assert ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
+            boolean assertionCondition = ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
+            if (!assertionCondition) {
+                RepositoryUtils.remove(getUID());
+                throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
+                        "Template expected. "+templateNode+" found."); // NOI18N
+                //assert assertionCondition : message;
+            }
             // 0. our grammar can't yet differ template-class's method from template-method
             // so we need to check here if we has template-class or not
-            boolean templateClass = false;
             AST qIdToken = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
             // 1. check for definition of template class's method
             // like template<class A> C<A>:C() {}

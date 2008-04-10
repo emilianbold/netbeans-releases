@@ -196,7 +196,6 @@ public class CompletionContextImpl extends CompletionContext {
     public boolean initContext() {
         try {
             fromNoNamespace = false;
-            noNamespaceModel = null;
             int id = token.getTokenID().getNumericID();
             switch ( id) {
                 //user enters < character
@@ -492,6 +491,10 @@ public class CompletionContextImpl extends CompletionContext {
             for(CompletionModel m: models) {
                 populateModelMap(m);
             }
+        }
+        
+        if(noNamespaceSchemaLocation != null && noNSModels.size() == 1) {
+            noNamespaceModel = noNSModels.get(0);
         }
         
         //last resort: try special completion
