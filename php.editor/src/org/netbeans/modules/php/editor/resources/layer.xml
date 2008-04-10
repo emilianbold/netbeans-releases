@@ -129,6 +129,13 @@
                     </file>
                 </folder>
                 <!--end of issue #127161-->
+                
+                <!-- associating platte with the mime type -->
+                <file name="PaletteFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.palette.PHPPaletteFactory.getPalette"/>
+                </file>
+                
             </folder>
             <folder name="x-php-doccomment">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
@@ -146,4 +153,32 @@
             </folder>
         </folder>
     </folder>
+    
+    <!-- registering PHP palette -->
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
+                <file name="org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.instance"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Palettes">
+        <folder name="PHP">
+
+            <file name="HTML.shadow">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+
+            <file name="HTML_Forms.shadow">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+
+        </folder>    
+     </folder>
 </filesystem>

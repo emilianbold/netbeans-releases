@@ -69,7 +69,7 @@ BUNDLE_LONG_NAMES[1] = "Mobility";
 BUNDLE_LONG_NAMES[2] = "Java&nbsp;SE";
 BUNDLE_LONG_NAMES[3] = "Ruby";
 BUNDLE_LONG_NAMES[4] = "C/C++";
-//BUNDLE_LONG_NAMES[5] = "PHP";
+//BUNDLE_LONG_NAMES[5] = "Early access for PHP";
 BUNDLE_LONG_NAMES[5] = "All";
 
 var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE {0} Download";

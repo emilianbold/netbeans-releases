@@ -426,7 +426,7 @@ made subject to such option by the copyright holder.
                 <mkdir dir="${{build.dir}}/META-INF"/>
                 <jar compress="true" jarfile="${{build.dir}}/BCDeployment.jar">
                     <fileset dir="${{src.dir}}/../jbiServiceUnits">
-                        <exclude name="META-INF/*/catalog.xml" />
+                        <exclude name="**/catalog.xml" />
                         <exclude name="**/jbi.xml"/>
                     </fileset>
                 </jar>
