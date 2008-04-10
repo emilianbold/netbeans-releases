@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.NbUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -437,9 +438,157 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             }
         }
 
+        if (id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END) {
+            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
+                PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
+            boolean isEmptyComment = (Boolean) ret[1];
+            
+            // XXX: hook up the doc fields auto-generation here, if isEmptyComment == true
+            
+            return (Integer) ret[0];
+        }
+        
+        if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END) {
+            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
+                PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
+            return (Integer) ret[0];
+        }
+        
         return -1;
     }
 
+    private static Object [] beforeBreakInComments(
+        BaseDocument doc, TokenSequence<? extends PHPTokenId> ts, int offset, Caret caret,
+        PHPTokenId commentStart, PHPTokenId commentBody, PHPTokenId commentEnd
+    ) throws BadLocationException {
+        PHPTokenId id = ts.token().id();
+        
+        if (id == commentBody || id == commentStart) {
+            int insertOffset;
+            
+
+            if (id == commentStart) {
+                insertOffset = ts.offset() + ts.token().length();
+            } else {
+                insertOffset = offset;
+            }
+
+            int indent = LexUtilities.getLineIndent(doc, ts.offset());
+            int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, insertOffset);
+
+            // find comment end
+            boolean addClosingTag = !isClosedComment(DocumentUtilities.getText(doc), insertOffset);
+            
+            // We've either encountered a further indented line, or a line that doesn't
+            // look like the end we're after, so insert a matching end.
+            int newCaretOffset;
+            StringBuilder sb = new StringBuilder();
+            if (offset > afterLastNonWhite) {
+                LexUtilities.indent(sb, indent);
+                sb.append(" * "); // NOI18N
+                newCaretOffset = insertOffset + sb.length() + 1;
+            } else {
+                // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
+                // I should insert the end AFTER the text on the line
+                String restOfLine = doc.getText(insertOffset, Utilities.getRowEnd(doc, afterLastNonWhite)-insertOffset);
+                LexUtilities.indent(sb, indent);
+                sb.append(" * "); // NOI18N
+                newCaretOffset = insertOffset + sb.length() + 1;
+                sb.append(restOfLine);
+                doc.remove(insertOffset, restOfLine.length());
+            }
+            
+            if (addClosingTag) {
+                // add the closing tag
+                sb.append("\n");
+                LexUtilities.indent(sb, indent);
+                sb.append(" */"); // NOI18N
+            }
+            
+            doc.insertString(insertOffset, sb.toString(), null);
+            caret.setDot(insertOffset);
+            
+            return new Object [] { newCaretOffset, addClosingTag };
+        }
+
+        if (id == commentEnd) {
+            int insertOffset = ts.offset();
+            
+            // find comment start
+            if (ts.movePrevious()) {
+                assert ts.token().id() == commentBody || 
+                       ts.token().id() == commentStart : "PHP_COMMENT_END should not be preceeded by " + ts.token().id().name(); //NOI18N
+            } else {
+                assert false : "PHP_COMMENT_END without PHP_COMMENT or PHP_COMMENT_START"; //NOI18N
+            }
+            
+            int indent = LexUtilities.getLineIndent(doc, ts.offset());
+            int beforeFirstNonWhite = Utilities.getRowFirstNonWhite(doc, insertOffset);
+            int rowStart = Utilities.getRowStart(doc, insertOffset);
+            int newCaretOffset = insertOffset;
+            
+            StringBuilder sb = new StringBuilder();
+            if (beforeFirstNonWhite >= insertOffset) {
+                // only whitespace in front of */
+                LexUtilities.indent(sb, indent);
+                sb.append(" * ");
+                newCaretOffset = rowStart + sb.length();
+                LexUtilities.indent(sb, indent);
+                sb.append(" "); //NOI18N
+                doc.remove(rowStart, insertOffset - rowStart);
+                insertOffset = rowStart;
+            } else {
+                LexUtilities.indent(sb, indent);
+                sb.append(" "); //NOI18N
+            }
+            
+            doc.insertString(insertOffset, sb.toString(), null);
+            caret.setDot(newCaretOffset);
+            
+            return new Object[] { newCaretOffset, false };
+        }
+        
+        return new Object[] { -1, false };
+    }
+    
+    // XXX: stolen from JavaKit.JavaInsertBreakAction, we should extend it to support heredoc
+    private static boolean isClosedComment(CharSequence txt, int pos) {
+        int length = txt.length();
+        int quotation = 0;
+        for (int i = pos; i < length; i++) {
+            char c = txt.charAt(i);
+            if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
+                if (quotation == 0 || i < length - 2) {
+                    return true;
+                }
+                // guess it is not just part of some text constant
+                boolean isClosed = true;
+                for (int j = i + 2; j < length; j++) {
+                    char cc = txt.charAt(j);
+                    if (cc == '\n') {
+                        break;
+                    } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                        isClosed = false;
+                        break;
+                    }
+                }
+
+                if (isClosed) {
+                    return true;
+                }
+            } else if (c == '/' && i < length - 1 && txt.charAt(i + 1) == '*') {
+                // start of another comment block
+                return false;
+            } else if (c == '\n') {
+                quotation = 0;
+            } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
+                quotation = ++quotation % 2;
+            }
+        }
+
+        return false;
+    }
+    
     /**
      * Determine if an "end" or "}" is missing following the caret offset.
      * The logic used is to check the text on the current line for block initiators
