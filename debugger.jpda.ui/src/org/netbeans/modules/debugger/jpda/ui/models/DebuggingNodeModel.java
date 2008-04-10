@@ -101,6 +101,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/threadsView/thread_suspended_16.png";
     public static final String THREAD_RUNNING = 
             "org/netbeans/modules/debugger/resources/threadsView/thread_running_16.png";
+    public static final String CALL_STACK2 =
+            "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
 
     private JPDADebugger debugger;
     
@@ -230,6 +232,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             } else {
                 return THREAD_RUNNING;
             }
+        }
+        if (node instanceof CallStackFrame) {
+            return CALL_STACK2;
         }
         return getIconBase(node)+".gif";
     }

@@ -81,6 +81,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private TapPanel tapPanel;
     private InfoPanel infoPanel;
     private JPDADebugger debugger;
+    private Session session;
     
     /**
      * instance/singleton of this class
@@ -198,12 +199,15 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     public void setRootContext(Node root, DebuggerEngine engine) {
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            this.debugger = debugger;
-            Session session = engine.lookupFirst(null, Session.class);
-            sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { session.getName() }));
+            synchronized (this) {
+                this.debugger = debugger;
+                this.session = engine.lookupFirst(null, Session.class);
+            }
         } else {
-            this.debugger = null;
-            sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { }));
+            synchronized (this) {
+                this.debugger = null;
+                this.session = null;
+            }
         }
         manager.setRootContext(root);
         refreshView();
@@ -384,6 +388,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 Node root = manager.getRootContext();
                 if (root != null) {
                     String comboItemText = root.getDisplayName();
+                    synchronized (DebuggingView.this) {
+                        if ((comboItemText == null || comboItemText.length() == 0) && session != null) {
+                            comboItemText = session.getName();
+                        }
+                    }
                     sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
                         comboItemText : "Java Project"); // NOI18N [TODO]
                 }
