@@ -52,11 +52,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -68,6 +70,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
@@ -87,6 +90,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame";
     public static final String CURRENT_CALL_STACK =
         "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame";
+    
+    public static final String THREAD_AT_BRKT_LINE = 
+            "org/netbeans/modules/debugger/resources/threadsView/thread_at_line_bpkt_16.png";
+    public static final String THREAD_AT_BRKT_NONLINE = 
+            "org/netbeans/modules/debugger/resources/threadsView/thread_at_non_line_bpkt_16.png";
+    public static final String THREAD_AT_BRKT_CONDITIONAL = 
+            "org/netbeans/modules/debugger/resources/threadsView/thread_at_conditional_bpkt_16.png";
+    public static final String THREAD_SUSPENDED = 
+            "org/netbeans/modules/debugger/resources/threadsView/thread_suspended_16.png";
+    public static final String THREAD_RUNNING = 
+            "org/netbeans/modules/debugger/resources/threadsView/thread_running_16.png";
 
     private JPDADebugger debugger;
     
@@ -196,6 +210,27 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+        if (node instanceof JPDAThread) {
+            JPDAThread t = (JPDAThread) node;
+            Breakpoint b = t.getCurrentBreakpoint();
+            if (b != null) {
+                if (b instanceof LineBreakpoint) {
+                    String condition = ((LineBreakpoint) b).getCondition();
+                    if (condition != null && condition.length() > 0) {
+                        return THREAD_AT_BRKT_CONDITIONAL;
+                    } else {
+                        return THREAD_AT_BRKT_LINE;
+                    }
+                } else {
+                    return THREAD_AT_BRKT_NONLINE;
+                }
+            }
+            if (t.isSuspended()) {
+                return THREAD_SUSPENDED;
+            } else {
+                return THREAD_RUNNING;
+            }
+        }
         return getIconBase(node)+".gif";
     }
 
@@ -339,6 +374,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private class ThreadStateUpdater implements PropertyChangeListener {
         
         private Reference<JPDAThread> tr;
+        // currently waiting / running refresh task
+        // there is at most one
+        private RequestProcessor.Task task;
         
         public ThreadStateUpdater(JPDAThread t) {
             this.tr = new WeakReference(t);
@@ -348,7 +386,21 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             JPDAThread t = tr.get();
             if (t != null) {
-                fireNodeChanged(t);
+                synchronized (this) {
+                    if (task == null) {
+                        task = RequestProcessor.getDefault().create(new Refresher());
+                    }
+                    task.schedule(100);
+                }
+            }
+        }
+        
+        private class Refresher extends Object implements Runnable {
+            public void run() {
+                JPDAThread t = tr.get();
+                if (t != null) {
+                    fireNodeChanged(t);
+                }
             }
         }
     }

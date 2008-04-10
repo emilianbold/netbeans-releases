@@ -306,6 +306,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private class ThreadStateListener implements PropertyChangeListener {
         
         private Reference<JPDAThread> tr;
+        // currently waiting / running refresh task
+        // there is at most one
+        private RequestProcessor.Task task;
         
         public ThreadStateListener(JPDAThread t) {
             this.tr = new WeakReference(t);
@@ -316,7 +319,21 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED));
             JPDAThread t = tr.get();
             if (t != null) {
-                fireThreadStateChanged(t);
+                synchronized (this) {
+                    if (task == null) {
+                        task = RequestProcessor.getDefault().create(new Refresher());
+                    }
+                    task.schedule(200);
+                }
+            }
+        }
+        
+        private class Refresher extends Object implements Runnable {
+            public void run() {
+                JPDAThread t = tr.get();
+                if (t != null) {
+                    fireThreadStateChanged(t);
+                }
             }
         }
     }
