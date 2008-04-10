@@ -57,8 +57,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
     private static final int ICON_WIDTH = 16;
+    private static final int BAR_WIDTH = 8;
     
-    transient Color hitsPanelColor = new Color(233, 228, 199); // new Color(255, 255, 153);
+    transient Color hitsPanelColor = new Color(255, 255, 153); // [TODO]
     private transient Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
@@ -335,29 +336,31 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             public void run() {
                 leftPanel.removeAll();
                 rightPanel.removeAll();
+                int sy = 0;
+                int sx = (rightPanel.getWidth() - ICON_WIDTH) / 2;
                 for (TreePath path : treeView.getVisiblePaths()) {
                     Node node = Visualizer.findNode(path.getLastPathComponent());
                     JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
                     
                     JTree tree = treeView.getTree();
                     Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
-                    double height = rect.getHeight();
+                    int height = (int)Math.round(rect.getHeight());
                     
                     JComponent label = new JPanel();
-                    label.setPreferredSize(new Dimension(8, (int)Math.round(height))); // [TODO] width constant
+                    label.setPreferredSize(new Dimension(BAR_WIDTH, height));
                     label.setBackground(greenBarColor);
                     leftPanel.add(label);
                     
                     JLabel icon = jpdaThread != null ?
                         new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
                         suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
-                    // [TODO] put this inside ClicableIcon constructor
-                    icon.setPreferredSize(new Dimension(ICON_WIDTH, (int)Math.round(height)));
+                    icon.setPreferredSize(new Dimension(ICON_WIDTH, height));
                     icon.setBackground(treeBackgroundColor);
                     rightPanel.add(icon);
                     if (icon instanceof ClickableIcon) {
-                        ((ClickableIcon)icon).initializeState();
+                        ((ClickableIcon)icon).initializeState(sx, sy, ICON_WIDTH, height);
                     }
+                    sy += height;
                 }
                 leftPanel.revalidate();
                 leftPanel.repaint();
