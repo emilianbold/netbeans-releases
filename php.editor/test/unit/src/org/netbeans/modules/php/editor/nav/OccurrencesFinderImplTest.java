@@ -60,11 +60,11 @@ public class OccurrencesFinderImplTest extends TestBase {
     }            
 
     public void testOccurrences1() throws Exception {
-        performTestOccurrences("<?php\n^$name^ = \"test\";\n echo \"^$na|me^\";\n?>");
+        performTestOccurrences("<?php\n^$name^ = \"test\";\n echo \"^$na|me^\";\n?>", true);
     }
     
     public void testOccurrences2() throws Exception {
-        performTestOccurrences("<?php\necho \"^$name^\";\n echo \"^$na|me^\";\n?>");
+        performTestOccurrences("<?php\necho \"^$name^\";\n echo \"^$na|me^\";\n?>", true);
     }
     
     public void testOccurrences3() throws Exception {
@@ -73,7 +73,8 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "function foo() {\n" +
                                "    echo \"^$na|me^\";\n" +
                                "}\n" + 
-                               "?>");
+                               "?>",
+                               true);
     }
     
     public void testOccurrences4() throws Exception {
@@ -83,7 +84,8 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "    global ^$name^;\n" +
                                "    echo \"^$na|me^\";\n" +
                                "}\n" + 
-                               "?>");
+                               "?>",
+                               true);
     }
     
     public void testOccurrences5() throws Exception {
@@ -101,7 +103,8 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "define('^test^', 'testttttt');\n" +
                                "echo \"fff\".^te|st^.\"dddd\";\n" +
                                "echo \"fff\".^test^.\"dddd\";\n" +
-                               "?>");
+                               "?>",
+                               true);
     }
     
     public void test132230() throws Exception {
@@ -110,10 +113,31 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "    global ^$f^;\n" +
                                "    ^$|f^['s']();\n" +
                                "}\n" +
+                               "?>",
+                               true);
+    }
+    
+    public void testOccurrencesFunctionHeader() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "function ^fo|o^() {\n" +
+                               "}\n" +
+                               "^foo^();\n" +
+                               "?>");
+    }
+    
+    public void testOccurrencesClassHeader() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "class ^fo|o^ {\n" +
+                               "}\n" +
+                               "$r = new ^foo^();\n" +
                                "?>");
     }
     
     private void performTestOccurrences(String code) throws Exception {
+        performTestOccurrences(code, false);
+    }
+    
+    private void performTestOccurrences(String code, boolean symmetric) throws Exception {
         int caretOffset = code.replaceAll("\\^", "").indexOf('|');
         String[] split = code.replaceAll("\\|", "").split("\\^");
         
@@ -129,28 +153,39 @@ public class OccurrencesFinderImplTest extends TestBase {
         
         assertTrue(caretOffset != (-1));
         
-        performTestOccurrences(code.replaceAll("\\^", "").replaceAll("\\|", ""), caretOffset, goldenRanges);
+        performTestOccurrences(code.replaceAll("\\^", "").replaceAll("\\|", ""), caretOffset, symmetric, goldenRanges);
     }
 
-    private void performTestOccurrences(String code, final int caretOffset, final int... goldenRanges) throws Exception {
+    private void performTestOccurrences(String code, final int caretOffset, final boolean symmetric, final int... goldenRanges) throws Exception {
         performTest(new String[] {code}, new CancellableTask<CompilationInfo>() {
             public void cancel() {}
             public void run(CompilationInfo parameter) throws Exception {
                 Collection<OffsetRange> ranges = OccurrencesFinderImpl.compute(parameter, caretOffset);
-                List<Integer> golden = new LinkedList<Integer>();
-                List<Integer> out = new LinkedList<Integer>();
                 
-                for (OffsetRange r : ranges) {
-                    out.add(r.getStart());
-                    out.add(r.getEnd());
+                assertEquals(goldenRanges, ranges);
+                
+                if (symmetric) {
+                    for (OffsetRange r : ranges) {
+                        assertEquals(goldenRanges, OccurrencesFinderImpl.compute(parameter, (r.getStart() + r.getEnd()) / 2));
+                    }
                 }
-                
-                for (int i : goldenRanges) {
-                    golden.add(i);
-                }
-                
-                assertEquals(golden, out);
             }
         });
+    }
+    
+    private static void assertEquals(int[] goldenRanges, Collection<OffsetRange> ranges) {
+        List<Integer> golden = new LinkedList<Integer>();
+        List<Integer> out = new LinkedList<Integer>();
+
+        for (OffsetRange r : ranges) {
+            out.add(r.getStart());
+            out.add(r.getEnd());
+        }
+
+        for (int i : goldenRanges) {
+            golden.add(i);
+        }
+
+        assertEquals(golden, out);
     }
 }

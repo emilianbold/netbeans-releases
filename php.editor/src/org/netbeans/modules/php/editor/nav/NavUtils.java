@@ -49,7 +49,9 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -105,10 +107,12 @@ public class NavUtils {
         Collections.reverse(path);
 
         AttributedElement result = null;
+        ASTNode previous = null;
 
         for (final ASTNode leaf : path) {
             if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {
                 result = a.getElement(leaf);
+                previous = leaf;
                 continue;
             }
 
@@ -135,10 +139,20 @@ public class NavUtils {
                     return e;
                 }
             }
+            
+            if (leaf instanceof FunctionDeclaration && ((FunctionDeclaration) leaf).getFunctionName() == previous) {
+                return a.getElement(leaf);
+            }
 
+            if (leaf instanceof ClassDeclaration && ((ClassDeclaration) leaf).getName() == previous) {
+                return a.getElement(leaf);
+            }
+            
             if (result != null) {
                 return result;
             }
+            
+            previous = leaf;
         }
 
         return null;
