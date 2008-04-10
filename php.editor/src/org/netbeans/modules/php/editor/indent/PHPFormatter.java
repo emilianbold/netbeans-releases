@@ -237,6 +237,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
                 if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                    id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
                     id == PHPTokenId.PHP_HEREDOC_TAG
@@ -274,6 +275,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
                 if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                    id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
                     id == PHPTokenId.PHP_HEREDOC_TAG
