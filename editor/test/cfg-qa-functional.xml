@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
     </testbag>
     
     <!-- Indentation tests -->
-    <testbag testattribs="all,indent" name="indentation-programmatic">
+    <testbag testattribs="indent" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>

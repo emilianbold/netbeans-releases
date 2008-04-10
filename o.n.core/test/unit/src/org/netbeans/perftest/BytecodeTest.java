@@ -130,7 +130,7 @@ public class BytecodeTest extends NbTestCase {
             
             // list of 3rd party libs
             // perhaps we can strip this debug info from these
-            if ("commons-logging-1.0.4.jar".equals(f.getName())
+            if ("commons-logging-1.1.jar".equals(f.getName())
             ||  "servlet-2.2.jar".equals(f.getName())
             ||  "servlet2.5-jsp2.1-api.jar".equals(f.getName())
             ||  "jaxws-tools.jar".equals(f.getName())
