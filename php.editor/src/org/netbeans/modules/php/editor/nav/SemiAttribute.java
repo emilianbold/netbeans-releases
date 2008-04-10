@@ -306,15 +306,15 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         String name = node.getName().getName();
-        ClassElement func = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
+        ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
 
-        node2Element.put(node, func);
+        node2Element.put(node, ce);
         
         if (node.getSuperClass() != null) {
-            func.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+            ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
         }
                 
-        scopes.push(func.enclosedElements);
+        scopes.push(ce.enclosedElements);
         
         super.visit(node);
         
