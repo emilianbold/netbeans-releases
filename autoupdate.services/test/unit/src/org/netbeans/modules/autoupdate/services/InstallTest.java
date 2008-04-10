@@ -58,6 +58,9 @@ public class InstallTest extends OperationsTestImpl {
     } 
     
     public void testSelf () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         File pf = getWorkDir ();
         File lastModified = new File (pf, ".lastModified"); // NOI18N
         lastModified.createNewFile ();
