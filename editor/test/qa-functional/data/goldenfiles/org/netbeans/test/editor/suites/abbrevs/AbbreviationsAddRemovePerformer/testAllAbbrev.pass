@@ -1,0 +1,209 @@
+En
+Enumeration
+Ex
+Exception
+Ob
+Object
+Psf
+public static final 
+Psfb
+public static final boolean 
+Psfi
+public static final int 
+Psfs
+public static final String 
+St
+String
+ab
+abstract 
+bcom
+/*${selection}*/
+bo
+boolean 
+br
+break
+ca
+catch (
+cl
+class 
+cn
+continue
+df
+default:
+dowhile
+do { 
+   ${selection}${cursor}
+} while (${EXP instanceof="boolean" default="exp"});
+
+eq
+equals
+ex
+extends 
+fa
+false
+fi
+final 
+fl
+float 
+forc
+for (${IT_TYPE rightSideType type="java.util.Iterator" default="Iterator" editable=false} ${IT newVarName default="it"} = ${COL instanceof="java.util.Collection" default="col"}.iterator(); ${IT}.hasNext();) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${IT}.next();
+   ${selection}${cursor}
+}
+
+fore
+for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
+   ${selection}${cursor}
+}
+
+fori
+for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
+   ${selection}${cursor}
+}
+
+forl
+for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${LIST instanceof="java.util.List" default="lst"}.size(); ${IDX}++) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${LIST}.get(${IDX});
+   ${selection}${cursor}
+}
+
+forst
+for (${STR_TOK type="java.util.StringTokenizer" default="StringTokenizer" editable=false} ${TOKENIZER newVarName} = new ${STR_TOK}(${STRING instanceof="java.lang.String"}); ${TOKENIZER}.hasMoreTokens();) {
+    String ${TOKEN default="token"} = ${TOKENIZER}.nextToken();
+    ${cursor}
+}
+
+forv
+for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${VECTOR instanceof="java.util.Vector" default="vct"}.size(); ${IDX}++) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${VECTOR}.elementAt(${IDX});
+   ${selection}${cursor}
+}
+
+fy
+finally 
+ie
+interface 
+ifelse
+if (${EXP instanceof="boolean" default="exp"}) {
+   ${selection}${cursor}
+} else {
+}
+
+iff
+if (${EXP instanceof="boolean" default="exp"}) {
+   ${selection}${cursor}
+}
+
+im
+implements 
+inst
+if (${EXP instanceof="java.lang.Object" default="exp"} instanceof ${TYPE default="Object"}) {
+   ${TYPE} ${VAR newVarName default="obj"} = (${TYPE})${EXP};
+   ${cursor}
+}
+
+iof
+instanceof 
+ir
+import 
+jaxbm
+try {            
+                javax.xml.bind.JAXBContext jaxbCtx= javax.xml.bind.JAXBContext.newInstance( ${OBJ2M instanceof="java.lang.Object" default="obj2BMarshalled"}.getClass().getPackage().getName());
+                javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();
+                marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, "UTF-8"); //NOI18N
+                marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                marshaller.marshal(${OBJ2M} , System.out);
+            } catch (javax.xml.bind.JAXBException ex) {
+                // XXXTODO Handle exception
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N
+        }
+jaxbu
+
+            try {
+                javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(${UM_OBJ instanceof="java.lang.Object" default="umObj"}.getClass().getPackage().getName());
+                javax.xml.bind.Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
+                ${UM_OBJ} = ${TYPE_CAST cast default=""} unmarshaller.unmarshal(new java.io.File("File path")); //NOI18N
+            } catch (javax.xml.bind.JAXBException ex) {
+                // XXXTODO Handle exception
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N
+            }
+        
+le
+length
+newo
+${TYPE default="Object"} ${OBJ newVarName default="obj"} = new ${TYPE}(${cursor});
+pe
+protected 
+pr
+private 
+psf
+private static final 
+psfb
+private static final boolean 
+psfi
+private static final int 
+psfs
+private static final String 
+pst
+printStackTrace();
+psvm
+public static void main(String[] args) {
+   ${cursor}
+}
+
+pu
+public 
+re
+return 
+runn
+${RUNN_TYPE type="java.lang.Runnable" default="Runnable" editable=false} ${RUNN newVarName default="r"} = new ${RUNN_TYPE}() {
+   public void run() {
+     ${selection}${cursor}
+   }
+};
+
+serr
+System.err.println("${cursor}");
+sout
+System.out.println("${cursor}");
+soutv
+System.out.println("${EXP instanceof="<any>" default="exp"} = " + ${EXP});
+st
+static 
+sw
+switch (
+sy
+synchronized 
+tds
+Thread.dumpStack();
+th
+throws 
+trycatch
+try {
+   ${selection}${cursor}
+} ${CATCH_STMTS uncaughtExceptionCatchStatements default="catch (Exception e) {}" editable=false}
+
+tw
+throw 
+twn
+throw new 
+wh
+while (
+whileit
+while(${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${IT}.next();
+   ${selection}${cursor}
+}
+
+whilen
+while(${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${ENUM}.nextElement();
+   ${selection}${cursor}
+}
+
+whilexp
+while (${EXP instanceof="boolean" default="exp"}) { 
+   ${selection}${cursor}
+}
+

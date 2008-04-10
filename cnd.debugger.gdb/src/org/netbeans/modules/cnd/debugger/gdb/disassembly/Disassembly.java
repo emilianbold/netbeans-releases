@@ -253,7 +253,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public Collection<RegisterValue> getRegisterValues() {
         Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
+            String name = regNames.get(idx);
+            if (name == null) {
+                assert false : "Unknown register: " + idx; // NOI18N
+                name = String.valueOf(idx);
+            }
+            res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
