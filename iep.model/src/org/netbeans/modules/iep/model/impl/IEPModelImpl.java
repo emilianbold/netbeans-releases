@@ -38,6 +38,7 @@ import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
+import org.netbeans.modules.iep.model.ModelHelper;
 import org.netbeans.modules.iep.model.NameUtil;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
@@ -172,7 +173,10 @@ public class IEPModelImpl extends IEPModel {
     public void saveWsdl() throws Exception {
         // auto generate .wsdl
         // see org.netbeans.modules.iep.editor.jbiadapter.IEPSEDeployer
-        String tns = NameUtil.makeJavaId(getIEPFileName());
+        //String tns = NameUtil.makeJavaId(getIEPFileName());
+    	
+    	//now use package qualified name as targetNamespace
+        String tns = getQualifiedName();
         FileOutputStream fos = null;
         try {
             // Generate .wsdl in the same dir as its .iep is
@@ -292,6 +296,7 @@ public class IEPModelImpl extends IEPModel {
             }
             
             qualifiedName = qualifiedName.replaceAll("/", ".");
+            qualifiedName = qualifiedName.replaceAll("\\\\", ".");
         }
         
         return qualifiedName;

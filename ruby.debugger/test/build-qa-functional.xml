@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,86 +40,11 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<project name="ruby/debugger/test-qa-functional" basedir="." default="all">
+<project name="ruby.debugger/test-qa-functional" basedir="." default="all">
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
-    <!-- Creates an empty Java project in IDE -->
-    <!-- <property name="xtest.ide.create.project" value="true"/> -->
-    <!-- Opens project at specified location -->
-<!--    <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>-->
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <!-- You can override default qa-functional-compiler if you need something special -->
-
-    <!--<target name="qa-functional-compiler" depends="init-cp">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-                <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
-                <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-                <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
-                <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
-                <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
-		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar" />
-		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar" />
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
-		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
-		<pathelement location="../../../libs/external/xerces-2.6.0.jar"/>-->
-		<!-- removed dependence on editor tests -->
-                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
-		<!--<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
-            </classpath>
-        </buildTests>
-    </target>-->
-         
-    <!--<target name="qa-functional-compiler-completion" depends="init-cp">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-		<pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
-		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar" />
-		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar" />
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
-		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
-		<pathelement location="../../../libs/external/xerces-2.6.0.jar"/>-->
-                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
-		<!--<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
-            </classpath>
-        </buildTests>
-    </target>-->
-    
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.
-         -->
-    <target name="runidetest" depends="init-cp">        
-        <executeTests  pluginName="ide">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>  
-		<!-- removed dependence on editor tests -->
-                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
-            </classpath>
-        </executeTests>
-    </target>
-    
-
-    
 </project>
 
