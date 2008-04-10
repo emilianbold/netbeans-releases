@@ -54,8 +54,11 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -109,6 +112,14 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
             }
 
             @Override
+            public void visit(ClassDeclaration node) {
+                if (el == a.getElement(node)) {
+                    usages.add(node.getName());
+                }
+                super.visit(node);
+            }
+
+            @Override
             public void visit(FunctionInvocation node) {
                 if (el == a.getElement(node)) {
                     usages.add(node.getFunctionName());
@@ -137,6 +148,14 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                     usages.add(scalar);
                 }
                 super.visit(scalar);
+            }
+
+            @Override
+            public void visit(ClassInstanceCreation node) {
+                if (el == a.getElement(node)) {
+                    usages.add(node.getClassName());
+                }
+                super.visit(node);
             }
         }.scan(Utils.getRoot(parameter));
         

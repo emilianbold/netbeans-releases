@@ -43,10 +43,12 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -248,14 +250,24 @@ public class PHPCodeCompletion implements Completable {
                 moreTokens = tokenSequence.movePrevious();
                 
                 String varName = tokenSequence.token().text().toString();
+                String typeName = null;
                 
-                Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+                if (staticContext){
+                    typeName = varName;
+                } else {
+                    Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+
+                    if (localVars != null) {
+                        for (IndexedConstant var : localVars){
+                            if (var.getName().equals(varName)){ // can be just a prefix
+                                typeName = var.getTypeName();
+                                break;
+                            }
+                        }
+                    }
+                }
                 
-                
-                if (localVars != null && localVars.size() == 1){
-                    IndexedConstant var = localVars.toArray(new IndexedConstant[1])[0];
-                    String typeName = var.getTypeName();
-                    
+                if (typeName != null){
                     Collection<IndexedFunction> methods = request.index.getAllMethods(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
@@ -273,6 +285,15 @@ public class PHPCodeCompletion implements Completable {
                         if (staticContext && prop.isStatic() 
                                 || !staticContext && !prop.isStatic()){
                             proposals.add(new VariableItem(prop, request));
+                        }
+                    }
+                    
+                    if (staticContext){
+                        Collection<IndexedConstant> classConstants = request.index.getClassConstants(
+                                request.result, typeName, request.prefix, NameKind.PREFIX);
+                        
+                        for (IndexedConstant constant : classConstants) {
+                            proposals.add(new VariableItem(constant, request));
                         }
                     }
                 }
@@ -330,7 +351,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private Collection<IndexedConstant> getLocalVariables(Collection<Statement> statementList, String namePrefix, int position, String localFileURL){
-        Collection<IndexedConstant> localVars = new ArrayList<IndexedConstant>();
+        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
         
         for (Statement statement : statementList){
             if (statement.getStartOffset() > position){
@@ -346,7 +367,7 @@ public class PHPCodeCompletion implements Completable {
 
                     String varType = extractVariableTypeFromExpression(statement);
                     ic.setTypeName(varType);
-                    localVars.add(ic);
+                    localVars.put(varName, ic);
                 }
             } else if (!offsetWithinStatement(position, statement)){
                 continue;
@@ -354,22 +375,33 @@ public class PHPCodeCompletion implements Completable {
                 
             if (statement instanceof Block) {
                 Block block = (Block) statement;
-                localVars.addAll(getLocalVariables(block.getStatements(), namePrefix, position, localFileURL));
+                
+                getLocalVariables_MergeResults(localVars,
+                        getLocalVariables(block.getStatements(), namePrefix, position, localFileURL));
+                
             } else if (statement instanceof IfStatement){
                 IfStatement ifStmt = (IfStatement)statement;
                 
                 if (offsetWithinStatement(position, ifStmt.getTrueStatement())) {
-                    localVars.addAll(getLocalVariables(Collections.singleton(ifStmt.getTrueStatement()), namePrefix, position, localFileURL));
+                    getLocalVariables_MergeResults(localVars,
+                            getLocalVariables(Collections.singleton(ifStmt.getTrueStatement()), namePrefix, position, localFileURL));
+                    
                 } else if (ifStmt.getFalseStatement() != null // false statement ('else') is optional
                         && offsetWithinStatement(position, ifStmt.getFalseStatement())) {
-                    localVars.addAll(getLocalVariables(Collections.singleton(ifStmt.getFalseStatement()), namePrefix, position, localFileURL));
+                    
+                    getLocalVariables_MergeResults(localVars,
+                            getLocalVariables(Collections.singleton(ifStmt.getFalseStatement()), namePrefix, position, localFileURL));
                 }
             } else if (statement instanceof WhileStatement) {
                 WhileStatement whileStatement = (WhileStatement) statement;
-                localVars.addAll(getLocalVariables(Collections.singleton(whileStatement.getBody()), namePrefix, position, localFileURL));
+                
+                getLocalVariables_MergeResults(localVars,
+                        getLocalVariables(Collections.singleton(whileStatement.getBody()), namePrefix, position, localFileURL));
             }  else if (statement instanceof DoStatement) {
                 DoStatement doStatement = (DoStatement) statement;
-                localVars.addAll(getLocalVariables(Collections.singleton(doStatement.getBody()), namePrefix, position, localFileURL));
+                
+                getLocalVariables_MergeResults(localVars,
+                        getLocalVariables(Collections.singleton(doStatement.getBody()), namePrefix, position, localFileURL));
             }
             else if (statement instanceof FunctionDeclaration) {
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
@@ -384,19 +416,29 @@ public class PHPCodeCompletion implements Completable {
                             ic.setTypeName(param.getParameterType().getName());
                         }
 
-                        localVars.add(ic);
+                        localVars.put(varName, ic);
                     }
                 }
                 
-                localVars.addAll(getLocalVariables(Collections.singleton((Statement)functionDeclaration.getBody()), namePrefix, position, localFileURL));
+                getLocalVariables_MergeResults(localVars,
+                            getLocalVariables(Collections.singleton((Statement)functionDeclaration.getBody()), namePrefix, position, localFileURL));
+                
             } else if (statement instanceof ClassDeclaration) {
                 ClassDeclaration classDeclaration = (ClassDeclaration) statement;
-                localVars.addAll(getLocalVariables(Collections.singleton((Statement)classDeclaration.getBody()), namePrefix, position, localFileURL));
+                
+                getLocalVariables_MergeResults(localVars,
+                    getLocalVariables(Collections.singleton((Statement)classDeclaration.getBody()), namePrefix, position, localFileURL));
             }
             
         }
         
-        return localVars;
+        return localVars.values();
+    }
+    
+    private void getLocalVariables_MergeResults(Map<String, IndexedConstant> existingMap, Collection<IndexedConstant> newValues){
+        for (IndexedConstant var : newValues){
+            existingMap.put(var.getName(), var);
+        }
     }
     
     private static boolean offsetWithinStatement(int offset, Statement statement){
@@ -456,7 +498,7 @@ public class PHPCodeCompletion implements Completable {
             
             builder.append(String.format("<font size=-1>%s</font>" +
                     "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    indexedElement.getFilenameUrl(), indexedElement.getName()));
+                    indexedElement.getFilenameUrl(), indexedElement.getDisplayName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             
