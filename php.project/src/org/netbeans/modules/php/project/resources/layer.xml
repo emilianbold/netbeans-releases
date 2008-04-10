@@ -66,10 +66,12 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="20"/>
 
             <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
-                <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
+                <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>
 
