@@ -1422,6 +1422,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <exec executable="hg" failonerror="yes" outputproperty="hg.unknown.files">
       <arg value="--cwd"/>
       <arg file="."/>
+      <arg value="--config"/>
+      <arg value="defaults.status="/>
       <arg value="status"/>
       <arg value="--unknown"/>
       <arg value="--no-status"/>
