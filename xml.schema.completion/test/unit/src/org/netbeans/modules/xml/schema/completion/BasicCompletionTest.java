@@ -61,8 +61,10 @@ public class BasicCompletionTest extends AbstractTestCase {
     
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        //suite.addTest(new BasicCompletionTest("testAttributes1"));
+        suite.addTest(new BasicCompletionTest("testAttributes1"));
         suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion"));
+        suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion1"));
+        suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion2"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder1"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder2"));
@@ -90,12 +92,43 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
+     * Query attributes at offset 217. See Attr1.xml.
+     * Should fetch five attributes.
+     */
+    public void testAttributes1() throws Exception {
+        setupCompletion("resources/Attr1.xml", null);
+        List<CompletionResultItem> items = query(217);
+        String[] expectedResult = {"attrA11", "attrA12", "attrA13", "attrA14", "attrA15"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
      * Queries elements from schema with no namespace.
      */
     public void testNoNamespaceCompletion() throws Exception {
         setupCompletion("resources/NoTNS.xml", null);
         List<CompletionResultItem> items = query(157);
         String[] expectedResult = {"NNSChild1", "NNSChild2"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries elements from schema with no namespace.
+     */
+    public void testNoNamespaceCompletion1() throws Exception {
+        setupCompletion("resources/NoTNS1.xml", null);
+        List<CompletionResultItem> items = query(175);
+        String[] expectedResult = {"NNSChild11", "NNSChild12"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries elements from schema with no namespace.
+     */
+    public void testNoNamespaceCompletion2() throws Exception {
+        setupCompletion("resources/NoTNS2.xml", null);
+        List<CompletionResultItem> items = query(167);
+        String[] expectedResult = {"Attr11", "Attr12"};
         assertResult(items, expectedResult);
     }
     
@@ -375,17 +408,6 @@ public class BasicCompletionTest extends AbstractTestCase {
         setupCompletion("resources/Include.xml", null);
         List<CompletionResultItem> items = query(233);
         String[] expectedResult = {"ns:M1","ns:M2"};
-        assertResult(items, expectedResult);
-    }
-
-    /**
-     * Query attributes at offset 217. See Attr1.xml.
-     * Should fetch five attributes.
-     */
-    public void testAttributes1() throws Exception {
-        setupCompletion("resources/Attr1.xml", null);
-        List<CompletionResultItem> items = query(217);
-        String[] expectedResult = {"attrA1", "attrA2", "attrA3", "attrA4", "attrA5"};
         assertResult(items, expectedResult);
     }
 

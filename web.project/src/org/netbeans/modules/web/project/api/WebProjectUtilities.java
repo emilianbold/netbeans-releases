@@ -76,8 +76,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 
@@ -551,7 +549,7 @@ public class WebProjectUtilities {
                         libs.add(URLMapper.findURL(FileUtil.getArchiveRoot(children[i]), URLMapper.EXTERNAL));
                     }
                 }
-                ProjectClassPathModifier.addRoots(libs.toArray(new URL[libs.size()]), p.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
+                p.getClassPathModifier().addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
                 //do we really need to add the listener? commenting it out
                 //libFolder.addFileChangeListener(p);
             }

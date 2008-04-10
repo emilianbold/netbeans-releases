@@ -685,6 +685,12 @@ public class SelectPanel extends JPanel implements SharedConstants {
     	}
     }
     
+    public void clearTable() {
+    	
+    	while(mTableModel.getRowCount() != 0) {
+    		mTableModel.removeRow(0);
+    	}
+    }
     public boolean hasExpressionList() {
         return mHasExpressionColumn;
     }
