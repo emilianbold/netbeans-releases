@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -73,6 +73,7 @@ public class ExecutionDescriptor {
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
+    private String jrubyProps;
     private FileObject fileObject;
     private String classPath;
     boolean showProgress = true;
@@ -181,6 +182,11 @@ public class ExecutionDescriptor {
         return this;
     }
     
+    public ExecutionDescriptor jrubyProperties(final String jrubyProps) {
+        this.jrubyProps = jrubyProps;
+        return this;
+    }
+
     public ExecutionDescriptor addBinPath(boolean addBinPath) {
         this.addBinPath = addBinPath;
         return this;
@@ -249,6 +255,11 @@ public class ExecutionDescriptor {
      */
     public String[] getInitialArgs() {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
+    }
+    
+    /** Properties to be passed to the JVM running the JRuby process. */
+    public String[] getJRubyProps() {
+        return jrubyProps == null ? null : Utilities.parseParameters(jrubyProps);
     }
     
     public File getPwd() {

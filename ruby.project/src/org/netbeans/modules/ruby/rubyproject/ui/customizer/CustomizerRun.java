@@ -103,21 +103,24 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextFieldArgs,
             jTextVMOptions,
             jTextWorkingDirectory,
-            rakeTextField
+            rakeTextField,
+            jrubyPropsText,
         };
         JLabel[] dataLabels = new JLabel[]{
             jLabelMainClass,
             jLabelArgs,
             jLabelVMOptions,
             jLabelWorkingDirectory,
-            rakeLabel
+            rakeLabel,
+            jrubyPropsLabel
         };
         keys = new String[] {
             RubyProjectProperties.MAIN_CLASS,
             RubyProjectProperties.APPLICATION_ARGS,
             RubyProjectProperties.RUN_JVM_ARGS,
             RubyProjectProperties.RUN_WORK_DIR,
-            RubyProjectProperties.RAKE_ARGS
+            RubyProjectProperties.RAKE_ARGS,
+            RubyProjectProperties.JRUBY_PROPS
         };
         assert data.length == keys.length;
         
@@ -187,6 +190,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
         platforms.setSelectedItem(uiProperties.getPlatform());
+        updateEnabled();
+    }
+
+    private void updateEnabled() {
+        boolean irJRuby = uiProperties.getPlatform().isJRuby();
+        jrubyPropsExample.setEnabled(irJRuby);
+        jrubyPropsLabel.setEnabled(irJRuby);
+        jrubyPropsText.setEnabled(irJRuby);
     }
 
     public @Override void addNotify() {
@@ -194,6 +205,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         platformListener = new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
                 uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
+                updateEnabled();
             }
         };
         PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);
@@ -233,6 +245,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         rakeLabel = new javax.swing.JLabel();
         rakeTextField = new javax.swing.JTextField();
         rakeExampleLabel = new javax.swing.JLabel();
+        jrubyPropsLabel = new javax.swing.JLabel();
+        jrubyPropsText = new javax.swing.JTextField();
+        jrubyPropsExample = new javax.swing.JLabel();
         rubyPlatformLabel = new javax.swing.JLabel();
         platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         manageButton = new javax.swing.JButton();
@@ -271,48 +286,48 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(rakeExampleLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
 
+        jrubyPropsLabel.setLabelFor(jTextVMOptions);
+        org.openide.awt.Mnemonics.setLocalizedText(jrubyPropsLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jrubyPropsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsExample.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(mainPanelLayout.createSequentialGroup()
-                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabelWorkingDirectory)
-                    .add(jLabelArgs)
-                    .add(jLabelMainClass))
+                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jrubyPropsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabelWorkingDirectory, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, Short.MAX_VALUE)
+                    .add(rakeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+                    .add(jLabelVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabelArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabelMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTextFieldMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
-                    .add(mainPanelLayout.createSequentialGroup()
-                        .add(jTextWorkingDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED))
                     .add(mainPanelLayout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
-                            .add(mainPanelLayout.createSequentialGroup()
-                                .add(jLabelVMOptionsExample)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 437, Short.MAX_VALUE))
-                            .add(rakeExampleLabel))))
-                .add(9, 9, 9)
+                            .add(jLabelVMOptionsExample)
+                            .add(rakeExampleLabel)
+                            .add(jrubyPropsExample)
+                            .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                            .add(jrubyPropsText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)))
+                    .add(jTextFieldArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(jTextVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(jTextFieldMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(jTextWorkingDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
+                .add(6, 6, 6)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jButtonWorkingDirectoryBrowse)
                     .add(jButtonMainClass)))
-            .add(mainPanelLayout.createSequentialGroup()
-                .add(jLabelVMOptions)
-                .addContainerGap())
-            .add(mainPanelLayout.createSequentialGroup()
-                .add(rakeLabel)
-                .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(mainPanelLayout.createSequentialGroup()
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelMainClass)
-                    .add(jButtonMainClass)
+                    .add(jButtonWorkingDirectoryBrowse)
                     .add(jTextFieldMainClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -321,21 +336,26 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelWorkingDirectory)
-                    .add(jButtonWorkingDirectoryBrowse)
+                    .add(jButtonMainClass)
                     .add(jTextWorkingDirectory, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(10, 10, 10)
+                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelVMOptions)
                     .add(jTextVMOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(0, 0, 0)
+                .add(5, 5, 5)
                 .add(jLabelVMOptionsExample)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(9, 9, 9)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rakeLabel)
                     .add(rakeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rakeExampleLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jrubyPropsLabel)
+                    .add(jrubyPropsText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jrubyPropsExample))
         );
 
         jTextFieldMainClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextFieldMainClass.AccessibleContext.accessibleName")); // NOI18N
@@ -366,7 +386,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
 
-        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" })); // NOI18N
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
         configCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configComboActionPerformed(evt);
@@ -568,6 +588,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jTextFieldMainClass;
     private javax.swing.JTextField jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
+    private javax.swing.JLabel jrubyPropsExample;
+    private javax.swing.JLabel jrubyPropsLabel;
+    private javax.swing.JTextField jrubyPropsText;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton manageButton;
     private javax.swing.JComboBox platforms;
