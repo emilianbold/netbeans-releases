@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
@@ -48,14 +50,17 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class BrkpntAnnotation extends DebuggerAnnotation {
+public class BrkpntAnnotation extends BreakpointAnnotation {
 
     public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";     // NOI18N
     
     private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
+    
+    private Breakpoint breakpoint;
 
-    public BrkpntAnnotation( Annotatable annotatable ) {
-        super(annotatable);
+    public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
+        this.breakpoint = breakpoint;
+        attach(annotatable);        
     }
 
     /* (non-Javadoc)
@@ -74,6 +79,11 @@ public class BrkpntAnnotation extends DebuggerAnnotation {
     public String getShortDescription()
     {
         return NbBundle.getBundle(DebuggerAnnotation.class).getString(BREAKPOINT);
+    }
+
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
 
 }
