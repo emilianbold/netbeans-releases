@@ -39,8 +39,23 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
+import org.openide.awt.DropDownButtonFactory;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -49,8 +64,9 @@ import java.awt.Dimension;
 public class InfoPanel extends javax.swing.JPanel {
 
     private static int UNIT_HEIGHT = 40;
-    
     private Color hitsPanelColor;
+    
+    private JButton arrowButton;
     
     /** Creates new form InfoPanel */
     public InfoPanel(TapPanel tapPanel) {
@@ -61,8 +77,86 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT - tapPanel.getMinimumHeight()));
         deadlocksPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
         filterPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
+        
+        deadlocksPanel.setVisible(false);
+        arrowButton = createArrowButton();
+        hitsPanel.add(arrowButton);
     }
 
+    private JButton createArrowButton() {
+        JPopupMenu menu = new JPopupMenu();
+        JButton button = DropDownButtonFactory.createDropDownButton(
+            new ImageIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png")), menu);
+        // JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) getValue(NAME)));//"<html><b>"+Actions.cutAmpersand((String) getValue(NAME))+"</b></html>") {
+        JMenuItem item = new JMenuItem("menu item");
+        // item.setEnabled(delegate.isEnabled());
+        menu.add(item);
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // [TODO]
+            }
+        });
+        button.setPreferredSize(new Dimension(48, button.getPreferredSize().height)); // [TODO]
+        button.setFocusable(false);
+        // Actions.connect(button, this);
+        return button;
+    }
+    
+//    private void initFilterPanel (JPanel filterPanel) {
+//        filterPanel.setBorder(new EmptyBorder(1, 2, 3, 5));
+//
+//        // configure toolbar
+//        JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
+//        toolbar.setFloatable(false);
+//        toolbar.setRollover(true);
+//        toolbar.setBorderPainted(false);
+//        // create toggle buttons
+//        int filterCount = filtersDesc.getFilterCount();
+//        toggles = new ArrayList<JToggleButton>(filterCount);
+//        JToggleButton toggleButton = null;
+//
+//        Map<String,Boolean> fStates = new HashMap<String, Boolean>(filterCount * 2);
+//
+//        for (int i = 0; i < filterCount; i++) {
+//            toggleButton = createToggle(fStates, i);
+//            toggles.add(toggleButton);
+//        }
+//
+//        // add toggle buttons
+//        JToggleButton curToggle;
+//        Dimension space = new Dimension(3, 0);
+//        for (int i = 0; i < toggles.size(); i++) {
+//            curToggle = toggles.get(i);
+//            curToggle.addActionListener(this);
+//            toolbar.add(curToggle);
+//            if (i != toggles.size() - 1) {
+//                toolbar.addSeparator(space);
+//            }
+//        }
+//
+//        add(toolbar);
+//
+//        // initialize member states map
+//        synchronized (STATES_LOCK) {
+//            filterStates = fStates;
+//        }
+//    }
+
+    private JToggleButton createToggle (int index) {
+        boolean isSelected = false; // [TODO] // filtersDesc.isSelected(index);
+        Icon icon = null; //filtersDesc.getSelectedIcon(index);
+        // ensure small size, just for the icon
+        JToggleButton result = new JToggleButton(icon, isSelected);
+        Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+        result.setPreferredSize(size);
+        result.setMargin(new Insets(2,3,2,3));
+        // result.setToolTipText(filtersDesc.getTooltip(index)); [TODO]
+
+        // fStates.put(filtersDesc.getName(index), Boolean.valueOf(isSelected));
+
+        return result;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -73,6 +167,8 @@ public class InfoPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         hitsPanel = new javax.swing.JPanel();
+        infoIcon = new javax.swing.JLabel();
+        hitsLabel = new javax.swing.JLabel();
         deadlocksPanel = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         filterPanel = new javax.swing.JPanel();
@@ -81,12 +177,19 @@ public class InfoPanel extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         hitsPanel.setBackground(hitsPanelColor);
-        hitsPanel.setPreferredSize(new java.awt.Dimension(0, 20));
-        hitsPanel.setLayout(new java.awt.BorderLayout());
+        hitsPanel.setPreferredSize(new java.awt.Dimension(0, 40));
+
+        infoIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        infoIcon.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon.text")); // NOI18N
+        hitsPanel.add(infoIcon);
+
+        hitsLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsLabel.text")); // NOI18N
+        hitsPanel.add(hitsLabel);
+
         add(hitsPanel, java.awt.BorderLayout.NORTH);
 
         deadlocksPanel.setBackground(hitsPanelColor);
-        deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 20));
+        deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 40));
         deadlocksPanel.setLayout(new java.awt.BorderLayout());
 
         jSeparator1.setBackground(hitsPanelColor);
@@ -94,7 +197,7 @@ public class InfoPanel extends javax.swing.JPanel {
 
         add(deadlocksPanel, java.awt.BorderLayout.CENTER);
 
-        filterPanel.setPreferredSize(new java.awt.Dimension(0, 20));
+        filterPanel.setPreferredSize(new java.awt.Dimension(0, 40));
         filterPanel.setLayout(new java.awt.BorderLayout());
         filterPanel.add(jSeparator2, java.awt.BorderLayout.PAGE_START);
 
@@ -105,7 +208,9 @@ public class InfoPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel deadlocksPanel;
     private javax.swing.JPanel filterPanel;
+    private javax.swing.JLabel hitsLabel;
     private javax.swing.JPanel hitsPanel;
+    private javax.swing.JLabel infoIcon;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     // End of variables declaration//GEN-END:variables
