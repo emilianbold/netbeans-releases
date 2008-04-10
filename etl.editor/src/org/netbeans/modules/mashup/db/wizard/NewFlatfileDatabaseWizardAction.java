@@ -29,13 +29,13 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     public static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
     private static transient final Logger mLogger = Logger.getLogger(NewFlatfileDatabaseWizardAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
-    public String nbBundle6 = mLoc.t("BUND773: Create Mashup Database...");
+    public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database...");
+    public String nbBundle6 = mLoc.t("BUND265: Create Mashup Database");
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle(nbBundle1.substring(15));
+        wizardDescriptor.setTitle(nbBundle6.substring(15));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription("This is the Dialog which lets the user create a mashup database");
         dialog.setSize(630, 334);
@@ -89,7 +89,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     }
 
     public String getName() {
-        return nbBundle6.substring(15);
+        return nbBundle1.substring(15);
     }
 
     @Override
