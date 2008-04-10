@@ -61,8 +61,10 @@ import org.netbeans.modules.gsf.api.IndexDocumentFactory;
  * reaches a given limit. When that happens, the lucene index is updated. 
  */
 public class CachingIndexer {
-    //private static final Integer CACHE_INDEX_SIZE = new Integer(300);
-    private static final Integer CACHE_INDEX_SIZE = Integer.getInteger("gsf.cacheindexsize");
+    /** Number of files whose index results we cache per file system
+     *  and language type until we flush the cache.
+     */
+    private static final int CACHE_INDEX_SIZE = 300;
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
 
@@ -71,11 +73,7 @@ public class CachingIndexer {
     private Map<Language,LanguageIndex> indices = new HashMap<Language,LanguageIndex>();
 
     public static CachingIndexer get(URL root, int size) {
-        if (CACHE_INDEX_SIZE != null) {
-            return new CachingIndexer(size, root);
-        }
-        
-        return null;
+        return new CachingIndexer(size, root);
     }
 
     public CachingIndexer(int fileCountGuess, URL root) {
@@ -175,7 +173,7 @@ public class CachingIndexer {
                 }
                 size++;
 
-                if (size == CACHE_INDEX_SIZE.intValue()) {
+                if (size == CACHE_INDEX_SIZE) {
                     flush();
                     size = 0;
                 }
