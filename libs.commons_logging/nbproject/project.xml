@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
                 <subpackages>org.apache.commons.logging</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/commons-logging-1.0.4.jar</runtime-relative-path>
-                <binary-origin>external/commons-logging-1.0.4.jar</binary-origin>
+                <runtime-relative-path>ext/commons-logging-1.1.jar</runtime-relative-path>
+                <binary-origin>external/commons-logging-1.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
