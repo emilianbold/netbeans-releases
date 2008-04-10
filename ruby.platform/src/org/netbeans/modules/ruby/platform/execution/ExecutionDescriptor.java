@@ -114,7 +114,7 @@ public class ExecutionDescriptor {
     
     public ExecutionDescriptor cmd(final File cmd) {
         this.cmd = cmd;
-        assert (cmd != null) && cmd.isFile() : cmd + " is a file";
+        assert (cmd != null) && cmd.isFile() : cmd + " must be a file";
         return this;
     }
 
