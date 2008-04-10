@@ -17,8 +17,8 @@ for use. This license file contains five distinct licenses.
 Unless specified below, the use of NetBeans IDE 6.1 and
 components from the GlassFish runtime are governed by the
 terms of either the GNU General Public License Version 2
-with Classpath Exception (“GPLv2 with Classpath Exception”)
-or the Common Development and Distribution License (“CDDL”).
+with Classpath Exception ("GPLv2 with Classpath Exception")
+or the Common Development and Distribution License ("CDDL").
 The Product also contains components which are governed
 exclusively by the terms of the GPLv2 with Classpath
 Exception (e.g., components from OpenJDK) .
@@ -763,7 +763,7 @@ NOT APPLY TO YOU.
 The Covered Software is a "commercial item," as that term is
 defined in 48 C.F.R. 2.101 (Oct. 1995), consisting of
 "commercial computer software" (as that term is defined at
-48 C.F.R. ¤ 252.227-7014(a)(1)) and "commercial computer
+48 C.F.R. 252.227-7014(a)(1)) and "commercial computer
 software documentation" as such terms are used in 48 C.F.R.
 12.212 (Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48
 C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all U.S.
