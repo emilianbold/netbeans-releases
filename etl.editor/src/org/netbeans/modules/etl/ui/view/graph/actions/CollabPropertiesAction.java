@@ -79,7 +79,7 @@ public class CollabPropertiesAction extends GraphAction {
         String nbBundle2 = mLoc.t("BUND016: Collaboration Properties (Ctrl+Shift+7)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
-        // Acceleratot Shift-Z
+        // Acceleratot Ctrl+Shift+7
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('7', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
 
     }

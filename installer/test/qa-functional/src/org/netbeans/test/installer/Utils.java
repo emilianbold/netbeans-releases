@@ -284,9 +284,10 @@ public class Utils {
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
         //there is no build nuber for RC1
-        if (Boolean.valueOf(System.getProperty("test.use.build.number")))
+        if (Boolean.valueOf(System.getProperty("test.use.build.number"))) {
             NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
-        //data.setBuildNumber(null);
+        }
+    //data.setBuildNumber(null);
     }
 
     public static void phaseOnePTwo(TestData data) {
@@ -384,6 +385,15 @@ public class Utils {
         new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
     }
 
+    public static void stepFinishRemoveRegisterChackmark() {
+        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
+
+        if (Boolean.valueOf(System.getProperty("test.build.can.register"))) {
+            new JCheckBoxOperator(installerMain, "Register").push();
+        }
+        new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
+    }
+
     public static void phaseOne(NbTestCase thiz, TestData data, String installerType) {
         phaseOnePOne(thiz, data, installerType);
         data.setInstallerURL(constructURL(data));
@@ -395,7 +405,7 @@ public class Utils {
         Utils.stepInstall(data);
 
         //finish
-        Utils.stepFinish();
+        Utils.stepFinishRemoveRegisterChackmark();
 
         Utils.waitSecond(data, 5);
 
@@ -492,7 +502,7 @@ public class Utils {
         }
         return null;
     }
-    
+
     public static String dirExist(String dirName, TestData data) {
         File dir = new File(data.getTestWorkDir() + File.separator + dirName);
         if (dir.exists() && dir.isDirectory()) {
@@ -529,7 +539,7 @@ public class Utils {
         String bundleNamePrefix = System.getProperty("test.installer.bundle.name.prefix");
         //String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
 
-        
+
         String bundleType = data.getInstallerType();
         if (bundleType == null || bundleType.equals("all")) {
             bundleType = "";
@@ -538,9 +548,9 @@ public class Utils {
         }
 
         String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? "-" + data.getBuildNumber() : "";
-        return prefix + "/" + "bundles" + 
-                "/" + bundleNamePrefix + 
-                build_number + bundleType + "-" + 
+        return prefix + "/" + "bundles" +
+                "/" + bundleNamePrefix +
+                build_number + bundleType + "-" +
                 data.getPlatformName() + "." + data.getPlatformExt();
     }
 }

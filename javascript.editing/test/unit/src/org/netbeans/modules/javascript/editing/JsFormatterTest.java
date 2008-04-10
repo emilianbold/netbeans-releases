@@ -41,11 +41,8 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.JTextArea;
-import javax.swing.text.Caret;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.gsf.api.Formatter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
 
@@ -58,101 +55,6 @@ public class JsFormatterTest extends JsTestBase {
     public JsFormatterTest(String testName) {
         super(testName);
     }            
-
-    private JsFormatter getFormatter(IndentPrefs preferences) {
-        if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
-
-        Preferences prefs = NbPreferences.forModule(JsFormatterTest.class);
-        prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
-        prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
-        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
-        
-        JsFormatter formatter = new JsFormatter(codeStyle, 80);
-        
-        return formatter;
-    }
-
-    
-    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        JsFormatter JsFormatter = getFormatter(preferences);
-        String BEGIN = "%<%"; // NOI18N
-        int startPos = source.indexOf(BEGIN);
-        if (startPos != -1) {
-            source = source.substring(0, startPos) + source.substring(startPos+BEGIN.length());
-        } else {
-            startPos = 0;
-        }
-        
-        String END = "%>%"; // NOI18N
-        int endPos = source.indexOf(END);
-        if (endPos != -1) {
-            source = source.substring(0, endPos) + source.substring(endPos+END.length());
-        }
-
-        BaseDocument doc = getDocument(source);
-
-        if (endPos == -1) {
-            endPos = doc.getLength();
-        }
-        
-        JsFormatter.reformat(doc, startPos, endPos, getInfoForText(source));
-
-        String formatted = doc.getText(0, doc.getLength());
-        assertEquals(reformatted, formatted);
-    }
-    
-    private void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
-        FileObject fo = getTestFile(file);
-        assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
-        assertNotNull(doc);
-        //String before = doc.getText(0, doc.getLength());
-        
-        JsFormatter formatter = getFormatter(preferences);
-
-        formatter.reformat(doc, 0, doc.getLength(), getInfo(fo));
-        String after = doc.getText(0, doc.getLength());
-        
-        assertDescriptionMatches(file, after, false, ".formatted");
-    }
-    
-    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        JsFormatter JsFormatter = getFormatter(preferences);
-
-        int sourcePos = source.indexOf('^');     
-        assertNotNull(sourcePos);
-        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-
-        int reformattedPos = reformatted.indexOf('^');        
-        assertNotNull(reformattedPos);
-        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
-        
-        BaseDocument doc = getDocument(source);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(sourcePos);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-        
-            int startPos = caret.getDot()+1;
-            int endPos = startPos;
-
-            //ParserResult result = parse(fo);
-            JsFormatter.reindent(doc, startPos, endPos);
-
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(reformatted, formatted);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
 
     // Used to test arbitrary source trees
     //public void testReformatSourceTree() {
@@ -279,7 +181,7 @@ public class JsFormatterTest extends JsTestBase {
     public void testFormat4() throws Exception {
         reformatFileContents("testfiles/orig-dojo.js.uncompressed.js",new IndentPrefs(2,2));
     }
-    
+
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
                "if (true) {\n    foo();\n}\n", null);
@@ -812,6 +714,13 @@ public class JsFormatterTest extends JsTestBase {
                 "}\n", null
                 );
     }
+
+    public void testCompressed() throws Exception {
+        format(
+                "if(true&&(/alpha/i).test()){}",
+                "if(true&&(/alpha/i).test()){}", null
+                );
+    }
     
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
@@ -981,26 +890,4 @@ public class JsFormatterTest extends JsTestBase {
 //        format("x\n",
 //               "x\n", null);
 //    }
-    
-    public class IndentPrefs {
-
-        private final int hanging;
-
-        private final int indent;
-
-        public IndentPrefs(int indent, int hanging) {
-            super();
-            this.indent = indent;
-            this.hanging = hanging;
-        }
-
-        public int getIndentation() {
-            return indent;
-        }
-
-        public int getHangingIndentation() {
-            return hanging;
-        }
-    }
-    
 }
