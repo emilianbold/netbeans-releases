@@ -172,9 +172,13 @@ public class ExecutionService {
     }
     
     public void kill() {
+        // temp logging to track down #131628
+        LOGGER.log(Level.FINE, "Killing " + this.displayName + " " + this);
         if (stopAction != null) {
+            LOGGER.log(Level.FINE, "StopAction: " + stopAction);
             stopAction.actionPerformed(null);
             if (stopAction.process != null) {
+                LOGGER.log(Level.FINE, "Destroying process: " + stopAction.process);
                 stopAction.process.destroy();
             }
         }
