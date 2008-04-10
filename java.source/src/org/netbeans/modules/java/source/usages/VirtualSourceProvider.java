@@ -44,12 +44,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
+ * This class provides a SPI used by {@link RepositoryUpdater} to generate java proxies
+ * for languages which form a single compilation unit with java files, for example groovy.
  * @author Tomas Zezula
  */
 public interface VirtualSourceProvider {
     
+    /**
+     * Returns a set of extensions supported by this {@link VirtualSourceProvider}
+     * @return a set of supported extensions
+     */
     public Set<String> getSupportedExtensions ();
 
+    /**
+     * Return a list of tuples {fully qualified name, file content} as a result of
+     * transformation of given files.
+     * @param files to be transformed
+     * @param sourceRoot containing the sources
+     * @return  result of transformation
+     */
     public List<Pair<String,CharSequence>> translate (Iterable<File> files, File sourceRoot);
 }
