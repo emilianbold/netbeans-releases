@@ -394,7 +394,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
+            throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
 
         compare(measuredTime);
 
@@ -512,7 +512,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }
 
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+            throw new RuntimeException("Exception rises during measurement, look at appropriate log file for stack trace(s).");
 
     }
 
