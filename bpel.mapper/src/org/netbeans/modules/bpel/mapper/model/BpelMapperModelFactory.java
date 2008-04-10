@@ -31,6 +31,7 @@ import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEntit
 import org.netbeans.modules.bpel.mapper.predicates.PredicateFinderVisitor;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextControllerImpl2;
 import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
@@ -344,6 +345,13 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
         ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.constructFindersList(
             form, copy, copyTo, toExpr, castList.getToCasts(), this);
+        
+        if (toNodeFinderList.isEmpty() && (currentBpelDesignContext != null)) {
+            // add warning message about wrong "toExpr"
+            DesignContextControllerImpl2.addErrMessage(
+                currentBpelDesignContext.getValidationErrMsgBuffer(), 
+                toExpr.getExpressionString(), "to");
+        }
         //
         PreprocessedGraphLocation graphLocation = 
                 new PreprocessedGraphLocation(newGraph, toNodeFinderList);

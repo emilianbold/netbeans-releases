@@ -41,7 +41,6 @@ package org.netbeans.modules.ruby.railsprojects.database;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -174,7 +173,6 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
 
                     doc.remove(0, doc.getLength());
                     String insert = null;
-                    String projectName = projectDir.getName();
                     insert =
                             "# JDBC Setup\n" +
                             "# Adjust JDBC driver URLs as necessary.\n" +
