@@ -332,14 +332,14 @@ public final class Deployment {
      * Returns the default server instance or <code>null</code> if no default
      * instance configured.
      * <p>
-     * This method is deprecated, so do expect it will return any useful default
+     * This method is deprecated, so don't expect it will return any useful default
      * instance. Method will be removed in near future.
      *
      * @return the default server instance
      * @deprecated this API is broken by design - the client should choose the
      *             instance by usage {@link #getServerInstanceIDs} and selection
      *             of appropriate server instance. Method will be removed in
-     *             near future.
+     *             near future. See issue 83934.
      */
     public String getDefaultServerInstanceID () {
         return null;
