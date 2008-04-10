@@ -108,7 +108,8 @@ abstract class ProjectComponent implements Persistent, SelfPersistent {
 	if( p != null ) {
 	    assert p instanceof  ProjectComponent;
 	    ProjectComponent pc = (ProjectComponent) p;
-	    pc.putImpl();
+            // A workaround for #131701
+	    //pc.putImpl();
 	}
     }
 }
