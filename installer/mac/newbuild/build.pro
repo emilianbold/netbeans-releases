@@ -8,8 +8,8 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="6.1"/>
-    <property name="mpkgname" value="NetBeans IDE for PHP EA"/> 
-    <property name="appname" value="NetBeans IDE for PHP EA"/> 
+    <property name="mpkgname" value="NetBeans for PHP EA"/> 
+    <property name="appname" value="NetBeans for PHP EA"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.1"/>
 
