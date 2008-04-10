@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,18 +40,27 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
-    <name>junit_4</name>
-    <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.junit.Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/junit-4.1.jar!/</resource>
-    </volume>
-    <volume>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/junit/junit/4.1/junit-4.1.pom</resource>
-    </volume>
-</library>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.libs.junit4</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <package>junit.extensions</package>
+                <package>junit.framework</package>
+                <package>junit.runner</package>
+                <package>junit.textui</package>
+                <package>org.junit</package>
+                <package>org.junit.runner</package>
+                <package>org.junit.runner.manipulation</package>
+                <package>org.junit.runner.notification</package>
+                <package>org.junit.runners</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/junit-4.1.jar</runtime-relative-path>
+                <binary-origin>external/junit-4.1.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
