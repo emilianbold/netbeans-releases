@@ -44,6 +44,8 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestResult;
@@ -77,15 +79,22 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
 
     @Override
     public void setUp() throws Exception {
-        root = FileUtil.toFileObject(getWorkDir());
+        clearWorkDir();
+        
+        File r = new File(getWorkDir(), "dir");
+        r.mkdirs();
+        root = FileUtil.toFileObject(r);
         assertNotNull("Cannot find dir for " + getWorkDir() + " exists: " + getWorkDir().exists(), root);
 
+        int extPos = getName().indexOf("Ext");
+        String ext = getName().substring(extPos + 3);
+
         for (int i = 0; i < 1000; i++) {
-            new File(getWorkDir(), "empty" + i + ".java").createNewFile();
+            new File(r, "empty" + i + "." + ext).createNewFile();
         }
     }
     
-    public void testGetNodesForAFolder() throws Exception {
+    public void testGetNodesForAFolderExtjava() throws Exception {
         CountingSecurityManager.initialize(getWorkDirPath());
         long now = System.currentTimeMillis();
         DataFolder f = DataFolder.findFolder(root);
@@ -94,7 +103,19 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        len = CountingSecurityManager.assertCounts("About 1000?", 1000);
+        len = CountingSecurityManager.assertCounts("About 1000 * 5?", 5000);
+    }
+
+    public void testGetNodesForAFolderExtxml() throws Exception {
+        CountingSecurityManager.initialize(getWorkDirPath());
+        long now = System.currentTimeMillis();
+        DataFolder f = DataFolder.findFolder(root);
+        Node n = f.getNodeDelegate();
+        Node[] arr = n.getChildren().getNodes(true);
+        
+        assertEquals("1000 nodes", 1000, arr.length);
+        
+        len = CountingSecurityManager.assertCounts("About 1000 * 15?", 15000);
     }
 
     public Long call() throws Exception {

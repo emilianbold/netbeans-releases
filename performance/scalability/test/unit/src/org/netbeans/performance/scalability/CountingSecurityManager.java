@@ -43,6 +43,8 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Permission;
+import java.util.HashMap;
+import java.util.Map;
 import junit.framework.Assert;
 
 /**
@@ -74,10 +76,14 @@ public final class CountingSecurityManager extends SecurityManager {
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
         CountingSecurityManager.prefix = prefix;
+        Statistics.reset();
     }
     
     public static int assertCounts(String msg, int expectedCnt) {
         int real = cnt;
+        msgs = new StringWriter();
+        pw = new PrintWriter(msgs);
+        Statistics.getDefault().print(pw);
         if (cnt < expectedCnt / 10) {
             throw new AssertionError("Too small expectations:\n" + msg + "\n" + msgs + " exp: " + expectedCnt + " was: " + cnt);
         }
@@ -87,6 +93,7 @@ public final class CountingSecurityManager extends SecurityManager {
         cnt = 0;
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
+        Statistics.getDefault().print(pw);
         return real;
     }
 
@@ -94,6 +101,7 @@ public final class CountingSecurityManager extends SecurityManager {
     public void checkRead(String file) {
         if (file.startsWith(prefix)) {
             cnt++;
+            Statistics.fileIsDirectory(file);
 //            pw.println("checkRead: " + file);
 //            new Exception().printStackTrace(pw);
         }
@@ -103,6 +111,7 @@ public final class CountingSecurityManager extends SecurityManager {
     public void checkRead(String file, Object context) {
         if (file.startsWith(prefix)) {
             cnt++;
+            Statistics.fileIsDirectory(file);
             pw.println("checkRead2: " + file);
         }
     }
@@ -117,6 +126,7 @@ public final class CountingSecurityManager extends SecurityManager {
     public void checkWrite(String file) {
         if (file.startsWith(prefix)) {
             cnt++;
+            Statistics.fileIsDirectory(file);
             pw.println("checkWrite: " + file);
         }
     }
@@ -144,4 +154,90 @@ public final class CountingSecurityManager extends SecurityManager {
     private static void setAllowedReplace(boolean aAllowedReplace) {
         System.setProperty("CountingSecurityManager.allowReplace", String.valueOf(aAllowedReplace));
     }
+    
+    /**
+     * Collects data and print them when JVM shutting down.
+     * 
+     * @author Pavel Flaška
+     */
+    private static class Statistics {
+
+        private static final boolean streamLog = false;
+        private static final boolean dirLog = true;
+        private static final boolean streamCreation = false;
+        /** singleton instance */
+        private static Statistics INSTANCE;
+        private static int absoluteStacks;
+        private Map<String, Integer> isDirInvoc = new HashMap<String, Integer>();
+        private Map<String, Integer> stacks = new HashMap<String, Integer>();
+
+        private Statistics() {
+        }
+
+        /**
+         * Get the class instance.
+         * 
+         * @return singleton of Statistics class.
+         */
+        static synchronized Statistics getDefault() {
+            if (INSTANCE == null) {
+                INSTANCE = new Statistics();
+            }
+            return INSTANCE;
+        }
+
+        static synchronized void reset() {
+            INSTANCE = null;
+        }
+
+        /**
+         * Counts in isDirectory() call on <tt>file</tt>.
+         * 
+         * @param file  file name
+         */
+        public static void fileIsDirectory(String file) {
+            if (!dirLog) {
+                return;
+            }
+            Integer i = Statistics.getDefault().isDirInvoc.get(file);
+            if (i == null) {
+                i = 1;
+            } else {
+                i++;
+            }
+            Statistics.getDefault().isDirInvoc.put(file, i);
+
+            ////////////////////
+            StringBuilder sb = new StringBuilder(300);
+            StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+            for (i = 2; i < ste.length; i++) {
+                sb.append(ste[i].toString()).append('\n');
+            }
+            String s = sb.toString();
+            i = Statistics.getDefault().stacks.get(s);
+            if (i == null) {
+                i = 1;
+            } else {
+                i++;
+            }
+            Statistics.getDefault().stacks.put(s, i);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        // private members
+        void print(PrintWriter out) {
+            for (String s : isDirInvoc.keySet()) {
+                out.printf("%4d", isDirInvoc.get(s));
+                out.println("; " + s);
+            }
+            for (String s : stacks.keySet()) {
+                int value = stacks.get(s);
+                absoluteStacks += value;
+                out.printf("count %5d; Stack:\n", value);
+                out.println(s);
+            }
+            out.println("Total stacks recorded: " + absoluteStacks);
+        }
+    }
+    
 }
