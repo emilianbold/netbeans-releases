@@ -456,7 +456,7 @@ public class PHPCodeCompletion implements Completable {
             
             builder.append(String.format("<font size=-1>%s</font>" +
                     "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    indexedElement.getFilenameUrl(), indexedElement.getName()));
+                    indexedElement.getFilenameUrl(), indexedElement.getDisplayName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             
