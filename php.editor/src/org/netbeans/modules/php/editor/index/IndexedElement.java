@@ -107,7 +107,8 @@ public abstract class IndexedElement extends PHPElement {
     
     // used e.g. for online docs
     public String getDisplayName(){
-        return  getModifiersString() + getName();
+        String modifiersStr = getModifiersString();
+        return  modifiersStr.length() == 0 ? getName() : modifiersStr + " " + getName(); //NOI18N
     }
     
     public String getModifiersString(){

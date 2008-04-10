@@ -217,6 +217,24 @@ public class PHPIndex {
         return classLine;
     }
     
+    public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String className, String name, NameKind kind) { 
+        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_CLASS_CONST, name, kind);
+        
+        for (String signature : signaturesMap.keySet()) {
+            String propName = extractStringValueFromIndexSignature(signature, 0);
+            int offset = extractIntValueFromIndexSignature(signature, 1);
+            
+            IndexedConstant prop = new IndexedConstant(propName, className,
+                    this, signaturesMap.get(signature), null, 0, offset);
+
+            properties.add(prop);
+
+        }
+
+        return properties;
+    }
+    
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_METHOD, name, kind);

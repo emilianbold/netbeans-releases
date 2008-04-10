@@ -250,14 +250,24 @@ public class PHPCodeCompletion implements Completable {
                 moreTokens = tokenSequence.movePrevious();
                 
                 String varName = tokenSequence.token().text().toString();
+                String typeName = null;
                 
-                Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+                if (staticContext){
+                    typeName = varName;
+                } else {
+                    Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+
+                    if (localVars != null) {
+                        for (IndexedConstant var : localVars){
+                            if (var.getName().equals(varName)){ // can be just a prefix
+                                typeName = var.getTypeName();
+                                break;
+                            }
+                        }
+                    }
+                }
                 
-                
-                if (localVars != null && localVars.size() == 1){
-                    IndexedConstant var = localVars.toArray(new IndexedConstant[1])[0];
-                    String typeName = var.getTypeName();
-                    
+                if (typeName != null){
                     Collection<IndexedFunction> methods = request.index.getAllMethods(
                             request.result, typeName, request.prefix, NameKind.PREFIX);
                     
@@ -275,6 +285,15 @@ public class PHPCodeCompletion implements Completable {
                         if (staticContext && prop.isStatic() 
                                 || !staticContext && !prop.isStatic()){
                             proposals.add(new VariableItem(prop, request));
+                        }
+                    }
+                    
+                    if (staticContext){
+                        Collection<IndexedConstant> classConstants = request.index.getClassConstants(
+                                request.result, typeName, request.prefix, NameKind.PREFIX);
+                        
+                        for (IndexedConstant constant : classConstants) {
+                            proposals.add(new VariableItem(constant, request));
                         }
                     }
                 }
