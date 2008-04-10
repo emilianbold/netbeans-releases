@@ -84,9 +84,11 @@ public class PlaceHolderManager implements DnDTool {
             placeHolders.clear();
             currentPlaceHolder = null;
             draggedPattern = null;
-            getDiagramView().repaint();
+            
             defaultPlaceholder = null;
         }
+        
+        getDiagramView().repaint();
     //getDesignView().getButtonsManager().update();
     }
 
@@ -112,8 +114,8 @@ public class PlaceHolderManager implements DnDTool {
         this.draggedPattern = draggedPattern;
         this.defaultPlaceholder = null;
         createPlaceHolders();
-       
-    //FIXME getDesignView().getButtonsManager().clear();
+        getDiagramView().repaint();
+   
     }
 
     private boolean canContainCompensate(Pattern pattern) {
