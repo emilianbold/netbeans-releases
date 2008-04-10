@@ -12,6 +12,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 final class GrailsRuntimePanel extends javax.swing.JPanel {
 
@@ -26,7 +27,13 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
     }
     
     boolean checkForGrailsExecutable ( File pathToGrails ) {
-        return new File (new File (pathToGrails, "bin"), "grails").isFile ();
+        String GRAILS_BINARY = "grails";
+        
+        if(Utilities.isWindows()){
+            GRAILS_BINARY = "grails.bat";
+        }
+        
+        return new File (new File (pathToGrails, "bin"), GRAILS_BINARY).isFile ();
         }
     
     void displayGrailsHomeWarning() {
