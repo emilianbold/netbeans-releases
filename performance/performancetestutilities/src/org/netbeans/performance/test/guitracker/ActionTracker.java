@@ -627,7 +627,7 @@ public class ActionTracker {
             // For each Event
             for (Tuple t : eventList) {
                 // log only if it isn't the same
-                if(!t.equals(previous)){
+                if (t != null && !t.equals(previous)) {
                     Element eventElement = doc.createElement(TN_EVENT);
                     evlistElement.appendChild(eventElement);
                     eventElement.setAttribute(ATTR_TYPE, t.getCodeName());
@@ -832,7 +832,10 @@ public class ActionTracker {
                     startNewEventList("ad hoc");
                 }
             }
-            return super.add(o);
+            if (o == null) {
+                return false;
+            }
+            return super.add(o);            
         }
         
         /**
