@@ -146,6 +146,10 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         return addRoots(convertURLsToURIs(classPathRoots), sourceGroup, type);
     }
     
+    public boolean addRoots (URL[] classPathRoots, String classPathProperty) throws IOException, UnsupportedOperationException {
+        return handleRoots(convertURLsToURIs(classPathRoots), classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
+    }
+    
     @Override
     protected boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
         return addRoots(classPathRoots, sourceGroup, type, ADD);
