@@ -46,7 +46,6 @@ import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import java.io.StringReader;
 
-import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -55,7 +54,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
