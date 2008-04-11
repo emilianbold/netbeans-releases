@@ -44,7 +44,6 @@ package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
 import java.io.InputStream;
-import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ProjectUtils;
@@ -424,7 +423,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
         panel.getAttrNameTF().getDocument().addDocumentListener(docListener);
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(editDialog);
         d.getAccessibleContext().setAccessibleDescription(editDialog.getDialogPanel().getAccessibleContext().getAccessibleDescription());
-        d.show();
+        d.setVisible(true);
         panel.getAttrNameTF().getDocument().removeDocumentListener(docListener);
         
         if (editDialog.getValue().equals(EditDialog.OK_OPTION)) {
@@ -549,7 +548,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
 
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(editDialog);
         d.getAccessibleContext().setAccessibleDescription(editDialog.getDialogPanel().getAccessibleContext().getAccessibleDescription());
-        d.show();
+        d.setVisible(true);
         panel.getAttrNameTF().getDocument().removeDocumentListener(docListener);
         if (editDialog.getValue().equals(EditDialog.OK_OPTION)) {
             tableModel.setData(panel.getAttrName(),panel.getAttrType(),panel.isRequired(),panel.isRtexpr(),row);
