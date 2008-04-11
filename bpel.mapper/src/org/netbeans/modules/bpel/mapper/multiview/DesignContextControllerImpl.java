@@ -241,8 +241,8 @@ public class DesignContextControllerImpl implements DesignContextController {
             // No need to resubscribe to another BPEL model here 
             // because of the same design context.
             //
-            MapperModel newMapperModel = new BpelMapperModelFactory().
-                    constructModel(mMapperTcContext, mContext);
+            MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
+                mContext).constructModel();
             //
             // Save left tree state
             TreeExpandedState leftTreeState = null;
@@ -292,8 +292,8 @@ public class DesignContextControllerImpl implements DesignContextController {
                     setListenBpelModel(newContext.getBpelModel(), true);
                 }
                 //
-                MapperModel newMapperModel = new BpelMapperModelFactory().
-                        constructModel(mMapperTcContext, newContext);
+                MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
+                    newContext).constructModel();
                 //
                 mContext = newContext;
                 setMapperModel(newMapperModel);
