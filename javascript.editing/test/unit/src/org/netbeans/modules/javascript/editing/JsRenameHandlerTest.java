@@ -28,13 +28,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  *
@@ -51,35 +45,71 @@ public class JsRenameHandlerTest extends JsTestBase {
         return new JsRenameHandler();
     }
 
-    public void testRename1() throws Exception {
-        checkRenameSections("testfiles/rename.js", "x^xx");
+//    public void testRename1() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "x^xx");
+//    }
+//
+//    public void testRename2() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "function a^aa() {");
+//    }
+//
+//    public void testRename3() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "var y^yy");
+//    }
+//
+//    public void testRename4() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "b^bb:");
+//    }
+//
+//    public void testRename5() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "function(p^pp)");
+//    }
+//
+//    public void testRename6() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "alert(p^pp)");
+//    }
+//
+//    public void testRename7() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "al^ert(ppp)");
+//    }
+//    
+//    public void testRename8() throws Exception {
+//        checkRenameSections("testfiles/rename.js", "funct^ion");
+//    }
+    
+    public void testRename9a() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "function(dom^Node, props");
     }
 
-    public void testRename2() throws Exception {
-        checkRenameSections("testfiles/rename.js", "function a^aa() {");
+    public void testRename9b() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "@param {Node} dom^Node The DOM node");
     }
 
-    public void testRename3() throws Exception {
-        checkRenameSections("testfiles/rename.js", "var y^yy");
+    public void testRename9c() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "if (dom^Node == null || props == null) {");
     }
 
-    public void testRename4() throws Exception {
-        checkRenameSections("testfiles/rename.js", "b^bb:");
+    public void testRename10() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "function(domNode, pro^ps");
     }
 
-    public void testRename5() throws Exception {
-        checkRenameSections("testfiles/rename.js", "function(p^pp)");
-    }
-
-    public void testRename6() throws Exception {
-        checkRenameSections("testfiles/rename.js", "alert(p^pp)");
-    }
-
-    public void testRename7() throws Exception {
-        checkRenameSections("testfiles/rename.js", "al^ert(ppp)");
+    public void testRename11a() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "third^param)");
     }
     
-    public void testRename8() throws Exception {
-        checkRenameSections("testfiles/rename.js", "funct^ion");
+    public void testRename11b() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "{Object}  third^param");
+    }
+
+    public void testRename12() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "@param f^oo");
+    }
+
+    public void testRename13() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "* n^ew @param");
+    }
+
+    public void testRename14() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", " @param test^param");
     }
 }

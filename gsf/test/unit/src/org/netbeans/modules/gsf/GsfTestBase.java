@@ -1081,11 +1081,15 @@ public abstract class GsfTestBase extends NbTestCase {
         }
 
         String annotatedSource;
-        if (handler.isRenameAllowed(info, caretOffset, null)) {
+        String[] desc = new String[1];
+        if (handler.isRenameAllowed(info, caretOffset, desc)) {
             Set<OffsetRange> renameRegions = handler.getRenameRegions(info, caretOffset);
             annotatedSource = annotateRenameRegions(info.getDocument(), renameRegions);
         } else {
             annotatedSource = "Refactoring not allowed here\n";
+            if (desc != null) {
+                annotatedSource += desc + "\n";
+            }
         }
 
         assertDescriptionMatches(relFilePath, annotatedSource, true, ".rename");
