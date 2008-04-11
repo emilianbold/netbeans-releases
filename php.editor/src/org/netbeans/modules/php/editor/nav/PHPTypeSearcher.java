@@ -78,9 +78,10 @@ public class PHPTypeSearcher implements TypeSearcher {
             return Collections.emptySet();
         }
         
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
-            textForQuery = textForQuery.toLowerCase();
-        }
+        //#132529: consider after this is solved:
+//        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
+//            textForQuery = textForQuery.toLowerCase();
+//        }
         
         int doubleColon = textForQuery.indexOf("::");
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
