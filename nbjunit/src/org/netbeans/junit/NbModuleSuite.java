@@ -59,6 +59,7 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 /**
@@ -148,7 +149,8 @@ public class NbModuleSuite {
             
             // loader that does not see our current classloader
             ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
-            URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), parent);
+            JUnitLoader junit = new JUnitLoader(parent, NbModuleSuite.class.getClassLoader());
+            URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), junit);
             Class<?> main = loader.loadClass("org.netbeans.Main"); // NOI18N
             Assert.assertEquals("Loaded by our classloader", loader, main.getClassLoader());
             Method m = main.getDeclaredMethod("main", String[].class); // NOI18N
@@ -193,12 +195,17 @@ public class NbModuleSuite {
             Assert.assertNotNull("Global classloader is initialized", global);
 
             URL[] testCP = preparePath(clazz);
-            JUnitLoader testLoader = new JUnitLoader(testCP, global, NbTestSuite.class.getClassLoader());
+            ClassLoader testLoader = new URLClassLoader(testCP, global);
             try {
                 testLoader.loadClass("junit.framework.Test");
-                Class<?> sndClazz = testLoader.loadClass(clazz.getName());
+                testLoader.loadClass("org.netbeans.junit.NbTestSuite");
+                testLoader.loadClass("org.netbeans.jellytools.JellyTestCase");
+                @SuppressWarnings("unchecked")
+                Class<? extends TestCase> sndClazz = (Class<? extends TestCase>) testLoader.loadClass(clazz.getName());
                 new NbTestSuite(sndClazz).run(result);
             } catch (ClassNotFoundException ex) {
+                result.addError(this, ex);
+            } catch (NoClassDefFoundError ex) {
                 result.addError(this, ex);
             }
             
@@ -295,11 +302,11 @@ public class NbModuleSuite {
             return new String(arr, "UTF-8"); // NOI18N
         }
 
-        private static final class JUnitLoader extends URLClassLoader {
+        private static final class JUnitLoader extends ClassLoader {
             private final ClassLoader junit;
 
-            public JUnitLoader(URL[] urls, ClassLoader parent, ClassLoader junit) {
-                super(urls, parent);
+            public JUnitLoader(ClassLoader parent, ClassLoader junit) {
+                super(parent);
                 this.junit = junit;
             }
 
