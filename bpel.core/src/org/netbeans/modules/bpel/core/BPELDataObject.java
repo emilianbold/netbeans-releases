@@ -82,10 +82,9 @@ public class BPELDataObject extends MultiDataObject {
         
         InputSource in = DataObjectAdapters.inputSource(this);
         set.add(new CheckXMLSupport(in));
-        // add TransformableCookie
+
         Source source = DataObjectAdapters.source (this);
         set.add (new TransformableSupport (source));
-        //set.add(new ValidateXMLSupport(in));
         set.add(new AnnotationManagerProvider(this));
     }
  
@@ -156,17 +155,10 @@ public class BPELDataObject extends MultiDataObject {
             list.add(Lookups.fixed( new Object[]{
                     super.getLookup(), 
                     this ,
-                    // getEditorSupport() is needed for retrieving Editor Support.
-                    // This lookup will be put into Design Nodes, so they will have the same lookup. 
                     getEditorSupport(),
-                    // Model is needed by all design. Design is used lookup for accessing to model.
-////                    getEditorSupport().getBpelModel(),
-                    // Helper is also needed by design. It used in property editors.
                     new BusinessProcessHelperImpl(this),
                     XmlFileEncodingQueryImpl.singleton()
-                    // Add Validation Controller.
-////                    new BPELValidationController(getEditorSupport().getBpelModel())
-                    }));
+                  }));
 
             list.add(getCookieSet().getLookup());// 125540
             
@@ -201,20 +193,7 @@ public class BPELDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            
-            list.add(Lookups.fixed(
-                    new Class[] {BpelModel.class, BPELValidationController.class}
-                    , conv));
-            //
-                    
-            /* 
-             * Services are used for push/pop SaveCookie in lookup. This allow to work
-             * "Save" action on diagram.
-             */ 
-//            myServices.compareAndSet( null, new InstanceContent() );
-//            myServices.get().add( new Empty() );                      // FIX for #IZ78702
-//            list.add(new AbstractLookup(myServices.get()));
-
+            list.add(Lookups.fixed(new Class[] {BpelModel.class, BPELValidationController.class}, conv));
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);
@@ -232,12 +211,7 @@ public class BPELDataObject extends MultiDataObject {
         public BPELNode( BPELDataObject obj, BPELDataEditorSupport support ) {
             super( obj , Children.LEAF );
             myEditorSupport = support;  
-            
-            /* 
-             * recomendation from javadoc for createNodeDelegate() that
-             * getCookie(DataObject.class) for this class should return obj. 
-             */ 
-            getCookieSet().add( obj );
+            getCookieSet().add(obj);
             
             setIconBaseWithExtension( ICON_BASE );
             setShortDescription(NbBundle.getMessage( getClass(), FILE_DESC ));
@@ -271,9 +245,6 @@ public class BPELDataObject extends MultiDataObject {
             return false; // TODO - hook in to dataobject
         }
 
-        /**
-         * to pick up change in warn/error condition call fireIconChange()
-         */
         public Image getIcon(int type) {
             if(!isWarning() && !isError())
                 return super.getIcon(type);
@@ -303,14 +274,7 @@ public class BPELDataObject extends MultiDataObject {
         private BPELDataEditorSupport myEditorSupport;
     }
 
-//    private static class Empty {
-//        
-//    }
-    
     private transient BPELDataEditorSupport myEditorSupport;
-    private transient AtomicReference<Lookup> myLookup = 
-        new AtomicReference<Lookup>();
-//    private transient AtomicReference<InstanceContent> myServices = 
-//        new AtomicReference<InstanceContent>();
+    private transient AtomicReference<Lookup> myLookup = new AtomicReference<Lookup>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
 }

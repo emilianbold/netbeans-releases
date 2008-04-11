@@ -71,39 +71,32 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- * 
- * TODO add ValidateXMLCookie when becomes friend ...
  */
 public class XSLTDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie,
-        UndoRedoManagerProvider
-{
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, UndoRedoManagerProvider {
     
     public XSLTDataEditorSupport(XSLTDataObject dObj) {
         super(dObj, new XSLTEnv(dObj));
         setMIMEType(XSLTDataLoader.MIME_TYPE);
     }
 
-    // vlv
     public UndoRedo.Manager getUndoRedoManager() {
       return getUndoManager();
     }
 
-    /** {@inheritDoc} */
     public void saveDocument() throws IOException {
         super.saveDocument();
         syncModel();
         getDataObject().setModified(false);
     }
-    
-    /**
-     * Sync Xsl model with source.
-     */
+
     public void syncModel() {
         try {
             XslModel model = getXslModel();
@@ -113,7 +106,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         }
         catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            // assert false;
         }
     }
 
@@ -121,13 +113,9 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         return (QuietUndoManager) getUndoRedo();
     }
 
-    /**
-     * @return Xsl Model for this editor.
-     */
     public XslModel getXslModel() {
         XSLTDataObject dataObject = getEnv().getXsltDataObject();
-        ModelSource modelSource = Utilities.getModelSource(dataObject
-                .getPrimaryFile(), true);
+        ModelSource modelSource = Utilities.getModelSource(dataObject.getPrimaryFile(), true);
         return getModelFactory().getModel(modelSource);
     }
 
@@ -275,11 +263,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         return associatedTCs;
     }
 
-    public boolean validateXML(CookieObserver observer) {
-        // TODO a
-        return true;
-    }
-    
     protected CloneableEditorSupport.Pane createPane() {
         TopComponent multiview = XsltMultiViewSupport
                 .createMultiView((XSLTDataObject) getDataObject());
@@ -303,23 +286,20 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                 undo.endCompound();
                 undo.setDocument(null);
             }
-
             XslModel model = getXslModel();
+
             if (model != null) {
                 model.removeUndoableEditListener(undo);
+                model.removeComponentListener(myComponentListener);
             }
             // Must unset the model when no longer listening to it.
             undo.setModel(null);
-
         }
         super.notifyClosed();
         getUndoManager().discardAllEdits();
 
         // all editors are closed so we don't need to keep this task.
         prepareTask = null;
-
-//        getValidationController().detach();
-    
     }
     
     /*
@@ -513,18 +493,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                 }
             });
 //        }
-
-        // TODO a
-//        /*
-//         *  I put this code here because it is called each time when
-//         *  editor is opened. This can happened omn first open,
-//         *  on reopen, on deserialization.
-//         *  CTOR of BPELDataEditorSupport is called only once due lifecycle 
-//         *  data object, so it cannot be used on attach after reopening.
-//         *  Method "open" doesn't called after deser-ion.
-//         *  But this method is called always on editor opening. 
-//         */ 
-//        getValidationController().attach();
     }
     
    @Override
@@ -644,6 +612,11 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
             // Ensure the listener is not added twice.
             removeUndoManagerFromModel();
             model.addUndoableEditListener(undo);
+//out();
+//out("!!!!! add comp listener");
+//out();
+            // vlv
+            model.addComponentListener(myComponentListener);
             /* Ensure the model is sync'd when undo/redo is invoked,
              * otherwise the edits are added to the queue and eventually
              * cause exceptions.
@@ -746,15 +719,12 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         return super.close(false);
     }
     
-/** 
- * Handles closing of the MultiView component globally. Each opened {@link org.netbeans.core.spi.multiview.MultiViewElement}
- * creates a {@link org.netbeans.core.spi.multiview.CloseOperationState} instance to notify the environment of it's internal state.
- *
- */
-    public static class CloseHandler implements CloseOperationHandler,
-            Serializable 
-    {
-        
+    /** 
+     * Handles closing of the MultiView component globally. Each opened {@link org.netbeans.core.spi.multiview.MultiViewElement}
+     * creates a {@link org.netbeans.core.spi.multiview.CloseOperationState} instance to notify the environment of it's internal state.
+     *
+     */
+    public static class CloseHandler implements CloseOperationHandler, Serializable {
         private static final long serialVersionUID = -4621077799099893176L;
         
         private CloseHandler() {
@@ -783,7 +753,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                         support.reloadDocument().waitFinished();
 //                    }
                 }
-                
                 myDataObject.setModified(false); // Issue 85629
             }
             return close;
@@ -792,9 +761,21 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         private XSLTDataObject myDataObject;
     }
 
+    // --------------------------------------------------------------------
+    private static class MyComponentListener implements ComponentListener {
+      public void valueChanged(ComponentEvent event) {
+//out("CHANGED");
+      }
+      
+      public void childrenAdded(ComponentEvent event) {
+//out("ADDED");
+      }
+      
+      public void childrenDeleted(ComponentEvent event) {
+//out("DELETED");
+      }
+    }
 
-    /** Used for managing the prepareTask listener. */
     private transient Task prepareTask;
-
-    private ValidationAnnotation myAnnotation = new ValidationAnnotation();
+    private ComponentListener myComponentListener = new MyComponentListener();
 }
