@@ -65,7 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  */
 public class SessionId {    
-    private static final String PREFIX      = "netbeans-dbg-";         // NOI18N    
+    private static final String PREFIX      = "netbeans-xdebug";         // NOI18N    
     private static final String SLASH       = "/";                     // NOI18N    
     private static final String BACK_SLASH  = "\\";                    // NOI18N           
         
@@ -74,7 +74,7 @@ public class SessionId {
     
     
     public SessionId( FileObject fileObject ) {
-        myId = PREFIX + mySessionsCount;
+        myId = PREFIX;//+ mySessionsCount;
         mySessionsCount++;
         myFileObject = fileObject;
         myDebugFile = fileObject;
