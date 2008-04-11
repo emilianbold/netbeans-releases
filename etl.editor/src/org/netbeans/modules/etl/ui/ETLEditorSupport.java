@@ -369,6 +369,16 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
         }
     }
+    
+      /**
+     * This method allows the close behavior of CloneableEditorSupport to be
+     * invoked from the SourceMultiViewElement. The close method of
+     * CloneableEditorSupport at least clears the undo queue and releases the
+     * swing document.
+     */
+    public boolean silentClose() {
+        return super.close(false);
+    }
 
     /**
      * Implementation of CloseOperationHandler for multiview. Ensures both
@@ -376,13 +386,13 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
      * a reference to Schema DataObject only - to be serializable with the
      * multiview TopComponent without problems.
      */
-    public static class CloseHandler extends Object implements CloseOperationHandler, Serializable {
+    public static class CloseHandler  implements CloseOperationHandler, Serializable {
 
         private CloseHandler() {
             super();
         }
 
-        public CloseHandler(DataObject schemaDO) {
+        public CloseHandler(ETLDataObject schemaDO) {
             dataObject = schemaDO;
         }
 
@@ -396,11 +406,11 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
             if (etlEditor == null) {
                 return true;
             }
-            if (etlEditor != null) {
+          //  if (etlEditor != null) {
                 // This handles saving the document.
                 boolean close = etlEditor.canClose();
                 if (close) {
-                    /*if (dataObject.isValid()) {
+                    if (dataObject.isValid()) {
                     // In case user discarded edits, need to reload.
                     if (dataObject.isModified()) {
                     // In case user discarded edits, need to reload.
@@ -410,15 +420,15 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                     etlEditor.syncModel();
                     // Need to properly close the support, too.
                     etlEditor.notifyClosed();
-                    }*/
-                    //dataObject.setModified(false);
+                    }
+                    dataObject.setModified(false);
                 }
                 return close;
-            }
-            return true;
+           // }
+          //  return true;
         }
         private static final long serialVersionUID = -3838395157610633251L;
-        private DataObject dataObject;
+        private ETLDataObject dataObject;
     }
 
     /*public static String getPath() {
