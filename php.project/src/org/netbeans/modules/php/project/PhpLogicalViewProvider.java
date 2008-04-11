@@ -59,6 +59,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
@@ -910,7 +911,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          */
         public boolean acceptDataObject(DataObject object) {
                 return     isNotTemporaryFile(object)
-                        && isNotProjectFile(object);
+                        && isNotProjectFile(object)
+                        && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
         }
 
         private boolean isNotProjectFile(DataObject object){

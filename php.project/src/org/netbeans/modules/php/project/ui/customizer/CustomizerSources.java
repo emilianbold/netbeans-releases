@@ -180,7 +180,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         category.setValid(true);
 
         // sources
-        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true); // NOI18N
+        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true, // NOI18N
+                true);
         if (err != null) {
             category.setErrorMessage(err);
             category.setValid(false);
@@ -192,7 +193,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
-            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true); // NOI18N
+            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true, true); // NOI18N
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -305,29 +306,26 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectFolderLabel)
+                    .add(sourceFolderLabel)
+                    .add(urlLabel)
+                    .add(indexFileLabel)
+                    .add(encodingLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
+                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(projectFolderLabel)
+                        .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(sourceFolderLabel)
-                            .add(urlLabel)
-                            .add(indexFileLabel)
-                            .add(encodingLabel))
-                        .add(13, 13, 13)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
-                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(localServerButton))
-                            .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
+                        .add(localServerButton))
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
