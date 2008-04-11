@@ -122,11 +122,9 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
   }
 
   @Override
-  public void notifyEvent(ChangeEvent changeEvent) {
-    if (State.VALID.equals(myBpelModel.getState())){
-      if (event.isLastInAtomic()) {
-        startValidation();
-      }
+  public void notifyEvent(ChangeEvent event) {
+    if (State.VALID.equals(myBpelModel.getState()) && event.isLastInAtomic()) {
+      startValidation();
     }
   }
 
