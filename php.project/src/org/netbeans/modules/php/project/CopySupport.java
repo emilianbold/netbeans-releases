@@ -335,8 +335,8 @@ public abstract class CopySupport {
 	}
         
         private synchronized void prepareInitCopy() {
-            SourceTargetPair<FileObject, File> forInit = SourceTargetPair.forInit(config);
-            prepareOperation(forInit);
+            //SourceTargetPair<FileObject, File> forInit = SourceTargetPair.forInit(config);
+            //prepareOperation(forInit);
             final FileObject targetRoot = getTargetRoot();
             File target = FileUtil.toFile(targetRoot);
             if (target != null) {
