@@ -120,8 +120,8 @@
                   </Group>
                   <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jButtonWorkingDirectoryBrowse" min="-2" max="-2" attributes="0"/>
                       <Component id="jButtonMainClass" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonWorkingDirectoryBrowse" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -131,7 +131,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabelMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jButtonWorkingDirectoryBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jTextFieldMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -142,7 +142,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabelWorkingDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jButtonMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonWorkingDirectoryBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jTextWorkingDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
