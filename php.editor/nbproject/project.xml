@@ -202,6 +202,14 @@
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.plain.lib</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                         <recursive/>
                         <compile-dependency/>

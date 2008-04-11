@@ -694,7 +694,9 @@ public class SemiAttribute extends DefaultVisitor {
     
     private static final class Stop extends Error {}
     
-    public static class AttributedType {
+    public static abstract class AttributedType {
+        
+        public abstract String getTypeName();
         
     }
     
@@ -708,6 +710,11 @@ public class SemiAttribute extends DefaultVisitor {
 
         public ClassElement getElement() {
             return element;
+        }
+
+        @Override
+        public String getTypeName() {
+            return getElement().getName();
         }
         
     }
