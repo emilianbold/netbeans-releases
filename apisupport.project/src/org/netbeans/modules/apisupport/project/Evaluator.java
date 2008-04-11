@@ -385,7 +385,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
 
-            Map<String,TestClasspath> testsCPs = computeTestingClassPaths(ml, baseEval);
+            Map<String,TestClasspath> testsCPs = computeTestingClassPaths(ml, baseEval, testTypes);
             testTypes.addAll(testsCPs.keySet());
             for (String testType : testTypes) {
                 buildDefaults.put("test." + testType + ".cp.extra", ""); // NOI18N
@@ -601,7 +601,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      * to the {@link TestClasspath test classpath} according to the content in
      * the project's metadata (<em>project.xml<em>).
      */
-    private Map<String,TestClasspath> computeTestingClassPaths(ModuleList ml, PropertyEvaluator evaluator) {
+    private Map<String,TestClasspath> computeTestingClassPaths(ModuleList ml, PropertyEvaluator evaluator, Set<String> extraTestTypes) {
         Map<String, TestClasspath> classpaths = new HashMap<String,TestClasspath>();
         ProjectXMLManager pxm = new ProjectXMLManager(project);
         Map<String, Set<TestModuleDependency>> testDependencies = pxm.getTestDependencies(ml);
@@ -626,6 +626,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         for (Map.Entry<String,Set<TestModuleDependency>> entry : testDependencies.entrySet()) {
             computeTestType(entry.getKey(), new File(testDistDir), entry.getValue(), classpaths, ml);
+        }
+        for (String testType : extraTestTypes) {
+            if (!testDependencies.containsKey(testType)) {
+                // No declared dependencies of this type, so will definitely need to add in compatibility libraries.
+                computeTestType(testType, new File(testDistDir), Collections.<TestModuleDependency>emptySet(), classpaths, ml);
+            }
         }
         return classpaths;
     }
