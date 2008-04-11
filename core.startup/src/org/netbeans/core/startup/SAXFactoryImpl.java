@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -58,7 +59,16 @@ import org.xml.sax.SAXNotSupportedException;
  * @author Petr Nejedly
  */
 public class SAXFactoryImpl extends SAXParserFactory {
-    private static Class first;
+
+    private static Class getFirst() {
+        try {
+            String name = System.getProperty("nb.backup." + SAXParserFactory_PROP); // NOI18N
+            return name == null ? null : Class.forName(name);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
     
     private Map<String,Boolean> features = new HashMap<String,Boolean>();
     
@@ -72,13 +82,15 @@ public class SAXFactoryImpl extends SAXParserFactory {
     }
 
     static {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        // Not app class loader. only ext and bootstrap
-        try {
-           Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
-           first = SAXParserFactory.newInstance().getClass();
-        } finally {
-           Thread.currentThread().setContextClassLoader(orig);            
+        if (getFirst() == null) {
+            ClassLoader orig = Thread.currentThread().getContextClassLoader();
+            // Not app class loader. only ext and bootstrap
+            try {
+               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+               System.setProperty("nb.backup." + SAXParserFactory_PROP,SAXParserFactory.newInstance().getClass().getName()); // NOI18N
+            } finally {
+               Thread.currentThread().setContextClassLoader(orig);            
+            }
         }
         DOMFactoryImpl.install();
         SAXFactoryImpl.install();
@@ -99,7 +111,7 @@ public class SAXFactoryImpl extends SAXParserFactory {
     }
 
     private SAXParser tryCreate() throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        for (Iterator it = new LazyIterator(first, SAXParserFactory.class, SAXFactoryImpl.class); it.hasNext(); ) {
+        for (Iterator it = new LazyIterator(getFirst(), SAXParserFactory.class, SAXFactoryImpl.class); it.hasNext(); ) {
             try {
                 SAXParser parser = tryCreate((Class)it.next());
                 return parser;
