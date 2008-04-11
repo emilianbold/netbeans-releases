@@ -491,16 +491,12 @@ out();
 
     public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-        // Force the title to update so the * left over from when the
-        // modified data object was discarded is removed from the title.
-//        if (!getEnv().getXsltDataObject().isModified()) {
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    updateTitles();
-                }
-            });
-//        }
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                updateTitles();
+            }
+        });
     }
     
    @Override

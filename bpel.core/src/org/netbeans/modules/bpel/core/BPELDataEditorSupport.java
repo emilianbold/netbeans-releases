@@ -127,42 +127,18 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 model.sync();
             }
         }
-        catch (IOException e) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            // assert false;
-        }
+        catch (IOException e) {}
     }
 
-    /**
-     * Public accessor for the <code>initializeCloneableEditor()</code>
-     * method.
-     * {@inheritDoc} 
-     */
     @Override
-    public void initializeCloneableEditor( CloneableEditor editor )
-    {
+    public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-        // Force the title to update so the * left over from when the
-        // modified data object was discarded is removed from the title.
-//        if (!getEnv().getBpelDataObject().isModified()) {
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
-                    updateTitles();
-                }
-            });
-//        }
-
-        /*
-         *  I put this code here because it is called each time when
-         *  editor is opened. This can happened omn first open,
-         *  on reopen, on deserialization.
-         *  CTOR of BPELDataEditorSupport is called only once due lifecycle 
-         *  data object, so it cannot be used on attach after reopening.
-         *  Method "open" doesn't called after deser-ion.
-         *  But this method is called always on editor opening. 
-         */ 
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                updateTitles();
+            }
+        });
         getValidationController().attach();
     }
 
@@ -504,10 +480,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         }
         super.notifyClosed();
         getUndoManager().discardAllEdits();
-
-        // all editors are closed so we don't need to keep this task.
         prepareTask = null;
-
         getValidationController().detach();
     }
 
