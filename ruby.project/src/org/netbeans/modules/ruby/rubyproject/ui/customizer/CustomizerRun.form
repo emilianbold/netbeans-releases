@@ -97,7 +97,7 @@
                       <Component id="jrubyPropsLabel" max="32767" attributes="1"/>
                       <Component id="jLabelWorkingDirectory" alignment="0" pref="116" max="32767" attributes="1"/>
                       <Component id="rakeLabel" alignment="0" pref="116" max="32767" attributes="1"/>
-                      <Component id="jLabelVMOptions" alignment="0" max="32767" attributes="1"/>
+                      <Component id="rubyOptionsLabel" alignment="0" max="32767" attributes="1"/>
                       <Component id="jLabelArgs" alignment="0" max="32767" attributes="1"/>
                       <Component id="jLabelMainClass" alignment="0" max="32767" attributes="1"/>
                   </Group>
@@ -114,7 +114,7 @@
                           </Group>
                       </Group>
                       <Component id="jTextFieldArgs" alignment="0" pref="488" max="32767" attributes="2"/>
-                      <Component id="jTextVMOptions" alignment="0" pref="488" max="32767" attributes="2"/>
+                      <Component id="rubyOptions" alignment="0" pref="488" max="32767" attributes="2"/>
                       <Component id="jTextFieldMainClass" alignment="0" pref="488" max="32767" attributes="2"/>
                       <Component id="jTextWorkingDirectory" alignment="0" pref="488" max="32767" attributes="2"/>
                   </Group>
@@ -147,8 +147,8 @@
                   </Group>
                   <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jLabelVMOptions" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jTextVMOptions" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="rubyOptionsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="rubyOptions" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Component id="jLabelVMOptionsExample" min="-2" max="-2" attributes="0"/>
@@ -273,10 +273,10 @@
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabelVMOptions">
+        <Component class="javax.swing.JLabel" name="rubyOptionsLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="jTextVMOptions"/>
+              <ComponentRef name="rubyOptions"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="LBL_CustomizeRun_Run_VM_Options" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -286,7 +286,7 @@
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JTextField" name="jTextVMOptions">
+        <Component class="javax.swing.JTextField" name="rubyOptions">
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="CustomizerRun.jTextVMOptions.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -343,7 +343,7 @@
         <Component class="javax.swing.JLabel" name="jrubyPropsLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="jTextVMOptions"/>
+              <ComponentRef name="rubyOptions"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="CustomizerRun.jrubyPropsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

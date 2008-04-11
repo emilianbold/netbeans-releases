@@ -101,7 +101,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         data = new JTextField[] {
             jTextFieldMainClass,
             jTextFieldArgs,
-            jTextVMOptions,
+            rubyOptions,
             jTextWorkingDirectory,
             rakeTextField,
             jrubyPropsText,
@@ -109,7 +109,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         JLabel[] dataLabels = new JLabel[]{
             jLabelMainClass,
             jLabelArgs,
-            jLabelVMOptions,
+            rubyOptionsLabel,
             jLabelWorkingDirectory,
             rakeLabel,
             jrubyPropsLabel
@@ -117,10 +117,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         keys = new String[] {
             RubyProjectProperties.MAIN_CLASS,
             RubyProjectProperties.APPLICATION_ARGS,
-            RubyProjectProperties.RUN_JVM_ARGS,
+            RubyProjectProperties.RUBY_OPTIONS,
             RubyProjectProperties.RUN_WORK_DIR,
             RubyProjectProperties.RAKE_ARGS,
             RubyProjectProperties.JRUBY_PROPS
+        
         };
         assert data.length == keys.length;
         
@@ -239,8 +240,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelWorkingDirectory = new javax.swing.JLabel();
         jTextWorkingDirectory = new javax.swing.JTextField();
         jButtonWorkingDirectoryBrowse = new javax.swing.JButton();
-        jLabelVMOptions = new javax.swing.JLabel();
-        jTextVMOptions = new javax.swing.JTextField();
+        rubyOptionsLabel = new javax.swing.JLabel();
+        rubyOptions = new javax.swing.JTextField();
         jLabelVMOptionsExample = new javax.swing.JLabel();
         rakeLabel = new javax.swing.JLabel();
         rakeTextField = new javax.swing.JTextField();
@@ -276,8 +277,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        jLabelVMOptions.setLabelFor(jTextVMOptions);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options")); // NOI18N
+        rubyOptionsLabel.setLabelFor(rubyOptions);
+        org.openide.awt.Mnemonics.setLocalizedText(rubyOptionsLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
 
@@ -286,7 +287,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(rakeExampleLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
 
-        jrubyPropsLabel.setLabelFor(jTextVMOptions);
+        jrubyPropsLabel.setLabelFor(rubyOptions);
         org.openide.awt.Mnemonics.setLocalizedText(jrubyPropsLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jrubyPropsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsExample.text")); // NOI18N
@@ -300,7 +301,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(jrubyPropsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabelWorkingDirectory, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, Short.MAX_VALUE)
                     .add(rakeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
-                    .add(jLabelVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(rubyOptionsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabelArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabelMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -314,7 +315,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                             .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
                             .add(jrubyPropsText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)))
                     .add(jTextFieldArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
-                    .add(jTextVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(rubyOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
                     .add(jTextFieldMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
                     .add(jTextWorkingDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
                 .add(6, 6, 6)
@@ -340,8 +341,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(jTextWorkingDirectory, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(10, 10, 10)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelVMOptions)
-                    .add(jTextVMOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(rubyOptionsLabel)
+                    .add(rubyOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(5, 5, 5)
                 .add(jLabelVMOptionsExample)
                 .add(9, 9, 9)
@@ -367,8 +368,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle"); // NOI18N
         jTextWorkingDirectory.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_Working_Directory")); // NOI18N
         jButtonWorkingDirectoryBrowse.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_Working_Directory_Browse")); // NOI18N
-        jTextVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextVMOptions.AccessibleContext.accessibleName")); // NOI18N
-        jTextVMOptions.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_VM_Options")); // NOI18N
+        rubyOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextVMOptions.AccessibleContext.accessibleName")); // NOI18N
+        rubyOptions.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_VM_Options")); // NOI18N
         jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
         rakeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         rakeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeTextField.AccessibleContext.accessibleName")); // NOI18N
@@ -581,12 +582,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton jButtonWorkingDirectoryBrowse;
     private javax.swing.JLabel jLabelArgs;
     private javax.swing.JLabel jLabelMainClass;
-    private javax.swing.JLabel jLabelVMOptions;
     private javax.swing.JLabel jLabelVMOptionsExample;
     private javax.swing.JLabel jLabelWorkingDirectory;
     private javax.swing.JTextField jTextFieldArgs;
     private javax.swing.JTextField jTextFieldMainClass;
-    private javax.swing.JTextField jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
     private javax.swing.JLabel jrubyPropsExample;
     private javax.swing.JLabel jrubyPropsLabel;
@@ -597,6 +596,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel rakeExampleLabel;
     private javax.swing.JLabel rakeLabel;
     private javax.swing.JTextField rakeTextField;
+    private javax.swing.JTextField rubyOptions;
+    private javax.swing.JLabel rubyOptionsLabel;
     private javax.swing.JLabel rubyPlatformLabel;
     // End of variables declaration//GEN-END:variables
     

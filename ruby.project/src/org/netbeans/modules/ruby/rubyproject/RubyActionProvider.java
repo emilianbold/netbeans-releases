@@ -177,7 +177,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
     
-        String options = project.evaluator().getProperty(RubyProjectProperties.RUN_JVM_ARGS);
+        String options = project.evaluator().getProperty(RubyProjectProperties.RUBY_OPTIONS);
 
         if (options != null && options.trim().length() == 0) {
             options = null;
