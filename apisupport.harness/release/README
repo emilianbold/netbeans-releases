@@ -776,6 +776,8 @@ junit.jar, nbjunit.jar, and insanelib.jar. Not needed for netbeans.org modules.
 For external modules, may be needed if you do not have the junit and testtools
 modules installed in the target platform *or* the developing IDE, and the target
 platform is not inside a netbeans.org build tree (in nbbuild/netbeans).
+DEPRECATED as of 6.5; even basic libraries should instead be declared as regular
+test dependencies (they are now included in the harness cluster).
 
 test.unit.src.dir - "test/unit/src"; avoid overriding.
 
