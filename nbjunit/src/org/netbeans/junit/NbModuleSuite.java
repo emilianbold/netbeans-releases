@@ -199,7 +199,7 @@ public class NbModuleSuite {
             try {
                 testLoader.loadClass("junit.framework.Test");
                 testLoader.loadClass("org.netbeans.junit.NbTestSuite");
-                testLoader.loadClass("org.netbeans.jellytools.JellyTestCase");
+                //testLoader.loadClass("org.netbeans.jellytools.JellyTestCase");
                 @SuppressWarnings("unchecked")
                 Class<? extends TestCase> sndClazz = (Class<? extends TestCase>) testLoader.loadClass(clazz.getName());
                 new NbTestSuite(sndClazz).run(result);

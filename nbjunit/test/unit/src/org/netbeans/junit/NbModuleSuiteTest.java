@@ -76,9 +76,10 @@ public class NbModuleSuiteTest extends TestCase {
     public void testModulesForCL() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(ClassLoader.getSystemClassLoader());
         s.remove("org.netbeans.modules.nbjunit");
-        assertEquals("Two modules left: " + s, 2, s.size());
+        assertEquals("Two modules left: " + s, 3, s.size());
         
         assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("junit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
     
@@ -106,9 +107,10 @@ public class NbModuleSuiteTest extends TestCase {
     public void testModulesForMe() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(getClass().getClassLoader());
         s.remove("org.netbeans.modules.nbjunit");
-        assertEquals("Two modules left: " + s, 2, s.size());
+        assertEquals("Two modules left: " + s, 3, s.size());
         
         assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
     
