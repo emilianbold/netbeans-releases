@@ -39,9 +39,13 @@
 
 package org.netbeans.junit;
 
+import java.lang.reflect.Field;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import org.netbeans.insane.impl.InsaneEngine;
+import org.netbeans.insane.scanner.ObjectMap;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,14 +67,18 @@ public class NbModuleSuiteTest extends TestCase {
         super.tearDown();
     }
 
-    /**
-     * Test of run method, of class NbModuleSuite.
-     */
     public void testRun() {
         Test instance = NbModuleSuite.create(T.class, null, null);
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
+    }
+
+    public void testAccessToInsane() {
+        Test instance = NbModuleSuite.create(Ins.class, null, null);
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("OK", System.getProperty("ins.one"));
     }
     
     public void testModulesForCL() throws Exception {
@@ -121,6 +129,37 @@ public class NbModuleSuiteTest extends TestCase {
 
         public void testOne() {
             System.setProperty("t.one", "OK");
+        }
+    }
+
+    public static class Ins extends TestCase 
+    implements org.netbeans.insane.scanner.Visitor {
+        public Ins(String t) {
+            super(t);
+        }
+
+        public void testOne() {
+            try {
+                org.netbeans.insane.model.Support.convertSimpleDump(null, null);
+                System.setProperty("ins.one", "OK");
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public void visitClass(Class cls) {
+        }
+
+        public void visitObject(ObjectMap map, Object object) {
+        }
+
+        public void visitObjectReference(ObjectMap map, Object from, Object to, Field ref) {
+        }
+
+        public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
+        }
+
+        public void visitStaticReference(ObjectMap map, Object to, Field ref) {
         }
     }
     
