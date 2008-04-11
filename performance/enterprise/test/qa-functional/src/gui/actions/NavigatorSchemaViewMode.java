@@ -58,15 +58,18 @@ public class NavigatorSchemaViewMode  extends org.netbeans.performance.test.util
     
     private Node processNode; 
     
+    // After fix of 128596 "Please wait" text is shown so it is okay to wait up to 10 sec
+    public final long EXPECTED_TIME = 10000;
+    
     /** Creates a new instance of SchemaDesignView */
     public NavigatorSchemaViewMode(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
+        expectedTime = EXPECTED_TIME; 
     }
     
     public NavigatorSchemaViewMode(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
+        expectedTime = EXPECTED_TIME; 
     }
     
     protected void initialize() {
