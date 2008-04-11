@@ -37,7 +37,7 @@
 
 set -x
 ISROOT="$1"
-SYSTEM_TYPE="2"
+SYSTEM_TYPE="$2"
 PASSWORD="$3"
 
 INSTALLDIR=`pwd`
