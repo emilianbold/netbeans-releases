@@ -39,6 +39,7 @@
 
 package org.netbeans.junit;
 
+import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringBufferInputStream;
@@ -65,6 +66,11 @@ public class NbModuleSuiteTest extends TestCase {
     public NbModuleSuiteTest(String testName) {
         super(testName);
     }            
+    
+    public static Test suite() {
+        //return new NbModuleSuiteTest("testAccessExtraDefinedAutoload");
+        return new NbTestSuite(NbModuleSuiteTest.class);
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -91,7 +97,7 @@ public class NbModuleSuiteTest extends TestCase {
     }
 
     public void testAccessExtraDefinedAutoload() {
-        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(En.class);
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
         NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
         Test instance = NbModuleSuite.create(addEnum);
         junit.textui.TestRunner.run(instance);
@@ -217,20 +223,6 @@ public class NbModuleSuiteTest extends TestCase {
 
         public void testOne() {
             System.setProperty("t.one", "OK");
-        }
-    }
-    public static class En extends TestCase {
-        public En(String t) {
-            super(t);
-        }
-
-        public void testOne() {
-            try {
-                Class<?> access = Class.forName("org.openide.util.enum.ArrayEnumeration");
-                System.setProperty("en.one", "OK");
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
         }
     }
 
