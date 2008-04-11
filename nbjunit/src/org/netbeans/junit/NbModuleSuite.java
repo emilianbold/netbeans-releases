@@ -229,11 +229,8 @@ public class NbModuleSuite {
                 testLoader.loadClass("junit.framework.Test");
                 testLoader.loadClass("org.netbeans.junit.NbTestSuite");
                 //testLoader.loadClass("org.netbeans.jellytools.JellyTestCase");
-                @SuppressWarnings("unchecked")
                 Class<? extends TestCase> sndClazz = 
-                    (Class<? extends TestCase>) testLoader.loadClass(
-                        config.clazz.getName()
-                    );
+                    testLoader.loadClass(config.clazz.getName()).asSubclass(TestCase.class);
                 new NbTestSuite(sndClazz).run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
