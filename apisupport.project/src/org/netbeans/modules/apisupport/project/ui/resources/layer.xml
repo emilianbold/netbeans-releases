@@ -362,12 +362,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-
-    <!-- library definitions for projects in the harness cluster -->
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="jemmy.xml" url="library.xml"/>
-        </folder>
-    </folder>
-    
 </filesystem>
