@@ -80,9 +80,9 @@ import org.openide.windows.InputOutput;
  */
 public class GlassfishInstance implements ServerInstanceImplementation {
 
-    // !PW FIXME Can we extrace the server name from the install?  That way,
+    // !PW FIXME Can we extract the server name from the install?  That way,
     // perhaps we can distinguish between GF V3 and Sun AS 10.0
-    public static final String GLASSFISH_SERVER_NAME = "GlassFish V3 New Preview";
+    public static final String GLASSFISH_SERVER_NAME = "GlassFish V3 TP2";
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
