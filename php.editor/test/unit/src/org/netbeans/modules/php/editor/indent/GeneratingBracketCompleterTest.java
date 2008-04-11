@@ -135,6 +135,21 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "?>\n");
     }
     
+    public void testGlobalVariableDocumentation() throws Exception {
+        performInsertBreak( "<?php\n" +
+                            "/**^\n" +
+                            "$GLOBALS['test'] = \"\";\n" +
+                            "?>\n",
+                            "<?php\n" +
+                            "/**\n" +
+                            " * ^\n" +
+                            " * @global " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $GLOBALS['test']\n" +
+                            " * @name $test\n" +
+                            " */\n" +
+                            "$GLOBALS['test'] = \"\";\n" +
+                            "?>\n");
+    }
+    
     private void performInsertBreak(final String original, final String expected) throws Exception {
         final int insertOffset = original.indexOf('^');
         final int finalCaretPos = expected.indexOf('^');

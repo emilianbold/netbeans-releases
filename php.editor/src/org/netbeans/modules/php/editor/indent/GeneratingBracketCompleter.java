@@ -51,11 +51,15 @@ import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
+import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedType;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
@@ -135,6 +139,19 @@ public class GeneratingBracketCompleter {
                     if (n instanceof FunctionDeclaration) {
                         generateFunctionDoc(doc, offset, indent, parameter, (FunctionDeclaration) n);
                     }
+                    
+                    if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {
+                        Assignment a = (Assignment) ((ExpressionStatement) n).getExpression();
+
+                        if (a.getLeftHandSide() instanceof ArrayAccess) {
+                            AttributedElement el = SemiAttribute.semiAttribute(parameter).getElement(
+                                    a.getLeftHandSide());
+
+                            if (el != null && el.getKind() == Kind.VARIABLE) {
+                                generateVariableDoc(doc, offset, indent, parameter, el);
+                            }
+                        }
+                    }
                 }
             }, true);
         } catch (IOException ex) {
@@ -179,16 +196,26 @@ public class GeneratingBracketCompleter {
         }
     }
     
+    private static final AttributedType PRINT_NO_TYPE = new AttributedType() {
+        @Override
+        public String getTypeName() {
+            return null;
+        }
+    };
+    
     private static void generateDocEntry(StringBuilder toAdd, String text, int indent, String name, AttributedType type) {
         toAdd.append("\n");
         LexUtilities.indent(toAdd, indent);
 
         toAdd.append(" * ");
         toAdd.append(text);
-        toAdd.append(" ");
         if (type != null) {
-            toAdd.append(type.getTypeName());
+            if (type != PRINT_NO_TYPE) {
+                toAdd.append(" ");
+                toAdd.append(type.getTypeName());
+            }
         } else {
+            toAdd.append(" ");
             toAdd.append(TYPE_PLACEHOLDER);
         }
         if (name != null) {
@@ -254,6 +281,15 @@ public class GeneratingBracketCompleter {
         public void visit(ClassDeclaration node) {
         }
         
+    }
+    
+    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, AttributedElement el) throws BadLocationException {
+        StringBuilder toAdd = new StringBuilder();
+
+        generateDocEntry(toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
+        generateDocEntry(toAdd, "@name", indent, "$" + el.getName(), PRINT_NO_TYPE);
+
+        doc.insertString(offset - 1, toAdd.toString(), null);
     }
     
     private static final class Pair<A, B> {
