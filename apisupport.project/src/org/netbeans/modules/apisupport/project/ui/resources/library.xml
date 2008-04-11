@@ -48,10 +48,10 @@ Author: Jiri.Skrivanek@sun.com
 <library version="1.0">
     <name>Jemmy</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/jemmy/idemodule/Bundle</localizing-bundle>
+    <localizing-bundle>org/netbeans/modules/apisupport/project/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.jemmy.idemodule/modules/ext/jemmy.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.jemmy.idemodule/modules/org-netbeans-modules-jemmy.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
