@@ -28,9 +28,5 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  */
 public interface BPELValidationListener {
 
-    /**
-     * This is called when fast/partial validation results are updated.
-     * @param validationResults List of validation Results.
-     */
-    public void validationUpdated(List<ResultItem> validationResults);
+    public void validationUpdated(List<ResultItem> result);
 }

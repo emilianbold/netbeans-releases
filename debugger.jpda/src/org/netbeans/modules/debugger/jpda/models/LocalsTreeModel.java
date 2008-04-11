@@ -206,6 +206,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     return new Object[] {};
                 }
                 List<Operation> operations = frame.getThread().getLastOperations();
+                if (operations == null) {
+                    return new Object[] {};
+                }
                 List<Variable> lastOperationValues = new ArrayList<Variable>(operations.size());
                 for (int i = 0; i < operations.size(); i++) {
                     Variable ret = operations.get(i).getReturnValue();

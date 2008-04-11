@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -139,7 +139,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     RubyProject project;
     
     // Ant project helper of the project
-    private UpdateHelper updateHelper;
+    private final UpdateHelper updateHelper;
     
         
     /**Set of commands which are affected by background scanning*/
@@ -164,8 +164,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     private void runRubyScript(FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
+        if (!getPlatform().showWarningIfInvalid()) {
+            return;
+        }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-
         RubyExecution service = new RubyExecution(desc,
                 project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
         service.run();
@@ -175,7 +177,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
     
-        String options = project.evaluator().getProperty(RubyProjectProperties.RUN_JVM_ARGS);
+        String options = project.evaluator().getProperty(RubyProjectProperties.RUBY_OPTIONS);
 
         if (options != null && options.trim().length() == 0) {
             options = null;
@@ -243,12 +245,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
+        String jrubyProps = project.evaluator().getProperty(RubyProjectProperties.JRUBY_PROPS);
 
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
         desc.fileObject(fileObject);
+        desc.jrubyProperties(jrubyProps);
         desc.initialArgs(options);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
@@ -269,24 +273,22 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         // Locate the target and specify it by full path. This is necessary
         // because JRuby and Ruby don't locate the script from the load path it
         // seems.
-        if (!new File(target).exists()) {
-            if (srcPath != null && srcPath.length > 0) {
-                boolean found = false; // Prefer the first match
-                for (FileObject root : srcPath) {
+        if (!new File(target).exists() && srcPath != null && srcPath.length > 0) {
+            boolean found = false; // Prefer the first match
+            for (FileObject root : srcPath) {
+                FileObject fo = root.getFileObject(target);
+                if (fo != null) {
+                    target = FileUtil.toFile(fo).getAbsolutePath();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && testPath != null) {
+                for (FileObject root : testPath) {
                     FileObject fo = root.getFileObject(target);
                     if (fo != null) {
                         target = FileUtil.toFile(fo).getAbsolutePath();
-                        found = true;
                         break;
-                    }
-                }
-                if (!found && testPath != null) {
-                    for (FileObject root : testPath) {
-                        FileObject fo = root.getFileObject(target);
-                        if (fo != null) {
-                            target = FileUtil.toFile(fo).getAbsolutePath();
-                            break;
-                        }
                     }
                 }
             }

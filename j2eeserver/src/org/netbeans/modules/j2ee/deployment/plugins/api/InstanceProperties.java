@@ -55,6 +55,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Map;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 
 /**
@@ -291,12 +292,22 @@ public abstract class InstanceProperties {
     }
 
     /**
-     * Return default instance properties.
+     * Return default instance properties or <code>null</code> if no default
+     * instance configured.
+     * <p>
+     * This method is deprecated, so don't expect it will return any useful default
+     * instance properties. Method will be removed in near future.
+     *
+     * @return default instance properties
+     * @deprecated this API is broken by design - the client should choose the
+     *             instance by usage {@link Deployment#getServerInstanceIDs} and selection
+     *             of appropriate server instance. Method will be removed in
+     *             near future. See issue 83934.
      */
     public static InstanceProperties getDefaultInstance() {
-        return new InstancePropertiesImpl(ServerRegistry.getInstance().getDefaultInstance().getServerInstance());
+        return null;
     }
-    
+
     /**
      * Set instance properties.
      * @param props properties to set for this server instance.

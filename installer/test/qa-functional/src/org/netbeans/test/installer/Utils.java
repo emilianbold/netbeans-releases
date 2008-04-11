@@ -282,12 +282,13 @@ public class Utils {
 
         System.setProperty("nbi.dont.use.system.exit", "true");
         System.setProperty("nbi.utils.log.to.console", "false");
+        System.setProperty("servicetag.allow.register", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
-        //there is no build nuber for RC1
+        
         if (Boolean.valueOf(System.getProperty("test.use.build.number"))) {
             NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
         }
-    //data.setBuildNumber(null);
+        //data.setBuildNumber(null);
     }
 
     public static void phaseOnePTwo(TestData data) {
@@ -385,15 +386,6 @@ public class Utils {
         new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
     }
 
-    public static void stepFinishRemoveRegisterChackmark() {
-        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
-
-        if (Boolean.valueOf(System.getProperty("test.build.can.register"))) {
-            new JCheckBoxOperator(installerMain, "Register").push();
-        }
-        new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
-    }
-
     public static void phaseOne(NbTestCase thiz, TestData data, String installerType) {
         phaseOnePOne(thiz, data, installerType);
         data.setInstallerURL(constructURL(data));
@@ -405,7 +397,7 @@ public class Utils {
         Utils.stepInstall(data);
 
         //finish
-        Utils.stepFinishRemoveRegisterChackmark();
+        Utils.stepFinish();
 
         Utils.waitSecond(data, 5);
 

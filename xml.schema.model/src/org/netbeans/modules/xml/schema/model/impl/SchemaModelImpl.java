@@ -149,8 +149,8 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         T found = null;
         String targetNamespace = getSchema().getTargetNamespace();
         if ( targetNamespace != null && targetNamespace.equals(namespace) ||
-             targetNamespace == null && namespace == null ||
-             targetNamespace == null && refToMe instanceof Include ) {
+            targetNamespace == null && namespace == null ||
+            targetNamespace == null && refToMe instanceof Include) {
             found = findByNameAndType(localName, type);
         }
         

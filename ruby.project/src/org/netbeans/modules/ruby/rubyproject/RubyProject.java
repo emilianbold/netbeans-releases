@@ -44,7 +44,6 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Icon;
@@ -59,7 +58,6 @@ import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyLogicalViewProvider;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -213,7 +211,7 @@ public final class RubyProject implements Project, RakeProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new RubyActionProvider( this, this.updateHelper ),
-            new RubyLogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
+            new RubyLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             // new RubyCustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
@@ -267,14 +265,6 @@ public final class RubyProject implements Project, RakeProjectListener {
             this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
-    }
-    
-    File getTestClassesDirectory() {
-        String testClassesDir = evaluator().getProperty(RubyProjectProperties.BUILD_TEST_CLASSES_DIR);
-        if (testClassesDir == null) {
-            return null;
-        }
-        return helper.resolveFile(testClassesDir);
     }
     
     // Currently unused (but see #47230):

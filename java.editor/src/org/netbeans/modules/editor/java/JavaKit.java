@@ -72,6 +72,7 @@ import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
 import org.netbeans.modules.java.editor.rename.InstantRenameAction;
+import org.netbeans.modules.java.editor.semantic.GoToMarkOccurrencesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
@@ -266,6 +267,9 @@ public class JavaKit extends NbEditorKit {
                                    
                                    new FastImportAction(),
                                    new GoToSuperTypeAction(),
+                                   
+                                   new GoToMarkOccurrencesAction(false),
+                                   new GoToMarkOccurrencesAction(true),
                                };
                                
         return TextAction.augmentList(superActions, javaActions);
