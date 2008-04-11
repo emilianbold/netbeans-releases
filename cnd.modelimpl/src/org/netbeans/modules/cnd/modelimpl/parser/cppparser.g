@@ -1391,28 +1391,29 @@ function_K_R_parameter
 
 function_definition
 	:	// don't want next action as an init-action due to (...)=> caller
-	//{ beginFunctionDefinition(); }
-	(	// Next line is equivalent to guarded predicate in PCCTS
-		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
-		{( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
-		declaration_specifiers function_declarator[true]
+// IZ 132404 : Parser failed on code taken from boost
+//	//{ beginFunctionDefinition(); }
+//	(	// Next line is equivalent to guarded predicate in PCCTS
+//		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
+//              {( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
+                declaration_specifiers function_declarator[true]
 		(	options{warnWhenFollowAmbig = false;}:
 			//(declaration)*	// Possible for K & R definition
                         (function_K_R_parameter_list)?
 			{in_parameter_list = false;}
 		)?
 		compound_statement
-	|	// Next line is equivalent to guarded predicate in PCCTS
-		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
-		function_declarator[true]
-		(	options{warnWhenFollowAmbig = false;}:
-			(declaration)*	// Possible for K & R definition
-			{in_parameter_list = false;}
-		)?		    
-                compound_statement             
-	)
-	//{endFunctionDefinition();}
+//	|	// Next line is equivalent to guarded predicate in PCCTS
+//		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
+//		//{( !(LA(1)==SCOPE||LA(1)==ID) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
+//		function_declarator[true]
+//		(	options{warnWhenFollowAmbig = false;}:
+//			(declaration)*	// Possible for K & R definition
+//			{in_parameter_list = false;}
+//		)?		    
+//                compound_statement             
+//	)
+//	//{endFunctionDefinition();}
 	;
 
 // rule for predicting "declaration"
@@ -1554,8 +1555,12 @@ simple_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
 			// Fix towards allowing us to parse *.cpp files directly
-			(qualified_type qualified_id)=> qualified_type { ts=tsTYPEID; }
-			{ #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
+			
+                        // IZ 132404 : Parser failed on code taken from boost
+                        //(qualified_type qualified_id)=> qualified_type { ts=tsTYPEID; }
+                        (qualified_type) => qualified_type { ts=tsTYPEID; }
+			
+                        { #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		)
 	;
 
@@ -1568,7 +1573,7 @@ qualified_type
 		// predicate on
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
-		s = scope_override 
+		s = scope_override
 		id:ID 
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
