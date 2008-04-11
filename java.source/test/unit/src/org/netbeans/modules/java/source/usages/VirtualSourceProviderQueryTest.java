@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -92,7 +91,7 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
         assertTrue(es.isEmpty());
     }
     
-    public class TestVirtualSourceProvider implements VirtualSourceProvider {
+    public static class TestVirtualSourceProvider implements VirtualSourceProvider {
 
         public Set<String> getSupportedExtensions() {
             final Set<String> result = new HashSet<String>();
