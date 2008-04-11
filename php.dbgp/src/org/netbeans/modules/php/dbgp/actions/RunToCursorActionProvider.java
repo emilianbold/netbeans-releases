@@ -61,7 +61,7 @@ public class RunToCursorActionProvider extends AbstractActionProvider {
         BrkpntSetCommand command = BrkpntCommandBuilder.buildLineBreakpoint(
                 id, session.getTransactionId(), 
                 Utils.getCurrentFileObject( Utils.getCurrentNode()), 
-                line.getLineNumber() +1);
+                line.getLineNumber() );
         command.setTemporary( true );
         session.sendCommandLater(command);
         
