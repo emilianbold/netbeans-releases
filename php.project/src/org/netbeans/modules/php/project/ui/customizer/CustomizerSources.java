@@ -75,6 +75,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     final PropertyEvaluator evaluator;
     private final LocalServerController localServerController;
     private final CopyFilesVisual copyFilesVisual;
+    private final boolean originalCopySrcFiles;
+    private final String originalCopySrcTarget;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -85,8 +87,9 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         initEncoding();
         LocalServer sources = initSources();
-        boolean copyFiles = initCopyFiles();
+        originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
+        originalCopySrcTarget = copyTarget.getSrcRoot();
         initUrl();
         initIndexFile();
 
@@ -95,7 +98,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         localServerController.selectLocalServer(sources);
 
         copyFilesVisual = new CopyFilesVisual(this, copyTarget);
-        copyFilesVisual.setCopyFiles(copyFiles);
+        copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         encodingComboBox.addActionListener(new ActionListener() {
@@ -193,7 +196,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
-            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true, true); // NOI18N
+            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
+                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath()), true);
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -253,6 +257,10 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     private File getCopyTargetDir() {
         LocalServer localServer = copyFilesVisual.getLocalServer();
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+    }
+
+    private boolean allowNonEmptyDirectory(String copyTargetDir) {
+        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir);
     }
 
     /** This method is called from within the constructor to
