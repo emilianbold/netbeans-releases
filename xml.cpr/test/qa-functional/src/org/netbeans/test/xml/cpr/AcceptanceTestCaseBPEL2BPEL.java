@@ -97,6 +97,13 @@ import org.netbeans.test.xml.cpr.lib.FindUsagesOperator;
 
 import org.netbeans.jemmy.JemmyException;
 
+import javax.swing.text.Caret;
+
+import javax.swing.JEditorPane;
+import java.awt.Rectangle;
+import java.awt.Container;
+import javax.swing.text.BadLocationException;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -115,6 +122,25 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "DeleteReferencedSchema",
         //"FindUsages", // TODO : How to find find usages output?
         "ValidateAndBuild",
+        "AddAttribute",
+        "ExploreAttribute",
+        "DeleteAttribute",
+        "UndoRedoAttribute",
+        "AddComplex",
+        "ExploreComplex",
+        "DeleteComplex",
+        "UndoRedoComplex",
+        "AddElement",
+        "ExploreElement",
+        "DeleteElement",
+        "UndoRedoElement",
+        "AddSimple",
+        "ExploreSimple",
+        "DeleteSimple",
+        "UndoRedoSimple",
+
+
+
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -243,7 +269,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       }
     }
 
-    private void ImportReferencedSchemaInternal( )
+    private void ImportReferencedSchemaInternal( boolean bShort )
     {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -305,7 +331,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
       ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
 
-      ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
+      if( !bShort )
+        ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
       ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
 
       // Close
@@ -314,48 +341,51 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         fail( "OK button disabled after clicking in imports." );
       jOk.push( );
 
-      int iResult = 0;
-      for( int i = 0; i <= 1; i++ )
+      if( !bShort )
       {
-        // Check imported files in list
-        opList = opMultiView.getColumnListOperator( 1 );
-
-        // Go to source
-        iIndex = i;//opList.findItemIndex( asImported[ 0 ] );
-        opList.selectItem( iIndex );
-        pt = opList.getClickPoint( iIndex );
-        opList.clickForPopup( pt.x, pt.y );
-
-        // Click Add / Import...
-        popup = new JPopupMenuOperator( );
-        popup.pushMenu( "Go To Source" );
-
-        // Check text
-        String[] asRequiredLines =
+        int iResult = 0;
+        for( int i = 0; i <= 1; i++ )
         {
-          "<xs:import schemaLocation=\"" + MODULE_NAME + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
-          "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
-        };
-        EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
-        int iLineNumber = eoXMLSource.getLineNumber( );
-        String sChoosenLine = eoXMLSource.getText( iLineNumber );
-        for( int j = 0; j < asRequiredLines.length; j++ )
-          if( -1 != sChoosenLine.indexOf( asRequiredLines[ j ] ) )
-            iResult += ( j + 1 );//fail( "Go to source came to unknown line: #" + iLineNumber + ", \"" + sChoosenLine + "\"" );
+          // Check imported files in list
+          opList = opMultiView.getColumnListOperator( 1 );
 
-        // Switch back
-        opMultiView.switchToSchema( );
-        opMultiView.switchToSchemaColumns( );
+          // Go to source
+          iIndex = i;//opList.findItemIndex( asImported[ 0 ] );
+          opList.selectItem( iIndex );
+          pt = opList.getClickPoint( iIndex );
+          opList.clickForPopup( pt.x, pt.y );
+
+          // Click Add / Import...
+          popup = new JPopupMenuOperator( );
+          popup.pushMenu( "Go To Source" );
+
+          // Check text
+          String[] asRequiredLines =
+          {
+           "<xs:import schemaLocation=\"" + MODULE_NAME + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+            "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
+          };
+          EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+          int iLineNumber = eoXMLSource.getLineNumber( );
+          String sChoosenLine = eoXMLSource.getText( iLineNumber );
+          for( int j = 0; j < asRequiredLines.length; j++ )
+            if( -1 != sChoosenLine.indexOf( asRequiredLines[ j ] ) )
+              iResult += ( j + 1 );//fail( "Go to source came to unknown line: #" + iLineNumber + ", \"" + sChoosenLine + "\"" );
+
+          // Switch back
+          opMultiView.switchToSchema( );
+         opMultiView.switchToSchemaColumns( );
+        }
+        if( 3 != iResult )
+          fail( "Go to source works incorrect way, not all elements recognized: " + iResult );
       }
-      if( 3 != iResult )
-        fail( "Go to source works incorrect way, not all elements recognized: " + iResult );
     }
 
     public void ImportReferencedSchema( )
     {
       startTest( );
 
-      ImportReferencedSchemaInternal( );
+      ImportReferencedSchemaInternal( false );
 
       endTest( );
     }
@@ -463,7 +493,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           fail( "Import statement was not removed: \"" + sCompleteCode + "\"" );
       }
 
-      ImportReferencedSchemaInternal( );
+      ImportReferencedSchemaInternal( true );
 
       endTest( );
     }
@@ -517,16 +547,23 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       // "Output - XML Check"
       OutputOperator out = new OutputOperator( );
       String sText = out.getText( );
+
       String[] asIdealOutput =
       {
           "XML validation started.",
           "0 Error(s),  0 Warning(s).",
           "XML validation finished."
       };
+      // wait till stop line will appear
+      while( -1 == sText.indexOf( asIdealOutput[ asIdealOutput.length - 1 ] ) )
+      {
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
+        sText = out.getText( );
+      }
       for( String sChecker : asIdealOutput )
       {
         if( -1 == sText.indexOf( sChecker ) )
-          fail( "Unable to find ideal XML validate output: " + sChecker + "\n" + sText );
+          fail( "Unable to find ideal XML validate output: \"" + sChecker + "\"\n\"" + sText + "\"" );
       }
 
       // Build
@@ -554,6 +591,244 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( "BUILD FAILED" ) )
         fail( "BUILD FAILED mark fopund:\n" + sText + "\n" );
+
+      out.close( );
+
+      endTest( );
+    }
+
+    private boolean HasChild( JTreeOperator tree, TreePath path, String child )
+    {
+      int iCnt = tree.getChildCount( path );
+      for( int i = 0; i < iCnt; i++ )
+      {
+        TreePath subpath = tree.getChildPath( path, i );
+        Object o = subpath.getLastPathComponent( );
+        if( o.toString( ).startsWith( child ) )
+          return true;
+      }
+      return false;
+    }
+
+    private TreePath GetSubPath( JTreeOperator tree, TreePath path, String name )
+    {
+      String[] asPaths = name.split( "\\|" );
+      for( String chunk : asPaths )
+      {
+        int iCnt = tree.getChildCount( path );
+        for( int i = 0; i < iCnt; i++ )
+        {
+          System.out.println( "*** Checking chunk " + chunk );
+          TreePath subpath = tree.getChildPath( path, i );
+          Object o = subpath.getLastPathComponent( );
+          if( o.toString( ).startsWith( chunk ) )
+          {
+            System.out.println( "*** Chunk found" );
+            path = subpath;
+
+            tree.selectPath( path );
+            tree.clickOnPath( path );
+
+            break;
+          }
+        }
+      }
+      return path;
+    }
+
+    private TreePath FindMultiwayPath(
+        JTreeOperator tree,
+        String schema,
+        String name
+      )
+    {
+      // First level is always Referenced schemas
+      TreePath path = tree.findPath( "Referenced Schemas" );
+      System.out.println( "*** Referenced Schemas found" );
+      // Then find path with required subpath (tricky but...)
+      int iChild = tree.getChildCount( path );
+      TreePath subpath = null;
+      for( int i = 0; i < iChild; i++ )
+      {
+        subpath = tree.getChildPath( path, i );
+        if( HasChild( tree, subpath, schema ) )
+        {
+          System.out.println( "*** Correct import found" );
+          return GetSubPath( tree, subpath, name );
+        }
+      }
+      return null;
+    }
+
+    public void AddAttribute( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          "newAttribute"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreAttribute( )
+    {
+      startTest( );
+
+      ExploreSimpleInternal(
+          "newAttribute",
+          "StateType",
+          "attribute",
+          "ns:"
+        );
+
+      endTest( );
+    }
+
+    public void DeleteAttribute( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoAttribute( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddComplex( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Complex Types",
+          "Add Complex Type",
+          "Use Existing Definition", 
+          "Referenced Schemas|import|Complex Types|CarType",
+          "newComplexType"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddElement( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Elements",
+          "Add Element",
+          "Use Existing Type",
+          "Referenced Schemas|import|Complex Types|AddressType",
+          "newElement"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddSimple( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          "newSimpleType"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreSimple( )
+    {
+      startTest( );
+
+      ExploreSimpleInternal( "newSimpleType", "LoanType", "simpleType", "" );
+
+      endTest( );
+    }
+
+    public void DeleteSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoSimple( )
+    {
+      startTest( );
+
+
 
       endTest( );
     }

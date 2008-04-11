@@ -113,11 +113,6 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
     }
     
     public void testOrderingAttributes() throws Exception {
-        // From time to time RecognizeInstanceObjectsTest.testOrderingAttributes fails, no idea why. -jglick
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
-
         LOG.info("creating instances");
         
         FileObject inst = FileUtil.createData(root, "inst/ordering/X.instance");

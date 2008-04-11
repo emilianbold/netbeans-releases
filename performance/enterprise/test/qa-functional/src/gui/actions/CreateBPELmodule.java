@@ -87,8 +87,8 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void initialize(){
-        category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA"); // "Service Oriented Architecture"
-        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "BPEL Module"
+        category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
+        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle", "LBL_BPEL_Wizard_Title"); // "BPEL Module"
         project_type="BPELModule";
         index=1;
         
@@ -103,12 +103,12 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
             try {
                 wizard = NewProjectWizardOperator.invoke();
                 break;
-            } catch (Exception exc) {
+            } catch (RuntimeException exc) {
                 if (attempt < 5) {
                     log("Attempt failed with exception: " + exc);
                     continue;
                 }
-                throw new Error(exc);
+                throw exc;
             }
         }   
         wizard.selectCategory(category);

@@ -109,7 +109,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -1341,17 +1340,20 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.1");
-                        if (rubyIndex != -1) {
-                            path = path.substring(rubyIndex);
-                        }
                         final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",path);
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
     BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder2 - updating handle " + handle + " to " + message);
 }
                         handle.setDisplayName(message);
                     }
-                    batchCompile(toCompile, rootFo, cpInfo, /*sa,*/root, dirtyCrossFiles, added, handle, timeStamps);
+
+                    CachingIndexer cachingIndexer = CachingIndexer.get(root, toCompile.size());
+
+                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, handle, timeStamps);
+
+                    if (cachingIndexer != null) {
+                        cachingIndexer.flush();
+                    }
                 }
 // store is a noop anyway                
 //                sa.store();
@@ -1458,7 +1460,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     //jt.analyze ();
                     //dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null, ...
                     //sa.analyse (trees, jt, fm, active, added);
-                    sa.analyse (language, trees, jt, /*fm,*/ active);
+                    sa.analyse (language, trees);
                     
                     listener.cleanDiagnostics();                    
                 }
@@ -1827,8 +1829,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
     }
     
     public static void batchCompile (final List<ParserFile> toCompile, final FileObject rootFo, 
-             ClasspathInfo cpInfo,
-            /*final ClasspathInfo cpInfo,*/ URL root, /*final SourceAnalyser sa,*/
+             ClasspathInfo cpInfo, CachingIndexer cachingIndexer, URL root,
         final Set<URI> dirtyFiles, final Set/*<? super ElementHandle<TypeElement>>*/ added, ProgressHandle handle,
                         Map<Language,Map<String,String>> timeStamps) throws IOException {
         assert toCompile != null;
@@ -1987,75 +1988,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             System.gc();
                             continue;
                         }
-//                        Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-//                        dumpClasses (listener.getEnteredTypes(),fileManager,
-//                                rootFo.getURL().toExternalForm(), dirtyFiles,
-//                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
-//                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
-//                        if (listener.lowMemory.getAndSet(false)) {
-//                            jt.finish();
-//                            jt = null;
-//                            listener.cleanDiagnostics();
-//                            trees = null;
-//                            types = null;
-//                            if (state == 1) {
-//                                if (isBigFile) {
-//                                    break;
-//                                } else {
-//                                    bigFiles.add(active);
-//                                    active = null;
-//                                    state = 0;
-//                                }
-//                            } else {
-//                                state = 1;
-//                            }
-//                            System.gc();
-//                            continue;
-//                        }                        
-//                        final JavaCompiler jc = JavaCompiler.instance(jt.getContext());
-//                        final JavaFileObject finalActive = active;
-//                        Filter f = new Filter() {
-//                            public void process(Env<AttrContext> env) {
-//                                try {
-//                                    jc.attribute(env);
-//                                } catch (Throwable t) {
-//                                    if (finalActive.toUri().getPath().contains("org/openide/loaders/OpenSupport.java")) {
-//                                        Exceptions.printStackTrace(t);
-//                                    }
-//                                }
-//                            }
-//                        };
-//                        f.run(jc.todo, types);
-//                        dumpClasses (listener.getEnteredTypes(), fileManager,
-//                                rootFo.getURL().toExternalForm(), dirtyFiles,
-//                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
-//                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
-//                        if (listener.lowMemory.getAndSet(false)) {
-//                            jt.finish();
-//                            jt = null;
-//                            listener.cleanDiagnostics();
-//                            trees = null;
-//                            types = null;
-//                            if (state == 1) {
-//                                if (isBigFile) {
-//                                    break;
-//                                } else {
-//                                    bigFiles.add(active);
-//                                    active = null;
-//                                    state = 0;
-//                                }
-//                            } else {
-//                                state = 1;
-//                            }
-//                            System.gc();
-//                            continue;
-//                        }
                         if (trees != null) {
-                            ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
-                            assert uqImpl != null;
-                            SourceAnalyser sa = uqImpl.getSourceAnalyser();
-                            if (sa != null) {
-                                sa.analyse(language, trees, jt,/* ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo),*/ active);
+                            if (cachingIndexer != null) {
+                                cachingIndexer.index(language, active.getFile(), trees);
+                            } else {
+                                ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
+                                assert uqImpl != null;
+                                SourceAnalyser sa = uqImpl.getSourceAnalyser();
+                                if (sa != null) {
+                                    sa.analyse(language, trees);
+                                }
                             }
                         }
                         if (!listener.errors.isEmpty()) {

@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.schema.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -149,8 +148,9 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         
         T found = null;
         String targetNamespace = getSchema().getTargetNamespace();
-        if (targetNamespace != null && targetNamespace.equals(namespace) ||
-            targetNamespace == null && namespace == null) {
+        if ( targetNamespace != null && targetNamespace.equals(namespace) ||
+            targetNamespace == null && namespace == null ||
+            targetNamespace == null && refToMe instanceof Include) {
             found = findByNameAndType(localName, type);
         }
         

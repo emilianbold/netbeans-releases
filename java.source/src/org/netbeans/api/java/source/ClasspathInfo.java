@@ -58,6 +58,7 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.SourcePath;
+import org.netbeans.modules.java.source.parsing.MemoryFileManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
@@ -99,12 +100,13 @@ public final class ClasspathInfo {
     private JavaFileManager fileManager;
     //@GuardedBy (this)
     private OutputFileManager outFileManager;
+    private final MemoryFileManager memoryFileManager;
     private EventListenerList listenerList =  null;
     private ClassIndex usagesQuery;
     
     /** Creates a new instance of ClasspathInfo (private use the fatctory methods) */
     private ClasspathInfo(CachingArchiveProvider archiveProvider, ClassPath bootCp, ClassPath compileCp, ClassPath srcCp,
-        JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
+        JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager) {
         assert archiveProvider != null && bootCp != null && compileCp != null;
         this.cpListener = new ClassPathListener ();
         this.archiveProvider = archiveProvider;        
@@ -127,6 +129,15 @@ public final class ClasspathInfo {
         this.backgroundCompilation = backgroundCompilation;
         this.ignoreExcludes = ignoreExcludes;
         this.filter = filter;
+        if (hasMemoryFileManager) {
+            if (srcCp == null) {
+                throw new IllegalStateException ();
+            }
+            this.memoryFileManager = new MemoryFileManager();            
+        }
+        else {
+            this.memoryFileManager = null;
+        }
     }
     
     public String toString() {
@@ -161,7 +172,9 @@ public final class ClasspathInfo {
     }
     
     
-    private static ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
+    private static ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
+            final boolean backgroundCompilation, final boolean ignoreExcludes,
+            final boolean hasMemoryFileManager) {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         if (bootPath == null) {
             //javac requires at least java.lang
@@ -175,23 +188,24 @@ public final class ClasspathInfo {
         if (srcPath == null) {
             srcPath = EMPTY_PATH;
         }
-        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes);
+        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
     }
     
     /** Creates new interface to the compiler
      * @param fo for which the CompilerInterface should be created
      */
     public static ClasspathInfo create(FileObject fo) {
-        return create (fo, null, false, false);
+        return create (fo, null, false, false, false);
     }            
     
-    private static ClasspathInfo create(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter,
-                                        boolean backgroundCompilation, boolean ignoreExcludes) {
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes);
+    private static ClasspathInfo create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath,
+            final JavaFileFilterImplementation filter, final boolean backgroundCompilation,
+            final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
+        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
     }
     
-    public static ClasspathInfo create(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath) {        
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, null, false, false);
+    public static ClasspathInfo create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {        
+        return create (bootPath, classPath, sourcePath, null, false, false, false);
     }
        
     // Public methods ----------------------------------------------------------
@@ -265,7 +279,7 @@ public final class ClasspathInfo {
                 hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
                 hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath) : null
-            );
+            , this.memoryFileManager);
         }
         return this.fileManager;
     }
@@ -327,13 +341,32 @@ public final class ClasspathInfo {
         }                
         
         @Override
-        public ClasspathInfo create (ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
-            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes);
+        public ClasspathInfo create (final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath,
+                final JavaFileFilterImplementation filter, final boolean backgroundCompilation,
+                final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
+            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
         }
         
         @Override
-        public ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
-            return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes);
-        }                                
+        public ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
+                final boolean backgroundCompilation, final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
+            return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
+        }
+
+        @Override
+        public boolean registerVirtualSource(final ClasspathInfo cpInfo, final String fqn, final CharSequence content) throws UnsupportedOperationException {
+            if (cpInfo.memoryFileManager == null) {
+                throw new UnsupportedOperationException ("The ClassPathInfo doesn't support memory JavacFileManager");  //NOI18N
+            }
+            return cpInfo.memoryFileManager.register(fqn, System.currentTimeMillis(), content);
+        }
+
+        @Override
+        public boolean unregisterVirtualSource(final ClasspathInfo cpInfo, final String fqn) throws UnsupportedOperationException {
+            if (cpInfo.memoryFileManager == null) {
+                throw new UnsupportedOperationException();
+            }
+            return cpInfo.memoryFileManager.unregister(fqn);
+        }
     }
 }
