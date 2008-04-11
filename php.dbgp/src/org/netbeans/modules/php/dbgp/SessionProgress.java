@@ -80,7 +80,7 @@ public final class SessionProgress implements Cancellable {
     
     private SessionProgress(Session session) {
 	this.session = session;
-	String displayName = session.getName();
+	String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Connecting", session.getName());
 	h = ProgressHandleFactory.createHandle(displayName, this);	
     }
 
@@ -103,6 +103,7 @@ public final class SessionProgress implements Cancellable {
 
     public void notifyConnectionFinished() {
         String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Suspend");
+        h.setDisplayName(session.getName());
         h.suspend(displayName);
     }
     
