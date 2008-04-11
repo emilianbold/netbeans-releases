@@ -676,6 +676,7 @@ public class MySQLPanel extends DestinationPanel {
             "MSP.error.port.not.in.range"); // NOI18N
 
     public static final String DEFAULT_ERROR_PORT_OCCUPIED =
-            "MSP.error.port.occupied"; //NOI18N
+            ResourceUtils.getString(MySQLPanel.class,
+            "MSP.error.port.occupied"); //NOI18N
 
 }
