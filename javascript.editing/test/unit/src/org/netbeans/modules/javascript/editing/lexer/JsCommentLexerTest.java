@@ -57,6 +57,7 @@ public class JsCommentLexerTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 

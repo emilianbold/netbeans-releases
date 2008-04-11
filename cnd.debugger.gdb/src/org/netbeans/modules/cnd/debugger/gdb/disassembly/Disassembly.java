@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -111,6 +112,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
     private static FileObject fo = null;
+    
+    private static Logger LOG = Logger.getLogger("gdb.logger"); // NOI18N
     
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
@@ -253,7 +256,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public Collection<RegisterValue> getRegisterValues() {
         Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
+            String name = regNames.get(idx);
+            if (name == null) {
+                LOG.severe("Unknown register: " + idx); // NOI18N
+                name = String.valueOf(idx);
+            }
+            res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }

@@ -83,7 +83,7 @@ public class SelectImpl extends CsmSelect {
     }
     
     static class FilterBuilder implements CsmFilterBuilder {
-        public CsmFilter getKindAcceptor(final CsmDeclaration.Kind[] kinds) {
+        public CsmFilter createKindFilter(final CsmDeclaration.Kind[] kinds) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {
                     CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
@@ -99,7 +99,7 @@ public class SelectImpl extends CsmSelect {
             };
         }
 
-        public CsmFilter getNameAcceptor(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
+        public CsmFilter createNameFilter(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {
                     CharSequence name = UIDUtilities.getName(uid);
@@ -114,10 +114,19 @@ public class SelectImpl extends CsmSelect {
             };
         }
 
-        public CsmFilter getCompoundAcceptor(final CsmFilter first, final CsmFilter second) {
+        public CsmFilter createCompoundFilter(final CsmFilter first, final CsmFilter second) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {
                     return ((UIDFilter)first).accept(uid) && ((UIDFilter)second).accept(uid);
+                }
+            };
+        }
+
+        public CsmFilter createNameFilter(final NameAcceptor nameAcceptor) {
+            return new Filter(){
+                public boolean accept(CsmUID uid) {
+                    CharSequence name = UIDUtilities.getName(uid);
+                    return nameAcceptor.accept(name);
                 }
             };
         }

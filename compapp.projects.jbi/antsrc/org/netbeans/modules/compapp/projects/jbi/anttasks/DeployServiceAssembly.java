@@ -46,7 +46,6 @@ import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import java.io.StringReader;
 
-import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 

@@ -78,7 +78,10 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class RubyIndexerHelper {
+public final class RubyIndexerHelper {
+    private RubyIndexerHelper() {
+        // Private utility class, not instantiatable
+    }
     /**
      * @todo Compute parameter delimiters (e.g. DSL methods which shouldn't have params should be noted here
      * @todo Compute hash arguments

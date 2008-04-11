@@ -154,6 +154,7 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
         return Enumerations.array(children);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

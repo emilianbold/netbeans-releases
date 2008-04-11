@@ -210,7 +210,7 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
 //        if (validationController == null) {
 //            return;
 //        }
-        myValidationController.triggerValidation();
+        myValidationController.triggerValidation(false);
     }
     
     /**

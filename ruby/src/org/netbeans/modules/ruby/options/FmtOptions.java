@@ -126,8 +126,9 @@ public class FmtOptions {
 
     public static boolean getGlobalExpandTabToSpaces() {
         org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
+        if (f != null) {
             return f.expandTabs();
+        }
         return getDefaultAsBoolean(expandTabToSpaces);
     }
     

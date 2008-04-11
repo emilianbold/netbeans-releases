@@ -64,19 +64,20 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
     private static String testProjectName = "jEdit-Model";
     private static String testDiagramName = "jEdit";    
     private Node diag;
+    public static final long EXPECTED_TIME = 5000;
     
    
     /** Creates a new instance of GenerateDependencyDiagram */
     public GenerateDependencyDiagram(String testName) {
         super(testName);
         //TODO: Adjust expectedTime value        
-        expectedTime = 2000;
+        expectedTime = EXPECTED_TIME;
         WAIT_AFTER_OPEN=4000;        
     }
     public GenerateDependencyDiagram(String testName, String  performanceDataName) {
         super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
-        expectedTime = 2000;
+        expectedTime = EXPECTED_TIME;
         WAIT_AFTER_OPEN=4000;                
     }
     

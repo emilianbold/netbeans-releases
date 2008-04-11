@@ -104,20 +104,10 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
   }
   
-  BpelModel getModel() {
-    return myBpelModel;
+  public List<ResultItem> getValidationResult() {
+    return myValidationResult;
   }
-  
-  private void modelChanged(ChangeEvent event) {
-    if (event.isLastInAtomic()) {
-      startValidation();
-    }
-  }
-  
-  public void triggerValidation() {
-    triggerValidation(false);
-  }
-  
+
   public void triggerValidation(boolean checkExternallyTriggered) {
     if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
       startValidation();
@@ -127,19 +117,25 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
   }
   
-  @Override
-  public void notifyEvent(ChangeEvent changeEvent) {
-    if ( !State.VALID.equals(myBpelModel.getState())){
-      return;
-    }
-    modelChanged(changeEvent);
+  public void notifyValidationResult(List<ResultItem> result) {
+    notifyListeners(result);
   }
 
-  public void notifyCompleteValidationResults(List<ResultItem> result) {
-    notifyListeners(result);
+  @Override
+  public void notifyEvent(ChangeEvent event) {
+    if (State.VALID.equals(myBpelModel.getState()) && event.isLastInAtomic()) {
+      startValidation();
+    }
+  }
+
+  BpelModel getModel() {
+    return myBpelModel;
   }
   
   private synchronized void startValidation() {
+//System.out.println();
+//System.out.println();
+//new Exception("!!!").printStackTrace();
     TimerTask task = new TimerTask() {
       public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
@@ -232,10 +228,6 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     return myTrigger;
   }
 
-  public List<ResultItem> getValidationResult() {
-    return myValidationResult;
-  }
-  
   private Timer myTimer;
   private BpelModel myBpelModel;
   private List<ResultItem> myValidationResult;
