@@ -1520,7 +1520,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1679,7 +1679,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
