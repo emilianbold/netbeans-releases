@@ -311,7 +311,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        return Utils.validateProjectDirectory(projectPath, "Project", false); // NOI18N
+        return Utils.validateProjectDirectory(projectPath, "Project", false, false); // NOI18N
     }
 
     private String validateSources() {
@@ -322,11 +322,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
             File sources = FileUtil.normalizeFile(new File(sourcesLocation));
             if (sourcesLocation.trim().length() == 0
-                    || !Utils.isValidFileName(sources.getName())) {
+                    || !Utils.isValidFileName(sources)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
+            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
             if (err != null) {
                 return err;
             }
@@ -375,8 +375,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
-        if (copyTarget == null) {
+        Boolean isValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
+        if (isValid != null && !isValid) {
+            // some error there, need to be fixed, so do not compare
+            return null;
+        }
+        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        if (copyFiles == null || !copyFiles) {
             return null;
         }
         LocalServer sources = locationPanelVisual.getSourcesLocation();
@@ -386,6 +391,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCE_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
+        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
         File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
