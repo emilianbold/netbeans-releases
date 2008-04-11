@@ -326,6 +326,7 @@ made subject to such option by the copyright holder.
         <property name="test.unit.folder" location="build/test/unit/dist"/>
         <property name="test.unit.out.folder" location="${test.unit.folder}"/>
         <property name="test.timeout" value="600000"/> <!-- 10min per test -->
+        <property name="test.run.args" value="-ea"/>
 
         <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
@@ -481,7 +482,7 @@ made subject to such option by the copyright holder.
             </batchtest>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
-            <jvmarg value="-ea"/>
+            <jvmarg line="${test.run.args}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
@@ -497,8 +498,7 @@ made subject to such option by the copyright holder.
             </batchtest>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
-            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
-            <jvmarg value="-ea"/>
+            <jvmarg line="${test.run.args}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
@@ -516,7 +516,7 @@ made subject to such option by the copyright holder.
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <jvmarg value="-ea"/>
+            <jvmarg line="${test.run.args}"/>
             <classpath>
                 <path refid="test.unit.run.cp"/>
                 <pathelement location="${ant.home}/lib/ant.jar"/>
@@ -575,8 +575,7 @@ made subject to such option by the copyright holder.
             <test name="${profile.class}" todir="${build.test.unit.results.dir}"/>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
-            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
-            <jvmarg value="-ea"/>
+            <jvmarg line="${test.run.args}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>

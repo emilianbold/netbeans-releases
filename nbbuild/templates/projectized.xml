@@ -170,15 +170,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="test-lib-init" depends="init">
-        <!-- xtest.home is set externally when run using XTest. -->
-        <property name="xtest.home" location="${nb_all}/xtest"/>
-        <path id="test.unit.lib.cp">
-            <!-- XXX check if these files exist, and if not, run xtest/build.xml -->
-            <pathelement location="${xtest.home}/lib/junit.jar"/>
-            <pathelement location="${xtest.home}/lib/nbjunit.jar"/>
-            <pathelement location="${xtest.home}/lib/nbjunit-ide.jar"/>
-            <pathelement location="${xtest.home}/lib/insanelib.jar"/>
-        </path>
+        <path id="test.unit.lib.cp"/>
     </target>
 
     <target name="-conditional-javadoc-init" depends="-conditional-16-init">
@@ -595,14 +587,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <pathelement path="${test.qa-functional.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
         <path id="test.qa-functional.run.cp">
             <pathelement path="${test.qa-functional.runtime.cp}"/>
             <pathelement path="${test.qa-functional.run.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
     </target>
 
@@ -696,14 +684,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <pathelement path="${test.qa-performance.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
         <path id="test.qa-performance.run.cp">
             <pathelement path="${test.qa-performance.runtime.cp}"/>
             <pathelement path="${test.qa-performance.run.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
     </target>
 
