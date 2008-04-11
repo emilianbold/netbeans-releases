@@ -36,43 +36,70 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.platform.gems;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Erno Mononen
  */
-public class GemFilesParserTest extends TestCase {
-    
+public class GemFilesParserTest extends NbTestCase {
+
     public GemFilesParserTest(String testName) {
         super(testName);
-    }            
+    }
 
     public void testParseInfo() {
-        
+
         String gem1 = "mongrel-1.1.3-i386-mswin32";
         assertEquals("mongrel", GemFilesParser.parseInfo(gem1).getName());
         assertEquals("1.1.3", GemFilesParser.parseInfo(gem1).getVersion());
-        
+
         String gem2 = "activeresource-2.0.2";
         assertEquals("activeresource", GemFilesParser.parseInfo(gem2).getName());
         assertEquals("2.0.2", GemFilesParser.parseInfo(gem2).getVersion());
-        
+
         String gem3 = "win32-sapi-0.1.4";
         assertEquals("win32-sapi", GemFilesParser.parseInfo(gem3).getName());
         assertEquals("0.1.4", GemFilesParser.parseInfo(gem3).getVersion());
-        
+
         String gem4 = "cgi_multipart_eof_fix-2.5.0";
         assertEquals("cgi_multipart_eof_fix", GemFilesParser.parseInfo(gem4).getName());
         assertEquals("2.5.0", GemFilesParser.parseInfo(gem4).getVersion());
-        
+
         String gem5 = "win32-api-1.0.5-x86-mswin32-60";
         assertEquals("win32-api", GemFilesParser.parseInfo(gem5).getName());
         assertEquals("1.0.5", GemFilesParser.parseInfo(gem5).getVersion());
-        
+
     }
 
+    public void testChooseGems() throws IOException {
+        
+        GemFilesParser gemFilesParser = new GemFilesParser(
+                createGemFile("rails", "1.2.5"), 
+                createGemFile("rails", "2.0.2"), 
+                createGemFile("rails", "1.2.6"), 
+                createGemFile("rails", "1.2.3"),
+                createGemFile("rails", "1.2.9") 
+                );
+        
+        gemFilesParser.chooseGems();
+        Map<String, Map<String, File>> result = gemFilesParser.getGemMap();
+        assertEquals(1, result.get("rails").keySet().size());
+        assertEquals("2.0.2", result.get("rails").keySet().iterator().next());
+    }
+    
+    private File createGemFile(String name, String version) throws IOException {
+        FileObject result = 
+                FileUtil.createData(FileUtil.toFileObject(getWorkDir()), name + '-' + version + ".gemspec");
+        return FileUtil.toFile(result);
+        
+    }
 }
