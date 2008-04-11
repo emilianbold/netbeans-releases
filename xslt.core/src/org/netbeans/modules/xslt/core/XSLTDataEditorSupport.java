@@ -276,14 +276,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
     }
     
     @Override
-    public void open() {
-out();
-out("OPEN");
-out();
-      super.open();
-    }
-
-    @Override
     protected void notifyClosed() {
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
@@ -489,18 +481,16 @@ out();
         }
     }
 
+    @Override
     public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-        // Force the title to update so the * left over from when the
-        // modified data object was discarded is removed from the title.
-//        if (!getEnv().getXsltDataObject().isModified()) {
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    updateTitles();
-                }
-            });
-//        }
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                updateTitles();
+            }
+        });
+//out("!!! OPEN"); // todo vlv
     }
     
    @Override
@@ -623,7 +613,7 @@ out();
 //out();
 //out("!!!!! add comp listener");
 //out();
-            // vlv
+            // todo vlv
             model.addComponentListener(myComponentListener);
             /* Ensure the model is sync'd when undo/redo is invoked,
              * otherwise the edits are added to the queue and eventually

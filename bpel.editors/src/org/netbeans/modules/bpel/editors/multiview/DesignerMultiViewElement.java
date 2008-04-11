@@ -322,7 +322,7 @@ public class DesignerMultiViewElement extends TopComponent
         setActivatedNodes(new Node[0]);
         setActivatedNodes(aNodes);
         
-        getValidationController().triggerValidation( true );
+        getValidationController().triggerValidation(true);
     }
     
     public void componentClosed() {
@@ -988,8 +988,7 @@ new ProxyLookup(new Lookup[] {
                     // Send the complete validation results to the validation controller
                     // so that clients can be notified.
                     if(controller != null) {
-                        controller.
-                            notifyCompleteValidationResults(validationResults);
+                        controller.notifyValidationResult(validationResults);
                     }
                 }
             });
