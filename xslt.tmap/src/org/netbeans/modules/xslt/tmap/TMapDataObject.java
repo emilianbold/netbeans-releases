@@ -68,11 +68,6 @@ public class TMapDataObject extends MultiDataObject {
         CookieSet cookies = getCookieSet();
         cookies.add( getEditorSupport() );
         
-        // add check and validate cookies
-//        InputSource is = DataObjectAdapters.inputSource (this);
-//        cookies.add(new CheckXMLSupport (is));
-//        cookies.add(new ValidateXSLSupport (is));
-        
         // add xsl transform support
         Source source = DataObjectAdapters.source(this);
         cookies.add(new TransformableSupport(source));
