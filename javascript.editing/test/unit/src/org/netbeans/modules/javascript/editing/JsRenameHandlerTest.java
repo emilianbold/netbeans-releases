@@ -45,37 +45,37 @@ public class JsRenameHandlerTest extends JsTestBase {
         return new JsRenameHandler();
     }
 
-//    public void testRename1() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "x^xx");
-//    }
-//
-//    public void testRename2() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "function a^aa() {");
-//    }
-//
-//    public void testRename3() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "var y^yy");
-//    }
-//
-//    public void testRename4() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "b^bb:");
-//    }
-//
-//    public void testRename5() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "function(p^pp)");
-//    }
-//
-//    public void testRename6() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "alert(p^pp)");
-//    }
-//
-//    public void testRename7() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "al^ert(ppp)");
-//    }
-//    
-//    public void testRename8() throws Exception {
-//        checkRenameSections("testfiles/rename.js", "funct^ion");
-//    }
+    public void testRename1() throws Exception {
+        checkRenameSections("testfiles/rename.js", "x^xx");
+    }
+
+    public void testRename2() throws Exception {
+        checkRenameSections("testfiles/rename.js", "function a^aa() {");
+    }
+
+    public void testRename3() throws Exception {
+        checkRenameSections("testfiles/rename.js", "var y^yy");
+    }
+
+    public void testRename4() throws Exception {
+        checkRenameSections("testfiles/rename.js", "b^bb:");
+    }
+
+    public void testRename5() throws Exception {
+        checkRenameSections("testfiles/rename.js", "function(p^pp)");
+    }
+
+    public void testRename6() throws Exception {
+        checkRenameSections("testfiles/rename.js", "alert(p^pp)");
+    }
+
+    public void testRename7() throws Exception {
+        checkRenameSections("testfiles/rename.js", "al^ert(ppp)");
+    }
+    
+    public void testRename8() throws Exception {
+        checkRenameSections("testfiles/rename.js", "funct^ion");
+    }
     
     public void testRename9a() throws Exception {
         checkRenameSections("testfiles/webuifunc.js", "function(dom^Node, props");
