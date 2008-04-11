@@ -250,7 +250,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
-    public void testGoToinherited() throws Exception {
+    public void testGoToInherited() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
                                          "class foo {\n" +
