@@ -40,25 +40,13 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="jellytools" default="jar-library" basedir=".">
+<project name="jellytools" default="netbeans" basedir=".">
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="all" depends="jar-library,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
         <copy file="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools.zip" tofile="javadoc/jelly2-nb-javadoc.zip"/>
     </target>
-
-    <target name="buildDependentModules">
-        <ant dir="../nbjunit" inheritAll="false"/>
-        <!-- Write jemmy/idemodule.dir property to moduleCluster.properties. -->
-        <ant dir="../jemmy.idemodule" target="init" inheritAll="false"/>
-        <!-- Re-read moduleCluster.properties to initialize jemmy/idemodule.dir. -->
-        <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
-        <!-- Need to build jemmy because jellytools has jemmy/dist/jemmy.jar in cp.extra. -->
-        <ant dir="../jemmy" target="jar" inheritAll="false"/>
-    </target>
-    
-    <target name="compile" depends="buildDependentModules,projectized-common.compile"/>
 
     <target name="timestamp" unless="buildnumber">
       <tstamp>
@@ -83,7 +71,7 @@ made subject to such option by the copyright holder.
              includes="org/netbeans/jellytools/**/*.java,org/netbeans/jellytools/version_info"
         />
     </target>
-    
+    <!--
     <target name="jar" depends="init,compile,jar-prep">
         <property file="src/org/netbeans/jellytools/version_info"/>
         <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
@@ -93,17 +81,19 @@ made subject to such option by the copyright holder.
             </manifest>
         </jarwithmoduleattributes>
     </target>
-    
+    -->
+    <!--
     <target name="netbeans-extra" depends="jar-library,javadoc,zipsrc">
         <copy file="jelly2-nb.jar" todir="${cluster}/modules/ext"/>
         <copy file="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools.zip" tofile="${cluster}/docs/jelly2-nb-javadoc.zip"/>
         <copy file="jelly2-nb-src.zip" tofile="${cluster}/sources/jelly2-nb-src.zip"/>
-        <!-- To prevent Javadoc from being picked up spuriously by apisupport/apidocs: -->
+        To prevent Javadoc from being picked up spuriously by apisupport/apidocs: 
         <delete file="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools.zip" failonerror="false"/>
         <delete dir="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools" failonerror="false"/>
         <delete file="${export.interfaces}/org-netbeans-modules-jellytools" failonerror="false"/>
         <delete file="${export.apichanges}/org-netbeans-modules-jellytools" failonerror="false"/>
     </target>
+    -->
     
     <target name="javadocWithJemmy" description="Javadoc for Jellytools and Jemmy">
         <mkdir dir="javadoc/jemmy-jelly2-nb-javadoc"/>

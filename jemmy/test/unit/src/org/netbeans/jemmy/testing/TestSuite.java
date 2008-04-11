@@ -23,6 +23,9 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.Operator;
 
+public class TestSuite extends Object {
+    
+}
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
