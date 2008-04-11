@@ -135,8 +135,11 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="TITLE" value="${module.title}"/>
             </filterset>
-        </copy>        
+        </copy>
         
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/env.sh"/> 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/addproduct_id.sh"/>        
+                        
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
