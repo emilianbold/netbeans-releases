@@ -60,7 +60,7 @@ escape() {
 
 remove_remote_root() {
     do_query "DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';"
-    if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ] ; then
 	echo " ... Success!"
     else
 	echo " ... Failed!"
