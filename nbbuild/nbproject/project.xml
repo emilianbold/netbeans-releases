@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
             <compilation-unit>
                 <package-root>test/unit/src</package-root>
                 <unit-tests/>
-                <classpath mode="compile">../junit/external/junit-3.8.2.jar:netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar</classpath>
+                <classpath mode="compile">../libs.junit4/external/junit-4.1.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/test/unit/classes</built-to>
                 <source-level>1.5</source-level>
