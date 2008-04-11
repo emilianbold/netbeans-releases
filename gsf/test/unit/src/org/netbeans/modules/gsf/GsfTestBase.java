@@ -1087,8 +1087,8 @@ public abstract class GsfTestBase extends NbTestCase {
             annotatedSource = annotateRenameRegions(info.getDocument(), renameRegions);
         } else {
             annotatedSource = "Refactoring not allowed here\n";
-            if (desc != null) {
-                annotatedSource += desc + "\n";
+            if (desc[0] != null) {
+                annotatedSource += desc[0] + "\n";
             }
         }
 
