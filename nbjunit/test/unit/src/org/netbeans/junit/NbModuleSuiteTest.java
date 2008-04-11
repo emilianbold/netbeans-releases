@@ -140,7 +140,7 @@ public class NbModuleSuiteTest extends TestCase {
 
         public void testOne() {
             try {
-                org.netbeans.insane.model.Support.convertSimpleDump(null, null);
+                Class<?> access = Class.forName("org.netbeans.insane.model.Support");
                 System.setProperty("ins.one", "OK");
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
