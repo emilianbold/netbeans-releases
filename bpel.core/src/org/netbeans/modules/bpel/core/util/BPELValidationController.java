@@ -140,6 +140,9 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
   }
   
   private synchronized void startValidation() {
+//System.out.println();
+//System.out.println();
+//new Exception("!!!").printStackTrace();
     TimerTask task = new TimerTask() {
       public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);

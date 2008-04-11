@@ -276,6 +276,14 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
     }
     
     @Override
+    public void open() {
+out();
+out("OPEN");
+out();
+      super.open();
+    }
+
+    @Override
     protected void notifyClosed() {
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
