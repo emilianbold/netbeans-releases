@@ -1105,9 +1105,9 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         fldPartnerRole.setEditable(false);
 
         lblNewPLTypeName1.setLabelFor(myWsdlWrapperName);
-        lblNewPLTypeName1.setText("Create in &File:");
+        lblNewPLTypeName1.setText(NbBundle.getMessage(PartnerLinkMainPanel.class, "LBL_Create_in_File")); // NOI18N
 
-        myBrowseButton.setText("&Browse");
+        myBrowseButton.setText(NbBundle.getMessage(PartnerLinkMainPanel.class, "LBL_Browse")); // NOI18N
         myBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseWsdlFile(evt);
