@@ -458,8 +458,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    protected void notifyClosed()
-    {
+    protected void notifyClosed() {
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
         synchronized (undo) {

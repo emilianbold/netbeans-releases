@@ -481,6 +481,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         }
     }
 
+    @Override
     public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
 
