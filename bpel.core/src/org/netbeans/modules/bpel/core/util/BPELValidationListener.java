@@ -21,12 +21,7 @@ package org.netbeans.modules.bpel.core.util;
 import java.util.List;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
-/**
- * Interface for clients to listen to changes in BPEL validation results.
- *
- * @author Praveen Savur
- */
 public interface BPELValidationListener {
 
-    public void validationUpdated(List<ResultItem> result);
+  void validationUpdated(List<ResultItem> result);
 }

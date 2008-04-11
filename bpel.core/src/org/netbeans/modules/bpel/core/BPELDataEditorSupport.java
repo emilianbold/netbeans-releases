@@ -463,7 +463,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
             (BPELValidationController) ((BPELDataObject) getDataObject()).
                     getLookup().lookup(BPELValidationController.class);
         if (controller != null) {
-            controller.notifyCompleteValidationResults(validationResults);
+            controller.notifyValidationResult(validationResults);
         }
 
         return true;
