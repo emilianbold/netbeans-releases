@@ -39,7 +39,16 @@
 
 package org.netbeans.junit;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringBufferInputStream;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -80,6 +89,33 @@ public class NbModuleSuiteTest extends TestCase {
         
         assertEquals("OK", System.getProperty("ins.one"));
     }
+
+    public void testAccessExtraDefinedAutoload() {
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(En.class);
+        NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
+        Test instance = NbModuleSuite.create(addEnum);
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("OK", System.getProperty("en.one"));
+    }
+    /*
+    public void testAccessClassPathDefinedAutoload() {
+        
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(En.class);
+        String manifest =
+"Manifest-Version: 1.0\n" +
+"OpenIDE-Module-Module-Dependencies: org.openide.util.enumerations>1.5\n" +
+"OpenIDE-Module: org.netbeans.modules.test.nbjunit\n" +
+"OpenIDE-Module-Specification-Version: 1.0\n";
+                
+        ClassLoader loader = new ManifestClassLoader(config.parentClassLoader, manifest);
+        NbModuleSuite.Configuration load = config.classLoader(loader);
+        Test instance = NbModuleSuite.create(load);
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("OK", System.getProperty("en.one"));
+    }
+     */
     
     public void testModulesForCL() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(ClassLoader.getSystemClassLoader());
@@ -121,7 +157,59 @@ public class NbModuleSuiteTest extends TestCase {
         assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
-    
+/*    
+    private static class ManifestClassLoader extends ClassLoader {
+        private final String manifest;
+        public ManifestClassLoader(ClassLoader parent, String manifest) {
+            super(parent);
+            this.manifest = manifest;
+        }
+
+        @Override
+        protected URL findResource(String name) {
+            try {
+                class H extends URLStreamHandler {
+
+                    @Override
+                    protected URLConnection openConnection(URL u) throws IOException {
+                        return new C(u);
+                    }
+
+                    class C extends URLConnection {
+
+                        StringBufferInputStream buf;
+
+                        public C(URL url) {
+                            super(url);
+                            buf = new StringBufferInputStream(url.getHost());
+                        }
+
+                        @Override
+                        public InputStream getInputStream() throws IOException {
+                            return buf;
+                        }
+
+                        @Override
+                        public void connect() throws IOException {
+                        }
+                    }
+                }
+
+                URL u = new URL("text:", manifest, 0, "", new H());
+                return u;
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            return Collections.enumeration(Collections.singleton(findResource(name)));
+        }
+        
+    }
+*/    
     public static class T extends TestCase {
         public T(String t) {
             super(t);
@@ -129,6 +217,20 @@ public class NbModuleSuiteTest extends TestCase {
 
         public void testOne() {
             System.setProperty("t.one", "OK");
+        }
+    }
+    public static class En extends TestCase {
+        public En(String t) {
+            super(t);
+        }
+
+        public void testOne() {
+            try {
+                Class<?> access = Class.forName("org.openide.util.enum.ArrayEnumeration");
+                System.setProperty("en.one", "OK");
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
