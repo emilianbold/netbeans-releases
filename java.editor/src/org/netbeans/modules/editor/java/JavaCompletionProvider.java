@@ -1427,9 +1427,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             if (e.getEnclosingElement() == el && Utilities.startsWith(e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), false, true));
                                         }
-                                } else {
-                                    addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew);
                                 }
+                                addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew);
                                 if (results.isEmpty() && ((PackageElement)el).getQualifiedName() == el.getSimpleName()) {
                                     // no package content? Check for unimported class
                                     ClassIndex ci = controller.getClasspathInfo().getClassIndex();
