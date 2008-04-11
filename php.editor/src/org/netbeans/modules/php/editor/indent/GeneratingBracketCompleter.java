@@ -42,13 +42,13 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
@@ -69,7 +69,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,20 +77,8 @@ import org.openide.util.Exceptions;
  */
 public class GeneratingBracketCompleter {
 
-    private static FileObject getFile(Document doc) {
-        Object o = doc.getProperty(Document.StreamDescriptionProperty);
-        
-        if (o instanceof DataObject) {
-            DataObject od = (DataObject) o;
-            
-            return od.getPrimaryFile();
-        }
-        
-        return null;
-    }
-    
     static void generateDocTags(final BaseDocument doc, final int offset, final int indent) {
-        FileObject file = getFile(doc);
+        FileObject file = NavUtils.getFile(doc);
         
         if (file == null) {
             return ;

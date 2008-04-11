@@ -263,6 +263,16 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testGoToInclude() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include \"te|sta.php\";\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         
