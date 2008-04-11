@@ -44,6 +44,7 @@ package org.netbeans.junit;
 import java.util.*;
 import junit.framework.TestSuite;
 import junit.framework.Test;
+import junit.framework.TestCase;
 
 /**
  * NetBeans extension to JUnit's TestSuite class.
@@ -65,7 +66,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * starting with "test" as test cases to the suite.
      *
      */
-    public NbTestSuite(Class theClass) {       
+    public NbTestSuite(Class<? extends TestCase> theClass) {       
         super(theClass);
     }
 
@@ -80,6 +81,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
     /**
      * Adds a test to the suite.
      */
+    @Override
     public void addTest(Test test) {
         if (test instanceof NbTest) {
             //System.out.println("NbTestSuite.addTest(): Adding test with filter, test:"+test);
@@ -94,6 +96,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
     /**
      * adds a test suite to this test suite
      */
+    @Override
     public void addTestSuite(Class testClass) {
         NbTest t = new NbTestSuite(testClass);
         t.setFilter(fFilter);
@@ -187,6 +190,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
             this.type = type;
         }
         
+        @Override
         public void run (junit.framework.TestResult result) {
             StringBuffer error = new StringBuffer ();
             for (int i = 0; i < repeat; i++) {
