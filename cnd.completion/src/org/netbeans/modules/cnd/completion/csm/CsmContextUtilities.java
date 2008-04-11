@@ -175,7 +175,7 @@ public class CsmContextUtilities {
     }
     
     private static void getFileLocalMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(strPrefix, match, caseSensitive, false);
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
         for (Iterator itFile = CsmSelect.getDefault().getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
