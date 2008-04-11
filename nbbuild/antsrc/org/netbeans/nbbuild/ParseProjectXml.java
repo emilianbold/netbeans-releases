@@ -998,9 +998,16 @@ public final class ParseProjectXml extends Task {
         if (!cnbs.isEmpty() && entry != null) {
             // check if is tests are already built
             for (TestDep td : dependencies) {
-                if (cnb.equals(td.cnb) && new File(td.getTestJarPath()).exists()) {
+                if (cnb.equals(td.cnb)) {
                     // don't compile already compiled tests dependencies
-                    return ;
+                    String p = td.getTestJarPath(false);
+                    if (p != null && new File(p).exists()) {
+                        return;
+                    }
+                    p = td.getTestJarPath(true);
+                    if (p != null && new File(p).exists()) {
+                        return;
+                    }
                 }
             }
             if (sb.length() > 0) {
@@ -1117,7 +1124,11 @@ public final class ParseProjectXml extends Task {
                // get tests files
                if (test) {
                    // get test folder
-                   String jarPath = getTestJarPath() ;
+                   String jarPath = getTestJarPath(false);
+                   if (jarPath != null) {
+                      files.add(jarPath);
+                   }
+                   jarPath = getTestJarPath(true);
                    if (jarPath != null) {
                       files.add(jarPath);
                    }
@@ -1125,7 +1136,10 @@ public final class ParseProjectXml extends Task {
            }
            return files;
        }
-       public String getTestJarPath() {
+       /**
+        * @param useUnit if true, try unit tests, even if this is of another type (so we can use unit test utils in any kind of tests)
+        */
+       public String getTestJarPath(boolean useUnit) {
            String sep = File.separator;
            ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
            if (entry == null) {
@@ -1136,7 +1150,15 @@ public final class ParseProjectXml extends Task {
                if (cluster == null) {
                    cluster = "cluster";
                }
-                return ParseProjectXml.cachedTestDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";           
+               String type = testDeps.testtype;
+               if (useUnit) {
+                   if (type.equals("unit")) {
+                       return null;
+                   } else {
+                       type = "unit";
+                   }
+               }
+               return ParseProjectXml.cachedTestDistLocation + sep + type + sep + cluster + sep + cnb.replace('.', '-') + sep + "tests.jar";
            }
        }
    } 

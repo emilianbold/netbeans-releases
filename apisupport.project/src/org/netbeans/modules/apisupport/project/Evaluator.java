@@ -744,6 +744,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         File jarFile = new File(
                                           testDistDir, testtype + s + clusterName + s + cnb.replace('.','-') + s + "tests.jar"); // NOI18N
                         cps.append(jarFile.getPath());
+                        // See ParseProjectXml:
+                        if (!testtype.equals("unit")) {
+                            cps.append(':');
+                            jarFile = new File(testDistDir, "unit" + s + clusterName + s + cnb.replace('.', '-') + s + "tests.jar"); // NOI18N
+                            cps.append(jarFile.getPath());
+                        }
                     }
                      
                 } else {
