@@ -466,7 +466,7 @@ public final class ParseProjectXml extends Task {
                    testDistLocation = "${" + TestDeps.TEST_DIST_VAR + "}";
                }
                ParseProjectXml.cachedTestDistLocation = testDistLocation;
-               
+    
                for (TestDeps td : getTestDeps(pDoc, modules, getCodeNameBase(pDoc))) {
                    // unit tests
                    TestType testType = getTestType(td.testtype);
@@ -474,11 +474,17 @@ public final class ParseProjectXml extends Task {
                        if (testType.getFolder() != null) {
                            define(testType.getFolder(),td.getTestFolder());
                        }
-                       if (testType.getCompileCP() != null && td.getCompileClassPath() != null && td.getCompileClassPath().trim().length() > 0) {
-                           define(testType.getCompileCP(),td.getCompileClassPath());
+                       if (testType.getCompileCP() != null) {
+                           String cp = td.getCompileClassPath();
+                           if (cp != null && cp.trim().length() > 0) {
+                               define(testType.getCompileCP(), cp);
+                           }
                        }
-                       if (testType.getRuntimeCP() != null && td.getRuntimeClassPath() != null && td.getRuntimeClassPath().trim().length() > 0) {
-                           define(testType.getRuntimeCP(),td.getRuntimeClassPath());
+                       if (testType.getRuntimeCP() != null) {
+                           String cp = td.getRuntimeClassPath();
+                           if (cp != null && cp.trim().length() > 0) {
+                               define(testType.getRuntimeCP(), cp);
+                           }
                        }
                        if (TestDeps.UNIT.equals(td.testtype)) {
                            String testCompileDep = td.getTestCompileDep();   
@@ -918,6 +924,7 @@ public final class ParseProjectXml extends Task {
       // code name base of tested module
       final String cnb;
       final ModuleListParser modulesParser;
+      boolean fullySpecified;
       
       private Set<String> missingEntries;
   
@@ -928,6 +935,11 @@ public final class ParseProjectXml extends Task {
           this.cnb = cnb;
           this.modulesParser = modulesParser;
       }
+
+       @Override
+       public String toString() {
+           return cnb + "/" + testtype + ":" + dependencies;
+       }
       
       public List<String> getFiles(boolean compile) {
           List<String> files = new ArrayList<String>();
@@ -938,6 +950,7 @@ public final class ParseProjectXml extends Task {
       }
       public void addDependency(TestDep dep) {
           dependencies.add(dep);
+          fullySpecified |= dep.cnb.equals("org.netbeans.libs.junit4");
       }
       public void addOptionalDependency(TestDep dep) {
           if (dep.modulesParser.findByCodeNameBase(dep.cnb) != null) {
@@ -1070,6 +1083,11 @@ public final class ParseProjectXml extends Task {
            this.test = test;
            this.testDeps = testDeps;
            this.compile = compile;
+       }
+
+       @Override
+       public String toString() {
+           return cnb + (recursive ? "/recursive" : "") + (test ? "/test" : "") + (compile ? "/compile" : "");
        }
        /* get modules dependecies
         */
@@ -1284,13 +1302,11 @@ public final class ParseProjectXml extends Task {
                 }
                 TestDeps testDeps = new TestDeps(testType,testCnb,modules);
                 testDepsList.add(testDeps);
-                boolean fullySpecified = false;
                 for (Element el : XMLUtil.findSubElements(depssEl)) {
                     if (el.getTagName().equals("test-dependency")) {
                         // parse test dep
                         boolean  test =   (findNBMElement(el,"test") != null);
                         String cnb =  findTextOrNull(el,"code-name-base");
-                        fullySpecified |= cnb.equals("org.netbeans.libs.junit4");
                         boolean  recursive = (findNBMElement(el,"recursive") != null);
                         boolean  compile = (findNBMElement(el,"compile-dependency") != null);
                         testDeps.addDependency(new TestDep(cnb,
@@ -1302,19 +1318,6 @@ public final class ParseProjectXml extends Task {
                     }
 
                 }
-                if (!fullySpecified) {
-                    for (String library : new String[] {"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
-                        testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
-                    }
-                    if (testType.startsWith("qa-")) {
-                        // ProjectSupport moved from the old nbjunit.ide:
-                        testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, false, true, true, testDeps));
-                        // Common GUI testing tools:
-                        for (String library : new String[] {"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
-                            testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
-                        }
-                    }
-                }
             }
         }
         // #82204 intialize default testtypes when are not  in project.xml
@@ -1325,6 +1328,22 @@ public final class ParseProjectXml extends Task {
         if (!existsQaFunctionalTests) {
             log("Default TestDeps for qa-functional", Project.MSG_VERBOSE);
             testDepsList.add(new TestDeps(TestDeps.QA_FUNCTIONAL,testCnb,modules));
+        }
+        for (TestDeps testDeps : testDepsList) {
+            if (testDeps.fullySpecified) {
+                continue;
+            }
+            for (String library : new String[]{"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
+                testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
+            }
+            if (testDeps.testtype.startsWith("qa-")) {
+                // ProjectSupport moved from the old nbjunit.ide:
+                testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, false, true, true, testDeps));
+                // Common GUI testing tools:
+                for (String library : new String[]{"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
+                    testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
+                }
+            }
         }
         return testDepsList.toArray(new TestDeps[testDepsList.size()]);
     }
