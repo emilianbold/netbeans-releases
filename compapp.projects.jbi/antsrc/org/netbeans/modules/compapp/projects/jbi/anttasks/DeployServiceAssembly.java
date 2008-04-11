@@ -55,6 +55,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
