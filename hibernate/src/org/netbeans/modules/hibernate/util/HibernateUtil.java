@@ -97,7 +97,7 @@ public class HibernateUtil {
                         do {
                             java.sql.ResultSet rs = dbMetadata.getTables(null, rsSchema.getString("TABLE_SCHEM"), null, new String[]{"TABLE"}); //NOI18N
                             while (rs.next()) {
-                                allTables.add(rs.getString("TABLE_NAME")); 
+                                allTables.add(rs.getString("TABLE_NAME")); //NOI18N
                             }
                         } while (rsSchema.next());
                     } else {
