@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -95,7 +96,12 @@ public abstract class CopySupport {
 		SourceTargetPair<FileObject, File> nextPair = allPairs.poll();
 		Map<File, SourceTargetPair<FileObject, File>> m = new HashMap<File, SourceTargetPair<FileObject, File>>();
 		while (nextPair != null) {
-                    m.put(nextPair.getTarget(), nextPair);
+                    if (nextPair.isInitModifier()) {                    
+                        //init first
+                        doInit(nextPair);
+                    } else {                                        
+                        m.put(nextPair.getTarget(), nextPair);
+                    }
                     nextPair = allPairs.poll();
 		}
 		for (SourceTargetPair<FileObject, File> pair : m.values()) {
@@ -109,6 +115,19 @@ public abstract class CopySupport {
 		}
 	    }
 
+	    private void doInit(SourceTargetPair<FileObject, File> nextPair) {            
+                try {
+                    File target = nextPair.getTarget();
+                    File[] childs = target.listFiles();
+                    for (File file : childs) {
+                        doDelete(file);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+            
 	    private void doCopy(SourceTargetPair<FileObject, File> nextPair) {
 		try {
 		    File target = nextPair.getTarget();
@@ -155,9 +174,11 @@ public abstract class CopySupport {
 	    if (propertyName.equals(PhpProjectProperties.COPY_SRC_TARGET) ||
 		    propertyName.equals(PhpProjectProperties.SRC_DIR) ||
 		    propertyName.equals(PhpProjectProperties.COPY_SRC_FILES)) {
+                assert !propertyChangeEvent.getNewValue().equals(propertyChangeEvent.getOldValue());
 		ProjectManager.mutex().readAccess(new Runnable() {
 		    public void run() {
 			setConfig(new ConfigurationFactory(project).getConfiguration());
+                        start(true);
 		    }
 		});		
 	    }
@@ -190,7 +211,7 @@ public abstract class CopySupport {
 	protected void projectOpened(PhpProject project) {
 	    init(project);
 	    isProjectOpened = true;	    	    
-	    start();
+	    start(false);
 	}
 
 	@Override
@@ -212,9 +233,12 @@ public abstract class CopySupport {
 	    assert config != null;
 	    synchronized (this) {
 		this.config = config;
-	    }
-	    start();
+	    }	    
 	}
+
+        private boolean isProjectFolder(FileObject fo) {
+            return FileUtil.isParentOf(getConfig().getSource(), fo);
+        }
 
 	private FileObject getSourceRoot() {
 	    return getConfig().getSource();
@@ -230,18 +254,31 @@ public abstract class CopySupport {
 		PropertyEvaluator evaluator = project.getEvaluator();
 		evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
 		ConfigurationFactory factory = new ConfigurationFactory(project);
-		setConfig(factory.getConfiguration());
+		setConfig(factory.getConfiguration());                
 	    } else {
 		assert this.project.equals(project);
 	    }
 	}
 
-	private boolean isProjectFileObject(FileObject fo) {
-	    return !getConfig().isInvalidModifier() && FileUtil.isParentOf(getConfig().getSource(), fo);
+	private boolean isCopyAllowed(FileObject fo,boolean forDelete) {
+	     if (getConfig().isInvalidModifier() || !isProjectFolder(fo)) {
+                 return false;
+             }
+             if (!forDelete) {
+                 File srcRoot = FileUtil.toFile(getConfig().getSource());
+                 File tmp = FileUtil.toFile(fo);
+                 while(tmp != null && !tmp.equals(srcRoot)) {                              
+                     if (!VisibilityQuery.getDefault().isVisible(tmp)) {
+                         return false;
+                     }
+                     tmp = tmp.getParentFile();
+                 }
+             }
+             return true;
 	}
 
 	private void prepareForCopy(FileObject source) {
-	    if (isProjectFileObject(source)) {
+	    if (isCopyAllowed(source,false)) {
 		assert source.isValid();
 		prepareOperation(source, false);
 	    }
@@ -264,7 +301,7 @@ public abstract class CopySupport {
 	}
 
 	private void prepareForDelete(FileObject source) {
-	    if (isProjectFileObject(source)) {
+	    if (isCopyAllowed(source,true)) {
 		assert !source.isValid();
 		prepareOperation(source, true);
 	    }
@@ -274,7 +311,7 @@ public abstract class CopySupport {
 	    SourceTargetPair<FileObject, FileObject> config = getConfig();
 	    if (config != null && !config.isInvalidModifier() && config.isCopyModifier()) {
                 FileObject sourceFo = fe.getFile();                            
-                if (isProjectFileObject(sourceFo)) {
+                if (isCopyAllowed(sourceFo,false)) {
                     if (sourceFo.isFolder()) {
                         FileObject[] children = sourceFo.getChildren();
                         for (FileObject fileObject : children) {
@@ -297,25 +334,36 @@ public abstract class CopySupport {
             }
 	}
         
-	private synchronized void prepareInitCopy() {	    
-	    final FileObject targetRoot = getTargetRoot();
-	    File target = FileUtil.toFile(targetRoot);
-	    if (target != null) {
-		String[] childNames = target.list();
-		if (childNames != null && childNames.length == 0) {
-		    Enumeration<? extends FileObject> e = getSourceRoot().getChildren(true);
-		    while (e.hasMoreElements()) {
-			FileObject source = e.nextElement();
-			assert isProjectFileObject(source);
-			prepareForCopy(source);
-		    }
-		}
-	    }
-	}
+        private synchronized void prepareInitCopy() {
+            SourceTargetPair<FileObject, File> forInit = SourceTargetPair.forInit(config);
+            prepareOperation(forInit);
+            final FileObject targetRoot = getTargetRoot();
+            File target = FileUtil.toFile(targetRoot);
+            if (target != null) {
+                String[] childNames = target.list();
+                Enumeration<? extends FileObject> e = getSourceRoot().getChildren(true);
+                while (e.hasMoreElements()) {
+                    FileObject source = e.nextElement();
+                    prepareForCopy(source);
+                }
+            }
+        }
 
-	private void prepareOperation(FileObject source, boolean delete) {
+        private boolean existsEmptyFolder(FileObject target) {
+            assert target != null;            
+            assert target.isFolder();
+            return existsEmptyFolder(FileUtil.toFile(target));
+        }
+        
+        private boolean existsEmptyFolder(File target) {
+            assert target.isDirectory();
+            String[] childNames = target.list();
+            return (childNames != null && childNames.length == 0);            
+        }
+
+	private void prepareOperation(FileObject source, boolean forDelete) {
 	    File target = targetForSource(source);
-	    if (delete) {
+	    if (forDelete) {
 		prepareOperation(SourceTargetPair.forDelete(source, target));
 	    } else {
 		prepareOperation(SourceTargetPair.forCopy(source, target));
@@ -328,11 +376,13 @@ public abstract class CopySupport {
             task.schedule(300);
         }   
         
-	synchronized private void start() {
+	synchronized private void start(boolean initCopy) {
 	    stop();
 	    final SourceTargetPair<FileObject, FileObject> config = getConfig();
 	    if (config != null && !config.isInvalidModifier() && config.isCopyModifier()) {
-		prepareInitCopy();
+                if (initCopy || existsEmptyFolder(config.getTarget())) {
+                    prepareInitCopy();
+                }
 		if (weakFileChangeListener == null && isProjectOpened) {
 		    try {
 			fileSystem = config.getSource().getFileSystem();
@@ -442,8 +492,7 @@ public abstract class CopySupport {
     private static class SourceTargetPair<S, T> {
 
 	private static enum Modifier {
-
-	    IDLE, COPY, DELETE, INVALID
+	    IDLE, COPY, DELETE, INIT, INVALID
 	}
 	private final S source;
 	private final T target;
@@ -453,6 +502,14 @@ public abstract class CopySupport {
 	    return new SourceTargetPair<FileObject, FileObject>();
 	}
 
+	static SourceTargetPair<FileObject, File> forInit(SourceTargetPair<FileObject, FileObject> config) {
+            FileObject sourceRoot = config.getSource();
+            File targetRoot = FileUtil.toFile(config.getTarget());
+	    assert sourceRoot.isFolder();
+	    assert targetRoot.isDirectory();
+	    return new SourceTargetPair<FileObject, File>(sourceRoot, targetRoot, Modifier.INIT);
+	}
+        
 	static SourceTargetPair<FileObject, FileObject> forConfig(FileObject sourceRoot, FileObject targetRoot, boolean copyEnabled) {
 	    assert sourceRoot.isFolder();
 	    assert targetRoot.isFolder();
@@ -507,5 +564,8 @@ public abstract class CopySupport {
 	boolean isInvalidModifier() {
 	    return modifier.equals(Modifier.INVALID);
 	}
+	boolean isInitModifier() {
+	    return modifier.equals(Modifier.INIT);
+	}        
     }
 }
