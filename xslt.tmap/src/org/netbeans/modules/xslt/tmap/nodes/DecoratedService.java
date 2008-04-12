@@ -42,19 +42,12 @@ public class DecoratedService extends DecoratedTMapComponentAbstract<Service>{
     public String getHtmlDisplayName() {
         Service ref = getOriginal();
         String pltName = null;
-        String roleName = null;
         if (ref != null) {
-            pltName = Util.getReferenceLocalName(ref.getPartnerLinkType());
-            roleName = Util.getReferenceLocalName(ref.getRole());
+            pltName = Util.getReferenceLocalName(ref.getPortType());
         }
         String addon = null;
         if (pltName != null) {
             addon = TMapComponentNode.WHITE_SPACE+pltName; // NOI18N
-        }
-        
-        if (roleName != null) {
-            addon = (addon == null ? TMapComponentNode.EMPTY_STRING 
-                    : addon+TMapComponentNode.WHITE_SPACE)+ roleName; // NOI18N
         }
         
         return Util.getGrayString(super.getHtmlDisplayName(), addon);
@@ -67,12 +60,12 @@ public class DecoratedService extends DecoratedTMapComponentAbstract<Service>{
         
         if (ref != null) {
             attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getPartnerLinkType()
-                    , Service.PARTNER_LINK_TYPE));
-                    
+                    Util.getLocalizedAttribute(ref.getName()
+                    , Service.NAME_PROPERTY));
+
             attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getRole()
-                    , Service.ROLE_NAME));
+                    Util.getLocalizedAttribute(ref.getPortType()
+                    , Service.PORT_TYPE));
         }
        
         return NbBundle.getMessage(TMapComponentNode.class, 
