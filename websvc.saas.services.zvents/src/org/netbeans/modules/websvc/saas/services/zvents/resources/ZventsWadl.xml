@@ -3,14 +3,17 @@
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-	     xmlns="http://research.sun.com/wadl/2006/10">
-    <grammars/>    
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:z="urn:zvents:zventsresponse" >
+    <grammars>
+        <include href="ZventsResponse.xsd"/>
+    </grammars>
     <resources base="http://www.zvents.com/rest">
         <resource path="search">
-            <method name="GET" id="searchGet">
+            <method name="GET" id="searchEvents">
                 <doc xml:lang="en">
                     Search for events based on the type indicated in the &quot;what&quot; parameter.
-                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html  
+                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html
                 </doc>
                 <request>
                     <param name="key" type="xsd:string" required="true" style="query">
@@ -82,7 +85,7 @@
                     </param>
                     <param name="cc" type="xsd:string" required="false" style="query">
                         <doc xml:lang="en">
-                            Set to 1 to include category information in the search results. This will 
+            _                Set to 1 to include category information in the search results. This will 
                             give you the list of categories within the search result set. You can search 
                             within a specific category using the cat option. Defaults to 0.
                         </doc>
@@ -92,12 +95,32 @@
                            Set to 1 to include a list of events within the same repeat series that 
                            occur within the time range of the search. Defaults to 0.
                         </doc>
-                    </param>		
+                    </param>
                 </request>
                 <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="search_for_venues">
+            <method name="GET" id="searchVenues">
+                <doc xml:lang="en">
+                    Search for venues based on the type indicated in the &quot;what&quot; parameter.
+                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html
+                </doc>
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="what" type="xsd:string" required="false" style="query"/>
+                    <param name="where" type="xsd:string" required="false" style="query"/>
+                    <param name="radius" type="xsd:string" required="false" style="query"/>
+                    <param name="limit" type="xsd:string" required="false" style="query"/>
+                    <param name="offset" type="xsd:string" required="false" style="query"/>
+                    <param name="vt" type="xsd:string" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
                 </response>
             </method>
         </resource>
     </resources>
-
 </application>
