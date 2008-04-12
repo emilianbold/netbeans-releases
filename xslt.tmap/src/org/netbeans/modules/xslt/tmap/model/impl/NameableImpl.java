@@ -16,17 +16,33 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.xslt.tmap.model.api;
+package org.netbeans.modules.xslt.tmap.model.impl;
 
-import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
+import org.netbeans.modules.xslt.tmap.model.api.Nameable;
+import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
+import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
+import org.w3c.dom.Element;
+
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Invoke extends TMapComponent, VariableDeclarator,
-        PortTypeReference, OperationReference, TransformerDescriptor, Nameable 
+public abstract class NameableImpl extends TMapComponentAbstract 
+    implements Nameable 
 {
-    TMapComponents TYPE = TMapComponents.INVOKE;
+
+    public NameableImpl(TMapModelImpl model, Element element) {
+        super(model, element);
+    }
+
+    public void setName(String str) throws VetoException {
+        setAttribute(Nameable.NAME_PROPERTY, TMapAttributes.NAME, str);
+    }
+
+    public String getName() {
+        return getAttribute(TMapAttributes.NAME);
+    }
+    
 }

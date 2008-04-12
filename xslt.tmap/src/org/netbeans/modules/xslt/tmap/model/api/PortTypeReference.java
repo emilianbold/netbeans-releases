@@ -18,15 +18,27 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Invoke extends TMapComponent, VariableDeclarator,
-        PortTypeReference, OperationReference, TransformerDescriptor, Nameable 
-{
-    TMapComponents TYPE = TMapComponents.INVOKE;
+public interface PortTypeReference extends ReferenceCollection {
+    /**
+     * Port Type attribute name
+     */
+    String PORT_TYPE = "portType"; // NOI18N
+    
+    /**
+     * 
+     * @return 
+     */
+    WSDLReference<PortType> getPortType();
+    /**
+     * 
+     * @param portRef - reference to the port type
+     */
+    void setPortType(WSDLReference<PortType> portRef);
 }
