@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -116,10 +117,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         locationPanelVisual.setProjectName(getProjectName());
 
         // sources
-        MutableComboBoxModel localServers = getLocalServers();
-        if (localServers != null) {
-            locationPanelVisual.setLocalServerModel(localServers);
-        }
+        locationPanelVisual.setLocalServerModel(getLocalServers());
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
             locationPanelVisual.selectSourcesLocation(wwwFolder);
@@ -249,7 +247,63 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServers() {
-        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+        if (model != null) {
+            return model;
+        }
+        return getOSDependentLocalServers();
+    }
+
+    private MutableComboBoxModel getOSDependentLocalServers() {
+        MutableComboBoxModel model = locationPanelVisual.getLocalServerModel();
+        assert model.getSize() == 0;
+        if (Utilities.isUnix()) {
+            fillUnixLocalServers(model);
+        }
+        return model;
+    }
+
+    private void fillUnixLocalServers(final MutableComboBoxModel model) {
+        model.addElement(DEFAULT_LOCAL_SERVER);
+        LocalServer selected = null;
+
+        String webFolderName = getWebFolderName();
+        File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
+        if (userDir.exists()) {
+            LocalServer userDirLS = new LocalServer(getFolderName(userDir, webFolderName));
+            model.addElement(userDirLS);
+            if (selected == null) {
+                selected = userDirLS;
+                String user = System.getProperty("user.name"); // NOI18N
+                setDefaultUrl("~" + user + "/" + webFolderName); // NOI18N
+            }
+        }
+
+        File www = new File("/var/www"); // NOI18N
+        File wwwLocalhost = new File(www, "localhost"); // NOI18N
+        if (wwwLocalhost.exists()) {
+            LocalServer wwwLocalhostLS = new LocalServer(getFolderName(wwwLocalhost, webFolderName));
+            model.addElement(wwwLocalhostLS);
+            if (selected == null) {
+                selected = wwwLocalhostLS;
+                setDefaultUrl(webFolderName);
+            }
+        } else if (www.exists()) {
+            LocalServer wwwLS = new LocalServer(getFolderName(www, webFolderName));
+            model.addElement(wwwLS);
+            if (selected == null) {
+                selected = wwwLS;
+                setDefaultUrl(webFolderName);
+            }
+        }
+        if (selected == null) {
+            selected = DEFAULT_LOCAL_SERVER;
+        }
+        model.setSelectedItem(selected);
+    }
+
+    private String getFolderName(File location, String name) {
+        return new File(location, name).getAbsolutePath();
     }
 
     private String getUrl() {
@@ -262,6 +316,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     private String getDefaultUrl() {
         return "http://localhost/" + getProjectName() + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
+    }
+
+    private void setDefaultUrl(String urlPart) {
+        descriptor.putProperty(URL, "http://localhost/" + urlPart + "/"); // NOI18N
     }
 
     private Boolean isCreateIndex() {
