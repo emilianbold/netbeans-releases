@@ -8,12 +8,12 @@
                 <xsd:element name="stream_count" type="xsd:integer"/>
                 <xsd:element name="venue" maxOccurs="unbounded" minOccurs="0" type="venueType"/>
                 <xsd:element name="event" type="eventType" minOccurs="0" maxOccurs="unbounded"/>
-                <xsd:element name="category" maxOccurs="unbounded" type="categoryType"/>
+                <xsd:element name="category" maxOccurs="unbounded" type="categoryType" minOccurs="0"/>
                 <xsd:element name="group" minOccurs="0" maxOccurs="unbounded" type="groupType"/>
                 <xsd:element name="user" minOccurs="0" maxOccurs="unbounded" type="userType"/>
                 <xsd:element name="tag" minOccurs="0" maxOccurs="unbounded" type="tagType"/>
                 <xsd:element name="search_info" type="searchInfoType" minOccurs="0"/>
-                <xsd:element name="venue_type"/>
+                <xsd:element name="venue_type" minOccurs="0" type="venueTypeType"/>
             </xsd:sequence>
             <xsd:attribute name="status" type="xsd:string"/>
         </xsd:complexType>
@@ -34,24 +34,62 @@
             <xsd:element name="latitude" type="xsd:float"/>
             <xsd:element name="longitude" type="xsd:float"/>
             <xsd:element name="images" minOccurs="0" type="imageType"/>
-            <xsd:element name="venue_types" type="venueType"/>
+            <xsd:element name="venue_types">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="venue_type" minOccurs="0" maxOccurs="unbounded" type="venueTypeType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="id" type="xsd:integer"/>
     </xsd:complexType>
     <xsd:complexType name="eventType">
         <xsd:sequence>
             <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="description" type="xsd:string"/>
-            <xsd:element name="url" type="xsd:anyURI"/>
-            <xsd:element name="starttime" type="xsd:long"/>
-            <xsd:element name="endtime" type="xsd:long"/>
+            <xsd:element name="description" type="xsd:string" nillable="true" minOccurs="1"/>
+            <xsd:element name="url" type="xsd:anyURI" minOccurs="1"/>
+            <xsd:element name="starttime" type="xsd:integer"/>
+            <xsd:element name="endtime" type="xsd:integer" minOccurs="1"/>
             <xsd:element name="creator_id" type="xsd:integer"/>
-            <xsd:element name="price" type="xsd:string"/>
-            <xsd:element name="venue_id" type="xsd:string"/>
-            <xsd:element name="parent_id" type="xsd:string"/>
-            <xsd:element name="series_count" type="xsd:integer"/>
+            <xsd:element name="price" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="venue_id" type="xsd:integer"/>
+            <xsd:element name="parent_id" type="xsd:integer"/>
+            <xsd:element name="summary" type="xsd:string" nillable="false" minOccurs="1"/>
+            <xsd:element name="link" type="xsd:anyURI"/>
+            <xsd:element name="external_urls">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="external_url" minOccurs="0" maxOccurs="unbounded" type="externalUrlType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="phone" type="xsd:string"/>
+            <xsd:element name="age_suitability" type="xsd:string"/>
+            <xsd:element name="images" type="imageType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="tags" >
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tag" type="tagType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="performers">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="performer" type="performerType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="categories">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="category" minOccurs="0" maxOccurs="unbounded" type="categoryType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="id" type="xsd:integer"/>
     </xsd:complexType>
     <xsd:complexType name="groupType">
         <xsd:sequence>
@@ -62,7 +100,7 @@
             <xsd:element name="creator_id" type="xsd:integer"/>
             <xsd:element name="restrict_event_addition" type="xsd:integer"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="id" type="xsd:integer"/>
     </xsd:complexType>
     <xsd:complexType name="categoryType">
         <xsd:sequence>
@@ -70,8 +108,8 @@
             <xsd:element name="description" type="xsd:string"/>
             <xsd:element name="parent_id" type="xsd:integer"/>
             <xsd:element name="depth" type="xsd:integer"/>
+            <xsd:element name="id" type="xsd:integer"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="userType">
         <xsd:sequence>
@@ -83,20 +121,20 @@
         <xsd:sequence>
             <xsd:element name="name" type="xsd:string"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="id" type="xsd:integer"/>
     </xsd:complexType>
     <xsd:complexType name="searchInfoType">
         <xsd:sequence>
-            <xsd:element name="sst" type="xsd:long" nillable="true"/>
-            <xsd:element name="set" type="xsd:long" nillable="true"/>
+            <xsd:element name="sst" type="xsd:integer" nillable="true"/>
+            <xsd:element name="set" type="xsd:integer" nillable="true"/>
             <xsd:element name="srss" type="xsd:integer" nillable="true"/>
             <xsd:element name="what" type="xsd:string"/>
             <xsd:element name="when" type="xsd:string"/>
             <xsd:element name="where" type="xsd:string"/>
-            <xsd:element name="radius" type="xsd:string"/>
+            <xsd:element name="radius" type="xsd:float"/>
             <xsd:element name="st" type="xsd:string"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="id" type="xsd:integer"/>
     </xsd:complexType>
     <xsd:complexType name="imageType">
         <xsd:sequence>
@@ -105,10 +143,25 @@
     </xsd:complexType>
     <xsd:complexType name="venueTypeType">
         <xsd:sequence>
-            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="id" type="xsd:integer"/>
             <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="venue_type"/>
         </xsd:sequence>
         <!--xsd:attribute name="id" type="xsd:string"/-->
+    </xsd:complexType>
+    <xsd:complexType name="externalUrlType">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:string"/>
+            <xsd:element name="anchor_text" type="xsd:string"/>
+            <xsd:element name="location" type="xsd:anyURI"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="performerType">
+        <xsd:sequence>
+            <xsd:element name="id" type="xsd:integer"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="link" type="xsd:anyURI"/>
+        </xsd:sequence>
     </xsd:complexType>
 </xsd:schema>
 
