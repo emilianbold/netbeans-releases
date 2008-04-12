@@ -71,19 +71,19 @@ remove_remote_root() {
 #Modify my.cnf with settings
 #PORT_NUMBER, SKIP_NETWORKING, REMOVE_ANONYMOUS should be passed via env variables
 if [ -n "$PORT_NUMBER" ] ; then
-    sed -i -e "s/3306/$PORT_NUMBER/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
+    sed  -e "s/3306/$PORT_NUMBER/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 fi
 
 if [ -n "$SKIP_NETWORKING" ] ; then
-    sed -i -e "s/#skip-networking/skip-networking/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
+    sed -e "s/#skip-networking/skip-networking/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 fi
 
 #Enable using InnoDB
-sed -i -e "s/#innodb_/innodb_/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
+sed -e "s/#innodb_/innodb_/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 
 #Update mysql directory
 DEFAULT_MYSQL_DIR=/usr/local/mysql
-sed -i -e "s/`escape $DEFAULT_MYSQL_DIR`/`escape $INSTALLDIR`/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
+sed -e "s/`escape $DEFAULT_MYSQL_DIR`/`escape $INSTALLDIR`/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 
 
 if [ 1 -eq $ISROOT ] ; then
