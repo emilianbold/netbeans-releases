@@ -70,7 +70,7 @@ remove_remote_root() {
 
 #Modify my.cnf with settings
 #PORT_NUMBER, SKIP_NETWORKING, REMOVE_ANONYMOUS should be passed via env variables
-if [ -n "$PORT_NUMBER" ] ;
+if [ -n "$PORT_NUMBER" ] ; then
     sed -i -e "s/3306/$PORT_NUMBER/g" ./my.cnf
 fi
 
@@ -117,7 +117,7 @@ fi
 "$INSTALLDIR"/bin/mysqld_safe --user=mysql --no-defaults &
 sleep 3
 
-if [ -n "$REMOVE_ANONYMOUS" ] ; 
+if [ -n "$REMOVE_ANONYMOUS" ] ; then 
     do_query "DELETE FROM mysql.user WHERE User='';"
     echo "Result : $?"
     do_query "FLUSH PRIVILEGES;"
