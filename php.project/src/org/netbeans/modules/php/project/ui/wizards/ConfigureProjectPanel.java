@@ -270,6 +270,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             fillUnixLocalServers(model);
         } else if (Utilities.isWindows()) {
             fillWindowsLocalServers(model);
+        } else if (Utilities.isMac()) {
+            fillMacLocalServers(model);
         }
 
         if (model.getSelectedItem() == null) {
@@ -326,6 +328,17 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         model.addElement(htDocsLS);
         model.setSelectedItem(htDocsLS);
         setDefaultUrl(webFolderName);
+    }
+
+    private void fillMacLocalServers(final MutableComboBoxModel model) {
+        String webFolderName = getWebFolderName();
+        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
+        if (mamp.exists()) {
+            LocalServer mampLS = new LocalServer(getFolderName(mamp, webFolderName));
+            model.addElement(mampLS);
+            model.setSelectedItem(mampLS);
+            setDefaultUrl(webFolderName);
+        }
     }
 
     private String getFolderName(File location, String name) {
