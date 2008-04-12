@@ -43,6 +43,7 @@ import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -75,6 +76,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
+
+    private static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().startsWith("apache"); // NOI18N
+        }
+    };
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
@@ -257,14 +264,21 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private MutableComboBoxModel getOSDependentLocalServers() {
         MutableComboBoxModel model = locationPanelVisual.getLocalServerModel();
         assert model.getSize() == 0;
+
+        model.addElement(DEFAULT_LOCAL_SERVER);
         if (Utilities.isUnix()) {
             fillUnixLocalServers(model);
+        } else if (Utilities.isWindows()) {
+            fillWindowsLocalServers(model);
+        }
+
+        if (model.getSelectedItem() == null) {
+            model.setSelectedItem(DEFAULT_LOCAL_SERVER);
         }
         return model;
     }
 
     private void fillUnixLocalServers(final MutableComboBoxModel model) {
-        model.addElement(DEFAULT_LOCAL_SERVER);
         LocalServer selected = null;
 
         String webFolderName = getWebFolderName();
@@ -296,10 +310,22 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 setDefaultUrl(webFolderName);
             }
         }
-        if (selected == null) {
-            selected = DEFAULT_LOCAL_SERVER;
+
+        if (selected != null) {
+            model.setSelectedItem(selected);
         }
-        model.setSelectedItem(selected);
+    }
+
+    private void fillWindowsLocalServers(final MutableComboBoxModel model) {
+        File htDocs = getWindowsHtDocsDirectory();
+        if (htDocs == null) {
+            return;
+        }
+        String webFolderName = getWebFolderName();
+        LocalServer htDocsLS = new LocalServer(getFolderName(htDocs, webFolderName));
+        model.addElement(htDocsLS);
+        model.setSelectedItem(htDocsLS);
+        setDefaultUrl(webFolderName);
     }
 
     private String getFolderName(File location, String name) {
@@ -320,6 +346,38 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     private void setDefaultUrl(String urlPart) {
         descriptor.putProperty(URL, "http://localhost/" + urlPart + "/"); // NOI18N
+    }
+
+    private File getWindowsHtDocsDirectory() {
+        // list all harddrives (C - Z)
+        for (int i = 12; i < 36; i++) {
+            char hardDrive = Character.toUpperCase(Character.forDigit(i, Character.MAX_RADIX));
+            File programFiles = new File(hardDrive + ":\\Program Files"); // NOI18N
+            if (!programFiles.exists()) {
+                continue;
+            }
+            File htDocs = findHtDocs(programFiles);
+            if (htDocs != null) {
+                return htDocs;
+            }
+        }
+        return null;
+    }
+
+    private File findHtDocs(File startDir) {
+        String[] apaches = startDir.list(APACHE_FILENAME_FILTER);
+        if (apaches == null || apaches.length == 0) {
+            return null;
+        }
+        for (String apache : apaches) {
+            File apacheDir = new File(startDir, apache);
+            File htDocs = new File(apacheDir, "htdocs"); // NOI18N
+            if (htDocs.exists()) {
+                return htDocs;
+            }
+            return findHtDocs(apacheDir);
+        }
+        return null;
     }
 
     private Boolean isCreateIndex() {
