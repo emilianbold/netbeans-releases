@@ -114,7 +114,12 @@ if [ 1 -eq $ISROOT ] ; then
     echo "Result : $?"
 fi
 
-"$INSTALLDIR"/bin/mysqld_safe --user=mysql --no-defaults &
+if [ 1 -eq $ISROOT ] ; then
+    ./bin/mysqld_safe --user=mysql --no-defaults &
+else 
+    ./bin/mysqld_safe --no-defaults &
+fi
+
 sleep 3
 
 if [ -n "$REMOVE_ANONYMOUS" ] ; then 
