@@ -497,6 +497,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         File directory = getProduct().getInstallationLocation();
         if (SystemUtils.isWindows()) {
             uninstallWindows(progress, directory);
+        } else {
+            uninstallUnix(progress, directory);
         }
 
         try {
@@ -551,6 +553,39 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setPercentage(progress.COMPLETE);
         }
     }
+    private void uninstallUnix(Progress progress, File location) throws UninstallationException {
+        final File uninstallScript = new File(location, "uninstall-mysql.sh");
+        try {
+            InputStream is = ResourceUtils.getResource(UNINSTALL_SCRIPT_UNIX,
+                    getClass().getClassLoader());
+            FileUtils.writeFile(uninstallScript, is);
+            SystemUtils.setPermissions(uninstallScript, FileAccessMode.EU, NativeUtils.FA_MODE_ADD);
+            is.close();
+            List<String> commandsList = new ArrayList<String>();
+            commandsList.add(uninstallScript.getAbsolutePath());
+            commandsList.add(getProperty(MySQLPanel.PASSWORD_PROPERTY));
+            ExecutionResults results = SystemUtils.executeCommand(location, commandsList.toArray(new String[0]));
+            if(results.getStdErr().contains("Check that mysqld is running")) {
+                LogManager.log("MySQL server is not running");
+            } else if (results.getErrorCode() != 0) {
+                throw new UninstallationException(
+                        ResourceUtils.getString(ConfigurationLogic.class,
+                        ERROR_MYSQL_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY,
+                        StringUtils.EMPTY_STRING + results.getErrorCode()));
+            }
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_UNINSTALL_MYSQL_ERROR_KEY), e);
+        } finally {
+            progress.setPercentage(progress.COMPLETE);
+            try {
+                FileUtils.deleteFile(uninstallScript);
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
+    }
 
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
@@ -563,7 +598,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     @Override
     public boolean registerInSystem() {
-        return false;
+        return !SystemUtils.isWindows();
     }
 
     @Override
@@ -739,4 +774,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "MYSQL";
     public static final String INSTALL_SCRIPT_UNIX =
             "org/netbeans/installer/products/mysql/scripts/install.sh";
+    public static final String UNINSTALL_SCRIPT_UNIX =
+            "org/netbeans/installer/products/mysql/scripts/uninstall.sh";
 }
