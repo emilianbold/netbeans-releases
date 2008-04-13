@@ -113,17 +113,17 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     };
     
     public static Decorator JDBC_MANAGED_DATASOURCES = new Decorator() {
-        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
     };
     
     public static Decorator JDBC_NATIVE_DATASOURCES = new Decorator() {
-        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
     };
     
     public static Decorator CONNECTION_POOLS = new Decorator() {
-        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
     };
 

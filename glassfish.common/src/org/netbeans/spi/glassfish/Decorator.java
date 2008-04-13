@@ -104,6 +104,15 @@ public abstract class Decorator {
     }
 
     /**
+     * Can this node be undeployed?
+     * 
+     * @return true if undeploy is supported.
+     */
+    public boolean canUnregister() {
+        return false;
+    }
+
+    /**
      * Can this node be executed to show a browser page?
      * 
      * @return true if can be shown by a browser.

@@ -40,7 +40,6 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.ResourceDesc;
+import org.netbeans.spi.glassfish.ServerCommand;
 
 
 /**
@@ -60,112 +60,8 @@ import org.netbeans.spi.glassfish.ResourceDesc;
  *
  * @author Peter Williams
  */
-public abstract class ServerCommand {
+public class Commands {
 
-    private ServerCommand() {
-    }
-    
-    /**
-     * Override to provide the server command represented by this object.  Caller
-     * will prefix with http://host:port/__asadmin/ and open the server connection.
-     * 
-     * @return suffix to append to [host]/__asadmin/ for server command.
-     */
-    public abstract String getCommand();
-
-    /**
-     * Override to change the type of HTTP method used for this command.
-     * Default is GET.
-     * 
-     * @return HTTP method (GET, PUT, etc.)
-     */
-    public String getRequestMethod() {
-        return "GET"; // NOI18N
-    }
-    
-    /**
-     * Override and return true to send information to the server (HTTP PUT).
-     * Default is false.
-     * 
-     * @return HTTP method (GET, PUT, etc.)
-     */
-    public boolean getDoOutput() {
-        return false;
-    }
-    
-    /**
-     * Override to set the content-type of information sent to the server.
-     * Default is null (not set).
-     * 
-     * @return HTTP method (GET, PUT, etc.)
-     */
-    public String getContentType() {
-        return null;
-    }
-    
-    /**
-     * Override to provide a data stream for PUT requests.  Data will be read
-     * from this stream [until EOF?] and sent to the server.
-     * 
-     * @return a new InputStream derivative that provides the data to send
-     *  to the server.  Caller is responsible for closing the stream.  Can
-     *  return null, in which case no data will be sent.
-     */
-    public InputStream getInputStream() {
-        return null;
-    }
-    
-    /**
-     * Override for command specific failure checking.
-     * 
-     * @param responseCode code returned by http request
-     * @return true if response was acceptable (e.g. 200) and handling of result
-     * should proceed.
-     */
-    public boolean handleResponse(int responseCode) {
-        return responseCode == 200;
-    }
-    
-    /**
-     * Override this to read the response data sent by the server (e.g. list-applications
-     * sends the currently deployed applications.)  Do not close the stream parameter
-     * when finished.  Caller will take care of that.
-     * 
-     * @param in Stream to read data from.
-     * @return true if response was read correctly.
-     * @throws java.io.IOException in case of stream error.
-     */
-    public boolean readResponse(InputStream in) throws IOException {
-        boolean result = false;
-
-        Manifest m = new Manifest();
-        m.read(in);
-        String outputCode = m.getMainAttributes().getValue("exit-code"); // NOI18N
-        if(outputCode.equalsIgnoreCase("Success")) { // NOI18N
-            readManifest(m);
-            result = true;
-        } else {
-            // !PW FIXME Need to pass this message back.  Need <Result> object?
-            String message = m.getMainAttributes().getValue("message"); // NOI18N
-            Logger.getLogger("glassfish").log(Level.WARNING, message);
-        }
-
-        return result;
-    }
-    
-    public void readManifest(Manifest manifest) throws IOException {
-    }
-    
-    /**
-     * Override this to parse, validate, and/or format any data read from the 
-     * server in readResponse().
-     * 
-     * @return true if data was processed correctly.
-     */
-    public boolean processResponse() {
-        return true;
-    }
-    
     // ------------------------------------------------------------------------
     // Specific server commands.
     // ------------------------------------------------------------------------
@@ -464,4 +360,51 @@ public abstract class ServerCommand {
         
     }
     
+    /**
+     * Command to unregister a resource.
+     */
+    public static final class UnregisterCommand extends ServerCommand {
+        
+        private final String command;
+        private final String name;
+        
+        public UnregisterCommand(final String name, final String resourceCmdSuffix) {
+            this.name = name;
+            this.command = "delete-" + resourceCmdSuffix;
+        }
+        
+        @Override
+        public String getCommand() { 
+            return command + "?--cascade=true?name=" + name; // NOI18N
+        }
+        
+    }
+    
+    /**
+     * Command to get version information from the server.
+     */
+    public static final class VersionCommand extends ServerCommand {
+
+        private Manifest info;
+        
+        public VersionCommand() {
+        }
+
+        @Override
+        public String getCommand() {
+            return "version";
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            return true;
+        }
+        
+    }
 }
+

@@ -45,6 +45,9 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -59,6 +62,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /** Implementation of ModuleConfiguration.
@@ -82,16 +86,16 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         
         Object type = module.getModuleType();
         File dds[] = new File[0];
-        if (module.EJB.equals(type)) {
+        if (J2eeModule.EJB.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-ejb-jar.xml"),
                 module.getDeploymentConfigurationFile("META-INF/sun-cmp-mappings.xml") };
-        } else if (module.CLIENT.equals(type)) {
+        } else if (J2eeModule.CLIENT.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-application-client.xml")};
-        } else if (module.WAR.equals(type)) {
+        } else if (J2eeModule.WAR.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("WEB-INF/sun-web.xml") };
-        } else if (module.CONN.equals(type)) {
+        } else if (J2eeModule.CONN.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-ra.xml") };
-        } else if (module.EAR.equals(type)) {
+        } else if (J2eeModule.EAR.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-application.xml") };
         }
         
@@ -189,10 +193,9 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      */
     public Set<Datasource> getDatasources() {
         checkConfiguration(config);
-        Hk2Configuration sunConfig = ((Hk2Configuration)config);
-//        Set projectDS = sunConfig.getDatasources();
-        Set<Datasource> projectDS = new HashSet<Datasource>();
-        return projectDS;
+        // XXX Is there a way to access (or create) the DatasourceMgr for the DM
+        // instead of calling a static method here?
+        return Hk2DatasourceManager.getDatasources(config.getResourceDirectory());
     }    
     
     /**
@@ -201,27 +204,42 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      * @return Returns true of plugin implements DS Management API's
      */
     public boolean supportsCreateDatasource() {
-//        return true;
-        return false;
+        // !PW FIXME Don't enable datasource creation just yet --
+        // XXX need to resolve writing to sun-resources.xml and poolname mapping.
+        // return true;
+        String createDSProp = System.getProperty("glassfish.javaee.createDataSources");
+        return Boolean.valueOf(createDSProp).booleanValue();
     }
     
     /**
      * Implementation of DS Management API in ConfigurationSupport
      * Creates DataSource objects for this J2EE Project
+     * 
      * @param config deployment configuration object for this J2EE project.
      * @param jndiName JNDI Name of JDBC Resource
      * @param url Url for database referred to by this JDBC Resource's Connection Pool
      * @param username UserName for database referred to by this JDBC Resource's Connection Pool
      * @param password Password for database referred to by this JDBC Resource's Connection Pool
      * @param driver Driver ClassName for database referred to by this JDBC Resource's Connection Pool
+     * 
      * @return Set containing SunDataSource
      */
-    public Datasource createDatasource(String jndiName, String  url, String username, 
-            String password, String driver) 
-    throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException    {
+    public Datasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
+            throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
         checkConfiguration(config);
-//        Hk2Configuration sunConfig = ((Hk2Configuration)config);
-        throw new UnsupportedOperationException("createDatasource not supported.");
+        
+        File resourceDir = config.getResourceDirectory();
+        if (resourceDir == null) {
+            // Unable to create JDBC data source for resource ref.
+//            postResourceError(NbBundle.getMessage(ModuleConfigurationImpl.class, 
+//                    "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
+                    "Resource Folder " + resourceDir + " does not exist.");
+            throw new ConfigurationException(NbBundle.getMessage(
+                    ModuleConfigurationImpl.class, "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
+        }
+
+        return Hk2DatasourceManager.createDataSource(jndiName, url, username, password, driver, resourceDir);
     }
 
     /**
@@ -256,5 +274,27 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         throw new UnsupportedOperationException("findJndiNameForEjb not supported.");
     }
 
+    
+//    private void postResourceError(String resourceMsg) {
+//        // Unable to create JDBC data source for CMP.
+//        // JNDI name of CMP resource field not set.
+//        String folderMsg;
+//        String projectName = getProjectName(configFiles[0]);
+//        if (projectName != null) {
+//            folderMsg = NbBundle.getMessage(ModuleConfigurationImpl.class, "ERR_NoResourceFolderForProject", projectName); // NOI18N
+//        } else {
+//            folderMsg = NbBundle.getMessage(ModuleConfigurationImpl.class, "ERR_NoResourceFolderUnknown"); // NOI18N
+//        }
+//
+//        final String text = folderMsg + " " + resourceMsg;
+//        resourceProcessor.post(new Runnable() {
+//
+//            public void run() {
+//                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(text, NotifyDescriptor.WARNING_MESSAGE);
+//                DialogDisplayer.getDefault().notify(msg);
+//            }
+//        });
+//    }
+    
 }
 

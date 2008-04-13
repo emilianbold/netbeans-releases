@@ -1,0 +1,678 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.glassfish.javaee.db;
+
+import org.netbeans.modules.glassfish.javaee.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
+import org.netbeans.spi.glassfish.ServerCommand;
+import org.netbeans.spi.glassfish.TreeParser;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+/**
+ *
+ * @author Peter Williams
+ */
+public class Hk2DatasourceManager implements DatasourceManager {
+
+    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
+    private static final int TIMEOUT = 1000;
+    
+    private static final String DEFAULT_DOMAIN_DIR = "domains/domain1";
+    private static final String DOMAIN_XML_PATH = "config/domain.xml";
+    
+    private Hk2DeploymentManager dm;
+    
+    public Hk2DatasourceManager(Hk2DeploymentManager dm) {
+        this.dm = dm;
+    }
+    
+    /**
+     * Retrieves the data sources deployed on the server.
+     *
+     * @return the set of data sources deployed on the server.
+     * @throws ConfigurationException reports problems in retrieving data source
+     *         definitions.
+     */
+    public Set<Datasource> getDatasources() throws ConfigurationException {
+        GlassfishModule commonSupport = dm.getCommonServerSupport();
+        String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.HOME_FOLDER_ATTR);
+
+        // XXX Fix to work with current server domain, not just default domain.
+        File domainXml = new File(installRoot, DEFAULT_DOMAIN_DIR + "/" + DOMAIN_XML_PATH);
+        return readDatasources(domainXml, "/domain/", null);
+    }
+
+    /**
+     * Deploys the given set of data sources.
+     *
+     * @param Set of datasources to deploy.
+     * @throws ConfigurationException if there is some problem with data source
+     *         configuration.
+     * @throws DatasourceAlreadyExistsException if module data source(s) are
+     *         conflicting with data source(s) already deployed on the server.
+     */
+    public void deployDatasources(Set<Datasource> datasources) 
+            throws ConfigurationException, DatasourceAlreadyExistsException {
+        Set<File> resourceDirList = new TreeSet<File>();
+        for(Datasource ds: datasources) {
+            if(ds instanceof SunDatasource) {
+                File resourceDir = ((SunDatasource) ds).getResourceDir();
+                if(resourceDir != null) {
+                    resourceDirList.add(resourceDir);
+                }
+            }
+        }
+        
+        // !PW FIXME needs to throw exception when conflicting resources are found.
+        
+        for(File resourceDir: resourceDirList) {
+            registerResourceDir(resourceDir);
+        }
+    }
+    
+    private boolean registerResourceDir(File resourceDir) throws ConfigurationException {
+        boolean succeeded = false;
+        File sunResourcesXml = new File(resourceDir, "sun-resources.xml");
+        if(sunResourcesXml.exists()) {
+            GlassfishModule commonSupport = dm.getCommonServerSupport();
+            AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml.getAbsolutePath());
+            Future<OperationState> result = commonSupport.execute(cmd);
+            try {
+                if(result.get(TIMEOUT, TIMEOUT_UNIT) == OperationState.COMPLETED) {
+                    succeeded = true;
+                }
+            } catch (TimeoutException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            }
+        }
+        return succeeded;
+    }
+    
+    private static final class AddResourcesCommand extends ServerCommand {
+
+        private final String sunResourcesXmlPath;
+        
+        public AddResourcesCommand(String sunResourcesXmlPath) {
+            this.sunResourcesXmlPath = sunResourcesXmlPath;
+        }
+        
+        @Override
+        public String getCommand() {
+            return "add-resources?DEFAULT=" + sunResourcesXmlPath;
+        }
+        
+    }
+    
+    // ------------------------------------------------------------------------
+    //  Used by ModuleConfigurationImpl since 
+    // ------------------------------------------------------------------------
+    public static Set<Datasource> getDatasources(File resourceDir) {
+        File resourcesXml = new File(resourceDir, "sun-resources.xml");
+        return readDatasources(resourcesXml, "/", resourceDir);
+    }
+    
+//    public Datasource createDataSource(String jndiName, String url, String username,
+//            String password, String driver, File resourceDir) throws DatasourceAlreadyExistsException {
+//        SunDatasource result = null;
+//        try {
+//            // Throw an exception if the data source already exists.
+//            for(Datasource ds: getDatasources(resourceDir)) {
+//                if(jndiName.equals(ds.getJndiName())) {
+//                    throw new DatasourceAlreadyExistsException(new SunDatasource(
+//                            jndiName, url, username, password, driver));
+//                }
+//            }
+//            
+//            if(url != null) {
+////                String vendorName = convertToValidName(url);
+////                if(vendorName == null) {
+////                    vendorName = jndiName;
+////                }else{
+////                    if(vendorName.equals("derby_embedded")){ //NOI18N
+////                        NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
+////                        DialogDisplayer.getDefault().notify(d);
+////                        return null;
+////                    }
+////                }
+//                if(resourceDir.exists()) {
+//                    FileUtil.createFolder(resourceDir);
+//                }
+//                
+//                // Create connection pool if needed.
+//                String poolName = createCheckForConnectionPool(vendorName, url, username, password, driver, resourceDir);
+//                boolean jdbcExists = requiredResourceExists(jndiName, resourceDir, JDBC_RESOURCE);
+//                if (jdbcExists) {
+//                    result = null;
+//                } else {
+//                    createJDBCResource(jndiName, poolName, resourceDir);
+//                    result = new SunDatasource(jndiName, url, username, password, driver);
+//                }
+//            }
+//        } catch(IOException ex) {
+//            Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+//        }
+//        return result;
+//    }    
+    
+    
+    // ------------------------------------------------------------------------
+    //  Internal logic
+    // ------------------------------------------------------------------------
+    private static Set<Datasource> readDatasources(File xmlFile, String xPathPrefix, File resourcesDir) {
+        Set<Datasource> dataSources = new HashSet<Datasource>();
+        if(xmlFile.exists()) {
+            Map<String, JdbcResource> jdbcResourceMap = new HashMap<String, JdbcResource>();
+            Map<String, ConnectionPool> connectionPoolMap = new HashMap<String, ConnectionPool>();
+
+            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResourceMap)));
+            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-connection-pool", new ConnectionPoolReader(connectionPoolMap)));
+
+            try {
+                TreeParser.readXml(xmlFile, pathList);
+            } catch(IllegalStateException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+
+            for(JdbcResource jdbc: jdbcResourceMap.values()) {
+                ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
+                if(pool != null) {
+                    pool.normalize();
+
+                    // add to sun datasource list
+                    String url = pool.getProperty("URL");
+                    String username = pool.getProperty("User");
+                    String password = pool.getProperty("Password");
+                    String driverClassName = pool.getProperty("driverClass");
+                    dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username, 
+                            password, driverClassName, resourcesDir));
+                }
+            }
+        }
+        return dataSources;
+    }
+    
+    private static class JdbcResource {
+
+        private final String jndiName;
+        private final String poolName;
+        
+        public JdbcResource(String jndiName) {
+            this(jndiName, "");
+        }
+        
+        public JdbcResource(String jndiName, String poolName) {
+            this.jndiName = jndiName;
+            this.poolName = poolName;
+        }
+        
+        public String getJndiName() {
+            return jndiName;
+        }
+
+        public String getPoolName() {
+            return poolName;
+        }
+    }
+
+    private static class JdbcReader extends TreeParser.NodeReader {
+
+        private final Map<String, JdbcResource> resourceMap;
+        
+        public JdbcReader(Map<String, JdbcResource> resourceMap) {
+            this.resourceMap = resourceMap;
+        }
+        
+        // <jdbc-resource 
+        //      enabled="true" 
+        //      pool-name="DerbyPool" 
+        //      jndi-name="jdbc/__default" 
+        //      object-type="user" />
+        
+        @Override
+        public void readAttributes(Attributes attributes) throws SAXException {
+            String type = attributes.getValue("object-type");
+            
+            // Ignore system resources
+            if(type != null && type.startsWith("system-")) {
+                return;
+            }
+            
+            String jndiName = attributes.getValue("jndi-name");
+            String poolName = attributes.getValue("pool-name");
+            if(jndiName != null && jndiName.length() > 0 && 
+                    poolName != null && poolName.length() > 0) {
+                // add to jdbc resource list
+                resourceMap.put(poolName, 
+                        new JdbcResource(jndiName, poolName));
+            }
+        }
+    }
+    
+    private static class ConnectionPool {
+        
+        private final String poolName;
+        private final Map<String, String> properties;
+        
+        public ConnectionPool(String poolName) {
+            this.poolName = poolName;
+            this.properties = new HashMap<String, String>();
+        }
+        
+        public void setProperty(String key, String value) {
+            properties.put(key, value);
+        }
+        
+        public String getProperty(String key) {
+            return properties.get(key);
+        }
+        
+        public void normalize() {
+           DbUtil.normalizePoolMap(properties);
+        }
+        
+    }
+    
+    private static class ConnectionPoolReader extends TreeParser.NodeReader {
+        
+        private Map<String, ConnectionPool> resourceMap;
+        private ConnectionPool currentPool;
+        
+        public ConnectionPoolReader(Map<String, ConnectionPool> resourceMap) {
+            this.resourceMap = resourceMap;
+        }
+        
+        //<jdbc-connection-pool 
+        //        datasource-classname="org.apache.derby.jdbc.ClientDataSource" 
+        //        name="DerbyPool" 
+        //        res-type="javax.sql.DataSource" 
+        //    <property name="PortNumber" value="1527" />
+        //    <property name="Password" value="APP" />
+        //    <property name="User" value="APP" />
+        //    <property name="serverName" value="localhost" />
+        //    <property name="DatabaseName" value="sun-appserv-samples" />
+        //    <property name="connectionAttributes" value=";create=true" />
+        //</jdbc-connection-pool>
+    
+        @Override
+        public void readAttributes(Attributes attributes) throws SAXException {
+            String poolName = attributes.getValue("name");
+            if(poolName != null && poolName.length() > 0) {
+                currentPool = new ConnectionPool(poolName);
+                currentPool.setProperty("dsClassName", attributes.getValue("datasource-classname"));
+                currentPool.setProperty("resType", attributes.getValue("res-type"));
+                resourceMap.put(poolName, currentPool);
+            } else {
+                currentPool = null;
+            }
+        }
+
+        @Override
+        public void readChildren(String qname, Attributes attributes) throws SAXException {
+            if(currentPool != null) {
+                String key = attributes.getValue("name");
+                if(key != null && key.length() > 0) {
+                    currentPool.setProperty(key, attributes.getValue("value"));
+                }
+            }
+        }
+    }    
+
+    /**
+     * Create a data source (jdbc-resource and jdbc-connection-pool) and add it
+     * to sun-resources.xml in the specified resource folder.
+     * 
+     * @param jndiName
+     * @param url
+     * @param username
+     * @param password
+     * @param driver
+     * @param resourceDir
+     * @return
+     * @throws DatasourceAlreadyExistsException if the required resources already
+     *         exist.
+     */
+    public static Datasource createDataSource(String jndiName, String url, 
+            String username, String password, String driver, File resourceDir) 
+            throws ConfigurationException, DatasourceAlreadyExistsException {
+        SunDatasource ds = null;
+        DuplicateJdbcResourceFinder jdbcFinder = new DuplicateJdbcResourceFinder(jndiName);
+        ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
+        
+        File xmlFile = new File(resourceDir, "sun-resources.xml");
+        if(xmlFile.exists()) {
+            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
+            pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));
+            
+            try {
+                TreeParser.readXml(xmlFile, pathList);
+                if(jdbcFinder.isDuplicate()) {
+                    throw new DatasourceAlreadyExistsException(new SunDatasource(
+                            jndiName, url, username, password, driver));
+                }
+            } catch(IllegalStateException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            }
+        }
+
+        try {
+            // !PW FIXME determine vendor name
+//                String vendorName = convertToValidName(url);
+//                if(vendorName == null) {
+//                    vendorName = jndiName;
+//                }else{
+//                    if(vendorName.equals("derby_embedded")){ //NOI18N
+//                        NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
+//                        DialogDisplayer.getDefault().notify(d);
+//                        return null;
+//                    }
+//                }                
+            String vendorName = "vendorName";
+
+            // generate default pool name
+            String defaultPoolName = vendorName + "Pool";
+
+            // !PW FIXME logic to locate or create proper pool name
+
+            if(!cpFinder.getPoolNames().contains(defaultPoolName)) {
+                // create pool if necessary
+                createConnectionPool(xmlFile, defaultPoolName, url, username, password, driver);
+            }
+
+            // create jdbc resource
+            createJdbcResource(xmlFile, jndiName, defaultPoolName);
+
+            ds = new SunDatasource(jndiName, url, username, password, driver, resourceDir);
+        } catch(IOException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+        }
+        
+        return ds;
+    }
+    
+    private static final String CP_TAG_1 = 
+            "    <jdbc-connection-pool " +
+            "allow-non-component-callers=\"false\" " +
+            "associate-with-thread=\"false\" " +
+            "connection-creation-retry-attempts=\"0\" " +
+            "connection-creation-retry-interval-in-seconds=\"10\" " +
+            "connection-leak-reclaim=\"false\" " +
+            "connection-leak-timeout-in-seconds=\"0\" " +
+            "connection-validation-method=\"auto-commit\" ";
+    
+//            "datasource-classname=\"org.postgresql.ds.PGSimpleDataSource\" " +
+    private static final String ATTR_DATASOURCE_CLASSNAME = "datasource-classname";
+    private static final String CP_TAG_2 = 
+            "fail-all-connections=\"false\" " +
+            "idle-timeout-in-seconds=\"300\" " +
+            "is-connection-validation-required=\"false\" " +
+            "is-isolation-level-guaranteed=\"true\" " +
+            "lazy-connection-association=\"false\" " +
+            "lazy-connection-enlistment=\"false\" " +
+            "match-connections=\"false\" " +
+            "max-connection-usage-count=\"0\" " +
+            "max-pool-size=\"32\" " +
+            "max-wait-time-in-millis=\"60000\" ";
+//            "name=\"sawhorse-pool\" " +
+    private static final String ATTR_POOL_NAME = "name";
+    private static final String CP_TAG_3 = 
+            "non-transactional-connections=\"false\" " +
+            "pool-resize-quantity=\"2\" ";
+//            "res-type=\"javax.sql.DataSource\" " +
+    private static final String ATTR_RES_TYPE = "res-type";
+    private static final String CP_TAG_4 = 
+            "statement-timeout-in-seconds=\"-1\" " +
+            "steady-pool-size=\"8\" " +
+            "validate-atmost-once-period-in-seconds=\"0\" " +
+            "wrap-jdbc-objects=\"false\">\n";
+    private static final String PROP_SERVER_NAME = "serverName";
+    private static final String PROP_PORT_NUMBER = "portNumber";
+    private static final String PROP_DATABASE_NAME = "databaseName";
+    private static final String PROP_USER = "User";
+    private static final String PROP_PASSWORD = "Password";
+    private static final String PROP_URL = "URL";
+    private static final String PROP_DRIVER_CLASS = "driverClass";
+    private static final String CP_TAG_5 = "    </jdbc-connection-pool>\n";
+    
+    private static final String RESTYPE_DATASOURCE = "javax.sql.DataSource";
+
+    public static void createConnectionPool(File sunResourcesXml, String poolName, 
+            String url, String username, String password, String driver) throws IOException {
+            
+//  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="org.postgresql.ds.PGSimpleDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="32" max-wait-time-in-millis="60000" name="sawhorse-pool" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.DataSource" statement-timeout-in-seconds="-1" steady-pool-size="8" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+//    <property name="serverName" value="localhost"/>
+//    <property name="portNumber" value="5432"/>
+//    <property name="databaseName" value="cookbook2_development"/>
+//    <property name="User" value="cookbook2"/>
+//    <property name="Password" value="cookbook2"/>
+//    <property name="URL" value="jdbc:postgresql://localhost:5432/cookbook2_development"/>
+//    <property name="driverClass" value="org.postgresql.Driver"/>
+//  </jdbc-connection-pool>
+
+        UrlData urlData = new UrlData(url);
+
+        // Maybe move this logic into UrlData?
+        String dsClassName = computeDataSourceClassName(url, driver);
+        
+        StringBuilder xmlBuilder = new StringBuilder(2000);
+        xmlBuilder.append(CP_TAG_1);
+        appendAttr(xmlBuilder, ATTR_DATASOURCE_CLASSNAME, dsClassName, false);
+        xmlBuilder.append(CP_TAG_2);
+        appendAttr(xmlBuilder, ATTR_POOL_NAME, poolName, true);
+        xmlBuilder.append(CP_TAG_3);
+        appendAttr(xmlBuilder, ATTR_RES_TYPE, RESTYPE_DATASOURCE, true);
+        xmlBuilder.append(CP_TAG_4);
+        appendProperty(xmlBuilder, PROP_SERVER_NAME, urlData.getHostName(), true);
+        appendProperty(xmlBuilder, PROP_PORT_NUMBER, urlData.getPort(), false);
+        appendProperty(xmlBuilder, PROP_DATABASE_NAME, urlData.getDatabaseName(), false);
+        appendProperty(xmlBuilder, PROP_USER, username, true);
+        // blank password is ok so check just null here and pass force=true.
+        if(password != null) {
+            appendProperty(xmlBuilder, PROP_PASSWORD, password, true);
+        }
+        appendProperty(xmlBuilder, PROP_URL, url, true);
+        appendProperty(xmlBuilder, PROP_DRIVER_CLASS, driver, true);
+        xmlBuilder.append(CP_TAG_5);
+        
+        String xmlFragment = xmlBuilder.toString();
+        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + xmlFragment);
+        //        appendResource(sunResourcesXml, xmlFragment);
+    }
+    
+    private static String computeDataSourceClassName(String url, String driver) {
+        String dsClassName = null;
+        
+        // !PW FIXME Try to compute datasource classname from url + wizard data structure
+//        Wizard wizard = getWizardInfo();
+//        String vendorName = getDatabaseVendorName(databaseUrl, wizard);
+//        String datasourceClassName = ""; // NOI18N
+//        if(!vendorName.equals("")) { // NOI18N
+//            datasourceClassName = getDatasourceClassName(vendorName, false, wizard);
+//        }
+        
+        if(dsClassName == null || dsClassName.length() == 0) {
+            dsClassName = DriverMaps.getDSClassName(url);
+            if(dsClassName == null || dsClassName.length() == 0) {
+                dsClassName = driver;
+            } 
+        }
+        
+        return dsClassName;
+    }
+    
+    private static final String JDBC_TAG_1 = 
+            "    <jdbc-resource " +
+            "enabled=\"true\" ";
+        //      pool-name="DerbyPool" 
+    private static final String ATTR_POOLNAME = "pool-name";
+        //      jndi-name="jdbc/__default" 
+    private static final String ATTR_JNDINAME = "jndi-name";
+    private static final String JDBC_TAG_2 = 
+            " object-type=\"user\"/>\n";
+
+    public static void createJdbcResource(File sunResourcesXml, String jndiName, String poolName) throws IOException {
+        
+        // <jdbc-resource 
+        //      enabled="true" 
+        //      pool-name="DerbyPool" 
+        //      jndi-name="jdbc/__default" 
+        //      object-type="user" />
+        
+        StringBuilder xmlBuilder = new StringBuilder(500);
+        xmlBuilder.append(JDBC_TAG_1);
+        appendAttr(xmlBuilder, ATTR_POOLNAME, poolName, true);
+        appendAttr(xmlBuilder, ATTR_JNDINAME, jndiName, true);
+        xmlBuilder.append(JDBC_TAG_2);
+        
+        String xmlFragment = xmlBuilder.toString();
+        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + xmlFragment);
+        //        appendResource(sunResourcesXml, xmlFragment);
+    }
+    
+    private static void appendAttr(StringBuilder builder, String name, String value, boolean force) {
+        if(force || (name != null && name.length() > 0)) {
+            builder.append(name);
+            builder.append("=\"");
+            builder.append(value);
+            builder.append("\" ");
+        }
+    }
+    
+    private static void appendProperty(StringBuilder builder, String name, String value, boolean force) {
+        if(force || (value != null && value.length() > 0)) {
+            builder.append("        <property name=\"");
+            builder.append(name);
+            builder.append("\" value=\"");
+            builder.append(value);
+            builder.append("\"/>\n");
+        }
+    }
+    
+    
+    private static class DuplicateJdbcResourceFinder extends TreeParser.NodeReader {
+        
+        private final String targetJndiName;
+        private boolean duplicate;
+        private String poolName;
+        
+        public DuplicateJdbcResourceFinder(String jndiName) {
+            targetJndiName = jndiName;
+            duplicate = false;
+            poolName = null;
+        }
+        
+        @Override
+        public void readAttributes(Attributes attributes) throws SAXException {
+            String jndiName = attributes.getValue("jndi-name");
+            if(targetJndiName.equals(jndiName)) {
+                if(duplicate) {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
+                            "Duplicate jndi-names defined for JDBC resources.");
+                }
+                duplicate = true;
+                poolName = attributes.getValue("pool-name");
+            }
+        }
+        
+        public boolean isDuplicate() {
+            return duplicate;
+        }
+        
+        public String getPoolName() {
+            return poolName;
+        }
+        
+    }
+    
+    private static class ConnectionPoolFinder extends TreeParser.NodeReader {
+        
+        private List<String> poolNames = new ArrayList<String>();
+        
+        @Override
+        public void readAttributes(Attributes attributes) throws SAXException {
+            String poolName = attributes.getValue("name");
+            if(poolName != null && poolName.length() > 0) {
+                if(!poolNames.contains(poolName)) {
+                    poolNames.add(poolName);
+                } else {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
+                            "Duplicate pool-names defined for JDBC Connection Pools.");
+                }
+            }
+        }
+        
+        public List<String> getPoolNames() {
+            return poolNames;
+        }
+        
+    }
+
+}

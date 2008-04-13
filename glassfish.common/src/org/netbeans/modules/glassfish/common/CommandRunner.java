@@ -67,6 +67,7 @@ import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.OperationStateListener;
 import org.netbeans.spi.glassfish.ResourceDesc;
+import org.netbeans.spi.glassfish.ServerCommand;
 
 
 /** 
@@ -107,9 +108,8 @@ public class CommandRunner extends BasicTask<OperationState> {
      * 
      */
     public Future<OperationState> stopServer() {
-        serverCmd = ServerCommand.STOP;
-        fireOperationStateChanged(OperationState.RUNNING, "MSG_STOP_SERVER_IN_PROGRESS", instanceName);
-        return executor().submit(this);
+        return execute(Commands.STOP, "MSG_STOP_SERVER_IN_PROGRESS");
+        
     }
     
     /**
@@ -120,7 +120,7 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Map<String, List<AppDesc>> getApplications(String container) {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
-            ServerCommand.ListAppsCommand cmd = new ServerCommand.ListAppsCommand(container);
+            Commands.ListAppsCommand cmd = new Commands.ListAppsCommand(container);
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
@@ -138,7 +138,7 @@ public class CommandRunner extends BasicTask<OperationState> {
     public List<ResourceDesc> getResources(String type) {
         List<ResourceDesc> result = Collections.emptyList();
         try {
-            ServerCommand.ListResourcesCommand cmd = new ServerCommand.ListResourcesCommand(type);
+            Commands.ListResourcesCommand cmd = new Commands.ListResourcesCommand(type);
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
@@ -162,79 +162,29 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
-//        try {
-//            //file is someting like /Users/ludo/WebApplication91/build/web
-//            String docBaseURI = URLEncoder.encode(dir.getAbsoluteFile().toURI().toASCIIString(),"UTF-8");
-//            String docBase = moduleName;
-//            String ctxPath = docBase;///ctx.getAttributeValue ("path");
-//            this.tmId = new Hk2TargetModuleID(t, ctxPath, docBase); //NOI18N
-//            
-////            command = "deploy?path=" + dir.getAbsoluteFile()+"?name="+docBaseURI; // NOI18N
-//            command = "deploy?path=" + dir.getAbsoluteFile()+"?name="+docBase; // NOI18N
-//            
-//            serverCmd = ServerCommand.DISTRIBUTE;
-////            System.out.println("deploy command="+command);
-//            String msg = NbBundle.getMessage(Manager.class, "MSG_DeploymentInProgress");
-//            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.RUNNING));
-//            rp().post(this, 0, Thread.NORM_PRIORITY);
-//        } catch (UnsupportedEncodingException ex) {
-//            ex.printStackTrace();
-//            String msg = NbBundle.getMessage(Manager.class, "MSG_DeployBrokenContextXml");
-//            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.FAILED));
-//        } catch (RuntimeException e) {
-//            String msg = NbBundle.getMessage(Manager.class, "MSG_DeployBrokenContextXml");
-//            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.FAILED));
-//        }
-        
-        ServerCommand.DeployCommand cmd = new ServerCommand.DeployCommand(dir.getAbsolutePath(), moduleName, contextRoot);
-        serverCmd = cmd;
-        return executor().submit(this);
+        return execute(new Commands.DeployCommand(dir.getAbsolutePath(), moduleName, contextRoot));
     }
     
     public Future<OperationState> redeploy(String moduleName, String contextRoot)  {
-//        try {
-//            this.tmId = (Hk2TargetModuleID) targetModuleID;
-//            command = "redeploy?name=" +targetModuleID.getModuleID(); // NOI18N
-//            serverCmd = ServerCommand.DISTRIBUTE;
-////            System.out.println("redeploy command="+command);
-//            String msg = NbBundle.getMessage(Manager.class, "MSG_DeploymentInProgress");
-//            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.RUNNING));
-//            rp().post(this, 0, Thread.NORM_PRIORITY);
-//            
-//        } catch (RuntimeException e) {
-//            String msg = NbBundle.getMessage(Manager.class, "MSG_DeployBrokenContextXml");
-//            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.FAILED));
-//        }
-        
-        ServerCommand.RedeployCommand cmd = new ServerCommand.RedeployCommand(moduleName, contextRoot);
-        serverCmd = cmd;
-        return executor().submit(this);
+        return execute(new Commands.RedeployCommand(moduleName, contextRoot));
     }
     
-//    public  TargetModuleID[] getTargetModuleID(Target t){
-//        command = "list-applications"; // NOI18N
-//        cmdType = CommandType.DISTRIBUTE;
-//        run();
-//        if (tmidNames==null){
-//            return null;
-//        }
-//        TargetModuleID ret[] = new TargetModuleID[tmidNames.size()];
-//        for (int i=0;i< tmidNames.size();i++){
-//            ret[i]=new Hk2TargetModuleID(t,tmidNames.get(i),tmidNames.get(i));
-//        }
-//        return ret;
-//    }
-    
     public Future<OperationState> undeploy(String moduleName) {
-//        this.tmId = tmId;
-//        command = "undeploy?name="+tmId.getModuleID(); // NOI18N
-//        serverCmd = ServerCommand.UNDEPLOY;
-//        String msg = NbBundle.getMessage(Manager.class, "MSG_UndeploymentInProgress");
-//        fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.RUNNING));
-//        rp().post(this, 0, Thread.NORM_PRIORITY);
-        
-        ServerCommand.UndeployCommand cmd = new ServerCommand.UndeployCommand(moduleName);
-        serverCmd = cmd;
+        return execute(new Commands.UndeployCommand(moduleName));
+    }
+    
+    /**
+     * Execute an abitrary server command.
+     */
+    public Future<OperationState> execute(ServerCommand command) {
+        return execute(command, null);
+    }
+    
+    private Future<OperationState> execute(ServerCommand command, String msgResId) {
+        serverCmd = command;
+        if(msgResId != null) {
+            fireOperationStateChanged(OperationState.RUNNING, msgResId, instanceName);
+        }
         return executor().submit(this);
     }
     
@@ -264,12 +214,13 @@ public class CommandRunner extends BasicTask<OperationState> {
         fireOperationStateChanged(OperationState.RUNNING, "MSG_ServerCmdRunning", 
                 serverCmd.toString(), instanceName);
         
-        int retries = 3;
         boolean httpSucceeded = false;
         boolean commandSucceeded = false;
         URL urlToConnectTo = null;
         URLConnection conn = null;
-        String commandUrl = constructCommandUrl(true);
+        String cmd = serverCmd.getCommand();
+        String commandUrl = constructCommandUrl(cmd, true);
+        int retries = "version".equals(cmd) ? 1 : 3;
         
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CommandRunner.call(" + commandUrl + ") called on thread \"" + 
@@ -366,14 +317,14 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
     }
     
-    private String constructCommandUrl(final boolean encodeSpaces) {
+    private String constructCommandUrl(final String cmd, final boolean encodeSpaces) {
         StringBuilder builder = new StringBuilder(256);
         builder.append("http://"); // NOI18N
         builder.append(ip.get(GlassfishModule.HOSTNAME_ATTR));
         builder.append(":"); // NOI18N
         builder.append(ip.get(GlassfishModule.HTTPPORT_ATTR));
         builder.append("/__asadmin/");
-        builder.append(serverCmd.getCommand());
+        builder.append(cmd);
         String commandUrl = builder.toString();
         return encodeSpaces ? commandUrl.replaceAll(" ", "%20") : commandUrl;
     }

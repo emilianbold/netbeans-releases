@@ -97,7 +97,7 @@ public class FastDeploy extends IncrementalDeployment {
         String moduleName = dir.getParentFile().getParentFile().getName();
         Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
                 moduleName, dir.getAbsolutePath());
-        DeployProgressObject progressObject = new DeployProgressObject(moduleId);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
 
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         commonSupport.deploy(progressObject, dir, moduleName);
@@ -109,7 +109,7 @@ public class FastDeploy extends IncrementalDeployment {
         // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
         Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
                 moduleName, dir.getAbsolutePath());
-        DeployProgressObject progressObject = new DeployProgressObject(moduleId);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         commonSupport.deploy(progressObject, dir, moduleName);
         return progressObject;
@@ -122,7 +122,7 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject incrementalDeploy(TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
-        DeployProgressObject progressObject = new DeployProgressObject(targetModuleID);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, targetModuleID);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
         return progressObject;
@@ -186,137 +186,137 @@ public class FastDeploy extends IncrementalDeployment {
      * Progress object that monitors events from GlassFish Common and translates
      * them into JSR-88 equivalents.
      */
-    private class DeployProgressObject implements ProgressObject, OperationStateListener {
-       
-        private final TargetModuleID moduleId;
-        
-        public DeployProgressObject(TargetModuleID moduleId) {
-            this.moduleId = moduleId;
-            this.operationStatus = new Hk2DeploymentStatus(CommandType.DISTRIBUTE, 
-                    StateType.RUNNING, ActionType.EXECUTE, "Initializing...");
-        }
-        
-        public DeploymentStatus getDeploymentStatus() {
-            return operationStatus;
-        }
-
-        public TargetModuleID [] getResultTargetModuleIDs() {
-            return new TargetModuleID [] { moduleId };
-        }
-
-        public ClientConfiguration getClientConfiguration(TargetModuleID moduleId) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public boolean isCancelSupported() {
-            return false;
-        }
-
-        public void cancel() throws OperationUnsupportedException {
-            throw new OperationUnsupportedException("GFV3: Cancel not supported yet.");
-        }
-
-        public boolean isStopSupported() {
-            return false;
-        }
-
-        public void stop() throws OperationUnsupportedException {
-            throw new OperationUnsupportedException("GFV3: Stop not supported yet.");
-        }
-
-        /**
-         * OperationState listener - translates state events from common instance
-         * manager to JSR-88 compatible type.
-         * 
-         * @param newState Current state of operation
-         * @param message Informational message about latest state change
-         */
-        public void operationStateChanged(OperationState newState, String message) {
-            fireHandleProgressEvent(new Hk2DeploymentStatus(CommandType.DISTRIBUTE, 
-                    translateState(newState), ActionType.EXECUTE, message));
-        }
-        
-        private StateType translateState(OperationState commonState) {
-            if(commonState == OperationState.RUNNING) {
-                return StateType.RUNNING;
-            } else if(commonState == OperationState.COMPLETED) {
-                return StateType.COMPLETED;
-            } else {
-                return StateType.FAILED;
-            }
-        }
-        
-        // ProgressEvent/Listener support
-        
-        private volatile DeploymentStatus operationStatus;
-        private CopyOnWriteArrayList<ProgressListener> listeners = 
-                new CopyOnWriteArrayList<ProgressListener>();
-        
-        public void addProgressListener(ProgressListener listener) {
-            listeners.add(listener);
-        }
-
-        public void removeProgressListener(ProgressListener listener) {
-            listeners.remove(listener);
-        }  
-        
-        public void fireHandleProgressEvent(DeploymentStatus status) {
-            operationStatus = status;
-            ProgressEvent event = new ProgressEvent(dm, moduleId, status);
-            for(ProgressListener target: listeners) {
-                target.handleProgressEvent(event);
-            }
-        }
-
-    }
+//    private class DeployProgressObject implements ProgressObject, OperationStateListener {
+//       
+//        private final TargetModuleID moduleId;
+//        
+//        public DeployProgressObject(TargetModuleID moduleId) {
+//            this.moduleId = moduleId;
+//            this.operationStatus = new Hk2DeploymentStatus(CommandType.DISTRIBUTE, 
+//                    StateType.RUNNING, ActionType.EXECUTE, "Initializing...");
+//        }
+//        
+//        public DeploymentStatus getDeploymentStatus() {
+//            return operationStatus;
+//        }
+//
+//        public TargetModuleID [] getResultTargetModuleIDs() {
+//            return new TargetModuleID [] { moduleId };
+//        }
+//
+//        public ClientConfiguration getClientConfiguration(TargetModuleID moduleId) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        public boolean isCancelSupported() {
+//            return false;
+//        }
+//
+//        public void cancel() throws OperationUnsupportedException {
+//            throw new OperationUnsupportedException("GFV3: Cancel not supported yet.");
+//        }
+//
+//        public boolean isStopSupported() {
+//            return false;
+//        }
+//
+//        public void stop() throws OperationUnsupportedException {
+//            throw new OperationUnsupportedException("GFV3: Stop not supported yet.");
+//        }
+//
+//        /**
+//         * OperationState listener - translates state events from common instance
+//         * manager to JSR-88 compatible type.
+//         * 
+//         * @param newState Current state of operation
+//         * @param message Informational message about latest state change
+//         */
+//        public void operationStateChanged(OperationState newState, String message) {
+//            fireHandleProgressEvent(new Hk2DeploymentStatus(CommandType.DISTRIBUTE, 
+//                    translateState(newState), ActionType.EXECUTE, message));
+//        }
+//        
+//        private StateType translateState(OperationState commonState) {
+//            if(commonState == OperationState.RUNNING) {
+//                return StateType.RUNNING;
+//            } else if(commonState == OperationState.COMPLETED) {
+//                return StateType.COMPLETED;
+//            } else {
+//                return StateType.FAILED;
+//            }
+//        }
+//        
+//        // ProgressEvent/Listener support
+//        
+//        private volatile DeploymentStatus operationStatus;
+//        private CopyOnWriteArrayList<ProgressListener> listeners = 
+//                new CopyOnWriteArrayList<ProgressListener>();
+//        
+//        public void addProgressListener(ProgressListener listener) {
+//            listeners.add(listener);
+//        }
+//
+//        public void removeProgressListener(ProgressListener listener) {
+//            listeners.remove(listener);
+//        }  
+//        
+//        public void fireHandleProgressEvent(DeploymentStatus status) {
+//            operationStatus = status;
+//            ProgressEvent event = new ProgressEvent(dm, moduleId, status);
+//            for(ProgressListener target: listeners) {
+//                target.handleProgressEvent(event);
+//            }
+//        }
+//
+//    }
     
-    /**
-     * ProgressObject implementation that is in a permanent completed state.
-     * For returning from methods that must return a ProgressObject, but do not
-     * need to implement any asynchronous functionality.
-     */
-    public static class DummyProgressObject implements ProgressObject {
-
-        private final TargetModuleID [] moduleIDs;
-        private final DeploymentStatus status = new Hk2DeploymentStatus(CommandType.DISTRIBUTE,
-                StateType.COMPLETED, ActionType.EXECUTE, "");
-
-        public DummyProgressObject(final TargetModuleID moduleID) {
-            moduleIDs = new TargetModuleID [] { moduleID };
-        }
-        
-        public DeploymentStatus getDeploymentStatus() {
-            return status;
-        }
-
-        public TargetModuleID[] getResultTargetModuleIDs() {
-            return moduleIDs;
-        }
-
-        public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public boolean isCancelSupported() {
-            return true;
-        }
-
-        public void cancel() throws OperationUnsupportedException {
-        }
-
-        public boolean isStopSupported() {
-            return true;
-        }
-
-        public void stop() throws OperationUnsupportedException {
-        }
-
-        public void addProgressListener(ProgressListener listener) {
-        }
-
-        public void removeProgressListener(ProgressListener listener) {
-        }
-        
-    }
+//    /**
+//     * ProgressObject implementation that is in a permanent completed state.
+//     * For returning from methods that must return a ProgressObject, but do not
+//     * need to implement any asynchronous functionality.
+//     */
+//    public static class DummyProgressObject implements ProgressObject {
+//
+//        private final TargetModuleID [] moduleIDs;
+//        private final DeploymentStatus status = new Hk2DeploymentStatus(CommandType.DISTRIBUTE,
+//                StateType.COMPLETED, ActionType.EXECUTE, "");
+//
+//        public DummyProgressObject(final TargetModuleID moduleID) {
+//            moduleIDs = new TargetModuleID [] { moduleID };
+//        }
+//        
+//        public DeploymentStatus getDeploymentStatus() {
+//            return status;
+//        }
+//
+//        public TargetModuleID[] getResultTargetModuleIDs() {
+//            return moduleIDs;
+//        }
+//
+//        public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        public boolean isCancelSupported() {
+//            return true;
+//        }
+//
+//        public void cancel() throws OperationUnsupportedException {
+//        }
+//
+//        public boolean isStopSupported() {
+//            return true;
+//        }
+//
+//        public void stop() throws OperationUnsupportedException {
+//        }
+//
+//        public void addProgressListener(ProgressListener listener) {
+//        }
+//
+//        public void removeProgressListener(ProgressListener listener) {
+//        }
+//        
+//    }
     
 }

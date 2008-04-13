@@ -80,7 +80,7 @@ public class Hk2Configuration implements DeploymentConfiguration, XpathListener 
     public Hk2Configuration (J2eeModule j2eeModule) {
         this.j2eeModule = j2eeModule;
     }
-
+    
     /**
      * 
      * @param file 
@@ -235,4 +235,15 @@ public class Hk2Configuration implements DeploymentConfiguration, XpathListener 
     public void saveDConfigBean (OutputStream os, DConfigBeanRoot dConfigBeanRoot) 
             throws ConfigurationException {
     }
+    
+    /**
+     * Return the resource directory for this configuration  (aka project) if
+     * there is one.  Default is [project-dir]/setup.
+     * 
+     * @return
+     */
+    public File getResourceDirectory() {
+        return j2eeModule.getResourceDirectory();
+    }
+
 }

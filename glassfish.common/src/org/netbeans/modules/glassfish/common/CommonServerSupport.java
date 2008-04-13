@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -62,6 +63,7 @@ import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.netbeans.spi.glassfish.OperationStateListener;
+import org.netbeans.spi.glassfish.ServerCommand;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 
@@ -77,7 +79,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private Map<String, String> properties = 
             Collections.synchronizedMap(new HashMap<String, String>(37));
     
-    private volatile ServerState serverState;
+    private volatile ServerState serverState = ServerState.STOPPED;
     private final Object stateMonitor = new Object();
     
     private ChangeSupport changeSupport = new ChangeSupport(this);
@@ -106,8 +108,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         properties.put(JVM_MODE, NORMAL_MODE);
         properties.put(DEBUG_PORT, "8787");
         
-        boolean isRunning = isRunning(hostName, httpPort);
-        setServerState(isRunning ? ServerState.RUNNING : ServerState.STOPPED);
+        if(isRunning(hostName, httpPort)) {
+            refresh();
+        }
     }
     
     public String getHomeFolder() {
@@ -244,6 +247,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return mgr.undeploy(name);
     }
     
+    public Future<OperationState> execute(ServerCommand command) {
+        CommandRunner mgr = new CommandRunner(getInstanceProperties());
+        return mgr.execute(command);
+    }
+    
     public AppDesc [] getModuleList(String container) {
         CommandRunner mgr = new CommandRunner(getInstanceProperties());
         int total = 0;
@@ -314,7 +322,22 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             return false;
         }
     }
-
+    
+    public boolean isReallyRunning() {
+        boolean isRunning = isRunning(getHostName(), getHttpPortNumber());
+        if(isRunning) {
+            Future<OperationState> result = execute(new Commands.VersionCommand());
+            try {
+                if(result.get(3, TimeUnit.SECONDS) != OperationState.COMPLETED) {
+                    isRunning = false;
+                }
+            } catch(Exception ex) {
+                isRunning = false;
+            }
+        }
+        return isRunning;
+    }
+    
     /**
      * !PW XXX Is there a more efficient way to implement a failed future object? 
      * 
@@ -374,20 +397,32 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
     }
-
+    
     // ------------------------------------------------------------------------
     //  RefreshModulesCookie implementation (for refreshing server state)
     // ------------------------------------------------------------------------
+    private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
+
     public void refresh() {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
-        ServerState currentState = getServerState();
-        boolean isRunning = isRunning(getHostName(), getHttpPortNumber());
-        if(currentState == ServerState.STOPPED && isRunning) {
-            setServerState(ServerState.RUNNING);
-        } else if(currentState == ServerState.RUNNING && !isRunning) {
-            setServerState(ServerState.STOPPED);
+        if(refreshRunning.compareAndSet(false, true)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    // Can block for up to a few seconds...
+                    boolean isRunning = isReallyRunning();
+                    ServerState currentState = getServerState();
+                    
+                    if(currentState == ServerState.STOPPED && isRunning) {
+                        setServerState(ServerState.RUNNING);
+                    } else if(currentState == ServerState.RUNNING && !isRunning) {
+                        setServerState(ServerState.STOPPED);
+                    }
+                    
+                    refreshRunning.set(false);
+                }
+            });
         }
     }
     

@@ -226,6 +226,15 @@ public interface GlassfishModule {
             String name);
     
     /**
+     * Execute the specified server command.
+     * 
+     * @param command Object representing the server command to execute.
+     * 
+     * @return Future instance that finishes when the command has been completed.
+     */
+    public Future<OperationState> execute(ServerCommand command);
+    
+    /**
      * List the applications currently deployed on the server.
      * 
      * @return array of application names current deployed.

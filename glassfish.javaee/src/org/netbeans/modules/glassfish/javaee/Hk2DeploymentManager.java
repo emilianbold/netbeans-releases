@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
@@ -60,7 +61,8 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
+import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
+import org.netbeans.modules.glassfish.javaee.ide.DummyProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
@@ -101,49 +103,86 @@ public class Hk2DeploymentManager implements DeploymentManager {
     
     /**
      * 
-     * @param target 
-     * @param file 
-     * @param file2 
-     * @return 
-     * @throws java.lang.IllegalStateException 
-     */
-    public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
-        return null;
-    }
-
-    /**
-     * 
      * @param deployableObject 
      * @return 
      * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException 
      */
-    public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
+    public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) 
+            throws InvalidModuleException {
         return new Hk2Configuration(deployableObject);
     }
 
     /**
      * 
-     * @param targetModuleID 
-     * @param inputStream 
-     * @param inputStream2 
-     * @return 
-     * @throws java.lang.UnsupportedOperationException 
-     * @throws java.lang.IllegalStateException 
+     * @param targetList
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.IllegalStateException
      */
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws UnsupportedOperationException, IllegalStateException {
-        return null;
+    public ProgressObject distribute(Target [] targetList, File moduleArchive, File deploymentPlan) 
+            throws IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.distribute(target, file, file) not supported yet.");
     }
 
     /**
      * 
-     * @param target 
-     * @param inputStream 
-     * @param inputStream2 
-     * @return 
-     * @throws java.lang.IllegalStateException 
+     * @param targetList
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.IllegalStateException
      */
-    public ProgressObject distribute(Target[] target, InputStream inputStream, InputStream inputStream2) throws IllegalStateException {
-        return null;
+    public ProgressObject distribute(Target [] targetList, InputStream moduleArchive, InputStream deploymentPlan) 
+            throws IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.distribute(target [], stream, stream) not supported yet.");
+    }
+
+    /**
+     * 
+     * @param targetList
+     * @param type
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.IllegalStateException
+     */
+    public ProgressObject distribute(Target [] targetList, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan) 
+            throws IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.distribute(target [], module_type, stream, stream) not supported yet.");
+    }
+
+    /**
+     * 
+     * @param moduleIDList
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.UnsupportedOperationException
+     * @throws java.lang.IllegalStateException
+     */
+    public ProgressObject redeploy(TargetModuleID [] moduleIDList, File moduleArchive, File deploymentPlan) 
+            throws UnsupportedOperationException, IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.redeploy(target_module [], file, file) not supported yet.");
+    }
+
+    /**
+     * 
+     * @param moduleIDList
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.UnsupportedOperationException
+     * @throws java.lang.IllegalStateException
+     */
+    public ProgressObject redeploy(TargetModuleID [] moduleIDList, InputStream moduleArchive, InputStream deploymentPlan) 
+            throws UnsupportedOperationException, IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.redeploy(target_module [], stream, stream) not supported yet.");
     }
 
     /**
@@ -152,12 +191,18 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
-    public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
-        // !PW FIXME
-//        Hk2ManagerImpl g = new Hk2ManagerImpl(this);
-//        g.undeploy((Hk2TargetModuleID)targetModuleID[0]);
-//        return g;
-        return null;
+    public ProgressObject undeploy(TargetModuleID [] targetModuleIDs) 
+            throws IllegalStateException {
+        // !PW FIXME handle arrays with length > 1 (EARs?)
+        if(targetModuleIDs != null && targetModuleIDs.length > 0) {
+            GlassfishModule commonSupport = getCommonServerSupport();
+            MonitorProgressObject progressObject = new MonitorProgressObject(
+                    this, targetModuleIDs[0], CommandType.UNDEPLOY);
+            commonSupport.undeploy(progressObject, targetModuleIDs[0].getModuleID());
+            return progressObject;
+        } else {
+            throw new IllegalArgumentException("No TargetModuleID's specified.");
+        }
     }
 
     /**
@@ -166,8 +211,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
-    public ProgressObject stop(TargetModuleID[] targetModuleID) throws IllegalStateException {
-        return new FastDeploy.DummyProgressObject(targetModuleID[0]);
+    public ProgressObject stop(TargetModuleID[] moduleIDList) throws IllegalStateException {
+        return new DummyProgressObject(moduleIDList[0]);
     }
 
     /**
@@ -176,8 +221,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
-    public ProgressObject start(TargetModuleID [] targetModuleID) throws IllegalStateException {
-        return new FastDeploy.DummyProgressObject(targetModuleID[0]);
+    public ProgressObject start(TargetModuleID [] moduleIDList) throws IllegalStateException {
+        return new DummyProgressObject(moduleIDList[0]);
     }
 
     /**
@@ -205,9 +250,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
-    public TargetModuleID [] getAvailableModules(ModuleType moduleType, Target [] target) 
+    public TargetModuleID [] getAvailableModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
-        return getDeployedModules(moduleType, target);
+        return getDeployedModules(moduleType, targetList);
     }
         
 
@@ -219,9 +264,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
-    public TargetModuleID [] getNonRunningModules(ModuleType moduleType, Target [] target) 
+    public TargetModuleID [] getNonRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
-        return null;
+        Logger.getLogger("glassfish.javaee").log(Level.WARNING, 
+                "Hk2DeploymentManager.getNonRunningModules() not supported yet.");
+        return new TargetModuleID[0];
     }
 
     /**
@@ -232,12 +279,12 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
-    public TargetModuleID [] getRunningModules(ModuleType moduleType, Target [] target) 
+    public TargetModuleID [] getRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
-        return getDeployedModules(moduleType, target);
+        return getDeployedModules(moduleType, targetList);
     }
     
-    private TargetModuleID [] getDeployedModules(ModuleType moduleType, Target [] target) 
+    private TargetModuleID [] getDeployedModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         List<TargetModuleID> moduleList = new ArrayList<TargetModuleID>();
         GlassfishModule commonSupport = getCommonServerSupport();
@@ -245,7 +292,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
             AppDesc [] appList = commonSupport.getModuleList(GlassfishModule.WEB_CONTAINER);
             if(appList != null && appList.length > 0) {
                 for(AppDesc app: appList) {
-                    moduleList.add(new Hk2TargetModuleID(target[0], app.getName(), 
+                    moduleList.add(new Hk2TargetModuleID(targetList[0], app.getName(), 
                             app.getName(), app.getPath()));
                 }
             }
@@ -255,23 +302,10 @@ public class Hk2DeploymentManager implements DeploymentManager {
 
     /**
      * 
-     * @param targetModuleID 
-     * @param file 
-     * @param file2 
-     * @return 
-     * @throws java.lang.UnsupportedOperationException 
-     * @throws java.lang.IllegalStateException 
-     */
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        return null;
-    }
-
-    /**
-     * 
      * @param dConfigBeanVersionType 
      * @throws javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException 
      */
-    public void setDConfigBeanVersion(DConfigBeanVersionType dConfigBeanVersionType) throws DConfigBeanVersionUnsupportedException {
+    public void setDConfigBeanVersion(DConfigBeanVersionType version) throws DConfigBeanVersionUnsupportedException {
     }
 
     /**
@@ -279,7 +313,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param dConfigBeanVersionType 
      * @return 
      */
-    public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType dConfigBeanVersionType) {
+    public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType version) {
         return false;
     }
 
@@ -400,7 +434,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
     }
     
-    /** Returns URI of GF (manager application).
+    /** 
+     * Returns URI of GF (manager application).
+     * 
      * @return URI without home and base specification
      */
     public String getPlainUri() {
@@ -409,7 +445,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 ip.getProperty(GlassfishModule.HTTPPORT_ATTR), "/__asadmin/");
     }
     
-    /** Returns URI of hk2.
+    /** 
+     * Returns URI of hk2.
+     * 
      * @return URI without home and base specification
      */
     public String getServerUri() {
@@ -430,18 +468,4 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return builder.toString();
     }
 
-    /**
-     * 
-     * @param arg0 
-     * @param arg1 
-     * @param arg2 
-     * @param arg3 
-     * @return 
-     * @throws java.lang.IllegalStateException 
-     */
-    public ProgressObject distribute(Target[] arg0, ModuleType arg1, 
-            InputStream arg2, InputStream arg3) throws IllegalStateException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

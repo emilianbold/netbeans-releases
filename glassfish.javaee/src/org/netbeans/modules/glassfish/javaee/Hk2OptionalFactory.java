@@ -42,9 +42,12 @@ package org.netbeans.modules.glassfish.javaee;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.WizardDescriptor.InstantiatingIterator;
@@ -74,6 +77,17 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
+        return null;
+    }
+    
+    @Override
+    public DatasourceManager getDatasourceManager(DeploymentManager dm) {
+        return dm instanceof Hk2DeploymentManager ?
+                new Hk2DatasourceManager((Hk2DeploymentManager) dm) : null;
+    }
+    
+    @Override
+    public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
         return null;
     }
     
