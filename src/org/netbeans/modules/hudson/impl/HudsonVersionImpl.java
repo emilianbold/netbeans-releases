@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 
 /**
@@ -28,14 +30,17 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
  */
 public class HudsonVersionImpl implements HudsonVersion {
     
-    public static final HudsonVersionImpl SUPPORTED_VERSION = new HudsonVersionImpl("1.101");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\b.*");
     
-    private int major;
-    private int minor;
+    private final int major;
+    private final int minor;
     
     public HudsonVersionImpl(String version) {
-        this.major = parseMajor(version);
-        this.minor = parseMinor(version);
+        Matcher m = VERSION_PATTERN.matcher(version);
+        if(!m.matches())
+            throw new IllegalArgumentException(version);
+        this.major = Integer.parseInt(m.group(1));
+        this.minor = Integer.parseInt(m.group(2));
     }
     
     public int getMajorVersion() {
@@ -44,47 +49,6 @@ public class HudsonVersionImpl implements HudsonVersion {
     
     public int getMinorVersion() {
         return minor;
-    }
-    
-    private int parseMajor(String version) {
-        int result = 0;
-        
-        try {
-            // Get major version as string
-            String s = version.substring(0, version.indexOf("."));
-            
-            // Convert to integer
-            result = Integer.parseInt(s);
-        } catch (IndexOutOfBoundsException e) {
-            // Nothing
-        } catch (NumberFormatException e) {
-            // Nothing
-        } catch (NullPointerException e) {
-            // Nothing
-        }
-        
-        return result;
-    }
-    
-    private int parseMinor(String version) {
-        int result = 0;
-        
-        try {
-            // Get minor version as string
-            String s = (version.indexOf("-") == -1) ? version.substring(version.indexOf(".") + 1) :
-                version.substring(version.indexOf(".") + 1, version.indexOf("-"));
-            
-            // Convert to integer
-            result = Integer.parseInt(s);
-        } catch (IndexOutOfBoundsException e) {
-            // Nothing
-        } catch (NumberFormatException e) {
-            // Nothing
-        } catch (NullPointerException e) {
-            // Nothing
-        }
-        
-        return result;
     }
     
     public String toString() {
