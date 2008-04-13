@@ -39,7 +39,7 @@ set -x
 PASSWORD="$1"
 
 if [ -n "$PASSWORD" ] ; then
-    ./bin/mysqladmin -u root -p "$PASSWORD" shutdown
+    ./bin/mysqladmin -u root --password="$PASSWORD" shutdown
 else
     ./bin/mysqladmin -u root shutdown
 fi
