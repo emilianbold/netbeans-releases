@@ -33,7 +33,10 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
      * Describes state of the Hudson Job
      */
     public enum Color {
-        blue, blue_anime, red, red_anime, yellow, yellow_anime, grey, grey_anime
+        aborted, aborted_anime,
+        blue, blue_anime,
+        disabled,
+        red, red_anime, yellow, yellow_anime, grey, grey_anime
     }
     
     /**
