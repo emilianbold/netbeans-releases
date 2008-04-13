@@ -150,9 +150,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
     
     private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-V3"; // NOI18N
-    private static final String EL_CORE_LIB = "eclipselink.core-1.0-SNAPSHOT.jar"; // NOI18N
-    private static final String EL_EXT_ORACLE_LIB = "eclipselink.extension.oracle-1.0-SNAPSHOT.jar"; // NOI18N
-    private static final String EL_JPA_LIB = "eclipselink.jpa-1.0-SNAPSHOT.jar"; // NOI18N
+    private static final String EL_CORE_LIB = "eclipselink-wrapper-10.0-SNAPSHOT.jar"; // NOI18N
+
     private static final String PERSISTENCE_API_LIB = "persistence-api-1.0b.jar"; // NOI18N
     private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
     
@@ -186,8 +185,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 // classpath, src, javadoc -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
                 libraryList.add(new File(installRoot + "/modules/" + EL_CORE_LIB).toURL());
-                libraryList.add(new File(installRoot + "/modules/" + EL_EXT_ORACLE_LIB).toURL());
-                libraryList.add(new File(installRoot + "/modules/" + EL_JPA_LIB).toURL());
                 libraryList.add(new File(installRoot + "/modules/" + PERSISTENCE_API_LIB).toURL());
 
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(
@@ -215,8 +212,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
  
     private static final String COMET_LIB = "Comet-GlassFish-V3"; // NOI18N
-    private static final String COMET_JAR_LIB = "grizzly-comet-1.7.2.jar"; // NOI18N
-    private static final String COMET_JAR_LIB_SECOND = "grizzly-comet-1.7-SNAPSHOT.jar"; // NOI18N
+    private static final String COMET_JAR_LIB = "grizzly-module-1.7.3.jar"; // NOI18N
     
     public boolean ensureCometSupport(String installRoot) {
         LibraryManager lmgr = LibraryManager.getDefault();
@@ -247,11 +243,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src,  -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                File f= new File(installRoot + "/modules/" + COMET_JAR_LIB);
-                if (!f.exists()){//try another possible name
-                     f= new File(installRoot + "/modules/" + COMET_JAR_LIB_SECOND);
-                   
-                }
+                File f= new File(installRoot + "/modules/" + COMET_JAR_LIB); 
+
                 libraryList.add(f.toURL());
 
 

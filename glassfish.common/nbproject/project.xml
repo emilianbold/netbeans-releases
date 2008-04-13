@@ -116,6 +116,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
+                <friend>org.netbeans.modules.glassfish.phobos</friend>
                 <package>org.netbeans.spi.glassfish</package>
             </friend-packages>
         </data>
