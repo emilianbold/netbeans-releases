@@ -164,6 +164,8 @@ public class XmlFoldManager implements FoldManager {
    
     public void unsetDirty() {
         dirtyTimeMillis = 0;
+        timer.cancel();
+        timer = null;
     }
    
     private long dirtyIntervalMillis() {
