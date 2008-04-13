@@ -48,7 +48,15 @@ cp ./support-files/my-"$SYSTEM_TYPE".cnf ./my.cnf
 do_query() {
     tmpFile=./query.tmp
     echo "$1" > $tmpFile
-    ./bin/mysql --defaults-file=./my.cnf <$tmpFile
+    if [ 1 -eq $ISROOT ] ; then
+        ./bin/mysql --defaults-file=./my.cnf <$tmpFile
+    else
+        if [ -n "$PASSWORD" ] ; then
+            ./bin/mysql --defaults-file=./my.cnf --user=root --password="$PASSWORD" <$tmpFile
+        else
+            ./bin/mysql --defaults-file=./my.cnf --user=root <$tmpFile
+	fi
+    fi
     code=$?
     rm $tmpFile
     return $code
