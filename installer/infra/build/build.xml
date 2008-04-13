@@ -2254,7 +2254,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="generate-mysql-bundles" if="do.build.mysql">
+    <target name="init-mysql-bundles" if="do.build.mysql">
+        <antcall target="build-netbeans-engine">
+		<param name="netbeans.engine.branding.kit" value="mysql"/>
+	</antcall>
+    </target>
+
+
+    <target name="generate-mysql-bundles" depends="init-mysql-bundles" if="do.build.mysql">
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-windows.exe">
