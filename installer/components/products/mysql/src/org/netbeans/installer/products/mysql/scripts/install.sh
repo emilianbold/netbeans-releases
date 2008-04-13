@@ -75,6 +75,14 @@ remove_remote_root() {
     fi
 }
 
+remove_anonymous() {
+    if [ -n "$REMOVE_ANONYMOUS" ] ; then 
+        do_query "DELETE FROM mysql.user WHERE User='';"
+        echo "Result : $?"
+        do_query "FLUSH PRIVILEGES;"
+        echo "Result : $?"
+    fi
+}
 
 #Modify my.cnf with settings
 #PORT_NUMBER, SKIP_NETWORKING, REMOVE_ANONYMOUS should be passed via env variables
@@ -130,19 +138,12 @@ fi
 
 sleep 3
 
-if [ -n "$REMOVE_ANONYMOUS" ] ; then 
-    do_query "DELETE FROM mysql.user WHERE User='';"
-    echo "Result : $?"
-    do_query "FLUSH PRIVILEGES;"
-    echo "Result : $?"
-fi
-
-#Remove remote access 
-remove_remote_root
-
 if [ -n "$PASSWORD" ] ; then
     ./bin/mysqladmin -u root password "$PASSWORD"
     echo "Result : $?"
     ./bin/mysqladmin -u root -h `hostname` password "$PASSWORD"
     echo "Result : $?"
 fi
+
+remove_anonymous
+remove_remote_root
