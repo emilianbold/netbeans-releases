@@ -111,7 +111,7 @@ if [ 1 -eq $ISROOT ] ; then
     echo "Result : $?"
     chgrp -R mysql "$INSTALLDIR"
     echo "Result : $?"
-    chmod -R g+w INSTALLDIR/data
+    chmod -R g+w "$INSTALLDIR"/data
     echo "Result : $?"
 fi
 
