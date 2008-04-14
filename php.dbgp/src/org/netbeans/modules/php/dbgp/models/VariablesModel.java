@@ -300,7 +300,6 @@ public class VariablesModel extends ViewModelSupport
         try {
             if (myNodes.size() == 0) {
                 myNodes.add(node);
-                fireTreeChanged();
             }
             else {
                 boolean found = false;
@@ -315,9 +314,9 @@ public class VariablesModel extends ViewModelSupport
                 }
                 if (!found) {
                     myNodes.add(node);
-                    fireTreeChanged(new ModelEvent.NodeChanged(this, ROOT));
                 }
             }
+            fireTreeChanged();
         }
         finally {
             myWritelock.unlock();
