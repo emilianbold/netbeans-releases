@@ -109,9 +109,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private List<ModelListener> listeners = new ArrayList<ModelListener>();
     
     private Map<JPDAThread, ThreadStateUpdater> threadStateUpdaters = new WeakHashMap<JPDAThread, ThreadStateUpdater>();
+    private CurrentThreadListener currentThreadListener;
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        currentThreadListener = new CurrentThreadListener();
+        debugger.addPropertyChangeListener(WeakListeners.propertyChange(currentThreadListener, debugger));
     }
 
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -121,11 +124,25 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (node instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) node;
             watch(t);
-            return getDisplayName(t);
+            JPDAThread currentThread = debugger.getCurrentThread();
+            if (t == currentThread) {
+                return BoldVariablesTableModelFilterFirst.toHTML(
+                        getDisplayName(t),
+                        true, false, null);
+            } else {
+                return getDisplayName(t);
+            }
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame f = (CallStackFrame) node;
-            return CallStackNodeModel.getCSFName(null, f, false);
+            CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
+            if (f.equals(currentFrame)) {
+                return BoldVariablesTableModelFilterFirst.toHTML(
+                        CallStackNodeModel.getCSFName(null, f, false),
+                        true, false, null);
+            } else {
+                return CallStackNodeModel.getCSFName(null, f, false);
+            }
         }
         throw new UnknownTypeException(node.toString());
     }
@@ -409,6 +426,44 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 }
             }
         }
+    }
+    
+    private class CurrentThreadListener implements PropertyChangeListener {
+        
+        private Reference<JPDAThread> lastCurrentThreadRef = new WeakReference<JPDAThread>(null);
+        private Reference<CallStackFrame> lastCurrentFrameRef = new WeakReference<CallStackFrame>(null);
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.PROP_CURRENT_THREAD.equals(evt.getPropertyName())) {
+                JPDAThread currentThread = debugger.getCurrentThread();
+                JPDAThread lastCurrentThread;
+                synchronized (this) {
+                    lastCurrentThread = lastCurrentThreadRef.get();
+                    lastCurrentThreadRef = new WeakReference(currentThread);
+                }
+                if (lastCurrentThread != null) {
+                    fireNodeChanged(lastCurrentThread);
+                }
+                if (currentThread != null) {
+                    fireNodeChanged(currentThread);
+                }
+            }
+            if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
+                CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
+                CallStackFrame lastcurrentFrame;
+                synchronized (this) {
+                    lastcurrentFrame = lastCurrentFrameRef.get();
+                    lastCurrentFrameRef = new WeakReference(currentFrame);
+                }
+                if (lastcurrentFrame != null) {
+                    fireNodeChanged(lastcurrentFrame);
+                }
+                if (currentFrame != null) {
+                    fireNodeChanged(currentFrame);
+                }
+            }
+        }
+        
     }
     
 }
