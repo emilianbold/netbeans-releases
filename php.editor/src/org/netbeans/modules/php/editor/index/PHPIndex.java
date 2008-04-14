@@ -289,7 +289,7 @@ public class PHPIndex {
             String foundClassName = extractStringValueFromIndexSignature(classSignatures[0], 0);
             String persistentURL = classMap.getPersistentUrl();
             
-            if (!className.equals(foundClassName) || !isReachable(context, persistentURL)) {
+            if (!className.equals(foundClassName) || (context != null && !isReachable(context, persistentURL))) {
                 continue;
             }
 

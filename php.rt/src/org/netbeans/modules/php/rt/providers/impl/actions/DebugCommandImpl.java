@@ -120,7 +120,11 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
     public void run() {
         final SessionId sessionId = getSessionId();
         if ( sessionId != null ) {
-            runFilesInExistedSession(sessionId);
+            //just one session allowed for now
+            //runFilesInExistedSession(sessionId);
+            NotifyDescriptor descriptor =new NotifyDescriptor.Message(
+                    NbBundle.getMessage(DebugCommandImpl.class, "MSG_NoMoreDebugSession"));//NOI18N
+            DialogDisplayer.getDefault().notify(descriptor);
         }
         else {
             runFilesInFreshSession( null );

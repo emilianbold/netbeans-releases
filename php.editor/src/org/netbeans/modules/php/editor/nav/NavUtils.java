@@ -43,6 +43,9 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -51,11 +54,18 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -168,6 +178,54 @@ public class NavUtils {
         assert isQuoted(value);
         
         return value.substring(1, value.length() - 1);
+    }
+    
+    public static FileObject resolveInclude(CompilationInfo info, Include include) {
+        Expression e = include.getExpression();
+
+        if (e instanceof ParenthesisExpression) {
+            e = ((ParenthesisExpression) e).getExpression();
+        }
+
+        if (e instanceof Scalar) {
+            Scalar s = (Scalar) e;
+
+            if (Type.STRING == s.getScalarType()) {
+                String fileName = s.getStringValue();
+                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
+
+                return resolveRelativeFile(info, fileName);
+            }
+        }
+        
+        return null;
+    }
+    
+    private static FileObject resolveRelativeFile(CompilationInfo info, String name) {
+        PhpSourcePath psp = null;
+        Project p = FileOwnerQuery.getOwner(info.getFileObject());
+
+        if (p != null) {
+            psp = p.getLookup().lookup(PhpSourcePath.class);
+        }
+        
+        if (psp != null) {
+            return psp.resolveFile(info.getFileObject().getParent(), name);
+        } else {
+            return info.getFileObject().getParent().getFileObject(name);
+        }
+    }
+    
+    public static FileObject getFile(Document doc) {
+        Object o = doc.getProperty(Document.StreamDescriptionProperty);
+        
+        if (o instanceof DataObject) {
+            DataObject od = (DataObject) o;
+            
+            return od.getPrimaryFile();
+        }
+        
+        return null;
     }
     
 }

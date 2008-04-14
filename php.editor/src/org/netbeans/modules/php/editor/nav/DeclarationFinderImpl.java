@@ -57,15 +57,16 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -81,7 +82,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return findDeclarationImpl(info, caretOffset);
     }
 
-    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+    public OffsetRange getReferenceSpan(Document doc, final int caretOffset) {
         List<TokenSequence<?>> ets = TokenHierarchy.get(doc).embeddedTokenSequences(caretOffset, false);
         
         ets = new LinkedList<TokenSequence<?>>(ets);
@@ -98,6 +99,49 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             }
         }
         
+        //XXX: to find out includes, we need to parse - but this means we are parsing on mouse move in AWT!:
+        FileObject file = NavUtils.getFile(doc);
+        
+        if (file != null) {
+            SourceModel model = SourceModelFactory.getInstance().getModel(file);
+            final OffsetRange[] result = new OffsetRange[1];
+            
+            try {
+                model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                    public void cancel() {}
+                    public void run(CompilationInfo parameter) throws Exception {
+                        List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
+
+                        if (path.size() == 0) {
+                            return ;
+                        }
+
+                        path = new LinkedList<ASTNode>(path);
+
+                        Collections.reverse(path);
+
+                        for (ASTNode n : path) {
+                            if (n instanceof Include) {
+                                FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
+
+                                if (file != null) {
+                                    result[0] = new OffsetRange(n.getStartOffset(), n.getEndOffset());
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+            
+            if (result[0] != null) {
+                return result[0];
+            }
+        }
+        
         return OffsetRange.NONE;
     }
 
@@ -108,6 +152,26 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         
         if (el != null) {
             return create(info, el);
+        }
+        
+        if (path.size() == 0) {
+            return null;
+        }
+
+        path = new LinkedList<ASTNode>(path);
+
+        Collections.reverse(path);
+        
+        for (ASTNode n : path) {
+            if (n instanceof Include) {
+                FileObject file = NavUtils.resolveInclude(info, (Include) n);
+                
+                if (file != null) {
+                    return new DeclarationLocation(file, 0);
+                }
+                
+                break;
+            }
         }
         
         return DeclarationLocation.NONE;

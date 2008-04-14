@@ -109,7 +109,7 @@ public class PredicateMapperModelFactory {
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
         PredicateGraphBuilderVisitor graphBuilderVisitor = 
                 new PredicateGraphBuilderVisitor(
-                sContext, newGraph, leftTreeModel, true);
+                sContext, newGraph, leftTreeModel, true, null);
         predicate.accept(graphBuilderVisitor);
         //        
         // Attach the graph to the mapper

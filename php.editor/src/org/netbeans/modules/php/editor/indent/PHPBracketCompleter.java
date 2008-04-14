@@ -443,6 +443,11 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                 PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
             boolean isEmptyComment = (Boolean) ret[1];
             
+            if (isEmptyComment) {
+                int indent = LexUtilities.getLineIndent(doc, ts.offset());
+                GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+            }
+            
             // XXX: hook up the doc fields auto-generation here, if isEmptyComment == true
             
             return (Integer) ret[0];
@@ -456,7 +461,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         
         return -1;
     }
-
+    
     private static Object [] beforeBreakInComments(
         BaseDocument doc, TokenSequence<? extends PHPTokenId> ts, int offset, Caret caret,
         PHPTokenId commentStart, PHPTokenId commentBody, PHPTokenId commentEnd

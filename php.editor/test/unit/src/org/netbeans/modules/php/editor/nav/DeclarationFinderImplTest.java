@@ -250,7 +250,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
-    public void testGoToinherited() throws Exception {
+    public void testGoToInherited() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
                                          "class foo {\n" +
@@ -260,6 +260,16 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "$r = new bar();\n" +
                                          "$r->te|st();" +
+                                         "?>");
+    }
+    
+    public void testGoToInclude() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include \"te|sta.php\";\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
                                          "?>");
     }
     

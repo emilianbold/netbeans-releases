@@ -133,6 +133,15 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "?>");
     }
     
+    public void DISABLEDtestOccurrencesGlobalVariable() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "^$GLOBALS['na|me']^ = \"test\";\n" +
+                               "function foo() {\n" +
+                               "    echo ^$GLOBALS['name']^;\n" +
+                               "}\n" + 
+                               "?>", true);
+    }
+    
     private void performTestOccurrences(String code) throws Exception {
         performTestOccurrences(code, false);
     }
