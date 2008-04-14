@@ -25,7 +25,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
@@ -91,7 +91,7 @@ public class ValidationDecorationProvider extends DecorationProvider
     
     public void updateDecorations(){
         
-        final List<ResultItem> resultsFiltered = ValidationUtil.filterBpelResultItems(results);
+        final List<ResultItem> resultsFiltered = EditorUtil.filterBpelResultItems(results);
        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -210,7 +210,7 @@ public class ValidationDecorationProvider extends DecorationProvider
         for (ResultItem item1: list1){
             boolean found = false;
             for (ResultItem item2: list2){
-                if (ValidationUtil.equals(item1, item2)){
+                if (EditorUtil.equals(item1, item2)){
                     found = true;
                     break;
                 }

@@ -76,7 +76,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
 
@@ -409,7 +409,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 else if (mvp.preferredID().equals(
                         BPELSourceMultiViewElementDesc.PREFERED_ID))
                 {
-                    Line line = ValidationUtil.getLine(resultItem);
+                    Line line = EditorUtil.getLine(resultItem);
 
                     if (line != null) {
                       line.show(Line.SHOW_GOTO);

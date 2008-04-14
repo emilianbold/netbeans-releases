@@ -59,6 +59,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -71,29 +72,16 @@ public class BPELValidationController implements ComponentListener {
     myTimer = new Timer();
     myBpelModel = bpelModel;
     myListeners = new WeakHashMap<BPELValidationListener, Object>();
-//    myTrigger = new ExternalModelsValidationTrigger( this );
     myAnnotations = new ArrayList<BPELValidationAnnotation>();
     myValidationResult = new ArrayList<ResultItem>();
   }
 
   public void attach() {
     myBpelModel.addComponentListener(this);
-                                            /*
-    if (myBpelModel != null) {
-      myBpelModel.addEntityChangeListener(this);
-//      myBpelModel.addEntityChangeListener(getTrigger());
-//    getTrigger().loadImports();
-    }*/
   }
 
   public void detach() {
     myBpelModel.removeComponentListener(this);
-                /*
-    if (myBpelModel != null) {
-      myBpelModel.removeEntityChangeListener(this);
-//    myBpelModel.removeEntityChangeListener(getTrigger());
-//    getTrigger().clearTrigger();
-    }*/
   }
 
   public void addValidationListener(BPELValidationListener listener) {
@@ -113,33 +101,15 @@ public class BPELValidationController implements ComponentListener {
   }
 
   public void triggerValidation(boolean checkExternallyTriggered) {
-//    if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
-//      startValidation();
-//    }
-//    else if ( !checkExternallyTriggered) {
-      startValidation();
-//    }
+    startValidation();
   }
   
   public void notifyValidationResult(List<ResultItem> result) {
     notifyListeners(result);
   }
-/*
-  @Override
-  public void notifyEvent(ChangeEvent event) {
-    if (State.VALID.equals(myBpelModel.getState()) && event.isLastInAtomic()) {
-      startValidation();
-    }
-  }
-*/
-  BpelModel getModel() {
-    return myBpelModel;
-  }
-  
+
   private synchronized void startValidation() {
-//System.out.println();
-//System.out.println();
-//new Exception("!!!").printStackTrace();
+//stackTrace()
     TimerTask task = new TimerTask() {
       public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
@@ -185,17 +155,16 @@ public class BPELValidationController implements ComponentListener {
       for (BPELValidationAnnotation annotation : myAnnotations) {
         annotation.detach();
       }
-      myAnnotations.clear();
 //out();
 //out("SHOW ANNOTATION IN EDITOR");
-      
+      myAnnotations.clear();
       Map<Line.Part, List<ResultItem>> map = new HashMap<Line.Part, List<ResultItem>>();
   
       for (ResultItem item : result) {
           if (item.getType() != ResultType.ERROR) {
             continue;
           }
-          Line.Part part = ValidationUtil.getLinePart(item);
+          Line.Part part = EditorUtil.getLinePart(item);
 
           if (part == null) {
             continue;
@@ -219,16 +188,10 @@ public class BPELValidationController implements ComponentListener {
                   description.append("\n\n"); // NOI18N
               }
           }
-          BPELValidationAnnotation annotation = new BPELValidationAnnotation();
-          myAnnotations.add(annotation);
-          annotation.show(part, description.toString());
+          myAnnotations.add(new BPELValidationAnnotation(part, description.toString()));
       }
     }
   }
-
-//  private ExternalModelsValidationTrigger getTrigger() {
-//    return myTrigger;
-//  }
 
   public void valueChanged(ComponentEvent event) {
 //out("CHANGED");
@@ -249,7 +212,6 @@ public class BPELValidationController implements ComponentListener {
   private Timer myTimer;
   private BpelModel myBpelModel;
   private List<ResultItem> myValidationResult;
-//  private ExternalModelsValidationTrigger myTrigger;
   private List<BPELValidationAnnotation> myAnnotations;
   private Map<BPELValidationListener, Object> myListeners;
 
