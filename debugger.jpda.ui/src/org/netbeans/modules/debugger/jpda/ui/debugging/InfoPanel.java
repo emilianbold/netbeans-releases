@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -78,6 +79,8 @@ public class InfoPanel extends javax.swing.JPanel {
         deadlocksPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
         filterPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
         
+        initFilterPanel(filterPanel);
+        
         deadlocksPanel.setVisible(false);
         arrowButton = createArrowButton();
         hitsPanel.add(arrowButton);
@@ -102,59 +105,49 @@ public class InfoPanel extends javax.swing.JPanel {
         return button;
     }
     
-//    private void initFilterPanel (JPanel filterPanel) {
-//        filterPanel.setBorder(new EmptyBorder(1, 2, 3, 5));
-//
-//        // configure toolbar
-//        JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
-//        toolbar.setFloatable(false);
-//        toolbar.setRollover(true);
-//        toolbar.setBorderPainted(false);
-//        // create toggle buttons
-//        int filterCount = filtersDesc.getFilterCount();
-//        toggles = new ArrayList<JToggleButton>(filterCount);
-//        JToggleButton toggleButton = null;
-//
-//        Map<String,Boolean> fStates = new HashMap<String, Boolean>(filterCount * 2);
-//
-//        for (int i = 0; i < filterCount; i++) {
-//            toggleButton = createToggle(fStates, i);
-//            toggles.add(toggleButton);
-//        }
-//
-//        // add toggle buttons
-//        JToggleButton curToggle;
-//        Dimension space = new Dimension(3, 0);
-//        for (int i = 0; i < toggles.size(); i++) {
-//            curToggle = toggles.get(i);
-//            curToggle.addActionListener(this);
-//            toolbar.add(curToggle);
-//            if (i != toggles.size() - 1) {
-//                toolbar.addSeparator(space);
-//            }
-//        }
-//
-//        add(toolbar);
-//
-//        // initialize member states map
-//        synchronized (STATES_LOCK) {
-//            filterStates = fStates;
-//        }
-//    }
+    private void initFilterPanel (JPanel filterPanel) {
+        filterPanel.setBorder(new EmptyBorder(1, 2, 3, 5));
+        FiltersDescriptor filtersDesc = FiltersDescriptor.createDebuggingViewFilters();
+        // configure toolbar
+        JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
+        toolbar.setFloatable(false);
+        toolbar.setRollover(true);
+        toolbar.setBorderPainted(false);
+        // create toggle buttons
+        int filterCount = filtersDesc.getFilterCount();
+        ArrayList<JToggleButton> toggles = new ArrayList<JToggleButton>(filterCount);
+        JToggleButton toggleButton = null;
 
-    private JToggleButton createToggle (int index) {
-        boolean isSelected = false; // [TODO] // filtersDesc.isSelected(index);
-        Icon icon = null; //filtersDesc.getSelectedIcon(index);
+        for (int i = 0; i < filterCount; i++) {
+            toggleButton = createToggle(filtersDesc, i);
+            toggles.add(toggleButton);
+        }
+
+        // add toggle buttons
+        JToggleButton curToggle;
+        Dimension space = new Dimension(3, 0);
+        for (int i = 0; i < toggles.size(); i++) {
+            curToggle = toggles.get(i);
+            // curToggle.addActionListener(this); [TODO]
+            toolbar.add(curToggle);
+            if (i != toggles.size() - 1) {
+                toolbar.addSeparator(space);
+            }
+        }
+        filterPanel.add(toolbar);
+    }
+
+    private JToggleButton createToggle (FiltersDescriptor filtersDesc, int index) {
+        boolean isSelected = filtersDesc.isSelected(index);
+        Icon icon = filtersDesc.getSelectedIcon(index);
         // ensure small size, just for the icon
-        JToggleButton result = new JToggleButton(icon, isSelected);
+        JToggleButton toggleButton = new JToggleButton(icon, isSelected);
         Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
-        result.setPreferredSize(size);
-        result.setMargin(new Insets(2,3,2,3));
-        // result.setToolTipText(filtersDesc.getTooltip(index)); [TODO]
-
-        // fStates.put(filtersDesc.getName(index), Boolean.valueOf(isSelected));
-
-        return result;
+        toggleButton.setPreferredSize(size);
+        toggleButton.setMargin(new Insets(2,3,2,3));
+        toggleButton.setToolTipText(filtersDesc.getTooltip(index));
+        toggleButton.setFocusable(false);
+        return toggleButton;
     }
     
     /** This method is called from within the constructor to

@@ -9,7 +9,6 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -17,8 +16,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -42,8 +39,6 @@ import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.Visualizer;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -82,6 +77,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private InfoPanel infoPanel;
     private JPDADebugger debugger;
     private Session session;
+    private JPDADebugger previousDebugger;
     
     /**
      * instance/singleton of this class
@@ -135,15 +131,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeView.addTreeExpansionListener(this);
         TreeModel model = treeView.getTree().getModel();
         model.addTreeModelListener(this);
-        
-//        Collection<Node> col1 = new ArrayList<Node>();
-//        col1.add(new ElemNode("subnode 1", 4));
-//        col1.add(new ElemNode("subnode 2", 6));
-//        ElemNode rootNode = new ElemNode("root node", new ElemNodeChildren2(col1));
-
-//        sessionComboBox.removeAllItems();
-//        sessionComboBox.addItem(rootNode.getDisplayName());
-//        manager.setRootContext(rootNode);
     }
  
     /** This method is called from within the constructor to
@@ -198,13 +185,22 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     public void setRootContext(Node root, DebuggerEngine engine) {
         if (engine != null) {
-            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+            JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
             synchronized (this) {
-                this.debugger = debugger;
+                if (previousDebugger != null) {
+                    previousDebugger.removePropertyChangeListener(this);
+                }
+                previousDebugger = this.debugger;
+                this.debugger = deb;
                 this.session = engine.lookupFirst(null, Session.class);
+                deb.addPropertyChangeListener(this);
             }
         } else {
             synchronized (this) {
+                if (previousDebugger != null) {
+                    previousDebugger.removePropertyChangeListener(this);
+                }
+                previousDebugger = null;
                 this.debugger = null;
                 this.session = null;
             }
@@ -318,6 +314,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName) || 
                 ExplorerManager.PROP_NODE_CHANGE.equals(propertyName)) {
             refreshView();
+        } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
+            refreshView();
         }
     }
 
@@ -355,9 +353,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 rightPanel.removeAll();
                 int sy = 0;
                 int sx = (rightPanel.getWidth() - ICON_WIDTH) / 2;
+                JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
+                boolean isCurrent = false;
                 for (TreePath path : treeView.getVisiblePaths()) {
                     Node node = Visualizer.findNode(path.getLastPathComponent());
                     JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
+                    if (jpdaThread != null) {
+                        isCurrent = jpdaThread == currentThread;
+                    }
                     
                     JTree tree = treeView.getTree();
                     Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
@@ -365,7 +368,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     
                     JComponent label = new JPanel();
                     label.setPreferredSize(new Dimension(BAR_WIDTH, height));
-                    label.setBackground(greenBarColor);
+                    if (isCurrent) {
+                        label.setBackground(greenBarColor);
+                    } else {
+                        label.setBackground(treeBackgroundColor);
+                        label.setOpaque(false);
+                    }
                     leftPanel.add(label);
                     
                     JLabel icon = jpdaThread != null ?
@@ -373,6 +381,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                         suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
                     icon.setPreferredSize(new Dimension(ICON_WIDTH, height));
                     icon.setBackground(treeBackgroundColor);
+                    icon.setOpaque(false);
                     rightPanel.add(icon);
                     if (icon instanceof ClickableIcon) {
                         ((ClickableIcon)icon).initializeState(sx, sy, ICON_WIDTH, height);
@@ -400,74 +409,4 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         });
     }
     
-    // **************************************************************************
-    // ElemNode
-    // **************************************************************************
-    static class ElemNode extends AbstractNode {
-        
-        private String description;
-        
-        public ElemNode(String description, int childrenCount) {
-            super(childrenCount == 0 ? Children.LEAF : new ElemNodeChildren(childrenCount));
-            this.description = description;
-            setDisplayName(description); 
-        }
-        
-        public ElemNode(String description, Children children) {
-            super(children);
-            this.description = description;
-            setDisplayName(description); 
-        }
-        
-        @Override
-        public Image getIcon(int type) {
-             return Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/classLoader.gif");
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            return Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/classLoaderOpen.gif");
-        }
-
-        @Override
-        public String getDisplayName() {
-            return description;
-        }
-        
-    }
-
-    static class ElemNodeChildren extends Children.Array {
-
-        private int count;
-        
-        ElemNodeChildren(int count) {
-            this.count = count;
-        }
-        
-        @Override
-        protected Collection<Node> initCollection() {
-            Collection<Node> result = new ArrayList<Node>();
-            for (int x = 1; x <= count; x++) {
-                result.add(new ElemNode("node " + x, 0));
-            }
-            return result;
-        }
-
-    }
-
-    static class ElemNodeChildren2 extends Children.Array {
-
-        private Collection<Node> children;
-        
-        ElemNodeChildren2(Collection<Node> children) {
-            this.children = children;
-        }
-        
-        @Override
-        protected Collection<Node> initCollection() {
-            return children;
-        }
-
-    }
-
 }
