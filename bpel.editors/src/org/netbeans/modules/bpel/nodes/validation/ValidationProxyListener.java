@@ -27,7 +27,7 @@ import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
 import org.netbeans.modules.bpel.core.annotations.DiagramAnnotation;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
@@ -92,7 +92,7 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
     }
     
     public synchronized void validationUpdated(List<Validator.ResultItem> validationResults ) {
-        validationResults = ValidationUtil.filterBpelResultItems(validationResults);
+        validationResults = EditorUtil.filterBpelResultItems(validationResults);
         
         Map<Component, Validator.ResultType> newResultMap
                 = getComponentResultMap(validationResults);
@@ -112,22 +112,6 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         if (changedResults != null && changedResults.size() > 0) {
             myValidationSupport.fireChangeValidation(changedResults);
         }
-        
-//        List<Validator.ResultItem> changedItems = new ArrayList<Validator.ResultItem>();
-        
-//        List<Validator.ResultItem> removedResultItem = ValidationUtil
-//                .getRemovedResultItems(previousResultItems, validationResults);
-//        if (removedResultItem != null) {
-//            myValidationSupport.fireRemoveValidation(removedResultItem);
-//        }
-//
-//        List<Validator.ResultItem> addedResultItem = ValidationUtil
-//                .getAddedResultItems(previousResultItems, validationResults);
-//        if (addedResultItem != null && addedResultItem.size() > 0) {
-//            myValidationSupport.fireChangeValidation(addedResultItem);
-//        }
-//
-//        previousResultItems = validationResults;
     }
     
     private Map<Component, Validator.ResultType> getRemovedComponentResultMap(

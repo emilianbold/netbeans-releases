@@ -3155,7 +3155,7 @@ public class CodeCompleter implements Completable {
             final RubyParser parser = new RubyParser();
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
-                Element surrounding = parser.resolveHandle(null, elementHandle);
+                Element surrounding = RubyParser.resolveHandle(null, elementHandle);
                 if (surrounding != null && surrounding.getKind() != ElementKind.KEYWORD) {
                     String name = surrounding.getName();
                     ElementKind kind = surrounding.getKind();

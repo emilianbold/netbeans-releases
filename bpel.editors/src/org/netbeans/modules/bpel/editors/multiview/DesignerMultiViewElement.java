@@ -82,7 +82,7 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.SelectBpelElement;
+import org.netbeans.modules.bpel.core.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDeleteAction;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDisableAction;

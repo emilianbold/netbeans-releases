@@ -33,7 +33,6 @@ import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider
 
 import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.bpel.core.util.BadgedIconCache;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
