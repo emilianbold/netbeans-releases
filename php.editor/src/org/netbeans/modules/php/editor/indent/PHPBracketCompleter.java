@@ -1656,7 +1656,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                 assert firstNonWhiteFwd != -1;
                 char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
                 insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                         chr == ';' || chr == ']' || chr == '/'; //NOI18N
+                         chr == ';' || chr == ']' || chr == '/' || chr == '.'; //NOI18N
             }
             
             if (insert) {
@@ -1684,7 +1684,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         int highest = doc.getLength();
         if (currentLineOnly) {
             lowest = doc.getParagraphElement(offset).getStartOffset();
-            highest = doc.getParagraphElement(offset).getEndOffset();
+            highest = Math.max(doc.getParagraphElement(offset).getEndOffset() - 1, lowest);
         }
         
         // find the section end

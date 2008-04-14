@@ -60,10 +60,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -127,6 +129,10 @@ public class GeneratingBracketCompleter {
                         generateFunctionDoc(doc, offset, indent, parameter, (FunctionDeclaration) n);
                     }
                     
+                    if (n instanceof MethodDeclaration) {
+                        generateFunctionDoc(doc, offset, indent, parameter, ((MethodDeclaration) n).getFunction());
+                    }
+                    
                     if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {
                         Assignment a = (Assignment) ((ExpressionStatement) n).getExpression();
 
@@ -138,6 +144,10 @@ public class GeneratingBracketCompleter {
                                 generateVariableDoc(doc, offset, indent, parameter, el);
                             }
                         }
+                    }
+                    
+                    if (n instanceof FieldsDeclaration) {
+                        generateFieldDoc(doc, offset, indent, parameter, (FieldsDeclaration) n);
                     }
                 }
             }, true);
@@ -211,6 +221,23 @@ public class GeneratingBracketCompleter {
         }
     }
     
+    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, AttributedElement el) throws BadLocationException {
+        StringBuilder toAdd = new StringBuilder();
+
+        generateDocEntry(toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
+        generateDocEntry(toAdd, "@name", indent, "$" + el.getName(), PRINT_NO_TYPE);
+
+        doc.insertString(offset - 1, toAdd.toString(), null);
+    }
+    
+    private static void generateFieldDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, FieldsDeclaration decl) throws BadLocationException {
+        StringBuilder toAdd = new StringBuilder();
+        
+        generateDocEntry(toAdd, "@var", indent, null, null);
+        
+        doc.insertString(offset - 1, toAdd.toString(), null);
+    }
+    
     private static class ScannerImpl extends DefaultVisitor {
         private List<Pair<AttributedElement, AttributedType>> globals = new LinkedList<Pair<AttributedElement, AttributedType>>();
         private List<Pair<AttributedElement, AttributedType>> staticvars = new LinkedList<Pair<AttributedElement, AttributedType>>();
@@ -268,15 +295,6 @@ public class GeneratingBracketCompleter {
         public void visit(ClassDeclaration node) {
         }
         
-    }
-    
-    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, AttributedElement el) throws BadLocationException {
-        StringBuilder toAdd = new StringBuilder();
-
-        generateDocEntry(toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
-        generateDocEntry(toAdd, "@name", indent, "$" + el.getName(), PRINT_NO_TYPE);
-
-        doc.insertString(offset - 1, toAdd.toString(), null);
     }
     
     private static final class Pair<A, B> {
