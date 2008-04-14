@@ -514,13 +514,4 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void tearDown() {
-        new SaveAllAction().performAPI();
-    }
-
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
-    }
-
 }

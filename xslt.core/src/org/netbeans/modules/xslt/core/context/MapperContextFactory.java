@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.xslt.core.context;
 
-
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.List;
@@ -42,7 +41,6 @@ import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.util.TMapUtil;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * @author Vitaly Bychkov

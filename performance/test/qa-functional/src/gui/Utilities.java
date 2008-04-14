@@ -41,6 +41,7 @@
 
 package gui;
 
+import java.io.PrintStream;
 import javax.swing.tree.TreePath;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,7 +53,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -62,7 +62,6 @@ import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -651,7 +650,12 @@ public class Utilities {
      */
     public static void waitScanFinished(){
         ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
+        try {
+            new QueueTool().waitEmpty(1000);
+        } catch (TimeoutExpiredException tee) {            
+            getLog().println("The following exception is ignored");
+            tee.printStackTrace(getLog());
+        }
         ProjectSupport.waitScanFinished();
     }
     public static void initLog(PerformanceTestCase testCase) {
@@ -663,6 +667,13 @@ public class Utilities {
     private static void log(String logMessage) {
         System.out.println("Utilities::"+logMessage);
         if( test != null  ) { test.log("Utilities::"+logMessage); }
+    }
+    private static PrintStream getLog() {
+        if( test != null  ) { 
+            return test.getLog(); 
+        } else {
+            return System.out;
+        }
     }
     
 }

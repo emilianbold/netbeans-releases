@@ -69,11 +69,9 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsDebugAction;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -93,7 +91,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -107,6 +104,7 @@ import org.openide.xml.XMLUtil;
  * @author Petr Hrebejk
  */
 public class RubyLogicalViewProvider implements LogicalViewProvider {
+    
     /** Add an IRB console action to Ruby projects, like the Rails console for Rails projects */
     private static final boolean INCLUDE_IRB_CONSOLE = Boolean.getBoolean("ruby.irbconsole"); // NOI18N
     
@@ -115,19 +113,16 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     private final RubyProject project;
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
-    private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
     private List<ChangeListener> changeListeners;
     
-    public RubyLogicalViewProvider(RubyProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public RubyLogicalViewProvider(RubyProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
         this.helper = helper;
         assert helper != null;
         this.evaluator = evaluator;
         assert evaluator != null;
-        this.spp = spp;
-        assert spp != null;
         this.resolver = resolver;
     }
     
@@ -221,15 +216,6 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     
     // Private innerclasses ----------------------------------------------------------------
     
-    private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        RubyProjectProperties.JAVAC_CLASSPATH,
-        RubyProjectProperties.RUN_CLASSPATH,
-        RubyProjectProperties.DEBUG_CLASSPATH,
-        RubyProjectProperties.RUN_TEST_CLASSPATH,
-        RubyProjectProperties.DEBUG_TEST_CLASSPATH,
-        RubyProjectProperties.JAVAC_TEST_CLASSPATH,
-    };
-    
     public boolean hasBrokenLinks () {
 //        return BrokenReferencesSupport.isBroken(helper.getRakeProjectHelper(), resolver, getBreakableProperties(),
 //                new String[] {RubyProjectProperties.JAVA_PLATFORM});
@@ -261,31 +247,16 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         return false;
     }
     
-//    private String[] getBreakableProperties() {
-//        SourceRoots roots = this.project.getSourceRoots();
-//        String[] srcRootProps = roots.getRootProperties();
-//        roots = this.project.getTestSourceRoots();
-//        String[] testRootProps = roots.getRootProperties();
-//        String[] result = new String [BREAKABLE_PROPERTIES.length + srcRootProps.length + testRootProps.length];
-//        System.arraycopy(BREAKABLE_PROPERTIES, 0, result, 0, BREAKABLE_PROPERTIES.length);
-//        System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
-//        System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
-//        return result;
-//    }
-    
     private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the Ruby physical
      */
     private final class RubyLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
         
-        private Image icon;
-        private Lookup lookup;
         //private Action brokenLinksAction;
         private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
-        // icon badging >>>
         private Set<FileObject> files;
         private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
@@ -294,8 +265,6 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         private boolean nameChange;
         private ChangeListener sourcesListener;
         private Map<SourceGroup, PropertyChangeListener> groupsListeners;
-        //private Project project;
-        // icon badging <<<
         
         public RubyLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-ruby-rubyproject/Nodes"), 
@@ -321,7 +290,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             return NbBundle.getMessage(RubyLogicalViewProvider.class, "RubyLogicalViewProvider.ProjectTooltipDescription", dirName, platformDesc);
         }
         
-        protected final void setProjectFiles(Project project) {
+        protected void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
                 sourcesListener = WeakListeners.change(this, sources);
@@ -331,7 +300,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         }
         
         
-        private final void setGroups(Collection groups) {
+        private void setGroups(Collection groups) {
             if (groupsListeners != null) {
                 for (SourceGroup group : groupsListeners.keySet()) {
                     PropertyChangeListener pcl = groupsListeners.get(group);
@@ -352,7 +321,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             setFiles(roots);
         }
         
-        protected final void setFiles(Set<FileObject> files) {
+        protected void setFiles(Set<FileObject> files) {
             if (fileSystemListeners != null) {
                 Iterator it = fileSystemListeners.keySet().iterator();
                 while (it.hasNext()) {
@@ -464,7 +433,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             }
             
             synchronized (privateLock) {
-                if ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange())) {
+                if ((iconChange && event.isIconChange()) || (nameChange && event.isNameChange())) {
                     Iterator it = files.iterator();
                     while (it.hasNext()) {
                         FileObject fo = (FileObject) it.next();

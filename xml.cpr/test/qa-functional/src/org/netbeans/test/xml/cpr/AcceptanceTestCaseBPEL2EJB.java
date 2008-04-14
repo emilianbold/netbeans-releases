@@ -471,12 +471,5 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     }
 
     public void tearDown() {
-        new SaveAllAction().performAPI();
     }
-
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
-    }
-
 }

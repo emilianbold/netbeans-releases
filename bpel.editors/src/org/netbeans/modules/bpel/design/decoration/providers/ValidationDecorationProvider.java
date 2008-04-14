@@ -69,7 +69,7 @@ public class ValidationDecorationProvider extends DecorationProvider
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                vc.triggerValidation();
+                vc.triggerValidation(false);
             }
         });
         

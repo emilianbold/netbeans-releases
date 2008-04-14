@@ -389,6 +389,9 @@ public class JsCodeCompletion implements Completable {
         final Document document;
         try {
             document = info.getDocument();
+            if (document == null) {
+                return null;
+            }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
             return null;
@@ -908,6 +911,10 @@ public class JsCodeCompletion implements Completable {
     public String getPrefix(CompilationInfo info, int lexOffset, boolean upToOffset) {
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return null;
+            }
+            
 
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             doc.readLock(); // Read-lock due to token hierarchy use
@@ -1189,17 +1196,12 @@ public class JsCodeCompletion implements Completable {
         boolean includeNonFqn = true;
         
         // Add in inherited properties, if any...
-        // DEMO HACK, NOT YET FULLY IMPLEMENTED
-        if (request.fileObject.getName().equals("test") && request.path.contains(org.mozilla.javascript.Token.OBJECTLIT)) {
-//            String type = "YAHOO.widget.Editor";
-//            // Demo HACK
-//            Set<IndexedElement> inherited = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
-//            if (inherited.size() > 0) {
-//                matches.addAll(inherited);
-//            }
-            fqn = "YAHOO.widget.Editor";
-            includeNonFqn = false;
-        }
+        // TODO - look for properties on the object - as well as inherited properties. NOT methods!!!
+        // Also look for @cfg and @config properties. This is a bit tricky. In the case of Ext,
+        // we have these guys on the class itself, not associated with a method parameter.
+        // Shall I take this to be a set of constructor properties?
+        // In YUI it's different; many of the properties we want to inherit are NOT marked as @config,
+        // such as "animate" in the Editor. 
         
         Set<IndexedElement> matches;
         if (fqn != null) {
@@ -2209,7 +2211,7 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(false);
             }
-
+            
             if (indexedElement != null) {
                 String type = indexedElement.getType();
                 if (type != null && type != Node.UNKNOWN_TYPE) {

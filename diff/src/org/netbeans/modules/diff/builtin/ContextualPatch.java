@@ -602,6 +602,7 @@ public final class ContextualPatch {
             base = base.substring(2);
         }
         int pathEndIdx = base.indexOf('\t');
+        if (pathEndIdx == -1) pathEndIdx = base.length();
         patch.targetPath = base.substring(0, pathEndIdx).trim();
     }
 

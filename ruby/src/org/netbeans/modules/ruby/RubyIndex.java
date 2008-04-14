@@ -233,7 +233,7 @@ public final class RubyIndex {
                         StringBuilder sb = new StringBuilder();
 //                        String prefix = null;
                         int lastIndex = 0;
-                        int index;
+                        int idx;
                         do {
 
                             int nextUpper = -1;
@@ -243,17 +243,17 @@ public final class RubyIndex {
                                     break;
                                 }
                             }
-                            index = nextUpper;
-                            String token = classFqn.substring(lastIndex, index == -1 ? classFqn.length(): index);
+                            idx = nextUpper;
+                            String token = classFqn.substring(lastIndex, idx == -1 ? classFqn.length(): idx);
 //                            if ( lastIndex == 0 ) {
 //                                prefix = token;
 //                            }
                             sb.append(token); 
                             // TODO - add in Ruby chars here?
-                            sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
-                            lastIndex = index;
+                            sb.append( idx != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                            lastIndex = idx;
                         }
-                        while(index != -1);
+                        while(idx != -1);
 
                         final Pattern pattern = Pattern.compile(sb.toString());
                         if (!pattern.matcher(in).matches()) {

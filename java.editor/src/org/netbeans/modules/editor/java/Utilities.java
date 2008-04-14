@@ -345,16 +345,13 @@ public class Utilities {
         return result;
     }
 
-    public static boolean isInMethod(TreePath tp) {
-        while (tp != null) {
-            if (tp.getLeaf().getKind() == Tree.Kind.METHOD) {
-                return true;
-            }
-            
-            tp = tp.getParentPath();
-        }
-        
-        return false;
+    public static boolean inAnonymousOrLocalClass(TreePath path) {
+        if (path == null)
+            return false;
+        TreePath parentPath = path.getParentPath();
+        if (path.getLeaf().getKind() == Tree.Kind.CLASS && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && parentPath.getLeaf().getKind() != Tree.Kind.CLASS)                
+            return true;
+        return inAnonymousOrLocalClass(parentPath);
     }
         
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements) {
