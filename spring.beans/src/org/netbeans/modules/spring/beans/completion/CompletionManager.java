@@ -102,6 +102,13 @@ public final class CompletionManager {
         completorFactory = new AttributeValueCompletorFactory(autoWireItems);
         registerCompletorFactory(BeansElements.BEAN, BeansAttributes.AUTOWIRE, completorFactory);
         
+        String[] primaryItems = new String[] {
+            "true", null, //XXX: Documentation // NOI18N
+            "false", null, //XXX: Documentation // NOI18N
+        };
+        completorFactory = new AttributeValueCompletorFactory(primaryItems);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.PRIMARY, completorFactory);
+        
         String[] defaultLazyInitItems = new String[]{
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
