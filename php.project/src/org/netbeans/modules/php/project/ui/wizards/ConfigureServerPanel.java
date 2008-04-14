@@ -179,12 +179,13 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
 
         LocalServer copyTarget = configureServerPanelVisual.getLocalServer();
         String sourcesLocation = copyTarget.getSrcRoot();
+        File sources = FileUtil.normalizeFile(new File(sourcesLocation));
         if (sourcesLocation == null
-                || !Utils.isValidFileName(new File(sourcesLocation).getName())) {
+                || !Utils.isValidFileName(sources)) {
             return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
         }
 
-        String err = Utils.validateProjectDirectory(sourcesLocation, "Folder", false); // NOI18N
+        String err = Utils.validateProjectDirectory(sourcesLocation, "Folder", false, true); // NOI18N
         if (err != null) {
             return err;
         }

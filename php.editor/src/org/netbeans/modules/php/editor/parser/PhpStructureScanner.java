@@ -38,14 +38,25 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
  * Just s dummy impl. to enable the html, javascript and css navigator
@@ -55,12 +66,309 @@ import org.netbeans.modules.gsf.api.StructureScanner;
  */
 public class PhpStructureScanner implements StructureScanner {
 
+    private HtmlFormatter formatter;
+    private CompilationInfo info;
+    private static String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
+
+    private static String FOLD_PHPDOC = "comments"; //NOI18N
+
+    private static String FOLD_COMMENT = "initial-comment"; //NOI18N
+
+    private static String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
+
+    private static String CLOSE_FONT = "</font>";                   //NOI18N
+
+
     public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+        this.formatter = formatter;
+        this.info = info;
+        Program program = Utils.getRoot(info);
+        final List<StructureItem> items = new ArrayList<StructureItem>();
+        if (program != null) {
+            program.accept(new StructureVisitor(items));
+            return items;
+        }
         return Collections.emptyList();
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+        Program program = Utils.getRoot(info);
+        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        if (program != null) {
+            program.accept(new FoldVisitor(folds));
+
+            List<Comment> comments = program.getComments();
+            if (comments != null) {
+                for (Comment comment : comments) {
+                    if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
+                        getRanges(folds, FOLD_PHPDOC).add(createOffsetRange(comment));
+                    } else {
+                        if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
+                            getRanges(folds, FOLD_COMMENT).add(createOffsetRange(comment));
+                        }
+                    }
+                }
+            }
+            return folds;
+        }
         return Collections.emptyMap();
     }
 
+    private OffsetRange createOffsetRange(ASTNode node) {
+        return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+    }
+
+    private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
+        List<OffsetRange> ranges = folds.get(kind);
+        if (ranges == null) {
+            ranges = new ArrayList<OffsetRange>();
+            folds.put(kind, ranges);
+        }
+        return ranges;
+    }
+
+    private class StructureVisitor extends DefaultVisitor {
+
+        final List<StructureItem> items;
+        private List<StructureItem> children = null;
+
+        public StructureVisitor(List<StructureItem> items) {
+            this.items = items;
+        }
+
+        @Override
+        public void visit(FunctionDeclaration function) {
+            if (children == null && function.getFunctionName() != null) {
+                appendFunctionDescription(function);
+                PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.FunctionDeclarationHandle(info, function), formatter.getText(), null);
+                items.add(item);
+            }
+        }
+
+        @Override
+        public void visit(ClassDeclaration cldec) {
+            if (cldec.getName() != null) {
+                children = new ArrayList<StructureItem>();
+                super.visit(cldec);
+                formatter.reset();
+                formatter.appendText(cldec.getName().getName());
+                if (cldec.getSuperClass() != null) {
+                    formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
+                    formatter.appendText(cldec.getSuperClass().getName());
+                    formatter.appendHtml(CLOSE_FONT);
+                }
+                List<Identifier> interfaes = cldec.getInterfaes();
+                if (interfaes != null && interfaes.size() > 0) {
+                    formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                    appendInterfeas(interfaes);
+                    formatter.appendHtml(CLOSE_FONT);
+                }
+                PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.ClassDeclarationHandle(info, cldec), formatter.getText(), children);
+                items.add(item);
+                children = null;
+            }
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration indec) {
+            if (indec.getName() != null) {
+                children = new ArrayList<StructureItem>();
+                super.visit(indec);
+                formatter.reset();
+                formatter.appendText(indec.getName().getName());
+                List<Identifier> interfaes = indec.getInterfaes();
+                if (interfaes != null && interfaes.size() > 0) {
+                    formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
+                    appendInterfeas(interfaes);
+                    formatter.appendHtml(CLOSE_FONT);
+                    PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.InterfaceDeclarationHandle(info, indec), formatter.getText(), children);
+                    items.add(item);
+                    children = null;
+                }
+            }
+        }
+
+        @Override
+        public void visit(MethodDeclaration method) {
+            FunctionDeclaration function = method.getFunction();
+            if (function != null && function.getFunctionName() != null) {
+                appendFunctionDescription(function);
+                PHPStructureItem item = new PHPStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method), formatter.getText(), null);
+                if (children == null) {
+                    System.out.println(formatter.getText());
+                } else {
+                    children.add(item);
+                }
+            }
+
+        }
+
+        private void appendInterfeas(List<Identifier> interfaes) {
+            boolean first = true;
+            for (Identifier identifier : interfaes) {
+                if (identifier != null) {
+                    if (!first) {
+                        formatter.appendText(", ");  //NOI18N
+
+                    } else {
+                        first = false;
+                    }
+                    formatter.appendText(identifier.getName());
+                }
+
+            }
+        }
+
+        private void appendFunctionDescription(FunctionDeclaration function) {
+            formatter.reset();
+            formatter.appendText(function.getFunctionName().getName());
+            formatter.appendText("(");   //NOI18N
+
+            List<FormalParameter> parameters = function.getFormalParameters();
+            if (parameters != null && parameters.size() > 0) {
+                boolean first = true;
+                for (FormalParameter formalParameter : parameters) {
+                    String name = null;
+                    Expression parameter = formalParameter.getParameterName();
+                    if (parameter != null) {
+                        if (parameter instanceof Variable) {
+                            Variable variable = (Variable)parameter;
+                            if (variable.getName() instanceof Identifier) {
+                                name = ((Identifier) variable.getName()).getName();
+                                if (variable.isDollared()) {
+                                    name = "$" + name; //NOI18N
+                                }
+                            }
+                        }
+                        else {
+                            name = "??"; //NOI18N
+                        }
+                    }
+                    String type = null;
+                    if (formalParameter.getParameterType() != null) {
+                        type = formalParameter.getParameterType().getName();
+                    }
+                    if (name != null) {
+                        if (!first) {
+                            formatter.appendText(", "); //NOI18N
+
+                        }
+
+                        if (type != null) {
+                            formatter.appendHtml(FONT_GRAY_COLOR);
+                            formatter.appendText(type);
+                            formatter.appendText(" ");   //NOI18N
+
+                            formatter.appendHtml(CLOSE_FONT);
+                        }
+                        formatter.appendText(name);
+                        first = false;
+                    }
+                }
+            }
+            formatter.appendText(")");   //NOI18N
+
+        }
+    }
+
+    private class PHPStructureItem implements StructureItem {
+
+        final private GSFPHPElementHandle elementHandle;
+        final private String description;
+        final private List<? extends StructureItem> children;
+
+        public PHPStructureItem(GSFPHPElementHandle elementHandle, String htmlDescription, List<? extends StructureItem> children) {
+            this.elementHandle = elementHandle;
+            this.description = htmlDescription;
+            if (children != null) {
+                this.children = children;
+            } else {
+                this.children = Collections.emptyList();
+            }
+        }
+
+        public String getName() {
+            return elementHandle.getName();
+        }
+
+        public String getSortText() {
+            return elementHandle.getName();
+        }
+
+        public String getHtml() {
+            return description;
+        }
+
+        public ElementHandle getElementHandle() {
+            return elementHandle;
+        }
+
+        public ElementKind getKind() {
+            return elementHandle.getKind();
+        }
+
+        public Set<Modifier> getModifiers() {
+            return elementHandle.getModifiers();
+        }
+
+        public boolean isLeaf() {
+            return (children.size() == 0);
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return children;
+        }
+
+        public long getPosition() {
+            return elementHandle.getASTNode().getStartOffset();
+        }
+
+        public long getEndPosition() {
+            return elementHandle.getASTNode().getEndOffset();
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+    }
+
+    private class FoldVisitor extends DefaultVisitor {
+
+        final Map<String, List<OffsetRange>> folds;
+        boolean foldingBlock;
+
+        public FoldVisitor(Map<String, List<OffsetRange>> folds) {
+            this.folds = folds;
+            foldingBlock = false;
+        }
+
+        @Override
+        public void visit(ClassDeclaration cldec) {
+            foldingBlock = true;
+            if (cldec.getBody() != null) {
+                cldec.getBody().accept(this);
+            }
+        }
+
+        @Override
+        public void visit(Block block) {
+            if (foldingBlock) {
+                getRanges(folds, FOLD_CODE_BLOCKS).add(createOffsetRange(block));
+                foldingBlock = false;
+                if (block.getStatements() != null) {
+                    for (Statement statement : block.getStatements()) {
+                        statement.accept(this);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void visit(FunctionDeclaration function) {
+            foldingBlock = true;
+            if (function.getBody() != null) {
+                function.getBody().accept(this);
+            }
+        }
+    }
 }
