@@ -220,6 +220,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <branding name="php"/>
     </locjar>
 
+    <locjar warnMissingDir="true"
+      basedir="welcome/src"
+      jarfile="${cluster}/modules/org-netbeans-welcome.jar">
+      <branding name="php"/>
+    </locjar>
+
 <!--    <locjar warnMissingDir="true"
       basedir="autoupdate/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar">
