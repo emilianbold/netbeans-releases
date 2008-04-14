@@ -1272,6 +1272,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                 element);
     }
 
+    @SuppressWarnings("empty-statement")
     private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int astOffset, int lexOffset, 
             Node root, AstPath path, Node closest, RubyIndex index) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
@@ -1346,6 +1347,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
         return DeclarationLocation.NONE;
     }
     
+    @SuppressWarnings("empty-statement")
     DeclarationLocation findLinkedMethod(CompilationInfo info, String method) {
         Node root = AstUtilities.getRoot(info);
         AstPath path = new AstPath();

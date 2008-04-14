@@ -54,6 +54,7 @@ public class JsLexerTest extends TestCase {
         super(testName);
     }            
 
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);

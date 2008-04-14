@@ -71,11 +71,16 @@ public abstract class CsmSelect {
     
     public static interface CsmFilter {
     }
+    
+    public static interface NameAcceptor {
+        boolean accept(CharSequence name);
+    }
 
     public static interface CsmFilterBuilder {
-        CsmFilter getKindAcceptor(final CsmDeclaration.Kind kinds[]);
-        CsmFilter getNameAcceptor(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName);
-        CsmFilter getCompoundAcceptor(final CsmFilter first, final CsmFilter second);
+        CsmFilter createKindFilter(CsmDeclaration.Kind kinds[]);
+        CsmFilter createNameFilter(String strPrefix, boolean match, boolean caseSensitive, boolean allowEmptyName);
+        CsmFilter createCompoundFilter(CsmFilter first, CsmFilter second);
+        CsmFilter createNameFilter(NameAcceptor nameAcceptor);
     }
 
     /**
