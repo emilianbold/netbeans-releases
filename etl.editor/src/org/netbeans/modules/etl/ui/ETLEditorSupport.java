@@ -299,7 +299,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
             Document doc = getDocument();
             //String testing = doc.getText(0, getDocument().getLength());
             //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** testing *************** " + testing);
-            java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("********************* content in synchDocument *********** " + content);
+            //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("********************* content in synchDocument *********** " + content);
             if (doc != null) {
                 doc.remove(0, getDocument().getLength());
                 doc.insertString(0, content, null);
@@ -369,6 +369,9 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
         }
     }
+    public boolean silentClose() {
+        return super.close(false);
+    }
 
     /**
      * Implementation of CloseOperationHandler for multiview. Ensures both
@@ -376,13 +379,13 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
      * a reference to Schema DataObject only - to be serializable with the
      * multiview TopComponent without problems.
      */
-    public static class CloseHandler extends Object implements CloseOperationHandler, Serializable {
+    public static class CloseHandler  implements CloseOperationHandler, Serializable {
 
         private CloseHandler() {
             super();
         }
 
-        public CloseHandler(DataObject schemaDO) {
+        public CloseHandler(ETLDataObject schemaDO) {
             dataObject = schemaDO;
         }
 
@@ -396,11 +399,11 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
             if (etlEditor == null) {
                 return true;
             }
-            if (etlEditor != null) {
+          //  if (etlEditor != null) {
                 // This handles saving the document.
                 boolean close = etlEditor.canClose();
                 if (close) {
-                    /*if (dataObject.isValid()) {
+                    if (dataObject.isValid()) {
                     // In case user discarded edits, need to reload.
                     if (dataObject.isModified()) {
                     // In case user discarded edits, need to reload.
@@ -410,15 +413,15 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                     etlEditor.syncModel();
                     // Need to properly close the support, too.
                     etlEditor.notifyClosed();
-                    }*/
-                    //dataObject.setModified(false);
+                    }
+                    dataObject.setModified(false);
                 }
                 return close;
-            }
-            return true;
+           // }
+          //  return true;
         }
         private static final long serialVersionUID = -3838395157610633251L;
-        private DataObject dataObject;
+        private ETLDataObject dataObject;
     }
 
     /*public static String getPath() {
@@ -532,21 +535,8 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     @Override
     public void saveDocument() throws IOException {
         super.saveDocument();
-        Document doc = getDocument();
-        if (doc != null) {
-            try {
-                String testing = doc.getText(0, getDocument().getLength());
-                java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** testing in saveDocument *************** " + testing);
-                doc.remove(0, getDocument().getLength());
-                doc.insertString(0, testing, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
         syncModel();
-        ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
-        //etlDataObject.getModel().setDirty(false);
-        etlDataObject.setModified(false);
+        getDataObject().setModified(false);
     }
 
     @Override
@@ -685,7 +675,6 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-        if (!getEnv().getETLDataObject().isModified()) {
             // Update later to avoid an infinite loop.
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
@@ -694,4 +683,3 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
             });
         }
     }
-}
