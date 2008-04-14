@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,67 +34,106 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server;
+package org.netbeans.modules.server.test;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Hejl
  */
-public class TestInstance implements ServerInstanceImplementation {
+public final class MockInstanceImplementation implements ServerInstanceImplementation {
 
-    private final TestInstanceProvider provider;
+    private final MockInstanceProvider provider;
 
-    private ServerInstance commonInstance;
-    
-    private TestInstance(TestInstanceProvider provider) {
+    private final String serverName;
+
+    private final String instanceName;
+
+    private final boolean removable;
+
+    private ServerInstance serverInstance;
+
+    private JPanel customizer;
+
+    private MockInstanceImplementation(MockInstanceProvider provider, String serverName,
+            String instanceName, boolean removable) {
+
         this.provider = provider;
+        this.serverName = serverName;
+        this.instanceName = instanceName;
+        this.removable = removable;
     }
 
-    public static TestInstance createInstance(TestInstanceProvider provider) {
-        TestInstance created = new TestInstance(provider);
-        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
+    public static MockInstanceImplementation createInstance(MockInstanceProvider provider,
+            String serverName, String instanceName, boolean removable) {
+
+        MockInstanceImplementation created = new MockInstanceImplementation(
+                provider, serverName, instanceName, removable);
+        created.serverInstance = ServerInstanceFactory.createServerInstance(created);
         return created;
-    }
-    
-    public String getDisplayName() {
-        return "Test Instance"; // NOI18N
-    }
-
-    public String getServerDisplayName() {
-        return "Test Server"; // NOI18N
     }
 
     public Node getFullNode() {
-        return null;
+        return new AbstractNode(Children.LEAF) {
+
+            @Override
+            public String getDisplayName() {
+                return instanceName;
+            }
+
+        };
     }
 
     public Node getBasicNode() {
-        return null;
+        return new AbstractNode(Children.LEAF) {
+
+            @Override
+            public String getDisplayName() {
+                return instanceName;
+            }
+
+        };
     }
 
     public JComponent getCustomizer() {
-        return null;
+        synchronized (this) {
+            if (customizer == null) {
+                customizer = new JPanel();
+                customizer.add(new JLabel(instanceName));
+            }
+            return customizer;
+        }
+    }
+
+    public String getDisplayName() {
+        return instanceName;
+    }
+
+    public String getServerDisplayName() {
+        return serverName;
     }
 
     public boolean isRemovable() {
-        return true;
+        return removable;
     }
 
     public void remove() {
-        provider.removeInstance(commonInstance);
+        provider.removeInstance(serverInstance);
     }
 
-    public ServerInstance getCommonInstance() {
-        return commonInstance;
+    public ServerInstance getServerInstance() {
+        return serverInstance;
     }
-    
 }
