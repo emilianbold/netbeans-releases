@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -11,22 +11,16 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License. When distributing the software, include this License Header
+ * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bpel.search.impl.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
+package org.netbeans.modules.java.hints;
+
+import com.sun.source.util.TreePath;
 import java.util.List;
-
-import org.openide.util.Lookup;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2006.11.17
+ *
+ * @author Jan Lahoda
  */
-public final class Util {
-
-  private Util() {}
-
-  public static <T> List<T> getInstances(Class<T> clazz) {
-    Collection<? extends T> collection = Lookup.getDefault().lookupAll(clazz);
-    List<T> list = new ArrayList<T>();
-
-    for (Object object : collection) {
-      list.add(clazz.cast(object));
+public class SyncOnNonFinalTest extends TreeRuleTestBase {
+    
+    public SyncOnNonFinalTest(String testName) {
+        super(testName);
     }
-    return list;
-  }
+
+    public void testSimple1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private Object o; private void t() {synch|ronized(o) {}}}",
+                            "0:81-0:84:verifier:Synchronization on non-final field");
+    }
+    
+    public void testSimple2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private final Object o; private void t() {synch|ronized(o) {}}}");
+    }
+    
+    public void testSimple3() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private void t() {Object o = null; synch|ronized(o) {}}}");
+    }
+    
+    @Override
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
+        return new SyncOnNonFinal().run(info, path);
+    }
+
 }

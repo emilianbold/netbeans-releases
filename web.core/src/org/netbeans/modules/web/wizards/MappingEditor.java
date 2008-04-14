@@ -42,7 +42,6 @@ package org.netbeans.modules.web.wizards;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -56,8 +55,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-
-import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDisplayer; 
 import org.openide.NotifyDescriptor; 
@@ -297,7 +294,7 @@ public class MappingEditor extends JPanel implements ActionListener {
 
 	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
-	dialog.show();
+	dialog.setVisible(true);
     }
 
     public void actionPerformed(ActionEvent evt) { 

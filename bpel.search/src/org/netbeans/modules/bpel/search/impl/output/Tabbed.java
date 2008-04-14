@@ -113,7 +113,7 @@ final class Tabbed extends JTabbedPane {
     }
   }
 
-  private void closeAllTabs() {
+  public void closeAllTabs() {
     removeAll();
   }
 

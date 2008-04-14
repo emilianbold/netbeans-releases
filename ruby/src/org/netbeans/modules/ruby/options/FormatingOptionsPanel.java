@@ -78,8 +78,9 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         
         initComponents();
         
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            setOpaque( false );
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque(false);
+        }
         
         previewPane.setContentType(RubyInstallation.RUBY_MIME_TYPE); // NOI18N
         // Don't highlight caret row 

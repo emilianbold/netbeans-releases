@@ -140,6 +140,10 @@ public class ActionTracker {
     
     /** Before/After messages. */
     public final static int TRACK_TRACE_MESSAGE = 52;
+    /** Should be used only for value of MY_START_EVENT or MY_END_EVENT*/
+    public final static int TRACK_OPEN_BEFORE_TRACE_MESSAGE = TRACK_TRACE_MESSAGE + 1;
+    /** Should be used only for value of MY_START_EVENT or MY_END_EVENT*/
+    public final static int TRACK_OPEN_AFTER_TRACE_MESSAGE = TRACK_TRACE_MESSAGE + 2;
     
     /** FOCUS_GAINED event */
     public final static int TRACK_FOCUS_GAINED = 80;
@@ -627,7 +631,7 @@ public class ActionTracker {
             // For each Event
             for (Tuple t : eventList) {
                 // log only if it isn't the same
-                if(!t.equals(previous)){
+                if (t != null && !t.equals(previous)) {
                     Element eventElement = doc.createElement(TN_EVENT);
                     evlistElement.appendChild(eventElement);
                     eventElement.setAttribute(ATTR_TYPE, t.getCodeName());
@@ -832,7 +836,10 @@ public class ActionTracker {
                     startNewEventList("ad hoc");
                 }
             }
-            return super.add(o);
+            if (o == null) {
+                return false;
+            }
+            return super.add(o);            
         }
         
         /**

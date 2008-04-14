@@ -81,6 +81,9 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.api.project.ProjectInformation;
 import javax.swing.ListModel;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+import java.awt.Rectangle;
+import javax.swing.text.BadLocationException;
 
 /**
  *
@@ -95,6 +98,23 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
         "DeleteProjectReference",
 
         "ImportReferencedSchema",
+
+        "AddAttribute",
+        "ExploreAttribute",
+        "DeleteAttribute",
+        "UndoRedoAttribute",
+        "AddComplex",
+        "ExploreComplex",
+        "DeleteComplex",
+        "UndoRedoComplex",
+        "AddElement",
+        "ExploreElement",
+        "DeleteElement",
+        "UndoRedoElement",
+        "AddSimple",
+        "ExploreSimple",
+        "DeleteSimple",
+        "UndoRedoSimple",
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -182,6 +202,247 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
+    public void AddAttribute( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          "newAttribute"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreAttribute( )
+    {
+      startTest( );
+
+      // Explore added with Go to <> menus
+
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( "newAttribute" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "newAttribute" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click go to definition
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Definition" );
+
+      // Check opened view
+      if( !CheckSchemaView( "Schema" ) )
+        fail( "Go To Definition option for Schema view opened not on schema view." );
+
+      // Check selected schema item
+      SchemaMultiView opMultiViewDef = new SchemaMultiView( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
+      JListOperator opListDef = opMultiViewDef.getColumnListOperator( 1 );
+      if( !opListDef.getSelectedValue( ).toString( ).startsWith( "StateType" ) )
+        fail( "StateType did not selected with Go To Definition option." );
+
+      // Close definition
+      opMultiViewDef.close( );
+
+      // Click go to code
+      opList.clickForPopup( pt.x, pt.y );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( "<xs:attribute name=\"newAttribute\" type=\"ns2:StateType\"/>" ) )
+        fail( "Go To Source feature selected wrong line of code: \"" + sSelectedText + "\"" );
+
+      // Click go to definition
+      ClickForTextPopup( eoXsdCode );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Definition" );
+
+      // Check opened view
+      if( !CheckSchemaView( "Source" ) )
+        fail( "Go To Definition option for Source view opened not on source view." );
+
+      // Check selected code line
+      EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
+      sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( "<xs:simpleType name=\"StateType\">" ) )
+        fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
+
+      // Close definition
+      eoXsdCodeDef.close( );
+
+      // Click go to schema
+      ClickForTextPopup( eoXsdCode );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Schema" );
+      //try { Thread.sleep( 2000 ); } catch( InterruptedException ex ) { }
+
+      // Check sche,a view opened
+      if( !CheckSchemaView( "Schema" ) )
+        fail( "Go To Schema option for Source view opened not on source view." );
+
+      // Check selected schema item
+      opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+        fail( "Incorrect (no) selection after Go To Schema option." );
+      if( !opList.getSelectedValue( ).toString( ).startsWith( "newAttribute" ) )
+        fail( "newAttribute did not selected with Go To Schema option." );
+
+      endTest( );
+    }
+
+    public void DeleteAttribute( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoAttribute( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddComplex( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Complex Types",
+          "Add Complex Type",
+          "Use Existing Definition", 
+          "Referenced Schemas|import|Complex Types|CarType",
+          "newComplexType"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddElement( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Elements",
+          "Add Element",
+          "Use Existing Type", 
+          "Referenced Schemas|import|Complex Types|AddressType",
+          "newElement"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddSimple( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          "newSimpleType"
+        );
+
+      endTest( );
+    }
+
+    public void ExploreSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
     public void RenameSampleSchema( )
     {
       startTest( );
@@ -210,12 +471,5 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     }
 
     public void tearDown() {
-        new SaveAllAction().performAPI();
     }
-
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
-    }
-
 }

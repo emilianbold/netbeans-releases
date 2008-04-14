@@ -20,21 +20,13 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Reference;
-import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
-import org.netbeans.modules.xslt.tmap.model.api.Invoke;
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
-import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
-import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
-import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.w3c.dom.Element;
 
 /**
@@ -42,9 +34,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TransformImpl extends TMapComponentContainerImpl 
-    implements Transform 
-{
+public class TransformImpl extends NameableImpl implements Transform {
 
     public TransformImpl(TMapModelImpl model) {
         this(model, createNewElement(TMapComponents.TRANSFORM, model));
@@ -118,5 +108,4 @@ public class TransformImpl extends TMapComponentContainerImpl
         
         return refs.toArray(new Reference[refs.size()]);
     }
-
 }
