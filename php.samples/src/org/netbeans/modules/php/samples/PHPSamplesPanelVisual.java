@@ -207,9 +207,9 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
 
-        String projectName = (String) settings.getProperty("name");
+        String projectName = (String) settings.getProperty(WizardProperties.NAME);
         if (projectName == null) {
-            projectName = "PHPSamples";
+            projectName = "sample";
         }
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();

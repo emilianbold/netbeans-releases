@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
@@ -27,6 +28,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -62,20 +64,21 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
     }
 
     public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
-        dirF.mkdirs();
+        Set resultSet = new LinkedHashSet();
+        File dirF = FileUtil.normalizeFile((File) wiz.getProperty(WizardProperties.PROJ_DIR));
+        createFolder(dirF);
 
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
         unZipFile(template.getInputStream(), dir);
+        ProjectManager.getDefault().clearNonProjectCache();
 
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
-        Enumeration<? extends FileObject> e = dir.getFolders(true);
+        Enumeration e = dir.getFolders(true);
         while (e.hasMoreElements()) {
-            FileObject subfolder = e.nextElement();
+            FileObject subfolder = (FileObject) e.nextElement();
             if (ProjectManager.getDefault().isProject(subfolder)) {
                 resultSet.add(subfolder);
             }
@@ -88,11 +91,13 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
 
         // Open readme.html in a browser
         File urlTempF = File.createTempFile("phpSamplesReadme", ".url"); // NOI18N
+
         urlTempF.deleteOnExit();
         FileObject readmeURL = FileUtil.toFileObject(FileUtil.normalizeFile(urlTempF));
         writeLines(readmeURL, dir.getFileObject("readme.html").getURL().toString()); // NOI18N
+
         resultSet.add(readmeURL);
-        
+
         return resultSet;
     }
 
@@ -105,7 +110,7 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
         }
         readmeW.close();
     }
-    
+
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -124,16 +129,20 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
 
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                jc.putClientProperty(WizardProperties.SELECTED_INDEX, new Integer(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps);
+                jc.putClientProperty(WizardProperties.CONTENT_DATA, steps);
             }
         }
+
+        FileObject template = Templates.getTemplate(wiz);
+
+        wiz.putProperty(WizardProperties.NAME, template.getName());
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir", null);
-        this.wiz.putProperty("name", null);
+        this.wiz.putProperty(WizardProperties.PROJ_DIR, null);
+        this.wiz.putProperty(WizardProperties.NAME, null);
         this.wiz = null;
         panels = null;
     }
@@ -236,5 +245,34 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
             writeFile(str, fo);
         }
 
+    }
+
+    private static FileObject createFolder(File dir) throws IOException {
+        Stack stack = new Stack();
+        while (!dir.exists()) {
+            stack.push(dir.getName());
+            dir = dir.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(dir);
+        if (dirFO == null) {
+            refreshFileSystem(dir);
+            dirFO = FileUtil.toFileObject(dir);
+        }
+        assert dirFO != null;
+        while (!stack.isEmpty()) {
+            dirFO = dirFO.createFolder((String) stack.pop());
+        }
+        return dirFO;
+    }
+
+    private static void refreshFileSystem(final File dir) throws FileStateInvalidException {
+        File rootF = dir;
+        while (rootF.getParentFile() != null) {
+            rootF = rootF.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+
+        dirFO.getFileSystem().refresh(false);
     }
 }
