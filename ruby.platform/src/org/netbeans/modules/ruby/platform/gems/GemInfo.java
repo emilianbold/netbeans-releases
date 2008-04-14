@@ -77,8 +77,9 @@ public class GemInfo implements Comparable<GemInfo> {
 
     public int compareTo(GemInfo o) {
         int nameComparison = getName().compareTo(o.getName());
+        
         return nameComparison == 0 
-                ? o.getVersion().compareTo(getVersion()) 
+                ? GemManager.compareGemVersions(o.getVersion(), getVersion())
                 : nameComparison;
     }
     

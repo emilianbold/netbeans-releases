@@ -62,6 +62,12 @@ public class GemInfoTest extends NbTestCase {
 
         GemInfo mongrel2 = new GemInfo("mongrel", "1.1.2", getWorkDir());
         assertTrue(mongrel1.compareTo(mongrel2) > 0);
+
+        GemInfo mongrel3 = new GemInfo("mongrel", "10.1.3", getWorkDir());
+        assertTrue(mongrel2.compareTo(mongrel3) > 0);
+
+        GemInfo mongrel4 = new GemInfo("mongrel", "9.1.1", getWorkDir());
+        assertTrue(mongrel3.compareTo(mongrel4) < 0);
     }
 
 }
