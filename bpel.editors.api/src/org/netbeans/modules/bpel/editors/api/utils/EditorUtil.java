@@ -161,18 +161,6 @@ public class EditorUtil {
 
     private EditorUtil() {}
     
-    public static String getProcessName(BpelModel model) {
-      if (model == null) {
-        return null;
-      }
-      Process process = model.getProcess();
-
-      if (process == null) {
-        return null;
-      }
-      return process.getName();
-    }
-
     public static BpelModel getBpelModel(DataObject data) {
       if ( !(data instanceof Lookup.Provider)) {
         return null;

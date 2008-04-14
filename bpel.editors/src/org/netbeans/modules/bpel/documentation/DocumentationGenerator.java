@@ -87,7 +87,6 @@ import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -110,7 +109,7 @@ public class DocumentationGenerator implements ReportCookie {
         return null;
       }
       return createReport(
-        CoreUtil.getBpelModel(myDataObject).getProcess(), myFactory.createReport());
+        EditorUtil.getBpelModel(myDataObject).getProcess(), myFactory.createReport());
     }
     catch (ReportException e) {
       ErrorManager.getDefault().notify(e);
