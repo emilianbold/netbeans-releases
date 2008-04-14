@@ -271,7 +271,7 @@ public class NbModuleSuite {
 
                 return util.getParentFile().getParentFile();
             } catch (Exception ex) {
-                Assert.fail("Cannot find utilities JAR");
+                Assert.fail("Cannot find utilities JAR: " + ex);
                 return null;
             }
         }
