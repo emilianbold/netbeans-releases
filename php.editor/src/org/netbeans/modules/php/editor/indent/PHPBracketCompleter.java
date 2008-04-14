@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.NbUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -119,10 +120,10 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("php.cont.comment"); // NOI18N
 
     /** Tokens which indicate that we're within a literal string */
-    private final static TokenId[] STRING_TOKENS = // XXX What about PHPTokenId.PHP_STRING_BEGIN or QUOTED_STRING_BEGIN?
-        {
-            PHPTokenId.PHP_STRING
-        };
+    private final static PHPTokenId [] STRING_TOKENS = {
+        PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING,
+        PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
+    };
 
 //    /** Tokens which indicate that we're within a regexp string */
 //    // XXX What about PHPTokenId.PHP_REGEXP_BEGIN?
@@ -167,12 +168,12 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
-        
+
         boolean insertMatching = isInsertMatchingEnabled(doc);
         
         int lineBegin = Utilities.getRowStart(doc,offset);
         int lineEnd = Utilities.getRowEnd(doc,offset);
-        
+
         if (lineBegin == offset && lineEnd == offset) {
             // Pressed return on a blank newline - do nothing
             return -1;
@@ -248,7 +249,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
 //                }
 //            }
 //        }
-        
+
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
 
         if (ts == null) {
@@ -282,14 +283,14 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
-                sb.append("\n"); // XXX On Windows, do \r\n?
+                sb.append("\n"); //NOI18N
                 LexUtilities.indent(sb, indent);
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
-                sb.append("\n");
+                sb.append("\n"); //NOI18N
                 LexUtilities.indent(sb, indent);
                 doc.remove(offset, restOfLine.length());
             }
@@ -308,6 +309,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             return -1;
         }
 
+        // XXX: this may not be neccessary, at least not for }
         // Special case: since I do hash completion, if you try to type
         //     y = Thread.start {
         //         code here
@@ -324,7 +326,6 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']')) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
             int indent = LexUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
-            // XXX On Windows, do \r\n?
             sb.append("\n"); // NOI18N
             LexUtilities.indent(sb, indent);
 
@@ -332,7 +333,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             doc.insertString(insertOffset, sb.toString(), null);
             caret.setDot(insertOffset);
         }
-        
+
+        // Support continual line comments
         if (id == PHPTokenId.WHITESPACE) {
             // Pressing newline in the whitespace before a comment
             // should be identical to pressing newline with the caret
@@ -409,7 +411,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                 int indent = LexUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
                 LexUtilities.indent(sb, indent);
-                sb.append("#"); // NOI18N
+                sb.append("//"); // NOI18N
                 // Copy existing indentation
                 int afterHash = begin+1;
                 String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash)-afterHash);
@@ -436,9 +438,157 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             }
         }
 
+        if (id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END) {
+            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
+                PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
+            boolean isEmptyComment = (Boolean) ret[1];
+            
+            // XXX: hook up the doc fields auto-generation here, if isEmptyComment == true
+            
+            return (Integer) ret[0];
+        }
+        
+        if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END) {
+            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
+                PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
+            return (Integer) ret[0];
+        }
+        
         return -1;
     }
 
+    private static Object [] beforeBreakInComments(
+        BaseDocument doc, TokenSequence<? extends PHPTokenId> ts, int offset, Caret caret,
+        PHPTokenId commentStart, PHPTokenId commentBody, PHPTokenId commentEnd
+    ) throws BadLocationException {
+        PHPTokenId id = ts.token().id();
+        
+        if (id == commentBody || id == commentStart) {
+            int insertOffset;
+            
+
+            if (id == commentStart) {
+                insertOffset = ts.offset() + ts.token().length();
+            } else {
+                insertOffset = offset;
+            }
+
+            int indent = LexUtilities.getLineIndent(doc, ts.offset());
+            int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, insertOffset);
+
+            // find comment end
+            boolean addClosingTag = !isClosedComment(DocumentUtilities.getText(doc), insertOffset);
+            
+            // We've either encountered a further indented line, or a line that doesn't
+            // look like the end we're after, so insert a matching end.
+            int newCaretOffset;
+            StringBuilder sb = new StringBuilder();
+            if (offset > afterLastNonWhite) {
+                LexUtilities.indent(sb, indent);
+                sb.append(" * "); // NOI18N
+                newCaretOffset = insertOffset + sb.length() + 1;
+            } else {
+                // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
+                // I should insert the end AFTER the text on the line
+                String restOfLine = doc.getText(insertOffset, Utilities.getRowEnd(doc, afterLastNonWhite)-insertOffset);
+                LexUtilities.indent(sb, indent);
+                sb.append(" * "); // NOI18N
+                newCaretOffset = insertOffset + sb.length() + 1;
+                sb.append(restOfLine);
+                doc.remove(insertOffset, restOfLine.length());
+            }
+            
+            if (addClosingTag) {
+                // add the closing tag
+                sb.append("\n");
+                LexUtilities.indent(sb, indent);
+                sb.append(" */"); // NOI18N
+            }
+            
+            doc.insertString(insertOffset, sb.toString(), null);
+            caret.setDot(insertOffset);
+            
+            return new Object [] { newCaretOffset, addClosingTag };
+        }
+
+        if (id == commentEnd) {
+            int insertOffset = ts.offset();
+            
+            // find comment start
+            if (ts.movePrevious()) {
+                assert ts.token().id() == commentBody || 
+                       ts.token().id() == commentStart : "PHP_COMMENT_END should not be preceeded by " + ts.token().id().name(); //NOI18N
+            } else {
+                assert false : "PHP_COMMENT_END without PHP_COMMENT or PHP_COMMENT_START"; //NOI18N
+            }
+            
+            int indent = LexUtilities.getLineIndent(doc, ts.offset());
+            int beforeFirstNonWhite = Utilities.getRowFirstNonWhite(doc, insertOffset);
+            int rowStart = Utilities.getRowStart(doc, insertOffset);
+            int newCaretOffset = insertOffset;
+            
+            StringBuilder sb = new StringBuilder();
+            if (beforeFirstNonWhite >= insertOffset) {
+                // only whitespace in front of */
+                LexUtilities.indent(sb, indent);
+                sb.append(" * ");
+                newCaretOffset = rowStart + sb.length();
+                LexUtilities.indent(sb, indent);
+                sb.append(" "); //NOI18N
+                doc.remove(rowStart, insertOffset - rowStart);
+                insertOffset = rowStart;
+            } else {
+                LexUtilities.indent(sb, indent);
+                sb.append(" "); //NOI18N
+            }
+            
+            doc.insertString(insertOffset, sb.toString(), null);
+            caret.setDot(newCaretOffset);
+            
+            return new Object[] { newCaretOffset, false };
+        }
+        
+        return new Object[] { -1, false };
+    }
+    
+    // XXX: stolen from JavaKit.JavaInsertBreakAction, we should extend it to support heredoc
+    private static boolean isClosedComment(CharSequence txt, int pos) {
+        int length = txt.length();
+        int quotation = 0;
+        for (int i = pos; i < length; i++) {
+            char c = txt.charAt(i);
+            if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
+                if (quotation == 0 || i < length - 2) {
+                    return true;
+                }
+                // guess it is not just part of some text constant
+                boolean isClosed = true;
+                for (int j = i + 2; j < length; j++) {
+                    char cc = txt.charAt(j);
+                    if (cc == '\n') {
+                        break;
+                    } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                        isClosed = false;
+                        break;
+                    }
+                }
+
+                if (isClosed) {
+                    return true;
+                }
+            } else if (c == '/' && i < length - 1 && txt.charAt(i + 1) == '*') {
+                // start of another comment block
+                return false;
+            } else if (c == '\n') {
+                quotation = 0;
+            } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
+                quotation = ++quotation % 2;
+            }
+        }
+
+        return false;
+    }
+    
     /**
      * Determine if an "end" or "}" is missing following the caret offset.
      * The logic used is to check the text on the current line for block initiators
@@ -591,7 +741,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
                         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
-                        if (ts != null && ts.token().id() != PHPTokenId.PHP_STRING) {
+                        if (ts != null && (!isStringToken(ts.token()) || firstChar == '\"' || firstChar == '\'')) {
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
                             if (selection.length() > 1 && 
@@ -654,10 +804,10 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"') {
             stringTokens = STRING_TOKENS;
-            beginTokenId = PHPTokenId.PHP_STRING;
-//        } else if (ch == '\'') {
-//            stringTokens = STRING_TOKENS;
-//            beginTokenId = PHPTokenId.PHP_STRING_BEGIN;
+            beginTokenId = PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+        } else if (ch == '\'') {
+            stringTokens = STRING_TOKENS;
+            beginTokenId = PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 //        } else if (id == PHPTokenId.UNKNOWN_TOKEN) {
 //            String text = token.text().toString();
 //
@@ -730,12 +880,10 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         }
 
         if (stringTokens != null) {
-            boolean inserted =
-                completeQuote(doc, caretOffset, caret, ch, stringTokens, beginTokenId);
+            boolean inserted = completeQuote(doc, caretOffset, ch);
 
             if (inserted) {
                 caret.setDot(caretOffset + 1);
-
                 return true;
             } else {
                 return false;
@@ -843,11 +991,11 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
 
             if (((id == PHPTokenId.PHP_VARIABLE) && (token.length() == 1)) ||
                     (LexUtilities.textEquals(token.text(), '[')) || (LexUtilities.textEquals(token.text(), ']')) ||
-                    (id == PHPTokenId.PHP_CURLY_OPEN) || (id == PHPTokenId.PHP_CURLY_CLOSE) ||
+//                    (id == PHPTokenId.PHP_CURLY_OPEN) || (id == PHPTokenId.PHP_CURLY_CLOSE) ||
                     (LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), ')'))) {
-                if (ch == ']' || ch == ')' || ch == '}') {
+                if (ch == ']' || ch == ')') { // || ch == '}'
                     skipClosingBracket(doc, caret, ch);
-                } else if ((ch == '[') || (ch == '(') || (ch == '{')) {
+                } else if ((ch == '[') || (ch == '(')) {//  || (ch == '{')
                     completeOpeningBracket(doc, dotPos, caret, ch);
                 }
             }
@@ -1141,7 +1289,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
-        
+
         switch (ch) {
         case ' ': {
         // Backspacing over "# " ? Delete the "#" too!
@@ -1172,15 +1320,15 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             break;
         }
 //        case '|':
-//        case '\"':
-//        case '\'':
-//        case '/': {
-//            char[] match = doc.getChars(dotPos, 1);
-//
-//            if ((match != null) && (match[0] == ch)) {
-//                doc.remove(dotPos, 1);
-//            }
-//        } // TODO: Test other auto-completion chars, like %q-foo-
+//        case '/': 
+        case '\"':
+        case '\'': {
+            char[] match = doc.getChars(dotPos, 1);
+
+            if ((match != null) && (match[0] == ch)) {
+                doc.remove(dotPos, 1);
+            }
+        }
         }
         return true;
     }
@@ -1430,86 +1578,54 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
      * @param caret caret
      * @param bracket the character that was inserted
      */
-    private boolean completeQuote(BaseDocument doc, int dotPos, Caret caret, char bracket,
-        TokenId[] stringTokens, TokenId beginToken) throws BadLocationException {
-        if (isEscapeSequence(doc, dotPos)) { // \" or \' typed
-
+    private boolean completeQuote(BaseDocument doc, int dotPos, char bracket) throws BadLocationException {
+        // No chars completion when escaping, eg \" or \' typed
+        if (isEscapeSequence(doc, dotPos)) {
             return false;
         }
 
-        // Examine token at the caret offset
-        if (doc.getLength() < dotPos) {
+        // Find the token sequence and look at what token is under the caret
+        Object [] result = findPhpSectionBoundaries(doc, dotPos, true);
+        if (result == null) {
+            // not in PHP section
             return false;
         }
-
-        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos);
-
-        if (ts == null) {
-            return false;
-        }
-
-        ts.move(dotPos);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
-        }
-
+        
+        TokenSequence<? extends PHPTokenId> ts = (TokenSequence<? extends PHPTokenId>)result[0];
+        int sectionStart = (Integer) result[1];
+        int sectionEnd = (Integer) result[2];
+        boolean onlyWhitespacePreceeds = (Boolean) result[3];
+        boolean onlyWhitespaceFollows = (Boolean) result[4];
+        
         Token<?extends PHPTokenId> token = ts.token();
-        Token<?extends PHPTokenId> previousToken = null;
+        Token<?extends PHPTokenId> previousToken = ts.movePrevious() ? ts.token() : null;
 
-        if (ts.movePrevious()) {
-            previousToken = ts.token();
-        }
-
-        int lastNonWhite = Utilities.getRowLastNonWhite(doc, dotPos);
-
-        // eol - true if the caret is at the end of line (ignoring whitespaces)
-        boolean eol = lastNonWhite < dotPos;
-
-        if ((token.id() == PHPTokenId.PHP_COMMENT) || (token.id() == PHPTokenId.PHP_LINE_COMMENT) ||
-                (token.id() == PHPTokenId.PHPDOC_COMMENT)) { // 105419
+        // Check if we are inside a comment
+        if (token.id() == PHPTokenId.PHP_COMMENT || 
+            token.id() == PHPTokenId.PHP_LINE_COMMENT ||
+            token.id() == PHPTokenId.PHPDOC_COMMENT
+        ) {
             return false;
-        } else if ((token.id() == PHPTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
-            // check if the caret is at the very end of the line comment
-            token = LexUtilities.getToken(doc, dotPos - 1);
-
-            if (token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT) {
-                return false;
-            }
+        } else if (onlyWhitespaceFollows && previousToken != null && previousToken.id() == PHPTokenId.PHP_LINE_COMMENT) {
+            // We could be at the EOL of a line comment, token is the EOL whitespace,
+            // but the previous token is PHP_LINE_COMMENT
+            return false;
         }
 
-        boolean completablePosition = isQuoteCompletablePosition(doc, dotPos);
-
-        boolean insideString = false;
-        TokenId id = token.id();
-
-        for (TokenId currId : stringTokens) {
-            if (id == currId) {
-                insideString = true;
-                break;
-            }
-        }
-
-        if ((id == PHPTokenId.UNKNOWN_TOKEN) && (previousToken != null) &&
-                (previousToken.id() == beginToken)) {
-            insideString = true;
-        }
-
+        // Check if we are inside a string
+        boolean insideString = isStringToken(token);
         if (!insideString) {
-            // check if the caret is at the very end of the line and there
-            // is an unterminated string literal
-            if ((token.id() == PHPTokenId.WHITESPACE) && eol) {
-                if ((dotPos - 1) > 0) {
-                    token = LexUtilities.getToken(doc, dotPos - 1);
-                    // XXX TODO use language embedding to handle this
-                    insideString = (token != null && token.id() == PHPTokenId.PHP_STRING);
-                }
+            if (onlyWhitespaceFollows && previousToken != null && isStringToken(previousToken)) {
+                // The same as for the line comment above. We could be at the EOL
+                // of a string literal, token is the EOL whitespace,
+                // but the previous token is PHP string
+                insideString = true;
             }
         }
 
         if (insideString) {
-            if (eol) {
-                return false; // do not complete
+            if (onlyWhitespaceFollows) {
+                return false;
             } else {
                 //#69524
                 char chr = doc.getChars(dotPos, 1)[0];
@@ -1528,14 +1644,92 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                     return true;
                 }
             }
+        } else {
+            boolean insert = onlyWhitespaceFollows;
+            if (!insert) {
+                int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, sectionEnd);
+                assert firstNonWhiteFwd != -1;
+                char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
+                insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
+                         chr == ';' || chr == ']' || chr == '/'; //NOI18N
+            }
+            
+            if (insert) {
+                doc.insertString(dotPos, "" + bracket + (isAfter ? "" : matching(bracket)), null); //NOI18N
+                return true;
+            }
         }
 
-        if ((completablePosition && !insideString) || eol) {
-            doc.insertString(dotPos, "" + bracket + (isAfter ? "" : matching(bracket)), null); //NOI18N
-
-            return true;
+        return false;
+    }
+    
+    private static Object [] findPhpSectionBoundaries(BaseDocument doc, int offset, boolean currentLineOnly) {
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+        if (ts == null) {
+            return null;
         }
 
+        ts.move(offset);
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+        
+        // determine the row boundaries
+        int lowest = 0;
+        int highest = doc.getLength();
+        if (currentLineOnly) {
+            lowest = doc.getParagraphElement(offset).getStartOffset();
+            highest = doc.getParagraphElement(offset).getEndOffset();
+        }
+        
+        // find the section end
+        int sectionEnd = highest;
+        boolean onlyWhitespaceFollows = true;
+        do {
+            if (highest < ts.offset()) {
+                break;
+            }
+            
+            if (ts.token().id() == PHPTokenId.PHP_CLOSETAG) {
+                sectionEnd = ts.offset();
+                break;
+            } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
+                onlyWhitespaceFollows = false;
+            }
+        } while (ts.moveNext());
+
+        // find the section start
+        int sectionStart = lowest;
+        boolean onlyWhitespacePreceeds = true;
+        while (ts.movePrevious()) {
+            if (lowest > ts.offset()) {
+                break;
+            }
+            
+            if (ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                sectionStart = ts.offset();
+                break;
+            } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
+                onlyWhitespacePreceeds = false;
+            }
+        }
+        
+        // re-position the sequence
+        ts.move(offset);
+        if (!ts.moveNext()) {
+            assert ts.movePrevious();
+        }
+        
+        assert sectionStart != -1 && sectionEnd != -1 : "sectionStart=" + sectionStart + ", sectionEnd=" + sectionEnd; //NOI18N
+        return new Object [] { ts, sectionStart, sectionEnd, onlyWhitespacePreceeds, onlyWhitespaceFollows };
+    }
+    
+    private static boolean isStringToken(Token<? extends PHPTokenId> token) {
+        for (PHPTokenId stringTokenId : STRING_TOKENS) {
+            if (token.id() == stringTokenId) {
+                return true;
+            }
+        }
         return false;
     }
     
@@ -1560,31 +1754,30 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         }
     }
 
-    private boolean isQuoteCompletablePosition(BaseDocument doc, int dotPos)
-        throws BadLocationException {
-        if (dotPos == doc.getLength()) { // there's no other character to test
-
-            return true;
-        } else {
-            // test that we are in front of ) , " or ' ... etc.
-            int eol = Utilities.getRowEnd(doc, dotPos);
-
-            if ((dotPos == eol) || (eol == -1)) {
-                return false;
-            }
-
-            int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, eol);
-
-            if (firstNonWhiteFwd == -1) {
-                return false;
-            }
-
-            char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
-
-            return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
-               (chr == ']') || (chr == '/'));
-        }
-    }
+//    private boolean isQuoteCompletablePosition(BaseDocument doc, int dotPos) throws BadLocationException {
+//        if (dotPos == doc.getLength()) { // there's no other character to test
+//
+//            return true;
+//        } else {
+//            // test that we are in front of ) , " or ' ... etc.
+//            int eol = LexUtilities.findPhpSectionEnd(doc, dotPos, true, 0);
+//
+//            if ((dotPos == eol) || (eol == -1)) {
+//                return false;
+//            }
+//
+//            int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, eol);
+//
+//            if (firstNonWhiteFwd == -1) {
+//                return false;
+//            }
+//
+//            char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
+//
+//            return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
+//               (chr == ']') || (chr == '/'));
+//        }
+//    }
 
     /**
      * Returns for an opening bracket or quote the appropriate closing

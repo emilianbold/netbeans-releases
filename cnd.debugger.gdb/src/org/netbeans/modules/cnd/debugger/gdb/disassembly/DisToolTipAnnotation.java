@@ -117,9 +117,11 @@ public class DisToolTipAnnotation extends Annotation implements Runnable {
         String toolTipText = null;
         
         Collection<RegisterValue> regValues = (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
-        for (RegisterValue value : regValues) {
-            if (value.getName().equals(register)) {
-                toolTipText = value.getValue();
+        if (regValues != null) {
+            for (RegisterValue value : regValues) {
+                if (register.equals(value.getName())) {
+                    toolTipText = value.getValue();
+                }
             }
         }
         

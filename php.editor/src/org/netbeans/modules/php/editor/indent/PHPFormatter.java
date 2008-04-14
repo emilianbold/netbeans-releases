@@ -144,7 +144,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
             Token<?extends PHPTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (id == PHPTokenId.PHP_OPENTAG) {
+            if (id == PHPTokenId.PHP_OPENTAG || id == PHPTokenId.PHP_CLASS || id == PHPTokenId.PHP_FUNCTION) {
                 return ts.offset();
             }
         } while (ts.movePrevious());
@@ -236,9 +236,10 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_STRING ||
-                    id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                    id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
+                    id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
                     id == PHPTokenId.PHP_HEREDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
@@ -273,9 +274,10 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_STRING ||
-                    id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                    id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
+                    id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
                     id == PHPTokenId.PHP_HEREDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
@@ -385,6 +387,9 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
     private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
 //        System.out.println("~~~ PHP Formatter: " + (indentOnly ? "renidenting" : "reformatting")
 //                + " <" + startOffset + ", " + endOffset + ">");
+        
+        // a workaround for issue #131929
+        document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
         
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())

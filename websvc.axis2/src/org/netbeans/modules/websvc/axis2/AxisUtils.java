@@ -291,7 +291,7 @@ public class AxisUtils {
     }
     
     public static boolean runTargets(FileObject projectDir, final String[] targets, final long timeLimit ) {
-        final FileObject buildImplFo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+        final FileObject buildImplFo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         try {
             return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException, InterruptedException {

@@ -1,5 +1,93 @@
 <?php
 
+// PHP SuperGlobals - it's a hack to have them as defines, but it should serve us well for now
+
+/**
+ * Contains a reference to every variable which is currently available within the global scope of the script.
+ * The keys of this array are the names of the global variables.
+ * $GLOBALS has existed since PHP 3.
+ *
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$GLOBALS', 0);
+
+
+/**
+ * Variables set by the web server or otherwise directly related to the execution environment of the current script.
+ * Analogous to the old $HTTP_SERVER_VARS array (which is still available, but deprecated).
+ *
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_SERVER', 0);
+
+/**
+ * Variables provided to the script via URL query string.
+ * Analogous to the old $HTTP_GET_VARS array (which is still available, but deprecated).
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_GET', 0);
+
+
+/**
+ * Variables provided to the script via HTTP POST. Analogous to the old $HTTP_POST_VARS array 
+ * (which is still available, but deprecated).
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_POST', 0);
+
+
+/**
+ * Variables provided to the script via HTTP cookies. Analogous to the old $HTTP_COOKIE_VARS array
+ * (which is still available, but deprecated).
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_COOKIE', 0);
+
+
+/**
+ * Variables provided to the script via HTTP post file uploads. Analogous to the old $HTTP_POST_FILES array
+ * (which is still available, but deprecated).
+ * See POST method uploads for more information.
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_FILES', 0);
+
+
+/**
+ * Variables provided to the script via the environment.
+ * Analogous to the old $HTTP_ENV_VARS array (which is still available, but deprecated).
+ *
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_ENV', 0);
+
+
+/**
+ * Variables provided to the script via the GET, POST, and COOKIE input mechanisms,
+ * and which therefore cannot be trusted.
+ * The presence and order of variable inclusion in this array is defined according to the 
+ * PHP variables_order configuration directive.
+ * This array has no direct analogue in versions of PHP prior to 4.1.0.
+ * See also import_request_variables().
+ * 
+ * Caution
+ * Since PHP 4.3.0, FILE information from $_FILES does not exist in $_REQUEST.
+ *
+ * Note: When running on the command line , this will not include the argv and argc entries; these are present in the $_SERVER array.
+ *
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_REQUEST', 0);
+
+
+/**
+ * Variables which are currently registered to a script's session.
+ * Analogous to the old $HTTP_SESSION_VARS array (which is still available, but deprecated).
+ * See the Session handling functions section for more information.
+ * @link http://www.php.net/manual/en/language.variables.predefined.php
+ */
+define('$_SESSION', 0);
+
 // Start of libxml v.
 
 /**

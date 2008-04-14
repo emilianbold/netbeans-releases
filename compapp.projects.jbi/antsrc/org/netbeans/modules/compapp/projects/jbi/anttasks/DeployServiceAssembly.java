@@ -46,6 +46,7 @@ import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import java.io.StringReader;
 
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -54,6 +55,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
@@ -67,6 +69,9 @@ import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
  *
  */
 public class DeployServiceAssembly extends Task {
+    
+    private static final String SERVER_TARGET = "server";
+    
     /**
      * DOCUMENT ME!
      */
@@ -260,10 +265,9 @@ public class DeployServiceAssembly extends Task {
 
             mgmtServiceWrapper.clearServiceAssemblyStatusCache();
             ServiceAssemblyInfo assembly = mgmtServiceWrapper.getServiceAssembly(
-                    serviceAssemblyID, "server");  
+                    serviceAssemblyID,SERVER_TARGET);  
             
             String status = assembly == null ? null : assembly.getState();
-            // System.out.println("Current assembly status is " + status);
 
             if (JBIComponentStatus.UNKNOWN_STATE.equals(status)) {
                 String msg = "Unknown status for Service Assembly "
@@ -297,28 +301,64 @@ public class DeployServiceAssembly extends Task {
                 try {
                     deployServiceAssembly(deploymentService);
                 } catch (BuildException e) {
-                    log("ERROR: Service assembly deployment failed (see error below). Cleaning up...", Project.MSG_ERR);
-                    undeployServiceAssembly(deploymentService);
                     
                     Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
                             GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
                             serviceAssemblyID, e.getMessage(), false);                    
-                    throw new BuildException((String) processResult[0]);
+                    log("ERROR: " + processResult[0], Project.MSG_ERR);
+                    
+                    ServiceAssemblyInfo saInfo = mgmtServiceWrapper.getServiceAssembly(
+                            serviceAssemblyID,SERVER_TARGET);
+                    if (saInfo != null) {
+                        log("Cleaning up...");
+                        try {
+                            undeployServiceAssembly(deploymentService);
+                        } catch (BuildException ex) {
+                            log("ERROR: " + ex.getMessage(), Project.MSG_ERR);
+                        }
+                    }
+                    
+                    throw new BuildException("Deployment failure.");                    
                 } 
                 
                 try {
                     startServiceAssembly(mgmtServiceWrapper);
                 } catch (BuildException e) {
-                    log("ERROR: Starting service assembly failed (see error below). Cleaning up... ", Project.MSG_ERR);
-                    
-                    stopServiceAssembly(mgmtServiceWrapper);
-                    shutdownServiceAssembly(mgmtServiceWrapper);
-                    undeployServiceAssembly(deploymentService);
                     
                     Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
                             GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
                             serviceAssemblyID, e.getMessage(), false);
-                    throw new BuildException((String) processResult[0]);
+                    log("ERROR: " +  processResult[0], Project.MSG_ERR);
+                    log("Cleaning up...");
+                    
+                    boolean rollbackFailure = false;
+                    
+                    try{
+                        stopServiceAssembly(mgmtServiceWrapper);
+                    } catch (BuildException ex) {
+                        rollbackFailure = true;
+                        log("ERROR: " + ex.getMessage(), Project.MSG_ERR);
+                    }
+                    
+                    if (!rollbackFailure) {
+                        try {
+                            shutdownServiceAssembly(mgmtServiceWrapper);
+                        } catch (BuildException ex) {
+                            rollbackFailure = true;
+                            log("ERROR: " + ex.getMessage(), Project.MSG_ERR);
+                        }
+                    }
+                    
+                    if (!rollbackFailure) {
+                        try {
+                            undeployServiceAssembly(deploymentService);
+                        } catch (BuildException ex) {
+                            rollbackFailure = true;
+                            log("ERROR: " + ex.getMessage(), Project.MSG_ERR);
+                        }
+                    }
+                    
+                    throw new BuildException("Start failure.");    
                 }
             }
         } catch (ManagementRemoteException e) {
@@ -339,7 +379,7 @@ public class DeployServiceAssembly extends Task {
         
         String result = null;
         try {
-            result = adminService.deployServiceAssembly(serviceAssemblyLocation, "server");
+            result = adminService.deployServiceAssembly(serviceAssemblyLocation, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
             result = e.getMessage();
         } finally {
@@ -362,7 +402,7 @@ public class DeployServiceAssembly extends Task {
           
         String result = null;
         try {
-            result = adminService.startServiceAssembly(serviceAssemblyID, "server");
+            result = adminService.startServiceAssembly(serviceAssemblyID, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
              result = e.getMessage();
         } finally {
@@ -384,7 +424,7 @@ public class DeployServiceAssembly extends Task {
         
         String result = null;
         try {
-            result = adminService.stopServiceAssembly(serviceAssemblyID, "server");
+            result = adminService.stopServiceAssembly(serviceAssemblyID, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
              result = e.getMessage();
         } finally {
@@ -406,7 +446,7 @@ public class DeployServiceAssembly extends Task {
         
         String result = null;
         try {
-            result = adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE, "server");
+            result = adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
              result = e.getMessage();
         } finally {
@@ -428,7 +468,7 @@ public class DeployServiceAssembly extends Task {
         
         String result = null;
         try {
-            result = adminService.undeployServiceAssembly(serviceAssemblyID, FORCE, "server");
+            result = adminService.undeployServiceAssembly(serviceAssemblyID, FORCE, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
              result = e.getMessage();
         } finally {
