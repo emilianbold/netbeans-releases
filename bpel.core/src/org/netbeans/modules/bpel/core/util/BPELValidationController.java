@@ -103,10 +103,14 @@ public class BPELValidationController implements ComponentListener {
   }
 
   public void startValidation() {
+    log();
+    log("START VALIDATION"); // NOI18N
     doValidation(true, true);
   }
 
   public void runValidation() {
+    log();
+    log("RUN VALIDATION"); // NOI18N
     doValidation(true, false);
   }
 
@@ -123,7 +127,7 @@ public class BPELValidationController implements ComponentListener {
       type = ValidationType.COMPLETE;
     }
     log();
-    log("START VALIDATION: " + type); // NOI18N
+    log(" DO VALIDATION: " + type); // NOI18N
     startTimeln();
          /* todo start here
     if (isOutput) {
@@ -137,7 +141,7 @@ public class BPELValidationController implements ComponentListener {
       items = validation.getValidationResult();
     }  */
     endTime("VALIDATION"); // NOI18N
-    log("  END VALIDATION: " + type); // NOI18N
+    log("END VALIDATION: " + type); // NOI18N
 
     myValidationResult = new ArrayList<ResultItem>();
 
