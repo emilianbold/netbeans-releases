@@ -53,6 +53,14 @@ public class PHPPositionManager implements PositionManager {
     }
     
     public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+        if (object instanceof GSFPHPElementHandle) {
+            GSFPHPElementHandle h = (GSFPHPElementHandle) object;
+            
+            if (h.getASTNode() != null) {
+                return new OffsetRange(h.getASTNode().getStartOffset(), h.getASTNode().getEndOffset());
+            }
+        }
+        
         return OffsetRange.NONE;
     }
 
