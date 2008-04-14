@@ -144,12 +144,13 @@ public class BPELValidationController implements ComponentListener {
     log("END VALIDATION: " + type); // NOI18N
 
     myValidationResult = new ArrayList<ResultItem>();
-
+/*
     synchronized(items) {
       for (ResultItem item : items) {
         myValidationResult.add(item);
       }
     }
+    */
     notifyListeners();
 
     return true;
