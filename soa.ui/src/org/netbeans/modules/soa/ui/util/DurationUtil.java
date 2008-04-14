@@ -43,7 +43,7 @@ public final class DurationUtil {
       return throwException("FIX_Empty_Value", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
 //out("2");
-    if (!value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
+    if ( !value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
       return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
     }
     if (value.length() == 1 && value.startsWith(QUOTE)) {
