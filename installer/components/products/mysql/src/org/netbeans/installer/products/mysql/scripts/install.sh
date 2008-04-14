@@ -149,7 +149,7 @@ if [ 1 -eq $ISROOT ] ; then
 fi
 
 if [ 1 -eq $ISROOT ] ; then
-    ./scripts/mysql_install_db --user=mysql --no-defaults --defaults-file="$INSTALLDIR"/my.cnf
+    ./scripts/mysql_install_db --no-defaults --defaults-file="$INSTALLDIR"/my.cnf --user=mysql 
     echo "Result : $?"
 else 
     ./scripts/mysql_install_db --no-defaults --defaults-file="$INSTALLDIR"/my.cnf
@@ -175,7 +175,7 @@ if [ 1 -eq $ISROOT ] ; then
 fi
 
 if [ 1 -eq $ISROOT ] ; then
-    ./bin/mysqld_safe --user=mysql --defaults-file="$INSTALLDIR"/my.cnf &
+    ./bin/mysqld_safe --defaults-file="$INSTALLDIR"/my.cnf --user=mysql &
 else 
     ./bin/mysqld_safe --defaults-file="$INSTALLDIR"/my.cnf &
 fi
