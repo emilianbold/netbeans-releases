@@ -50,14 +50,13 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -181,6 +180,9 @@ public class CompilerSetManager {
         HashSet flavors = new HashSet();
         
         for (String path : dirlist) {
+            if (!IpeUtils.isPathAbsolute(path)) {
+                path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+            }
             File dir = new File(path);
             if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
                 ArrayList<String> list = new ArrayList<String>();
