@@ -201,6 +201,13 @@ public class CodeCompleter implements Completable {
         
         // figure out which class we are dealing with:
         ASTNode root = AstUtilities.getRoot(request.info);
+        
+        // in some cases we can not repair the code, therefore root == null
+        // therefore we can not complete. See # 131317
+        
+        if (root == null)
+            return false;
+        
         AstPath path = new AstPath(root ,request.astOffset, request.doc);
         ASTNode closest;
         

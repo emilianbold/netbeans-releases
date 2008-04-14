@@ -52,6 +52,8 @@ import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.netbeans.modules.groovy.editor.test.TestCompilationInfo;
 import org.openide.filesystems.FileObject;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
@@ -62,6 +64,16 @@ public class GroovyParserTest extends GroovyTestBase {
     public GroovyParserTest(String testName) {
         super(testName);
     }
+    
+    @Override
+    protected void setUp() throws IOException {
+        super.setUp();
+        Logger.getLogger(org.netbeans.modules.groovy.editor.parser.GroovyParser.class.getName())
+                .setLevel(Level.FINEST);
+    }
+    
+    
+    
     
     private void checkParseTree(FileObject file, String caretLine, String nodeName) throws IOException {
         CompilationInfo info = getInfo(file);
@@ -154,17 +166,7 @@ public class GroovyParserTest extends GroovyTestBase {
     }    
     
     
-    public void testRootNPE() throws IOException {
-        
-        // we have an issue with compileUnit.getModules()
-        // in GroovyParser.java returning no AST, see # 131317
-        // This might be related to GROOVY-1443
-        // The sanitize() recursion reads:
-        // NONE
-        // ERROR_DOT
-        // ERROR_LINE
-        // MISSING_END
-      
+    public void testSanatizerLimitations() throws IOException {
         
         copyStringToFileObject(testFO,
                 "def m() {\n" +
@@ -172,11 +174,18 @@ public class GroovyParserTest extends GroovyTestBase {
                 "\tx.\n" +
                 "}\n");
         
+        /*
+            0000000   d   e   f       m   (   )       {  \n  \t   O   b   j   e   c
+            0000016   t       x       =       n   e   w       O   b   j   e   c   t
+            0000032   (   )  \n  \t   x   .  \n   }  \n
+         */
+        
         CompilationInfo info = getInfo(testFO);
         ASTNode root = AstUtilities.getRoot(info);
-        // root is null, the AssertionError/NPE is just the follow-up:
-        AstPath path = new AstPath(root ,1, (BaseDocument)info.getDocument());
-        assertNotNull("new AstPath() failed", path);
+        // The code above is brocken (x. unfinisched method/memeber access)
+        // *AND* can not be repaired at the time of this writing (# 131317) 
+        // by the sanatizer, therefore we expect a null here.
+        assertNull(root);
     }
 
 }

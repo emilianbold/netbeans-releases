@@ -95,6 +95,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
@@ -105,6 +107,7 @@ import org.openide.util.Exceptions;
 public class GroovyParser implements Parser {
 
     private final PositionManager positions = createPositionManager();
+    private final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
 
     public void parseFiles(Job job) {
         ParseListener listener = job.listener;
@@ -164,7 +167,9 @@ public class GroovyParser implements Parser {
         // See if it looks modified
         // Insert an end statement? Insert a } marker?
         String doc = context.source;
-        if (offset > doc.length()) {
+        int docLength = doc.length(); // since doc will not be modified, we can safely optimize here.
+        
+        if (offset > docLength) {
             return false;
         }
 
@@ -172,25 +177,25 @@ public class GroovyParser implements Parser {
             try {
                 int start = GroovyUtils.getRowFirstNonWhite(doc, offset);
                 if (start != -1 && 
-                        start+2 < doc.length() &&
+                        start+2 < docLength &&
                         doc.regionMatches(start, "if", 0, 2)) {
                     // TODO - check lexer
                     char c = 0;
-                    if (start+2 < doc.length()) {
+                    if (start+2 < docLength) {
                         c = doc.charAt(start+2);
                     }
                     if (!Character.isLetter(c)) {
                         int removeStart = start;
                         int removeEnd = removeStart+2;
-                        StringBuilder sb = new StringBuilder(doc.length());
+                        StringBuilder sb = new StringBuilder(docLength);
                         sb.append(doc.substring(0, removeStart));
                         for (int i = removeStart; i < removeEnd; i++) {
                             sb.append(' ');
                         }
-                        if (removeEnd < doc.length()) {
-                            sb.append(doc.substring(removeEnd, doc.length()));
+                        if (removeEnd < docLength) {
+                            sb.append(doc.substring(removeEnd, docLength));
                         }
-                        assert sb.length() == doc.length();
+                        assert sb.length() == docLength;
                         context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
                         context.sanitizedSource = sb.toString();
                         context.sanitizedContents = doc.substring(removeStart, removeEnd);
@@ -219,18 +224,18 @@ public class GroovyParser implements Parser {
                     // See if I should try to remove the current line, since it has text on it.
                     int lineEnd = GroovyUtils.getRowLastNonWhite(doc, offset);
 
-                    if (lineEnd != -1 && offset < (doc.length() - 1)) {
-                        StringBuilder sb = new StringBuilder(doc.length());
+                    if (lineEnd != -1 && offset < (docLength - 1)) {
+                        StringBuilder sb = new StringBuilder(docLength);
                         int lineStart = GroovyUtils.getRowStart(doc, offset);
                         int rest = lineStart + 2;
 
                         sb.append(doc.substring(0, lineStart));
                         sb.append("//");
 
-                        if (rest < doc.length()) {
-                            sb.append(doc.substring(rest, doc.length()));
+                        if (rest < docLength) {
+                            sb.append(doc.substring(rest, docLength));
                         }
-                        assert sb.length() == doc.length();
+                        assert sb.length() == docLength;
 
                         context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
                         context.sanitizedSource = sb.toString();
@@ -243,14 +248,22 @@ public class GroovyParser implements Parser {
                     // See if I should try to remove the current line, since it has text on it.
                     int lineStart = GroovyUtils.getRowStart(doc, offset);
                     int lineEnd = offset-1;
-                    while (lineEnd >= lineStart && lineEnd < doc.length()) {
+                    
+                    /* if the "offset" variable provided above was wrong for
+                     * various reasons, one might end up with lineStart > lineEnd
+                     */
+                    
+                    if (lineStart > lineEnd)
+                        return false;
+                    
+                    while (lineEnd >= lineStart && lineEnd < docLength) {
                         if (!Character.isWhitespace(doc.charAt(lineEnd))) {
                             break;
                         }
                         lineEnd--;
                     }
                     if (lineEnd > lineStart) {
-                        StringBuilder sb = new StringBuilder(doc.length());
+                        StringBuilder sb = new StringBuilder(docLength);
                         String line = doc.substring(lineStart, lineEnd + 1);
                         int removeChars = 0;
                         int removeEnd = lineEnd+1;
@@ -304,10 +317,10 @@ public class GroovyParser implements Parser {
                             sb.append(' ');
                         }
 
-                        if (removeEnd < doc.length()) {
-                            sb.append(doc.substring(removeEnd, doc.length()));
+                        if (removeEnd < docLength) {
+                            sb.append(doc.substring(removeEnd, docLength));
                         }
-                        assert sb.length() == doc.length();
+                        assert sb.length() == docLength;
 
                         context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
                         context.sanitizedSource = sb.toString();
@@ -551,6 +564,23 @@ public class GroovyParser implements Parser {
                     
                     if(col < 1 )
                         col = 1;
+
+                    // display Exception information
+//                    LOG.log(Level.FINEST, "-----------------------------------------------");
+//                    LOG.log(Level.FINEST, "File: " + context.file.getNameExt());
+//                    LOG.log(Level.FINEST, "source: " + source);
+//                    LOG.log(Level.FINEST, "getStartLine(): " + line);
+//                    LOG.log(Level.FINEST, "getStartColumn(): " + col);
+
+//                    System.out.println("-----------------------------------------------");
+//                    System.out.println("File: " + context.file.getNameExt());
+//                    System.out.println("Error: " + errorMessage);
+//                    System.out.println("Sanitizing: " + sanitizing);
+//                    System.out.println("source: " + source);
+//                    System.out.println("Source Locator: " + se.getSourceLocator());
+//                    System.out.println("getStartLine(): " + line);
+//                    System.out.println("getLine(): " + se.getLine());
+//                    System.out.println("getStartColumn(): " + col);
                     
                     offset = AstUtilities.getOffset(context.document, line, col);
                     errorMessage = se.getMessage();
@@ -627,6 +657,7 @@ public class GroovyParser implements Parser {
                 startOffset, endOffset, severity);
         context.listener.error(error);
 
+        // FIXME: this looks like a bug to me below:
         context.errorOffset = startOffset;
 
         if (sanitizing == Sanitize.NONE) {
