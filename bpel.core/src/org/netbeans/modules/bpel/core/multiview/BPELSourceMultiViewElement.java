@@ -45,7 +45,7 @@ import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ArrayUpdateEvent;
@@ -531,12 +531,10 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                 if (foundedEntity == null) {
                     return;
                 }
-
-        //                NodeFactory nodeFactory = (NodeFactory)getDataObject().getLookup().lookup(NodeFactory.class);
                 NodeFactory nodeFactory = FactoryAccess.getPropertyNodeFactory();
                 assert nodeFactory != null;
 
-                NodeType nodeType = Util.getBasicNodeType(foundedEntity);
+                NodeType nodeType = EditorUtil.getBasicNodeType(foundedEntity);
                 if (nodeType == null) {
                     return;
                 }
@@ -551,22 +549,14 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                 if (node == null) {
                     return;
                 }
-
-        //                    System.out.println("set active node");
-                
                 final TopComponent tc = myMultiViewObserver == null 
                         ? null 
                         : myMultiViewObserver.getTopComponent();
                 if (tc != null) {
-////                    tc.setActivatedNodes(new Node[] {node});
                     setActivatedNodes(new Node[] {node});
                 }
             }
         });
-//                    setActivatedNodes(new Node[] {node});
-//                    setActivatedNodes(new Node[] {node, getDataObject().getNodeDelegate()});
-//            Node[] tmpNodes = getActivatedNodes();
-//                    System.out.println("tmpNodes: "+tmpNodes);
     }
     
     private void removeCaretPositionListener() {
@@ -622,18 +612,9 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     }
     
     private transient MultiViewElementCallback myMultiViewObserver;
-    
     private BPELDataObject myDataObject;
-    
     private transient JToolBar myToolBar; 
-    
     private CaretListener myCaretPositionListener;
-    
     private ChangeEventListener myBpelModelListener;
-
     private transient RequestProcessor.Task myPreviousTask;
 }
-
-
-
-

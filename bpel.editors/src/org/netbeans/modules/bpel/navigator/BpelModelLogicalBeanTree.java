@@ -134,9 +134,9 @@ public class BpelModelLogicalBeanTree
                 elem = ((UsageFilterNode)elem).getOriginal();
             } else if (elem instanceof BpelNode 
                     && ((BpelNode)elem).getReference() instanceof BpelEntity
-                    && !(org.netbeans.modules.bpel.editors.api.utils.Util.isNavigatorShowableNodeType(((BpelNode)elem).getNodeType()))) 
+                    && !(org.netbeans.modules.bpel.editors.api.utils.EditorUtil.isNavigatorShowableNodeType(((BpelNode)elem).getNodeType()))) 
             {
-                elem = org.netbeans.modules.bpel.editors.api.utils.Util.getClosestNavigatorNode(
+                elem = org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getClosestNavigatorNode(
                         (BpelEntity)((BpelNode)elem).getReference(),
                         elem.getLookup());
             }

@@ -88,7 +88,7 @@ import org.netbeans.modules.reportgenerator.api.ReportSection;
 
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -298,7 +298,7 @@ public class DocumentationGenerator implements ReportCookie {
 
   private void fillElement(BpelEntity entity, ReportSection section) {
     ReportElement element = myFactory.createReportElement();
-    Icon icon = RefactorUtil.getIcon(entity);
+    Icon icon = EditorUtil.getIcon(entity);
 
     if (icon instanceof ImageIcon) {
       element.setImage(((ImageIcon) icon).getImage());
@@ -348,7 +348,7 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String getInfo(BpelEntity entity) {
-    String info = RefactorUtil.getType(entity);
+    String info = EditorUtil.getType(entity);
     String name = getName(entity);
 
     if (name != null) {
