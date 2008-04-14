@@ -266,8 +266,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         assert model.getSize() == 0;
 
         model.addElement(DEFAULT_LOCAL_SERVER);
-        if (Utilities.isUnix()) {
-            fillUnixLocalServers(model);
+        if (isLinux()) {
+            fillLinuxLocalServers(model);
+        } else if (isSolaris()) {
+            fillSolarisLocalServers(model);
         } else if (Utilities.isWindows()) {
             fillWindowsLocalServers(model);
         } else if (Utilities.isMac()) {
@@ -280,7 +282,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return model;
     }
 
-    private void fillUnixLocalServers(final MutableComboBoxModel model) {
+    private boolean isLinux() {
+        return (Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0;
+    }
+
+    private boolean isSolaris() {
+        return (Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0
+                || (Utilities.getOperatingSystem() & Utilities.OS_SUNOS) != 0;
+    }
+
+    private void fillLinuxLocalServers(final MutableComboBoxModel model) {
         LocalServer selected = null;
 
         String webFolderName = getWebFolderName();
@@ -316,6 +327,18 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (selected != null) {
             model.setSelectedItem(selected);
         }
+    }
+
+    private void fillSolarisLocalServers(final MutableComboBoxModel model) {
+        File htDocs = getSolarisHtDocsDirectory();
+        if (htDocs == null) {
+            return;
+        }
+        String webFolderName = getWebFolderName();
+        LocalServer htDocsLS = new LocalServer(getFolderName(htDocs, webFolderName));
+        model.addElement(htDocsLS);
+        model.setSelectedItem(htDocsLS);
+        setDefaultUrl(webFolderName);
     }
 
     private void fillWindowsLocalServers(final MutableComboBoxModel model) {
@@ -361,6 +384,24 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         descriptor.putProperty(URL, "http://localhost/" + urlPart + "/"); // NOI18N
     }
 
+    private File getSolarisHtDocsDirectory() {
+        File varDir = new File("/var/"); // NOI18N
+        if (!varDir.isDirectory()) {
+            return null;
+        }
+        String[] apaches = varDir.list(APACHE_FILENAME_FILTER);
+        if (apaches == null || apaches.length == 0) {
+            return null;
+        }
+        for (String apache : apaches) {
+            File htDocs = findHtDocs(new File(varDir, apache), null);
+            if (htDocs.isDirectory()) {
+                return htDocs;
+            }
+        }
+        return null;
+    }
+
     private File getWindowsHtDocsDirectory() {
         // list all harddrives (C - Z)
         for (int i = 12; i < 36; i++) {
@@ -369,7 +410,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             if (!programFiles.isDirectory()) {
                 continue;
             }
-            File htDocs = findHtDocs(programFiles);
+            File htDocs = findHtDocs(programFiles, APACHE_FILENAME_FILTER);
             if (htDocs != null) {
                 return htDocs;
             }
@@ -377,18 +418,18 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return null;
     }
 
-    private File findHtDocs(File startDir) {
-        String[] apaches = startDir.list(APACHE_FILENAME_FILTER);
-        if (apaches == null || apaches.length == 0) {
+    private File findHtDocs(File startDir, FilenameFilter filenameFilter) {
+        String[] subDirs = startDir.list(filenameFilter);
+        if (subDirs == null || subDirs.length == 0) {
             return null;
         }
-        for (String apache : apaches) {
-            File apacheDir = new File(startDir, apache);
+        for (String subDir : subDirs) {
+            File apacheDir = new File(startDir, subDir);
             File htDocs = new File(apacheDir, "htdocs"); // NOI18N
             if (htDocs.isDirectory()) {
                 return htDocs;
             }
-            return findHtDocs(apacheDir);
+            return findHtDocs(apacheDir, filenameFilter);
         }
         return null;
     }
