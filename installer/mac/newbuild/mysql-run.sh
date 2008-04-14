@@ -4,7 +4,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
-source init.sh
+source ../../../nbbuild/newbuild/init.sh
 
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
