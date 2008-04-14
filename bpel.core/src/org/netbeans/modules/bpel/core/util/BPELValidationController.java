@@ -50,57 +50,61 @@ import java.util.TimerTask;
 import java.util.WeakHashMap;
 
 import org.openide.text.Line;
-import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
+
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
-import org.netbeans.modules.bpel.model.api.events.ChangeEventListenerAdapter;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.01.17
  */
-public class BPELValidationController extends ChangeEventListenerAdapter {
+public class BPELValidationController implements ComponentListener {
     
   public BPELValidationController(BpelModel bpelModel) {
     myTimer = new Timer();
     myBpelModel = bpelModel;
-    myWeaklisteners = new WeakHashMap<BPELValidationListener, Object>();
-    myTrigger = new ExternalModelsValidationTrigger( this );
+    myListeners = new WeakHashMap<BPELValidationListener, Object>();
+//    myTrigger = new ExternalModelsValidationTrigger( this );
     myAnnotations = new ArrayList<BPELValidationAnnotation>();
     myValidationResult = new ArrayList<ResultItem>();
   }
 
   public void attach() {
+    myBpelModel.addComponentListener(this);
+                                            /*
     if (myBpelModel != null) {
       myBpelModel.addEntityChangeListener(this);
-      myBpelModel.addEntityChangeListener(getTrigger());
-      getTrigger().loadImports();
-    }
+//      myBpelModel.addEntityChangeListener(getTrigger());
+//    getTrigger().loadImports();
+    }*/
   }
 
   public void detach() {
+    myBpelModel.removeComponentListener(this);
+                /*
     if (myBpelModel != null) {
       myBpelModel.removeEntityChangeListener(this);
-      myBpelModel.removeEntityChangeListener(getTrigger());
-      getTrigger().clearTrigger();
-    }
+//    myBpelModel.removeEntityChangeListener(getTrigger());
+//    getTrigger().clearTrigger();
+    }*/
   }
 
   public void addValidationListener(BPELValidationListener listener) {
-    synchronized(myWeaklisteners) {
-      myWeaklisteners.put(listener, null);
+    synchronized(myListeners) {
+      myListeners.put(listener, null);
     }
   }
   
   public void removeValidationListener(BPELValidationListener listener) {
-    synchronized(myWeaklisteners) {
-      myWeaklisteners.remove(listener);
+    synchronized(myListeners) {
+      myListeners.remove(listener);
     }
   }
   
@@ -109,25 +113,25 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
   }
 
   public void triggerValidation(boolean checkExternallyTriggered) {
-    if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
+//    if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
+//      startValidation();
+//    }
+//    else if ( !checkExternallyTriggered) {
       startValidation();
-    }
-    else if ( !checkExternallyTriggered) {
-      startValidation();
-    }
+//    }
   }
   
   public void notifyValidationResult(List<ResultItem> result) {
     notifyListeners(result);
   }
-
+/*
   @Override
   public void notifyEvent(ChangeEvent event) {
     if (State.VALID.equals(myBpelModel.getState()) && event.isLastInAtomic()) {
       startValidation();
     }
   }
-
+*/
   BpelModel getModel() {
     return myBpelModel;
   }
@@ -166,8 +170,8 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
   }
 
   private void notifyListeners(List<ResultItem> result) {
-    synchronized (myWeaklisteners) {
-      for (BPELValidationListener listener : myWeaklisteners.keySet()) {
+    synchronized (myListeners) {
+      for (BPELValidationListener listener : myListeners.keySet()) {
         if (listener != null) {
           listener.validationUpdated(result);
         }
@@ -185,8 +189,6 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
 //out();
 //out("SHOW ANNOTATION IN EDITOR");
       
-      // First we need to group the results by line. We need this to add only 
-      // one annotation per line
       Map<Line.Part, List<ResultItem>> map = new HashMap<Line.Part, List<ResultItem>>();
   
       for (ResultItem item : result) {
@@ -224,17 +226,34 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
   }
 
-  private ExternalModelsValidationTrigger getTrigger() {
-    return myTrigger;
-  }
+//  private ExternalModelsValidationTrigger getTrigger() {
+//    return myTrigger;
+//  }
 
+  public void valueChanged(ComponentEvent event) {
+//out("CHANGED");
+    startValidation();
+  }
+  
+  public void childrenAdded(ComponentEvent event) {
+//out("ADDED");
+    startValidation();
+  }
+  
+  public void childrenDeleted(ComponentEvent event) {
+//out("DELETED");
+    startValidation();
+  }
+  
+  
   private Timer myTimer;
   private BpelModel myBpelModel;
   private List<ResultItem> myValidationResult;
-  private ExternalModelsValidationTrigger myTrigger;
+//  private ExternalModelsValidationTrigger myTrigger;
   private List<BPELValidationAnnotation> myAnnotations;
-  private Map<BPELValidationListener, Object> myWeaklisteners;
+  private Map<BPELValidationListener, Object> myListeners;
 
   // vlv
   private static final int DELAY = 5432;
+//  private static final int DELAY = 432;
 }
