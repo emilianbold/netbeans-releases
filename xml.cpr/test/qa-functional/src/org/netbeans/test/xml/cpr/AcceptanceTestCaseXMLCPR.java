@@ -305,10 +305,12 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         String error
       )
     {
+      table.selectCell( row, col );
       table.clickOnCell( row, col, count );
-       int iRows = table.getRowCount( );
-       if( result != iRows )
-         fail( error + iRows );
+      try { Thread.sleep( 200 ); } catch( InterruptedException ex ) { }
+      int iRows = table.getRowCount( );
+      if( result != iRows )
+        fail( error + iRows );
       return;
     }
 
@@ -375,6 +377,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       for( CImportClickData cli : aimpData )
       {
+        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         if( cli.inshort || !bShort )
           ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
         // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
