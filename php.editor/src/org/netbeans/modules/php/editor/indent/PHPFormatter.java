@@ -59,6 +59,7 @@ import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
@@ -606,7 +607,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
         private EditorKit getEditorKit() {
             if(kit == null) {
-                kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
+                kit = MimeLookup.getLookup(MimePath.parse(PHPLanguage.PHP_MIME_TYPE)).lookup(EditorKit.class); // NOI18N
             }
             return kit;
         }
