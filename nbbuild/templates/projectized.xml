@@ -784,13 +784,13 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
          </condition>          
     </target>
     
-    <target name="test-build-condition" if="contains.unit.test" depends="test-init" description="build unit tests if exists">
+    <target name="test-build-condition" if="contains.unit.test" unless="disable.unit.tests" depends="test-init" description="build unit tests if exists">
         <antcall target="test-build-datajar"/>
     </target>
-    <target name="test-build-qa-functional-condition" if="contains.qa-functional.test" depends="test-init-qa-functional" description="build qa-functional test if exists">
+    <target name="test-build-qa-functional-condition" if="contains.qa-functional.test" unless="disable.qa-functional.tests" depends="test-init-qa-functional" description="build qa-functional test if exists">
         <antcall target="test-build-datajar-qa-functional"/>
     </target>
-    <target name="test-build-qa-performance-condition" if="contains.qa-performance.test" depends="test-init-qa-performance" description="build qa-performance test if exists">
+    <target name="test-build-qa-performance-condition" if="contains.qa-performance.test" unless="disable.qa-performance.tests" depends="test-init-qa-performance" description="build qa-performance test if exists">
         <antcall target="test-build-datajar-qa-performance"/>
     </target>
 
