@@ -273,6 +273,28 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testGoToInstanceVar() throws Exception {
+        performTestSimpleFindDeclaration("<?php\n" +
+                                         "class test {\n" +
+                                         "    function ftest($name) {\n" +
+                                         "        $this->na|me = $name;\n" +
+                                         "    }\n" +
+                                         "    ^var $name;\n" +
+                                         "}\n" +
+                                         "?>");
+    }
+    
+    public void testGoToForward() throws Exception {
+        performTestSimpleFindDeclaration("<?php\n" +
+                                         "class test {\n" +
+                                         "    function ftest($name) {\n" +
+                                         "        $this->na|me();\n" +
+                                         "    }\n" +
+                                         "    ^function name() {}\n" +
+                                         "}\n" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         

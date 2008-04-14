@@ -142,6 +142,42 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "?>", true);
     }
     
+    public void testOccurrencesInstanceVarParam1() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "class test {\n" +
+                               "    var $name;\n" +
+                               "    function ftest(^$name^) {\n" +
+                               "        $this->name = ^$na|me^;\n" +
+                               "    }\n" +
+                               "}\n" +
+                               "?>",
+                               true);
+    }
+    
+    public void testOccurrencesInstanceVarParam2() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "class test {\n" +
+                               "    var ^$name^;\n" +
+                               "    function ftest($name) {\n" +
+                               "        $this->^na|me^ = $name;\n" +
+                               "    }\n" +
+                               "}\n" +
+                               "?>",
+                               true);
+    }
+    
+    public void testOccurrencesInstanceMethod() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "class test {\n" +
+                               "    function ^name^() {}\n" +
+                               "    function ftest() {\n" +
+                               "        $this->^na|me^();\n" +
+                               "    }\n" +
+                               "}\n" +
+                               "?>",
+                               true);
+    }
+    
     private void performTestOccurrences(String code) throws Exception {
         performTestOccurrences(code, false);
     }
