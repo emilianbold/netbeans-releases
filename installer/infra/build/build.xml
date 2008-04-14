@@ -1989,7 +1989,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-ea-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.tgz"/>
+            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-ea-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-ea-macosx-ppc.zip"/>
