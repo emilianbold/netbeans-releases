@@ -77,7 +77,7 @@ class RailsInstallationValidator {
         
         boolean valid = false;
         String message = null;
-        String version = gemManager.getVersion(RAILS_GEM_NAME);
+        String version = gemManager.getLatestVersion(RAILS_GEM_NAME);
 
         if (version == null) {
             message = NbBundle.getMessage(RailsInstallationValidator.class, "NoRails");

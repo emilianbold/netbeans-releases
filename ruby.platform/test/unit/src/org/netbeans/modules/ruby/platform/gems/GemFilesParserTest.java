@@ -40,8 +40,8 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,41 +59,47 @@ public class GemFilesParserTest extends NbTestCase {
     public void testParseInfo() {
 
         String gem1 = "mongrel-1.1.3-i386-mswin32";
-        assertEquals("mongrel", GemFilesParser.parseInfo(gem1).getName());
-        assertEquals("1.1.3", GemFilesParser.parseInfo(gem1).getVersion());
+        assertEquals("mongrel", GemFilesParser.parseNameAndVersion(gem1)[0]);
+        assertEquals("1.1.3", GemFilesParser.parseNameAndVersion(gem1)[1]);
 
         String gem2 = "activeresource-2.0.2";
-        assertEquals("activeresource", GemFilesParser.parseInfo(gem2).getName());
-        assertEquals("2.0.2", GemFilesParser.parseInfo(gem2).getVersion());
+        assertEquals("activeresource", GemFilesParser.parseNameAndVersion(gem2)[0]);
+        assertEquals("2.0.2", GemFilesParser.parseNameAndVersion(gem2)[1]);
 
         String gem3 = "win32-sapi-0.1.4";
-        assertEquals("win32-sapi", GemFilesParser.parseInfo(gem3).getName());
-        assertEquals("0.1.4", GemFilesParser.parseInfo(gem3).getVersion());
+        assertEquals("win32-sapi", GemFilesParser.parseNameAndVersion(gem3)[0]);
+        assertEquals("0.1.4", GemFilesParser.parseNameAndVersion(gem3)[1]);
 
         String gem4 = "cgi_multipart_eof_fix-2.5.0";
-        assertEquals("cgi_multipart_eof_fix", GemFilesParser.parseInfo(gem4).getName());
-        assertEquals("2.5.0", GemFilesParser.parseInfo(gem4).getVersion());
+        assertEquals("cgi_multipart_eof_fix", GemFilesParser.parseNameAndVersion(gem4)[0]);
+        assertEquals("2.5.0", GemFilesParser.parseNameAndVersion(gem4)[1]);
 
         String gem5 = "win32-api-1.0.5-x86-mswin32-60";
-        assertEquals("win32-api", GemFilesParser.parseInfo(gem5).getName());
-        assertEquals("1.0.5", GemFilesParser.parseInfo(gem5).getVersion());
+        assertEquals("win32-api", GemFilesParser.parseNameAndVersion(gem5)[0]);
+        assertEquals("1.0.5", GemFilesParser.parseNameAndVersion(gem5)[1]);
 
     }
 
-    public void testChooseGems() throws IOException {
+    public void testVersionSorting() throws IOException {
         
         GemFilesParser gemFilesParser = new GemFilesParser(
                 createGemFile("rails", "1.2.5"), 
                 createGemFile("rails", "2.0.2"), 
                 createGemFile("rails", "1.2.6"), 
-                createGemFile("rails", "1.2.3"),
-                createGemFile("rails", "1.2.9") 
+                createGemFile("rails", "1.2"),
+                createGemFile("rails", "2.0") 
                 );
         
-        gemFilesParser.chooseGems();
-        Map<String, Map<String, File>> result = gemFilesParser.getGemMap();
-        assertEquals(1, result.get("rails").keySet().size());
-        assertEquals("2.0.2", result.get("rails").keySet().iterator().next());
+        gemFilesParser.parseGems();
+        Map<String, List<GemInfo>> result = gemFilesParser.getGemInfos();
+        
+        List<GemInfo> versions = result.get("rails");
+        assertEquals(5, versions.size());
+        assertEquals("2.0.2", versions.get(0).getVersion());
+        assertEquals("2.0", versions.get(1).getVersion());
+        assertEquals("1.2.6", versions.get(2).getVersion());
+        assertEquals("1.2.5", versions.get(3).getVersion());
+        assertEquals("1.2", versions.get(4).getVersion());
     }
     
     private File createGemFile(String name, String version) throws IOException {

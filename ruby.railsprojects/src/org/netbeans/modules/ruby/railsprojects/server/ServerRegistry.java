@@ -172,7 +172,7 @@ public class ServerRegistry implements VetoableChangeListener {
                 return;
             }
             
-            String mongrelVersion = gemManager.getVersion(Mongrel.GEM_NAME);
+            String mongrelVersion = gemManager.getLatestVersion(Mongrel.GEM_NAME);
             if (mongrelVersion == null) {
                 // remove all mongrels
                 for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {

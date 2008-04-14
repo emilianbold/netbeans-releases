@@ -113,7 +113,7 @@ public class RailsProjectUtil {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
-        String railsVersion = gemManager.getVersion("rails"); // NOI18N
+        String railsVersion = gemManager.getLatestVersion("rails"); // NOI18N
 
         FileObject railsPlugin = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
         if (railsPlugin != null) {
