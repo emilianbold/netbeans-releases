@@ -222,7 +222,9 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
                 NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
-        setProjectLocation(newLocation);
+        if (newLocation != null) {
+            setProjectLocation(newLocation);
+        }
     }//GEN-LAST:event_browseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
