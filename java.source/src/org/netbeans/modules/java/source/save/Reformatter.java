@@ -1212,11 +1212,11 @@ public class Reformatter implements ReformatTask {
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                    accept(IDENTIFIER);
+                    accept(IDENTIFIER, THIS, SUPER);
                     if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent && (wrapDepth == 0 || c <= rightMargin)) {
                         rollback(index, c, d);
                         newline();
-                        accept(IDENTIFIER);
+                        accept(IDENTIFIER, THIS, SUPER);
                     }
                 }
             } else {
