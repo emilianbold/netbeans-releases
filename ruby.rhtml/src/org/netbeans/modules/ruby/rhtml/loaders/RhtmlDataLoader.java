@@ -57,10 +57,12 @@ public class RhtmlDataLoader extends UniFileLoader {
         super("org.netbeans.modules.ruby.rhtml.loaders.RhtmlDataObject");
     }
     
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(RhtmlDataLoader.class, "LBL_Rhtml_loader_name");
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(RhtmlTokenId.MIME_TYPE);
@@ -70,6 +72,7 @@ public class RhtmlDataLoader extends UniFileLoader {
         return new RhtmlDataObject(primaryFile, this);
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/" + RhtmlTokenId.MIME_TYPE + "/Actions";
     }

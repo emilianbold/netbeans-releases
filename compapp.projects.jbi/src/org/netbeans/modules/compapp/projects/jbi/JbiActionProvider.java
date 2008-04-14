@@ -237,8 +237,22 @@ public class JbiActionProvider implements ActionProvider {
                     DialogDisplayer.getDefault().notify(d);
                     return;
                     }*/
-
-                    if (!JbiManager.isSelectedServer(project)) {
+                    
+                    JbiProjectProperties properties = project.getProjectProperties();
+                    
+                    // 4/11/08 OSGi support
+                    Boolean osgiSupport = (Boolean) properties.get(JbiProjectProperties.OSGI_SUPPORT);
+                    if (osgiSupport) {
+                        String osgiContainerDir = (String) properties.get(JbiProjectProperties.OSGI_CONTAINER_DIR);
+                        if (osgiContainerDir == null || osgiContainerDir.trim().length() == 0) {
+                            NotifyDescriptor d = new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(JbiActionProvider.class,
+                                    "MSG_CHOOSE_OSGI_CONTAINER_FIRST"), // NOI18N
+                                    NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(d);
+                            return;
+                        }
+                    } else if (!JbiManager.isSelectedServer(project)) {
                         return;
                     }
                     if (!validateSubProjects()) {
@@ -261,7 +275,6 @@ public class JbiActionProvider implements ActionProvider {
                                     AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
                             mgmtServiceWrapper.clearServiceAssemblyStatusCache();
 
-                            JbiProjectProperties properties = project.getProjectProperties();
                             String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
                             ServiceAssemblyInfo saStatus = mgmtServiceWrapper.getServiceAssembly(saID, "server");
                             if (saStatus == null) { // not deployed

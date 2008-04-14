@@ -42,48 +42,30 @@
 package org.netbeans.test.xml.cpr;
 
 import java.awt.Point;
-import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 //import org.netbeans.test.xml.schema.lib.util.Helpers;
 
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.ListModel;
 import org.netbeans.api.project.ProjectInformation;
 import javax.swing.text.BadLocationException;
 import java.awt.Rectangle;
 import javax.swing.JEditorPane;
+import javax.swing.JTable;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
@@ -98,11 +80,45 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     protected final String LOAN_SCHEMA_FILE_NAME_ORIGINAL = "newLoanApplication.xsd";
     protected final String LOAN_SCHEMA_FILE_NAME_RENAMED = "myLoanApplication.xsd";
     
+    static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
+    static final String BUILD_FAILED = "BUILD FAILED";
+    
+
     class CFulltextStringComparator implements Operator.StringComparator
     {
       public boolean equals( java.lang.String caption, java.lang.String match )
       {
         return caption.equals( match );
+      }
+    }
+    
+    public class CImportClickData
+    {
+      public boolean inshort;
+      public int row;
+      public int col;
+      public int count;
+      public int result;
+      public String error;
+      public String checker;
+      
+      public CImportClickData(
+          boolean _inshort,
+          int _row,
+          int _col,
+          int _count,
+          int _result,
+          String _error,
+          String _checker
+        )
+      {
+        inshort = _inshort;
+        row = _row;
+        col = _col;
+        count = _count;
+        result = _result;
+        error = _error;
+        checker = _checker;
       }
     }
 
@@ -212,6 +228,308 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       okButton.pushNoBlock( );
     }
 
+    protected void AddSampleSchemaInternal(
+        String sModule,
+        String sPath
+      )
+    {
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( sModule );
+      prn.select( );
+
+      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
+      opNewFileWizard.selectCategory( "XML" );
+      opNewFileWizard.selectFileType( "Loan Application Sample Schema" );
+      opNewFileWizard.next( );
+      opNewFileWizard.finish( );
+
+      // Check created schema in project tree
+      if( null == ( new Node( prn, sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL ) ) )
+      {
+        fail( "Unable to check created sample schema." );
+      }
+    }
+
+    public void DeleteReferencedSchemaInternal( String sModule )
+    {
+      // Select first column
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      opList = opMultiView.getColumnListOperator( 1 );
+
+      // Click Delete
+      for( int i = 0; i < 2; i++ )
+      {
+        // Right click on Reference Schemas
+        opList.selectItem( 0 );
+
+        // Right click on Reference Schemas
+        Point pt = opList.getClickPoint( 0 );
+        opList.clickForPopup( pt.x, pt.y );
+
+        JPopupMenuOperator popup = new JPopupMenuOperator( );
+        popup.pushMenu( "Delete" );
+
+        try{ Thread.sleep( 1500 ); } catch( InterruptedException ex ) { }
+      }
+
+      // Go to source
+      opMultiView.switchToSource( );
+
+      // Check there is no more imports
+      EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sCompleteCode = eoXMLSource.getText( );
+      String[] asRequiredLines =
+      {
+        "<xs:import schemaLocation=\"" + sModule + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+        "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
+      };
+      for( String sImport : asRequiredLines )
+      {
+        if( -1 != sCompleteCode.indexOf( sImport ) )
+          fail( "Import statement was not removed: \"" + sCompleteCode + "\"" );
+      }
+
+    }
+
+    private void ExpandByClicks(
+        JTableOperator table,
+        int row,
+        int col,
+        int count,
+        int result,
+        String error
+      )
+    {
+      table.clickOnCell( row, col, count );
+       int iRows = table.getRowCount( );
+       if( result != iRows )
+         fail( error + iRows );
+      return;
+    }
+
+    protected void ImportReferencedSchemaInternal(
+        String sSample,
+        String sModule,
+        boolean bShort,
+        CImportClickData[] aimpData
+      )
+    {
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.select( );
+
+      JTreeOperator tree = pto.tree( );
+      tree.clickOnPath(
+          tree.findPath( sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME ),
+          2
+        );
+
+      // Check was it opened or no
+      EditorOperator eoSchemaEditor = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      if( null == eoSchemaEditor )
+      {
+        fail( PURCHASE_SCHEMA_FILE_NAME + " was not opened after double click." );
+      }
+
+      // Switch to schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      // ^ - remove???
+
+      // Select first column
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Referenced Schemas" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add / Import...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add|Import..." );
+
+      // Get import dialog
+      JDialogOperator jImport = new JDialogOperator( "Add Import" );
+
+      // Import required files
+      JTableOperator jto = new JTableOperator( jImport, new ComponentChooser( ) {
+            public java.lang.String getDescription() { return "getDesriptor: looking for happy"; }
+            public boolean checkComponent( java.awt.Component comp ) { if( comp instanceof JTable ) return true; return false; }
+          }
+      );
+
+      int iRows = jto.getRowCount( );
+      if( 2 != iRows )
+        fail( "Unknown initial import table state, number of rows: " + iRows );
+
+      for( CImportClickData cli : aimpData )
+      {
+        if( cli.inshort || !bShort )
+          ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
+        // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
+        // ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
+        // ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
+        // ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
+        // ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
+
+        // if( !bShort )
+        //   ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
+        // ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
+      }
+
+      // Close
+      JButtonOperator jOk = new JButtonOperator( jImport, "OK" );
+      if( !jOk.isEnabled( ) )
+        fail( "OK button disabled after clicking in imports." );
+      jOk.push( );
+
+      if( !bShort )
+      {
+        int iResult = 0;
+        for( int i = 0; i <= 1; i++ )
+        {
+          // Check imported files in list
+          opList = opMultiView.getColumnListOperator( 1 );
+
+          // Go to source
+          iIndex = i;//opList.findItemIndex( asImported[ 0 ] );
+          opList.selectItem( iIndex );
+          pt = opList.getClickPoint( iIndex );
+          opList.clickForPopup( pt.x, pt.y );
+
+          // Click Add / Import...
+          popup = new JPopupMenuOperator( );
+          popup.pushMenu( "Go To Source" );
+
+          // Check text
+          String[] asRequiredLines =
+          {
+           "<xs:import schemaLocation=\"" + sModule + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+            "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
+          };
+          EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+          int iLineNumber = eoXMLSource.getLineNumber( );
+          String sChoosenLine = eoXMLSource.getText( iLineNumber );
+          for( int j = 0; j < asRequiredLines.length; j++ )
+            if( -1 != sChoosenLine.indexOf( asRequiredLines[ j ] ) )
+              iResult += ( j + 1 );//fail( "Go to source came to unknown line: #" + iLineNumber + ", \"" + sChoosenLine + "\"" );
+
+          // Switch back
+          opMultiView.switchToSchema( );
+         opMultiView.switchToSchemaColumns( );
+        }
+        if( 3 != iResult )
+          fail( "Go to source works incorrect way, not all elements recognized: " + iResult );
+      }
+    }
+
+    protected void ImportReferencedSchema2Internal(
+        CImportClickData[] aimpData
+      )
+    {
+      // Select first column
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Referenced Schemas" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add / Import...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add|Import..." );
+
+      // Get import dialog
+      JDialogOperator jImport = new JDialogOperator( "Add Import" );
+
+      // Import required files
+      JTableOperator jto = new JTableOperator( jImport, new ComponentChooser( ) {
+            public java.lang.String getDescription() { return "getDesriptor: looking for happy"; }
+            public boolean checkComponent( java.awt.Component comp ) { if( comp instanceof JTable ) return true; return false; }
+          }
+      );
+
+      int iRows = jto.getRowCount( );
+      if( 2 != iRows )
+        fail( "Unknown initial import table state, number of rows: " + iRows );
+
+      for( CImportClickData cli : aimpData )
+      {
+        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
+        if( null != cli.checker )
+          new JLabelOperator( jImport, cli.checker );
+        // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
+        // ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
+        // ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
+        // ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
+        // ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
+
+        // ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
+        // JLabelOperator jl = new JLabelOperator( jImport, "Selected document is already referenced." );
+        // ExpandByClicks( jto, 4, 1, 1, 9, "Unknown to click on checkbox. #" );
+        // jl = new JLabelOperator( jImport, "Document cannot reference itself." );
+        // ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
+        // jl = new JLabelOperator( jImport, "Selected document is already referenced." );
+      }
+
+      // Close
+      JButtonOperator jOk = new JButtonOperator( jImport, "OK" );
+      if( jOk.isEnabled( ) )
+        fail( "OK button enabled after clicking on existing imports." );
+      JButtonOperator jCancel = new JButtonOperator( jImport, "Cancel" );
+      jCancel.push( );
+    }
+
+    public void FindUsagesInternal( String sModule, String sPath )
+    {
+      // Select schema
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
+        );
+      prn.select( );
+
+      // Refactor rename
+      prn.performPopupAction( "Find Usages" );
+
+      // Wait window
+      JDialogOperator opFindProgress = null;
+      try
+      {
+        opFindProgress = new JDialogOperator( "Find XML Usages" );
+      }
+      catch( JemmyException ex )
+      {
+        // No window found. Too fast?
+      }
+      if( null != opFindProgress )
+      {
+        System.out.println( "****** USAGES HERE" );
+        opFindProgress.waitClosed( );
+      }
+
+      // Check result
+      //FindUsagesOperator fuop = new FindUsagesOperator( );
+      
+      //System.out.println( "******" + ( null == fuop ) );
+    }
+
     protected void AddItInternal(
         String sItName,
         String sMenuToAdd,
@@ -313,8 +631,13 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Check selected code line
       EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
       String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
-      if( -1 == sSelectedText.indexOf( "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>" ) )
-        fail( "Go To Source feature selected wrong line of code: \"" + sSelectedText + "\"" );
+
+      String sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\">";
+      if( null != sNamespace )
+        sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>";
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
 
       // Click go to definition
       ClickForTextPopup( eoXsdCode );
@@ -456,13 +779,139 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
     }
 
-    public void tearDown() {
-        new SaveAllAction().performAPI();
+    protected void ValidateAndBuildInternal( String sSample )
+    {
+      // Set focus to file for validation to ensure Validate menu enabled
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
+      
+      // Validate
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Validate XML");
+
+      // "Output - XML Check"
+      OutputOperator out = new OutputOperator( );
+      String sText = out.getText( );
+
+      String[] asIdealOutput =
+      {
+          "XML validation started.",
+          "0 Error(s),  0 Warning(s).",
+          "XML validation finished."
+      };
+      // wait till stop line will appear
+      while( -1 == sText.indexOf( asIdealOutput[ asIdealOutput.length - 1 ] ) )
+      {
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
+        sText = out.getText( );
+      }
+      for( String sChecker : asIdealOutput )
+      {
+        if( -1 == sText.indexOf( sChecker ) )
+          fail( "Unable to find ideal XML validate output: \"" + sChecker + "\"\n\"" + sText + "\"" );
+      }
+
+      // Build
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sSample
+        );
+      prn.select( );
+
+      // Ensure we will catch all with any slowness
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      prn.performPopupActionNoBlock( "Build" );
+
+      // Wait till JAXB really created
+      stt.waitText( "Finished building build.xml (dist_se)." );
+      stt.stop( );
+
+      // Get output
+      out = new OutputOperator( );
+      sText = out.getText( );
+      if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
+        fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
+      if( -1 != sText.indexOf( BUILD_FAILED ) )
+        fail( "BUILD FAILED mark fopund:\n" + sText + "\n" );
+
+      // Close output
+      out.close( );
     }
 
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
+    protected void DeployCompositeApplicationInternal( String sName )
+    {
+      // Access to projects page
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode( sName );
+      prn.select( );
+
+      // Ensure we will catch all with any slowness
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      prn.performPopupActionNoBlock( "Deploy" );
+
+      // Check window with AS selection
+      try
+      {
+        JDialogOperator jselect = new JDialogOperator( "Warning - Select Server" );
+        JButtonOperator jOk = new JButtonOperator( jselect, "OK" );
+        jOk.push( );
+        jselect.waitClosed( );
+      }
+      catch( JemmyException ex )
+      {
+          // No selection window.
+          // It's strange but normal.
+      }
+
+      // Wait till JAXB really created
+      stt.waitText( "Finished building build.xml (run)." );
+      stt.stop( );
+
+      // Check output for BUILD SUCCESSFUL
+      // Get output
+      OutputOperator out = new OutputOperator( );
+      out.getOutputTab( "build.xml (run)" );
+      String sText = out.getText( );
+      if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
+        fail( "Unable to deploy composite application.\n" + sText + "\n" );
+      if( -1 != sText.indexOf( BUILD_FAILED ) )
+        fail( "BUILD FAILED mark found for deploy CA:\n" + sText + "\n" );
+    }
+
+    public void BuildCompositeApplicationInternal( String sName )
+    {
+      // Access to projects page
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode( sName );
+      prn.select( );
+
+      // Ensure we will catch all with any slowness
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      prn.performPopupActionNoBlock( "Build" );
+
+      // Wait till JAXB really created
+      stt.waitText( "Finished building build.xml (jbi-build)." );
+      stt.stop( );
+
+      // Check output for BUILD SUCCESSFUL
+      // Get output
+      OutputOperator out = OutputOperator.invoke( );
+      String sText = out.getText( );
+      if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
+        fail( "Unable to build composite application.\n" + sText + "\n" );
+      if( -1 != sText.indexOf( BUILD_FAILED ) )
+        fail( "BUILD FAILED mark found for build CA:\n" + sText + "\n" );
+    }
+
+    public void tearDown() {
+        new SaveAllAction().performAPI();
     }
 
 }

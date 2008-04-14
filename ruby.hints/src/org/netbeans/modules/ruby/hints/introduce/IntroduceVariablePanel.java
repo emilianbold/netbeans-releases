@@ -100,15 +100,15 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             }
         };
 
-        final ErrorLabel errorLabel = new ErrorLabel(name.getDocument(), validator);
-        errorLabel.addPropertyChangeListener(ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
+        final ErrorLabel label = new ErrorLabel(name.getDocument(), validator);
+        label.addPropertyChangeListener(ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled(errorLabel.isInputTextValid());
+                btnOk.setEnabled(label.isInputTextValid());
             }
         });
-        btnOk.setEnabled(errorLabel.isInputTextValid());
-        return errorLabel;
+        btnOk.setEnabled(label.isInputTextValid());
+        return label;
     }
 
     String getDefaultErrorMessage(String inputText) {

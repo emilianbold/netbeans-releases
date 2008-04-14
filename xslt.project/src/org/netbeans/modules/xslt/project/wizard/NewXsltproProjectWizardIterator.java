@@ -18,12 +18,21 @@
  */
 package org.netbeans.modules.xslt.project.wizard;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 import org.netbeans.modules.xslt.project.XsltproProjectGenerator;
 import org.netbeans.modules.xslt.tmap.util.Util;
@@ -43,6 +52,7 @@ import org.openide.loaders.DataObject;
 public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIterator {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(NewXsltproProjectWizardIterator.class.getName());
 
     public NewXsltproProjectWizardIterator() {
         super();
@@ -92,7 +102,50 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
                     .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     srcFo, "transformmap"); //NOI18N
 
+            // TODO m
+            String projectName = "http://enterprise.netbeans.org/transformmap/"+ProjectUtils.getInformation(p).getName(); // NOI18N
+            initialiseNames(tMapFo, projectName);
+            
             SoaUiUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
+        }
+    }
+    
+    private void filterOutWrongCharacters() {
+    }
+    
+    /**
+     *   Basically acts like a xslt tranformer by
+     *   replaceing _NS_ in fileObject contents with 'namespace'
+     */
+    private void initialiseNames(FileObject fileObject, String namespace) {
+        String line;
+        StringBuffer buffer = new StringBuffer();
+        String separator = System.getProperty("line.separator"); // NOI18N
+        
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    fileObject.getInputStream(), "UTF-8")); // NOI18N
+            
+            try {
+                while((line = reader.readLine()) != null) {
+                    line = line.replace("_NS_", namespace); // NOI18N
+                    buffer.append(line);
+                    buffer.append(separator);
+                }
+            } finally {
+                reader.close();
+            }
+
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    fileObject.getOutputStream(), 
+                    FileEncodingQuery.getDefaultEncoding())); //NOI18N
+            try {
+                writer.write(buffer.toString());
+            } finally {
+                writer.close();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
         }
     }
 }

@@ -3023,9 +3023,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
                             case EXPRESSION_STATEMENT:
-                                ExpressionTree expr = ((ExpressionStatementTree)tp.getLeaf()).getExpression();
-                                if (expr != null && expr.getKind() == Tree.Kind.ERRONEOUS)
-                                    break;
                             case IMPORT:                                
                                 t = tp.getLeaf();
                                 break;

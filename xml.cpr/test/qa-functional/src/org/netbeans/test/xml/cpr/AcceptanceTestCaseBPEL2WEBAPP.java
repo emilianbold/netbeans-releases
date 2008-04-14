@@ -515,13 +515,4 @@ public class AcceptanceTestCaseBPEL2WEBAPP extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void tearDown() {
-        new SaveAllAction().performAPI();
-    }
-
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
-    }
-
 }
