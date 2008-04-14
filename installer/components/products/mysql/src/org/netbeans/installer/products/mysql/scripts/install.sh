@@ -103,16 +103,49 @@ sed -e "s/`escape $DEFAULT_MYSQL_DIR`/`escape $INSTALLDIR`/g" ./my.cnf > ./my.cn
 
 
 if [ 1 -eq $ISROOT ] ; then
+
     groupadd mysql
-    echo "Result : $?"
+
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    elif [ 9 -eq $? ] ; then
+       echo "... group mysql already exist"
+    else
+       echo "errorcode : $?"
+    fi
+
     useradd -g mysql mysql 
-    echo "Result : $?"
-    chown -R mysql "$INSTALLDIR"
-    echo "Result : $?"
-    chgrp -R mysql "$INSTALLDIR"
-    echo "Result : $?"
-    chmod -R g+w "$INSTALLDIR"/data
-    echo "Result : $?"
+
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    elif [ 9 -eq $? ] ; then
+       echo "... group mysql already exist"
+    else
+       echo "errorcode : $?"
+    fi
+
+    chown -R mysql .
+
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    else
+       echo "errorcode : $?"
+    fi
+
+
+    chgrp -R mysql .
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    else
+       echo "errorcode : $?"
+    fi
+
+    chmod -R g+w ./data
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    else
+       echo "errorcode : $?"
+    fi
 fi
 
 if [ 1 -eq $ISROOT ] ; then
@@ -124,10 +157,21 @@ else
 fi
 
 if [ 1 -eq $ISROOT ] ; then
-    chown -R root  "$INSTALLDIR"
-    echo "Result : $?"
-    chown -R mysql "$INSTALLDIR"/data
-    echo "Result : $?"
+
+    chown -R root  .
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    else
+       echo "errorcode : $?"
+    fi
+
+    chown -R mysql data
+
+    if [ 0 -eq $? ] ; then
+       echo "... OK"
+    else
+       echo "errorcode : $?"
+    fi
 fi
 
 if [ 1 -eq $ISROOT ] ; then
