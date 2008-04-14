@@ -24,8 +24,8 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
        exit $ERROR_CODE;
    fi
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
-   scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
-   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
+   scp -q -v $LAST_BITS_ZIP/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
+   ls $LAST_BITS_ZIP/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $LAST_BITS_ZIP/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
 
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
