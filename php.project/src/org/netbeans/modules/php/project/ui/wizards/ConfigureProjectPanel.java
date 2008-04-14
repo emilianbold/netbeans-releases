@@ -43,6 +43,7 @@ import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -54,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -74,6 +76,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
+
+    private static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().startsWith("apache"); // NOI18N
+        }
+    };
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
@@ -116,10 +124,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         locationPanelVisual.setProjectName(getProjectName());
 
         // sources
-        MutableComboBoxModel localServers = getLocalServers();
-        if (localServers != null) {
-            locationPanelVisual.setLocalServerModel(localServers);
-        }
+        locationPanelVisual.setLocalServerModel(getLocalServers());
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
             locationPanelVisual.selectSourcesLocation(wwwFolder);
@@ -249,15 +254,143 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServers() {
-        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+        if (model != null) {
+            return model;
+        }
+        return getOSDependentLocalServers();
+    }
+
+    private MutableComboBoxModel getOSDependentLocalServers() {
+        MutableComboBoxModel model = locationPanelVisual.getLocalServerModel();
+        assert model.getSize() == 0;
+
+        model.addElement(DEFAULT_LOCAL_SERVER);
+        if (Utilities.isUnix()) {
+            fillUnixLocalServers(model);
+        } else if (Utilities.isWindows()) {
+            fillWindowsLocalServers(model);
+        } else if (Utilities.isMac()) {
+            fillMacLocalServers(model);
+        }
+
+        if (model.getSelectedItem() == null) {
+            model.setSelectedItem(DEFAULT_LOCAL_SERVER);
+        }
+        return model;
+    }
+
+    private void fillUnixLocalServers(final MutableComboBoxModel model) {
+        LocalServer selected = null;
+
+        String webFolderName = getWebFolderName();
+        File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
+        if (userDir.isDirectory()) {
+            LocalServer userDirLS = new LocalServer(getFolderName(userDir, webFolderName));
+            model.addElement(userDirLS);
+            if (selected == null) {
+                selected = userDirLS;
+                String user = System.getProperty("user.name"); // NOI18N
+                setDefaultUrl("~" + user + "/" + webFolderName); // NOI18N
+            }
+        }
+
+        File www = new File("/var/www"); // NOI18N
+        File wwwLocalhost = new File(www, "localhost"); // NOI18N
+        if (wwwLocalhost.isDirectory()) {
+            LocalServer wwwLocalhostLS = new LocalServer(getFolderName(wwwLocalhost, webFolderName));
+            model.addElement(wwwLocalhostLS);
+            if (selected == null) {
+                selected = wwwLocalhostLS;
+                setDefaultUrl(webFolderName);
+            }
+        } else if (www.isDirectory()) {
+            LocalServer wwwLS = new LocalServer(getFolderName(www, webFolderName));
+            model.addElement(wwwLS);
+            if (selected == null) {
+                selected = wwwLS;
+                setDefaultUrl(webFolderName);
+            }
+        }
+
+        if (selected != null) {
+            model.setSelectedItem(selected);
+        }
+    }
+
+    private void fillWindowsLocalServers(final MutableComboBoxModel model) {
+        File htDocs = getWindowsHtDocsDirectory();
+        if (htDocs == null) {
+            return;
+        }
+        String webFolderName = getWebFolderName();
+        LocalServer htDocsLS = new LocalServer(getFolderName(htDocs, webFolderName));
+        model.addElement(htDocsLS);
+        model.setSelectedItem(htDocsLS);
+        setDefaultUrl(webFolderName);
+    }
+
+    private void fillMacLocalServers(final MutableComboBoxModel model) {
+        String webFolderName = getWebFolderName();
+        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
+        if (mamp.isDirectory()) {
+            LocalServer mampLS = new LocalServer(getFolderName(mamp, webFolderName));
+            model.addElement(mampLS);
+            model.setSelectedItem(mampLS);
+            setDefaultUrl(webFolderName);
+        }
+    }
+
+    private String getFolderName(File location, String name) {
+        return new File(location, name).getAbsolutePath();
     }
 
     private String getUrl() {
         String url = (String) descriptor.getProperty(URL);
         if (url == null) {
-            url = "http://localhost/" + getProjectName() + "/"; // NOI18N
+            url = getDefaultUrl();
         }
         return url;
+    }
+
+    private String getDefaultUrl() {
+        return "http://localhost/" + getProjectName() + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
+    }
+
+    private void setDefaultUrl(String urlPart) {
+        descriptor.putProperty(URL, "http://localhost/" + urlPart + "/"); // NOI18N
+    }
+
+    private File getWindowsHtDocsDirectory() {
+        // list all harddrives (C - Z)
+        for (int i = 12; i < 36; i++) {
+            char hardDrive = Character.toUpperCase(Character.forDigit(i, Character.MAX_RADIX));
+            File programFiles = new File(hardDrive + ":\\Program Files"); // NOI18N
+            if (!programFiles.isDirectory()) {
+                continue;
+            }
+            File htDocs = findHtDocs(programFiles);
+            if (htDocs != null) {
+                return htDocs;
+            }
+        }
+        return null;
+    }
+
+    private File findHtDocs(File startDir) {
+        String[] apaches = startDir.list(APACHE_FILENAME_FILTER);
+        if (apaches == null || apaches.length == 0) {
+            return null;
+        }
+        for (String apache : apaches) {
+            File apacheDir = new File(startDir, apache);
+            File htDocs = new File(apacheDir, "htdocs"); // NOI18N
+            if (htDocs.isDirectory()) {
+                return htDocs;
+            }
+            return findHtDocs(apacheDir);
+        }
+        return null;
     }
 
     private Boolean isCreateIndex() {
@@ -307,7 +440,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        return Utils.validateProjectDirectory(projectPath, "Project", false); // NOI18N
+        return Utils.validateProjectDirectory(projectPath, "Project", false, false); // NOI18N
     }
 
     private String validateSources() {
@@ -318,11 +451,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
             File sources = FileUtil.normalizeFile(new File(sourcesLocation));
             if (sourcesLocation.trim().length() == 0
-                    || !Utils.isValidFileName(sources.getName())) {
+                    || !Utils.isValidFileName(sources)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
+            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
             if (err != null) {
                 return err;
             }
@@ -371,8 +504,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
-        if (copyTarget == null) {
+        Boolean isValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
+        if (isValid != null && !isValid) {
+            // some error there, need to be fixed, so do not compare
+            return null;
+        }
+        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        if (copyFiles == null || !copyFiles) {
             return null;
         }
         LocalServer sources = locationPanelVisual.getSourcesLocation();
@@ -382,6 +520,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCE_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
+        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
         File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);

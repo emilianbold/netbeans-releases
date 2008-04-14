@@ -124,13 +124,13 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
 
     public boolean isValid() {
         getComponent();
+        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
         String error = validateServerLocation();
         if (error != null) {
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             descriptor.putProperty(SERVER_IS_VALID, false);
             return false;
         }
-        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
         descriptor.putProperty(SERVER_IS_VALID, true);
         return true;
     }
@@ -179,16 +179,25 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
 
         LocalServer copyTarget = configureServerPanelVisual.getLocalServer();
         String sourcesLocation = copyTarget.getSrcRoot();
+        File sources = FileUtil.normalizeFile(new File(sourcesLocation));
         if (sourcesLocation == null
-                || !Utils.isValidFileName(new File(sourcesLocation).getName())) {
+                || !Utils.isValidFileName(sources)) {
             return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
         }
 
-        String err = Utils.validateProjectDirectory(sourcesLocation, "Folder", false); // NOI18N
+        String err = Utils.validateProjectDirectory(sourcesLocation, "Folder", false, true); // NOI18N
         if (err != null) {
             return err;
         }
-        return validateSourcesAndCopyTarget();
+        err = validateSourcesAndCopyTarget();
+        if (err != null) {
+            return err;
+        }
+        // warn about visibility of source folder
+        String url = (String) descriptor.getProperty(ConfigureProjectPanel.URL);
+        String warning = NbBundle.getMessage(ConfigureServerPanel.class, "MSG_TargetFolderVisible", url);
+        descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+        return null;
     }
 
     // #131023

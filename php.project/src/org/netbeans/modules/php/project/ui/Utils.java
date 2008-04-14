@@ -210,14 +210,33 @@ public final class Utils {
     }
 
     /**
+     * Check whether the provided File has a valid file name. File is not
+     * {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
+     * @param file File to check.
+     * @return <code>true</true> if the provided File has valid file name.
+     * @see #isValidFileName(java.lang.String)
+     */
+    public static boolean isValidFileName(File file) {
+        assert file != null;
+        // #132520
+        if (file.isAbsolute() && file.getParentFile() == null) {
+            return true;
+        }
+        return isValidFileName(file.getName());
+    }
+
+    /**
      * Validate the path and get the error message or <code>null</code> if it's all right.
      * @param projectPath the path to validate
      * @param type the type for error messages, currently "Project", "Sources" and "Folder".
      *             Add other to Bundle.properties file if more types are needed.
      * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
+     * @param allowInRoot  <code>true</code> if the folder can exist and can be a root directory "/"
+     *                     (this parameter is taken into account only for *NIX OS).
      * @return localized error message in case of error, <code>null</code> otherwise.
      */
-    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty) {
+    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty,
+            boolean allowInRoot) {
         assert projectPath != null;
         assert type != null;
 
@@ -228,9 +247,11 @@ public final class Utils {
         }
 
         // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(project);
-        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
-            return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
+        if (!allowInRoot && Utilities.isUnix()) {
+            File cfl = Utils.getCanonicalFile(project);
+            if (cfl != null && (cfl.getParentFile() == null || cfl.getParentFile().getParent() == null)) {
+                return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
+            }
         }
 
         final File destFolder = project.getAbsoluteFile();

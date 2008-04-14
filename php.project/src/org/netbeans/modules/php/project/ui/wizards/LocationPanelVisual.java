@@ -67,8 +67,7 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     public LocationPanelVisual() {
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"),
-                ConfigureProjectPanel.DEFAULT_LOCAL_SERVER);
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         init();
     }
 

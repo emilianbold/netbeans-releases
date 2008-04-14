@@ -45,6 +45,8 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -175,17 +177,68 @@ public class ToolTipAnnotation extends Annotation
         String selectedText = getSelectedText( editorCookie, offset);
         if ( selectedText != null ){
             sendEvalCommand( selectedText );
+        } else {
+            JEditorPane ep = Utils.getEditorPane( editorCookie );
+            final String identifier = getIdentifier(document, ep, offset);            
+            if (identifier != null && isDollarMark(identifier.charAt(0))) {
+                Runnable runnable = new Runnable(){
+                    public void run() {
+                        //TODO: should have been changed to PropertCommand
+                        sendEvalCommand(identifier);
+                    }
+                };
+                RequestProcessor.getDefault().post(runnable);
+            }
         }
         //TODO: review, replace the code depending on lexer.model - part I
-        /*else {
-            Runnable runnable = new Runnable(){
-                public void run() {
-                    computeVariable(fileObject, offset);                    
-                }
-            };
-            RequestProcessor.getDefault().post(runnable);
-        }*/
     }
+
+    private static String getIdentifier(final StyledDocument doc, final JEditorPane ep, final int offset) {
+        String t = null;
+        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+            t = ep.getSelectedText();
+        }
+        if (t != null) { return t; }
+        int line = NbDocument.findLineNumber(doc, offset);
+        int col = NbDocument.findLineColumn(doc, offset);
+        Element lineElem = NbDocument.findLineRootElement(doc).getElement(line);
+        try {
+            if (lineElem == null) { return null; }
+            int lineStartOffset = lineElem.getStartOffset();
+            int lineLen = lineElem.getEndOffset() - lineStartOffset;
+            if (col + 1 >= lineLen) {
+                // do not evaluate when mouse hover behind the end of line (112662)
+                return null;
+            }
+            t = doc.getText(lineStartOffset, lineLen);
+            return getExpressionToEvaluate(t, col);
+        } catch (BadLocationException e) {
+            return null;
+        }
+    }
+
+    static String getExpressionToEvaluate(String text, int col) {
+        int identStart = col;
+        while (identStart > 0 && (isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.'))) {
+            identStart--;
+        }
+        int identEnd = col;
+        while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
+            identEnd++;
+        }
+        if (identStart == identEnd) {
+            return null;
+        }
+        return text.substring(identStart, identEnd);
+    }
+    
+    static boolean isPHPIdentifier(char ch) {
+        return isDollarMark(ch) || Character.isJavaIdentifierPart(ch);
+    }
+
+    private static boolean isDollarMark(char ch) {
+        return ch == '$';//NOI18N
+    }        
     
     private boolean isPhpDataObject( DataObject dataObject ) {
         return Utils.isPhpFile( dataObject.getPrimaryFile() );

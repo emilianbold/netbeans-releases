@@ -306,15 +306,15 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         String name = node.getName().getName();
-        ClassElement func = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
+        ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
 
-        node2Element.put(node, func);
+        node2Element.put(node, ce);
         
         if (node.getSuperClass() != null) {
-            func.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+            ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
         }
                 
-        scopes.push(func.enclosedElements);
+        scopes.push(ce.enclosedElements);
         
         super.visit(node);
         
@@ -334,22 +334,10 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(Include node) {
-        Expression e = node.getExpression();
-        
-        if (e instanceof ParenthesisExpression) {
-            e = ((ParenthesisExpression) e).getExpression();
-        }
-        
-        if (e instanceof Scalar) {
-            Scalar s = (Scalar) e;
-            
-            if (Type.STRING == s.getScalarType()) {
-                String fileName = s.getStringValue();
-                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
-                FileObject toInclude = info.getFileObject().getParent().getFileObject(fileName);
-                
-                enterInclude(toInclude);
-            }
+        FileObject toInclude = NavUtils.resolveInclude(info, node);
+
+        if (toInclude != null) {
+            enterInclude(toInclude);
         }
         
         super.visit(node);
@@ -694,7 +682,9 @@ public class SemiAttribute extends DefaultVisitor {
     
     private static final class Stop extends Error {}
     
-    public static class AttributedType {
+    public static abstract class AttributedType {
+        
+        public abstract String getTypeName();
         
     }
     
@@ -708,6 +698,11 @@ public class SemiAttribute extends DefaultVisitor {
 
         public ClassElement getElement() {
             return element;
+        }
+
+        @Override
+        public String getTypeName() {
+            return getElement().getName();
         }
         
     }
