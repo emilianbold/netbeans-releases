@@ -262,7 +262,6 @@
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
-                <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
                 <package>org.netbeans.modules.bpel.core</package>
                 <package>org.netbeans.modules.bpel.core.annotations</package>
