@@ -285,7 +285,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         String webFolderName = getWebFolderName();
         File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
-        if (userDir.exists()) {
+        if (userDir.isDirectory()) {
             LocalServer userDirLS = new LocalServer(getFolderName(userDir, webFolderName));
             model.addElement(userDirLS);
             if (selected == null) {
@@ -297,14 +297,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         File www = new File("/var/www"); // NOI18N
         File wwwLocalhost = new File(www, "localhost"); // NOI18N
-        if (wwwLocalhost.exists()) {
+        if (wwwLocalhost.isDirectory()) {
             LocalServer wwwLocalhostLS = new LocalServer(getFolderName(wwwLocalhost, webFolderName));
             model.addElement(wwwLocalhostLS);
             if (selected == null) {
                 selected = wwwLocalhostLS;
                 setDefaultUrl(webFolderName);
             }
-        } else if (www.exists()) {
+        } else if (www.isDirectory()) {
             LocalServer wwwLS = new LocalServer(getFolderName(www, webFolderName));
             model.addElement(wwwLS);
             if (selected == null) {
@@ -333,7 +333,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private void fillMacLocalServers(final MutableComboBoxModel model) {
         String webFolderName = getWebFolderName();
         File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
-        if (mamp.exists()) {
+        if (mamp.isDirectory()) {
             LocalServer mampLS = new LocalServer(getFolderName(mamp, webFolderName));
             model.addElement(mampLS);
             model.setSelectedItem(mampLS);
@@ -366,7 +366,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         for (int i = 12; i < 36; i++) {
             char hardDrive = Character.toUpperCase(Character.forDigit(i, Character.MAX_RADIX));
             File programFiles = new File(hardDrive + ":\\Program Files"); // NOI18N
-            if (!programFiles.exists()) {
+            if (!programFiles.isDirectory()) {
                 continue;
             }
             File htDocs = findHtDocs(programFiles);
@@ -385,7 +385,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         for (String apache : apaches) {
             File apacheDir = new File(startDir, apache);
             File htDocs = new File(apacheDir, "htdocs"); // NOI18N
-            if (htDocs.exists()) {
+            if (htDocs.isDirectory()) {
                 return htDocs;
             }
             return findHtDocs(apacheDir);
