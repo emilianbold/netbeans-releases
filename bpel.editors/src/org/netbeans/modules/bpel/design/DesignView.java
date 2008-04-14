@@ -346,14 +346,9 @@ public class DesignView extends JPanel implements
         return selectionModel;
     }
 
-
-
-
     public FlowlinkTool getFlowLinkTool() {
         return flowLinkTool;
     }
-
-
 
     public DecorationManager getDecorationManager() {
         return decorationManager;
