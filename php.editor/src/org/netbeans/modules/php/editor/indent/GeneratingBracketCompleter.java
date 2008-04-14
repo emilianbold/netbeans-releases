@@ -65,6 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -126,6 +127,10 @@ public class GeneratingBracketCompleter {
 
                     if (n instanceof FunctionDeclaration) {
                         generateFunctionDoc(doc, offset, indent, parameter, (FunctionDeclaration) n);
+                    }
+                    
+                    if (n instanceof MethodDeclaration) {
+                        generateFunctionDoc(doc, offset, indent, parameter, ((MethodDeclaration) n).getFunction());
                     }
                     
                     if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {

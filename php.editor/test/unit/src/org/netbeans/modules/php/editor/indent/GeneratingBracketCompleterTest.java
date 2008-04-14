@@ -150,7 +150,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "?>\n");
     }
     
-    public void testGlobalFieldDocumentation() throws Exception {
+    public void testFieldDocumentation() throws Exception {
         performInsertBreak( "<?php\n" +
                             "class foo {\n" +
                             "    /**^\n" +
@@ -164,6 +164,26 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "     * @var " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + "\n" +
                             "     */\n" +
                             "    var $bar = \"\";\n" +
+                            "}\n" +
+                            "?>\n");
+    }
+    
+    public void testMethodDocumentation() throws Exception {
+        performInsertBreak( "<?php\n" +
+                            "class foo {\n" +
+                            "    /**^\n" +
+                            "    function bar($par) {\n" +
+                            "    }\n" +
+                            "}\n" +
+                            "?>\n",
+                            "<?php\n" +
+                            "class foo {\n" +
+                            "    /**\n" +
+                            "     * ^\n" +
+                            "     * @param " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $par\n" +
+                            "     */\n" +
+                            "    function bar($par) {\n" +
+                            "    }\n" +
                             "}\n" +
                             "?>\n");
     }
