@@ -18,46 +18,24 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
+ * 
  */
-public interface PartnerLinkTypeReference extends ReferenceCollection {
-    /**
-     * Partner Link Type attribute name
-     */
-    String PARTNER_LINK_TYPE = "partnerLinkType"; // NOI18N
-    
-    /**
-     * Role Name attribute name 
-     */
-    String ROLE_NAME = "roleName"; // NOI18N
-    
-    /**
-     * 
-     * @return 
-     */
-    WSDLReference<PartnerLinkType> getPartnerLinkType();
-    /**
-     * 
-     * @param pltRef - reference to the partner link type
-     */
-    void setPartnerLinkType(WSDLReference<PartnerLinkType> pltRef);
-    
-     /**
-      * 
-      * @return 
-      */
-     WSDLReference<Role> getRole();
+public interface Nameable extends Named<TMapComponent>, TMapComponent {
 
-     /**
-      * 
-      * @param roleRef - reference to the role wsdl component
-      */
-     void setRole(WSDLReference<Role> roleRef);
+    /**
+     * Setter for "name" attribute.
+     * @param str New "name" attribute value.
+     * @throws VetoException {@link VetoException } could be thrown if
+     * <code>str</code> is not acceptable as name value.
+     */
+    void setName( String str ) throws VetoException ;
     
-}
+}    
+

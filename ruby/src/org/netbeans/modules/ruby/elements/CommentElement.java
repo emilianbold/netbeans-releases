@@ -64,10 +64,12 @@ public class CommentElement extends RubyElement {
         return ElementKind.KEYWORD;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
 
+    @Override
     public String getIn() {
         return null;
     }

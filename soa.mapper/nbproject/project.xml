@@ -125,7 +125,6 @@
                 <package>org.netbeans.modules.soa.mapper.common.palette</package>
                 <package>org.netbeans.modules.soa.mapper.common.ui.palette</package>
                 <package>org.netbeans.modules.soa.mapper.common.util</package>
-                <package>org.netbeans.modules.soa.mapper.util</package>
             </public-packages>
         </data>
     </configuration>

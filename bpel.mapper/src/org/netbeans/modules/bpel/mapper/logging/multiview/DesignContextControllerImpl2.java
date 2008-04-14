@@ -25,7 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.EventObject;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -437,7 +437,7 @@ public class DesignContextControllerImpl2
         entityName = node != null ? node.getDisplayName() : null;
         if (entityName == null) {
             BpelEntity entity = context.getSelectedEntity();
-            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : EditorUtil.getTagName(entity);
         }
         entityName = entityName == null ? "" : entityName;
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class,
@@ -451,7 +451,7 @@ public class DesignContextControllerImpl2
         entityName = node != null ? node.getDisplayName() : null;
         if (entityName == null) {
             BpelEntity entity = context.getSelectedEntity();
-            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : EditorUtil.getTagName(entity);
         }
         entityName = entityName == null ? "" : entityName;
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class,

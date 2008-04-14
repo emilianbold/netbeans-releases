@@ -1196,7 +1196,12 @@ public class JsCodeCompletion implements Completable {
         boolean includeNonFqn = true;
         
         // Add in inherited properties, if any...
-        // TODO
+        // TODO - look for properties on the object - as well as inherited properties. NOT methods!!!
+        // Also look for @cfg and @config properties. This is a bit tricky. In the case of Ext,
+        // we have these guys on the class itself, not associated with a method parameter.
+        // Shall I take this to be a set of constructor properties?
+        // In YUI it's different; many of the properties we want to inherit are NOT marked as @config,
+        // such as "animate" in the Editor. 
         
         Set<IndexedElement> matches;
         if (fqn != null) {

@@ -75,10 +75,14 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -131,7 +135,11 @@ public final class RubyProject implements Project, RakeProjectListener {
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
-    
+
+    FileObject getRakeFile() {
+        return RakeSupport.findRakeFile(this);
+    }
+
     @Override
     public String toString() {
         return "RubyProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
@@ -243,6 +251,14 @@ public final class RubyProject implements Project, RakeProjectListener {
         }
     }
 
+    private void updateRakeTargets() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                RakeTargetsAction.refreshTargets(RubyProject.this);
+            }
+        });
+    }
+    
     public void propertiesChanged(RakeProjectEvent ev) {
         // currently ignored (probably better to listen to evaluator() if you need to)
     }
@@ -292,9 +308,6 @@ public final class RubyProject implements Project, RakeProjectListener {
             }
         });
     }
-
-
-
 
     // Private innerclasses ----------------------------------------------------------------
     
@@ -352,36 +365,7 @@ public final class RubyProject implements Project, RakeProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            if (!bootRegistered) {
-                GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-                bootRegistered = true;
-            }
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            
-/*
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
-                    EditableProperties ep = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
-                    updateHelper.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(RubyProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    return null;
-                }
-            });
-            RubyLogicalViewProvider physicalViewProvider = (RubyLogicalViewProvider)
-                RubyProject.this.getLookup().lookup (RubyLogicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert();
-            }
-*/
+            open();
         }
         
         protected void projectClosed() {
@@ -398,6 +382,50 @@ public final class RubyProject implements Project, RakeProjectListener {
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         }
         
+    }
+    
+    /** Package-private for unit tests. */
+    void open() {
+        // register project's classpaths to GlobalPathRegistry
+        ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+        if (!bootRegistered) {
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            bootRegistered = true;
+        }
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+
+        FileObject rakeFile = RakeSupport.findRakeFile(RubyProject.this);
+        if (rakeFile != null) {
+            rakeFile.addFileChangeListener(new FileChangeAdapter() {
+                public @Override void fileChanged(FileEvent fe) { updateRakeTargets(); }
+                public @Override void fileDeleted(FileEvent fe) { updateRakeTargets(); }
+                public @Override void fileRenamed(FileRenameEvent fe) { updateRakeTargets(); }
+            });
+        }
+        updateRakeTargets();
+
+/*
+        // Make it easier to run headless builds on the same machine at least.
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                EditableProperties ep = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+                File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
+                updateHelper.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                try {
+                    ProjectManager.getDefault().saveProject(RubyProject.this);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+                return null;
+            }
+        });
+        RubyLogicalViewProvider physicalViewProvider = (RubyLogicalViewProvider)
+            RubyProject.this.getLookup().lookup (RubyLogicalViewProvider.class);
+        if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
+            BrokenReferencesSupport.showAlert();
+        }
+*/
     }
         
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
@@ -434,4 +462,5 @@ public final class RubyProject implements Project, RakeProjectListener {
         }
         
     }
+    
 }

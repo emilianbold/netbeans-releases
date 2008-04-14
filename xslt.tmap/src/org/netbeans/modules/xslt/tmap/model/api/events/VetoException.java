@@ -16,15 +16,31 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.core.util;
+package org.netbeans.modules.xslt.tmap.model.api.events;
 
-import org.netbeans.modules.bpel.model.api.BpelEntity;
+import java.beans.PropertyChangeEvent;
 
 /**
+ * This class is intended for fired Exception about wrong change in Model was
+ * trying to perform. This action should be rolled back.
  *
- * @author Praveen Savur
+ * @author Vitaly Bychkov
+ * @author ads
+ * @version 1.0
  */
-public interface SelectBpelElement {
-    
-    public void select(BpelEntity bpelEntity); 
+public class VetoException extends Exception {
+
+    private static final long serialVersionUID = 3499029788731463455L;
+
+    public VetoException( String message, PropertyChangeEvent event ) {
+        super(message);
+        myEvent = event;
+    }
+
+    public PropertyChangeEvent getChangeEvent() {
+        return myEvent;
+    }
+
+    private final PropertyChangeEvent myEvent;
+
 }

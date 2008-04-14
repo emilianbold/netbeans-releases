@@ -292,7 +292,13 @@ public class SvnClientExceptionHandler {
     }
     private String getRealmFromException() {        
         String exceptionMessage = exception.getMessage().toLowerCase();             
-        String[] errorMessages = new String[] {"host not found (", "could not connect to server (", "could not resolve hostname (", "issuer is not trusted ("};        
+        String[] errorMessages = new String[] {
+            "host not found (", 
+            "could not connect to server (", 
+            "could not resolve hostname (", 
+            "issuer is not trusted (",
+            "authorization failed ("
+        };        
         for(String errorMessage : errorMessages) {
             int idxL = exceptionMessage.indexOf(errorMessage);
             if(idxL < 0) {

@@ -135,7 +135,7 @@ public class RailsProjectGenerator {
             task.waitFinished();
             
             // Precreate a spec directory if it doesn't exist such that my source root will work
-            if (platform.getGemManager().getVersion("rspec") != null) { // NOI18N
+            if (platform.getGemManager().getLatestVersion("rspec") != null) { // NOI18N
                 File spec = new File(data.getDir(), "spec"); // NOI18N
                 if (!spec.exists()) {
                     spec.mkdirs();
