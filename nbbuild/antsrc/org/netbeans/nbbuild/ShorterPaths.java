@@ -200,8 +200,9 @@ public class ShorterPaths extends Task {
                        pw.println(name + "=" + outProp);          
                     }
                 }
+                // XXX this is backwards! is: e.t.l.d=${e.t.l}/*.jar should be: e.t.l=${e.t.l.d}/*.jar
                 pw.println("extra.test.libs.dir=" + externalLibBuf.toString());
-                pw.println("test.unit.run.cp=" + nbLibBuff.toString());
+                pw.println("test.run.cp=" + nbLibBuff.toString());
                 pw.close();
             }
         } catch (IOException ex) {

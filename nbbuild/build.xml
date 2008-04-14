@@ -1985,17 +1985,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
                  <include name="*-all-qa-functional.*"/>
              </fileset>
       </copy>
-      <copy todir="${test.dist.dir}" file="templates/testdist/build.xml"/>
-      <copy todir="${test.dist.dir}" file="templates/testdist/README.txt"/>
+      <copy todir="${test.dist.dir}">
+          <fileset dir="templates/testdist"/>
+      </copy>
       <mkdir dir="${test.dist.dir}/nbbuild"/>
       <copy todir="${test.dist.dir}/nbbuild"> 
              <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties" excludes="templates/testdist"/>
       </copy>
-      <!-- add xtest -->
-      <mkdir dir="${test.dist.dir}/xtest"/>
-      <copy todir="${test.dist.dir}/xtest" > 
-             <fileset dir="../xtest" includes="lib/**,plugins/**,standard-test-*cludes.txt"/>
-      </copy> 
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 

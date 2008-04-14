@@ -1339,10 +1339,14 @@ public final class ParseProjectXml extends Task {
             if (testDeps.testtype.startsWith("qa-")) {
                 // ProjectSupport moved from the old nbjunit.ide:
                 testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, false, true, true, testDeps));
+                // Need to include transitive deps of j2seproject in CP:
+                testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, true, false, false, testDeps));
                 // Common GUI testing tools:
                 for (String library : new String[]{"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
                     testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
                 }
+                // For NbModuleSuite, which needs to find the platform:
+                testDeps.addOptionalDependency(new TestDep("org.openide.util", modules, false, false, false, testDeps));
             }
         }
         return testDepsList.toArray(new TestDeps[testDepsList.size()]);
