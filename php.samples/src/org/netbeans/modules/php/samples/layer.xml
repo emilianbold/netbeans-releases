@@ -12,7 +12,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/AirAlliance.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                    <!--
+                   <!--
                     <file name="BookORama" url="BookORama.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
