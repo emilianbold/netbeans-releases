@@ -175,9 +175,9 @@ if [ 1 -eq $ISROOT ] ; then
 fi
 
 if [ 1 -eq $ISROOT ] ; then
-    ./bin/mysqld_safe --user=mysql --no-defaults &
+    ./bin/mysqld_safe --user=mysql --defaults-file="$INSTALLDIR"/my.cnf &
 else 
-    ./bin/mysqld_safe --no-defaults &
+    ./bin/mysqld_safe --defaults-file="$INSTALLDIR"/my.cnf &
 fi
 
 sleep 3
