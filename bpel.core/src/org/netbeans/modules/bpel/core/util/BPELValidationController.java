@@ -50,6 +50,9 @@ import java.util.TimerTask;
 import java.util.WeakHashMap;
 
 import org.openide.text.Line;
+import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.ValidateAction.RunAction;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 
@@ -58,7 +61,6 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -68,20 +70,20 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public class BPELValidationController implements ComponentListener {
     
-  public BPELValidationController(BpelModel bpelModel) {
+  public BPELValidationController(Model model) {
     myTimer = new Timer();
-    myBpelModel = bpelModel;
+    myModel = model;
     myListeners = new WeakHashMap<BPELValidationListener, Object>();
     myAnnotations = new ArrayList<BPELValidationAnnotation>();
     myValidationResult = new ArrayList<ResultItem>();
   }
 
   public void attach() {
-    myBpelModel.addComponentListener(this);
+    myModel.addComponentListener(this);
   }
 
   public void detach() {
-    myBpelModel.removeComponentListener(this);
+    myModel.removeComponentListener(this);
   }
 
   public void addValidationListener(BPELValidationListener listener) {
@@ -100,57 +102,81 @@ public class BPELValidationController implements ComponentListener {
     return myValidationResult;
   }
 
-  public void triggerValidation(boolean checkExternallyTriggered) {
-    startValidation();
-  }
-  
-  public void notifyValidationResult(List<ResultItem> result) {
-    notifyListeners(result);
+  public void startValidation() {
+    doValidation(true, true);
   }
 
-  private synchronized void startValidation() {
-//stackTrace()
-    TimerTask task = new TimerTask() {
-      public void run() {
-        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-        Validation validation = new Validation();
-        log();
-        log("START VALIDATION"); // NOI18N
-        startTimeln();
-        validation.validate(myBpelModel, ValidationType.PARTIAL);
-        endTime("FAST VALIDATION"); // NOI18N
-        log("END VALIDATION"); // NOI18N
-        
-        List<ResultItem> items = validation.getValidationResult();
-        myValidationResult = new ArrayList<ResultItem>();
+  public void runValidation() {
+    doValidation(true, false);
+  }
 
-        synchronized(items) {
-          for (ResultItem item : items) {
-            myValidationResult.add(item);
-          }
-        }
-        notifyListeners(myValidationResult);
-      }
-    };
+  private synchronized boolean doValidation(boolean isComplete, boolean isOutput) {
+    List<ResultItem> items;
+    ValidationType type;
+
+    if (isComplete) {
+      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+      type = ValidationType.PARTIAL;
+    }
+    else {
+      Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+      type = ValidationType.COMPLETE;
+    }
     log();
-    log("TIMER"); // NOI18N
+    log("START VALIDATION: " + type); // NOI18N
+    startTimeln();
+         /* todo start here
+    if (isOutput) {
+      RunAction action = new ValidateAction(myModel).new RunAction();
+      action.run();
+      items = action.getValidationResults();
+    }
+    else {
+      Validation validation = new Validation();
+      validation.validate(myModel, type);
+      items = validation.getValidationResult();
+    }  */
+    endTime("VALIDATION"); // NOI18N
+    log("  END VALIDATION: " + type); // NOI18N
+
+    myValidationResult = new ArrayList<ResultItem>();
+
+    synchronized(items) {
+      for (ResultItem item : items) {
+        myValidationResult.add(item);
+      }
+    }
+    notifyListeners();
+
+    return true;
+  }
+
+  public void triggerValidation() {
+//stackTrace();
+    log();
+    log("TIMER-TRIGGER"); // NOI18N
     myTimer.cancel();
     myTimer = new Timer();
-    myTimer.schedule(task, DELAY);
+    myTimer.schedule(new TimerTask() {
+      public void run() {
+        doValidation(false, false);
+      }
+    },
+    DELAY);
   }
 
-  private void notifyListeners(List<ResultItem> result) {
+  private void notifyListeners() {
     synchronized (myListeners) {
       for (BPELValidationListener listener : myListeners.keySet()) {
         if (listener != null) {
-          listener.validationUpdated(result);
+          listener.validationUpdated(myValidationResult);
         }
       }
     }
-    showAnnotationsInEditor(result);
+    showAnnotationsInEditor();
   }
   
-  private void showAnnotationsInEditor(List<ResultItem> result) {
+  private void showAnnotationsInEditor() {
     synchronized (myAnnotations) {
       for (BPELValidationAnnotation annotation : myAnnotations) {
         annotation.detach();
@@ -160,7 +186,7 @@ public class BPELValidationController implements ComponentListener {
       myAnnotations.clear();
       Map<Line.Part, List<ResultItem>> map = new HashMap<Line.Part, List<ResultItem>>();
   
-      for (ResultItem item : result) {
+      for (ResultItem item : myValidationResult) {
           if (item.getType() != ResultType.ERROR) {
             continue;
           }
@@ -195,27 +221,25 @@ public class BPELValidationController implements ComponentListener {
 
   public void valueChanged(ComponentEvent event) {
 //out("CHANGED");
-    startValidation();
+    triggerValidation();
   }
   
   public void childrenAdded(ComponentEvent event) {
 //out("ADDED");
-    startValidation();
+    triggerValidation();
   }
   
   public void childrenDeleted(ComponentEvent event) {
 //out("DELETED");
-    startValidation();
+    triggerValidation();
   }
   
-  
+  private Model myModel;
   private Timer myTimer;
-  private BpelModel myBpelModel;
   private List<ResultItem> myValidationResult;
   private List<BPELValidationAnnotation> myAnnotations;
   private Map<BPELValidationListener, Object> myListeners;
 
   // vlv
   private static final int DELAY = 5432;
-//  private static final int DELAY = 432;
 }

@@ -16,13 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.design.decoration.providers;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
+
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.BPELValidationListener;
 import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
@@ -42,51 +42,37 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+
 /**
- *
  * @author aa160298
  */
-public class ValidationDecorationProvider extends DecorationProvider
-        implements BPELValidationListener {
+public class ValidationDecorationProvider extends DecorationProvider implements BPELValidationListener {
     
-        
     private Object list_key = new Object();
     private Object decoration_key = new Object();
     
     private List<ResultItem> results = new ArrayList<ResultItem>();
     
-    /** Creates a new instance of ValidationDecorationProvider */
     public ValidationDecorationProvider(DesignView designView) {
         super(designView);
-        
-        
-  
-        
-        
         final BPELValidationController vc = getDesignView().getValidationController();
-        
         vc.addValidationListener(this);
-        
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                vc.triggerValidation(false);
+                vc.triggerValidation();
             }
         });
-        
-        
     }
     
-    
     public void release(){
-        // Removed validation listener.
         getDesignView().getValidationController().removeValidationListener(this);
         list_key = null;
         decoration_key = null;
-        
     }
+
     public Decoration getDecoration(BpelEntity entity){
         return (Decoration) entity.getCookie(decoration_key);
-        
     }
     
     public void updateDecorations(){
