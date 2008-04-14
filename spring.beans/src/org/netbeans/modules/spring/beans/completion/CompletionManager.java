@@ -134,6 +134,7 @@ public final class CompletionManager {
         registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_DEPENDENCY_CHECK, completorFactory);
 
         String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
+        System.arraycopy(defaultDepCheckItems, 0, depCheckItems, 0, defaultDepCheckItems.length);
         depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
         depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
         completorFactory = new AttributeValueCompletorFactory(depCheckItems);
