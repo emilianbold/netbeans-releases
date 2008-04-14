@@ -318,6 +318,7 @@ public class TreeModelNode extends AbstractNode {
             refresh();
             return ;
         }
+        boolean refreshed = false;
         if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
             try {
                 String name = model.getDisplayName (object);
@@ -334,7 +335,9 @@ public class TreeModelNode extends AbstractNode {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
-        } else if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
+            refreshed = true;
+        }
+        if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
             try {
                 String iconBase = model.getIconBaseWithExtension (object);
                 if (iconBase != null)
@@ -345,15 +348,21 @@ public class TreeModelNode extends AbstractNode {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
-        } else if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
+            refreshed = true;
+        }
+        if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
             fireShortDescriptionChange(null, null);
-        } else if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
+            refreshed = true;
+        }
+        if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
             getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     refreshTheChildren(false);
                 }
             });
-        } else {
+            refreshed = true;
+        }
+        if (!refreshed) {
             refresh();
         }
     }

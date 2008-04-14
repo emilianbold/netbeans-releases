@@ -362,7 +362,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
                 ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
                 ModelEvent.NodeChanged.ICON_MASK |
-                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK);
+                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
+                ModelEvent.NodeChanged.CHILDREN_MASK);
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
