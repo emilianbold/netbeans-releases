@@ -304,7 +304,7 @@ fi"
               append="true"/>        
               
         <ant target="build-dmg">             
-             <property name="packages" value="./build/*.pkg"/>  
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/>               
         </ant>          
     </target>
