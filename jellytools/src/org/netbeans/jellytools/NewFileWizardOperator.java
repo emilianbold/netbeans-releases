@@ -80,7 +80,7 @@ public class NewFileWizardOperator extends WizardOperator {
     /** Creates new NewFileWizardOperator that can handle it.
      */
     public NewFileWizardOperator() {
-        super(Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_NewFileWizard_Title"));        
+        super(Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_NewFileWizard_Subtitle"));
     }
 
     /** Waits for wizard with given title.
