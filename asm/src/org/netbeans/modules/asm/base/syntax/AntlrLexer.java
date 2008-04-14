@@ -76,9 +76,12 @@ public class AntlrLexer implements AsmHighlightLexer {
             
             AsmToken asmTok = antlrTok.createAsmToken(resolver);
             tokId = asmTok.getId();
-               
-            length = antlrTok.getEndOffset() -
-                     antlrTok.getStartOffset();
+
+            // Filtering was turned on in the fix of 132563
+            // so we need to add skipped symbols length to the length of the returned token
+            length = scanner.getOffset() - start;
+            /*length = antlrTok.getEndOffset() -
+                     antlrTok.getStartOffset();*/
                         
             // FAKE STARTED 
             if ((tokId == AsmBaseTokenId.ASM_UNKWN_ID || 

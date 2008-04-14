@@ -245,6 +245,8 @@ public class MySQLPanel extends DestinationPanel {
 
             securitySettingsCheckbox.setText(
                     panel.getProperty(MODIFY_SECURITY_TEXT_PROPERTY));
+            securitySettingsCheckbox.setSelected(false);
+
             if (Boolean.parseBoolean(
                     panel.getWizard().getProperty(MODIFY_SECURITY_PROPERTY))) {
                 securitySettingsCheckbox.doClick();
