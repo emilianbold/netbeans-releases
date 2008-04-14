@@ -44,6 +44,9 @@ public final class DurationUtil {
     }
 //out("2");
     if ( !value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
+      if (throwException) {
+        return null;
+      }
       return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
     }
     if (value.length() == 1 && value.startsWith(QUOTE)) {
