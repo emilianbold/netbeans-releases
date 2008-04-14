@@ -432,13 +432,6 @@ made subject to such option by the copyright holder.
                 <replacement dir="${java.home}" name="java.home"/>
                 <replacement dir="${java.home.parent}" name="java.home.parent"/>
             </shorterpaths>
-             <copy todir="${test.unit.out.folder}">
-                <fileset dir="${test.unit.dir}/..">
-                  <include name="build-unit.xml"/>
-                  <include name="build.xml"/>
-                  <include name="cfg-unit.xml"/>
-                </fileset>
-            </copy>
     </target>
     
     <target name="test-build-datajar" depends="do-test-build" if="exists.test.data">
