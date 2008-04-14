@@ -185,6 +185,7 @@ else
 fi
 
 sleep 3
+sleep 2
 
 if [ -n "$PASSWORD" ] ; then
     ./bin/mysqladmin -u root password "$PASSWORD"
