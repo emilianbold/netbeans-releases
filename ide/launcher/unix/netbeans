@@ -186,7 +186,7 @@ case "`uname`" in
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
             '"-J-Xdock:icon=$progdir/../nb6.1/netbeans.icns"' \
-            --branding nb \
+            --branding php \
             --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
@@ -196,7 +196,7 @@ case "`uname`" in
     *)
         eval launchNbexec \
             --jdkhome '"$netbeans_jdkhome"' \
-            --branding nb \
+            --branding php \
             --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
