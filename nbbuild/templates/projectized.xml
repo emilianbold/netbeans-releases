@@ -633,7 +633,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <available file="${test.qa-functional.dir}/data" type="dir" property="exists.test.qa-functional.data"/>
         <!-- test distribution -->
                <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
-               <mkdir dir="${test.dist.dir}/extralibs"/>
+               <mkdir dir="${extra.test.libs.dir}"/>
            <mkdir dir="${test.qa-functional.out.folder}"/>
            <jar destfile="${test.qa-functional.out.folder}/tests.jar" basedir="${build.test.qa-functional.classes.dir}"/>            
            <!-- create properties -->
@@ -723,7 +723,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <available file="${test.qa-performance.dir}/data" type="dir" property="exists.test.qa-performance.data"/>
         <!-- test distribution -->
                <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
-               <mkdir dir="${test.dist.dir}/extralibs"/>
+               <mkdir dir="${extra.test.libs.dir}"/>
            <mkdir dir="${test.qa-performance.out.folder}"/>
            <jar destfile="${test.qa-performance.out.folder}/tests.jar" basedir="${build.test.qa-performance.classes.dir}"/>            
            <!-- create properties -->

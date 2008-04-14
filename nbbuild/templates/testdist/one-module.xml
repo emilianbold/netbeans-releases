@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="test runner" default="test" basedir=".">
     <target name="init">
-       <property name="extra.test.libs" location="../../../extralibs"/>
+       <property name="extra.test.libs.dir" location="../../../extralibs"/>
        <property name="test.dist.dir" location="../../.."/>
        <property name="test.timeout" value="600000"/>
        <property name="test.results.dir" location="../../results"/>
@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
        <available file="${netbeans.dest.dir}/moduleCluster.properties" type="file" property="exists.platform.properties"/>
        <path id="test.cp">
                 <pathelement location="${test.classes.dir}"/>
-                <path path="${extra.test.libs.dir}"/>
+                <path path="${extra.test.libs}"/>
                <path path="${test.run.cp}"/>
        </path> 
        <taskdef name="validatepath" classpath="../../../nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.ValidatePath"/>

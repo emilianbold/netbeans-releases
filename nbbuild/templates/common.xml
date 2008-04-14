@@ -417,7 +417,7 @@ made subject to such option by the copyright holder.
         
         <available file="${test.unit.data.dir}" type="dir" property="exists.test.data"/>
         <!-- test distribution -->
-           <mkdir dir="${test.dist.dir}/extralibs"/>
+           <mkdir dir="${extra.test.libs.dir}"/>
            <mkdir dir="${test.unit.out.folder}"/>
            <jar destfile="${test.unit.out.folder}/tests.jar" basedir="${build.test.unit.classes.dir}" filesetmanifest="merge"/>            
            <!-- create properties -->

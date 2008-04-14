@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
         <basename file="${basedir}" property="test.type"/>
         <testdistfilter testlistproperty="modules.list" testdistdir=".." requiredmodules="${test.required.modules}" testtype="${test.type}"/>
         <echo>Running modules: ${modules.list}</echo>
-        <property name="extra.test.libs" location="../extralibs"/>
+        <property name="extra.test.libs.dir" location="../extralibs"/>
         <property name="test.results.dir" location="results"/>
         <subant buildpath="${modules.list}" genericantfile="../one-module.xml" >
             <property name="test.disable.fails" value="true"/>
