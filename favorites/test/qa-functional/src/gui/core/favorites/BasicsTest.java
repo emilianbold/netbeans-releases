@@ -41,6 +41,7 @@
 package gui.core.favorites;
 
 import java.io.File;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -51,7 +52,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -59,25 +60,19 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author Tomas.Musil@sun.com
  */
-public class BasicTests extends JellyTestCase {
+public class BasicsTest extends JellyTestCase {
 
     private final String SAMPLE_PROJECT_NAME_F1="SampleF1";
 
     
     
     /** Need to be defined because of JUnit */
-    public BasicTests(String name) {
+    public BasicsTest(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new BasicTests("testHomeFolder"));
-        suite.addTest(new BasicTests("addJavaPackageToFavorites"));
-        suite.addTest(new BasicTests("addFolderToFavorites"));
-        suite.addTest(new BasicTests("addNonexistingFolder"));
-        suite.addTest(new BasicTests("removeFromfavorites"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(BasicsTest.class, ".*", ".*");
     }
     
     public @Override void setUp() {
@@ -93,7 +88,7 @@ public class BasicTests extends JellyTestCase {
         nodeHome.collapse();
     }
     
-    public void addJavaPackageToFavorites(){
+    public void testAddJavaPackageToFavorites(){
         //Creating sample project General/Java application
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         String standard = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
@@ -119,7 +114,7 @@ public class BasicTests extends JellyTestCase {
         assertEquals("items in favorites", 2, fo.tree().getChildCount(fo.tree().getRoot()));
     }
 
-    public void addFolderToFavorites(){
+    public void testAddFolderToFavorites(){
         //Opening a favorites tab (or focusing into it)
         FavoritesOperator fo = FavoritesOperator.invoke();
         //Invoking popup, choosing Add to favorites.
@@ -137,7 +132,7 @@ public class BasicTests extends JellyTestCase {
         assertEquals("items in favorites", 3, fo.tree().getChildCount(fo.tree().getRoot()));
      }
     
-    public void addNonexistingFolder(){
+    public void testAddNonexistingFolder(){
         //Opening a favorites tab (or focusing into it)
         FavoritesOperator fo = FavoritesOperator.invoke();
         //Invoking popup, choosing Add to favorites.
@@ -153,7 +148,7 @@ public class BasicTests extends JellyTestCase {
         assertEquals("items in favorites", 3, fo.tree().getChildCount(fo.tree().getRoot()));
     }
     
-    public void removeFromfavorites(){
+    public void testRemoveFromFavorites(){
         //Opening a favorites tab (or focusing into it)
         FavoritesOperator fo = FavoritesOperator.invoke();
         // Selecting home node in favorites window.
