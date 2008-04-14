@@ -82,25 +82,15 @@ function checkChoiceUpgradeAction() {
             <line choice="baseide"></line>
             <line choice="javase"></line>
             <line choice="javaee"></line>
-            <line choice="cpp"></line>
             <line choice="ruby"></line>
-            <line choice="soa"></line>
         </line>
         <line choice="glassfish"></line>
-        <line choice="tomcat"></line>
-        <line choice="openesb"></line>
         <line choice="mysql"></line>
         <line choice="mysqlstartup"></line>
     </choices-outline>
     <choice id="glassfish" title="glassfish-title" description="glassfish-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.glassfish"></pkg-ref>
     </choice>
-    <choice id="tomcat" title="tomcat-title" description="tomcat-description" start_selected="false" start_enabled="true" start_visible="true">
-        <pkg-ref id="ident.pkg.tomcat"></pkg-ref>
-    </choice>  
-    <choice id="openesb" title="openesb-title" description="openesb-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.openesb.selected &amp;&amp; choices.glassfish.selected" enabled="choices.glassfish.selected">
-        <pkg-ref id="ident.pkg.openesb"></pkg-ref>
-    </choice>  
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
@@ -111,14 +101,8 @@ function checkChoiceUpgradeAction() {
     <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
-    <choice id="cpp" title="cpp-title" description="cpp-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.cpp"></pkg-ref>
-    </choice>
     <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
-    </choice>
-    <choice id="soa" title="soa-title" description="soa-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.soa.selected &amp;&amp; choices.javaee.selected &amp;&amp; choices.openesb.selected" enabled="choices.javaee.selected &amp;&amp; choices.openesb.selected">
-        <pkg-ref id="ident.pkg.soa"></pkg-ref>
     </choice>
     <choice id="mysql" title="mysql-title" description="mysql-description" start_selected="true" start_enabled="true" start_visible="true" selected="true" enabled="true">
         <pkg-ref id="com.mysql.mysql"></pkg-ref>
@@ -127,14 +111,10 @@ function checkChoiceUpgradeAction() {
         <pkg-ref id="com.mysql.mysqlstartup"></pkg-ref>
     </choice>
     <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.openesb" version="0.0.0.0.0" installKBytes="@SIZE_OPENESB@" auth="Root" onConclusion="None">file:./Contents/Packages/openesb.pkg</pkg-ref>
     <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.soa" version="0.0.0.0.1" installKBytes="@SIZE_SOA@" auth="Root" onConclusion="None">file:./Contents/Packages/soa.pkg</pkg-ref>
     <pkg-ref id="com.mysql.mysql" version="5.0.51.5.0" installKBytes="@SIZE_MYSQL@" auth="Root" onConclusion="None">file:./Contents/Packages/mysql.pkg</pkg-ref>
     <pkg-ref id="com.mysql.mysqlstartup" version="1.0.0.1.0" installKBytes="@SIZE_MYSQLSTARTUP@" auth="Root" onConclusion="None">file:./Contents/Packages/mysqlstartup.pkg</pkg-ref>
     
