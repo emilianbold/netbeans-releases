@@ -53,7 +53,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <target name="init" depends="default.init,basic-init,files-init,build-init" >
 
     <patternset id="ide/branding.files">
-      <include name="**/*_nb.jar"/>
+      <include name="**/*_php.jar"/>
       <include name="modules/org-netbeans-modules-php-branding.jar" />
       <include name="config/Modules/org-netbeans-modules-php-branding.xml" />
       <include name="netbeans.icns" />
