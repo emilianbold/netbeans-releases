@@ -150,6 +150,24 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "?>\n");
     }
     
+    public void testGlobalFieldDocumentation() throws Exception {
+        performInsertBreak( "<?php\n" +
+                            "class foo {\n" +
+                            "    /**^\n" +
+                            "    var $bar = \"\";\n" +
+                            "}\n" +
+                            "?>\n",
+                            "<?php\n" +
+                            "class foo {\n" +
+                            "    /**\n" +
+                            "     * ^\n" +
+                            "     * @var " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + "\n" +
+                            "     */\n" +
+                            "    var $bar = \"\";\n" +
+                            "}\n" +
+                            "?>\n");
+    }
+    
     private void performInsertBreak(final String original, final String expected) throws Exception {
         final int insertOffset = original.indexOf('^');
         final int finalCaretPos = expected.indexOf('^');
