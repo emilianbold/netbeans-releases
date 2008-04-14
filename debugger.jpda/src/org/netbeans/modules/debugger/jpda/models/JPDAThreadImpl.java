@@ -357,13 +357,14 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             int max = threadReference.frameCount();
             from = Math.min(from, max);
             to = Math.min(to, max);
-            if (to - from > 1) {
+            /*if (to - from > 1) {  TODO: Frame caching cause problems with invalid frames. Some fix is necessary...
+             *  as a workaround, frames caching is disabled.
                 synchronized (cachedFramesLock) {
                     if (from == cachedFramesFrom && to == cachedFramesTo) {
                         return cachedFrames;
                     }
                 }
-            }
+            }*/
             if (from < 0) {
                 throw new IndexOutOfBoundsException("from = "+from);
             }
