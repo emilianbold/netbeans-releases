@@ -266,14 +266,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         assert model.getSize() == 0;
 
         model.addElement(DEFAULT_LOCAL_SERVER);
-        if (isLinux()) {
-            fillLinuxLocalServers(model);
-        } else if (isSolaris()) {
+        if (isSolaris()) {
             fillSolarisLocalServers(model);
         } else if (Utilities.isWindows()) {
             fillWindowsLocalServers(model);
         } else if (Utilities.isMac()) {
             fillMacLocalServers(model);
+        } else if (Utilities.isUnix()) {
+            fillUnixLocalServers(model);
         }
 
         if (model.getSelectedItem() == null) {
@@ -282,16 +282,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return model;
     }
 
-    private boolean isLinux() {
-        return (Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0;
-    }
-
     private boolean isSolaris() {
         return (Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0
                 || (Utilities.getOperatingSystem() & Utilities.OS_SUNOS) != 0;
     }
 
-    private void fillLinuxLocalServers(final MutableComboBoxModel model) {
+    private void fillUnixLocalServers(final MutableComboBoxModel model) {
         LocalServer selected = null;
 
         String webFolderName = getWebFolderName();
