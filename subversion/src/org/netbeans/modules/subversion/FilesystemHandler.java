@@ -91,7 +91,7 @@ class FilesystemHandler extends VCSInterceptor {
      * @param file file to delete
      */ 
     @Override
-    public void doDelete(File file) throws IOException {
+    public void doDelete(File file) throws IOException { 
         Subversion.LOG.fine("doDelete " + file);
         boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);        
         if (!isMetadata) {
@@ -107,33 +107,20 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void afterDelete(final File file) {
-        Subversion.LOG.fine("afterDelete " + file);
+    public void afterDelete(final File file) {   
+        Subversion.LOG.fine("afterDelete " + file);              
+        if (file == null) return;             
+        
+        // TODO the afterXXX events should not be triggered by the FS listener events
+        //      their order isn't guaranteed when e.g calling fo.delete() a fo.create() 
+        //      in an atomic action
+        
         Utils.post(new Runnable() {
             public void run() {                
-                if (file == null) return;
-                try {   
-                    // I. check if svn is aware that the file was deleted - update its Entries 
-                    SvnClient client = Subversion.getInstance().getClient(false);
-                    ISVNStatus status = getStatus(client, file);                    
-                    if (FilesystemHandler.this.equals(status, SVNStatusKind.UNVERSIONED) ||
-                        FilesystemHandler.this.equals(status, SVNStatusKind.DELETED)) 
-                    {                       
-                        try {   
-                            client.remove(new File [] { file }, true);
-                        } catch (SVNClientException e) {
-                            // ignore; we do not know what to do here; does no harm, the file was probably Locally New
-                            Subversion.LOG.log(Level.FINER, null, e);
-                        } 
-                    }
-                } catch (SVNClientException e) {                    
-                    SvnClientExceptionHandler.notifyException(e, false, false);
-                } finally {                    
-                    // II. refresh cache
-                    if (!SvnUtils.isPartOfSubversionMetadata(file)) {
-                        cache.refreshAsync(file);                            
-                    }                     
-                }   
+                // II. refresh cache
+                if (!SvnUtils.isPartOfSubversionMetadata(file)) {
+                    cache.refreshAsync(file);                            
+                }                     
             }
         });
     }
