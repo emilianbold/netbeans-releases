@@ -40,51 +40,24 @@
  */
 package org.netbeans.modules.bpel.core.util;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.02.01
+ * @version 2008.04.15
  */
-final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
-    
-  public BPELValidationAnnotation(Annotatable annotatable, String message) {
-    myMessage = message;
-
-    if (annotatable != null) {
-//    if (annotatable instanceof Line.Part) {
-//      Line.Part part = (Line.Part) annotatable;
-//      System.out.println(" *** attach: " + part.getColumn() + ":" + part.getLength());
-//    }
-      attach(annotatable);
-      annotatable.addPropertyChangeListener(this);
-    }
+public final class BPELValidationAction extends ValidateAction {
+        
+  public BPELValidationAction(BPELValidationController controller) {
+    super(null);
+    myController = controller;
   }
 
-  public String getAnnotationType() {
-    return "bpel-validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    if (Annotatable.PROP_ANNOTATION_COUNT.equals(propertyChangeEvent.getPropertyName())) {
-      return;
-    }
-    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
-
-    if (annotatable != null) {
-      annotatable.removePropertyChangeListener(this);
-      detach();
-    }
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
   }
 
-  private String myMessage;
+  private BPELValidationController myController;
 }
