@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
@@ -60,45 +61,36 @@ public class Choose implements ActiveEditorDrop {
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-
         ChooseCustomizer c = new ChooseCustomizer(this, targetComponent);
         boolean accept = c.showDialog();
         if (accept) {
-            String body = createBody();
+            String prefix = JSPPaletteUtilities.findJstlPrefix(targetComponent);
+            String body = createBody(prefix);
             try {
                 JSPPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
         }
-        
         return accept;
     }
 
-    private String createBody() {
-        
-        String cBody = generateChooseBody();
-        String body = 
-                "<c:choose>\n" + // NOI18N
-                cBody +
-                "</c:choose>\n"; // NOI18N
-        
-        return body;
+    private String createBody(String prefix) {
+        return "<"+prefix+":choose>\n" + // NOI18N
+                generateChooseBody(prefix) +
+                "</"+prefix+":choose>\n"; // NOI18N
     }
     
-    private String generateChooseBody() {
-        
+    private String generateChooseBody(String prefix) {
         StringBuffer sb = new StringBuffer();
-        sb.append("<c:when test=\""+JSPPaletteUtilities.CARET+"\">\n</c:when>\n");
+        sb.append("<"+prefix+":when test=\""+JSPPaletteUtilities.CARET+"\">\n</"+prefix+":when>\n");  //NOI18N
         for (int i = 1; i < whens; i++)
-            sb.append("<c:when test=\"\">\n</c:when>\n"); // NOI18N
+            sb.append("<"+prefix+":when test=\"\">\n</"+prefix+":when>\n"); // NOI18N
         
         if (otherwise)
-            sb.append("<c:otherwise>\n</c:otherwise>\n"); // NOI18N
+            sb.append("<"+prefix+":otherwise>\n</"+prefix+":otherwise>\n"); // NOI18N
                 
-        String cBody = sb.toString();
-        
-        return cBody;
+        return sb.toString();
     }
 
     public int getWhens() {

@@ -38,45 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.core.helper.api;
+package org.netbeans.modules.bpel.core.util;
 
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Process;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.11.09
+ * @version 2008.04.15
  */
-public final class CoreUtil {
-
-  private CoreUtil() {}
-
-  public static String getProcessName(BpelModel model) {
-    if (model == null) {
-      return null;
-    }
-    Process process = model.getProcess();
-
-    if (process == null) {
-      return null;
-    }
-    return process.getName();
+public final class BPELValidationAction extends ValidateAction {
+        
+  public BPELValidationAction(BPELValidationController controller) {
+    super(null);
+    myController = controller;
   }
 
-  public static BpelModel getBpelModel(DataObject data) {
-    if ( !(data instanceof Lookup.Provider)) {
-      return null;
-    }
-    Lookup.Provider provider = (Lookup.Provider) data;
-
-    // # 100277
-    try {
-      return (BpelModel) provider.getLookup().lookup(BpelModel.class);
-    }
-    catch (IllegalStateException e) {
-      return null;
-    }
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
   }
+
+  private BPELValidationController myController;
 }

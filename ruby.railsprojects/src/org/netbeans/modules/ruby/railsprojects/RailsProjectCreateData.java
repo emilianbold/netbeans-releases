@@ -80,6 +80,12 @@ public class RailsProjectCreateData {
      * The instance id of the project's target server.
      */
     private final String serverInstanceId;
+    
+    /**
+     * The version of Rails to be used for this project. If <code>null</code>,
+     * the newest available versions should be used.
+     */
+    private final String railsVersion;
     /**
      * Constructs a new RailsProjectCreateData instance.
      * @param dir the top-level directory for the project 
@@ -91,9 +97,14 @@ public class RailsProjectCreateData {
      * @param jdbc specifies whether JDBC should be used for accessing the database.
      * @param deploy specifies whether the Rake support targets for deploying 
      * the project as a .war file should be added.
+     * @param serverInstanceId the id of the server instance to be used for this
+     * project
+     * @param railsVersion the version of Rails to be used for this project. 
+     * If <code>null</code>, the latest installed version should be used.
      */
     public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
-            RailsDatabaseConfiguration database, boolean deploy, String serverInstanceId) {
+            RailsDatabaseConfiguration database, boolean deploy, String serverInstanceId, 
+            String railsVersion) {
         this.platform = platform;
         this.dir = dir;
         this.name = name;
@@ -101,6 +112,7 @@ public class RailsProjectCreateData {
         this.database = database;
         this.deploy = deploy;
         this.serverInstanceId = serverInstanceId;
+        this.railsVersion = railsVersion;
     }
 
     /**
@@ -152,6 +164,14 @@ public class RailsProjectCreateData {
         return platform;
     }
 
+    /**
+     * @see #railsVersion
+     */
+    public String getRailsVersion() {
+        return railsVersion;
+    }
+
+    
     
 }
 

@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.bpel.core.util.SelectBpelElement;
+import org.netbeans.modules.bpel.core.SelectBpelElement;
 import org.netbeans.modules.bpel.debugger.ui.breakpoint.BreakpointTranslator;
 import org.netbeans.modules.bpel.debugger.ui.util.Log;
 import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;

@@ -42,12 +42,19 @@ package org.netbeans.modules.subversion;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -106,7 +113,113 @@ public class InteceptorTest extends NbTestCase {
         cleanUpWC();        
     }
 
-    public void testDeleteNotVersionedFile() throws Exception {
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(createSuite());
+        
+        suite.addTest(deleteSuite());
+        
+        suite.addTest(renameViaDataObjectSuite());
+        suite.addTest(renameViaFileObjectSuite());
+        
+        suite.addTest(moveViaDataObjectSuite());        
+        suite.addTest(moveViaFileObjectSuite());
+        
+        return suite;
+    }
+    
+    public static Test deleteSuite() {
+	TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("deleteNotVersionedFile"));
+        suite.addTest(new InteceptorTest("deleteVersionedFile"));
+        suite.addTest(new InteceptorTest("deleteVersionedFolder"));
+        suite.addTest(new InteceptorTest("deleteNotVersionedFolder"));
+        suite.addTest(new InteceptorTest("deleteWCRoot"));
+        suite.addTest(new InteceptorTest("deleteVersionedFileTree"));
+        suite.addTest(new InteceptorTest("deleteNotVersionedFileTree"));
+        return(suite);
+    }
+   
+    public static Test createSuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("createNewFile"));
+        suite.addTest(new InteceptorTest("createNewFolder"));
+        suite.addTest(new InteceptorTest("deleteA_CreateA"));
+        suite.addTest(new InteceptorTest("deleteA_CreateA_RunAtomic"));
+        return(suite);
+    }
+    
+    public static Test renameViaDataObjectSuite() {
+	TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("renameVersionedFile_DO"));
+        suite.addTest(new InteceptorTest("renameUnversionedFile_DO"));
+        suite.addTest(new InteceptorTest("renameUnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("renameAddedFile_DO"));
+        suite.addTest(new InteceptorTest("renameA2B2A_DO"));
+        suite.addTest(new InteceptorTest("renameA2B2C_DO"));
+        suite.addTest(new InteceptorTest("renameA2B2C2A_DO"));
+        suite.addTest(new InteceptorTest("renameA2B_CreateA_DO"));
+        suite.addTest(new InteceptorTest("deleteA_RenameB2A_DO_not_fixed_yet_129805O"));
+        suite.addTest(new InteceptorTest("renameVersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("renameFileTree_DO"));
+        return(suite);
+    }
+    
+    public static Test moveViaDataObjectSuite() {
+	TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree_DO"));
+        return(suite);
+    }
+    
+    public static Test renameViaFileObjectSuite() {
+	TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("renameVersionedFile_FO"));
+        suite.addTest(new InteceptorTest("renameUnversionedFile_FO"));
+        suite.addTest(new InteceptorTest("renameUnversionedFolder_FO"));
+        suite.addTest(new InteceptorTest("renameAddedFile_FO"));
+        suite.addTest(new InteceptorTest("renameA2B2A_FO"));
+        suite.addTest(new InteceptorTest("renameA2B2C_FO"));
+        suite.addTest(new InteceptorTest("renameA2B2C2A_FO"));
+        suite.addTest(new InteceptorTest("renameA2B_CreateA_FO"));
+        suite.addTest(new InteceptorTest("deleteA_RenameB2A_FO_not_fixed_yet_129805"));
+        suite.addTest(new InteceptorTest("renameVersionedFolder_FO"));
+        suite.addTest(new InteceptorTest("renameFileTree_FO"));
+        return(suite);
+    }
+    
+    public static Test moveViaFileObjectSuite() {
+	TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("moveVersionedFile_FO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFile_FO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFolder_FO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_FO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_FO"));
+        suite.addTest(new InteceptorTest("moveA2B2A_FO"));
+        suite.addTest(new InteceptorTest("moveA2B2C_FO"));
+        suite.addTest(new InteceptorTest("moveA2B2C2A_FO"));
+        suite.addTest(new InteceptorTest("moveA2B_CreateA_FO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder_FO"));
+        suite.addTest(new InteceptorTest("moveFileTree_FO"));                                
+        
+        return(suite);
+    }
+    
+    public void deleteNotVersionedFile() throws Exception {
         // init        
         File file = new File(wc, "file");
         file.createNewFile();             
@@ -124,7 +237,7 @@ public class InteceptorTest extends NbTestCase {
         commit(wc);        
     }
 
-    public void testDeleteVersionedFile() throws Exception {
+    public void deleteVersionedFile() throws Exception {
         // init
         File file = new File(wc, "file");
         file.createNewFile();        
@@ -138,14 +251,14 @@ public class InteceptorTest extends NbTestCase {
         assertFalse(file.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
         
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(file));
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
         
         commit(wc);
         
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
     }
 
-    public void testDeleteVersionedFolder() throws Exception {
+    public void deleteVersionedFolder() throws Exception {
         // init        
         File folder = new File(wc, "folder1");
         folder.mkdirs();
@@ -159,7 +272,7 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(folder.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(folder).getTextStatus());
         
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(folder));        
+        assertCachedStatus(folder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);        
         
         commit(wc);
         
@@ -167,7 +280,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());        
     }
 
-    public void testDeleteNotVersionedFolder() throws IOException, SVNClientException {
+    public void deleteNotVersionedFolder() throws IOException, SVNClientException {
         // init        
         File folder = new File(wc, "folder2");
         folder.mkdirs();
@@ -185,7 +298,7 @@ public class InteceptorTest extends NbTestCase {
         commit(wc);        
     }    
 
-    public void testDeleteWCRoot() throws Exception {
+    public void deleteWCRoot() throws Exception {
         // init        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(wc).getTextStatus());
 
@@ -199,7 +312,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(wc));        
     }
 
-    public void testDeleteVersionedFileTree() throws Exception {
+    public void deleteVersionedFileTree() throws Exception {
         // init
         File folder = new File(wc, "folder");
         folder.mkdirs();
@@ -245,9 +358,9 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(file21).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(file22).getTextStatus());                
         
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(folder));        
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(folder1));        
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(folder2));        
+        assertCachedStatus(folder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);        
+        assertCachedStatus(folder1, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);        
+        assertCachedStatus(folder2, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);        
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(file11));        
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(file12));        
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(file21));        
@@ -261,7 +374,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());                
     }
 
-    public void testDeleteNotVersionedFileTree() throws Exception {
+    public void deleteNotVersionedFileTree() throws Exception {
         // init
         File folder = new File(wc, "folder");
         folder.mkdirs();
@@ -321,7 +434,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());        
     }
 
-    public void testCreateNewFile() throws Exception {
+    public void createNewFile() throws Exception {
         // init
         File file = new File(wc, "file");
         
@@ -333,10 +446,10 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(file.exists());
         
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(file));                
+        assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
     }
 
-    public void testCreateNewFolder() throws Exception {
+    public void createNewFolder() throws Exception {
         // init
         File folder = new File(wc, "folder");
         
@@ -348,101 +461,203 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(folder.exists());
         
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(folder));                
+        assertCachedStatus(folder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
     }
     
-    public void testDeleteA_CreateA() throws IOException, SVNClientException {
+    public void deleteA_CreateA() throws IOException, SVNClientException {
+        
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();        
         commit(wc);        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
-
-        // delete
+        
+        // delete                
         FileObject fo = FileUtil.toFileObject(fileA);
         fo.delete();
-                
+
         // test if deleted
         assertFalse(fileA.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());
-        
+
         // create        
-        fo.getParent().createData(fo.getName());
+        fo.getParent().createData(fo.getName());       
         
         // test 
         assertTrue(fileA.exists());
         
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        
     }
 
-    public void testRenameVersionedFile() throws Exception {
+    public void deleteA_CreateA_RunAtomic() throws IOException, SVNClientException {
+        // init
+        final File fileA = new File(wc, "A");
+        fileA.createNewFile();        
+        commit(wc);        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        
+        final FileObject fo = FileUtil.toFileObject(fileA);
+        AtomicAction a = new AtomicAction() {
+            public void run() throws IOException {             
+                fo.delete();
+                fo.getParent().createData(fo.getName());
+            }
+        };
+        fo.getFileSystem().runAtomicAction(a);        
+        
+        waitALittleBit(500); // after create 
+        
+        // test 
+        assertTrue(fileA.exists());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+    }    
+    
+    public void renameVersionedFile_DO() throws Exception {
         // init
         File fromFile = new File(wc, "fromFile");
         fromFile.createNewFile();
         commit(wc);                       
         File toFile = new File(wc, "toFile");
         
-        // rename        
-        mrVersionedFile(new Renamer(fromFile, toFile));
+        // rename    
+        renameDO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertCachedStatus(fromFile, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFile, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);   
+        
+        commit(wc);
     }
 
-    public void testMoveVersionedFile() throws Exception {
+    public void moveVersionedFile_DO() throws Exception {
         // init
-        File fromFile = new File(wc, "fromFile");
+        File fromFile = new File(wc, "file");
         fromFile.createNewFile();
         File toFolder = new File(wc, "toFolder");
         toFolder.mkdirs();
         commit(wc);               
+        File toFile = new File(toFolder, fromFile.getName());
         
-        // rename        
-        mrVersionedFile(new Mover(fromFile, toFolder));
+        // move
+        moveDO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertCachedStatus(fromFile, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFile, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);   
+        
+        commit(wc);
     }
     
-    public void testRenameUnversionedFile() throws Exception {
+    public void renameUnversionedFile_DO() throws Exception {
         // init
         File fromFile = new File(wc, "fromFile");
         fromFile.createNewFile();
         File toFile = new File(wc, "toFile");
                 
         // rename
-        mrUnversionedFile(new Renamer(fromFile, toFile));
+        renameDO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
     
-    public void testMoveUnversionedFile() throws Exception {
+    public void moveUnversionedFile_DO() throws Exception {
         // init
-        File fromFile = new File(wc, "fromFile");
+        File fromFile = new File(wc, "file");
         fromFile.createNewFile();
         File toFolder = new File(wc, "toFolder");
         toFolder.mkdirs();
         
+        File toFile = new File(toFolder, fromFile.getName());
+        
         // rename
-        mrUnversionedFile(new Mover(fromFile, toFolder));
+        moveDO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
 
-    public void testRenameUnversionedFolder() throws Exception {
+    public void renameUnversionedFolder_DO() throws Exception {
         // init
         File fromFolder = new File(wc, "fromFolder");
         fromFolder.mkdirs();
+        File toFolder = new File(wc, "toFolder");
         
         // rename
-        File toFolder = new File(wc, "toFolder");
-        mrUnversionedFolder(new Renamer(fromFolder, toFolder));
+        renameDO(fromFolder, toFolder);
+        
+        // test 
+        assertFalse(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFolder));                
+        assertCachedStatus(toFolder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
     
-    public void testMoveUnversionedFolder() throws Exception {
+    public void moveUnversionedFolder_DO() throws Exception {
         // init
-        File fromFolder = new File(wc, "fromFolder");
+        File fromFolder = new File(wc, "folder");
         fromFolder.mkdirs();
-        File toFolder = new File(new File(wc, "toFolder"), "toFolder");
-        toFolder.mkdirs();
+        File toParent = new File(wc, "toFolder");
+        toParent.mkdirs();
+        File toFolder = new File(toParent, fromFolder.getName());
         
         // move        
-        mrUnversionedFolder(new Mover(fromFolder, toFolder));
+        moveDO(fromFolder, toFolder);
+        
+        // test 
+        assertFalse(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFolder));                
+        assertCachedStatus(toFolder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
     
     
-    public void testRenameAddedFile() throws Exception {
+    public void renameAddedFile_DO() throws Exception {
         // init        
         File fromFile = new File(wc, "fromFile");
         fromFile.createNewFile();
@@ -452,24 +667,50 @@ public class InteceptorTest extends NbTestCase {
         getClient().addFile(fromFile);                
         
         // rename
-        mrAddedFile(new Renamer(fromFile, toFile));
+        renameDO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
     
-    public void testMoveAddedFile2UnversionedFolder() throws Exception {
+    public void moveAddedFile2UnversionedFolder_DO() throws Exception {
         // init        
-        File fromFile = new File(wc, "fromFile");
+        File fromFile = new File(wc, "file");
         fromFile.createNewFile();
         File toFolder = new File(wc, "toFodler");
         toFolder.mkdirs();
         
+        File toFile = new File(toFolder, fromFile.getName());
+        
         // add
         getClient().addFile(fromFile);                
         
-        // rename
-        mrAddedFile(new Mover(fromFile, toFolder));
+        // move
+        moveDO(fromFile, toFile);
+                
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
     
-    public void testMoveAddedFile2VersionedFolder() throws Exception {
+    public void moveAddedFile2VersionedFolder_DO() throws Exception {
         // init        
         File toFolder = new File(wc, "toFodler");
         toFolder.mkdirs();
@@ -477,14 +718,28 @@ public class InteceptorTest extends NbTestCase {
         File fromFile = new File(wc, "fromFile");
         fromFile.createNewFile();        
         
+        File toFile = new File(toFolder, fromFile.getName());  
+        
         // add
         getClient().addFile(fromFile);                
         
         // rename
-        mrAddedFile(new Mover(fromFile, toFolder));
+        moveDO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
     }
 
-    public void testRenameA2B2A() throws Exception {
+    public void renameA2B2A_DO() throws Exception {
         // init
         File fileA = new File(wc, "from");
         fileA.createNewFile();
@@ -492,10 +747,24 @@ public class InteceptorTest extends NbTestCase {
         
         File fileB = new File(wc, "to");
         
-        mrA2B2A(new Renamer(fileA, fileB), new Renamer(fileB, fileA));
+        // rename
+        renameDO(fileA, fileB);
+        renameDO(fileB, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        
+        commit(wc);        
     }
     
-    public void testMoveA2B2A() throws Exception {
+    public void moveA2B2A_DO() throws Exception {
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();
@@ -503,41 +772,55 @@ public class InteceptorTest extends NbTestCase {
         folder.mkdirs();        
         commit(wc);  
         
-        mrA2B2A(new Mover(fileA, folder), 
-                new Mover(new File(folder, fileA.getName()), fileA.getParentFile()));
-    }
-    
-    public void mrA2B2A(Handler handlerA2B, Handler handlerB2A) throws Exception {
-        handlerA2B.handle();
-        handlerB2A.handle();
+        File fileB = new File(folder, fileA.getName());
+        
+        // move
+        moveDO(fileA, fileB);
+        moveDO(fileB, fileA);
         
         // test 
-        assertTrue(handlerA2B.from.exists());
-        assertFalse(handlerA2B.to.exists());
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
         
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(handlerA2B.from).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handlerA2B.to).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
               
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(handlerA2B.from));                
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(handlerA2B.to));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
         
         commit(wc);
     }
 
-    public void testRenameA2B2C() throws Exception {
+    public void renameA2B2C_DO() throws Exception {
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();        
         commit(wc);  
         
-        // rename
         File fileB = new File(wc, "B");
         File fileC = new File(wc, "C");
 
-        mrA2B2C(new Renamer(fileA, fileB), new Renamer(fileB, fileC));
+        // rename
+        renameDO(fileA, fileB);
+        renameDO(fileB, fileC);
+        
+        // test 
+        assertFalse(fileA.exists());
+        assertFalse(fileB.exists());
+        assertTrue(fileC.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        
+        commit(wc);
     }
     
-    public void testMoveA2B2C() throws Exception {
+    public void moveA2B2C_DO() throws Exception {
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();
@@ -547,32 +830,30 @@ public class InteceptorTest extends NbTestCase {
         folderC.mkdirs();
         commit(wc);  
         
-        // rename
-        mrA2B2C(new Mover(fileA, folderB), 
-                new Mover(new File(folderB, fileA.getName()), folderC));
-    }
-    
-    private void mrA2B2C(Handler handlerA2B, Handler handlerB2C) throws Exception {        
-        handlerA2B.handle();
-        handlerB2C.handle();
-                
+        File fileB = new File(folderB, fileA.getName());
+        File fileC = new File(folderC, fileA.getName());
+        
+        // move
+        moveDO(fileA, fileB);
+        moveDO(fileB, fileC);
+        
         // test 
-        assertFalse(handlerA2B.from.exists());
-        assertFalse(handlerA2B.to.exists());
-        assertTrue(handlerB2C.to.exists());
+        assertFalse(fileA.exists());
+        assertFalse(fileB.exists());
+        assertTrue(fileC.exists());
         
-        assertEquals(SVNStatusKind.DELETED, getSVNStatus(handlerA2B.from).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handlerA2B.to).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handlerB2C.from).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
         
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(handlerA2B.from));                
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(handlerA2B.to));                
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(handlerB2C.from));    
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
         
         commit(wc);
     }
 
-    public void testRenameA2B2C2A() throws Exception {
+    public void renameA2B2C2A_DO() throws Exception {
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();
@@ -581,13 +862,64 @@ public class InteceptorTest extends NbTestCase {
         File fileB = new File(wc, "B");
         File fileC = new File(wc, "C");
         
-        // rename A to B        
-        mrA2B2C2A(new Renamer(fileA, fileB), // rename A to B
-                  new Renamer(fileB, fileC), // rename B to C
-                  new Renamer(fileC, fileA));// rename C to A
+        // rename 
+        renameDO(fileA, fileB);
+        renameDO(fileB, fileC);
+        renameDO(fileC, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        assertFalse(fileC.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());  
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileC));                
+        
+        commit(wc);
+        
     }        
     
-    public void testRenameA2B_CreateA() throws Exception {
+    public void moveA2B2C2A_DO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        File folderB = new File(wc, "folderB");
+        folderB.mkdirs();
+        File folderC = new File(wc, "folderC");
+        folderC.mkdirs();
+        commit(wc);  
+        
+        File fileB = new File(folderB, fileA.getName());
+        File fileC = new File(folderC, fileA.getName());
+        
+        // move
+        moveDO(fileA, fileB);
+        moveDO(fileB, fileC);
+        moveDO(fileC, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        assertFalse(fileC.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());  
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileC));                
+        
+        commit(wc);
+        
+    }        
+    
+    public void renameA2B_CreateA_DO() throws Exception {
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();
@@ -595,7 +927,8 @@ public class InteceptorTest extends NbTestCase {
         
         // rename
         File fileB = new File(wc, "B");
-        new Renamer(fileA, fileB).handle();
+        renameDO(fileA, fileB);
+        
         // create from file
         FileUtil.toFileObject(fileA.getParentFile()).createData(fileA.getName());
         
@@ -607,13 +940,42 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());        
         
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
-        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCachedStatus(fileB));                
+        assertCachedStatus(fileB, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        
+        commit(wc);
+    }
+    
+    public void moveA2B_CreateA_DO() throws Exception {
+        // init
+        File fileA = new File(wc, "file");
+        fileA.createNewFile();
+        File folderB = new File(wc, "folderB");
+        folderB.mkdirs();
+        commit(wc);  
+        
+        File fileB = new File(folderB, fileA.getName());
+        
+        // move
+        moveDO(fileA, fileB);
+        
+        // create from file
+        FileUtil.toFileObject(fileA.getParentFile()).createData(fileA.getName());
+        
+        // test 
+        assertTrue(fileB.exists());
+        assertTrue(fileA.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertCachedStatus(fileB, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
         
         commit(wc);
     }
     
     // not fixed yet - see issue #129805
-    public void testDeleteA_RenameB2A_not_fixed_yet_129805() throws Exception {
+    public void deleteA_RenameB2A_DO_not_fixed_yet_129805() throws Exception {
         // init
         File fileA = new File(wc, "A");
         fileA.createNewFile();
@@ -624,7 +986,7 @@ public class InteceptorTest extends NbTestCase {
         // delete A
         delete(fileA);
         // rename B to A
-        new Renamer(fileB, fileA).handle();
+        renameDO(fileB, fileA);
         
         // test 
         assertFalse(fileB.exists());
@@ -639,30 +1001,754 @@ public class InteceptorTest extends NbTestCase {
         commit(wc);
     }
     
-    public void testRenameVersionedFolder() throws Exception {
+    public void renameVersionedFolder_DO() throws Exception {
         // init
         File fromFolder = new File(wc, "from");
         fromFolder.mkdirs();
         commit(wc);               
-        
-        // rename
+       
         File toFolder = new File(wc, "to");
-        mrVersionedFolder(new Renamer(fromFolder, toFolder));
+        
+        // rename       
+        renameDO(fromFolder, toFolder);
+        
+        // test 
+        assertTrue(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        commit(wc);
+        assertFalse(fromFolder.exists());        
     }
 
-    public void testMoveVersionedFolder() throws Exception {
+    public void moveVersionedFolder_DO() throws Exception {
         // init
         File fromFolder = new File(wc, "from");
         fromFolder.mkdirs();
+        File toParent = new File(wc, "toFolder");
+        toParent.mkdirs();
+        commit(wc);               
+        
+        File toFolder = new File(toParent, fromFolder.getName());
+        
+        // move
+        moveDO(fromFolder, toFolder);
+        
+        // test 
+        assertTrue(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder));                
+        assertCachedStatus(toFolder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        commit(wc);
+        assertTrue(fromFolder.exists()); 
+    }    
+    
+    public void renameFileTree_DO() throws Exception {
+        // init
+        File fromFolder = new File(wc, "from");
+        fromFolder.mkdirs();
+        File fromFolder1 = new File(fromFolder, "folder1");
+        fromFolder1.mkdirs();
+        File fromFolder2 = new File(fromFolder, "folder2");
+        fromFolder2.mkdirs();
+        File fromFile11 = new File(fromFolder1, "file11");
+        fromFile11.createNewFile();
+        File fromFile12 = new File(fromFolder1, "file12");
+        fromFile12.createNewFile();
+        File fromFile21 = new File(fromFolder2, "file21");
+        fromFile21.createNewFile();
+        File fromFile22 = new File(fromFolder2, "file22");
+        fromFile22.createNewFile();
+        commit(wc);               
+        
+        // rename
+        File toFolder = new File(wc, "to");
+        renameDO(fromFolder, toFolder);
+                                        
+        // test 
+        assertTrue(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        File toFolder1 = new File(toFolder, "folder1");
+        assertTrue(toFolder1.exists());
+        File toFolder2 = new File(toFolder, "folder2");
+        assertTrue(toFolder2.exists());
+        File toFile11 = new File(toFolder1, "file11");
+        assertTrue(toFile11.exists());
+        File toFile12 = new File(toFolder1, "file12");
+        assertTrue(toFile12.exists());
+        File toFile21 = new File(toFolder2, "file21");
+        assertTrue(toFile21.exists());
+        File toFile22 = new File(toFolder2, "file22");
+        assertTrue(toFile22.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder1).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder2).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile11).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile12).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile21).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile22).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFolder1).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFolder2).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile11).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile12).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile21).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile22).getTextStatus());    
+        
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFolder1, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFolder2, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile11, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile12, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile21, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile22, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFolder1, FileInformation.STATUS_VERSIONED_UPTODATE);                
+        assertCachedStatus(toFolder2, FileInformation.STATUS_VERSIONED_UPTODATE);                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile11));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile12));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile21));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile22));   
+        
+        commit(wc);
+        assertFalse(fromFolder.exists());
+    }
+    
+    public void moveFileTree_DO() throws Exception {
+        // init
+        File fromFolder = new File(wc, "from");
+        fromFolder.mkdirs();
+        File fromFolder1 = new File(fromFolder, "folder1");
+        fromFolder1.mkdirs();
+        File fromFolder2 = new File(fromFolder, "folder2");
+        fromFolder2.mkdirs();
+        File fromFile11 = new File(fromFolder1, "file11");
+        fromFile11.createNewFile();
+        File fromFile12 = new File(fromFolder1, "file12");
+        fromFile12.createNewFile();
+        File fromFile21 = new File(fromFolder2, "file21");
+        fromFile21.createNewFile();
+        File fromFile22 = new File(fromFolder2, "file22");
+        fromFile22.createNewFile();
+        
+        File toFolderParent = new File(wc, "to");
+        toFolderParent.mkdirs();
+        
+        commit(wc);               
+        
+        File toFolder = new File(toFolderParent, fromFolder.getName());
+        
+        // move
+        moveDO(fromFolder, toFolder);
+                                                
+        // test         t.
+        assertTrue(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        File toFolder1 = new File(toFolder, fromFolder1.getName());
+        assertTrue(toFolder1.exists());
+        File toFolder2 = new File(toFolder, fromFolder2.getName());
+        assertTrue(toFolder2.exists());
+        File toFile11 = new File(toFolder1, "file11");
+        assertTrue(toFile11.exists());
+        File toFile12 = new File(toFolder1, "file12");
+        assertTrue(toFile12.exists());
+        File toFile21 = new File(toFolder2, "file21");
+        assertTrue(toFile21.exists());
+        File toFile22 = new File(toFolder2, "file22");
+        assertTrue(toFile22.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder1).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder2).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile11).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile12).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile21).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile22).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder1).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder2).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile11).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile12).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile21).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile22).getTextStatus());    
+                     
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder1));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder2));                
+        assertCachedStatus(fromFile11, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile12, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile21, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile22, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFolder1, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFolder2, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFile11, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFile12, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFile21, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFile22, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                        
+        
+        commit(wc);
+        
+        assertTrue(fromFolder.exists());
+        assertTrue(fromFolder1.exists());
+        assertTrue(fromFolder2.exists());
+        assertFalse(fromFile11.exists());
+        assertFalse(fromFile12.exists());
+        assertFalse(fromFile21.exists());
+        assertFalse(fromFile22.exists());
+        
+    }    
+
+    public void renameVersionedFile_FO() throws Exception {
+        // init
+        File fromFile = new File(wc, "fromFile");
+        fromFile.createNewFile();
+        commit(wc);                       
+        File toFile = new File(wc, "toFile");
+        
+        // rename    
+        renameFO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertCachedStatus(fromFile, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFile, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);   
+        
+        commit(wc);
+    }
+
+    public void moveVersionedFile_FO() throws Exception {
+        // init
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
         File toFolder = new File(wc, "toFolder");
         toFolder.mkdirs();
         commit(wc);               
+        File toFile = new File(toFolder, fromFile.getName());
+        
+        // move
+        moveFO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertCachedStatus(fromFile, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFile, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);   
+        
+        commit(wc);
+    }
+    
+    public void renameUnversionedFile_FO() throws Exception {
+        // init
+        File fromFile = new File(wc, "fromFile");
+        fromFile.createNewFile();
+        File toFile = new File(wc, "toFile");
+                
+        // rename
+        renameFO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
+    }
+    
+    public void moveUnversionedFile_FO() throws Exception {
+        // init
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
+        File toFolder = new File(wc, "toFolder");
+        toFolder.mkdirs();
+        
+        File toFile = new File(toFolder, fromFile.getName());
         
         // rename
-        mrVersionedFolder(new Mover(fromFolder, toFolder));
+        moveFO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
+    }
+
+    public void renameUnversionedFolder_FO() throws Exception {
+        // init
+        File fromFolder = new File(wc, "fromFolder");
+        fromFolder.mkdirs();
+        File toFolder = new File(wc, "toFolder");
+        
+        // rename
+        renameFO(fromFolder, toFolder);
+        
+        // test 
+        assertFalse(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFolder));                
+        assertCachedStatus(toFolder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
+    }
+    
+    public void moveUnversionedFolder_FO() throws Exception {
+        // init
+        File fromFolder = new File(wc, "folder");
+        fromFolder.mkdirs();
+        File toParent = new File(wc, "toFolder");
+        toParent.mkdirs();
+        File toFolder = new File(toParent, fromFolder.getName());
+        
+        
+        // move        
+        IOException e = null;
+        try {
+            moveFO(fromFolder, toFolder);
+        } catch (IOException ex) {
+            e = ex;
+        }
+        // expected to fail 
+        // if it should change in the future enble the following tests 
+        assertNotNull(e); 
+        
+        // test 
+//        assertFalse(fromFolder.exists());
+//        assertTrue(toFolder.exists());
+//        
+//        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFolder).getTextStatus());        
+//        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());        
+//              
+//        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFolder));                
+//        assertCachedStatus(toFolder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+//        
+//        commit(wc);
+    }
+    
+    
+    public void renameAddedFile_FO() throws Exception {
+        // init        
+        File fromFile = new File(wc, "fromFile");
+        fromFile.createNewFile();
+        File toFile = new File(wc, "toFile");
+        
+        // add
+        getClient().addFile(fromFile);                
+        
+        // rename
+        renameFO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
+    }
+    
+    public void moveAddedFile2UnversionedFolder_FO() throws Exception {
+        // init        
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
+        File toFolder = new File(wc, "toFodler");
+        toFolder.mkdirs();
+        
+        File toFile = new File(toFolder, fromFile.getName());
+        
+        // add
+        getClient().addFile(fromFile);                
+        
+        // move
+        moveFO(fromFile, toFile);
+                
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
+    }
+       
+    public void moveAddedFile2VersionedFolder_FO() throws Exception {
+        // init        
+        File toFolder = new File(wc, "toFodler");
+        toFolder.mkdirs();
+        commit(wc);
+        File fromFile = new File(wc, "fromFile");
+        fromFile.createNewFile();        
+        
+        File toFile = new File(toFolder, fromFile.getName());  
+        
+        // add
+        getClient().addFile(fromFile);                
+        
+        // rename
+        moveFO(fromFile, toFile);
+        
+        // test 
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        
+        commit(wc);
+    }
+
+    public void renameA2B2A_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "from");
+        fileA.createNewFile();
+        commit(wc);  
+        
+        File fileB = new File(wc, "to");
+        
+        // rename
+        renameFO(fileA, fileB);
+        renameFO(fileB, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        
+        commit(wc);        
+    }
+    
+    public void moveA2B2A_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        assertFalse(fileA.exists());
+        fileA.createNewFile();
+        File folder = new File(wc, "folder");
+        assertFalse(folder.exists());
+        folder.mkdirs();        
+        commit(wc);  
+        
+        File fileB = new File(folder, fileA.getName());
+        assertFalse(fileB.exists());
+        
+        // move
+        moveFO(fileA, fileB);                
+        moveFO(fileB, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+              
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        
+        commit(wc);
+    }
+
+    public void renameA2B2C_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();        
+        commit(wc);  
+        
+        File fileB = new File(wc, "B");
+        File fileC = new File(wc, "C");
+
+        // rename
+        renameFO(fileA, fileB);
+        renameFO(fileB, fileC);
+        
+        // test 
+        assertFalse(fileA.exists());
+        assertFalse(fileB.exists());
+        assertTrue(fileC.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        
+        commit(wc);
+    }
+    
+    public void moveA2B2C_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        File folderB = new File(wc, "folderB");
+        folderB.mkdirs();
+        File folderC = new File(wc, "folderC");
+        folderC.mkdirs();
+        commit(wc);  
+        
+        File fileB = new File(folderB, fileA.getName());
+        File fileC = new File(folderC, fileA.getName());
+        
+        // move
+        moveFO(fileA, fileB);
+        moveFO(fileB, fileC);
+        
+        // test 
+        assertFalse(fileA.exists());
+        assertFalse(fileB.exists());
+        assertTrue(fileC.exists());
+        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        
+        commit(wc);
+    }
+
+    public void renameA2B2C2A_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        commit(wc);  
+        
+        File fileB = new File(wc, "B");
+        File fileC = new File(wc, "C");
+        
+        // rename 
+        renameFO(fileA, fileB);
+        renameFO(fileB, fileC);
+        renameFO(fileC, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        assertFalse(fileC.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());  
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileC));                
+        
+        commit(wc);
+        
+    }        
+    
+    public void moveA2B2C2A_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        File folderB = new File(wc, "folderB");
+        folderB.mkdirs();
+        File folderC = new File(wc, "folderC");
+        folderC.mkdirs();
+        commit(wc);  
+        
+        File fileB = new File(folderB, fileA.getName());
+        File fileC = new File(folderC, fileA.getName());
+        
+        // move
+        moveFO(fileA, fileB);
+        moveFO(fileB, fileC);
+        moveFO(fileC, fileA);
+        
+        // test 
+        assertTrue(fileA.exists());
+        assertFalse(fileB.exists());
+        assertFalse(fileC.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());  
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileC));                
+        
+        commit(wc);
+        
+    }        
+    
+    public void renameA2B_CreateA_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        commit(wc);  
+        
+        // rename
+        File fileB = new File(wc, "B");
+        renameFO(fileA, fileB);
+        
+        // create from file
+        FileUtil.toFileObject(fileA.getParentFile()).createData(fileA.getName());
+        
+        // test 
+        assertTrue(fileB.exists());
+        assertTrue(fileA.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertCachedStatus(fileB, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        
+        commit(wc);
+    }
+    
+    public void moveA2B_CreateA_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "file");
+        fileA.createNewFile();
+        File folderB = new File(wc, "folderB");
+        folderB.mkdirs();
+        commit(wc);  
+        
+        File fileB = new File(folderB, fileA.getName());
+        
+        // move
+        moveFO(fileA, fileB);
+        
+        // create from file
+        FileUtil.toFileObject(fileA.getParentFile()).createData(fileA.getName());
+        
+        // test 
+        assertTrue(fileB.exists());
+        assertTrue(fileA.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());        
+        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertCachedStatus(fileB, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        
+        commit(wc);
+    }
+    
+    // not fixed yet - see issue #129805
+    public void deleteA_RenameB2A_FO_not_fixed_yet_129805() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        File fileB = new File(wc, "B");
+        fileB.createNewFile();
+        commit(wc);  
+        
+        // delete A
+        delete(fileA);
+        // rename B to A
+        renameFO(fileB, fileA);
+        
+        // test 
+        assertFalse(fileB.exists());
+        assertTrue(fileA.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());                
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
+             
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
+        
+        commit(wc);
+    }
+    
+    public void renameVersionedFolder_FO() throws Exception {
+        // init
+        File fromFolder = new File(wc, "from");
+        fromFolder.mkdirs();
+        commit(wc);               
+       
+        File toFolder = new File(wc, "to");
+        
+        // rename       
+        renameFO(fromFolder, toFolder);
+        
+        // test 
+        assertTrue(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        commit(wc);
+        assertFalse(fromFolder.exists());        
+    }
+
+    public void moveVersionedFolder_FO() throws Exception {
+        // init
+        File fromFolder = new File(wc, "from");
+        fromFolder.mkdirs();
+        File toParent = new File(wc, "toFolder");
+        toParent.mkdirs();
+        commit(wc);               
+        
+        File toFolder = new File(toParent, fromFolder.getName());
+        
+        // move
+        moveFO(fromFolder, toFolder);
+        
+        // test 
+        assertTrue(fromFolder.exists());
+        assertTrue(toFolder.exists());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFolder).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        commit(wc);
+        assertFalse(fromFolder.exists()); 
     }    
     
-    public void testRenameFileTree() throws Exception {
+    public void renameFileTree_FO() throws Exception {
         // init
         File fromFolder = new File(wc, "from");
         fromFolder.mkdirs();
@@ -682,7 +1768,7 @@ public class InteceptorTest extends NbTestCase {
         
         // rename
         File toFolder = new File(wc, "to");
-        new Renamer(fromFolder, toFolder).handle();
+        renameFO(fromFolder, toFolder);
                                         
         // test 
         assertTrue(fromFolder.exists());
@@ -715,16 +1801,19 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile21).getTextStatus());        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile22).getTextStatus());    
         
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFolder));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFolder1));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFolder2));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile11));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile12));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile21));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile22));                
-        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCachedStatus(toFolder));                
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCachedStatus(toFolder1));                
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCachedStatus(toFolder2));                
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFolder1, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFolder2, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile11, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile12, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile21, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile22, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFolder1, FileInformation.STATUS_VERSIONED_UPTODATE);                
+        assertCachedStatus(toFolder2, FileInformation.STATUS_VERSIONED_UPTODATE);                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile11));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile11));                
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile11));                
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile11));                
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile12));                
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile21));                
@@ -734,7 +1823,7 @@ public class InteceptorTest extends NbTestCase {
         assertFalse(fromFolder.exists());
     }
     
-    public void testMoveFileTree() throws Exception {
+    public void moveFileTree_FO() throws Exception {
         // init
         File fromFolder = new File(wc, "from");
         fromFolder.mkdirs();
@@ -750,19 +1839,23 @@ public class InteceptorTest extends NbTestCase {
         fromFile21.createNewFile();
         File fromFile22 = new File(fromFolder2, "file22");
         fromFile22.createNewFile();
-        File toFolder = new File(wc, "to");
-        toFolder.mkdirs();
+        
+        File toFolderParent = new File(wc, "to");
+        toFolderParent.mkdirs();
+        
         commit(wc);               
         
-        // rename
-        new Mover(fromFolder, toFolder).handle();
-                                        
-        // test 
+        File toFolder = new File(toFolderParent, fromFolder.getName());
+        
+        // move
+        moveFO(fromFolder, toFolder);
+                                                
+        // test         t.
         assertTrue(fromFolder.exists());
         assertTrue(toFolder.exists());
-        File toFolder1 = new File(toFolder, "folder1");
+        File toFolder1 = new File(toFolder, fromFolder1.getName());
         assertTrue(toFolder1.exists());
-        File toFolder2 = new File(toFolder, "folder2");
+        File toFolder2 = new File(toFolder, fromFolder2.getName());
         assertTrue(toFolder2.exists());
         File toFile11 = new File(toFolder1, "file11");
         assertTrue(toFile11.exists());
@@ -780,6 +1873,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile12).getTextStatus());        
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile21).getTextStatus());        
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile22).getTextStatus());        
+        
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFolder).getTextStatus());        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFolder1).getTextStatus());        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFolder2).getTextStatus());        
@@ -788,150 +1882,25 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile21).getTextStatus());        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(toFile22).getTextStatus());    
         
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFolder));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFolder1));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFolder2));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile11));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile12));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile21));                
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(fromFile22));                
-        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCachedStatus(toFolder));                
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCachedStatus(toFolder1));                
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCachedStatus(toFolder2));                
+        assertCachedStatus(fromFolder, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFolder1, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFolder2, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile11, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile12, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile21, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
+        assertCachedStatus(fromFile22, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);     
+        
+        assertCachedStatus(toFolder, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
+        assertCachedStatus(toFolder1, FileInformation.STATUS_VERSIONED_UPTODATE);                
+        assertCachedStatus(toFolder2, FileInformation.STATUS_VERSIONED_UPTODATE);                
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile11));                
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile12));                
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile21));                
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile22));   
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(toFile22));                
         
         commit(wc);
         assertFalse(fromFolder.exists());
-    }
-     
-    private void mrVersionedFile(Handler handler) throws Exception {               
-        handler.handle();
-                                        
-        // test 
-        assertFalse(handler.from.exists());
-        assertTrue(handler.to.exists());
-        
-        assertEquals(SVNStatusKind.DELETED, getSVNStatus(handler.from).getTextStatus());        
-        assertEquals(SVNStatusKind.ADDED, getSVNStatus(handler.to).getTextStatus());        
-        
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(handler.from));                
-        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCachedStatus(handler.to));   
-        
-        commit(wc);
-    }
-    
-    private void mrUnversionedFile(Handler handler) throws Exception {
-        handler.handle();
-                                        
-        // test 
-        assertFalse(handler.from.exists());
-        assertTrue(handler.to.exists());
-        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handler.from).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handler.to).getTextStatus());        
-              
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(handler.from));                
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(handler.to));                
-        
-        commit(wc);
-    }
-
-    private void mrUnversionedFolder(Handler hanlder) throws Exception {
-        hanlder.handle();
-        // test 
-        assertFalse(hanlder.from.exists());
-        assertTrue(hanlder.to.exists());
-        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(hanlder.from).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(hanlder.to).getTextStatus());        
-              
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(hanlder.from));                
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(hanlder.to));                
-        
-        commit(wc);
-    }
-
-
-    private void mrAddedFile(Handler handler) throws Exception {
-        handler.handle();
-                                        
-        // test 
-        assertFalse(handler.from.exists());
-        assertTrue(handler.to.exists());
-        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handler.from).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handler.to).getTextStatus());        
-        
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(handler.from));                
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCachedStatus(handler.to));                
-        
-        commit(wc);
-    }
-    
-    private void mrVersionedFolder(Handler handler) throws Exception {
-        handler.handle();
-                                        
-        // test 
-        assertTrue(handler.from.exists());
-        assertTrue(handler.to.exists());
-        assertEquals(SVNStatusKind.DELETED, getSVNStatus(handler.from).getTextStatus());        
-        assertEquals(SVNStatusKind.ADDED, getSVNStatus(handler.to).getTextStatus());        
-        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCachedStatus(handler.from));                
-        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getCachedStatus(handler.to));                
-        commit(wc);
-        assertFalse(handler.from.exists());
-    }
-
-    private void mrA2B2C2A(Handler handlerA2B, Handler handlerB2C, Handler handlerC2A) throws Exception {
-        handlerA2B.handle();
-        handlerB2C.handle();
-        handlerC2A.handle();
-        
-        // test 
-        assertTrue(handlerA2B.from.exists());
-        assertFalse(handlerA2B.to.exists());
-        assertFalse(handlerB2C.to.exists());
-        
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(handlerA2B.from).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handlerA2B.to).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(handlerB2C.to).getTextStatus());  
-        
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(handlerA2B.from));                
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(handlerA2B.to));                
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(handlerB2C.to));                
-        
-        commit(wc);
-    }
-    
-    // XXX add move tests
-    
-//    public void testRecreateDeletedFolder() throws IOException, SVNClientException {
-//        // init
-//        File wc = new File(dataRootDir, "wc");
-//        wc.mkdirs();        
-//        File folder = new File(wc, "folder");
-//        folder.mkdirs();
-//        commit(wc);        
-//        assertEquals(SVNStatusKind.NORMAL, getStatus(folder).getTextStatus());        
-//
-//        // delete
-//        FileObject fo = FileUtil.toFileObject(folder);
-//        fo.delete();
-//                
-//        // test if deleted
-//        assertTrue(folder.exists());
-//        assertEquals(SVNStatusKind.DELETED, getStatus(folder).getTextStatus());
-//        
-//        // create        
-//        fo.getParent().createFolder("folder");
-//        
-//        // test 
-//        assertTrue(folder.exists());
-//        assertEquals(SVNStatusKind.NORMAL, getStatus(folder).getTextStatus());        
-//    }
+    }    
     
     private void commit(File folder) throws SVNClientException {
         add(folder);
@@ -993,7 +1962,7 @@ public class InteceptorTest extends NbTestCase {
             assertEquals(status, iSVNStatus.getTextStatus());
         }
     }
-   
+ 
     private ISVNStatus getSVNStatus(File file) throws SVNClientException {
         return getClient().getSingleStatus(file);        
     }
@@ -1002,26 +1971,31 @@ public class InteceptorTest extends NbTestCase {
         return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
     }   
     
-    private int getCachedStatus(File file) throws Exception {
+    private void assertCachedStatus(File file, int expectedStatus) throws Exception {
+        assert !file.isFile() || expectedStatus != FileInformation.STATUS_VERSIONED_UPTODATE : "doesn't work for dirs with FileInformation.STATUS_VERSIONED_UPTODATE. Use getStatus instead";
+        int status = getCachedStatus(file, expectedStatus);
+        assertEquals(expectedStatus, status);
+    }        
+
+    private int getCachedStatus(File file, int exceptedStatus) throws Exception, InterruptedException {
         FileInformation info = null;
-        for (int i = 0; i < 300; i++) {                        
+        for (int i = 0; i < 600; i++) {
             try {
-                Thread.sleep(100);  
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 throw ex;
-            }            
-            info = cache.getCachedStatus(file);    
-            if(info != null) {
-                break;
             }
+            info = cache.getCachedStatus(file);
+            if (info != null && info.getStatus() == exceptedStatus) {
+                break;
+            }            
         }
-        if(info == null) {            
+        if (info == null) {
             throw new Exception("Cache timeout!");
         }
-        int status = info.getStatus();
-        return status;
+        return info.getStatus();
     }
-
+    
     private int getStatus(File file) {
         return cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
     }
@@ -1077,34 +2051,38 @@ public class InteceptorTest extends NbTestCase {
         return SvnUtils.isAdministrative(file) || SvnUtils.isPartOfSubversionMetadata(file);
     }
     
-    private abstract class Handler {
-        protected final File from;
-        protected final File to;
-        public Handler(File from, File to) {
-            this.from = from;
-            this.to = to;
-        }
-        public abstract void handle() throws Exception;        
+    private void renameDO(File from, File to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));                
+        daoFrom.rename(to.getName());               
     }
     
-    private class Renamer extends Handler{
-        public Renamer(File from, File to) {
-            super(from, to);
-        }
-        public void handle() throws Exception {
-            DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));                
-            daoFrom.rename(to.getName());        
+    private void renameFO(File from, File to) throws DataObjectNotFoundException, IOException {
+        FileObject foFrom = FileUtil.toFileObject(from);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.rename(lock, to.getName(), null);
+        } finally {
+            lock.releaseLock();
         }
     }
     
-    private class Mover extends Handler {
-        public Mover(File from, File toFolder) {
-            super(from, new File(toFolder, from.getName()));
-        }
-        public void handle() throws Exception {
-            DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));    
-            DataObject daoTarget = DataObject.find(FileUtil.toFileObject(to.getParentFile()));    
-            daoFrom.move((DataFolder) daoTarget);        
-        }
-    }    
+    private void moveDO(File from, File to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));    
+        DataObject daoTarget = DataObject.find(FileUtil.toFileObject(to.getParentFile()));    
+        daoFrom.move((DataFolder) daoTarget);    
+    }
+    
+    private void moveFO(File from, File to) throws DataObjectNotFoundException, IOException {
+        FileObject foFrom = FileUtil.toFileObject(from);
+        assertNotNull(foFrom);
+        FileObject foTarget = FileUtil.toFileObject(to.getParentFile());
+        assertNotNull(foTarget);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.move(lock, foTarget, to.getName(), null);
+        } finally {
+            lock.releaseLock();
+        }        
+    }
+    
 }

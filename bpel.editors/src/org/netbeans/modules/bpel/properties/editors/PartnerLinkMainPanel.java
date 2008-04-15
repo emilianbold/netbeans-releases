@@ -74,6 +74,7 @@ import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.openide.ErrorManager;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
@@ -624,10 +625,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
     
     private FileObject getSource() {
-        BpelModel model = myEditor.getLookup().lookup(BpelModel.class);
-        
-        return org.netbeans.modules.bpel.editors.api.utils.Util.
-                getFileObjectByModel(model);
+        return EditorUtil.getFileObjectByModel(myEditor.getLookup().lookup(BpelModel.class));
     }
     
     // vlv
@@ -1319,8 +1317,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         if (result != DialogDescriptor.OK_OPTION) {
             return;
         }
-        FileObject file = org.netbeans.modules.bpel.editors.api.utils.Util.
-                getFileObjectByModel(dialog.getModel());
+        FileObject file = EditorUtil.getFileObjectByModel(dialog.getModel());
         
         String text = getRelativeName(file);
         myWsdlWrapperName.setText(text);

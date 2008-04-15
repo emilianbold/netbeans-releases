@@ -177,13 +177,10 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
         bottomPanel = new WsFromJavaPanel1(project, wiz);
         WizardDescriptor.Panel<WizardDescriptor> secondPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)
-            secondPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
+            secondPanel = Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel);
         else
-            secondPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
-
-        //JComponent comp = (JComponent) secondPanel.getComponent();
-        
-        
+            secondPanel = JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true);
+      
         panels = new WizardDescriptor.Panel[] {
             new WsFromJavaPanel0(project, wiz),
             secondPanel

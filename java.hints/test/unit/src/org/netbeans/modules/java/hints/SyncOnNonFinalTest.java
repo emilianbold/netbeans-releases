@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,70 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server;
+package org.netbeans.modules.java.hints;
 
-import javax.swing.JComponent;
-import org.netbeans.api.server.ServerInstance;
-import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
-import org.openide.nodes.Node;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
- * @author Petr Hejl
+ * @author Jan Lahoda
  */
-public class TestInstance implements ServerInstanceImplementation {
-
-    private final TestInstanceProvider provider;
-
-    private ServerInstance commonInstance;
+public class SyncOnNonFinalTest extends TreeRuleTestBase {
     
-    private TestInstance(TestInstanceProvider provider) {
-        this.provider = provider;
+    public SyncOnNonFinalTest(String testName) {
+        super(testName);
     }
 
-    public static TestInstance createInstance(TestInstanceProvider provider) {
-        TestInstance created = new TestInstance(provider);
-        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
-        return created;
+    public void testSimple1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private Object o; private void t() {synch|ronized(o) {}}}",
+                            "0:81-0:84:verifier:Synchronization on non-final field");
     }
     
-    public String getDisplayName() {
-        return "Test Instance"; // NOI18N
-    }
-
-    public String getServerDisplayName() {
-        return "Test Server"; // NOI18N
-    }
-
-    public Node getFullNode() {
-        return null;
-    }
-
-    public Node getBasicNode() {
-        return null;
-    }
-
-    public JComponent getCustomizer() {
-        return null;
-    }
-
-    public boolean isRemovable() {
-        return true;
-    }
-
-    public void remove() {
-        provider.removeInstance(commonInstance);
-    }
-
-    public ServerInstance getCommonInstance() {
-        return commonInstance;
+    public void testSimple2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private final Object o; private void t() {synch|ronized(o) {}}}");
     }
     
+    public void testSimple3() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private void t() {Object o = null; synch|ronized(o) {}}}");
+    }
+    
+    @Override
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
+        return new SyncOnNonFinal().run(info, path);
+    }
+
 }

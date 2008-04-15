@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.core.util;
+package org.netbeans.modules.bpel.core;
 
 import java.awt.Image;
 import java.net.URL;
@@ -24,9 +24,7 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import javax.swing.ImageIcon;
-
 import org.openide.util.Utilities;
 
 /**
@@ -36,7 +34,7 @@ import org.openide.util.Utilities;
  * @author  Matt Stevens (revisons on initial theft)
  * @version
  */
-public abstract class BadgedIconCache {
+abstract class BadgedIconCache {
 
     private static Map<String,Image> theCache =
         Collections.synchronizedMap(new WeakHashMap<String,Image>(101));

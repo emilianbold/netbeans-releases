@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,62 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.server.ServerInstance;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.util.ChangeSupport;
+package org.netbeans.modules.spring.beans;
 
 /**
  *
- * @author Petr Hejl
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class TestInstanceProvider implements ServerInstanceProvider {
+public final class BeansElements {
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    private final List<ServerInstance> instances = new ArrayList<ServerInstance>();
-
-    public TestInstanceProvider() {
-        super();
+    private BeansElements() {
     }
-
-    public List<ServerInstance> getInstances() {
-        return instances;
-    }
-
-    public void clean() {
-        for (ServerInstance instance : instances) {
-            instances.remove(instance);
-            changeSupport.fireChange();
-        }
-    }
-
-    public void addInstance(ServerInstance instance) {
-        instances.add(instance);
-        changeSupport.fireChange();
-    }
-
-    public void removeInstance(ServerInstance instance) {
-        instances.remove(instance);
-        changeSupport.fireChange();
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
+    
+    public static final String BEAN = "bean"; // NOI18N
+    public static final String ALIAS = "alias"; // NOI18N
+    public static final String BEANS = "beans"; // NOI18N
+    public static final String LIST = "list"; // NOI18N
+    public static final String SET = "set"; // NOI18N
+    public static final String MAP = "map"; // NOI18N
+    public static final String PROPS = "props"; // NOI18N
+    public static final String IMPORT = "import"; // NOI18N
+    public static final String VALUE = "value"; // NOI18N
+    public static final String CONSTRUCTOR_ARG = "constructor-arg"; // NOI18N
+    public static final String REF = "ref"; // NOI18N
+    public static final String IDREF = "idref"; // NOI18N
+    public static final String ENTRY = "entry"; // NOI18N
+    public static final String PROPERTY = "property"; // NOI18N
+    public static final String LOOKUP_METHOD = "lookup-method"; // NOI18N
+    public static final String REPLACED_METHOD = "replaced-method";  // NOI18N
+    
 }

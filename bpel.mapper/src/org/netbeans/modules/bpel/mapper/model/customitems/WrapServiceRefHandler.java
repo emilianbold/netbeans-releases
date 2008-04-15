@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
 import org.netbeans.modules.bpel.mapper.model.VertexFactory;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -149,7 +149,7 @@ public class WrapServiceRefHandler implements ItemHandler {
         
         BpelModel bpelModel = getActiveModel();
         
-        FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
+        FileObject bpelFo = EditorUtil.getFileObjectByModel(bpelModel);
         FileObject wrap2servicerefFo = null;
         if (bpelFo != null) {
             wrap2servicerefFo = bpelFo.getParent().getFileObject(WRAP2SERVICEREF_XSL);
@@ -184,5 +184,4 @@ public class WrapServiceRefHandler implements ItemHandler {
         
         return model;
     }
-    
 }
