@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-import org.netbeans.modules.php.editor.PHPVersion;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
@@ -1188,7 +1187,7 @@ public class PHP5ColoringLexer {
             
         }
 
-        public class LexerState  {
+        public static final class LexerState  {
             final StateStack stack;
             /** the current state of the DFA */
             final int zzState;
@@ -1199,12 +1198,17 @@ public class PHP5ColoringLexer {
             /** and the lenght of */
             final int heredoc_len;
             
-            LexerState () {
-                stack = PHP5ColoringLexer.this.stack.createClone();
-                zzState =  PHP5ColoringLexer.this.zzState;
-                zzLexicalState = PHP5ColoringLexer.this.zzLexicalState;
-                heredoc = PHP5ColoringLexer.this.heredoc;
-                heredoc_len = PHP5ColoringLexer.this.heredoc_len;
+            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len) {
+//                stack = PHP5ColoringLexer.this.stack.createClone();
+//                zzState =  PHP5ColoringLexer.this.zzState;
+//                zzLexicalState = PHP5ColoringLexer.this.zzLexicalState;
+//                heredoc = PHP5ColoringLexer.this.heredoc;
+//                heredoc_len = PHP5ColoringLexer.this.heredoc_len;
+                this.stack = stack;
+                this.zzState = zzState;
+                this.zzLexicalState = zzLexicalState;
+                this.heredoc = heredoc;
+                this.heredoc_len = heredoc_len;
             }
             
             @Override
@@ -1238,7 +1242,7 @@ public class PHP5ColoringLexer {
         }
         
         public LexerState getState() {
-            return new LexerState();
+            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len);
         }
         
         public void setState(LexerState state) {
