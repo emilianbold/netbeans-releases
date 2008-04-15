@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.io.File;
@@ -60,34 +59,35 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.spi.glassfish.ServerUtilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-
 
 /**
  * Hk2PluginProperties
  */
 public class Hk2PluginProperties {
-    
+
     /**
      *
      */
     public static final String PROP_JAVA_PLATFORM = "java_platform"; //NOI18N
+
     /**
      *
      */
-    public static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
+    public static final String PROP_JAVADOCS = "javadocs";        // NOI18N
+
     /**
      *
      */
     public static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
-    
+
     private InstanceProperties ip;
     private Hk2DeploymentManager dm;
-    
     private static final int DEBUGPORT = 8787;
-    
+
     /**
      *
      * @param dm
@@ -96,7 +96,7 @@ public class Hk2PluginProperties {
         this.dm = dm;
         ip = InstanceProperties.getInstanceProperties(dm.getUri());
     }
-    
+
     /**
      *
      * @return
@@ -104,7 +104,7 @@ public class Hk2PluginProperties {
     public String getHk2JHomeLocation() {
         return ip.getProperty(GlassfishModule.HOME_FOLDER_ATTR);
     }
-    
+
     /**
      *
      * @return
@@ -113,8 +113,9 @@ public class Hk2PluginProperties {
         String currentJvm = ip.getProperty(PROP_JAVA_PLATFORM);
         JavaPlatformManager jpm = JavaPlatformManager.getDefault();
         JavaPlatform[] installedPlatforms = jpm.getPlatforms(null, new Specification("J2SE", null)); // NOI18N
+
         for (int i = 0; i < installedPlatforms.length; i++) {
-            String platformName = (String)installedPlatforms[i].getProperties().get(PLAT_PROP_ANT_NAME);
+            String platformName = (String) installedPlatforms[i].getProperties().get(PLAT_PROP_ANT_NAME);
             if (platformName != null && platformName.equals(currentJvm)) {
                 return installedPlatforms[i];
             }
@@ -122,7 +123,7 @@ public class Hk2PluginProperties {
         // return default platform if none was set
         return jpm.getDefaultPlatform();
     }
-    
+
     /**
      *
      * @return
@@ -130,7 +131,7 @@ public class Hk2PluginProperties {
     public InstanceProperties getInstanceProperties() {
         return ip;
     }
-    
+
     /**
      *
      * @return
@@ -139,47 +140,54 @@ public class Hk2PluginProperties {
         List<URL> list = new ArrayList<URL>();
         File serverDir = new File(getHk2JHomeLocation());
         try {
-            File jarDir = new File(serverDir, "modules");
-            if(!jarDir.exists()) {
-                // !PW Older V3 installs (pre 12/01/07) put jars in lib folder.
-                jarDir = new File(serverDir, "lib");
-                if(!jarDir.exists()) {
-                    // jar folder does not exist, return empty list.
+            File jarDir = new File(serverDir, ServerUtilities.GFV3_MODULES_DIR_NAME);
+            if (!jarDir.exists()) {
+                // jar folder does not exist, return empty list.
+                return list;
+
+            }
+
+            File ee5lib = new File(jarDir, "javax.javaee-10.0-SNAPSHOT.jar");  // V3 P2 M4
+
+            if (ee5lib.exists()) {
+                list.add(fileToUrl(ee5lib));
+                return list;
+            }
+            ee5lib = new File(jarDir, "javax.javaee-10.0" + ServerUtilities.GFV3_VERSION_NAME + ".jar");  // V3 P2 M4
+
+            if (ee5lib.exists()) {
+                list.add(fileToUrl(ee5lib));
+                return list;
+            }
+            ee5lib = new File(jarDir, "javaee-5.0-SNAPSHOT.jar");  // V3 P2 M2
+
+            if (!ee5lib.exists()) {
+                ee5lib = new File(jarDir, "javaee-5.0.jar"); // V1 P2 M1 uses an older name.
+
+                if (!ee5lib.exists()) {
                     return list;
                 }
             }
 
-            File ee5lib = new File(jarDir, "javax.javaee-10.0-SNAPSHOT.jar");  // V3 P2 M4
-            if(ee5lib.exists()) {
-                list.add(fileToUrl(ee5lib));
-            } else {
-                ee5lib = new File(jarDir, "javaee-5.0-SNAPSHOT.jar");  // V3 P2 M2
-                if (!ee5lib.exists()) {
-                    ee5lib = new File(jarDir, "javaee-5.0.jar"); // V1 P2 M1 uses an older name.
-                    if (!ee5lib.exists()) {
-                        return list;
-                    }
-                }
-            
-                Manifest m = new JarFile(ee5lib).getManifest();
-                String dependentJars = m.getMainAttributes().getValue("Class-Path");
-                if(dependentJars != null) {
-                    for(String jar: dependentJars.split(" ")) {
-                        if(jar != null && jar.length() > 0) {
-                            File j = new File(jarDir, jar);
-                            list.add(fileToUrl(j));
-                        }
+            Manifest m = new JarFile(ee5lib).getManifest();
+            String dependentJars = m.getMainAttributes().getValue("Class-Path");
+            if (dependentJars != null) {
+                for (String jar : dependentJars.split(" ")) {
+                    if (jar != null && jar.length() > 0) {
+                        File j = new File(jarDir, jar);
+                        list.add(fileToUrl(j));
                     }
                 }
             }
-        } catch(MalformedURLException ex) {
+
+        } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return list;
     }
-    
+
     /**
      *
      * @return
@@ -190,6 +198,7 @@ public class Hk2PluginProperties {
             ArrayList<URL> list = new ArrayList<URL>();
             try {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+
                 if (j2eeDoc != null) {
                     list.add(fileToUrl(j2eeDoc));
                 }
@@ -200,6 +209,7 @@ public class Hk2PluginProperties {
         }
         return tokenizePath(path);
     }
+
     /**
      * Splits an Ant-style path specification into the list of URLs.  Tokenizes on
      * <code>:</code> and <code>;</code>, paying attention to DOS-style components
@@ -213,6 +223,7 @@ public class Hk2PluginProperties {
         try {
             List<URL> l = new ArrayList<URL>();
             StringTokenizer tok = new StringTokenizer(path, ":;", true); // NOI18N
+
             char dosHack = '\0';
             char lastDelim = '\0';
             int delimCount = 0;
@@ -236,11 +247,11 @@ public class Hk2PluginProperties {
                     if (lastDelim == ':' && delimCount == 1 && (s.charAt(0) == '\\' || s.charAt(0) == '/')) {
                         // We had a single letter followed by ':' now followed by \something or /something
                         s = "" + dosHack + ':' + s;
-                        // and use the new token with the drive prefix...
+                    // and use the new token with the drive prefix...
                     } else {
                         // Something else, leave alone.
                         l.add(fileToUrl(new File(Character.toString(dosHack))));
-                        // and continue with this token too...
+                    // and continue with this token too...
                     }
                     dosHack = '\0';
                 }
@@ -268,7 +279,7 @@ public class Hk2PluginProperties {
             return new ArrayList<URL>();
         }
     }
-    
+
     /**
      *
      * @param file
@@ -282,7 +293,7 @@ public class Hk2PluginProperties {
         }
         return url;
     }
-    
+
     /**
      * Creates an Ant-style path specification from the specified list of URLs.
      *
@@ -292,8 +303,9 @@ public class Hk2PluginProperties {
      */
     public static String buildPath(List<URL> path) {
         String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
+
         StringBuffer sb = new StringBuffer(path.size() * 16);
-        for (Iterator<URL> i = path.iterator(); i.hasNext(); ) {
+        for (Iterator<URL> i = path.iterator(); i.hasNext();) {
             sb.append(urlToString(i.next()));
             if (i.hasNext()) {
                 sb.append(PATH_SEPARATOR);
@@ -301,9 +313,11 @@ public class Hk2PluginProperties {
         }
         return sb.toString();
     }
+
     /** Return string representation of the specified URL. */
     private static String urlToString(URL url) {
         if ("jar".equals(url.getProtocol())) { // NOI18N
+
             URL fileURL = FileUtil.getArchiveFile(url);
             if (FileUtil.getArchiveRoot(fileURL).equals(url)) {
                 // really the root
@@ -314,13 +328,14 @@ public class Hk2PluginProperties {
             }
         }
         if ("file".equals(url.getProtocol())) { // NOI18N
+
             File f = new File(URI.create(url.toExternalForm()));
             return f.getAbsolutePath();
         } else {
             return url.toExternalForm();
         }
     }
-    
+
     /**
      *
      * @param path
@@ -328,7 +343,7 @@ public class Hk2PluginProperties {
     public void setJavadocs(List<URL> path) {
         ip.setProperty(PROP_JAVADOCS, buildPath(path));
     }
-    
+
     /**
      *
      * @return
@@ -336,7 +351,7 @@ public class Hk2PluginProperties {
     public int getDebugPort() {
         return DEBUGPORT;
     }
-    
+
     /**
      *
      * @param host
@@ -344,9 +359,9 @@ public class Hk2PluginProperties {
      * @return
      */
     public static boolean isRunning(String host, int port) {
-        if(null == host)
+        if (null == host) {
             return false;
-        
+        }
         try {
             InetSocketAddress isa = new InetSocketAddress(host, port);
             Socket socket = new Socket();
@@ -357,7 +372,7 @@ public class Hk2PluginProperties {
             return false;
         }
     }
-    
+
     /**
      *
      * @param host
@@ -367,10 +382,9 @@ public class Hk2PluginProperties {
     public static boolean isRunning(String host, String port) {
         try {
             return isRunning(host, Integer.parseInt(port));
-        } catch(NumberFormatException e) {
-            
+        } catch (NumberFormatException e) {
+
             return false;
         }
     }
-    
 }

@@ -60,6 +60,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.spi.glassfish.ServerUtilities;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -226,10 +227,10 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     private boolean isValidV3Install(File installDir) {
-        File glassfishRef = new File(installDir, "modules" + File.separator + "glassfish-10.0-SNAPSHOT.jar");
+        File glassfishRef = new File(installDir, ServerUtilities.GFV3_MODULES_DIR_NAME + File.separator + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME);
         if(!glassfishRef.exists()) {
-            // !PW Older V3 installs (pre 12/01/07) put snapshot jar in lib folder.
-            glassfishRef = new File(installDir, "lib" + File.separator + "glassfish-10.0-SNAPSHOT.jar");
+            // !tp2 release
+            glassfishRef = new File(installDir, ServerUtilities.GFV3_MODULES_DIR_NAME + File.separator + ServerUtilities.GFV3_TP2_JAR_NAME);
             if(!glassfishRef.exists()) {
                 return false;
             }

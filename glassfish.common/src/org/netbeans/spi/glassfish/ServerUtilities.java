@@ -53,11 +53,16 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  * General helper methods for accessing GlassFish server objects.
  *
  * @author Peter Williams
+ * @author Ludovic Champenois
  */
 public final class ServerUtilities {
 
     public static final int ACTION_TIMEOUT = 10000;
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
+    public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
+    public static final String GFV3_SNAPSHOT_JAR_NAME = "glassfish-10.0-SNAPSHOT.jar"; // NOI18N"
+    public static final String GFV3_VERSION_NAME = "-tp-2"; // NOI18N"
+    public static final String GFV3_TP2_JAR_NAME = "glassfish-10.0"+GFV3_VERSION_NAME+"+.jar"; // NOI18N"
     
     
     private ServerUtilities() {

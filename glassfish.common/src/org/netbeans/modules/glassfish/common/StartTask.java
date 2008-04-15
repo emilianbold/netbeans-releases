@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.OperationStateListener;
+import org.netbeans.spi.glassfish.ServerUtilities;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 
@@ -60,9 +61,6 @@ import org.openide.execution.NbProcessDescriptor;
  */
 public class StartTask extends BasicTask<OperationState> {
     
-    private static final String GFV3_LIB_DIR_NAME = "lib"; // NOI18N
-    private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
-    private static final String GFV3_SNAPSHOT_JAR_NAME = "glassfish-10.0-SNAPSHOT.jar"; // NOI18N"
 
     /**
      * 
@@ -177,10 +175,10 @@ public class StartTask extends BasicTask<OperationState> {
     private NbProcessDescriptor createProcessDescriptor() {
         String startScript = System.getProperty("java.home") + "/bin/java" ; 
         String serverHome = ip.get(GlassfishModule.HOME_FOLDER_ATTR);
-        String jarLocation = serverHome + "/" + GFV3_MODULES_DIR_NAME + "/" + GFV3_SNAPSHOT_JAR_NAME;
+        String jarLocation = serverHome + "/" + ServerUtilities.GFV3_MODULES_DIR_NAME + "/" + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME;
         if(!new File(jarLocation).exists()) {
-            // !PW Older V3 installs (pre 12/01/07) put snapshot jar in lib folder.
-            jarLocation = serverHome + "/" + GFV3_LIB_DIR_NAME + "/" + GFV3_SNAPSHOT_JAR_NAME;
+            // try TP2 jar names
+            jarLocation = serverHome + "/" + ServerUtilities.GFV3_MODULES_DIR_NAME + "/" + ServerUtilities.GFV3_TP2_JAR_NAME;
             if(!new File(jarLocation).exists()) {
                 fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
                 return null;

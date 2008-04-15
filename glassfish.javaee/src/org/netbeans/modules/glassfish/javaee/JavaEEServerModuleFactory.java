@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationExceptio
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
+import org.netbeans.spi.glassfish.ServerUtilities;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -75,35 +76,20 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
     
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
-        boolean result = false;
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
-        File javaEEJar = new File(glassfishHome, "lib/javaee-5.0.jar"); // lib folder for 2007 builds of V3
-        if(javaEEJar.exists()) {
-            File webTierJar = new File(glassfishHome, "lib/webtier-10.0-SNAPSHOT.jar");
-            if(webTierJar.exists()) {
-                result = true;
-            }
-        } else {
-            javaEEJar = new File(glassfishHome, "modules/javaee-5.0.jar"); // Jan/Feb 2008 builds used this name
-            if(!javaEEJar.exists()) {
-                javaEEJar = new File(glassfishHome, "modules/javaee-5.0-SNAPSHOT.jar"); // Name in V3P2M2 build.
-            }
-            if(!javaEEJar.exists()) {
-                javaEEJar = new File(glassfishHome, "modules/javax.javaee-10.0-SNAPSHOT.jar"); // Name in V3P2M4 build.
-            }
-            if(javaEEJar.exists()) {
-                File webTierJar = new File(glassfishHome, "modules/web/webtier-10.0-SNAPSHOT.jar"); // Name & Loc in V3P2M2 build.
-                if(!webTierJar.exists()) {
-                    webTierJar = new File(glassfishHome, "modules/webtier-10.0-SNAPSHOT.jar"); // Name & Loc in V3P2M4 build.
-                }
-                if(webTierJar.exists()) {
-                    result = true;
-                }
-            }
+        File jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME); // V3 regular builds
+
+        if (jar.exists()) {
+            return true;
+        }
+        jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME + ServerUtilities.GFV3_TP2_JAR_NAME); // Tp2 build
+
+        if (jar.exists()) {
+            return true;
         }
 
-        return result;
+        return false;
     }
 
     public Object createModule(Lookup instanceLookup) {
