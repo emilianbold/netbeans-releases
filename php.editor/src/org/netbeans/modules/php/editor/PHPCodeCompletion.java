@@ -51,7 +51,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -668,8 +670,29 @@ public class PHPCodeCompletion implements Completable {
     }
 
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        if(typedText.length() == 0) {
+            return QueryType.NONE;
+        }
+        char lastChar = typedText.charAt(typedText.length() - 1);
+        Document document = component.getDocument();
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence<PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());
+        int offset = component.getCaretPosition();
+        int diff = ts.move(offset);
+        if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
+            Token t = ts.token();
+            if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR
+                    || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
+                    || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
+                    || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$') {
+                return QueryType.ALL_COMPLETION;
+            }
+            
+        }
         return QueryType.NONE;
     }
+
+    
 
     public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset, String name, Map parameters) {
         return null;
