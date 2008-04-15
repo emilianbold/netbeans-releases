@@ -93,8 +93,7 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void doDelete(File file) throws IOException { 
         Subversion.LOG.fine("doDelete " + file);
-        boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);        
-        if (!isMetadata) {
+        if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);                
                 client.remove(new File [] { file }, true); // delete all files recursively                           
