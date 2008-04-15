@@ -24,7 +24,6 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
 /**
- *
  * @author Vitaly
  * @version 1.0
  */
@@ -57,18 +56,12 @@ public interface HtmlNameManager {
             }
             
             if (refName == null && reference instanceof DocumentComponent) {
-                refName = org.netbeans.modules.bpel.editors.api.utils.Util.getTagName((DocumentComponent)reference);
+                refName = EditorUtil.getTagName((DocumentComponent)reference);
             }
             
             refName = refName == null ? "" : refName;
             
-            return org.netbeans.modules.bpel.editors.api.utils.
-                                Util.getCorrectedHtmlRenderedString(refName);
-        }
-    }
-    
-    class Util {
-        private Util() {
+            return EditorUtil.getCorrectedHtmlRenderedString(refName);
         }
     }
 }

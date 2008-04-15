@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bpel.core.helper.api;
+package org.netbeans.modules.ruby.platform.gems;
 
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Process;
+import java.io.File;
+import org.openide.util.Parameters;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.11.09
+ * Encapsulates info of an installed gem.
+ *
+ * TODO: merge with <code>Gem</code>
+ * 
+ * @author Erno Mononen
  */
-public final class CoreUtil {
+public class GemInfo implements Comparable<GemInfo> {
 
-  private CoreUtil() {}
+    private final String name;
+    private final String version;
+    private final File specFile;
 
-  public static String getProcessName(BpelModel model) {
-    if (model == null) {
-      return null;
+    public GemInfo(String name, String version, File specFile) {
+        Parameters.notEmpty("name", name);
+        Parameters.notEmpty("version", version);
+        Parameters.notNull("specFile", specFile);
+        this.name = name;
+        this.version = version;
+        this.specFile = specFile;
     }
-    Process process = model.getProcess();
 
-    if (process == null) {
-      return null;
+    public String getName() {
+        return name;
     }
-    return process.getName();
-  }
 
-  public static BpelModel getBpelModel(DataObject data) {
-    if ( !(data instanceof Lookup.Provider)) {
-      return null;
+    public String getVersion() {
+        return version;
     }
-    Lookup.Provider provider = (Lookup.Provider) data;
 
-    // # 100277
-    try {
-      return (BpelModel) provider.getLookup().lookup(BpelModel.class);
+    public File getSpecFile() {
+        return specFile;
     }
-    catch (IllegalStateException e) {
-      return null;
+
+    public int compareTo(GemInfo o) {
+        int nameComparison = getName().compareTo(o.getName());
+        
+        return nameComparison == 0 
+                ? GemManager.compareGemVersions(o.getVersion(), getVersion())
+                : nameComparison;
     }
-  }
+    
 }

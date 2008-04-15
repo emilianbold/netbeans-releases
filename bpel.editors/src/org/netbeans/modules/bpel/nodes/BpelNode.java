@@ -784,7 +784,7 @@ public abstract class BpelNode<T>
         htmlDisplayName = htmlDisplayName != null && htmlDisplayName.length() > 0 ?
             htmlDisplayName : getNodeType().getDisplayName();
         
-        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(htmlDisplayName);
+        return org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getCorrectedHtmlRenderedString(htmlDisplayName);
     }
     
     protected String getImplShortDescription() {

@@ -83,6 +83,54 @@ public class DeclarationForInstanceOfTest extends TreeRuleTestBase {
                        "package test;public class Test { private void test(Object o) { if (o instanceof String) { String string = (String) o; } } } ");
     }
     
+    public void DISABLEtest132746() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {\n" +
+                       "    private void test(Object o) {\n" +
+                       "        if (o instan|ceof String) {\n" +
+                       "            String s = (String) o;" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+    
+    public void test132747() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {\n" +
+                       "    private void test(Integer o) {\n" +
+                       "        if (o instan|ceof String) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+    
+    public void test132755() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {\n" +
+                       "    private void test(Object o) {\n" +
+                       "        if (o instan|ceof String)\n" +
+                       "            System.err.println(o);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "2:20-2:20:hint:Declaration for instanceof",
+                       "FixImpl",
+                       "package test;public class Test { private void test(Object o) { if (o instanceof String) { String string = (String) o; System.err.println(o); } } } ");
+    }
+    
+    public void test132757() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {\n" +
+                       "    private void test(Integer o) {\n" +
+                       "        if (o instan|ceof ) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+    
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         throw new UnsupportedOperationException("Should not be called");

@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,70 +37,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bpel.core.util;
 
-package org.netbeans.modules.server;
-
-import javax.swing.JComponent;
-import org.netbeans.api.server.ServerInstance;
-import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
-import org.openide.nodes.Node;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
- *
- * @author Petr Hejl
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.04.15
  */
-public class TestInstance implements ServerInstanceImplementation {
+public final class BPELValidationAction extends ValidateAction {
+        
+  public BPELValidationAction(BPELValidationController controller) {
+    super(null);
+    myController = controller;
+  }
 
-    private final TestInstanceProvider provider;
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
+  }
 
-    private ServerInstance commonInstance;
-    
-    private TestInstance(TestInstanceProvider provider) {
-        this.provider = provider;
-    }
-
-    public static TestInstance createInstance(TestInstanceProvider provider) {
-        TestInstance created = new TestInstance(provider);
-        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
-        return created;
-    }
-    
-    public String getDisplayName() {
-        return "Test Instance"; // NOI18N
-    }
-
-    public String getServerDisplayName() {
-        return "Test Server"; // NOI18N
-    }
-
-    public Node getFullNode() {
-        return null;
-    }
-
-    public Node getBasicNode() {
-        return null;
-    }
-
-    public JComponent getCustomizer() {
-        return null;
-    }
-
-    public boolean isRemovable() {
-        return true;
-    }
-
-    public void remove() {
-        provider.removeInstance(commonInstance);
-    }
-
-    public ServerInstance getCommonInstance() {
-        return commonInstance;
-    }
-    
+  private BPELValidationController myController;
 }
