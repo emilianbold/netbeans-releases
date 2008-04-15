@@ -76,7 +76,7 @@ instrument_build() {
 
 buildnum=""`find "$zipdir" -name '*[0-9].zip'`
 buildnum="`expr $buildnum : '.*-\(.*\)\..*'`" 
-installdir="NetBeans 6.1 RC1"
+installdir="NetBeans 6.1 RC2"
 
 ant -f $progdir/build.xml distclean
 
