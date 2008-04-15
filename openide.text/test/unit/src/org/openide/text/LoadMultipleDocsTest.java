@@ -43,12 +43,11 @@
 package org.openide.text;
 
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.lang.reflect.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 
@@ -57,7 +56,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
 import org.openide.text.Line.Set;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 
@@ -110,6 +108,27 @@ public class LoadMultipleDocsTest extends NbTestCase {
         Document doc = MockAnnoProvider.getDoc();
         assertNotNull("Other document is also opened", doc);
     }
+
+    public void testInitializeAndWaitForSameDocument() throws Exception {
+        MockServices.setServices(MockAnnoProvider.class);
+        MockAnnoProvider.open = env1;
+        
+        env1.support.open();
+        
+        
+        class R implements Runnable {
+            JEditorPane p;
+            public void run() {
+                p = env1.support.getOpenedPanes()[0];
+            }
+        }
+        R r = new R();
+        SwingUtilities.invokeAndWait(r);
+        assertNotNull(r.p);
+        
+        Document doc = MockAnnoProvider.getDoc();
+        assertNotNull("The same document is also opened in anntation processor", doc);
+    }
     
     //
     // Implementation of the CloneableEditorSupport.Env
@@ -120,7 +139,7 @@ public class LoadMultipleDocsTest extends NbTestCase {
         private boolean valid = true;
         private boolean modified = false;
         private java.util.Date date = new java.util.Date();
-        private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList();
+        private java.util.List<java.beans.PropertyChangeListener> propL = new ArrayList<PropertyChangeListener>();
         private java.beans.VetoableChangeListener vetoL;
         private CES support;
         
