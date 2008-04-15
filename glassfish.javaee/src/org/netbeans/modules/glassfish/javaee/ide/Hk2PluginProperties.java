@@ -149,22 +149,28 @@ public class Hk2PluginProperties {
                 }
             }
 
-            File ee5lib = new File(jarDir, "javaee-5.0-SNAPSHOT.jar");  // V3 P2 M2
-            if (!ee5lib.exists()) {
-                ee5lib = new File(jarDir, "javaee-5.0.jar"); // V1 P2 M1 uses an older name.
+            File ee5lib = new File(jarDir, "javax.javaee-10.0-SNAPSHOT.jar");  // V3 P2 M4
+            if(ee5lib.exists()) {
+                list.add(fileToUrl(ee5lib));
+            } else {
+                ee5lib = new File(jarDir, "javaee-5.0-SNAPSHOT.jar");  // V3 P2 M2
                 if (!ee5lib.exists()) {
-                    return list;
+                    ee5lib = new File(jarDir, "javaee-5.0.jar"); // V1 P2 M1 uses an older name.
+                    if (!ee5lib.exists()) {
+                        return list;
+                    }
                 }
-            }
             
-            Manifest m = new JarFile(ee5lib).getManifest();
-            String dependentJars = m.getMainAttributes().getValue("Class-Path");
-            dependentJars.split(" ");
-            StringTokenizer token = new StringTokenizer(dependentJars, " ");
-            while (token.hasMoreTokens()) {
-                String jar = token.nextToken();
-                File j = new File(jarDir, jar);
-                list.add(fileToUrl(j));
+                Manifest m = new JarFile(ee5lib).getManifest();
+                String dependentJars = m.getMainAttributes().getValue("Class-Path");
+                if(dependentJars != null) {
+                    for(String jar: dependentJars.split(" ")) {
+                        if(jar != null && jar.length() > 0) {
+                            File j = new File(jarDir, jar);
+                            list.add(fileToUrl(j));
+                        }
+                    }
+                }
             }
         } catch(MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

@@ -184,13 +184,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src, javadoc -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                libraryList.add(new File(installRoot + "/modules/" + EL_CORE_LIB).toURL());
-                libraryList.add(new File(installRoot + "/modules/" + PERSISTENCE_API_LIB).toURL());
+                libraryList.add(new File(installRoot + "/modules/" + EL_CORE_LIB).toURI().toURL());
+                libraryList.add(new File(installRoot + "/modules/" + PERSISTENCE_API_LIB).toURI().toURL());
 
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(
                         "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
                 List<URL> docList = new ArrayList<URL>();
-                docList.add(j2eeDoc.toURL());
+                docList.add(j2eeDoc.toURI().toURL());
 
                 Map<String, List<URL>> contents = new HashMap<String, List<URL>>();
                 contents.put(CLASSPATH_VOLUME, libraryList);
@@ -245,13 +245,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 List<URL> libraryList = new ArrayList<URL>();
                 File f= new File(installRoot + "/modules/" + COMET_JAR_LIB); 
 
-                libraryList.add(f.toURL());
+                libraryList.add(f.toURI().toURL());
 
 
 //                File j2eeDoc = InstalledFileLocator.getDefault().locate(
 //                        "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
 //                List<URL> docList = new ArrayList<URL>();
-//                docList.add(j2eeDoc.toURL());
+//                docList.add(j2eeDoc.toURI().toURL());
 
                 Map<String, List<URL>> contents = new HashMap<String, List<URL>>();
                 contents.put(CLASSPATH_VOLUME, libraryList);
