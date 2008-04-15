@@ -171,6 +171,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         Problem problem = null;
         Set<FileObject> references = new HashSet<FileObject>();
         List<EncapsulateDesc> descs = new ArrayList<EncapsulateDesc>(refactorings.size());
+        fireProgressListenerStart(ProgressEvent.START, refactorings.size() + 1);
         for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
             if (cancelRequest) {
                 return null;
@@ -184,10 +185,12 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             }
             descs.add(desc);
             references.addAll(desc.refs);
+            fireProgressListenerStep();
         }
 
         Encapsulator encapsulator = new Encapsulator(descs, problem);
         Problem prob = createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
+        fireProgressListenerStop();
         problem = encapsulator.getProblem();
         return prob != null ? prob : problem;
     }
