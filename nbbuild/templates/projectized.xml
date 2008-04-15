@@ -170,15 +170,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="test-lib-init" depends="init">
-        <!-- xtest.home is set externally when run using XTest. -->
-        <property name="xtest.home" location="${nb_all}/xtest"/>
-        <path id="test.unit.lib.cp">
-            <!-- XXX check if these files exist, and if not, run xtest/build.xml -->
-            <pathelement location="${xtest.home}/lib/junit.jar"/>
-            <pathelement location="${xtest.home}/lib/nbjunit.jar"/>
-            <pathelement location="${xtest.home}/lib/nbjunit-ide.jar"/>
-            <pathelement location="${xtest.home}/lib/insanelib.jar"/>
-        </path>
+        <path id="test.unit.lib.cp"/>
     </target>
 
     <target name="-conditional-javadoc-init" depends="-conditional-16-init">
@@ -595,14 +587,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <pathelement path="${test.qa-functional.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
         <path id="test.qa-functional.run.cp">
             <pathelement path="${test.qa-functional.runtime.cp}"/>
             <pathelement path="${test.qa-functional.run.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
     </target>
 
@@ -645,7 +633,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <available file="${test.qa-functional.dir}/data" type="dir" property="exists.test.qa-functional.data"/>
         <!-- test distribution -->
                <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
-               <mkdir dir="${test.dist.dir}/extralibs"/>
+               <mkdir dir="${extra.test.libs.dir}"/>
            <mkdir dir="${test.qa-functional.out.folder}"/>
            <jar destfile="${test.qa-functional.out.folder}/tests.jar" basedir="${build.test.qa-functional.classes.dir}"/>            
            <!-- create properties -->
@@ -661,13 +649,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <replacement dir="${java.home}" name="java.home"/>
                 <replacement dir="${java.home.parent}" name="java.home.parent"/>
             </shorterpaths>
-             <copy todir="${test.qa-functional.out.folder}">
-                <fileset dir="${test.qa-functional.dir}/..">
-                  <include name="build-qa-functional.xml"/>
-                  <include name="build.xml"/>
-                  <include name="cfg-qa-functional.xml"/>
-                </fileset>
-            </copy>
     </target>
     
     <target name="test-build-datajar-qa-functional" depends="do-test-build-qa-functional" if="exists.test.qa-functional.data">
@@ -696,14 +677,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <pathelement path="${test.qa-performance.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
         <path id="test.qa-performance.run.cp">
             <pathelement path="${test.qa-performance.runtime.cp}"/>
             <pathelement path="${test.qa-performance.run.cp.extra}"/>
-            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
         </path>
     </target>
 
@@ -746,7 +723,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <available file="${test.qa-performance.dir}/data" type="dir" property="exists.test.qa-performance.data"/>
         <!-- test distribution -->
                <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
-               <mkdir dir="${test.dist.dir}/extralibs"/>
+               <mkdir dir="${extra.test.libs.dir}"/>
            <mkdir dir="${test.qa-performance.out.folder}"/>
            <jar destfile="${test.qa-performance.out.folder}/tests.jar" basedir="${build.test.qa-performance.classes.dir}"/>            
            <!-- create properties -->
@@ -762,13 +739,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <replacement dir="${java.home}" name="java.home"/>
                 <replacement dir="${java.home.parent}" name="java.home.parent"/>
             </shorterpaths>
-             <copy todir="${test.qa-performance.out.folder}">
-                <fileset dir="${test.qa-performance.dir}/..">
-                  <include name="build-qa-performance.xml"/>
-                  <include name="build.xml"/>
-                  <include name="cfg-qa-performance.xml"/>
-                </fileset>
-            </copy>
     </target>
     
     <target name="test-build-datajar-qa-performance" depends="do-test-build-qa-performance" if="exists.test.qa-performance.data">
@@ -802,44 +772,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
            4. contains.test - project contains at least one test type
         -->
     <target name="test-condition" depends="init">
-        <available file="test/cfg-unit.xml" property="contains.unit.test.cfg"/>
-        <available file="test/cfg-qa-functional.xml" property="contains.qa-functional.test.cfg"/>
-        <available file="test/cfg-qa-performance.xml" property="contains.qa-performance.test.cfg"/>
-        <available file="test/build-unit.xml" property="contains.unit.test.build"/>
-        <available file="test/build-qa-functional.xml" property="contains.qa-functional.test.build"/>
-        <available file="test/build-qa-performance.xml" property="contains.qa-performance.test.build"/>
-        <available file="test/build.xml" property="contains.test.build"/>
-        <available file="test/unit/src" property="contains.unit.test.src"/>
-        <available file="test/qa-functional/src" property="contains.qa-functional.test.src"/>
-        <available file="test/qa-performance/src" property="contains.qa-performance.test.src"/>
-
-        <condition property="contains.unit.test">
-            <and>
-                <isset property="contains.unit.test.cfg"/>
-                <isset property="contains.unit.test.build"/>
-                <isset property="contains.test.build"/>
-                <isset property="contains.unit.test.src"/>
-            </and>
-        </condition>
-        
-        <condition property="contains.qa-functional.test">
-            <and>
-                <isset property="contains.qa-functional.test.cfg"/>
-                <isset property="contains.qa-functional.test.build"/>
-                <isset property="contains.test.build"/>
-                <isset property="contains.qa-functional.test.src"/>
-            </and>
-        </condition>
-
-        <condition property="contains.qa-performance.test">
-            <and>
-                <isset property="contains.qa-performance.test.cfg"/>
-                <isset property="contains.qa-performance.test.build"/>
-                <isset property="contains.test.build"/>
-                <isset property="contains.qa-performance.test.src"/>
-            </and>
-        </condition>
-
+        <available file="test/unit/src" property="contains.unit.test"/>
+        <available file="test/qa-functional/src" property="contains.qa-functional.test"/>
+        <available file="test/qa-performance/src" property="contains.qa-performance.test"/>
         <condition property="contains.test">
              <or>
                  <isset property="contains.unit.test"/>
@@ -849,34 +784,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
          </condition>          
     </target>
     
-    <target name="test-build-condition" if="contains.unit.test" depends="test-init" description="build unit tests if exists">
+    <target name="test-build-condition" if="contains.unit.test" unless="disable.unit.tests" depends="test-init" description="build unit tests if exists">
         <antcall target="test-build-datajar"/>
-        <convertimport file="${test.unit.out.folder}/build-unit.xml" 
-                       oldname="xtest-unit.xml"
-                       newpath="../../../nbbuild/templates/xtest-unit.xml"/>
-        <convertimport file="${test.unit.out.folder}/build.xml" 
-                       oldname="xtest.xml"
-                       newpath="../../../nbbuild/templates/xtest.xml"/>
-         <copy file="${nb_all}/nbbuild/templates/testdist/unit-unit.xml" tofile="${test.unit.out.folder}/unit-unit.xml"/>
     </target>
-    <target name="test-build-qa-functional-condition" if="contains.qa-functional.test" depends="test-init-qa-functional" description="build qa-functional test if exists">
+    <target name="test-build-qa-functional-condition" if="contains.qa-functional.test" unless="disable.qa-functional.tests" depends="test-init-qa-functional" description="build qa-functional test if exists">
         <antcall target="test-build-datajar-qa-functional"/>
-        <convertimport file="${test.qa-functional.out.folder}/build-qa-functional.xml" 
-                       oldname="xtest-qa-functional.xml"
-                       newpath="../../../nbbuild/templates/xtest-qa-functional.xml"/>
-        <convertimport file="${test.qa-functional.out.folder}/build.xml" 
-                       oldname="xtest.xml"
-                       newpath="../../../nbbuild/templates/xtest.xml"/>
     </target>
-
-    <target name="test-build-qa-performance-condition" if="contains.qa-performance.test" depends="test-init-qa-performance" description="build qa-performance test if exists">
+    <target name="test-build-qa-performance-condition" if="contains.qa-performance.test" unless="disable.qa-performance.tests" depends="test-init-qa-performance" description="build qa-performance test if exists">
         <antcall target="test-build-datajar-qa-performance"/>
-        <convertimport file="${test.qa-performance.out.folder}/build-qa-performance.xml" 
-                       oldname="xtest-qa-performance.xml"
-                       newpath="../../../nbbuild/templates/xtest-qa-performance.xml"/>
-        <convertimport file="${test.qa-performance.out.folder}/build.xml" 
-                       oldname="xtest.xml"
-                       newpath="../../../nbbuild/templates/xtest.xml"/>
     </target>
 
     <target name="-sigtest-init" depends="build-init">
