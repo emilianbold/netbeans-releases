@@ -313,7 +313,10 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         CompilationInfo info) {
         int type = node.getType();
         
-        if (type == Token.THROW || type == Token.RETHROW || type == Token.RETURN) {
+        if (type == Token.THROW || type == Token.RETHROW ||
+                // There are many RETURN nodes for implicit returns (e.g. end of the
+                // function) - these have zero size, and we skip these for occurrence highlighting
+                (type == Token.RETURN && node.getSourceEnd() > node.getSourceStart())) {
             OffsetRange astRange = AstUtilities.getRange(node);
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();

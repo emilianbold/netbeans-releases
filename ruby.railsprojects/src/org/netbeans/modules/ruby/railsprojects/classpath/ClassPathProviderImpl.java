@@ -94,7 +94,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private synchronized FileObject getDir(String propname) {
-        FileObject fo = this.dirCache.get (propname);
+        FileObject fo = this.dirCache.get(propname);
         if (fo == null ||  !fo.isValid()) {
             String prop = evaluator.getProperty(propname);
             if (prop != null) {
@@ -161,7 +161,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots));
                     break;
             }
         }
@@ -171,7 +171,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
-        if ( cp== null ) {
+        if (cp == null) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(projectDirectory, evaluator));
             cache[7] = cp;
         }

@@ -38,57 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.core.util;
 
-package org.netbeans.modules.websvc.axis2.wizards;
-
-import org.openide.WizardDescriptor;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
- * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
- * the original wizard panel, that is not finishable
- * 
- *
- * @author mkuchtiak
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.04.15
  */
-public class FinishableProxyWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
-    
-    private WizardDescriptor.Panel<WizardDescriptor> original;
-    /** Creates a new instance of ProxyWizardPanel */
-    public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original) {
-        this.original=original;
+public final class BPELValidationAction extends ValidateAction {
         
-    }
+  public BPELValidationAction(BPELValidationController controller) {
+    super(null);
+    myController = controller;
+  }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        original.addChangeListener(l);
-    }
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
+  }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        original.removeChangeListener(l);
-    }
-
-    public void storeSettings(WizardDescriptor settings) {
-        original.storeSettings(settings);
-    }
-
-    public void readSettings(WizardDescriptor settings) {
-        original.readSettings(settings);
-    }
-
-    public boolean isValid() {
-        return original.isValid();
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    public java.awt.Component getComponent() {
-        return original.getComponent();
-    }
-
-    public org.openide.util.HelpCtx getHelp() {
-        return original.getHelp();
-    }
-    
+  private BPELValidationController myController;
 }

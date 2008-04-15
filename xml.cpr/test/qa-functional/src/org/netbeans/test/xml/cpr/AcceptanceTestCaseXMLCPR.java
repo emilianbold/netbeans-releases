@@ -67,6 +67,8 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 /**
  *
@@ -82,7 +84,29 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     
     static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
     static final String BUILD_FAILED = "BUILD FAILED";
+
+    protected final String ATTRIBUTES_NAMES[] =
+    {
+      "newAttributeA", "newAttributeB", "newAttributeC"
+    };
     
+    protected final String SIMPLE_NAMES[] =
+    {
+      "newSimpleTypeA", "newSimpleTypeB", "newSimpleTypeC"
+    };
+    
+    // Ideal code lines
+    protected final String[] asIdealAttributeLines =
+    {
+      "<xs:attribute name=\"" + ATTRIBUTES_NAMES[ 0 ] + "\" type=\"ns2:StateType\"/>",
+      "<xs:attribute name=\"" + ATTRIBUTES_NAMES[ 1 ] + "\" type=\"ns2:StateType\"/>"
+    };
+
+    protected final String[] asIdealSimpleLines =
+    {
+      "<xs:simpleType name=\"newSimpleTypeA\">",
+      "<xs:simpleType name=\"newSimpleTypeB\">",
+    };
 
     class CFulltextStringComparator implements Operator.StringComparator
     {
@@ -305,9 +329,9 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         String error
       )
     {
-      table.selectCell( row, col );
+      //table.selectCell( row, col );
       table.clickOnCell( row, col, count );
-      try { Thread.sleep( 200 ); } catch( InterruptedException ex ) { }
+      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
       int iRows = table.getRowCount( );
       if( result != iRows )
         fail( error + iRows );
@@ -421,6 +445,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
            "<xs:import schemaLocation=\"" + sModule + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
             "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
           };
+
           EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
           int iLineNumber = eoXMLSource.getLineNumber( );
           String sChoosenLine = eoXMLSource.getText( iLineNumber );
@@ -476,18 +501,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
         if( null != cli.checker )
           new JLabelOperator( jImport, cli.checker );
-        // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
-        // ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
-        // ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
-        // ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
-        // ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
-
-        // ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // JLabelOperator jl = new JLabelOperator( jImport, "Selected document is already referenced." );
-        // ExpandByClicks( jto, 4, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // jl = new JLabelOperator( jImport, "Document cannot reference itself." );
-        // ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // jl = new JLabelOperator( jImport, "Selected document is already referenced." );
       }
 
       // Close
@@ -563,6 +576,10 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Get dialog
       JDialogOperator jadd = new JDialogOperator( sMenuToAdd );
 
+      // Set unique name
+      JTextFieldOperator txt = new JTextFieldOperator( jadd, 0 );
+      txt.setText( sAddedName );
+
       // Use existing definition
       if( null != sRadioName )
       {
@@ -604,7 +621,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       JListOperator opList = opMultiView.getColumnListOperator( 1 );
       opList.selectItem( sName );
 
-      // Right click on Reference Schemas
+      // Right click on item
       int iIndex = opList.findItemIndex( sName );
       Point pt = opList.getClickPoint( iIndex );
       opList.clickForPopup( pt.x, pt.y );
@@ -676,6 +693,268 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         fail( "Incorrect (no) selection after Go To Schema option." );
       if( !opList.getSelectedValue( ).toString( ).startsWith( sName ) )
         fail( sName + " did not selected with Go To Schema option." );
+    }
+
+    public void ManipulateAttributeInternal( String sSample )
+    {
+      // Add one more attribute
+      AddItInternal(
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          ATTRIBUTES_NAMES[ 1 ]
+        );
+
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+
+      // Check both attributes present in code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      EditorOperator eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 == sCompleteText.indexOf( asIdealAttributeLines[ 0 ] )
+          || -1 == sCompleteText.indexOf( asIdealAttributeLines[ 1 ] )
+        )
+      {
+        fail( "Attributes code was not added into schema." );
+      }
+
+      // Remove code line for first attribute
+      eoXMLCode.setCaretPosition(
+          asIdealAttributeLines[ 0 ],
+          0,
+          true
+        );
+      JEditorPaneOperator editor = eoXMLCode.txtEditorPane( );
+      editor.pushKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+      editor.releaseKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+
+      // Check attribute deleted from schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Attributes" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( 1 != opList.getModel( ).getSize( ) )
+        fail( "Invalid number of attribute items in schema view." );
+      if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
+        fail( "Atribute was not removed from schema view" );
+      int iIndex = opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] );
+      if( -1 == iIndex )
+        fail( "Wrong attribute removed from schema view." );
+
+      // Delete attribute from schema view
+      opList.selectItem( iIndex );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Delete" );
+      JDialogOperator jsafe = new JDialogOperator( "Safe Delete" );
+      JButtonOperator jbut = new JButtonOperator( jsafe, "Refactor" );
+      jbut.push( );
+      jsafe.waitClosed( );
+
+      // Check number of remained items
+      int iSize = opList.getModel( ).getSize( );
+      if( 0 != iSize )
+        fail( "Invalid number of attribute items in schema view: " + iSize );
+
+      // Check attribute deleted from code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealAttributeLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealAttributeLines[ 1 ] )
+        )
+      {
+        fail( "Attributes code was not removed into schema." );
+      }
+
+      ////////////////////////////////////////////////////////////////
+      // Undo delete from schema
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Undo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+
+      // Check schema view
+      //SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Attributes" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
+        fail( "Wrong attribute restored after deletion." );
+      if( -1 == opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] ) )
+        fail( "Correct attribute did not restor after deletion." );
+
+      // Check code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if( -1 != sCompleteText.indexOf( asIdealAttributeLines[ 0 ] ) )
+        fail( "Wrong attribute source restored after deletion." );
+      if( -1 == sCompleteText.indexOf( asIdealAttributeLines[ 1 ] ) )
+        fail( "Correct attribute source did not restor after deletion." );
+
+      // Redo delete
+      pto = new ProjectsTabOperator( );
+      prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+
+      // Check source
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealAttributeLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealAttributeLines[ 1 ] )
+        )
+        fail( "Redo attribute deletion failed for source code." );
+
+      // Check schema
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      if(
+          -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] )
+          || -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] )
+        )
+        fail( "Redo attribute deletion failed for schema view." );
+    }
+
+    protected void ManipulateSimpleInternal( String sSample )
+    {
+      // Add one more attribute
+      AddItInternal(
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          SIMPLE_NAMES[ 1 ]
+        );
+
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+
+      // Check both attributes present in code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      EditorOperator eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 == sCompleteText.indexOf( asIdealSimpleLines[ 0 ] )
+          || -1 == sCompleteText.indexOf( asIdealSimpleLines[ 1 ] )
+        )
+      {
+        fail( "Simple type code was not added into schema." );
+      }
+
+      // Remove code line for first attribute
+      eoXMLCode.setCaretPosition(
+          asIdealSimpleLines[ 0 ],
+          0,
+          true
+        );
+      JEditorPaneOperator editor = eoXMLCode.txtEditorPane( );
+      for( int ip = 0; ip < 3; ip++ )
+      {
+        editor.pushKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+        editor.releaseKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+      }
+
+      // Check attribute deleted from schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Simple Types" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( 1 != opList.getModel( ).getSize( ) )
+        fail( "Invalid number of simple type items in schema view." );
+      if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
+        fail( "Simple type was not removed from schema view" );
+      int iIndex = opList.findItemIndex( SIMPLE_NAMES[ 1 ] );
+      if( -1 == iIndex )
+        fail( "Wrong simple type removed from schema view." );
+
+      // Delete attribute from schema view
+      opList.selectItem( iIndex );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Delete" );
+      JDialogOperator jsafe = new JDialogOperator( "Safe Delete" );
+      JButtonOperator jbut = new JButtonOperator( jsafe, "Refactor" );
+      jbut.push( );
+      jsafe.waitClosed( );
+
+      // Check number of remained items
+      int iSize = opList.getModel( ).getSize( );
+      if( 0 != iSize )
+        fail( "Invalid number of simple type items in schema view: " + iSize );
+
+      // Check attribute deleted from code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealSimpleLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealSimpleLines[ 1 ] )
+        )
+      {
+        fail( "Simple type code was not removed into schema." );
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      // Undo delete from schema
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Undo [Delete " + SIMPLE_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [Delete " + SIMPLE_NAMES[ 1 ] + "]");
+
+      // Check schema view
+      //SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Simple Types" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( -1 != opList.findItemIndex( SIMPLE_NAMES[ 0 ] ) )
+        fail( "Wrong simple type restored after deletion." );
+      if( -1 == opList.findItemIndex( SIMPLE_NAMES[ 1 ] ) )
+        fail( "Correct simple type did not restor after deletion." );
+
+      // Check code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if( -1 != sCompleteText.indexOf( asIdealSimpleLines[ 0 ] ) )
+        fail( "Wrong simple type source restored after deletion." );
+      if( -1 == sCompleteText.indexOf( asIdealSimpleLines[ 1 ] ) )
+        fail( "Correct simple typesource did not restor after deletion." );
+
+      // Redo delete
+      pto = new ProjectsTabOperator( );
+      prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Redo [Delete " + SIMPLE_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+
+      // Check source
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealSimpleLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealSimpleLines[ 1 ] )
+        )
+        fail( "Redo simple type deletion failed for source code." );
+
+      // Check schema
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      if(
+          -1 != opList.findItemIndex( SIMPLE_NAMES[ 0 ] )
+          || -1 != opList.findItemIndex( SIMPLE_NAMES[ 1 ] )
+        )
+        fail( "Redo simple type deletion failed for schema view." );
     }
 
     protected boolean CheckSchemaView( String sView )
