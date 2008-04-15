@@ -48,6 +48,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
@@ -105,8 +106,20 @@ public class DeclarationForInstanceOf implements TreeRule {
             return null;
         }
         
-        TypeMirror castTo = info.getTrees().getTypeMirror(new TreePath(treePath, ((InstanceOfTree) treePath.getLeaf()).getType()));
-        TreePath expression = new TreePath(treePath, ((InstanceOfTree) treePath.getLeaf()).getExpression());
+        InstanceOfTree leaf = (InstanceOfTree) treePath.getLeaf();
+        
+        if (leaf.getType() == null || leaf.getType().getKind() == Kind.ERRONEOUS) {
+            return null;
+        }
+        
+        TypeMirror castTo = info.getTrees().getTypeMirror(new TreePath(treePath, leaf.getType()));
+        TreePath expression = new TreePath(treePath, leaf.getExpression());
+        TypeMirror expressionType = info.getTrees().getTypeMirror(expression);
+        
+        if (expressionType == null || !info.getTypeUtilities().isCastable(expressionType, castTo)) {
+            return null;
+        }
+        
         List<Fix> fix = Collections.<Fix>singletonList(new FixImpl(info.getJavaSource(), TreePathHandle.create(ifPath, info), TreePathHandle.create(expression, info), TypeMirrorHandle.create(castTo), Utilities.getName(castTo)));
         String displayName = NbBundle.getMessage(DeclarationForInstanceOf.class, "ERR_DeclarationForInstanceof");
         ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName, fix, info.getFileObject(), offset, offset);
@@ -161,14 +174,24 @@ public class DeclarationForInstanceOf implements TreeRule {
                     IfTree ift = (IfTree) ifTP.getLeaf();
                     StatementTree then = ift.getThenStatement();
                     
-                    if (then.getKind() != Kind.BLOCK && then.getKind() != Kind.ERRONEOUS) {
-                        return ;
+                    if (then.getKind() == Kind.ERRONEOUS) {
+                        return ; //TODO.
+                    }
+                    
+                    List<StatementTree> statements = new LinkedList<StatementTree>();
+                    
+                    if (then.getKind() == Kind.BLOCK) {
+                        statements.addAll(((BlockTree) then).getStatements());
+                    } else {
+                        statements.add(then);
                     }
                     
                     TreeMaker make = wc.getTreeMaker();
                     VariableTree decl = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(resolvedType), make.TypeCast(make.Type(resolvedType), (ExpressionTree) resolvedExpression.getLeaf()));
                     
-                    BlockTree nue = then.getKind() == Kind.BLOCK ? make.insertBlockStatement((BlockTree) then, 0, decl) : make.Block(Collections.singletonList(decl), false);
+                    statements.add(0, decl);
+                    
+                    BlockTree nue = make.Block(statements, false);
                     
                     wc.rewrite(then, nue);
                 }
