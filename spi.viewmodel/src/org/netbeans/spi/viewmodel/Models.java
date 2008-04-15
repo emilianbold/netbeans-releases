@@ -83,6 +83,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
+import org.openide.explorer.view.TreeView;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
@@ -139,9 +140,10 @@ public final class Models {
      * @return new instance root node
      */
     public static Node createNodes (
-        CompoundModel compoundModel
+        CompoundModel compoundModel,
+        TreeView treeView
     ) {
-        return new TreeModelRoot (compoundModel, null).getRootNode();
+        return new TreeModelRoot (compoundModel, treeView).getRootNode();
     }
     
     /**
@@ -389,7 +391,7 @@ public final class Models {
      */
     public static TreeFeatures treeFeatures (JComponent view) 
     throws UnsupportedOperationException {
-        return new TreeFeatures (view);
+        return new DefaultTreeFeatures (view);
     }
     
     
@@ -2693,14 +2695,40 @@ public final class Models {
         }
     }
     
+    public static interface TreeFeatures {
+        
+        /**
+         * Returns <code>true</code> if given node is expanded.
+         *
+         * @param node a node to be checked
+         * @return <code>true</code> if given node is expanded
+         */
+        public boolean isExpanded (Object node);
+        
+        /**
+         * Expands given list of nodes.
+         *
+         * @param node a list of nodes to be expanded
+         */
+        public void expandNode (Object node);
+        
+        /**
+         * Collapses given node.
+         *
+         * @param node a node to be expanded
+         */
+        public void collapseNode (Object node);
+        
+    }
+    
     /**
      * Implements set of tree view features.
      */
-    public static final class TreeFeatures {
+    private static final class DefaultTreeFeatures implements TreeFeatures {
         
         private JComponent view;
         
-        private TreeFeatures (JComponent view) {
+        private DefaultTreeFeatures (JComponent view) {
             this.view = view;
         }
         

@@ -50,6 +50,10 @@ import javax.swing.Renderer;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+
+import org.netbeans.spi.viewmodel.Models.TreeFeatures;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+
 import org.openide.explorer.view.BeanTreeView;
 
 /**
@@ -98,6 +102,10 @@ public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
     
     public void removeTreeExpansionListener(TreeExpansionListener listener) {
         tree.removeTreeExpansionListener(listener);
+    }
+
+    void setExpansionModel(TreeExpansionModel model) {
+        
     }
 
     private void collectVisiblePaths(List<TreePath> result, TreePath path) {

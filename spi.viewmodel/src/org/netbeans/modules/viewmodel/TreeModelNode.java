@@ -65,6 +65,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
@@ -814,7 +815,7 @@ public class TreeModelNode extends AbstractNode {
                         try {
                             DefaultTreeExpansionManager.get(model).setChildrenToActOn(getTreeDepth());
                             if (model.isExpanded (ch [i])) {
-                                TreeTable treeTable = treeModelRoot.getTreeTable ();
+                                TreeFeatures treeTable = treeModelRoot.getTreeFeatures ();
                                 if (treeTable.isExpanded(object)) {
                                     // Expand the child only if the parent is expanded
                                     treeTable.expandNode (ch [i]);

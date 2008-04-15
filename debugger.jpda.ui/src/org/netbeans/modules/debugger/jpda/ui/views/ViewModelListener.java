@@ -66,7 +66,6 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.nodes.Node;
 
 
 /**
@@ -111,7 +110,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             this
         );
         if (view instanceof DebuggingView) {
-            ((DebuggingView) view).setRootContext(Node.EMPTY, null);
+            ((DebuggingView) view).setRootContext(null, null);
         } else {
             Models.setModelsToView (
                 view, 
@@ -167,7 +166,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         
         if (view instanceof DebuggingView) {
             ((DebuggingView) view).setRootContext(
-                    Models.createNodes(Models.createCompoundModel(models)),
+                    Models.createCompoundModel(models),
                     e);
         } else {
             Models.setModelsToView (

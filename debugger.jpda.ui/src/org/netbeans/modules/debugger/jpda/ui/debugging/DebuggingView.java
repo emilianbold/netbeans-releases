@@ -37,6 +37,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
+import org.netbeans.spi.viewmodel.Models;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
@@ -183,7 +184,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private javax.swing.JComboBox sessionComboBox;
     // End of variables declaration//GEN-END:variables
 
-    public void setRootContext(Node root, DebuggerEngine engine) {
+    public void setRootContext(Models.CompoundModel model, DebuggerEngine engine) {
         if (engine != null) {
             JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
             synchronized (this) {
@@ -204,6 +205,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
+        }
+        Node root;
+        if (model == null) {
+            root = Node.EMPTY;
+        } else {
+            root = Models.createNodes(model, treeView);
+            treeView.setExpansionModel(model);
         }
         manager.setRootContext(root);
         refreshView();
