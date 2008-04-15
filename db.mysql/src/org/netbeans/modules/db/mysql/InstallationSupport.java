@@ -109,7 +109,7 @@ public class InstallationSupport {
         for ( Iterator it = installations.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();
             
-            LOGGER.log(Level.INFO, "Looking for MySQL installation " + 
+            LOGGER.log(Level.FINE, "Looking for MySQL installation " + 
                     installation.getStartCommand()[0] + 
                     installation.getStartCommand()[1]);
             
