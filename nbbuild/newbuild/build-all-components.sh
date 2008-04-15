@@ -173,7 +173,7 @@ echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 if [ $TEST_CODE = 1 ]; then
     echo "ERROR: At least one of validation tests failed"
-    exit 1;
+#    exit 1;
 fi
 
 
