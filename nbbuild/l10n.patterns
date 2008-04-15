@@ -54,6 +54,7 @@ exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/repor
 exclude **/org-netbeans-modules-uml-reporting.jar:**/generating_model_reports.html
 exclude **/org-netbeans-modules-uml-reporting.jar:**/viewing_reports.html
 exclude **/org-netbeans-modules-html.jar:org/netbeans/modules/html/templates/html.html
+exclude **/org-netbeans-modules-reglib.jar:org/netbeans/modules/servicetag/resources/register*.html
 exclude **/core-renderer.jar:
 exclude **/junit-3.8.2.jar:
 exclude **/junit-4.1.jar:
