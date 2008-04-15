@@ -47,7 +47,9 @@ import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -166,5 +168,13 @@ public class Utils {
 
             }
         }
+    }
+    
+    public static String resolveVariableName(Variable variable) {
+        String name = null;
+        if (variable.getName() instanceof Identifier) {
+            name = ((Identifier) variable.getName()).getName();
+        }
+        return name;
     }
 }
