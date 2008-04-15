@@ -78,12 +78,14 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
-        File jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME); // V3 regular builds
+        File jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME +
+                File.separatorChar + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME); // V3 regular builds
 
         if (jar.exists()) {
             return true;
         }
-        jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME + ServerUtilities.GFV3_TP2_JAR_NAME); // Tp2 build
+        jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME +
+                File.separatorChar + ServerUtilities.GFV3_TP2_JAR_NAME); // Tp2 build
 
         if (jar.exists()) {
             return true;
