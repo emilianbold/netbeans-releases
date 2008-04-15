@@ -315,8 +315,8 @@ public class RailsInstallationPanel extends JPanel {
     private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_railsButtonActionPerformed
         Runnable asyncCompletionTask = new InstallationComplete();
         Gem rails = new Gem("rails", null, null); // NOI18N
-        Gem jdbc = new Gem("ActiveRecord-JDBC", null, null); // NOI18N
-        Gem[] gems = new Gem[]{rails, jdbc};
+        Gem jdbc = new Gem("activerecord-jdbc-adapter", null, null); // NOI18N
+        Gem[] gems = platform().isJRuby() ? new Gem[]{rails, jdbc} : new Gem[]{rails};
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(platform());
         if (railsInfo.getVersion() == null) {
             gemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
