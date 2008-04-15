@@ -13,18 +13,8 @@ import java.io.File;
 import java.io.PrintStream;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *

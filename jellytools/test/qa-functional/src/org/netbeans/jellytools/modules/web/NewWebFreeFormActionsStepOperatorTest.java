@@ -45,15 +45,8 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
