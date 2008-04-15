@@ -271,9 +271,9 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
         
         WizardDescriptor.Panel<WizardDescriptor> firstPanel = null;
         if (sourceGroups.length == 0)
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
+            firstPanel = Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel);
         else
-            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
+            firstPanel = JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true);
      
         panels = new WizardDescriptor.Panel[] {
             firstPanel,
