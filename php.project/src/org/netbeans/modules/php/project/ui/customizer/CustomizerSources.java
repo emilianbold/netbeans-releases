@@ -238,7 +238,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         // everything ok
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        if (srcPath.startsWith("../")) { // NOI18N
+        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
