@@ -124,9 +124,9 @@ public class CompletionScrollPane extends JScrollPane {
         dataObj = data;
         view.setData(data);
         view.setSelectedIndex(selectedIndex);
-        Point p = view.indexToLocation(selectedIndex);
-        if (p != null)
-            view.scrollRectToVisible(new Rectangle(p));
+        Rectangle r = view.getCellBounds(selectedIndex, selectedIndex);
+        if (r != null)
+            view.scrollRectToVisible(r);
         setTitle(title);
         // Force the viewport preferred size to be taken into account
         // Otherwise the scroll pane attempts to retain its size
