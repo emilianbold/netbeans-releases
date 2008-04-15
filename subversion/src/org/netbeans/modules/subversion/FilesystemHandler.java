@@ -114,15 +114,9 @@ class FilesystemHandler extends VCSInterceptor {
         // TODO the afterXXX events should not be triggered by the FS listener events
         //      their order isn't guaranteed when e.g calling fo.delete() a fo.create() 
         //      in an atomic action
-        
-        Utils.post(new Runnable() {
-            public void run() {                
-                // II. refresh cache
-                if (!SvnUtils.isPartOfSubversionMetadata(file)) {
-                    cache.refreshAsync(file);                            
-                }                     
-            }
-        });
+        if (!SvnUtils.isPartOfSubversionMetadata(file)) {
+            cache.refreshAsync(file);                            
+        }                     
     }
 
     @Override
@@ -181,24 +175,20 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void afterMove(final File from, final File to) {
         Subversion.LOG.fine("afterMove " + from +  " -> " + to);
-        Utils.post(new Runnable() {
-            public void run() {    
-                File[] files;
-                synchronized(movedFiles) {
-                    movedFiles.add(from);
-                    files = movedFiles.toArray(new File[movedFiles.size()]);
-                    movedFiles.clear();
-                }
-                cache.refreshAsync(true, to);  // refresh the whole target tree                         
-                cache.refreshAsync(files);      
-                File parent = to.getParentFile(); 
-                if (parent != null) {
-                    if (from.equals(to)) {
-                        Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());                        
-                    }
-                }
+        File[] files;
+        synchronized(movedFiles) {
+            movedFiles.add(from);
+            files = movedFiles.toArray(new File[movedFiles.size()]);
+            movedFiles.clear();
+        }
+        cache.refreshAsync(true, to);  // refresh the whole target tree                         
+        cache.refreshAsync(files);      
+        File parent = to.getParentFile(); 
+        if (parent != null) {
+            if (from.equals(to)) {
+                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());                        
             }
-        });
+        }
     }
     
     @Override
@@ -432,11 +422,7 @@ class FilesystemHandler extends VCSInterceptor {
             }
             SvnClient client = Subversion.getInstance().getClient(false);
             client.addDirectory(dir, false);
-            Utils.post(new Runnable() {
-                public void run() {
-                    cache.refresh(dir, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                }
-            });                
+            cache.refreshAsync(dir);
         } else {
             throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!"); // NOI18N
         }
