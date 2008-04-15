@@ -262,10 +262,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getOSDependentLocalServers() {
-        MutableComboBoxModel model = locationPanelVisual.getLocalServerModel();
-        assert model.getSize() == 0;
+        MutableComboBoxModel model = new LocalServer.ComboBoxModel(DEFAULT_LOCAL_SERVER);
 
-        model.addElement(DEFAULT_LOCAL_SERVER);
         if (isSolaris()) {
             fillSolarisLocalServers(model);
         } else if (Utilities.isWindows()) {
@@ -274,10 +272,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             fillMacLocalServers(model);
         } else if (Utilities.isUnix()) {
             fillUnixLocalServers(model);
-        }
-
-        if (model.getSelectedItem() == null) {
-            model.setSelectedItem(DEFAULT_LOCAL_SERVER);
         }
         return model;
     }
