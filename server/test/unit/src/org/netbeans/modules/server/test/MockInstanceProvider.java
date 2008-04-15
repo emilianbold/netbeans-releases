@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,51 +34,87 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server;
+package org.netbeans.modules.server.test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Petr Hejl
  */
-public class TestInstanceProvider implements ServerInstanceProvider {
+public class MockInstanceProvider implements ServerInstanceProvider {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final List<ServerInstance> instances = new ArrayList<ServerInstance>();
 
-    public TestInstanceProvider() {
+    public MockInstanceProvider() {
         super();
     }
 
-    public List<ServerInstance> getInstances() {
-        return instances;
-    }
-
-    public void clean() {
-        for (ServerInstance instance : instances) {
-            instances.remove(instance);
-            changeSupport.fireChange();
+    public static void registerInstanceProvider(String instanceName, ServerInstanceProvider provider) throws IOException {
+        if (provider == null) {
+            return;
         }
+
+        Lookup.getDefault().lookup(ModuleInfo.class);
+
+        FileObject servers = Repository.getDefault().getDefaultFileSystem().getRoot()
+                .getFileObject(ServerRegistry.SERVERS_PATH);
+        FileObject testProvider = FileUtil.createData(servers, instanceName);
+
+        testProvider.setAttribute("instanceOf", ServerInstanceProvider.class.getName()); // NOI18N
+        testProvider.setAttribute("instanceCreate", provider); // NOI18N
     }
 
     public void addInstance(ServerInstance instance) {
-        instances.add(instance);
+        if (instance == null) {
+            return;
+        }
+
+        synchronized (this) {
+            instances.add(instance);
+        }
         changeSupport.fireChange();
     }
 
     public void removeInstance(ServerInstance instance) {
-        instances.remove(instance);
+        if (instance == null) {
+            return;
+        }
+
+        synchronized (this) {
+            instances.remove(instance);
+        }
         changeSupport.fireChange();
+    }
+
+    public void clear() {
+        synchronized (this) {
+            instances.clear();
+        }
+        changeSupport.fireChange();
+    }
+
+    public List<ServerInstance> getInstances() {
+        synchronized (this) {
+            return new ArrayList<ServerInstance>(instances);
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {

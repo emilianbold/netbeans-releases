@@ -167,11 +167,11 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     public boolean validateXML(CookieObserver cookieObserver) {
-        getValidationController().runValidation();
-        return true;
+      getValidationController().runValidation();
+      return true;
     }
 
-    public BPELValidationController getValidationController() {
+    private BPELValidationController getValidationController() {
       return (BPELValidationController) getEnv().getBpelDataObject().getLookup().lookup(BPELValidationController.class);
     }
 

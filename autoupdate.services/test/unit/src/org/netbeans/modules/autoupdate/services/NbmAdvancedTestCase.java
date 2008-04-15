@@ -106,6 +106,10 @@ public class NbmAdvancedTestCase extends NbTestCase {
         return generateModuleElement (codeName, version, "OpenIDE-Module-Provides", provides, false, false, deps);
     }
     
+    public static String generateModuleElementWithJavaDependency (String codeName, String version, String java, String... deps) {
+        return generateModuleElement (codeName, version, "OpenIDE-Module-Java-Dependencies", java, false, false, deps);
+    }
+    
     public static String generateModuleElement (String codeName, String version, Boolean global, String targetCluster) {
         String res = "<module codenamebase=\"" + codeName + "\" " +
                 "homepage=\"http://au.netbeans.org/\" distribution=\"nbresloc:/org/netbeans/api/autoupdate/data/org-yourorghere-independent.nbm\" " +
