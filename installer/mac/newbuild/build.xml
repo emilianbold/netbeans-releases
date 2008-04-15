@@ -129,7 +129,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
+    <target name="build-all-dmg" depends="clean,init,build-pkg">                                                    
         <property file="${basedir}/build/sizes.pro"/>  
         <mkdir dir="dist"/>                  
         <property name="bundles" value="        (./build/*pkg),
