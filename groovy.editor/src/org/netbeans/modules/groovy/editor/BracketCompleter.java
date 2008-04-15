@@ -525,7 +525,7 @@ public class BracketCompleter implements BracketCompletion {
         //dumpTokens(doc, caretOffset);
 
         // Gotta look for the string begin pair in tokens since ANY character can
-        // be used in Ruby string like the %x!! form.
+        // be used in string like the %x!! form.
         if (caretOffset == 0) {
             return false;
         }
@@ -1636,9 +1636,6 @@ public class BracketCompleter implements BracketCompletion {
 
             char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
 
-//            if (chr == '%' && RubyUtils.isRhtmlDocument(doc)) {
-//                return true;
-//            }
 
             return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
                (chr == ']') || (chr == '/'));

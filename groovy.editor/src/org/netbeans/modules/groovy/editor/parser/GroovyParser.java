@@ -410,13 +410,12 @@ public class GroovyParser implements Parser {
             return new GroovyElementHandle(null, object, info.getFileObject());
         }
 
-        // TODO - check for Ruby
         if (object instanceof IndexedElement) {
             // Probably a function in a "foreign" file (not parsed from AST),
-            // such as a signature returned from the index of the Ruby libraries.
-// TODO - make sure this is infrequent! getFileObject is expensive!            
-// Alternatively, do this in a delayed fashion - e.g. pass in null and in getFileObject
-// look up from index            
+            // such as a signature returned from the index of the Groovy libraries.
+            // TODO - make sure this is infrequent! getFileObject is expensive!            
+            // Alternatively, do this in a delayed fashion - e.g. pass in null and in getFileObject
+            // look up from index            
             return new GroovyElementHandle(null, object, ((IndexedElement)object).getFileObject());
         }
 

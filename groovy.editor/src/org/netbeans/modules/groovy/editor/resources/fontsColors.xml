@@ -2,7 +2,7 @@
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <!-- See http://ui.netbeans.org/docs/ui/editor_fonts_colors/Editor_fonts_and_colors.htm#ruby -->
+    <!-- See http://ui.netbeans.org/docs/ui/editor_fonts_colors/Editor_fonts_and_colors.htm -->
     <!-- A couple of things are not accurate yet; globals are not bold, and method calls are
          black and bold instead of green (which would be identical to fields) -->
     

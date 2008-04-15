@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     "**/*Hid.*"
 -->
 
-<mconfig name="ruby editing">
+<mconfig name="groovy editing">
 
     <testbag testattribs="all,stable" executor="code" name="Unit Tests">
         <testset dir="unit/src">
@@ -61,20 +61,6 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
-
-    <!--
-    <testbag testattribs="failing" executor="code" name="failing">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/**Test.class"/>
-<include name="org/netbeans/modules/ruby/RubyLexerRandomTest.class/testRandom"
-         expectedFail="problems in incremental lexing"/>
-<include name="org/netbeans/modules/ruby/RubyLexerTest.class/test93990"
-         expectedFail="problems in incremental lexing"/>
-            </patternset>
-        </testset>
-    </testbag>
-    -->
     
     <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     

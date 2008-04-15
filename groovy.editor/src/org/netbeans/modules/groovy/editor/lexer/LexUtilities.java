@@ -125,7 +125,7 @@ public class LexUtilities {
         return astRange;
     }
     
-    /** Find the ruby token sequence (in case it's embedded in something else at the top level */
+    /** Find the Groovy token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(BaseDocument doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
@@ -605,7 +605,7 @@ public class LexUtilities {
     }
 
     /**
-     * Return true iff the line for the given offset is a Ruby comment line.
+     * Return true iff the line for the given offset is a comment line.
      * This will return false for lines that contain comments (even when the
      * offset is within the comment portion) but also contain code.
      */
@@ -707,7 +707,7 @@ public class LexUtilities {
         if (token != null) {
             TokenId id = token.id();
 
-            // We're within a String that has embedded Ruby. Drop into the
+            // We're within a String that has embedded Groovy. Drop into the
             // embedded language and see if we're within a literal string there.
             if (id == GroovyTokenId.EMBEDDED_GROOVY) {
                 ts = (TokenSequence)ts.embedded();
@@ -724,7 +724,7 @@ public class LexUtilities {
 
             String string = null;
 
-            // Skip over embedded Ruby segments and literal strings until you find the beginning
+            // Skip over embedded Groovy segments and literal strings until you find the beginning
             int segments = 0;
 
             while ((id == GroovyTokenId.ERROR) || (id == GroovyTokenId.STRING_LITERAL) ||
@@ -795,7 +795,7 @@ public class LexUtilities {
         if (token != null) {
             TokenId id = token.id();
 
-            // Skip over embedded Ruby segments and literal strings until you find the beginning
+            // Skip over embedded Groovy segments and literal strings until you find the beginning
             while ((id == GroovyTokenId.ERROR) || (id == GroovyTokenId.STRING_LITERAL) ||
                     (id == GroovyTokenId.QUOTED_STRING_LITERAL) || (id == GroovyTokenId.EMBEDDED_GROOVY)) {
                 ts.movePrevious();
@@ -878,7 +878,7 @@ public class LexUtilities {
         if (token != null) {
             TokenId id = token.id();
 
-            // We're within a String that has embedded Ruby. Drop into the
+            // We're within a String that has embedded Groovy. Drop into the
             // embedded language and see if we're within a literal string there.
             if (id == GroovyTokenId.EMBEDDED_GROOVY) {
                 ts = (TokenSequence)ts.embedded();
@@ -893,7 +893,7 @@ public class LexUtilities {
                 id = token.id();
             }
 
-            // Skip over embedded Ruby segments and literal strings until you find the beginning
+            // Skip over embedded Groovy segments and literal strings until you find the beginning
             while ((id == GroovyTokenId.ERROR) || (id == GroovyTokenId.STRING_LITERAL) ||
                     (id == GroovyTokenId.QUOTED_STRING_LITERAL) ||
                     (id == GroovyTokenId.REGEXP_LITERAL) || (id == GroovyTokenId.EMBEDDED_GROOVY)) {

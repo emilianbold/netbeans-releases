@@ -170,7 +170,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         if (isGspDocument) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             // Probably an GSP file - gotta process it in sections since I can have lines
-            // made up of both whitespace, ruby, html and delimiters and all ruby sections
+            // made up of both whitespace, groovy, html and delimiters and all groovy sections
             // can affect the token balance
             TokenSequence<?> t = th.tokenSequence();
             if (t == null) {
@@ -269,7 +269,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
                         id == GroovyTokenId.DOCUMENTATION ||
                         (id == GroovyTokenId.QUOTED_STRING_LITERAL) ||
                         (id == GroovyTokenId.REGEXP_LITERAL)) {
-                    // No indentation for literal strings in Ruby, since they can
+                    // No indentation for literal strings in Groovy, since they can
                     // contain newlines. Leave it as is.
                     return true;
                 }
@@ -289,8 +289,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
                     }
                 }
             } else {
-                // No ruby token -- leave the formatting alone!
-                // (Probably in an RHTML file on a line with no Ruby)
+                // No Groovy token -- leave the formatting alone!
                 return true;
             }
         } else {
@@ -305,7 +304,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
                         id == GroovyTokenId.DOCUMENTATION ||
                         (id == GroovyTokenId.QUOTED_STRING_LITERAL) ||
                         (id == GroovyTokenId.REGEXP_LITERAL)) {
-                    // No indentation for literal strings in Ruby, since they can
+                    // No indentation for literal strings in Groovy, since they can
                     // contain newlines. Leave it as is.
                     return true;
                 }
@@ -316,16 +315,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     /** 
-     * Get the first token on the given line. Similar to LexUtilities.getToken(doc, lineBegin)
-     * except (a) it computes the line begin from the offset itself, and more importantly,
-     * (b) it handles RHTML tokens specially; e.g. if a line begins with
-     * {@code
-     *    <% if %>
-     * }
-     * then the "if" embedded token will be returned rather than the RHTML delimiter, or even
-     * the whitespace token (which is the first Ruby token in the embedded sequence).
-     *    
-     * </pre>   
+     * Get the first token on the given line. 
      */
     private Token<? extends GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
@@ -445,7 +435,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
-        isGspDocument = false;//RubyUtils.isRhtmlDocument(document);
+        isGspDocument = false;
 
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
@@ -575,10 +565,6 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
             
             // Pending - apply comment formatting too?
 
-            // XXX Look up RHTML too
-            //int indentSize = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getSpacesPerTab();
-            //int hangingIndentSize = indentSize;
-            
 
             // Build up a set of offsets and indents for lines where I know I need
             // to adjust the offset. I will then go back over the document and adjust

@@ -163,8 +163,6 @@ public class AstUtilities {
 
         GroovyParserResult result = (GroovyParserResult)r;
 
-        // TODO - just call result.getRoot()
-        // but I might have to compensate for the new RootNode behavior in JRuby
         ParserResult.AstTreeNode ast = result.getAst();
 
         if (ast == null) {

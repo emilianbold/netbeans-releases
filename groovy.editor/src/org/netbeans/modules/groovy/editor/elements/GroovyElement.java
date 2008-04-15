@@ -49,7 +49,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * A logical program element, such as a Class, Method, Attribute, etc.
- * These are either backed by a JRuby AST node, or data from the persistent index.
+ * These are either backed by a Groovy AST node, or data from the persistent index.
  *
  * @author Tor Norbye
  */
