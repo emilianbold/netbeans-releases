@@ -406,10 +406,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private File getWindowsHtDocsDirectory() {
-        // list all harddrives (C - Z)
-        for (int i = 12; i < 36; i++) {
-            char hardDrive = Character.toUpperCase(Character.forDigit(i, Character.MAX_RADIX));
-            File programFiles = new File(hardDrive + ":\\Program Files"); // NOI18N
+        File[] roots = File.listRoots();
+        if (roots == null) {
+            return null;
+        }
+        for (File root : roots) {
+            if (isFloppy(root)) {
+                continue;
+            }
+            File programFiles = new File(root, "Program Files"); // NOI18N
             if (!programFiles.isDirectory()) {
                 continue;
             }
@@ -419,6 +424,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             }
         }
         return null;
+    }
+
+    private boolean isFloppy(File root) {
+        return root.getName().toLowerCase().startsWith("a:") // NOI18N
+                || root.getName().toLowerCase().startsWith("b:"); // NOI18N
     }
 
     private File findHtDocs(File startDir, FilenameFilter filenameFilter) {
