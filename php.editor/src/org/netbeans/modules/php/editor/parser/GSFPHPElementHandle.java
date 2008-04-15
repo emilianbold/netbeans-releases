@@ -41,18 +41,15 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -184,6 +181,39 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         }    
     }
     
+    public static class ClassConstantDeclarationHandle extends GSFPHPElementHandle {
+
+        private ClassConstantDeclaration declaration;
+        
+        public ClassConstantDeclarationHandle (CompilationInfo info, ClassConstantDeclaration declaration) {
+            super (info);
+            this.declaration = declaration;
+        }
+        
+        @Override
+        public ASTNode getASTNode() {
+            return declaration;
+        }
+
+        public String getName() {
+            String name = "";
+            List<Identifier> names = declaration.getNames();
+            
+            for (Identifier identifier : names) {
+                name = name + identifier;
+            }
+            return name;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }    
+    }
+    
     public static class MethodDeclarationHandle extends FunctionDeclarationHandle {
         
         private MethodDeclaration declaration;
@@ -199,8 +229,87 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         }
 
         public Set<Modifier> getModifiers() {
+            return translateModifiers(declaration.getModifier());
+        }
+    }
+    
+    /**
+     * Handle for global definitions define('CONSTANT', 10);
+     */
+    public static class GlobalConstant extends GSFPHPElementHandle {
+        
+        private FunctionInvocation invocation;
+        private String name = null;
+        
+        public GlobalConstant (CompilationInfo info, FunctionInvocation invocation) {
+            super (info);
+            this.invocation = invocation;
+        }
+
+        @Override
+        public ASTNode getASTNode() {
+            return invocation;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public String getName() {
+            if (name != null) {
+                List<Expression> parameters = invocation.getParameters();
+                if (parameters.size() == 2 && parameters.get(0) instanceof Scalar && parameters.get(1) instanceof Scalar) {
+                    Scalar value = (Scalar)parameters.get(0);
+                    if (value.getScalarType() == Scalar.Type.STRING) {
+                        name = value.getStringValue();
+                    }
+                }
+            }
+            return name;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+    }
+    
+    public static class FieldsDeclarationHandle extends GSFPHPElementHandle {
+
+        private FieldsDeclaration declaration;
+        
+        public FieldsDeclarationHandle (CompilationInfo info, FieldsDeclaration declaration) {
+            super (info);
+            this.declaration = declaration;
+        }
+        
+        @Override
+        public ASTNode getASTNode() {
+            return declaration;
+        }
+
+        public String getName() {
+            String name = "";
+            Variable[] variables = declaration.getVariableNames();
+            for (Variable variable : variables) {
+                String hName = Utils.resolveVariableName(variable);
+                if (hName != null) {
+                    name = (variable.isDollared() ? name + "$" + hName : name + hName); //NOI18N
+                }
+            }
+            return name;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return translateModifiers(declaration.getModifier());
+        }    
+    }
+    
+    private static Set<Modifier> translateModifiers (int modifier) {
             Set<Modifier> modifiers = new HashSet<Modifier> ();
-            int modifier = declaration.getModifier();
             if (BodyDeclaration.Modifier.isPrivate(modifier)) {
                 modifiers.add(Modifier.PRIVATE);
             }
@@ -214,7 +323,6 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
                 modifiers.add(Modifier.STATIC);
             }
             return modifiers;
-        }
     }
 
 }
