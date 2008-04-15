@@ -196,6 +196,12 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
+            if (copyTargetDir == null) {
+                // nothing selected
+                category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalFolderName"));
+                category.setValid(false);
+                return;
+            }
             err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
                     allowNonEmptyDirectory(copyTargetDir.getAbsolutePath()), true);
             if (err != null) {
@@ -244,7 +250,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         }
         properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
-        properties.setCopySrcTarget(copyTargetDir.getAbsolutePath());
+        properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
         properties.setUrl(url);
         properties.setIndexFile(indexFile);
     }
@@ -256,7 +262,12 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
     private File getCopyTargetDir() {
         LocalServer localServer = copyFilesVisual.getLocalServer();
-        return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+        // #132864
+        String srcRoot = localServer.getSrcRoot();
+        if (srcRoot == null || srcRoot.length() == 0) {
+            return null;
+        }
+        return FileUtil.normalizeFile(new File(srcRoot));
     }
 
     private boolean allowNonEmptyDirectory(String copyTargetDir) {
