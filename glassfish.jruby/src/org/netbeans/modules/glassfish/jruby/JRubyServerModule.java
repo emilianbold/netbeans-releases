@@ -68,6 +68,8 @@ import org.openide.util.RequestProcessor;
  */
 public class JRubyServerModule implements RubyInstance, CustomizerCookie {
 
+    public static final String USE_ROOT_CONTEXT_ATTR = "jruby.useRootContext"; // NOI18N
+    
     private Lookup lookup;
     
     JRubyServerModule(Lookup instanceLookup) {
@@ -148,7 +150,9 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             if(!requestedPlatformDir.equals(currentPlatformDir)) {
                 // !PW XXX Server using different platform, fail until platform
                 // restart query implemented.
-                return failedOperation();
+                Logger.getLogger("glassfish-jruby").log(Level.WARNING, 
+                        "Running project with current V3 Rails platform " + currentPlatformDir + 
+                        " rather than requested platform " + requestedPlatformDir);
             }
 
             GlassfishModule.ServerState state = commonModule.getServerState();
@@ -192,8 +196,11 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             GlassfishModule.OperationState result = startFuture.get();
             if(result == GlassfishModule.OperationState.COMPLETED) {
                 step = "deploy";
+                boolean useRootContext = Boolean.valueOf(
+                        commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
                 final Future<GlassfishModule.OperationState> deployFuture = 
-                        commonModule.deploy(this, applicationDir, applicationName, "/");
+                        commonModule.deploy(this, applicationDir, applicationName, 
+                        useRootContext ? "/" : "/" + applicationName);
                 result = deployFuture.get();
             }
             return translateOperationState(result);
@@ -223,12 +230,14 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     public Future<OperationState> deploy(final String applicationName, final File applicationDir) {
         GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
         if(commonModule != null) {
+            boolean useRootContext = Boolean.valueOf(
+                    commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
             return wrapTask(commonModule.deploy(new OperationStateListener() {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
                     Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
                             "deploy V3/JRuby: " + newState + " - " + message);
                 }
-            }, applicationDir, applicationName, "/"));
+            }, applicationDir, applicationName, useRootContext ? "/" : "/" + applicationName));
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }

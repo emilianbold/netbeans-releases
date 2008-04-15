@@ -47,6 +47,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.glassfish.jruby.JRubyServerModule;
 import org.netbeans.spi.glassfish.GlassfishModule;
 
 /**
@@ -58,6 +59,7 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
     public static final String DEFAULT_RUBY_PLATFORM_ID = "ruby.platform.id"; // NOI18N
     
     private GlassfishModule commonSupport;
+    private boolean useRootContextChanged = false;
     
     public JRubyServerCustomizer(GlassfishModule commonSupport) {
         this.commonSupport = commonSupport;
@@ -70,6 +72,9 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
         Map<String, String> ip = commonSupport.getInstanceProperties();
         RubyPlatform defaultPlatform = getDefaultPlatform(ip.get(DEFAULT_RUBY_PLATFORM_ID));
         comboJRubyPlatform.setSelectedItem(defaultPlatform);
+        
+        boolean useRootContextEnabled = Boolean.parseBoolean(ip.get(JRubyServerModule.USE_ROOT_CONTEXT_ATTR));
+        useRootContextCheckBox.setSelected(useRootContextEnabled);
     }
     
     private RubyPlatform getDefaultPlatform(String savedPlatformId) {
@@ -98,6 +103,11 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
             commonSupport.setEnvironmentProperty(DEFAULT_RUBY_PLATFORM_ID, p.getID(), true);
             commonSupport.setEnvironmentProperty(GlassfishModule.JRUBY_HOME, p.getHome().getAbsolutePath(), true);
         }
+        
+        if(useRootContextChanged) {
+            String useRootContextEnabled = Boolean.toString(useRootContextCheckBox.isSelected());
+            commonSupport.setEnvironmentProperty(JRubyServerModule.USE_ROOT_CONTEXT_ATTR, useRootContextEnabled, true);
+        }
     }
     
     @Override
@@ -123,26 +133,37 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
 
         labelJRubyPlatform = new javax.swing.JLabel();
         comboJRubyPlatform = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
+        useRootContextCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(JRubyServerCustomizer.class, "JRubyServerCustomizer.name")); // NOI18N
 
         labelJRubyPlatform.setText(org.openide.util.NbBundle.getMessage(JRubyServerCustomizer.class, "JRubyServerCustomizer.labelJRubyPlatform.text")); // NOI18N
 
+        comboJRubyPlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboJRubyPlatformActionPerformed(evt);
+            }
+        });
         comboJRubyPlatform.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 comboJRubyPlatformPropertyChange(evt);
             }
         });
 
+        useRootContextCheckBox.setText(org.openide.util.NbBundle.getMessage(JRubyServerCustomizer.class, "LBL_UseRootContext")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(labelJRubyPlatform)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(comboJRubyPlatform, 0, 62, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, useRootContextCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(labelJRubyPlatform)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(comboJRubyPlatform, 0, 244, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -152,7 +173,9 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelJRubyPlatform)
                     .add(comboJRubyPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(useRootContextCheckBox)
+                .addContainerGap(166, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -171,6 +194,10 @@ private void comboJRubyPlatformPropertyChange(java.beans.PropertyChangeEvent evt
     }
 }//GEN-LAST:event_comboJRubyPlatformPropertyChange
 
+private void comboJRubyPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboJRubyPlatformActionPerformed
+    useRootContextChanged = true;
+}//GEN-LAST:event_comboJRubyPlatformActionPerformed
+
     private void setFilterModel(ComboBoxModel model) {
         if(model != null &&
                 (model.getSize() == 0 || model.getElementAt(0) instanceof RubyPlatform)) {
@@ -182,6 +209,7 @@ private void comboJRubyPlatformPropertyChange(java.beans.PropertyChangeEvent evt
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comboJRubyPlatform;
     private javax.swing.JLabel labelJRubyPlatform;
+    private javax.swing.JCheckBox useRootContextCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private static class FilterModel implements ComboBoxModel {
