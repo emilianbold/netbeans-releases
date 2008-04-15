@@ -58,7 +58,6 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -94,26 +93,10 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
     public static final String MAIN_CLASS = "main.file"; // NOI18N
-    public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
-    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    public static final String RUBY_OPTIONS = "run.jvmargs"; // NOI18N
     public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
     public static final String DIST_DIR = "dist.dir"; // NOI18N
-    public static final String DIST_JAR = "dist.jar"; // NOI18N
-    public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
-    public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
-    public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
-    public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
-    public static final String JAVAC_TARGET = "javac.target"; // NOI18N
-    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
-    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String BUILD_DIR = "build.dir"; // NOI18N
-    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
-    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
-    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
-    public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
-    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
                     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
@@ -124,9 +107,6 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
      
-    // CustomizerLibraries
-    Document JAVAC_COMPILER_ARG_MODEL;
-    
     // CustomizerRun
     Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     String activeConfig;
@@ -189,7 +169,6 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = RubySourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = RubySourceRootsUi.createModel( project.getTestSourceRoots() );        
-        JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
 
         // CustomizerRun
         RUN_CONFIGS = readRunConfigs();
@@ -361,7 +340,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, RAKE_ARGS}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS}) {
             String v = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -404,7 +383,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, RAKE_ARGS}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS}) {
             String v = def.get(prop);
             EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR) || prop.equals(RAKE_ARGS)) ?
                 privateProperties : projectProperties;

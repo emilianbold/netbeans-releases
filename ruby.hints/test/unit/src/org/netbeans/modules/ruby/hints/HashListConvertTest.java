@@ -41,7 +41,6 @@ package org.netbeans.modules.ruby.hints;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.ruby.hints.HintTestBase;
 
 /**
  *

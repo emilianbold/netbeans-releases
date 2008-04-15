@@ -225,6 +225,18 @@ public class JsIndex {
         return getByFqn(prefix, type, kind, scope, false, context, true, true, false);
     }
 
+    public Set<IndexedElement> getElementsByFqn(String fqn,
+            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
+        String name = fqn;
+        int dot = name.lastIndexOf('.');
+        String type = null;
+        if (dot != -1) {
+            type = name.substring(0, dot);
+            name = name.substring(dot+1);
+        }
+        return getByFqn(name, type, kind, scope, false, context, true, true, false);
+    }
+    
     public Set<IndexedElement> getAllElements(String prefix, String type,
             NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
         return getByFqn(prefix, type, kind, scope, false, context, true, true, true);
@@ -306,7 +318,7 @@ public class JsIndex {
                                 (signature.charAt(lcname.length()) != ';'))) {
                             continue;
                         }
-                    }
+                    } // TODO - check camel case here too!
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
                     assert map != null;

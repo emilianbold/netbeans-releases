@@ -320,8 +320,8 @@ made subject to such option by the copyright holder.
     </question>
     -->
     <answer id="arch-what">
-        <code><api type="export" category="devel" group="java" name="org.netbeans.api.autoupdate" url="@TOP@/overview-summary.html"/></code>
-        <code><api type="export" category="devel" group="java" name="org.netbeans.spi.autoupdate" url="@TOP@/overview-summary.html"/></code>
+        <code><api type="export" category="official" group="java" name="org.netbeans.api.autoupdate" url="@TOP@/overview-summary.html"/></code>
+        <code><api type="export" category="official" group="java" name="org.netbeans.spi.autoupdate" url="@TOP@/overview-summary.html"/></code>
     </answer>
     
     

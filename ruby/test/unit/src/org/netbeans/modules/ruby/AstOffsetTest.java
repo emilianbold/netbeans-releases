@@ -1,0 +1,146 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.ruby;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.jruby.ast.Node;
+import org.jruby.ast.NodeType;
+import org.jruby.lexer.yacc.ISourcePosition;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+
+/**
+ * Check offsets for the JRuby AST
+ * 
+ * @author Tor Norbye
+ */
+public class AstOffsetTest extends RubyTestBase {
+    
+    public AstOffsetTest(String testName) {
+        super(testName);
+    }            
+    
+    @Override
+    protected String describeNode(CompilationInfo info, Object obj, boolean includePath) throws Exception {
+        Node node = (Node)obj;
+        if (includePath) {
+            AstPath path = new AstPath(AstUtilities.getRoot(info), node);
+            Iterator<Node> it = path.leafToRoot();
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            String s = null;
+            while (it.hasNext()) {
+                node = it.next();
+                int line = Utilities.getLineOffset(doc, node.getPosition().getStartOffset());
+                int offset = node.getPosition().getStartOffset()-Utilities.getRowStart(doc, node.getPosition().getStartOffset());
+                String offsetDesc = line + ":" + offset;
+                String n = node.nodeId.name() + "[" + offsetDesc + "]";
+                if (s != null) {
+                    s = n + ":" + s;
+                } else {
+                    s = n;
+                }
+            }
+
+            return s;
+        } else {
+            return node.nodeId.name();
+        }
+    }
+    
+    @Override
+    protected void initializeNodes(CompilationInfo info, List<Object> validNodes,
+            Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
+        Node root = AstUtilities.getRoot(info);
+        assertNotNull(root);
+        
+        initialize(root, validNodes, invalidNodes, positions, null/*doc*/);
+    }
+
+    private void initialize(Node node, List<Object> validNodes, List<Object> invalidNodes, Map<Object,
+            OffsetRange> positions, BaseDocument doc) throws Exception {
+        
+        if (node.nodeId != NodeType.NEWLINENODE) { // Skipping newline nodes since they're everywhere
+            ISourcePosition pos = node.getPosition();
+            OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+            if (range.getStart() != 0 || range.getEnd() != 0) { // Don't include 0-0 nodes, these are errors
+                validNodes.add(node);
+                positions.put(node, range);
+            } else {
+                invalidNodes.add(node);
+            }
+        }
+        
+        List<Node> children = node.childNodes();
+        if (children.size() > 0) {
+            for (Node child : children) {
+                assert child != null;
+                initialize(child, validNodes, invalidNodes, positions, doc);
+            }
+        }
+    }
+
+    public void testAnalysis2() throws Exception {
+        checkOffsets("testfiles/ape.rb");
+    }
+    
+    public void testAnalysis() throws Exception {
+        checkOffsets("testfiles/postgresql_adapter.rb");
+    }
+
+    public void testAnalysis3() throws Exception {
+        checkOffsets("testfiles/date.rb");
+    }
+
+    public void testAnalysis4() throws Exception {
+        checkOffsets("testfiles/resolv.rb");
+    }
+
+    public void testUnused() throws Exception {
+        checkOffsets("testfiles/unused.rb");
+    }
+
+    public void testRails1() throws Exception {
+        checkOffsets("testfiles/action_controller.rb");
+    }
+}

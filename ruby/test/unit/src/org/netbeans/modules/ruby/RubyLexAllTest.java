@@ -61,6 +61,7 @@ public class RubyLexAllTest extends RubyTestBase {
         super(testName);
     }
 
+    @SuppressWarnings("empty-statement")
     public void testLexAll() throws BadLocationException {
         // Find ruby files
         List<FileObject> files = findJRubyRubyFiles();

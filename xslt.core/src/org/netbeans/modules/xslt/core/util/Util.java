@@ -26,9 +26,7 @@ import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.util.Lookup;
 
-
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */

@@ -87,6 +87,8 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
     /** Wizard descriptor name for the Ruby platform */
     static final String PLATFORM = "platform"; //NOI18N
+    /** Wizard descriptor name for the Rails version */
+    static final String RAILS_VERSION = "rails.version"; //NOI18N
     
     static final int TYPE_APP = 0;
     //static final int TYPE_LIB = 1;
@@ -164,8 +166,10 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         if (databaseConf == null) {
             databaseConf = RailsAdapterFactory.getDefaultAdapter();
         }
+        
+        String railsVersion = (String) wiz.getProperty(RAILS_VERSION);
         RailsProjectCreateData data = new RailsProjectCreateData(platform, dirF, name, type == TYPE_APP,
-                databaseConf, deploy, server.getServerUri());
+                databaseConf, deploy, server.getServerUri(), railsVersion);
         h = RailsProjectGenerator.createProject(data);
         handle.progress(2);
 

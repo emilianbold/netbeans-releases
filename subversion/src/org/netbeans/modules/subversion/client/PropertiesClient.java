@@ -122,7 +122,6 @@ public final class PropertiesClient {
     }
 
     private File getPropertyFile(boolean base) throws SVNClientException {
-        // XXX realy not sure if this is the best way ...
         SvnClient client = Subversion.getInstance().getClient(false);
         ISVNInfo info = null;
         try {

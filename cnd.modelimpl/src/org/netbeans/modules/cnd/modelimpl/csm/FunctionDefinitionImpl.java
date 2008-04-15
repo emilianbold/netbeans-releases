@@ -51,6 +51,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -63,14 +64,20 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     
     private final CsmCompoundStatement body;
     
-    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
+    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
     }
     
-    protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
+    protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         super(ast, file, scope, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        boolean assertionCondition = body != null;
+        if (!assertionCondition) {
+            RepositoryUtils.hang(this);
+            throw new AstRendererException((FileImpl)file, getStartOffset(),
+                    "Null body in function definition."); // NOI18N
+            //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        }
         if (register) {
             registerInProject();
         }
@@ -117,7 +124,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	    }
 	    else if( owner instanceof CsmNamespace ) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace) owner),
-                          CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(getName().toString(),true, true, false));
+                          CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(),true, true, false));
 		def = findByName(it,getName());
 	    }
 	}

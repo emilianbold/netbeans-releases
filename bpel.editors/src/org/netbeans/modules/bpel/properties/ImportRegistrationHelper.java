@@ -29,11 +29,9 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
-
 import org.openide.filesystems.FileObject;
 
 /**
@@ -43,6 +41,10 @@ import org.openide.filesystems.FileObject;
 public class ImportRegistrationHelper {
     public ImportRegistrationHelper(BpelModel model) {
         this.model = model;
+    }
+    
+    public BpelModel getBpelModel() {
+        return model;
     }
     
     public void addImport(Model imp_model){
@@ -106,6 +108,8 @@ public class ImportRegistrationHelper {
         }
         // may be this model is known by global catalog
         BPELCatalog bpelCatalog = BPELCatalog.getDefault();
+        WsAddressingImportHelper wsAddressingHelper 
+                = WsAddressingImportHelper.getInstance(getBpelModel(), this);
         String namespace= null;
         StandardImportType importType = null;
         if (model instanceof SchemaModel) {
@@ -120,6 +124,10 @@ public class ImportRegistrationHelper {
         
         String modelUri = null;
         if (namespace != null) {
+            if (wsAddressingHelper != null && wsAddressingHelper.isAccepted(
+                    namespace)) {
+                return wsAddressingHelper.createWsAddressingImport(namespace);
+            }
             modelUri = bpelCatalog.resolveURI(namespace);
         }
         
@@ -129,7 +137,7 @@ public class ImportRegistrationHelper {
         
         return null;
     }
-    
+
     public Import createImport(FileObject fo){
         if (fo != null) {
             StandardImportType importType = StandardImportType.forExt(fo.getExt());
@@ -202,5 +210,5 @@ public class ImportRegistrationHelper {
         return false;
     }
 
-    private BpelModel model;
+    private final BpelModel model;
 }

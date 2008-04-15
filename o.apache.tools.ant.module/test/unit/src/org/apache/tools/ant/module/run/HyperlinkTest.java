@@ -102,7 +102,13 @@ public class HyperlinkTest extends NbTestCase {
 
     private void doTestMovingHyperlink(boolean save) throws Exception {
         click(h11);
-        JEditorPane ep1 = ((CloneableEditor) TopComponent.getRegistry().getActivated()).getEditorPane();
+        final JEditorPane[] _ep1 = {null};
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                _ep1[0] = ((CloneableEditor) TopComponent.getRegistry().getActivated()).getEditorPane();
+            }
+        });
+        JEditorPane ep1 = _ep1[0];
         assertEquals("#1\n", ep1.getDocument().getText(ep1.getCaretPosition(), 3));
         ep1.getDocument().insertString(ep1.getCaretPosition() + 3, "fixstuff\n", null);
         if (save) {

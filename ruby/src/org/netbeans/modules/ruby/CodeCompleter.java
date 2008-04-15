@@ -1297,7 +1297,7 @@ public class CodeCompleter implements Completable {
     }
     
     private static int callLineStart = -1;
-    private static IndexedMethod callMethod;
+    static IndexedMethod callMethod;
 
     /** Compute the current method call at the given offset. Returns false if we're not in a method call. 
      * The argument index is returned in parameterIndexHolder[0] and the method being
@@ -3155,7 +3155,7 @@ public class CodeCompleter implements Completable {
             final RubyParser parser = new RubyParser();
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
-                Element surrounding = parser.resolveHandle(null, elementHandle);
+                Element surrounding = RubyParser.resolveHandle(null, elementHandle);
                 if (surrounding != null && surrounding.getKind() != ElementKind.KEYWORD) {
                     String name = surrounding.getName();
                     ElementKind kind = surrounding.getKind();

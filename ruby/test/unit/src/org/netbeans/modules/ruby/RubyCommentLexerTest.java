@@ -57,6 +57,7 @@ public class RubyCommentLexerTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);

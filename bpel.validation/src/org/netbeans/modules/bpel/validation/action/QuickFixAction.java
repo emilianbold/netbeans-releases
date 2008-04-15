@@ -57,8 +57,6 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
-import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
 import org.netbeans.modules.bpel.validation.core.QuickFixable;
@@ -92,7 +90,6 @@ public final class QuickFixAction extends IconAction {
     io.select();
 
     out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix_started")); // NOI18N
-//    doQuickFix(getQuickFixes(getBpelModel(getSelectedNode())), out); // todo r
     doQuickFix(getQuickFixes(getSelectedNode()), out);
     out.println();
     out.print(i18n(QuickFixAction.class,"MSG_Quick_Fix_finished")); // NOI18N
@@ -112,55 +109,25 @@ public final class QuickFixAction extends IconAction {
       out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", quickFix.getDescription())); // NOI18N
     }
   }
-/* todo r
-  private BpelModel getBpelModel(Node node) {
-    DataObject data = getDataObject(node);
 
-    if (data == null) {
-      return null;
-    }
-    return CoreUtil.getBpelModel(data);
-  }
-
-  private List<QuickFix> getQuickFixes(BpelModel model) {
-    List<QuickFix> quickFixes = new ArrayList<QuickFix>();
-
-    if (model == null) {
-      return quickFixes;
-    }
-    Validation validation = new Validation();
-    validation.validate(model, ValidationType.COMPLETE);
-    List<ResultItem> result = validation.getValidationResult();
-
-    for (ResultItem item : result) {
-      if ( !(item instanceof QuickFixable)) {
-        continue;
-      }
-      QuickFix quickFix = ((QuickFixable) item).getQuickFix();
-
-      if (quickFix != null) {
-        quickFixes.add(quickFix);
-      }
-    }
-    return quickFixes;
-  }
-*/
   private List<QuickFix> getQuickFixes(Node node) {
     List<QuickFix> quickFixes = new ArrayList<QuickFix>();
 
     if (node == null) {
       return quickFixes;
     }
-//out("MODE: " + node);
+//out();
+//out("NODE: " + node);
+
     if (myValidationController == null) {
-      BPELDataEditorSupport support = (BPELDataEditorSupport) node.getLookup().lookup(DataEditorSupport.class);
-      myValidationController = support.getValidationController();
+      myValidationController = node.getLookup().lookup(BPELValidationController.class);
+//out("CONTROLLER: " + myValidationController);
     }
     if (myValidationController == null) {
 //out("CONTROLLER is NULL");
       return quickFixes;
     }
-    List<ResultItem> result = myValidationController.getValidationResult();
+    List<ResultItem> result = myValidationController.getResult();
 
     for (ResultItem item : result) {
       if ( !(item instanceof QuickFixable)) {

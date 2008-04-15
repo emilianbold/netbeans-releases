@@ -41,9 +41,9 @@
 package org.netbeans.modules.bpel.project.anttasks.cli;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -53,8 +53,6 @@ import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvide
 import org.netbeans.modules.bpel.project.anttasks.util.Util;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
@@ -196,38 +194,31 @@ public class CliValidateBpelProjectDelegate extends Task {
     }
     
     private void validate(File bpelFile) throws BuildException {
-        try {
-            BpelModel model = CliBpelCatalogModel.
-                    getDefault().getBPELModel(bpelFile.toURI());
-                    
-            Validation validation = new Validation();
-            validation.validate((Model) model, ValidationType.COMPLETE);
-            Collection col = validation.getValidationResult();
-            boolean isError = false;
-            
-            for (Iterator itr = col.iterator(); itr.hasNext();) {
-                ResultItem resultItem = (ResultItem) itr.next();
-                
-                if (!mAllowBuildWithError) {
-                    if (resultItem.getType() == Validator.ResultType.ERROR) {
-                        System.out.println(getValidationError(resultItem));
-                        System.out.println();
-                    }
-                }
-                
-                if (resultItem.getType() == Validator.ResultType.ERROR) {
-                    isError = true;
+      try {
+        BpelModel model = CliBpelCatalogModel.getDefault().getBPELModel(bpelFile.toURI());
+        List<ResultItem> result = Util.validate(model);
+        boolean isError = false;
+          
+        for (ResultItem item : result) {
+            if ( !mAllowBuildWithError) {
+                if (item.getType() == Validator.ResultType.ERROR) {
+                    System.out.println(getValidationError(item));
+                    System.out.println();
                 }
             }
-
-            if (isError) {
-                this.isFoundErrors = true;
-            }
-        } catch (Throwable e) {
-            if (!mAllowBuildWithError) {
-                throw new BuildException(e);
+            if (item.getType() == Validator.ResultType.ERROR) {
+                isError = true;
             }
         }
+        if (isError) {
+            this.isFoundErrors = true;
+        }
+      }
+      catch (Throwable e) {
+          if ( !mAllowBuildWithError) {
+              throw new BuildException(e);
+          }
+      }
     }
     
     private String getValidationError(ResultItem resultItem) {

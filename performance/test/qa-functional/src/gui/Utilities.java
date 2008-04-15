@@ -41,6 +41,7 @@
 
 package gui;
 
+import java.io.PrintStream;
 import javax.swing.tree.TreePath;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -305,14 +306,16 @@ public class Utilities {
         NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
-        String pname = wizard_location.txtProjectName().getText();
+        String pname = wizard_location.txtProjectName().getText() + System.currentTimeMillis();
+        wizard_location.txtProjectName().clearText();
+        wizard_location.txtProjectName().typeText(pname);
         
-        // if the project exists, try to generate new name
-        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
-            pname = pname+"1";
-            wizard_location.txtProjectName().clearText();
-            wizard_location.txtProjectName().typeText(pname);
-        }
+//        // if the project exists, try to generate new name
+//        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
+//            pname = pname+"1";
+//            wizard_location.txtProjectName().clearText();
+//            wizard_location.txtProjectName().typeText(pname);
+//        }
         wizard.finish();
         
         // wait 10 seconds
@@ -382,7 +385,7 @@ public class Utilities {
     public static void buildproject(String project) {
         ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
         prn.buildProject();
-        StringComparator sc = MainWindowOperator.getDefault().getComparator();
+        StringComparator sc = MainWindowOperator.getDefault().getComparator();        
         MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, true));
         MainWindowOperator.getDefault().waitStatusText("Finished building "); // NOI18N
         MainWindowOperator.getDefault().setComparator(sc);
@@ -647,7 +650,12 @@ public class Utilities {
      */
     public static void waitScanFinished(){
         ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
+        try {
+            new QueueTool().waitEmpty(1000);
+        } catch (TimeoutExpiredException tee) {            
+            getLog().println("The following exception is ignored");
+            tee.printStackTrace(getLog());
+        }
         ProjectSupport.waitScanFinished();
     }
     public static void initLog(PerformanceTestCase testCase) {
@@ -659,6 +667,13 @@ public class Utilities {
     private static void log(String logMessage) {
         System.out.println("Utilities::"+logMessage);
         if( test != null  ) { test.log("Utilities::"+logMessage); }
+    }
+    private static PrintStream getLog() {
+        if( test != null  ) { 
+            return test.getLog(); 
+        } else {
+            return System.out;
+        }
     }
     
 }

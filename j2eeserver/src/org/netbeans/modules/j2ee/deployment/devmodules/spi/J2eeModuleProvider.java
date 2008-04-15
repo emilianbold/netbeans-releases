@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.beans.PropertyChangeListener;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
@@ -76,6 +80,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  * @author  Pavel Buzek
  */
 public abstract class J2eeModuleProvider {
+    
+    private static final Logger LOGGER = Logger.getLogger(J2eeModuleProvider.class.getName());
     
     private ConfigSupportImpl configSupportImpl;
     final List listeners = new ArrayList();
@@ -674,7 +680,15 @@ public abstract class J2eeModuleProvider {
      * Return InstanceProperties of the server instance
      **/
     public InstanceProperties getInstanceProperties(){
-        return InstanceProperties.getInstanceProperties(getServerInstanceID());
+        InstanceProperties props = InstanceProperties.getInstanceProperties(getServerInstanceID());
+
+        boolean asserts = false;
+        assert asserts = true;
+
+        if (asserts && props != null) {
+            return new WarningInstanceProperties(props);
+        }
+        return props;
     }
 
     /** This method is used to determin type of target server.
@@ -846,4 +860,59 @@ public abstract class J2eeModuleProvider {
         return (ConfigSupportImpl) getConfigSupport();
     }
 
+    private static class WarningInstanceProperties extends InstanceProperties {
+
+        private final InstanceProperties delegate;
+
+        public WarningInstanceProperties(InstanceProperties delegate) {
+            this.delegate = delegate;
+        }
+
+        public String getProperty(String propname) throws IllegalStateException {
+            LOGGER.log(Level.WARNING, "Accessing instance property through "
+                    + J2eeModuleProvider.class.getName() + " is pointing to a missing API or a bad design of the module");
+            return delegate.getProperty(propname);
+        }
+
+        public void setProperty(String propname, String value) throws IllegalStateException {
+            LOGGER.log(Level.WARNING, "Accessing instance property through "
+                    + J2eeModuleProvider.class.getName() + " is pointing to a missing API or a bad design of the module");
+            delegate.setProperty(propname, value);
+        }
+
+        public void setProperties(Properties props) throws IllegalStateException {
+            LOGGER.log(Level.WARNING, "Accessing instance property through "
+                    + J2eeModuleProvider.class.getName() + " is pointing to a missing API or a bad design of the module");
+            delegate.setProperties(props);
+        }
+
+        public void setAsDefaultServer(String targetName) {
+            delegate.setAsDefaultServer(targetName);
+        }
+
+        public void refreshServerInstance() {
+            delegate.refreshServerInstance();
+        }
+
+        public Enumeration propertyNames() throws IllegalStateException {
+            return delegate.propertyNames();
+        }
+
+        public boolean isDefaultInstance() {
+            return delegate.isDefaultInstance();
+        }
+
+        public DeploymentManager getDeploymentManager() {
+            return delegate.getDeploymentManager();
+        }
+
+        public Target getDefaultTarget() {
+            return delegate.getDefaultTarget();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+    }
 }

@@ -77,6 +77,7 @@ public class Description {
         return priority;
     }
     
+    @Override
     public String toString() {
         return "Description(desc=" + description + ",fixes=" + fixes + ")";
     }

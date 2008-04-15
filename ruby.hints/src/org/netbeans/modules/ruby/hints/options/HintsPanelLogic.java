@@ -60,7 +60,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -291,8 +290,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     // ActionListener implementation -------------------------------------------
     
     public void actionPerformed(ActionEvent e) {
-        if( errorTree.getSelectionPath() == null )
+        if( errorTree.getSelectionPath() == null ) {
             return;
+        }
         
         Object o = getUserObject(errorTree.getSelectionPath());
         
@@ -300,8 +300,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             UserConfigurableRule hint = (UserConfigurableRule) o;
             Preferences p = getPreferences4Modification(hint);
             
-            if( severityComboBox.equals( e.getSource() ) )
-                HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));            
+            if( severityComboBox.equals( e.getSource() ) ) {
+                HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));
+            }            
         }
     }
 
@@ -329,8 +330,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
        
     private boolean toggle( TreePath treePath ) {
 
-        if( treePath == null )
+        if( treePath == null ) {
             return false;
+        }
 
         Object o = getUserObject(treePath);
 

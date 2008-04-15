@@ -66,7 +66,7 @@ public class RailsProjectTestBase extends RubyTestBase {
     protected RailsProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
         RailsDatabaseConfiguration dbConf = RailsAdapterFactory.getDefaultAdapter();
-        RailsProjectCreateData data = new RailsProjectCreateData(RubyPlatformManager.getDefaultPlatform(), prjDirF, projectName, false, dbConf, false, "WEBRICK");
+        RailsProjectCreateData data = new RailsProjectCreateData(RubyPlatformManager.getDefaultPlatform(), prjDirF, projectName, false, dbConf, false, "WEBRICK", null);
         RailsProjectGenerator.createProject(data);
         RubyTestBase.createFiles(prjDirF, paths);
         RailsProject project = (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));

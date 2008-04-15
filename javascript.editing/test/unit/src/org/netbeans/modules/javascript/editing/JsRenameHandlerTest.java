@@ -28,12 +28,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.InstantRenamer;
 
 /**
  *
@@ -45,69 +40,9 @@ public class JsRenameHandlerTest extends JsTestBase {
         super(testName);
     }
 
-    private String annotate(Document doc, Set<OffsetRange> ranges) throws Exception {
-        if (ranges.size() == 0) {
-            return "Requires Interactive Refactoring\n";
-        }
-        StringBuilder sb = new StringBuilder();
-        String text = doc.getText(0, doc.getLength());
-        Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
-        Map<Integer, OffsetRange> ends = new HashMap<Integer, OffsetRange>(100);
-        for (OffsetRange range : ranges) {
-            starts.put(range.getStart(), range);
-            ends.put(range.getEnd(), range);
-        }
-
-        for (int i = 0; i < text.length(); i++) {
-            if (starts.containsKey(i)) {
-                sb.append("|>");
-            }
-            if (ends.containsKey(i)) {
-                sb.append("<|");
-            }
-            sb.append(text.charAt(i));
-        }
-        // Only print lines with result
-        String[] lines = sb.toString().split("\n");
-        sb = new StringBuilder();
-        int lineno = 1;
-        for (String line : lines) {
-            if (line.indexOf("|>") != -1) {
-                sb.append(Integer.toString(lineno));
-                sb.append(": ");
-                sb.append(line);
-                sb.append("\n");
-            }
-            lineno++;
-        }
-        
-        return sb.toString();
-    }
-
-    private void checkRenameSections(String relFilePath, String caretLine) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        JsRenameHandler handler = new JsRenameHandler();
-
-        int caretOffset = -1;
-        if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = info.getText().indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
-        }
-
-        String annotatedSource;
-        if (handler.isRenameAllowed(info, caretOffset, null)) {
-            Set<OffsetRange> renameRegions = handler.getRenameRegions(info, caretOffset);
-            annotatedSource = annotate(info.getDocument(), renameRegions);
-        } else {
-            annotatedSource = "Refactoring not allowed here\n";
-        }
-
-        assertDescriptionMatches(relFilePath, annotatedSource, true, ".rename");
+    @Override
+    protected InstantRenamer getRenameHandler() {
+        return new JsRenameHandler();
     }
 
     public void testRename1() throws Exception {
@@ -140,5 +75,41 @@ public class JsRenameHandlerTest extends JsTestBase {
     
     public void testRename8() throws Exception {
         checkRenameSections("testfiles/rename.js", "funct^ion");
+    }
+    
+    public void testRename9a() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "function(dom^Node, props");
+    }
+
+    public void testRename9b() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "@param {Node} dom^Node The DOM node");
+    }
+
+    public void testRename9c() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "if (dom^Node == null || props == null) {");
+    }
+
+    public void testRename10() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "function(domNode, pro^ps");
+    }
+
+    public void testRename11a() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "third^param)");
+    }
+    
+    public void testRename11b() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "{Object}  third^param");
+    }
+
+    public void testRename12() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "@param f^oo");
+    }
+
+    public void testRename13() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "* n^ew @param");
+    }
+
+    public void testRename14() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", " @param test^param");
     }
 }

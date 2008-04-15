@@ -59,16 +59,18 @@ public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.ut
     
     private Node processNode, schemaNode, anotherSchemaNode;
     
+    public final long EXPECTED_TIME = 10000; // After fix of issue 128585 "Please wait" text is shown
+    
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaView(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
+        expectedTime = EXPECTED_TIME;
     }
     
     /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaView(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
+        expectedTime = EXPECTED_TIME;
     }
     
     protected void initialize() {
