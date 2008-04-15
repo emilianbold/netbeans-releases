@@ -46,7 +46,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +63,7 @@ import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
 import org.netbeans.spi.glassfish.CustomizerCookie;
+import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
@@ -105,9 +108,8 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     // api instance
     private ServerInstance commonInstance;
     
-
-    GlassfishInstance(String displayName, String homeFolder, int httpPort, int adminPort) {
-        commonSupport = new CommonServerSupport(displayName, homeFolder, httpPort, adminPort);
+    GlassfishInstance(Map<String, String> ip) {
+        commonSupport = new CommonServerSupport(ip);
 
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
@@ -167,7 +169,18 @@ public class GlassfishInstance implements ServerInstanceImplementation {
      * @return GlassfishInstance object for this server instance.
      */
     public static GlassfishInstance create(String displayName, String homeFolder, int httpPort, int adminPort) {
-        GlassfishInstance result = new GlassfishInstance(displayName, homeFolder, httpPort, adminPort);
+        Map<String, String> ip = new HashMap<String, String>();
+        ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
+        ip.put(GlassfishModule.HOME_FOLDER_ATTR, homeFolder);
+        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
+        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        GlassfishInstance result = new GlassfishInstance(ip);
+        result.commonInstance = ServerInstanceFactory.createServerInstance(result);
+        return result;
+    }
+    
+    public static GlassfishInstance create(Map<String, String> ip) {
+        GlassfishInstance result = new GlassfishInstance(ip);
         result.commonInstance = ServerInstanceFactory.createServerInstance(result);
         return result;
     }

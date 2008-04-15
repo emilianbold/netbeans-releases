@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,7 @@ import org.openide.util.NbBundle;
 public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String DIR_GLASSFISH_INSTANCES = "/GlassFish/Instances"; //NOI18N
+    static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
     
     private static final GlassfishInstanceProvider singleton = new GlassfishInstanceProvider();
     
@@ -206,12 +208,18 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         GlassfishInstance instance = null;
 
         String homeFolder = getStringAttribute(instanceFO, GlassfishModule.HOME_FOLDER_ATTR);
-        String displayName = getStringAttribute(instanceFO, GlassfishModule.DISPLAY_NAME_ATTR);
-        int httpPort = getIntAttribute(instanceFO, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
-        int adminPort = getIntAttribute(instanceFO, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
 
         if(isValidHomeFolder(homeFolder)) {
-            instance = GlassfishInstance.create(displayName, homeFolder, httpPort, adminPort);
+            // collect attributes and pass to create()
+            Map<String, String> ip = new HashMap<String, String>();
+            Enumeration<String> iter = instanceFO.getAttributes();
+            while(iter.hasMoreElements()) {
+                String name = iter.nextElement();
+                String value = getStringAttribute(instanceFO, name);
+                ip.put(name, value);
+            }
+            ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
+            instance = GlassfishInstance.create(ip);
         } else {
             Logger.getLogger("glassfish").finer("GlassFish folder " + instanceFO.getPath() + " is not a valid V3 install.");
             instanceFO.delete();
@@ -247,12 +255,21 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             }
 
             CommonServerSupport css = instance.getCommonSupport();
-            instanceFO.setAttribute(GlassfishModule.URL_ATTR, instance.getDeployerUri());
-            instanceFO.setAttribute(GlassfishModule.HOME_FOLDER_ATTR, homeFolder);
-            instanceFO.setAttribute(GlassfishModule.DISPLAY_NAME_ATTR, instance.getDisplayName());
-            instanceFO.setAttribute(GlassfishModule.HTTPPORT_ATTR, css.getHttpPort());
-            instanceFO.setAttribute(GlassfishModule.ADMINPORT_ATTR, css.getAdminPort());
+            Map<String, String> attrMap = css.getInstanceProperties();
+            for(Map.Entry<String, String> entry: attrMap.entrySet()) {
+                String key = entry.getKey();
+                if(!filterKey(key)) {
+                    instanceFO.setAttribute(key, entry.getValue());
+                }
+            }
+            
+            css.setProperty(INSTANCE_FO_ATTR, instanceFO.getName());
+            css.setFileObject(instanceFO);
         }
+    }
+    
+    private static boolean filterKey(String key) {
+        return INSTANCE_FO_ATTR.equals(key);
     }
 
     private void removeInstanceFromFile(String url) {
@@ -294,9 +311,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private static boolean isValidHomeFolder(String folderName) {
-        File f = new File(folderName);
-        // !PW FIXME better heuristics to identify a valid V3 install
-        return f.exists();
+        boolean result = false;
+        if(folderName != null) {
+            File f = new File(folderName);
+            // !PW FIXME better heuristics to identify a valid V3 install
+            result = f.exists();
+        }
+        return result;    
     }
 
     private static String getStringAttribute(FileObject fo, String attrName) {

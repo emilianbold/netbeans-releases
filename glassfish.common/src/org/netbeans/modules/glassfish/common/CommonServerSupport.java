@@ -64,6 +64,9 @@ import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.netbeans.spi.glassfish.OperationStateListener;
 import org.netbeans.spi.glassfish.ServerCommand;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 
@@ -84,33 +87,69 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     private ChangeSupport changeSupport = new ChangeSupport(this);
     
-    CommonServerSupport(final String displayName, final String homeFolder, int httpPort, int adminPort) {
-        final String hostName = GlassfishInstance.DEFAULT_HOST_NAME;
-        if(adminPort < 0) {
-            adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
+    private FileObject instanceFO;
+    
+    CommonServerSupport(Map<String, String> ip) {
+        String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
+        String homeFolder = updateString(ip, GlassfishModule.HOME_FOLDER_ATTR, "");
+        int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
+        updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, GlassfishInstance.GLASSFISH_SERVER_NAME);
+        updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
+
+        if(ip.get(GlassfishModule.URL_ATTR) == null) {
+            String deployerUrl = "[" + homeFolder + "]" + URI_PREFIX + ":" + 
+                    hostName + ":" + httpPort;
+            ip.put(URL_ATTR, deployerUrl);
         }
-        if(httpPort < 0) {
-            httpPort = GlassfishInstance.DEFAULT_HTTP_PORT;
-        }
+
+        ip.put(JVM_MODE, NORMAL_MODE);
+        ip.put(DEBUG_PORT, "8787");
+        properties.putAll(ip);
         
-        properties.put(DISPLAY_NAME_ATTR, displayName);
-        properties.put(HOME_FOLDER_ATTR, homeFolder);
-        
-        String deployerUrl = "[" + homeFolder + "]" + URI_PREFIX + ":" + 
-                hostName + ":" + httpPort;
-        properties.put(URL_ATTR, deployerUrl);
-        
+        // XXX username/password handling at some point.
         properties.put(USERNAME_ATTR, GlassfishInstance.DEFAULT_ADMIN_NAME);
         properties.put(PASSWORD_ATTR, GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
-        properties.put(ADMINPORT_ATTR, Integer.toString(adminPort));
-        properties.put(HTTPPORT_ATTR, Integer.toString(httpPort));
-        properties.put(HOSTNAME_ATTR, hostName);
-        properties.put(JVM_MODE, NORMAL_MODE);
-        properties.put(DEBUG_PORT, "8787");
+
+        // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
+        // to persist per-instance property changes made by the user.
+        instanceFO = getInstanceFileObject();
         
         if(isRunning(hostName, httpPort)) {
             refresh();
         }
+    }
+    
+    private static String updateString(Map<String, String> map, String key, String defaultValue) {
+        String result = map.get(key);
+        if(result == null) {
+            map.put(key, defaultValue);
+            result = defaultValue;
+        }
+        return result;
+    }
+
+    private static int updateInt(Map<String, String> map, String key, int defaultValue) {
+        int result;
+        String value = map.get(key);
+        try {
+            result = Integer.parseInt(value);
+        } catch(NumberFormatException ex) {
+            map.put(key, Integer.toString(defaultValue));
+            result = defaultValue;
+        }
+        return result;
+    }
+    
+    private FileObject getInstanceFileObject() {
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject dir = fs.findResource(GlassfishInstanceProvider.DIR_GLASSFISH_INSTANCES);
+        if(dir != null) {
+            String instanceFN = properties.get(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+            if(instanceFN != null) {
+                return dir.getFileObject(instanceFN);
+            }
+        }
+        return null;
     }
     
     public String getHomeFolder() {
@@ -290,6 +329,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             result = properties.get(name);
             if(result == null || overwrite == true) {
                 properties.put(name, value);
+                setInstanceAttr(name, value);
                 result = value;
             }
         }
@@ -306,6 +346,27 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     void getProperty(String key) {
         properties.get(key);
+    }
+    
+    void setInstanceAttr(String name, String value) {
+        if(instanceFO == null || !instanceFO.isValid()) {
+            instanceFO = getInstanceFileObject();
+        }
+        if(instanceFO != null) {
+            try {
+                instanceFO.setAttribute(name, value);
+            } catch(IOException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, 
+                        "Unable to save attribute " + name + " for " + getDeployerUri(), ex);
+            }
+        } else {
+            Logger.getLogger("glassfish").log(Level.WARNING, 
+                    "Unable to save attribute " + name + " for " + getDeployerUri());
+        }
+    }
+    
+    void setFileObject(FileObject fo) {
+        instanceFO = fo;
     }
 
     public static boolean isRunning(final String host, final int port) {
