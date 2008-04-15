@@ -43,12 +43,15 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.Gem;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.ui.wizards.RailsInstallationValidator.RailsInstallationInfo;
 import org.openide.DialogDisplayer;
@@ -77,6 +80,19 @@ public class RailsInstallationPanel extends JPanel {
         this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(RailsInstallationPanel.class,"TXT_NewRoRApp")); // NOI18N
     }
     
+    private void initRailsVersionComboBox() {
+        List<GemInfo> gemInfos = platform().getGemManager().getVersions("rails"); //NOI18N
+        int size = gemInfos.size();
+        railsVersionComboBox.setEnabled(size > 0);
+        railsVersionLabel.setEnabled(size > 0);
+        
+        String[] versions = new String[size];
+        for (int i = 0; i < size; i++) {
+            versions[i] = gemInfos.get(i).getVersion();
+        }
+        railsVersionComboBox.setModel(new DefaultComboBoxModel(versions));
+    }
+    
     private RubyPlatform platform() {
         return (RubyPlatform) wizardDescriptor.getProperty("platform");
     }
@@ -102,11 +118,11 @@ public class RailsInstallationPanel extends JPanel {
         if (railsInfo.isValid()) {
             descLabel.setText(railsInfo.getMessage());
             Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "UpdateRails")); // NOI18N
-            installedLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsVersion", railsInfo.getVersion()));
+//            installedLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsVersion", railsInfo.getVersion()));
         } else {
             descLabel.setText(railsInfo.getMessage());
             Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
-            installedLabel.setText("");
+//            installedLabel.setText("");
         }
     }
     
@@ -118,8 +134,18 @@ public class RailsInstallationPanel extends JPanel {
         
         // In case user went back to the previous panel and changed the ruby settings
         updateGemProblem();
+        initRailsVersionComboBox();
+
     }
-        
+
+    void store(WizardDescriptor settings) {
+        String version = (String) railsVersionComboBox.getSelectedItem();
+        String latest = platform().getGemManager().getLatestVersion("rails");
+        // specify the version only if not using the latest version
+        if (version != null && !version.equals(latest)) {
+            settings.putProperty(NewRailsProjectWizardIterator.RAILS_VERSION, railsVersionComboBox.getSelectedItem());
+        }
+    }
     boolean valid (WizardDescriptor settings) {
         if (!platform().isValidRuby(false)) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
@@ -151,8 +177,9 @@ public class RailsInstallationPanel extends JPanel {
         jrubyLabel = new javax.swing.JLabel();
         jrubySslLabel = new javax.swing.JLabel();
         proxyButton = new javax.swing.JButton();
-        installedLabel = new javax.swing.JLabel();
         railsDetailButton = new javax.swing.JButton();
+        railsVersionLabel = new javax.swing.JLabel();
+        railsVersionComboBox = new javax.swing.JComboBox();
 
         FormListener formListener = new FormListener();
 
@@ -171,10 +198,13 @@ public class RailsInstallationPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.proxyButton.text")); // NOI18N
         proxyButton.addActionListener(formListener);
 
-        org.openide.awt.Mnemonics.setLocalizedText(installedLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installedLabel.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(railsDetailButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsDetailButton.text")); // NOI18N
         railsDetailButton.addActionListener(formListener);
+
+        railsVersionLabel.setLabelFor(railsVersionComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(railsVersionLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsVersionLabel.text")); // NOI18N
+
+        railsVersionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -183,19 +213,23 @@ public class RailsInstallationPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(descLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(railsDetailButton))
-                    .add(layout.createSequentialGroup()
-                        .add(railsButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(installedLabel))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .add(jrubyLabel)
                     .add(proxyButton)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(railsVersionLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(railsVersionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(descLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(railsDetailButton)
+                            .add(railsButton))
+                        .add(162, 162, 162))
+                    .add(jrubyLabel)
                     .add(jrubySslLabel)
-                    .add(sslButton))
+                    .add(sslButton)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -205,19 +239,20 @@ public class RailsInstallationPanel extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(descLabel)
                     .add(railsDetailButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(13, 13, 13)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(railsButton)
-                    .add(installedLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(railsVersionLabel)
+                    .add(railsVersionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(railsButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(23, 23, 23)
                 .add(jrubyLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jrubySslLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 83, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 53, Short.MAX_VALUE)
                 .add(proxyButton)
                 .addContainerGap())
         );
@@ -273,6 +308,7 @@ public class RailsInstallationPanel extends JPanel {
             RailsInstallationPanel.this.updateLabel();
             RailsInstallationPanel.this.firer.fireChangeEvent();
             platform().recomputeRoots();
+            initRailsVersionComboBox();
         }
     }
 
@@ -293,13 +329,14 @@ public class RailsInstallationPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
-    private javax.swing.JLabel installedLabel;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jrubyLabel;
     private javax.swing.JLabel jrubySslLabel;
     private javax.swing.JButton proxyButton;
     private javax.swing.JButton railsButton;
     private javax.swing.JButton railsDetailButton;
+    private javax.swing.JComboBox railsVersionComboBox;
+    private javax.swing.JLabel railsVersionLabel;
     private javax.swing.JButton sslButton;
     // End of variables declaration//GEN-END:variables
 
@@ -336,7 +373,7 @@ public class RailsInstallationPanel extends JPanel {
         }
 
         public void storeSettings(Object settings) {
-            // Nothing to store/restore here
+            this.component.store((WizardDescriptor) settings);
         }
 
         public void validate() throws WizardValidationException {
