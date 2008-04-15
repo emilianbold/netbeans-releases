@@ -164,7 +164,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 ResourceUtils.getString(ConfigurationLogic.class,
                                 ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY));
                 }
-
+                SystemUtils.sleep(3000);//wait for 3 seconds so that mysql really starts
                 fixSecuritySettingsWindows(location);
 
             //createWindowsShortcuts(location);
@@ -188,7 +188,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
-    private void fixSecuritySettingsWindows(File location) throws InstallationException {
+    private void fixSecuritySettingsWindows(File location) throws InstallationException {        
         if (!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
             query(location, REMOVE_ANONYMOUS_QUERY);
         }
@@ -209,7 +209,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (!getProperty(MySQLPanel.PASSWORD_PROPERTY).equals(StringUtils.EMPTY_STRING)) {
                 commands.add("--password=" + getProperty(MySQLPanel.PASSWORD_PROPERTY));
             }
-            
+            commands.add("--connect_timeout=3");
+            commands.add("-v");
             ProcessBuilder pb = new ProcessBuilder(commands).directory(location).redirectErrorStream(true);
             LogManager.log("... starting process : " + StringUtils.asString(commands, " "));
             Process p = pb.start();
@@ -232,6 +233,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private void installUnix(Progress progress) throws InstallationException {
+        progress.setDetail(PROGRESS_DETAIL_RUNNING_MYSQL_INSTANCE_CONFIGURATION);
         final File location = getProduct().getInstallationLocation();
         final File installScript = new File(location, "configure-mysql.sh");
         try {
@@ -602,6 +604,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private void uninstallUnix(Progress progress, File location) throws UninstallationException {
+        
         final File uninstallScript = new File(location, "uninstall-mysql.sh");
         try {
             InputStream is = ResourceUtils.getResource(UNINSTALL_SCRIPT_UNIX,
