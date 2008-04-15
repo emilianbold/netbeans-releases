@@ -75,11 +75,11 @@ public class SelectTableAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(selTableImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND034: Select Source And Target Tables (Shift-S)");
+        String nbBundle2 = mLoc.t("BUND034: Select Source And Target Tables (Ctrl+Shift-T)");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle2.substring(15));
 
         // Acceleratot Shift-S
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.SHIFT_DOWN_MASK));
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('T', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
     }
 
     /**

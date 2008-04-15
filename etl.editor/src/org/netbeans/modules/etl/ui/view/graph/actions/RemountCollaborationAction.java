@@ -53,10 +53,9 @@ public class RemountCollaborationAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(remountImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND028: Drops and re-creates all the tables. (Shift-M)");
+        String nbBundle2 = mLoc.t("BUND028: Drops and re-creates all the tables.");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
         // Acceleratot Shift-M
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('M', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**
