@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -477,7 +477,13 @@ public class TopComponentOperator extends JComponentOperator {
         if(subchooser == null) {
             return c;
         } else {
-            if(c instanceof MultiViewCloneableTopComponent) {
+            boolean isMultiView = false;
+            try {
+                isMultiView = c instanceof MultiViewCloneableTopComponent;
+            } catch (Throwable t) {
+                // ignore possible NoClassDefFoundError because org.netbeans.core.multiview module is not enabled in IDE
+            }
+            if(isMultiView) {
                 TopComponentOperator tco = new TopComponentOperator((JComponent)c);
                 // suppress output when finding sub component
                 tco.setOutput(TestOut.getNullOutput());

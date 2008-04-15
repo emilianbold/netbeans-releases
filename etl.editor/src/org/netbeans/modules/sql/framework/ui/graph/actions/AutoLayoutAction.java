@@ -71,11 +71,10 @@ public class AutoLayoutAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(autoLayoutImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("BUND312: AutoLayout All Graph Objects (Shift-L)");
+        String nbBundle1 = mLoc.t("BUND312: AutoLayout All Graph Objects");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
 
         // Acceleratot Shift-L
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('L', InputEvent.SHIFT_DOWN_MASK));
 
     }
 
