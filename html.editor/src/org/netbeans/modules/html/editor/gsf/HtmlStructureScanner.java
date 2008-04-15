@@ -54,6 +54,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.AstPath;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -65,6 +66,7 @@ import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.editor.html.HTMLKit;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -155,11 +157,12 @@ public class HtmlStructureScanner implements StructureScanner {
 
         private TranslatedSource source;
         private HtmlElementHandle handle;
-
+        private int myIndexInParent = -1;
+        private List<StructureItem> items = null;
+        
         private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
             this.handle = handle;
             this.source= source;
-
         }
 
         public String getName() {
@@ -181,21 +184,35 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle;
         }
 
+        synchronized int indexInParent() {
+            if(myIndexInParent == -1) {
+                AstNode papa = handle.node().parent();
+                myIndexInParent = papa == null ? -2 : AstPath.indexInSimilarNodes(papa, handle.node());
+            }
+            return myIndexInParent;
+        }
+        
         @Override
         public boolean equals(Object o) {
             if(!(o instanceof HtmlStructureItem)) {
                 return false;
             }
-            HtmlStructureItem compared = (HtmlStructureItem)o;
-            return compared.handle.signatureEquals(handle);
-        }
-        
-        @Override
-        public int hashCode() {
-            return handle.node().path().toString().hashCode();
+            HtmlStructureItem item = (HtmlStructureItem)o;
+            
+            AstNode he = ((HtmlStructureItem)o).handle.node();
+            AstNode me = handle.node();
+            if(he.type() == me.type() && he.name().equals(me.name())) {
+                return indexInParent() == item.indexInParent();
+            }
+            return false;
         }
 
+        @Override
+        public int hashCode() {
+            return handle.node().name().hashCode() + indexInParent();
         
+        }
+      
         public ElementKind getKind() {
             return ElementKind.TAG;
         }
@@ -217,16 +234,18 @@ public class HtmlStructureScanner implements StructureScanner {
             //return handle.node().children().isEmpty();
         }
 
-        public List<? extends StructureItem> getNestedItems() {
-            List<StructureItem> list = new  ArrayList<StructureItem>(handle.node().children().size());
-            for(AstNode child : handle.node().children()) {
-                if(child.type() == AstNode.NodeType.TAG 
-                        || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                    HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
-                    list.add(new HtmlStructureItem(childHandle, source));
+        public synchronized List<? extends StructureItem> getNestedItems() {
+            if(items == null) {
+                items = new  ArrayList<StructureItem>(handle.node().children().size());
+                for(AstNode child : handle.node().children()) {
+                    if(child.type() == AstNode.NodeType.TAG 
+                            || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                        HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
+                        items.add(new HtmlStructureItem(childHandle, source));
+                    }
                 }
             }
-            return list;
+            return items;
         }
 
         public long getPosition() {
