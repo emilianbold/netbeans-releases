@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -206,14 +207,7 @@ class PhpActionProvider implements ActionProvider {
      */
     private boolean doInvokeAction(Command command) {
 	if (command != null) {
-	    if (command.isSaveRequired()) {
-		LifecycleManager.getDefault().saveAll();
-		final CopySupport copySupport = getProject().getCopySupport();
-		if (copySupport != null) {
-		    copySupport.waitFinished();		
-		}
-	    }
-	    PhpCommandRunner.runCommand(command);
+	    PhpCommandRunner.runCommand(command,getProject());
 	}
 	return command != null;
     }
@@ -266,7 +260,14 @@ class PhpActionProvider implements ActionProvider {
         //private static RequestProcessor RP = new RequestProcessor(
         //        "Module-Actions", Integer.MAX_VALUE); // NOI18N
 
-        public static void runCommand(final Command command) {
+        public static void runCommand(final Command command,PhpProject project) {
+	    if (command.isSaveRequired()) {
+		LifecycleManager.getDefault().saveAll();
+		final CopySupport copySupport = project.getCopySupport();
+		if (copySupport != null) {
+		    copySupport.waitFinished();		
+		}
+	    }
             
             command.setActionFiles(PhpCommandUtils.getActionFiles());
             
