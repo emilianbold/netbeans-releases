@@ -60,11 +60,6 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         super(name);
     }
     
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run (new NbTestSuite (AsynchronousValidatingPanelTest.class));
-        System.exit (0);
-    }
-    
     WizardDescriptor wd;
     String exceptedValue;
 
@@ -82,6 +77,9 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
     }
     
     public void testAsynchronousLazyValidation () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         Panel panels[] = new Panel[3];
         
         class MyPanel extends Panel implements WizardDescriptor.AsynchronousValidatingPanel {
