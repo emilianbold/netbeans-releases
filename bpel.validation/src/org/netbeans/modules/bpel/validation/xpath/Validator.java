@@ -326,6 +326,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     try {
       Duration duration = DurationUtil.parseDuration(value, true);
 
+      if (duration == null) {
+        return;
+      }
       if (duration.hasMinus() || isZero(duration)) {
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }

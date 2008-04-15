@@ -19,7 +19,7 @@
 package org.netbeans.modules.bpel.nodes.refactoring;
 
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.nodes.BpelNode;
@@ -50,7 +50,7 @@ public class UsageContextNode extends UsageFilterNode {
 //        if (ref == null || !(ref instanceof BpelEntity)) {
 //            return originalNode.getHtmlDisplayName();
 //        }
-//        return Util.getUsageContextPath((BpelEntity)ref, Sequence.class);
+//        return EditorUtil.getUsageContextPath((BpelEntity)ref, Sequence.class);
 //    }
     
     public String getDisplayName() {
@@ -76,14 +76,14 @@ public class UsageContextNode extends UsageFilterNode {
             case VARIABLE_CONTAINER :
             case CORRELATION_SET_CONTAINER :
             case MESSAGE_EXCHANGE_CONTAINER :
-                contextName = RefactorUtil.getUsageContextPath(
+                contextName = EditorUtil.getUsageContextPath(
                         ((BpelNode)originalNode).getHtmlDisplayName()
                         , (BpelEntity)ref
                         , Sequence.class);
                 break;
             default :
                 contextName =
-                        RefactorUtil.getUsageContextPath((BpelEntity)ref, Sequence.class);
+                        EditorUtil.getUsageContextPath((BpelEntity)ref, Sequence.class);
         }
         
         if (contextName == null) {
@@ -103,7 +103,7 @@ public class UsageContextNode extends UsageFilterNode {
             return contextPathName;
         }
         
-        int lastSepPosition = contextPathName.lastIndexOf(RefactorUtil.ENTITY_SEPARATOR);
+        int lastSepPosition = contextPathName.lastIndexOf(EditorUtil.ENTITY_SEPARATOR);
         if (lastSepPosition > 0) {
             lastSepPosition++;
             contextPathName = SoaUiUtil.getGrayString(

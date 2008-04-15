@@ -16,15 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.core.util;
+package org.netbeans.modules.bpel.core;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 
 /**
- *
  * @author Praveen Savur
  */
 public interface SelectBpelElement {
     
-    public void select(BpelEntity bpelEntity); 
+    void select(BpelEntity bpelEntity); 
 }

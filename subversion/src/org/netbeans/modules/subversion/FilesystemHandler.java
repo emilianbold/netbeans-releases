@@ -392,6 +392,8 @@ class FilesystemHandler extends VCSInterceptor {
                                 client.move(from, to, force);    
                             }                                                       
                         } finally {
+                            // we moved the files so schedule them a for a refresh 
+                            // in the following afterMove call
                             synchronized(movedFiles) {
                                 if(srcChildren != null) {
                                     movedFiles.addAll(srcChildren);

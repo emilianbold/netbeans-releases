@@ -84,7 +84,7 @@ public class NavigatorNodeFactory implements NodeFactory<NodeType> {
      */
     public Node createNode(BpelEntity reference, Lookup lookup) {
         return this.createNode(org.netbeans.modules.bpel.editors.api.utils.
-                                    Util.getBasicNodeType((BpelEntity)reference)
+                                    EditorUtil.getBasicNodeType((BpelEntity)reference)
                 , reference, ChildrenType.DEFAULT_CHILD, lookup);
     }
     

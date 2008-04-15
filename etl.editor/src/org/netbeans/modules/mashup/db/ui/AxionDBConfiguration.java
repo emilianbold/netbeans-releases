@@ -107,7 +107,7 @@ public class AxionDBConfiguration {
                 if (!driver.exists()) {
                     nbHomeDir = "";
                 }
-                java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("***** AxionDBConfiguration Axiond driver location "+nbHomeDir);
+                //java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("***** AxionDBConfiguration Axiond driver location "+nbHomeDir);
                 return nbHomeDir;
             }
         }

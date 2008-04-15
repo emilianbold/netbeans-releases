@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.xam.dom.Attribute;
