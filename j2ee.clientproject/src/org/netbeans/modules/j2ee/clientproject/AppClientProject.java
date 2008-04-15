@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -148,6 +149,8 @@ import org.w3c.dom.Text;
  * @author Jesse Glick, et al.
  */
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
+    
+    private static final String UI_LOGGER_NAME = "org.netbeans.ui.appclient.project"; //NOI18N
     
     private static final Icon CAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif")); // NOI18N
     
@@ -726,6 +729,14 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     if (platform == null) {
                         BrokenServerSupport.showAlert();
                     }
+                    // UI Logging
+                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_APP_CLIENT_PROJECT_OPENED");  //NOI18N
+                    logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
+                    logRecord.setResourceBundle(NbBundle.getBundle(AppClientProject.class));
+                    logRecord.setParameters(new Object[] {
+                        (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
+                        servInstID});
+                    Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
                 }
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
