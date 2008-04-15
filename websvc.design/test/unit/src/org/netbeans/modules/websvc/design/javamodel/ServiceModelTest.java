@@ -138,9 +138,7 @@ public class ServiceModelTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.out.println("0");
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        System.out.println("1");
         // workaround for JavaSource class
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         dataDir = FileUtil.toFileObject(getDataDir());
