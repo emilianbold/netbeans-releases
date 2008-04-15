@@ -65,6 +65,7 @@ import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -130,6 +131,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List treeModels;
         List treeModelFilters;
         List treeExpansionModels;
+        List treeExpansionModelFilters;
         List nodeModels;
         List nodeModelFilters;
         List tableModels;
@@ -142,6 +144,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeModels =            cp.lookup (viewType, TreeModel.class);
         treeModelFilters =      cp.lookup (viewType, TreeModelFilter.class);
         treeExpansionModels =   cp.lookup (viewType, TreeExpansionModel.class);
+        treeExpansionModelFilters = cp.lookup (viewType, TreeExpansionModelFilter.class);
         nodeModels =            cp.lookup (viewType, NodeModel.class);
         nodeModelFilters =      cp.lookup (viewType, NodeModelFilter.class);
         tableModels =           cp.lookup (viewType, TableModel.class);
@@ -163,6 +166,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         models.add(nodeActionsProviderFilters);
         models.add(columnModels);
         models.add(mm);
+        models.add(treeExpansionModelFilters);
         
         if (view instanceof DebuggingView) {
             ((DebuggingView) view).setRootContext(

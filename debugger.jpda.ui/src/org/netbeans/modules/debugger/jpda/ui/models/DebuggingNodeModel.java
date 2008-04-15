@@ -125,7 +125,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             JPDAThread t = (JPDAThread) node;
             watch(t);
             JPDAThread currentThread = debugger.getCurrentThread();
-            if (t == currentThread) {
+            if (t == currentThread && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
                         getDisplayName(t),
                         true, false, null);
