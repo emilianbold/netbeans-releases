@@ -132,7 +132,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle1 = mLoc.t("BUND365: Show SQL");
             String lblShowSql =  nbBundle1.substring(15);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
-            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('B', InputEvent.SHIFT_DOWN_MASK));
+            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
@@ -140,7 +140,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle2 = mLoc.t("BUND453: Show Data");
             String lblShowData = nbBundle2.substring(15);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
-            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.ALT_DOWN_MASK));
+            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
 
@@ -150,7 +150,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle3 = mLoc.t("BUND461: Show Rejected Data...");
             String lblRjtShowData = nbBundle3.substring(15);
             showRejectionDataItem = new JMenuItem(lblRjtShowData, new ImageIcon(showRejectionDataImgUrl));
-            showRejectionDataItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.ALT_DOWN_MASK));
+            showRejectionDataItem.setMnemonic(nbBundle3.substring(15).charAt(0));
             showRejectionDataItem.addActionListener(aListener);
             popUpMenu.add(showRejectionDataItem);
 
@@ -158,14 +158,14 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             addSelectVisibleColumnsPopUpMenu(aListener);
             String nbBundle4 = mLoc.t("BUND024: Refresh Metadata");
             synchroniseItem = new JMenuItem(nbBundle4.substring(15), new ImageIcon(synchroniseImgUrl));
-            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.SHIFT_DOWN_MASK));
+            synchroniseItem.setMnemonic(nbBundle4.substring(15).charAt(9));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
             String nbBundle5 = mLoc.t("BUND027: Remount");
             String lblRemount = nbBundle5.substring(15);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
-            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.SHIFT_DOWN_MASK));
+            remountItem.setMnemonic(nbBundle5.substring(15).charAt(0));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
@@ -180,7 +180,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle6 = mLoc.t("BUND462: Target Join Condition...");
             String lblTargetCondition = nbBundle6.substring(15);
             editJoinConditionItem = new JMenuItem(lblTargetCondition, new ImageIcon(targetTableConditionImgUrl));
-            editJoinConditionItem.setAccelerator(KeyStroke.getKeyStroke('J',InputEvent.SHIFT_DOWN_MASK));
+            editJoinConditionItem.setMnemonic(nbBundle6.substring(15).charAt(0));
             editJoinConditionItem.addActionListener(aListener);
             popUpMenu.add(editJoinConditionItem);
 
@@ -188,7 +188,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle7 = mLoc.t("BUND463: Outer Filter Condition...");
             String lblTargetFilterCondition = nbBundle7.substring(15);
             editFilterConditionItem = new JMenuItem(lblTargetFilterCondition, new ImageIcon(dataFilterImgUrl));
-            editFilterConditionItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.SHIFT_DOWN_MASK));
+            editFilterConditionItem.setMnemonic(nbBundle7.substring(15).charAt(0));
             editFilterConditionItem.addActionListener(aListener);
             popUpMenu.add(editFilterConditionItem);
             popUpMenu.addSeparator();
@@ -201,7 +201,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle8 = mLoc.t("BUND443: Properties");
             String lblProps =  nbBundle8.substring(15);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('Z',InputEvent.SHIFT_DOWN_MASK));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('7',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
         } catch (BaseException ex) {

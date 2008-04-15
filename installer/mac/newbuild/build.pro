@@ -8,12 +8,12 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="6.1"/>
-    <property name="mpkgname" value="NetBeans IDE 6.1 RC1"/> 
-    <property name="appname" value="NetBeans 6.1 RC1"/> 
+    <property name="mpkgname" value="NetBeans IDE 6.1 RC2"/> 
+    <property name="appname" value="NetBeans 6.1 RC2"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.1"/>      
 
-    <property name="appversion" value="6.1 RC1"/>
+    <property name="appversion" value="6.1 RC2"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-6.0.16"/>
@@ -33,4 +33,15 @@
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
     <property name="dmg.prefix.name" value="${prefix}"/>                  
+
+    <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
+    <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
+    <property name="mysql_10.5.dmg.name" value="netbeans-mysql_10.5"/>
+    <property name="mysql_10.4.dmg.name" value="netbeans-mysql_10.4"/>
+    <property name="mysql_startup.pkg.name" value="MySQLStartupItem"/>
+    <property name="mysql_prefPane.name" value="MySQL.prefPane"/>
+    <property name="mysql_connector.name" value="mysql-connector-java-5.1.6-bin"/>
+    <property name="mysql_10.5.location" value="${binary_cache_host}/mysql/${mysql_10.5.pkg.name}.dmg"/>
+    <property name="mysql_10.4.location" value="${binary_cache_host}/mysql/${mysql_10.4.pkg.name}.dmg"/>
+    <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
 </project>
