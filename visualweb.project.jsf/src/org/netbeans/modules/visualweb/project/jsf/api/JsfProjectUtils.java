@@ -594,7 +594,7 @@ public class JsfProjectUtils {
         }
 
         for (int i = 0; i < servlets.length; i++) {
-            if (servlets[i].getServletClass().equals("javax.faces.webapp.FacesServlet")) { // NOI18N
+            if ((servlets[i] != null) && "javax.faces.webapp.FacesServlet".equals(servlets[i].getServletClass())) { // NOI18N
                 String servletName = servlets[i].getServletName();
                 for (int j = 0; j < mapping.length; j++) {
                     if (servletName.equals(mapping[j].getServletName())) {
