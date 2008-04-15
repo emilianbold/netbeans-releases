@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="size-pack-module" description="Count up size of the module, pack200">           
-        <exec executable="sh" failonerror="yes" outputproperty="size">
+        <exec executable="sh" failonerror="no" outputproperty="size">
             <arg value="-c"/>
             <arg value="cd ${basedir}/netBeans/${module.name}; du -sk build | sed 's/[\t]*build//'"/>
         </exec>        
@@ -147,19 +147,21 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
-        <property file="${basedir}/build/sizes.pro"/>  
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                             
         <mkdir dir="dist"/>                  
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
                                              -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/ruby.pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
+                                             -php(./build/baseide.pkg ./build/php.pkg)"/>                                                 
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
-            <ant target="build-dmg"/>                           
-        </for-each>         
-        <delete file="${basedir}/build/sizes.pro"/>
+            <delete dir="${basedir}/dist_dmg"/>                          
+            <ant target="build-dmg">
+                 <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+            </ant>     
+        </for-each>             
+        <delete file="${basedir}/build/sizes.pro"/>                                                
     </target>     
             
     <target name="prepare-lproj-dirs">  
@@ -226,7 +228,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- copy Welcome.html and Localizable.strings -->                 
         <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
               tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
-        <exec executable="sh" failonerror="yes" outputproperty="size">
+        <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
                 sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//;
@@ -237,10 +239,12 @@ Microsystems, Inc. All Rights Reserved.
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
                             
-    <target name="build-dmg">     
-        <echo message="Building dmg for ${dmg.prefix.name}${bundle.type}..."/>             
-        <delete dir="dist_dmg"/>        
-        <property name="mpkgfile" value="dist_dmg/${mpkgname}.mpkg"/>               
+    <target name="build-dmg">   
+        <property file="${basedir}/build/sizes.pro"/>         
+        <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
+        <property name="mpkgfile" value="dist_dmg/${mpkgname}.mpkg"/>   
+        <mkdir dir="${mpkgfile}/Contents/Packages"/> 
+        
         <copy file="${basedir}/dmg/Resources/bgimage.tif" 
               tofile="${mpkgfile}/Contents/Resources/background.tif"/>  
         <copy file="${basedir}/dmg/Resources/license.txt" 
@@ -260,19 +264,19 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
-                <filter token="SIZE_PHP" value="${sizeof.php}"/>                 
+                <filter token="SIZE_PHP" value="${sizeof.php}"/>                   
             </filterset>
         </copy>            
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} ./dist_dmg/'${mpkgname}'.mpkg/Contents/Packages"/>
-        </exec>                         
+        </exec>                                            
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-macosx.dmg '${mpkgname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkgname}'"/>
         </exec>  
-        <delete dir="dist_dmg"/>
+        <delete dir="dist_dmg"/>                                                   
     </target>             
 </project>          
