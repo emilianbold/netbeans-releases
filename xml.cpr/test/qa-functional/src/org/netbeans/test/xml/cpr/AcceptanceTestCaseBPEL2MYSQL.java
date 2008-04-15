@@ -309,7 +309,7 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
           "Add Attribute",
           null, 
           "Referenced Schemas|import|Simple Types|StateType",
-          "newAttribute"
+          ATTRIBUTES_NAMES[ 0 ]
         );
 
       endTest( );
@@ -320,29 +320,11 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreSimpleInternal(
-          "newAttribute",
+          ATTRIBUTES_NAMES[ 0 ],
           "StateType",
           "attribute",
           "ns2:"
         );
-
-      endTest( );
-    }
-
-    public void DeleteAttribute( )
-    {
-      startTest( );
-
-
-
-      endTest( );
-    }
-
-    public void UndoRedoAttribute( )
-    {
-      startTest( );
-
-
 
       endTest( );
     }
@@ -440,7 +422,7 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
           "Add Simple Type",
           null, 
           "Referenced Schemas|import|Simple Types|LoanType",
-          "newSimpleType"
+          SIMPLE_NAMES[ 0 ]
         );
 
       endTest( );
@@ -451,7 +433,7 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreSimpleInternal(
-          "newSimpleType",
+          SIMPLE_NAMES[ 0 ],
           "LoanType",
           "simpleType",
           null

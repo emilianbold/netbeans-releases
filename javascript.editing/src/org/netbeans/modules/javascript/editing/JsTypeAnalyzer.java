@@ -480,6 +480,7 @@ public class JsTypeAnalyzer {
     
     private String getCallExpressionType(Node node) {
         switch (node.getType()) {
+        case Token.NEW:
         case Token.CALL: {
             Node first = node.getFirstChild();
             if (first.getType() == Token.NAME) {

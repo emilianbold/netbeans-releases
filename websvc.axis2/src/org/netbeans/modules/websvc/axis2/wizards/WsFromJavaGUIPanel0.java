@@ -136,7 +136,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                         .add(21, 21, 21)
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButton1)
                         .addContainerGap())
@@ -148,7 +148,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                                 .add(21, 21, 21)
                                 .add(jLabel2))
                             .add(jCheckBox1))
-                        .addContainerGap(157, Short.MAX_VALUE))))
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -166,7 +166,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                 .add(jCheckBox1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton1.AccessibleContext.accessibleDescription")); // NOI18N

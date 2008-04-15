@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
@@ -112,17 +113,43 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     /** Locate the method declaration for the given method call */
     IndexedFunction findMethodDeclaration(CompilationInfo info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
-        String prefix = AstUtilities.getCallName(call, false);
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-        Set<IndexedElement> functions = index.getAllNames(prefix,
-                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+        Set<IndexedElement> functions = null;
 
-        IndexedElement candidate =
-            findBestElementMatch(info, /*name,*/ functions/*, (BaseDocument)info.getDocument(),
-                astOffset, lexOffset, path, closest, index*/);
-        if (candidate instanceof IndexedFunction) {
-            return (IndexedFunction)candidate;
+        String fqn = JsTypeAnalyzer.getCallFqn(info, call, true);
+        if (fqn != null) {
+            functions = index.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+            // Prefer methods/constructors
+            if (functions.size() > 0) {
+                Set<IndexedElement> filtered = new DuplicateElementSet(functions.size());
+                for (IndexedElement e : functions) {
+                    ElementKind kind = e.getKind();
+                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                        filtered.add(e);
+                    }
+                }
+                if (filtered.size() > 0) {
+                    functions = filtered;
+                }
+            }
+        }
+        
+        if (functions == null || functions.size() == 0) {
+            String prefix = AstUtilities.getCallName(call, false);
+            if (prefix.length() > 0) {
+                functions = index.getAllNames(prefix,
+                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+            }
+        }
+
+        if (functions != null && functions.size() > 0) {
+            IndexedElement candidate =
+                findBestElementMatch(info, /*name,*/ functions/*, (BaseDocument)info.getDocument(),
+                    astOffset, lexOffset, path, closest, index*/);
+            if (candidate instanceof IndexedFunction) {
+                return (IndexedFunction)candidate;
+            }
         }
         return null;
     }

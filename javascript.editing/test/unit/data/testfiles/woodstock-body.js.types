@@ -92,13 +92,13 @@ webui.<webui.suntheme4_2>suntheme4_2</webui.suntheme4_2>.<String>body</String> =
     // "==" also handles "null"
     //
     this.<String>preserveScroll</String> = (<Boolean><boolean>preserveScroll</boolean> == null)</Boolean>
-        ? <Boolean>true</Boolean> : new <Boolean.valueOf><Boolean>Boolean(<boolean>preserveScroll</boolean></Boolean>).<Boolean.valueOf>valueOf</Boolean.valueOf>()</Boolean.valueOf>;
+        ? <Boolean>true</Boolean> : <Boolean.valueOf><Boolean>new Boolean(<boolean>preserveScroll</boolean></Boolean>).<Boolean.valueOf>valueOf</Boolean.valueOf>()</Boolean.valueOf>;
 
     /**
      * Create the scroll cookie object.
      */
     if (<Boolean>this.preserveScroll == <Boolean>true</Boolean></Boolean>) {
-	this.<String>scrollCookie</String> = new <webui.suntheme4_2.scrollCookie><webui.suntheme4_2.scrollCookie>webui.<webui.suntheme4_2>suntheme4_2</webui.suntheme4_2>.scrollCookie</webui.suntheme4_2.scrollCookie>(<String>viewId</String>, <String>path</String>)</webui.suntheme4_2.scrollCookie>;
+	this.<String>scrollCookie</String> = <webui.suntheme4_2.scrollCookie>new <webui.suntheme4_2.scrollCookie>webui.<webui.suntheme4_2>suntheme4_2</webui.suntheme4_2>.scrollCookie</webui.suntheme4_2.scrollCookie>(<String>viewId</String>, <String>path</String>)</webui.suntheme4_2.scrollCookie>;
     }
 
     /**

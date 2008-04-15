@@ -139,9 +139,6 @@ public class JsPretty {
                 case Token.OBJECTLIT:
                     visitObjectLit(root);
                     break;
-                case Token.FUNCTION:
-                    visitFunction(root);
-                    break;
                 case Token.WITH:
                     visitWith(root);
                     break;
@@ -150,6 +147,7 @@ public class JsPretty {
                     break;
                 case Token.CATCH:
                     visitCatch(root);
+                    break;
                 default:
                     visitDefault(root);
             }
@@ -232,15 +230,17 @@ public class JsPretty {
     }
     
     private void visitOtherBlock(Node root) {
-        increaseIndent("visitOtherBlock");
         if (root.hasChildren()) {
+            increaseIndent("visitOtherBlock");
             Node child = root.getFirstChild();
             while (child != null) {
-                walk(child);
+                if (child.getSourceEnd() - child.getSourceStart() > 0) {
+                    walk(child);
+                }
                 child = next(child);
             }
+            decreaseIndent("visitOtherBlock");
         }
-        decreaseIndent("visitOtherBlock");
         acceptOffset(root.getSourceEnd());
     }
     
@@ -301,23 +301,6 @@ public class JsPretty {
             }
         }
         decreaseIndent("visitCase");
-        acceptOffset(node.getSourceEnd());
-    }
-    
-    private void visitFunction(Node node) {
-        increaseIndent("visitFunction");
-        if (node.hasChildren()) {
-            Node child = node.getFirstChild();
-            while (child != null) {
-                if (child.getType() == Token.BLOCK) {
-                    visitBlockWithoutIndenting(child);
-                } else {
-                    walk(child);
-                }
-                child = next(child);
-            }
-        }
-        decreaseIndent("visitFunction");
         acceptOffset(node.getSourceEnd());
     }
     
@@ -404,6 +387,7 @@ public class JsPretty {
         do {
             org.netbeans.api.lexer.Token<? extends JsTokenId> token = ts.token();
             int tokenOffset = ts.offset();
+//            System.out.println("\t# acceptNode " + node + ", " + token.id() + ", " + ts.offset());
             if (tokenOffset >= nodeOffset) {
                 if (token.id() != JsTokenId.EOL && token.id() != JsTokenId.LBRACE) {
                     handleToken(token, "1 acceptToken(" + node + ")");
