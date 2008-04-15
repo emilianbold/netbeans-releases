@@ -367,11 +367,25 @@ ioArgs:CLASS:[]:ESCAPED{ioArgs}:
   url:PROPERTY:[]:ESCAPED{url}:
 _d:CLASS:[]:ESCAPED{_d}:
   _ioWatch:METHOD:[PRIVATE]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}) : ESCAPED{void}:
-runner:CLASS:[]:ESCAPED{runner}:
-  run:METHOD:[]:ESCAPED{run} : ESCAPED{void}:
 dojo._Animation:CLASS:[]:ESCAPED{dojo._Animation}:
+  _cycle:METHOD:[PRIVATE]:ESCAPED{_cycle}:
+  _percent:PROPERTY:[PRIVATE]:ESCAPED{_percent} : ESCAPED{Number}:
+  _play:METHOD:[PRIVATE]:ESCAPED{_play}(PARAMETERS{ESCAPED{gotoStart}}):
+  _startRepeatCount:PROPERTY:[PRIVATE]:ESCAPED{_startRepeatCount} : ESCAPED{Number}:
   _startTimer:METHOD:[PRIVATE]:ESCAPED{_startTimer} : ESCAPED{void}:
   _stopTimer:METHOD:[PRIVATE]:ESCAPED{_stopTimer} : ESCAPED{void}:
+  constructor:METHOD:[]:ESCAPED{constructor}(PARAMETERS{ESCAPED{args}}) : ESCAPED{void}:
+  duration:PROPERTY:[]:ESCAPED{duration} : ESCAPED{Number}:
+  fire:METHOD:[]:ESCAPED{fire}(PARAMETERS{ESCAPED{evt}, ESCAPED{args}}):
+  gotoPercent:METHOD:[]:ESCAPED{gotoPercent}(PARAMETERS{ESCAPED{percent}, ESCAPED{andPlay}}):
+  pause:METHOD:[]:ESCAPED{pause}:
+  play:METHOD:[]:ESCAPED{play}(PARAMETERS{ESCAPED{delay}, ESCAPED{gotoStart}}):
+  rate:PROPERTY:[]:ESCAPED{rate} : ESCAPED{Number}:
+  repeat:PROPERTY:[]:ESCAPED{repeat} : ESCAPED{Number}:
+  status:METHOD:[]:ESCAPED{status}:
+  stop:METHOD:[]:ESCAPED{stop}(PARAMETERS{ESCAPED{gotoEnd}}):
+runner:CLASS:[]:ESCAPED{runner}:
+  run:METHOD:[]:ESCAPED{run} : ESCAPED{void}:
 PropLine:CLASS:[]:ESCAPED{PropLine}:
   PropLine:CONSTRUCTOR:[]:ESCAPED{PropLine}(PARAMETERS{ESCAPED{properties}}) : ESCAPED{PropLine}:
   getValue:METHOD:[]:ESCAPED{getValue}(PARAMETERS{ESCAPED{r}}):
