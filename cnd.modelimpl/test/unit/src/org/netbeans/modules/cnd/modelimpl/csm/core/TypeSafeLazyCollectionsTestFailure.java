@@ -40,80 +40,88 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
- * Test for #131967
+ * 
  * @author Vladimir Kvashin
  */
-public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
+public class TypeSafeLazyCollectionsTestFailure extends ModelImplBaseTestCase {
 
-    private final static boolean verbose;
-    static {
-        verbose = Boolean.getBoolean("test.fake.reg.verbose");
-        if( verbose ) {
-            System.setProperty("cnd.modelimpl.timing", "true");
-            System.setProperty("cnd.modelimpl.timing.per.file.flat", "true");
-        }
-        
-        System.setProperty("cnd.modelimpl.parser.threads", "1");
-    }    
-    
-    public FakeRegistrationTest1(String testName) {
+    public TypeSafeLazyCollectionsTestFailure(String testName) {
         super(testName);
     }
-    
+
     public void testSimple() throws Exception {
 
         File workDir = getWorkDir();
-        
-        File sourceFile = new File(workDir, "fake.cc");
-        File dummyFile1 = new File(workDir, "dummy1.cc");
-        File dummyFile2 = new File(workDir, "dummy2.cc");
-        File headerFile = new File(workDir, "fake.h");
-        
-        writeFile(sourceFile, " #include \"fake.h\"\n BEGIN\n int x;\n void QNAME () {}\n END \n");
-        writeFile(headerFile, " #define QNAME Qwe::foo\n  #define BEGIN\n #define END\n");
+        File sourceFile = new File(workDir, "test1.cc");
 
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 10000; i++) {
-            sb.append("#include \"fake.h\"\n");
-        }
-        writeFile(dummyFile1, sb.toString());
-        writeFile(dummyFile2, sb.toString());
-
-        TraceModelBase traceModel = new  TraceModelBase();
-
-	traceModel.processArguments(dummyFile1.getAbsolutePath(), sourceFile.getAbsolutePath(), dummyFile2.getAbsolutePath(), headerFile.getAbsolutePath());
+        // 
+        // create a file that uses macros;
+        // parse this file with these macros set to class start/end
+        //
+        writeFile(sourceFile, "START\nvoid foo();\nEND\n");
         
+	final TraceModelBase traceModel = new  TraceModelBase();
+	
+        String className = "MyClass";
+	traceModel.processArguments(sourceFile.getAbsolutePath(), "-DSTART=class " + className + "{", "-DEND=};");
 	ModelImpl model = traceModel.getModel();
+	//ModelSupport.instance().setModel(model);
 	final CsmProject project = traceModel.getProject();
-        
-        FileImpl csmSource = (FileImpl) project.findFile(sourceFile.getAbsolutePath());
-        assert csmSource != null;
 
-        FileImpl csmHeader = (FileImpl) project.findFile(headerFile.getAbsolutePath());
-        assert csmHeader != null;
-
-        csmSource.scheduleParsing(true);
+        project.waitParse();
         
-        writeFile(headerFile, " #define QNAME foo\n #define BEGIN class C {\n #define END };\n");
-        sleep(500);
-        csmHeader.stateChanged(true);
-        csmSource.stateChanged(true);
-        csmSource.scheduleParsing(true);
+        new CsmTracer(System.err).dumpModel(project);
+                
+        CsmClass cls = (CsmClass) findDeclaration(className, project);
+        assertNotNull(className + " can not be found", cls);
+        
+        //
+        // Remember the members collection
+        //
+        Collection<CsmMember> members = cls.getMembers();
+        
+        
+        //
+        // Parse it once more with macros unset
+        //
+        NativeProject nativeProject = (NativeProject)project.getPlatformProject();
+        List<String> macros = new ArrayList<String>();
+        macros.add("START=");
+        macros.add("END=");
+        NativeProjectProvider.setUserMacros(nativeProject, macros /*Collections.<String>emptyList()*/);
+        ((FileImpl) cls.getContainingFile()).stateChanged(true);
+        cls.getContainingFile().scheduleParsing(true);
         
         project.waitParse();
-        sleep(500);
         
+        new CsmTracer(System.err).dumpModel(project);
+        
+        //
+        // Make sure no class cast exception happens
+        //
+        CharSequence tmp;
+        try {
+            for( CsmMember member : members ) {
+                tmp = member.getName();
+            }
+        } catch( Exception e) {
+            DiagnosticExceptoins.register(e);
+        }
         assertNoExceptions();
-        
-        clearWorkDir();
     }
-
+   
 }
