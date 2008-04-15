@@ -356,7 +356,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             LocalServer mampLS = new LocalServer(getFolderName(mamp, webFolderName));
             model.addElement(mampLS);
             model.setSelectedItem(mampLS);
-            setDefaultUrl(webFolderName);
+            setDefaultUrl(webFolderName, 8888);
         }
     }
 
@@ -377,7 +377,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void setDefaultUrl(String urlPart) {
-        descriptor.putProperty(URL, "http://localhost/" + urlPart + "/"); // NOI18N
+        setDefaultUrl(urlPart, null);
+    }
+
+    private void setDefaultUrl(String urlPart, Integer port) {
+        StringBuilder url = new StringBuilder(100);
+        url.append("http://localhost"); // NOI18N
+        if (port != null) {
+            url.append(":"); // NOI18N
+            url.append(port);
+        }
+        url.append("/"); // NOI18N
+        url.append(urlPart);
+        url.append("/"); // NOI18N
+        descriptor.putProperty(URL, url.toString());
     }
 
     private File getSolarisHtDocsDirectory() {
