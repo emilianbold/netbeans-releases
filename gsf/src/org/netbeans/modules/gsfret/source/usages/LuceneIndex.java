@@ -374,6 +374,132 @@ class LuceneIndex extends Index {
     
 
     // BEGIN TOR MODIFICATIONS
+    public void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException {
+        // First, delete previous documents referring to any of these files
+        // (but we don't have to do that for new filesystems being scanned,
+        // which will be invalid)
+        if (!create) {
+            assert ClassIndexManager.holdsWriteLock();
+            IndexReader in = getReader();
+            this.rootPkgCache = null;
+
+            String prevUrl = "";
+            for (IndexBatchEntry entry : list) {
+                String fileUrl = entry.getFilename();
+                if (fileUrl == null) {
+                    continue;
+                }
+                if (fileUrl.equals(prevUrl)) {
+                    continue;
+                }
+                prevUrl = fileUrl;
+
+                final Searcher searcher = new IndexSearcher(in);
+                try {
+                    if (fileUrl != null) {
+                        BooleanQuery query = new BooleanQuery ();
+                        query.add (new TermQuery (new Term (DocumentUtil.FIELD_FILENAME, fileUrl)),BooleanClause.Occur.MUST);
+
+                        Hits hits = searcher.search(query);
+                        for (int i=0; i<hits.length(); i++) {
+                            in.deleteDocument (hits.id(i));
+                        }
+                    }
+                    in.deleteDocuments (DocumentUtil.rootDocumentTerm());
+                } finally {
+                    searcher.close();
+                }
+            }
+        }
+        long timeStamp = System.currentTimeMillis();
+        
+        final IndexWriter out = getWriter(create);
+        try {
+            if (debugIndexMerging) {
+                out.setInfoStream (System.err);
+            }
+            final LuceneIndexMBean indexSettings = LuceneIndexMBeanImpl.getDefault();
+            if (indexSettings != null) {
+                out.setMergeFactor(indexSettings.getMergeFactor());
+                out.setMaxMergeDocs(indexSettings.getMaxMergeDocs());
+                out.setMaxBufferedDocs(indexSettings.getMaxBufferedDocs());
+            }        
+            LowMemoryNotifier lm = LowMemoryNotifier.getDefault();
+            LMListener lmListener = new LMListener ();
+            lm.addLowMemoryListener (lmListener);        
+            Directory memDir = null;
+            IndexWriter activeOut = null;        
+            if (lmListener.lowMemory.getAndSet(false)) {
+                activeOut = out;
+            }
+            else {
+                memDir = new RAMDirectory ();
+                activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+            }        
+            try {
+                activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
+                for (IndexBatchEntry entry : list) {
+                    String filename = entry.getFilename();
+                    List<IndexDocumentImpl> documents = entry.getDocuments();
+                    if (documents != null && documents.size() > 0) {
+                        for (IndexDocumentImpl document : documents) {
+                            Document newDoc = new Document();
+                            newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+                            if (document.overrideUrl != null) {
+                                newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, document.overrideUrl, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                            } else if (filename != null) {
+                                newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                            }
+
+                            for (int i = 0, n = document.indexedKeys.size(); i < n; i++) {
+                                String key = document.indexedKeys.get(i);
+                                String value = document.indexedValues.get(i);
+                                assert key != null && value != null : "key=" + key + ", value=" + value;
+                                Field field = new Field(key, value, Field.Store.YES, Field.Index.UN_TOKENIZED);
+                                newDoc.add(field);
+                            }
+
+                            for (int i = 0, n = document.unindexedKeys.size(); i < n; i++) {
+                                String key = document.unindexedKeys.get(i);
+                                String value = document.unindexedValues.get(i);
+                                assert key != null && value != null : "key=" + key + ", value=" + value;
+                                Field field = new Field(key, value, Field.Store.YES, Field.Index.NO);
+                                newDoc.add(field);
+                            }
+
+                            activeOut.addDocument(newDoc);
+                        }
+                    } else if (filename != null) {
+                        Document newDoc = new Document();
+                        newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+                        newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                        activeOut.addDocument(newDoc);
+                    }
+                }
+
+                if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       
+                    activeOut.close();
+                    out.addIndexes(new Directory[] {memDir});                        
+                    memDir = new RAMDirectory ();        
+                    activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+                }
+                if (memDir != null) {
+                    activeOut.close();
+                    out.addIndexes(new Directory[] {memDir});   
+                    activeOut = null;
+                    memDir = null;
+                }
+                synchronized (this) {
+                    this.rootTimeStamp = new Long (timeStamp);
+                }
+            } finally {
+                lm.removeLowMemoryListener (lmListener);  
+            }
+        } finally {
+            out.close();
+        }
+    }
+    
     public void store(String fileUrl, List<IndexDocument> documents) throws IOException {
         assert ClassIndexManager.holdsWriteLock();
         this.rootPkgCache = null;
@@ -388,11 +514,6 @@ class LuceneIndex extends Index {
                     query.add (new TermQuery (new Term (DocumentUtil.FIELD_FILENAME, fileUrl)),BooleanClause.Occur.MUST);
 
                     Hits hits = searcher.search(query);
-                    //if (hits.length()>1) {
-                    //    // Uhm -- don't we put MULTIPLE documents into the same item now?
-                    //    // This isn't abnormal, is it?
-                    //    LOGGER.getLogger("global").warning("Multiple(" + hits.length() + ") index entries for key: " + key + " where value: " + value + " where cacheRoot=" + cacheRoot); //NOI18N
-                    //}
                     for (int i=0; i<hits.length(); i++) {
                         in.deleteDocument (hits.id(i));
                     }
@@ -492,7 +613,6 @@ class LuceneIndex extends Index {
             out.close();
         }
     }
-    
     
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public void search(final String primaryField, final String name, final NameKind kind, final Set<ClassIndex.SearchScope> scope, 

@@ -99,6 +99,11 @@ import org.netbeans.jemmy.JemmyException;
 
 import javax.swing.text.Caret;
 
+import javax.swing.JEditorPane;
+import java.awt.Rectangle;
+import java.awt.Container;
+import javax.swing.text.BadLocationException;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -659,149 +664,27 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      // Swicth to Schema view
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
-
-      // Select first column, Attributes
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      opMultiView.switchToSchema( );
-      opMultiView.switchToSchemaColumns( );
-      JListOperator opList = opMultiView.getColumnListOperator( 0 );
-      opList.selectItem( "Attributes" );
-
-      // Right click on Reference Schemas
-      int iIndex = opList.findItemIndex( "Attributes" );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
-
-      // Click Add Attribute...
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( "Add Attribute..." );
-
-      // Get dialog
-      JDialogOperator jadd = new JDialogOperator( "Add Attribute" );
-
-      // Use existing type by default
-
-      // Get tree
-      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
-      TreePath path = jtree.findPath( "Referenced Schemas|import|Simple Types|StateType" );
-      
-      jtree.selectPath( path );
-      jtree.clickOnPath( path );
-
-      // Close
-      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
-      jOK.push( );
-      jadd.waitClosed( );
-
-      // Check attribute was added successfully
-      opList = opMultiView.getColumnListOperator( 1 );
-      iIndex = opList.findItemIndex( "newAttribute" );
-      if( -1 == iIndex )
-        fail( "Attribute was not added." );
+      AddItInternal(
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          "newAttribute"
+        );
 
       endTest( );
-    }
-
-    private boolean CheckSchemaView( String sView )
-    {
-      for( int i = 0; i < 2; i++ )
-      {
-        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
-        JMenuItemOperator menu = bar.showMenuItem("View|Editors|" + sView );
-        boolean bres = menu.isSelected( );
-        bar.closeSubmenus( );
-        if( bres )
-          return true;
-      }
-      return false;
     }
 
     public void ExploreAttribute( )
     {
       startTest( );
 
-      // Explore added with Go to <> menus
-
-      // Select newAttribute
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      JListOperator opList = opMultiView.getColumnListOperator( 1 );
-      opList.selectItem( "newAttribute" );
-
-      // Right click on Reference Schemas
-      int iIndex = opList.findItemIndex( "newAttribute" );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
-
-      // Click go to definition
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenu( "Go To|Definition" );
-
-      // Check opened view
-      if( !CheckSchemaView( "Schema" ) )
-        fail( "Go To Definition option for Schema view opened not on schema view." );
-
-      // Check selected schema item
-      SchemaMultiView opMultiViewDef = new SchemaMultiView( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
-      JListOperator opListDef = opMultiViewDef.getColumnListOperator( 1 );
-      if( !opListDef.getSelectedValue( ).toString( ).startsWith( "StateType" ) )
-        fail( "StateType did not selected with Go To Definition option." );
-
-      // Close definition
-      opMultiViewDef.close( );
-
-      // Click go to code
-      opList.clickForPopup( pt.x, pt.y );
-      popup = new JPopupMenuOperator( );
-      popup.pushMenu( "Go To|Source" );
-
-      // Check selected code line
-      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
-      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
-      if( -1 == sSelectedText.indexOf( "<xs:attribute name=\"newAttribute\" type=\"ns2:StateType\"/>" ) )
-        fail( "Go To Source feature selected wrong line of code: \"" + sSelectedText + "\"" );
-
-      // Click go to definition
-      JEditorPaneOperator txt = eoXsdCode.txtEditorPane( );
-      Caret crt = txt.getCaret( );
-      pt = crt.getMagicCaretPosition( );
-      eoXsdCode.clickForPopup( pt.x, pt.y );
-      popup = new JPopupMenuOperator( );
-      popup.pushMenu( "Go To|Definition" );
-
-      // Check opened view
-      if( !CheckSchemaView( "Source" ) )
-        fail( "Go To Definition option for Source view opened not on source view." );
-
-      // Check selected code line
-      EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
-      sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
-      if( -1 == sSelectedText.indexOf( "<xs:simpleType name=\"StateType\">" ) )
-        fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
-
-      // Close definition
-      eoXsdCodeDef.close( );
-
-      // Click go to schema
-      txt = eoXsdCode.txtEditorPane( );
-      crt = txt.getCaret( );
-      pt = crt.getMagicCaretPosition( );
-      eoXsdCode.clickForPopup( pt.x, pt.y );
-      popup = new JPopupMenuOperator( );
-      popup.pushMenu( "Go To|Schema" );
-      //try { Thread.sleep( 2000 ); } catch( InterruptedException ex ) { }
-
-      // Check sche,a view opened
-      if( !CheckSchemaView( "Schema" ) )
-        fail( "Go To Schema option for Source view opened not on source view." );
-
-      // Check selected schema item
-      opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
-        fail( "Incorrect (no) selection after Go To Schema option." );
-      if( !opList.getSelectedValue( ).toString( ).startsWith( "newAttribute" ) )
-        fail( "newAttribute did not selected with Go To Schema option." );
+      ExploreSimpleInternal(
+          "newAttribute",
+          "StateType",
+          "attribute",
+          "ns:"
+        );
 
       endTest( );
     }
@@ -828,50 +711,13 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      // Swicth to Schema view
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
-
-      // Select first column, Attributes
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      opMultiView.switchToSchema( );
-      opMultiView.switchToSchemaColumns( );
-      JListOperator opList = opMultiView.getColumnListOperator( 0 );
-      opList.selectItem( "Complex Types" );
-
-      // Right click on Reference Schemas
-      int iIndex = opList.findItemIndex( "Complex Types" );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
-
-      // Click Add Complex Type...
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( "Add Complex Type..." );
-
-      // Get dialog
-      JDialogOperator jadd = new JDialogOperator( "Add Complex Type" );
-
-      // Use existing definition
-      JRadioButtonOperator jex = new JRadioButtonOperator( jadd, "Use Existing Definition" );
-      jex.setSelected( true );
-
-      // Get tree
-      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
-      /*
-      TreePath path = FindMultiwayPath(
-          jtree,
-          "http://xml.netbeans.org/examples/LoanApplication",
-          "Simple Types|StateType"
+      AddItInternal(
+          "Complex Types",
+          "Add Complex Type",
+          "Use Existing Definition", 
+          "Referenced Schemas|import|Complex Types|CarType",
+          "newComplexType"
         );
-      */
-      TreePath path = jtree.findPath( "Referenced Schemas|import|Complex Types|CarType" );
-      
-      jtree.selectPath( path );
-      jtree.clickOnPath( path );
-
-      // Close
-      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
-      jOK.push( );
-      jadd.waitClosed( );
 
       endTest( );
     }
@@ -907,50 +753,13 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      // Swicth to Schema view
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
-
-      // Select first column, Attributes
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      opMultiView.switchToSchema( );
-      opMultiView.switchToSchemaColumns( );
-      JListOperator opList = opMultiView.getColumnListOperator( 0 );
-      opList.selectItem( "Elements" );
-
-      // Right click on Reference Schemas
-      int iIndex = opList.findItemIndex( "Elements" );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
-
-      // Click Add Elements...
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( "Add Element..." );
-
-      // Get dialog
-      JDialogOperator jadd = new JDialogOperator( "Add Element" );
-
-      // Use existing definition
-      JRadioButtonOperator jex = new JRadioButtonOperator( jadd, "Use Existing Type" );
-      jex.setSelected( true );
-
-      // Get tree
-      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
-      /*
-      TreePath path = FindMultiwayPath(
-          jtree,
-          "http://xml.netbeans.org/examples/LoanApplication",
-          "Simple Types|StateType"
+      AddItInternal(
+          "Elements",
+          "Add Element",
+          "Use Existing Type",
+          "Referenced Schemas|import|Complex Types|AddressType",
+          "newElement"
         );
-      */
-      TreePath path = jtree.findPath( "Referenced Schemas|import|Complex Types|AddressType" );
-      
-      jtree.selectPath( path );
-      jtree.clickOnPath( path );
-
-      // Close
-      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
-      jOK.push( );
-      jadd.waitClosed( );
 
       endTest( );
     }
@@ -986,48 +795,13 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      // Swicth to Schema view
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
-
-      // Select first column, Attributes
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      opMultiView.switchToSchema( );
-      opMultiView.switchToSchemaColumns( );
-      JListOperator opList = opMultiView.getColumnListOperator( 0 );
-      opList.selectItem( "Simple Types" );
-
-      // Right click on Reference Schemas
-      int iIndex = opList.findItemIndex( "Simple Types" );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
-
-      // Click Add Attribute...
-      JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( "Add Simple Type..." );
-
-      // Get dialog
-      JDialogOperator jadd = new JDialogOperator( "Add Simple Type" );
-
-      // Use default type
-
-      // Get tree
-      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
-      /*
-      TreePath path = FindMultiwayPath(
-          jtree,
-          "http://xml.netbeans.org/examples/LoanApplication",
-          "Simple Types|StateType"
+      AddItInternal(
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          "newSimpleType"
         );
-      */
-      TreePath path = jtree.findPath( "Referenced Schemas|import|Simple Types|LoanType" );
-      
-      jtree.selectPath( path );
-      jtree.clickOnPath( path );
-
-      // Close
-      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
-      jOK.push( );
-      jadd.waitClosed( );
 
       endTest( );
     }
@@ -1036,7 +810,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      ExploreSimpleInternal( "newSimpleType", "LoanType", "simpleType", "" );
 
       endTest( );
     }

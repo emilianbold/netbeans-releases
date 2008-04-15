@@ -51,9 +51,4 @@ made subject to such option by the copyright holder.
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
 
-    <!-- Should not be here - some day change to not build to src. -->
-    <target name="cleantests" depends="xtest.cleantests" >
-        <ant dir="unit/src/org/openide/util/data" target="clean"/>
-    </target>
-    
 </project>

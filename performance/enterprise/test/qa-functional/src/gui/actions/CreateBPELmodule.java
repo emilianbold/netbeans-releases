@@ -103,12 +103,12 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
             try {
                 wizard = NewProjectWizardOperator.invoke();
                 break;
-            } catch (Exception exc) {
+            } catch (RuntimeException exc) {
                 if (attempt < 5) {
                     log("Attempt failed with exception: " + exc);
                     continue;
                 }
-                throw new Error(exc);
+                throw exc;
             }
         }   
         wizard.selectCategory(category);

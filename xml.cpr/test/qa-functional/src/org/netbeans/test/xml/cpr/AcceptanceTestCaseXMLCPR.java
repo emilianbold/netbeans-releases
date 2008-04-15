@@ -81,6 +81,10 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.ListModel;
 import org.netbeans.api.project.ProjectInformation;
+import javax.swing.text.BadLocationException;
+import java.awt.Rectangle;
+import javax.swing.JEditorPane;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
  *
@@ -206,6 +210,177 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       JButtonOperator okButton = new JButtonOperator( dProperties, "OK" );
       okButton.pushNoBlock( );
+    }
+
+    protected void AddItInternal(
+        String sItName,
+        String sMenuToAdd,
+        String sRadioName,
+        String sTypePath,
+        String sAddedName
+      )
+    {
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sItName );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( sItName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Attribute...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( sMenuToAdd + "..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( sMenuToAdd );
+
+      // Use existing definition
+      if( null != sRadioName )
+      {
+        JRadioButtonOperator jex = new JRadioButtonOperator( jadd, sRadioName );
+        jex.setSelected( true );
+      }
+
+      // Get tree
+      JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+      TreePath path = jtree.findPath( sTypePath );
+      
+      jtree.selectPath( path );
+      jtree.clickOnPath( path );
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      // Check attribute was added successfully
+      opList = opMultiView.getColumnListOperator( 1 );
+      iIndex = opList.findItemIndex( sAddedName );
+      if( -1 == iIndex )
+        fail( "Attribute was not added." );
+
+    }
+
+    protected void ExploreSimpleInternal(
+        String sName,
+        String sType,
+        String sIncode,
+        String sNamespace
+      )
+    {
+      // Explore added with Go to <> menus
+
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( sName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click go to definition
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Definition" );
+
+      // Check opened view
+      if( !CheckSchemaView( "Schema" ) )
+        fail( "Go To Definition option for Schema view opened not on schema view." );
+
+      // Check selected schema item
+      SchemaMultiView opMultiViewDef = new SchemaMultiView( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
+      JListOperator opListDef = opMultiViewDef.getColumnListOperator( 1 );
+      if( !opListDef.getSelectedValue( ).toString( ).startsWith( sType ) )
+        fail( "StateType did not selected with Go To Definition option." );
+
+      // Close definition
+      opMultiViewDef.close( );
+
+      // Click go to code
+      opList.clickForPopup( pt.x, pt.y );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>" ) )
+        fail( "Go To Source feature selected wrong line of code: \"" + sSelectedText + "\"" );
+
+      // Click go to definition
+      ClickForTextPopup( eoXsdCode );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Definition" );
+
+      // Check opened view
+      if( !CheckSchemaView( "Source" ) )
+        fail( "Go To Definition option for Source view opened not on source view." );
+
+      // Check selected code line
+      EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
+      sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( "<xs:simpleType name=\"" + sType + "\">" ) )
+        fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
+
+      // Close definition
+      eoXsdCodeDef.close( );
+
+      // Click go to schema
+      ClickForTextPopup( eoXsdCode );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Schema" );
+      //try { Thread.sleep( 2000 ); } catch( InterruptedException ex ) { }
+
+      // Check sche,a view opened
+      if( !CheckSchemaView( "Schema" ) )
+        fail( "Go To Schema option for Source view opened not on source view." );
+
+      // Check selected schema item
+      opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+        fail( "Incorrect (no) selection after Go To Schema option." );
+      if( !opList.getSelectedValue( ).toString( ).startsWith( sName ) )
+        fail( sName + " did not selected with Go To Schema option." );
+    }
+
+    protected boolean CheckSchemaView( String sView )
+    {
+      for( int i = 0; i < 2; i++ )
+      {
+        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
+        JMenuItemOperator menu = bar.showMenuItem("View|Editors|" + sView );
+        boolean bres = menu.isSelected( );
+        bar.closeSubmenus( );
+        if( bres )
+          return true;
+      }
+      return false;
+    }
+
+    protected void ClickForTextPopup( EditorOperator eo )
+    {
+      JEditorPaneOperator txt = eo.txtEditorPane( );
+      JEditorPane epane =  ( JEditorPane )txt.getSource( );
+      try
+      {
+        Rectangle rct = epane.modelToView( epane.getCaretPosition( ) );
+        txt.clickForPopup( rct.x, rct.y );
+      }
+      catch( BadLocationException ex )
+      {
+        System.out.println( "=== Bad location" );
+      }
+
+      return;
     }
 
     public void RenameSampleSchemaInternal( String sModule, String sPath )
