@@ -79,6 +79,9 @@ public class FolderInstanceTest extends NbTestCase {
     }
 
     public static Test suite() {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return new FolderInstanceTest("testListenersCountNoCookie");
+        }
         return new NbTestSuite(FolderInstanceTest.class);
     }
     
