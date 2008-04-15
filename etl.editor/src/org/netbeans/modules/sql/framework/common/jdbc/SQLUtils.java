@@ -95,7 +95,7 @@ public class SQLUtils {
     private static final List<String> SUPPORTED_INTERVAL_TYPES = new ArrayList<String>();
     private static final List<String> SUPPORTED_LITERAL_JDBC_TYPES = new ArrayList<String>();
     private static final List<String> SUPPORTED_CAST_JDBC_TYPES = new ArrayList<String>();
-    
+    private static String AXIONDB = "AXION";
 
     static {
         dbNameIdMap.put(DBConstants.ANSI92_STR, new Integer(DBConstants.ANSI92));
@@ -669,7 +669,9 @@ public class SQLUtils {
         if (normalizedName.startsWith(DBConstants.DB2_STR)) {
             normalizedName = DBConstants.DB2V7_STR;
         }
-
+        if (normalizedName.equals(AXIONDB)){
+            normalizedName = DBConstants.AXION_STR;
+        }
         Integer dbType = dbNameIdMap.get(normalizedName);
         if (dbType != null) {
             return dbType.intValue();
