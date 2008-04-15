@@ -1330,6 +1330,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <zip destfile="${l10n.kit}">
         <fileset dir="${nb_all}" includesfile="${nb_all}/installer/l10n.list"/>
         <fileset dir="${nb_all}" includesfile="${nb_all}/nbi/l10n.list"/>
+        <fileset dir="${nb_all}" includesfile="${nb_all}/ide.branding/l10n.list"/>
     </zip>
   </target>
 
