@@ -173,6 +173,11 @@ final class IRFactory
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node gotoTarget = Node.newTarget();
+        // <netbeans>
+        int pos = parser.getEndOffset();
+        gotoTarget.setSourceBounds(pos, pos);
+        // </netbeans>
+        
         if (caseExpression != null) {
             Node.Jump caseNode = new Node.Jump(Token.CASE, caseExpression);
             caseNode.target = gotoTarget;
@@ -207,6 +212,11 @@ final class IRFactory
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node switchBreakTarget = Node.newTarget();
+        // <netbeans>
+        int pos = parser.getEndOffset();
+        switchBreakTarget.setSourceBounds(pos, pos);
+        // </netbeans>
+
         // switchNode.target is only used by NodeTransformer
         // to detect switch end
         switchNode.target = switchBreakTarget;
@@ -336,6 +346,10 @@ final class IRFactory
         // right target.
 
         Node breakTarget = Node.newTarget();
+        // <netbeans>
+        int pos = parser.getStartOffset();
+        breakTarget.setSourceBounds(pos, pos);
+        // </netbeans>
         Node block = new Node(Token.BLOCK, label, statement, breakTarget);
         label.target = breakTarget;
 
@@ -441,7 +455,13 @@ final class IRFactory
         // Add return to end if needed.
         Node lastStmt = statements.getLastChild();
         if (lastStmt == null || lastStmt.getType() != Token.RETURN) {
-            statements.addChildToBack(new Node(Token.RETURN));
+            // <netbeans>
+            //statements.addChildToBack(new Node(Token.RETURN));
+            Node implicitReturn = new Node(Token.RETURN);
+            int pos = parser.getEndOffset()-1; // -1: the pos is after }
+            implicitReturn.setSourceBounds(pos, pos);
+            statements.addChildToBack(implicitReturn);
+            // </netbeans>
         }
 
         // <netbeans>
@@ -530,7 +550,13 @@ final class IRFactory
         loop.addChildrenToBack(body);
         if (loopType == LOOP_WHILE || loopType == LOOP_FOR) {
             // propagate lineno to condition
-            loop.addChildrenToBack(new Node(Token.EMPTY, loop.getLineno()));
+            // <netbeans>
+            //loop.addChildrenToBack(new Node(Token.EMPTY, loop.getLineno()));
+            Node emptyNode = new Node(Token.EMPTY, loop.getLineno());
+            int pos = loop.getSourceStart();
+            emptyNode.setSourceBounds(pos, pos);
+            loop.addChildrenToBack(emptyNode);
+            // </netbeans>
         }
         loop.addChildToBack(condTarget);
         loop.addChildToBack(IFEQ);
@@ -614,12 +640,17 @@ final class IRFactory
         Node cond = new Node(Token.ENUM_NEXT);
         cond.putProp(Node.LOCAL_BLOCK_PROP, localBlock);
         Node id = new Node(Token.ENUM_ID);
+        // <netbeans>
+        int lvalueStart = lvalue.getSourceStart();
+        int lvalueEnd = lvalue.getSourceEnd();
+        id.setSourceBounds(lvalueStart,lvalueEnd);
+        // </netbeans>
         id.putProp(Node.LOCAL_BLOCK_PROP, localBlock);
 
         Node newBody = new Node(Token.BLOCK);
         Node assign = simpleAssignment(lvalue, id);
         // <netbeans>
-        assign.setSourceBounds(lvalue.getSourceStart(), lvalue.getSourceEnd());
+        assign.setSourceBounds(lvalueStart, lvalueEnd);
         // </netbeans>
         newBody.addChildToBack(new Node(Token.EXPR_VOID, assign));
         newBody.addChildToBack(body);
@@ -983,11 +1014,24 @@ final class IRFactory
 
         if (ifFalse != null) {
             Node endTarget = Node.newTarget();
+
+            // <netbeans>
+            int endTargetPos = parser.getEndOffset();
+            endTarget.setSourceBounds(endTargetPos, endTargetPos);
+            int notPos = ifFalse.getSourceStart();
+            ifNotTarget.setSourceBounds(notPos, notPos);
+            // </netbeans>
+            
             result.addChildToBack(makeJump(Token.GOTO, endTarget));
             result.addChildToBack(ifNotTarget);
             result.addChildrenToBack(ifFalse);
             result.addChildToBack(endTarget);
         } else {
+            // <netbeans>
+            int endPos = parser.getEndOffset();
+            ifNotTarget.setSourceBounds(endPos, endPos);
+            // </netbeans>
+
             result.addChildToBack(ifNotTarget);
         }
 

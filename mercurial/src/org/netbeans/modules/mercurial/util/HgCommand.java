@@ -800,17 +800,17 @@ public class HgCommand {
         command.add(HG_FETCH_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+
         
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
         String proxy = getGlobalProxyIfNeeded(defaultPull, true, logger);
+        List<String> env = new ArrayList<String>(); 
+        env.add(HG_MERGE_ENV);
         if(proxy != null){
-            List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
-            list = execEnv(command, env);
-        }else{
-            list = exec(command);
         }
+        list = execEnv(command, env);
 
         if (!list.isEmpty()) {
             if (isErrorAbort(list.get(list.size() -1))) {

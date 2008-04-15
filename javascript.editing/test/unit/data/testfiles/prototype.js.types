@@ -25,7 +25,7 @@ var Class = {
   }</Function>
 }
 
-var <Object>Abstract = new <Object>Object()</Object></Object>;
+var <Object>Abstract = <Object>new Object()</Object></Object>;
 
 Object.<String>extend</String> = <Function>function(destination, source) {
   for (var property in source) {
@@ -197,12 +197,12 @@ String.<String>interpret</String> = <Function>function(value){
   }</Function>,
 
   stripScripts: <Function>function() {
-    return this.replace(new <RegExp>RegExp(<Prototype.ScriptFragment>Prototype.ScriptFragment</Prototype.ScriptFragment>, <String>'img'</String>)</RegExp>, <String>''</String>);
+    return this.replace(<RegExp>new RegExp(<Prototype.ScriptFragment>Prototype.ScriptFragment</Prototype.ScriptFragment>, <String>'img'</String>)</RegExp>, <String>''</String>);
   }</Function>,
 
   extractScripts: <Function>function() {
-    var <RegExp>matchAll = new <RegExp>RegExp(<Prototype.ScriptFragment>Prototype.ScriptFragment</Prototype.ScriptFragment>, <String>'img'</String>)</RegExp></RegExp>;
-    var <RegExp>matchOne = new <RegExp>RegExp(<Prototype.ScriptFragment>Prototype.ScriptFragment</Prototype.ScriptFragment>, <String>'im'</String>)</RegExp></RegExp>;
+    var <RegExp>matchAll = <RegExp>new RegExp(<Prototype.ScriptFragment>Prototype.ScriptFragment</Prototype.ScriptFragment>, <String>'img'</String>)</RegExp></RegExp>;
+    var <RegExp>matchOne = <RegExp>new RegExp(<Prototype.ScriptFragment>Prototype.ScriptFragment</Prototype.ScriptFragment>, <String>'im'</String>)</RegExp></RegExp>;
     return (this.match(<RegExp>matchAll</RegExp>) || <Array>[]</Array>).map(<Function>function(scriptTag) {
       return (<scriptTag.match>scriptTag.<scriptTag.match>match</scriptTag.match>(matchOne)</scriptTag.match> || [<Array><String>''</String>, <String>''</String>]</Array>)[<Number>1</Number>];
     }</Function>);
@@ -293,7 +293,7 @@ String.<String>interpret</String> = <Function>function(value){
 
 String.<String.prototype>prototype</String.prototype>.<String.prototype.gsub>gsub</String.prototype.gsub>.<String>prepareReplacement</String> = <Function>function(replacement) {
   if (<Boolean>typeof replacement == <String>'function'</String></Boolean>) return replacement;
-  var <Template>template = new <Template>Template(replacement)</Template></Template>;
+  var <Template>template = <Template>new Template(replacement)</Template></Template>;
   return <Function>function(match) { return <template.evaluate>template.<template.evaluate>evaluate</template.evaluate>(match)</template.evaluate> }</Function>;
 }</Function>
 
@@ -316,8 +316,8 @@ Template.<String>prototype</String> = {
   }</Function>
 }
 
-var <Object>$break    = new <Object>Object()</Object></Object>;
-var <Object>$continue = new <Object>Object()</Object></Object>;
+var <Object>$break    = <Object>new Object()</Object></Object>;
+var <Object>$continue = <Object>new Object()</Object></Object>;
 
 var Enumerable = {
   each: <Function>function(iterator) {
@@ -718,7 +718,7 @@ var <Function>Hash = <Function>function(obj) {
 
 <Function>function $H(object) {
   if (object &amp;&amp; <Boolean><object.constructor>object.constructor</object.constructor> == Hash</Boolean>) return object;
-  return new <Hash>Hash(object)</Hash>;
+  return <Hash>new Hash(object)</Hash>;
 }</Function>;
 ObjectRange = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
 <Object.extend>Object.<Object.extend>extend</Object.extend>(<ObjectRange.prototype>ObjectRange.prototype</ObjectRange.prototype>, Enumerable)</Object.extend>;
@@ -747,15 +747,15 @@ ObjectRange = <Class.create>Class.<Class.create>create</Class.create>()</Class.c
 })</Object.extend>;
 
 var <Function>$R = <Function>function(start, end, exclusive) {
-  return new <ObjectRange>ObjectRange(start, end, exclusive)</ObjectRange>;
+  return <ObjectRange>new ObjectRange(start, end, exclusive)</ObjectRange>;
 }</Function></Function>
 
 var Ajax = {
   getTransport: <Function>function() {
     return <Try.these>Try.<Try.these>these</Try.these>(
-      <Function>function() {return new <XMLHttpRequest>XMLHttpRequest()</XMLHttpRequest>}</Function>,
-      <Function>function() {return new <ActiveXObject>ActiveXObject(<String>'Msxml2.XMLHTTP'</String>)</ActiveXObject>}</Function>,
-      <Function>function() {return new <ActiveXObject>ActiveXObject(<String>'Microsoft.XMLHTTP'</String>)</ActiveXObject>}</Function>
+      <Function>function() {return <XMLHttpRequest>new XMLHttpRequest()</XMLHttpRequest>}</Function>,
+      <Function>function() {return <ActiveXObject>new ActiveXObject(<String>'Msxml2.XMLHTTP'</String>)</ActiveXObject>}</Function>,
+      <Function>function() {return <ActiveXObject>new ActiveXObject(<String>'Microsoft.XMLHTTP'</String>)</ActiveXObject>}</Function>
     )</Try.these> || <Boolean>false</Boolean>;
   }</Function>,
 
@@ -822,7 +822,7 @@ Ajax.<String>Request</String> = <Class.create>Class.<Class.create>create</Class.
 Ajax.<Ajax.Request>Request</Ajax.Request>.<String>Events</String> =
   [<Array><String>'Uninitialized'</String>, <String>'Loading'</String>, <String>'Loaded'</String>, <String>'Interactive'</String>, <String>'Complete'</String>]</Array>;
 
-Ajax.<Ajax.Request>Request</Ajax.Request>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Ajax.Base><Ajax.Base>Ajax.Base</Ajax.Base>()</Ajax.Base>, {
+Ajax.<Ajax.Request>Request</Ajax.Request>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Ajax.Base>new <Ajax.Base>Ajax.Base</Ajax.Base>()</Ajax.Base>, {
   _complete: <Boolean>false</Boolean>,
 
   initialize: <Function>function(url, options) {
@@ -1022,7 +1022,7 @@ Ajax.<String>Updater</String> = <Class.create>Class.<Class.create>create</Class.
 })</Object.extend>;
 
 Ajax.<String>PeriodicalUpdater</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-Ajax.<Ajax.PeriodicalUpdater>PeriodicalUpdater</Ajax.PeriodicalUpdater>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Ajax.Base><Ajax.Base>Ajax.Base</Ajax.Base>()</Ajax.Base>, {
+Ajax.<Ajax.PeriodicalUpdater>PeriodicalUpdater</Ajax.PeriodicalUpdater>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Ajax.Base>new <Ajax.Base>Ajax.Base</Ajax.Base>()</Ajax.Base>, {
   initialize: <Function>function(container, url, options) {
     this.setOptions(options);
     this.<String>onComplete</String> = this.options.onComplete;
@@ -1060,7 +1060,7 @@ Ajax.<Ajax.PeriodicalUpdater>PeriodicalUpdater</Ajax.PeriodicalUpdater>.<String>
   }</Function>,
 
   onTimerEvent: <Function>function() {
-    this.<String>updater</String> = new <Ajax.Updater><Ajax.Updater>Ajax.Updater</Ajax.Updater>(this.container, this.url, this.options)</Ajax.Updater>;
+    this.<String>updater</String> = <Ajax.Updater>new <Ajax.Updater>Ajax.Updater</Ajax.Updater>(this.container, this.url, this.options)</Ajax.Updater>;
   }</Function>
 })</Object.extend>;
 <Function>function $(<HTMLElement>element</HTMLElement>) {
@@ -1104,7 +1104,7 @@ if (<Prototype.BrowserFeatures.XPath>Prototype.<Prototype.BrowserFeatures>Browse
 /*--------------------------------------------------------------------------*/
 
 if (!<Window.Element><Window>window</Window>.Element</Window.Element>)
-  var <Object>Element = new <Object>Object()</Object></Object>;
+  var <Object>Element = <Object>new Object()</Object></Object>;
 
 <Object>Element</Object>.<String>extend</String> = <Function>function(<HTMLElement>element</HTMLElement>) {
   if (!<HTMLElement>element</HTMLElement> || _nativeExtensions || <Boolean><HTMLElement.nodeType><HTMLElement>element</HTMLElement>.nodeType</HTMLElement.nodeType> == <Number>3</Number></Boolean>) return <HTMLElement>element</HTMLElement>;
@@ -1237,7 +1237,7 @@ if (!<Window.Element><Window>window</Window>.Element</Window.Element>)
 
   match: <Function>function(<HTMLElement>element</HTMLElement>, selector) {
     if (<Boolean>typeof selector == <String>'string'</String></Boolean>)
-      <Selector>selector</Selector> = new <Selector>Selector(<Selector>selector</Selector>)</Selector>;
+      <Selector>selector</Selector> = <Selector>new Selector(<Selector>selector</Selector>)</Selector>;
     return <Selector.match><Selector>selector</Selector>.<Selector.match>match</Selector.match>(<$>$(<HTMLElement>element</HTMLElement>)</$>)</Selector.match>;
   }</Function>,
 
@@ -1287,7 +1287,7 @@ if (!<Window.Element><Window>window</Window>.Element</Window.Element>)
   }</Function>,
 
   classNames: <Function>function(<HTMLElement>element</HTMLElement>) {
-    return new <Element.ClassNames><Element.ClassNames>Element.ClassNames</Element.ClassNames>(<HTMLElement>element</HTMLElement>)</Element.ClassNames>;
+    return <Element.ClassNames>new <Element.ClassNames>Element.ClassNames</Element.ClassNames>(<HTMLElement>element</HTMLElement>)</Element.ClassNames>;
   }</Function>,
 
   hasClassName: <Function>function(<HTMLElement>element</HTMLElement>, className) {
@@ -1295,7 +1295,7 @@ if (!<Window.Element><Window>window</Window>.Element</Window.Element>)
     var <Element.className>elementClassName = <Element.className><Element>element</Element>.className</Element.className></Element.className>;
     if (<Boolean><Element.className.length><Element.className>elementClassName</Element.className>.length</Element.className.length> == <Number>0</Number></Boolean>) return <Boolean>false</Boolean>;
     if (<Boolean><Element.className>elementClassName</Element.className> == className</Boolean> ||
-        <Element.className.match><Element.className>elementClassName</Element.className>.<Element.className.match>match</Element.className.match>(new <RegExp>RegExp(<String>"(^|\\s)"</String> + className + <String>"(\\s|$)"</String>)</RegExp>)</Element.className.match>)
+        <Element.className.match><Element.className>elementClassName</Element.className>.<Element.className.match>match</Element.className.match>(<RegExp>new RegExp(<String>"(^|\\s)"</String> + className + <String>"(\\s|$)"</String>)</RegExp>)</Element.className.match>)
       return <Boolean>true</Boolean>;
     return <Boolean>false</Boolean>;
   }</Function>,
@@ -1609,7 +1609,7 @@ if(<RegExp.test><RegExp>/Konqueror|Safari|KHTML/</RegExp>.<RegExp.test>test</Reg
   }
 }</Function>
 
-var <Object>Toggle = new <Object>Object()</Object></Object>;
+var <Object>Toggle = <Object>new Object()</Object></Object>;
 <Object>Toggle</Object>.<String>display</String> = <Object.toggle><Object>Element</Object>.toggle</Object.toggle>;
 
 /*--------------------------------------------------------------------------*/
@@ -1650,10 +1650,10 @@ var <Object>Toggle = new <Object>Object()</Object></Object>;
   }</Function>
 }
 
-var <Object>Insertion = new <Object>Object()</Object></Object>;
+var <Object>Insertion = <Object>new Object()</Object></Object>;
 
 <Object>Insertion</Object>.<String>Before</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-<Object>Insertion</Object>.<Object.Before>Before</Object.Before>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Object.Insertion><Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'beforeBegin'</String>)</Object.Insertion>, {
+<Object>Insertion</Object>.<Object.Before>Before</Object.Before>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Object.Insertion>new <Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'beforeBegin'</String>)</Object.Insertion>, {
   initializeRange: <Function>function() {
     this.range.setStartBefore(this.element);
   }</Function>,
@@ -1666,7 +1666,7 @@ var <Object>Insertion = new <Object>Object()</Object></Object>;
 })</Object.extend>;
 
 <Object>Insertion</Object>.<String>Top</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-<Object>Insertion</Object>.<Object.Top>Top</Object.Top>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Object.Insertion><Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'afterBegin'</String>)</Object.Insertion>, {
+<Object>Insertion</Object>.<Object.Top>Top</Object.Top>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Object.Insertion>new <Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'afterBegin'</String>)</Object.Insertion>, {
   initializeRange: <Function>function() {
     this.range.selectNodeContents(this.element);
     this.range.collapse(<Boolean>true</Boolean>);
@@ -1680,7 +1680,7 @@ var <Object>Insertion = new <Object>Object()</Object></Object>;
 })</Object.extend>;
 
 <Object>Insertion</Object>.<String>Bottom</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-<Object>Insertion</Object>.<Object.Bottom>Bottom</Object.Bottom>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Object.Insertion><Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'beforeEnd'</String>)</Object.Insertion>, {
+<Object>Insertion</Object>.<Object.Bottom>Bottom</Object.Bottom>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Object.Insertion>new <Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'beforeEnd'</String>)</Object.Insertion>, {
   initializeRange: <Function>function() {
     this.range.selectNodeContents(this.element);
     this.range.collapse(this.element);
@@ -1694,7 +1694,7 @@ var <Object>Insertion = new <Object>Object()</Object></Object>;
 })</Object.extend>;
 
 <Object>Insertion</Object>.<String>After</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-<Object>Insertion</Object>.<Object.After>After</Object.After>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Object.Insertion><Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'afterEnd'</String>)</Object.Insertion>, {
+<Object>Insertion</Object>.<Object.After>After</Object.After>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Object.Insertion>new <Object.Insertion><Object>Abstract</Object>.Insertion</Object.Insertion>(<String>'afterEnd'</String>)</Object.Insertion>, {
   initializeRange: <Function>function() {
     this.range.setStartAfter(this.element);
   }</Function>,
@@ -1816,7 +1816,7 @@ Selector.<String>prototype</String> = {
   }</Function>,
 
   compileMatcher: <Function>function() {
-    this.<String>match</String> = new <Function>Function(<String>'element'</String>, <String>'if (!element.tagName) return false; \
+    this.<String>match</String> = <Function>new Function(<String>'element'</String>, <String>'if (!element.tagName) return false; \
       element = $(element); \
       return '</String> + this.buildMatchExpression())</Function>;
   }</Function>,
@@ -1846,7 +1846,7 @@ Selector.<String>prototype</String> = {
 
 <Object.extend>Object.<Object.extend>extend</Object.extend>(Selector, {
   matchElements: <Function>function(elements, expression) {
-    var <Selector>selector = new <Selector>Selector(expression)</Selector></Selector>;
+    var <Selector>selector = <Selector>new Selector(expression)</Selector></Selector>;
     return elements.<elements.select><elements.select>select</elements.select>(<Selector.match.bind><Selector>selector</Selector>.<Selector.match>match</Selector.match>.<Selector.match.bind>bind</Selector.match.bind>(<Selector>selector</Selector>)</Selector.match.bind></elements.select>).map(<Element.extend>Element.extend</Element.extend>);
   }</Function>,
 
@@ -1858,7 +1858,7 @@ Selector.<String>prototype</String> = {
   findChildElements: <Function>function(<HTMLElement>element</HTMLElement>, expressions) {
     return expressions.<expressions.map><expressions.map>map</expressions.map>(<Function>function(expression) {
       return expression.<expression.match><expression.match>match</expression.match>(<RegExp>/[^\s"]+(?:"[^"]*"[^\s"]+)*/g</RegExp></expression.match>).inject([<Array>null]</Array>, <Function>function(results, expr) {
-        var <Selector>selector = new <Selector>Selector(expr)</Selector></Selector>;
+        var <Selector>selector = <Selector>new Selector(expr)</Selector></Selector>;
         return <results.inject>results.<results.inject>inject</results.inject>(<Array>[]</Array>, <Function>function(elements, result) {
           return <elements.concat>elements.<elements.concat>concat</elements.concat>(<selector.findElements>selector.<selector.findElements>findElements</selector.findElements>(result || <HTMLElement>element</HTMLElement>)</selector.findElements>)</elements.concat>;
         }</Function>)</results.inject>;
@@ -2106,14 +2106,14 @@ Form.<Form.Element>Element</Form.Element>.<String>Serializers</String> = {
 }
 
 Form.<Form.Element>Element</Form.Element>.<String>Observer</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-Form.<Form.Element>Element</Form.Element>.<Form.Element.Observer>Observer</Form.Element.Observer>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Abstract.TimedObserver><Abstract.TimedObserver><Object>Abstract</Object>.TimedObserver</Abstract.TimedObserver>()</Abstract.TimedObserver>, {
+Form.<Form.Element>Element</Form.Element>.<Form.Element.Observer>Observer</Form.Element.Observer>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Abstract.TimedObserver>new <Abstract.TimedObserver><Object>Abstract</Object>.TimedObserver</Abstract.TimedObserver>()</Abstract.TimedObserver>, {
   getValue: <Function>function() {
     return <Form.Element.getValue>Form.<Form.Element>Element</Form.Element>.<Form.Element.getValue>getValue</Form.Element.getValue>(this.element)</Form.Element.getValue>;
   }</Function>
 })</Object.extend>;
 
 Form.<String>Observer</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-Form.<Form.Observer>Observer</Form.Observer>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Abstract.TimedObserver><Abstract.TimedObserver><Object>Abstract</Object>.TimedObserver</Abstract.TimedObserver>()</Abstract.TimedObserver>, {
+Form.<Form.Observer>Observer</Form.Observer>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Abstract.TimedObserver>new <Abstract.TimedObserver><Object>Abstract</Object>.TimedObserver</Abstract.TimedObserver>()</Abstract.TimedObserver>, {
   getValue: <Function>function() {
     return <Form.serialize>Form.<Form.serialize>serialize</Form.serialize>(this.element)</Form.serialize>;
   }</Function>
@@ -2162,20 +2162,20 @@ Form.<Form.Observer>Observer</Form.Observer>.<String>prototype</String> = <Objec
 }
 
 Form.<Form.Element>Element</Form.Element>.<String>EventObserver</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-Form.<Form.Element>Element</Form.Element>.<Form.Element.EventObserver>EventObserver</Form.Element.EventObserver>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Abstract.EventObserver><Abstract.EventObserver><Object>Abstract</Object>.EventObserver</Abstract.EventObserver>()</Abstract.EventObserver>, {
+Form.<Form.Element>Element</Form.Element>.<Form.Element.EventObserver>EventObserver</Form.Element.EventObserver>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Abstract.EventObserver>new <Abstract.EventObserver><Object>Abstract</Object>.EventObserver</Abstract.EventObserver>()</Abstract.EventObserver>, {
   getValue: <Function>function() {
     return <Form.Element.getValue>Form.<Form.Element>Element</Form.Element>.<Form.Element.getValue>getValue</Form.Element.getValue>(this.element)</Form.Element.getValue>;
   }</Function>
 })</Object.extend>;
 
 Form.<String>EventObserver</String> = <Class.create>Class.<Class.create>create</Class.create>()</Class.create>;
-Form.<Form.EventObserver>EventObserver</Form.EventObserver>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(new <Abstract.EventObserver><Abstract.EventObserver><Object>Abstract</Object>.EventObserver</Abstract.EventObserver>()</Abstract.EventObserver>, {
+Form.<Form.EventObserver>EventObserver</Form.EventObserver>.<String>prototype</String> = <Object.extend>Object.<Object.extend>extend</Object.extend>(<Abstract.EventObserver>new <Abstract.EventObserver><Object>Abstract</Object>.EventObserver</Abstract.EventObserver>()</Abstract.EventObserver>, {
   getValue: <Function>function() {
     return <Form.serialize>Form.<Form.serialize>serialize</Form.serialize>(this.element)</Form.serialize>;
   }</Function>
 })</Object.extend>;
 if (!<Window.Event><Window>window</Window>.Event</Window.Event>) {
-  var <Object>Event = new <Object>Object()</Object></Object>;
+  var <Object>Event = <Object>new Object()</Object></Object>;
 }
 
 <Object.extend>Object.<Object.extend>extend</Object.extend>(<Object>Event</Object>, {
