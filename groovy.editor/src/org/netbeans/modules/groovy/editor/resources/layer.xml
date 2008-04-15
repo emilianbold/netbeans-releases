@@ -40,11 +40,20 @@
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.resources.Bundle"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
 
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-groovy" url="GroovyPreviewExample"/>
             </folder>
         </folder>
     </folder>
