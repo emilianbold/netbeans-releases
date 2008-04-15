@@ -61,7 +61,7 @@ public class MIDletEditorOperator extends TopComponentOperator {
      */
     public static MIDletEditorOperator findMIDletEditorOperator(String midletName) {
         StringComparator oldOperator = Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(new DefaultStringComparator(true, true));
+        Operator.setDefaultStringComparator(new DefaultStringComparator(false, true));
         MIDletEditorOperator midletOperator =  new MIDletEditorOperator(midletName);
         Operator.setDefaultStringComparator(oldOperator);
         return midletOperator;        

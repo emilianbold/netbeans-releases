@@ -151,7 +151,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         }
         else {
             return MultiViewFactory.createUnsafeCloseState(
-                "Data Object Modified",                             // NOI18N
+                "Data Object Modified", // NOI18N
                 MultiViewFactory.NOOP_CLOSE_ACTION,
                 MultiViewFactory.NOOP_CLOSE_ACTION);            
         }
@@ -182,47 +182,29 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     
     public void componentActivated() {
         super.componentActivated();
-        // Set our activated nodes to kick Undo/Redo into action.
-        // Need to do it twice in the event we are switching from another
-        // multiview element that has the same activated nodes, in which
-        // case no events are fired and so the UndoAction does not
-        // register for changes with our undo manager.
-//        setActivatedNodes(new Node[0]);
-//        setActivatedNodes(new Node[] { getDataObject().getNodeDelegate() });
         setCaretAssocActiveNodes();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
         editor.addUndoManagerToDocument();
-//        addUndoManager();
-        
-        getValidationController().triggerValidation(true);
+//        getValidationController().triggerValidation();
+    }
+    
+    private BPELValidationController getValidationController() {
+      return (BPELValidationController) getDataObject().getLookup().lookup(BPELValidationController.class);
     }
     
     public void componentClosed() {
         super.componentClosed();
         removeCaretPositionListener();
-        
-        /*
-         *  Avoid memory leak. The first call is good it seems.
-         *  
-         *  The second is like a hack. But this works and could be a problem
-         *  only when this MultiviewElement will be reused after reopening.
-         *  It seems this is not a case - each time when editor is opened it is
-         *  instantiated. 
-         */
         setMultiViewCallback( null );
+
         if ( getParent()!= null ){
             getParent().remove( this );
         }
-
     }
     
     public void componentDeactivated() {
         super.componentDeactivated();
-//        removeCaretPositionListener();
-//        removeUndoManager();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
-        // Sync model before having undo manager listen to the model,
-        // lest we get redundant undoable edits added to the queue.
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
         
@@ -230,13 +212,9 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     
     public void componentHidden() {
         super.componentHidden();
-//        removeCaretPositionListener();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
-        // Sync model before having undo manager listen to the model,
-        // lest we get redundant undoable edits added to the queue.
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
-//        removeUndoManager();
     }
     
     public void componentOpened() {
@@ -246,17 +224,6 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     
     public void componentShowing() {
         super.componentShowing();
-        /*BPELDataEditorSupport editor = getDataObject().getEditorSupport();
-        // If the bpel model is valid, discard the edits on the editor
-        // support's undo queue. The idea is to keep our undo/redo model as
-        // simple as can be. Otherwise, the two undo managers would need to
-        // be kept in sync, making the undo/redo code vastly more complicated.
-
-        BpelModel model = editor.getBpelModel();
-        if (model.getState().equals(Model.State.VALID)) {
-            editor.getUndoManager().discardAllEdits();
-        }*/
-//        addUndoManager();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
         editor.addUndoManagerToDocument();
     }
@@ -345,17 +312,6 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         }, delegate);
         associateLookup(lookup);
         addPropertyChangeListener("activatedNodes", lookup);
-//      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
-//        Lookups.fixed(new Object[] {
-//          getActionMap(), // # 85512
-//          getDataObject(),
-//          getDataObject().getNodeDelegate() }),
-//          getDataObject().getLookup() })); // # 117029
-    }
-    
-    private BPELValidationController getValidationController() {
-        return (BPELValidationController) getDataObject().
-            getLookup().lookup( BPELValidationController.class );
     }
     
     /**

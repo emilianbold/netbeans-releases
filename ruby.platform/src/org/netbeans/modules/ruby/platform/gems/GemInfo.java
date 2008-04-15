@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,62 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.platform.gems;
 
-package org.netbeans.modules.server;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.server.ServerInstance;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.util.ChangeSupport;
+import java.io.File;
+import org.openide.util.Parameters;
 
 /**
+ * Encapsulates info of an installed gem.
  *
- * @author Petr Hejl
+ * TODO: merge with <code>Gem</code>
+ * 
+ * @author Erno Mononen
  */
-public class TestInstanceProvider implements ServerInstanceProvider {
+public class GemInfo implements Comparable<GemInfo> {
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final String name;
+    private final String version;
+    private final File specFile;
 
-    private final List<ServerInstance> instances = new ArrayList<ServerInstance>();
-
-    public TestInstanceProvider() {
-        super();
+    public GemInfo(String name, String version, File specFile) {
+        Parameters.notEmpty("name", name);
+        Parameters.notEmpty("version", version);
+        Parameters.notNull("specFile", specFile);
+        this.name = name;
+        this.version = version;
+        this.specFile = specFile;
     }
 
-    public List<ServerInstance> getInstances() {
-        return instances;
+    public String getName() {
+        return name;
     }
 
-    public void clean() {
-        for (ServerInstance instance : instances) {
-            instances.remove(instance);
-            changeSupport.fireChange();
-        }
+    public String getVersion() {
+        return version;
     }
 
-    public void addInstance(ServerInstance instance) {
-        instances.add(instance);
-        changeSupport.fireChange();
+    public File getSpecFile() {
+        return specFile;
     }
 
-    public void removeInstance(ServerInstance instance) {
-        instances.remove(instance);
-        changeSupport.fireChange();
+    public int compareTo(GemInfo o) {
+        int nameComparison = getName().compareTo(o.getName());
+        
+        return nameComparison == 0 
+                ? GemManager.compareGemVersions(o.getVersion(), getVersion())
+                : nameComparison;
     }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
+    
 }

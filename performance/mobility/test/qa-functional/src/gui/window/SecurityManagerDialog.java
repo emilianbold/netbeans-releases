@@ -41,6 +41,8 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
+
 /**
  *
  * @author mkhramov@netbeans.org
@@ -53,7 +55,10 @@ public class SecurityManagerDialog  extends MobilityToolsDialogs {
      */
     public SecurityManagerDialog(String testName) {
         super(testName);
-        cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");        
+        // "Keystores"
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");  
+        // "Keystores manager"        
+        wzdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "TITLE_SecurityManager");
     }
     /**
      * Creates a new instance of SecurityManagerDialog
@@ -62,7 +67,10 @@ public class SecurityManagerDialog  extends MobilityToolsDialogs {
      */
     public SecurityManagerDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");
+        // "Keystores"
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");  
+        // "Keystores manager"        
+        wzdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "TITLE_SecurityManager");
     }
 
 
