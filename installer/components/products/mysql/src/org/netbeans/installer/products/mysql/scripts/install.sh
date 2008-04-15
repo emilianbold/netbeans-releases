@@ -188,9 +188,9 @@ sleep 3
 sleep 2
 
 if [ -n "$PASSWORD" ] ; then
-    ./bin/mysqladmin -u root password "$PASSWORD"
+    ./bin/mysqladmin --defaults-file=./my.cnf -u root password "$PASSWORD"
     echo "Result : $?"
-    ./bin/mysqladmin -u root -h `hostname` password "$PASSWORD"
+    ./bin/mysqladmin --defaults-file=./my.cnf -u root -h `hostname` password "$PASSWORD"
     echo "Result : $?"
 fi
 
