@@ -138,7 +138,7 @@ public class LazyFileListTest extends NbTestCase {
     }
 
     public void testIterator() {
-        RepositoryUpdater.LazyFileList lfl = new RepositoryUpdater.LazyFileList (this.root);
+        RepositoryUpdater.FileList lfl = new RepositoryUpdater.FileList (this.root);
         List<String> fileNames = new ArrayList();
         for (File f :lfl) {
             fileNames.add(f.getName());
