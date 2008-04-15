@@ -241,7 +241,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-ea-macosx.dmg '${mpkgname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-macosx.dmg '${mpkgname}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
     </target>             
