@@ -290,20 +290,26 @@ public class SchemaEditorSupport extends DataEditorSupport
         // be listening to the document now.
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
+        SchemaModel model = null;
+        AXIModel aModel = null;
+        
+        //issue 132607: heavy-lifting outside of synchronized (undo) block.
+        try {
+            model = getModel();
+            aModel = AXIModelFactory.getDefault().getModel(model);
+        } catch (IOException ioe) {
+            // Model is gone, but just removing the listener is not
+            // going to matter anyway.
+        }
+        
         synchronized (undo) {
-            try {
-                SchemaModel model = getModel();
-                if (model != null) {
-                    model.removeUndoableEditListener(undo);
-                }
-                // Must unset the model when no longer listening to it.
-                undo.setModel(null);
-                AXIModel aModel = AXIModelFactory.getDefault().getModel(model);
-                undo.removeWrapperModel(aModel);
-            } catch (IOException ioe) {
-                // Model is gone, but just removing the listener is not
-                // going to matter anyway.
-            }
+            if (model != null) {
+                model.removeUndoableEditListener(undo);
+            }            
+            // Must unset the model when no longer listening to it.
+            undo.setModel(null);
+            undo.removeWrapperModel(aModel);
+            
             // Document may be null if the cloned views are not behaving correctly.
             if (doc != null) {
                 // Ensure the listener is not added twice.
