@@ -258,7 +258,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             long howLong = System.currentTimeMillis() - now;
             if (TIMER.isLoggable(Level.FINE)) {
                 String thread = SwingUtilities.isEventDispatchThread() ? "AWT" : "RP"; // NOI18N
-                Object who = doc.getProperty(Document.StreamDescriptionProperty);
+                Document d = doc;
+                Object who = d == null ? null : d.getProperty(Document.StreamDescriptionProperty);
                 if (who == null) {
                     who = support.messageName();
                 }
