@@ -54,12 +54,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
@@ -602,22 +602,27 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
         
         private int rightMargin = 80;
-        private EditorKit kit;
+        private Class kitClass;
         
         // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private EditorKit getEditorKit() {
-            if(kit == null) {
-                kit = MimeLookup.getLookup(MimePath.parse(PHPLanguage.PHP_MIME_TYPE)).lookup(EditorKit.class); // NOI18N
+        private Class getEditorKitClass() {
+            if(kitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
+                if (kit != null) {
+                    kitClass = kit.getClass();
+                } else {
+                    kitClass = BaseKit.class;
+                }
             }
-            return kit;
+            return kitClass;
         }
 
         // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
         private int getSpacesPerTab() {
-            Integer sp = (Integer) Settings.getValue(getEditorKit().getClass(), SettingsNames.SPACES_PER_TAB);
-            int indent = sp.intValue();
-            if (indent <= 0) {
-                indent = 4;
+            Integer sp = (Integer) Settings.getValue(getEditorKitClass(), SettingsNames.SPACES_PER_TAB);
+            int indent = 4;
+            if (sp != null && sp.intValue() >= 0) {
+                indent = sp.intValue();
             }
             return indent;
         }
