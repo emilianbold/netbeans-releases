@@ -51,9 +51,9 @@ public class AstPath {
     
     /** @param first may be null; in such case a path from the root is created */
     AstPath(AstNode first, AstNode last) {
-        if(first != null && !isDescendant(first, last)) {
-            throw new IllegalArgumentException("AstNode " + last + " is not an ancestor of AstNode " + first);
-        }
+//        if(first != null && !isDescendant(first, last)) {
+//            throw new IllegalArgumentException("AstNode " + last + " is not an ancestor of AstNode " + first);
+//        }
         this.first = first;
         this.last = last;
     }
@@ -135,10 +135,10 @@ public class AstPath {
         return true;
     }
 
-    private int indexInSimilarNodes(AstNode parent, AstNode node) {
+    public static int indexInSimilarNodes(AstNode parent, AstNode node) {
         int index = -1;
         for(AstNode child : parent.children()) {
-            if(child.signature().equals(node.signature())) {
+            if(node.name().equals(child.name()) && node.type() == child.type()) {
                 index++;
             }
             if(child == node) {
