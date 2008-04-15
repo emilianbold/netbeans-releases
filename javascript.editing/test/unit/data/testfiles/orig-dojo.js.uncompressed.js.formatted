@@ -1814,91 +1814,91 @@ if(!dojo._hasResource["dojo._base.connect"]){ //_hasResource checks added by bui
     /*Object|null*/ context, 
     /*String|Function*/ method,
     /*Boolean*/ dontFix){
-  // summary:
-  //		Create a link that calls one function when another executes. 
-  //
-  // description:
-  //		Connects method to event, so that after event fires, method
-  //		does too. All connected functions are passed the same arguments as
-  //		the event function was initially called with. You may connect as
-  //		many methods to event as needed.
-  //
-  //		event must be a string. If obj is null, dojo.global is used.
-  //
-  //		null arguments may simply be omitted.
-  //
-  //		obj[event] can resolve to a function or undefined (null). 
-  //		If obj[event] is null, it is assigned a function.
-  //
-  //		The return value is a handle that is needed to 
-  //		remove this connection with dojo.disconnect.
-  //
-  // obj: 
-  //		The source object for the event function. 
-  //		Defaults to dojo.global if null.
-  //		If obj is a DOM node, the connection is delegated 
-  //		to the DOM event manager (unless dontFix is true).
-  //
-  // event:
-  //		String name of the event function in obj. 
-  //		I.e. identifies a property obj[event].
-  //
-  // context: 
-  //		The object that method will receive as "this".
-  //
-  //		If context is null and method is a function, then method
-  //		inherits the context of event.
-  //	
-  //		If method is a string then context must be the source 
-  //		object object for method (context[method]). If context is null,
-  //		dojo.global is used.
-  //
-  // method:
-  //		A function reference, or name of a function in context. 
-  //		The function identified by method fires after event does. 
-  //		method receives the same arguments as the event.
-  //		See context argument comments for information on method's scope.
-  //
-  // dontFix:
-  //		If obj is a DOM node, set dontFix to true to prevent delegation 
-  //		of this connection to the DOM event manager. 
-  //
-  // example:
-  //		When obj.onchange(), do ui.update():
-  //	|	dojo.connect(obj, "onchange", ui, "update");
-  //	|	dojo.connect(obj, "onchange", ui, ui.update); // same
-  //
-  // example:
-  //		Using return value for disconnect:
-  //	|	var link = dojo.connect(obj, "onchange", ui, "update");
-  //	|	...
-  //	|	dojo.disconnect(link);
-  //
-  // example:
-  //		When onglobalevent executes, watcher.handler is invoked:
-  //	|	dojo.connect(null, "onglobalevent", watcher, "handler");
-  //
-  // example:
-  //		When ob.onCustomEvent executes, customEventHandler is invoked:
-  //	|	dojo.connect(ob, "onCustomEvent", null, "customEventHandler");
-  //	|	dojo.connect(ob, "onCustomEvent", "customEventHandler"); // same
-  //
-  // example:
-  //		When ob.onCustomEvent executes, customEventHandler is invoked
-  //		with the same scope (this):
-  //	|	dojo.connect(ob, "onCustomEvent", null, customEventHandler);
-  //	|	dojo.connect(ob, "onCustomEvent", customEventHandler); // same
-  //
-  // example:
-  //		When globalEvent executes, globalHandler is invoked
-  //		with the same scope (this):
-  //	|	dojo.connect(null, "globalEvent", null, globalHandler);
-  //	|	dojo.connect("globalEvent", globalHandler); // same
+    // summary:
+    //		Create a link that calls one function when another executes. 
+    //
+    // description:
+    //		Connects method to event, so that after event fires, method
+    //		does too. All connected functions are passed the same arguments as
+    //		the event function was initially called with. You may connect as
+    //		many methods to event as needed.
+    //
+    //		event must be a string. If obj is null, dojo.global is used.
+    //
+    //		null arguments may simply be omitted.
+    //
+    //		obj[event] can resolve to a function or undefined (null). 
+    //		If obj[event] is null, it is assigned a function.
+    //
+    //		The return value is a handle that is needed to 
+    //		remove this connection with dojo.disconnect.
+    //
+    // obj: 
+    //		The source object for the event function. 
+    //		Defaults to dojo.global if null.
+    //		If obj is a DOM node, the connection is delegated 
+    //		to the DOM event manager (unless dontFix is true).
+    //
+    // event:
+    //		String name of the event function in obj. 
+    //		I.e. identifies a property obj[event].
+    //
+    // context: 
+    //		The object that method will receive as "this".
+    //
+    //		If context is null and method is a function, then method
+    //		inherits the context of event.
+    //	
+    //		If method is a string then context must be the source 
+    //		object object for method (context[method]). If context is null,
+    //		dojo.global is used.
+    //
+    // method:
+    //		A function reference, or name of a function in context. 
+    //		The function identified by method fires after event does. 
+    //		method receives the same arguments as the event.
+    //		See context argument comments for information on method's scope.
+    //
+    // dontFix:
+    //		If obj is a DOM node, set dontFix to true to prevent delegation 
+    //		of this connection to the DOM event manager. 
+    //
+    // example:
+    //		When obj.onchange(), do ui.update():
+    //	|	dojo.connect(obj, "onchange", ui, "update");
+    //	|	dojo.connect(obj, "onchange", ui, ui.update); // same
+    //
+    // example:
+    //		Using return value for disconnect:
+    //	|	var link = dojo.connect(obj, "onchange", ui, "update");
+    //	|	...
+    //	|	dojo.disconnect(link);
+    //
+    // example:
+    //		When onglobalevent executes, watcher.handler is invoked:
+    //	|	dojo.connect(null, "onglobalevent", watcher, "handler");
+    //
+    // example:
+    //		When ob.onCustomEvent executes, customEventHandler is invoked:
+    //	|	dojo.connect(ob, "onCustomEvent", null, "customEventHandler");
+    //	|	dojo.connect(ob, "onCustomEvent", "customEventHandler"); // same
+    //
+    // example:
+    //		When ob.onCustomEvent executes, customEventHandler is invoked
+    //		with the same scope (this):
+    //	|	dojo.connect(ob, "onCustomEvent", null, customEventHandler);
+    //	|	dojo.connect(ob, "onCustomEvent", customEventHandler); // same
+    //
+    // example:
+    //		When globalEvent executes, globalHandler is invoked
+    //		with the same scope (this):
+    //	|	dojo.connect(null, "globalEvent", null, globalHandler);
+    //	|	dojo.connect("globalEvent", globalHandler); // same
 
-  // normalize arguments
-  var a=arguments, args=[], i=0;
-  // if a[0] is a String, obj was ommited
-  args.push(dojo.isString(a[0]) ? null : a[i++], a[i++]);
+    // normalize arguments
+    var a=arguments, args=[], i=0;
+    // if a[0] is a String, obj was ommited
+    args.push(dojo.isString(a[0]) ? null : a[i++], a[i++]);
     // if the arg-after-next is a String or Function, context was NOT omitted
     var a1 = a[i+1];
     args.push(dojo.isString(a1)||dojo.isFunction(a1) ? a[i++] : null, a[i++]);
@@ -1994,26 +1994,26 @@ if(!dojo._hasResource["dojo._base.connect"]){ //_hasResource checks added by bui
   dojo.connectPublisher = function(	/*String*/ topic, 
     /*Object|null*/ obj, 
     /*String*/ event){
-  //	summary:
-  //	 	Ensure that everytime obj.event() is called, a message is published
-  //	 	on the topic. Returns a handle which can be passed to
-  //	 	dojo.disconnect() to disable subsequent automatic publication on
-  //	 	the topic.
-  //	topic:
-  //	 	The name of the topic to publish.
-  //	obj: 
-  //	 	The source object for the event function. Defaults to dojo.global
-  //	 	if null.
-  //	event:
-  //	 	The name of the event function in obj. 
-  //	 	I.e. identifies a property obj[event].
-  //	example:
-  //	|	dojo.connectPublisher("/ajax/start", dojo, "xhrGet"};
-  var pf = function(){ 
-    dojo.publish(topic, arguments); 
-  }
-  return (event) ? dojo.connect(obj, event, pf) : dojo.connect(obj, pf); //Handle
-    };
+    //	summary:
+    //	 	Ensure that everytime obj.event() is called, a message is published
+    //	 	on the topic. Returns a handle which can be passed to
+    //	 	dojo.disconnect() to disable subsequent automatic publication on
+    //	 	the topic.
+    //	topic:
+    //	 	The name of the topic to publish.
+    //	obj: 
+    //	 	The source object for the event function. Defaults to dojo.global
+    //	 	if null.
+    //	event:
+    //	 	The name of the event function in obj. 
+    //	 	I.e. identifies a property obj[event].
+    //	example:
+    //	|	dojo.connectPublisher("/ajax/start", dojo, "xhrGet"};
+    var pf = function(){ 
+      dojo.publish(topic, arguments); 
+    }
+    return (event) ? dojo.connect(obj, event, pf) : dojo.connect(obj, pf); //Handle
+  };
 
 }
 
@@ -2605,24 +2605,24 @@ if(!dojo._hasResource["dojo._base.array"]){ //_hasResource checks added by build
         /*Object*/		value,
         /*Integer?*/	fromIndex,
         /*Boolean?*/	findLast){
-      // summary:
-      //		locates the first index of the provided value in the
-      //		passed array. If the value is not found, -1 is returned.
-      // description:
-      //		For details on this method, see:
-      // 			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:indexOf
+        // summary:
+        //		locates the first index of the provided value in the
+        //		passed array. If the value is not found, -1 is returned.
+        // description:
+        //		For details on this method, see:
+        // 			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:indexOf
 
-      var i = 0, step = 1, end = array.length;
-      if(findLast){
-        i = end - 1;
-        step = end = -1;
-      }
-      for(i = fromIndex || i; i != end; i += step){
-        if(array[i] == value){ 
-          return i; 
+        var i = 0, step = 1, end = array.length;
+        if(findLast){
+          i = end - 1;
+          step = end = -1;
         }
-      }
-      return -1;	// Number
+        for(i = fromIndex || i; i != end; i += step){
+          if(array[i] == value){ 
+            return i; 
+          }
+        }
+        return -1;	// Number
       },
 
       lastIndexOf: function(/*Array*/array, /*Object*/value, /*Integer?*/fromIndex){
@@ -2861,10 +2861,10 @@ if(!dojo._hasResource["dojo._base.Color"]){ //_hasResource checks added by build
     /*Number*/ weight,
     /*dojo.Color?*/ obj
     ){
-  // summary: 
-  //		blend colors end and start with weight from 0 to 1, 0.5 being a 50/50 blend,
-  //		can reuse a previously allocated dojo.Color object for the result
-  var d = dojo, t = obj || new dojo.Color();
+    // summary: 
+    //		blend colors end and start with weight from 0 to 1, 0.5 being a 50/50 blend,
+    //		can reuse a previously allocated dojo.Color object for the result
+    var d = dojo, t = obj || new dojo.Color();
     d.forEach(["r", "g", "b", "a"], function(x){
       t[x] = start[x] + (end[x] - start[x]) * weight;
       if(x != "a"){ 
@@ -3049,44 +3049,44 @@ if(!dojo._hasResource["dojo._base.window"]){ //_hasResource checks added by buil
     /*Function*/callback, 
     /*Object?*/thisObject, 
     /*Array?*/cbArguments){
-  // summary:
-  //		Call callback with globalObject as dojo.global and
-  //		globalObject.document as dojo.doc. If provided, globalObject
-  //		will be executed in the context of object thisObject
-  // description:
-  //		When callback() returns or throws an error, the dojo.global
-  //		and dojo.doc will be restored to its previous state.
-  var rval;
-  var oldGlob = dojo.global;
-  var oldDoc = dojo.doc;
-  try{
-    dojo.setContext(globalObject, globalObject.document);
-    rval = dojo._fireCallback(callback, thisObject, cbArguments);
-  }finally{
-    dojo.setContext(oldGlob, oldDoc);
-  }
-  return rval;
+    // summary:
+    //		Call callback with globalObject as dojo.global and
+    //		globalObject.document as dojo.doc. If provided, globalObject
+    //		will be executed in the context of object thisObject
+    // description:
+    //		When callback() returns or throws an error, the dojo.global
+    //		and dojo.doc will be restored to its previous state.
+    var rval;
+    var oldGlob = dojo.global;
+    var oldDoc = dojo.doc;
+    try{
+      dojo.setContext(globalObject, globalObject.document);
+      rval = dojo._fireCallback(callback, thisObject, cbArguments);
+    }finally{
+      dojo.setContext(oldGlob, oldDoc);
+    }
+    return rval;
   }
 
   dojo.withDoc = function(	/*Object*/documentObject, 
     /*Function*/callback, 
     /*Object?*/thisObject, 
     /*Array?*/cbArguments){
-  // summary:
-  //		Call callback with documentObject as dojo.doc. If provided,
-  //		callback will be executed in the context of object thisObject
-  // description:
-  //		When callback() returns or throws an error, the dojo.doc will
-  //		be restored to its previous state.
-  var rval;
-  var oldDoc = dojo.doc;
-  try{
-    dojo.doc = documentObject;
-    rval = dojo._fireCallback(callback, thisObject, cbArguments);
-  }finally{
-    dojo.doc = oldDoc;
-  }
-  return rval;
+    // summary:
+    //		Call callback with documentObject as dojo.doc. If provided,
+    //		callback will be executed in the context of object thisObject
+    // description:
+    //		When callback() returns or throws an error, the dojo.doc will
+    //		be restored to its previous state.
+    var rval;
+    var oldDoc = dojo.doc;
+    try{
+      dojo.doc = documentObject;
+      rval = dojo._fireCallback(callback, thisObject, cbArguments);
+    }finally{
+      dojo.doc = oldDoc;
+    }
+    return rval;
   };
 
   //Register any module paths set up in djConfig. Need to do this
@@ -4396,13 +4396,13 @@ dojo.byId = function(id, doc){
     dojo._setMarginBox = function(/*DomNode*/node, 	/*Number?*/leftPx, /*Number?*/topPx, 
       /*Number?*/widthPx, /*Number?*/heightPx, 
       /*Object*/computedStyle){
-    //	summary:
-    //		sets the size of the node's margin box and palcement
-    //		(left/top), irrespective of box model. Think of it as a
-    //		passthrough to dojo._setBox that handles box-model vagaries for
-    //		you.
+      //	summary:
+      //		sets the size of the node's margin box and palcement
+      //		(left/top), irrespective of box model. Think of it as a
+      //		passthrough to dojo._setBox that handles box-model vagaries for
+      //		you.
 
-    var s = computedStyle || dojo.getComputedStyle(node);
+      var s = computedStyle || dojo.getComputedStyle(node);
       // Some elements have special padding, margin, and box-model settings. 
       // To use box functions you may need to set padding, margin explicitly.
       // Controlling box-model is harder, in a pinch you might set dojo.boxModel.
@@ -5421,18 +5421,18 @@ if(!dojo._hasResource["dojo._base.query"]){ //_hasResource checks added by build
       query, 
       getDefault, 
       handleMatch){
-    d.forEach(query.attrs, function(attr){
-      var matcher;
-      // type, attr, matchFor
-      if(attr.type && attrList[attr.type]){
-        matcher = attrList[attr.type](attr.attr, attr.matchFor);
-      }else if(attr.attr.length){
-        matcher = getDefault(attr.attr);
-      }
-      if(matcher){ 
-        handleMatch(matcher); 
-      }
-    });
+      d.forEach(query.attrs, function(attr){
+        var matcher;
+        // type, attr, matchFor
+        if(attr.type && attrList[attr.type]){
+          matcher = attrList[attr.type](attr.attr, attr.matchFor);
+        }else if(attr.attr.length){
+          matcher = getDefault(attr.attr);
+        }
+        if(matcher){ 
+          handleMatch(matcher); 
+        }
+      });
     }
 
     var buildPath = function(query){
@@ -6648,58 +6648,58 @@ if(!dojo._hasResource["dojo._base.xhr"]){ //_hasResource checks added by build. 
       /*Function*/canceller,
       /*Function*/okHandler,
       /*Function*/errHandler){
-    //	summary: 
-    //		sets up the Deferred and ioArgs property on the Deferred so it
-    //		can be used in an io call.
-    //	args:
-    //		The args object passed into the public io call. Recognized properties on
-    //		the args object are:
-    //	canceller:
-    //		The canceller function used for the Deferred object. The function
-    //		will receive one argument, the Deferred object that is related to the
-    //		canceller.
-    //	okHandler:
-    //		The first OK callback to be registered with Deferred. It has the opportunity
-    //		to transform the OK response. It will receive one argument -- the Deferred
-    //		object returned from this function.
-    //	errHandler:
-    //		The first error callback to be registered with Deferred. It has the opportunity
-    //		to do cleanup on an error. It will receive two arguments: error (the 
-    //		Error object) and dfd, the Deferred object returned from this function.
+      //	summary: 
+      //		sets up the Deferred and ioArgs property on the Deferred so it
+      //		can be used in an io call.
+      //	args:
+      //		The args object passed into the public io call. Recognized properties on
+      //		the args object are:
+      //	canceller:
+      //		The canceller function used for the Deferred object. The function
+      //		will receive one argument, the Deferred object that is related to the
+      //		canceller.
+      //	okHandler:
+      //		The first OK callback to be registered with Deferred. It has the opportunity
+      //		to transform the OK response. It will receive one argument -- the Deferred
+      //		object returned from this function.
+      //	errHandler:
+      //		The first error callback to be registered with Deferred. It has the opportunity
+      //		to do cleanup on an error. It will receive two arguments: error (the 
+      //		Error object) and dfd, the Deferred object returned from this function.
 
-    var ioArgs = {
-      args: args, 
-      url: args.url
-      };
+      var ioArgs = {
+        args: args, 
+        url: args.url
+        };
 
-    //Get values from form if requestd.
-    var formObject = null;
-    if(args.form){ 
-      var form = _d.byId(args.form);
-      //IE requires going through getAttributeNode instead of just getAttribute in some form cases, 
-      //so use it for all.  See #2844
-      var actnNode = form.getAttributeNode("action");
-      ioArgs.url = ioArgs.url || (actnNode ? actnNode.value : null); 
-      formObject = _d.formToObject(form);
-    }
+      //Get values from form if requestd.
+      var formObject = null;
+      if(args.form){ 
+        var form = _d.byId(args.form);
+        //IE requires going through getAttributeNode instead of just getAttribute in some form cases, 
+        //so use it for all.  See #2844
+        var actnNode = form.getAttributeNode("action");
+        ioArgs.url = ioArgs.url || (actnNode ? actnNode.value : null); 
+        formObject = _d.formToObject(form);
+      }
 
-    // set up the query params
-    var miArgs = [{}];
+      // set up the query params
+      var miArgs = [{}];
 	
-    if(formObject){
-      // potentially over-ride url-provided params w/ form values
-      miArgs.push(formObject);
-    }
-    if(args.content){
-      // stuff in content over-rides what's set by form
-      miArgs.push(args.content);
-    }
-    if(args.preventCache){
-      miArgs.push({
-        "dojo.preventCache": new Date().valueOf()
-        });
-    }
-    ioArgs.query = _d.objectToQuery(_d.mixin.apply(null, miArgs));
+      if(formObject){
+        // potentially over-ride url-provided params w/ form values
+        miArgs.push(formObject);
+      }
+      if(args.content){
+        // stuff in content over-rides what's set by form
+        miArgs.push(args.content);
+      }
+      if(args.preventCache){
+        miArgs.push({
+          "dojo.preventCache": new Date().valueOf()
+          });
+      }
+      ioArgs.query = _d.objectToQuery(_d.mixin.apply(null, miArgs));
 	
       // .. and the real work of getting the deferred in order, etc.
       ioArgs.handleAs = args.handleAs || "text";
@@ -6843,31 +6843,31 @@ if(!dojo._hasResource["dojo._base.xhr"]){ //_hasResource checks added by build. 
       /*Function*/validCheck,
       /*Function*/ioCheck,
       /*Function*/resHandle){
-    //summary: watches the io request represented by dfd to see if it completes.
-    //dfd:
-    //		The Deferred object to watch.
-    //validCheck:
-    //		Function used to check if the IO request is still valid. Gets the dfd
-    //		object as its only argument.
-    //ioCheck:
-    //		Function used to check if basic IO call worked. Gets the dfd
-    //		object as its only argument.
-    //resHandle:
-    //		Function used to process response. Gets the dfd
-    //		object as its only argument.
-    if(dfd.ioArgs.args.timeout){
-      dfd.startTime = (new Date()).getTime();
-    }
-    _inFlight.push({
-      dfd: dfd, 
-      validCheck: validCheck, 
-      ioCheck: ioCheck, 
-      resHandle: resHandle
-    });
-    if(!_inFlightIntvl){
-      _inFlightIntvl = setInterval(_watchInFlight, 50);
-    }
-    _watchInFlight(); // handle sync requests
+      //summary: watches the io request represented by dfd to see if it completes.
+      //dfd:
+      //		The Deferred object to watch.
+      //validCheck:
+      //		Function used to check if the IO request is still valid. Gets the dfd
+      //		object as its only argument.
+      //ioCheck:
+      //		Function used to check if basic IO call worked. Gets the dfd
+      //		object as its only argument.
+      //resHandle:
+      //		Function used to process response. Gets the dfd
+      //		object as its only argument.
+      if(dfd.ioArgs.args.timeout){
+        dfd.startTime = (new Date()).getTime();
+      }
+      _inFlight.push({
+        dfd: dfd, 
+        validCheck: validCheck, 
+        ioCheck: ioCheck, 
+        resHandle: resHandle
+      });
+      if(!_inFlightIntvl){
+        _inFlightIntvl = setInterval(_watchInFlight, 50);
+      }
+      _watchInFlight(); // handle sync requests
     }
 
     var _defaultContentType = "application/x-www-form-urlencoded";

@@ -1,12 +1,12 @@
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]:ADD
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]:NEW[26:0]:NAME[0:0]:NAME
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]:USE_STACK[0:0]:USE_STACK
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15]:REF_MEMBER[0:0]:REF_MEMBER
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15]:REF_MEMBER[0:0]:STRING[0:0]:STRING
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[3:0]:SETNAME[3:0]:NEW[3:6]:NAME[0:0]:NAME
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]:NEW[26:0]:NAME[0:0]
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]:USE_STACK[0:0]
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15]:REF_MEMBER[0:0]
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15]:REF_MEMBER[0:0]:STRING[0:0]
+Missing position for node SCRIPT[0:0]:EXPR_RESULT[3:0]:SETNAME[3:0]:NEW[3:6]:NAME[0:0]
 
 <SCRIPT>// From http://www.w3schools.com/e4x/e4x_example.asp
-<VAR>var <NAME>order = new <NEW><NAME>XML</NAME>()</NEW></NAME></VAR>
+<VAR>var <NAME>order = <NEW>new <NAME>XML</NAME>()</NEW></NAME></VAR>
 
 <EXPR_RESULT><SETNAME><BINDNAME>order</BINDNAME>=<NEW><STRING>&lt;</NEW></SETNAME></EXPR_RESULT>order id="555"&gt;
 &lt;date&gt;2005-08-01&lt;/date&gt;

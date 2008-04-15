@@ -65,7 +65,7 @@ public class AstOffsetTest extends JsTestBase {
         Node node = (Node)obj;
         if (includePath) {
             BaseDocument doc = LexUtilities.getDocument(info, false);
-            String s = Token.fullName(node.getType());
+            String s = null;
             while (node != null) {
                 int line = Utilities.getLineOffset(doc, node.getSourceStart());
                 int offset = node.getSourceStart()-Utilities.getRowStart(doc, node.getSourceStart());
