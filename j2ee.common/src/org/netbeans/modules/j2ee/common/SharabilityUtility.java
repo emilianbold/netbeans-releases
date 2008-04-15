@@ -266,6 +266,7 @@ public final class SharabilityUtility {
             for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext();) {
                 ClassPathSupport.Item item = it.next();
                 if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        && !item.isBroken()
                         && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
                         && names.contains(item.getLibrary().getName())) {
                     containLibs = true;
