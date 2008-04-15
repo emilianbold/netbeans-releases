@@ -86,6 +86,34 @@ public class JsFormatterTest extends JsTestBase {
     public void testFormat4() throws Exception {
         reformatFileContents("testfiles/orig-dojo.js.uncompressed.js",new IndentPrefs(2,2));
     }
+    
+    public void testFormatE4x() throws Exception {
+        reformatFileContents("testfiles/e4x.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatE4x2() throws Exception {
+        reformatFileContents("testfiles/e4x2.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatTryCatch() throws Exception {
+        reformatFileContents("testfiles/tryblocks.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatPrototypeNew() throws Exception {
+        reformatFileContents("testfiles/prototype-new.js", new IndentPrefs(2,2));
+    }
+
+    public void testFormatSwitches() throws Exception {
+        reformatFileContents("testfiles/switches.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatWebui() throws Exception {
+        reformatFileContents("testfiles/bubble.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatWebui2() throws Exception {
+        reformatFileContents("testfiles/woodstock-body.js", new IndentPrefs(4,4));
+    }
 
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
