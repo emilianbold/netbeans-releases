@@ -93,8 +93,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         
         setName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TITLE_ServerLocation"));
         
-//        hk2HomeTextField.setText(System.getProperty("user.home") + "/glassfishV3preview");
-        hk2HomeTextField.setText("/space/tools/v3latest");
+        hk2HomeTextField.setText(System.getProperty("user.home") + File.separatorChar + "GlassFish_V3_TP2");
+//        hk2HomeTextField.setText("/space/tools/v3latest");
         hk2HomeTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 fireChangeEvent();
