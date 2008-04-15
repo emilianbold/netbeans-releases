@@ -45,12 +45,12 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>createXMLHttpRequest</String> = <Fun
 	try
 	{
 		if (<Window.XMLHttpRequest><Window>window</Window>.XMLHttpRequest</Window.XMLHttpRequest>)
-			<XMLHttpRequest>req</XMLHttpRequest> = new <XMLHttpRequest>XMLHttpRequest()</XMLHttpRequest>;
+			<XMLHttpRequest>req</XMLHttpRequest> = <XMLHttpRequest>new XMLHttpRequest()</XMLHttpRequest>;
 		else if (<Window.ActiveXObject><Window>window</Window>.ActiveXObject</Window.ActiveXObject>)
 		{
 			while (!req &amp;&amp; <Spry.Utils.msProgIDs.length>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.msProgIDs>msProgIDs</Spry.Utils.msProgIDs>.length</Spry.Utils.msProgIDs.length>)
 			{
-				try { <ActiveXObject>req</ActiveXObject> = new <ActiveXObject>ActiveXObject(Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.msProgIDs>msProgIDs</Spry.Utils.msProgIDs>[<Number>0</Number>])</ActiveXObject>; } catch (e) { req = null; }
+				try { <ActiveXObject>req</ActiveXObject> = <ActiveXObject>new ActiveXObject(Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.msProgIDs>msProgIDs</Spry.Utils.msProgIDs>[<Number>0</Number>])</ActiveXObject>; } catch (e) { req = null; }
 				if (!req)
 					<Spry.Utils.msProgIDs.splice>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.msProgIDs>msProgIDs</Spry.Utils.msProgIDs>.<Spry.Utils.msProgIDs.splice>splice</Spry.Utils.msProgIDs.splice>(<Number>0</Number>, <Number>1</Number>)</Spry.Utils.msProgIDs.splice>;
 			}
@@ -66,7 +66,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>createXMLHttpRequest</String> = <Fun
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<String>loadURL</String> = <Function>function(method, url, async, callback, opts)
 {
-	var <Spry.Utils.loadURL.Request>req = new <Spry.Utils.loadURL.Request><Spry.Utils.loadURL.Request>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.Request</Spry.Utils.loadURL.Request>()</Spry.Utils.loadURL.Request></Spry.Utils.loadURL.Request>;
+	var <Spry.Utils.loadURL.Request>req = <Spry.Utils.loadURL.Request>new <Spry.Utils.loadURL.Request>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.Request</Spry.Utils.loadURL.Request>()</Spry.Utils.loadURL.Request></Spry.Utils.loadURL.Request>;
 	<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>method</String> = method;
 	<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>url</String> = url;
 	<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>async</String> = async;
@@ -149,7 +149,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.load
 {
 	var <Spry.Utils.loadURL.Request.props>props = <Spry.Utils.loadURL.Request.props>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.<Spry.Utils.loadURL.Request>Request</Spry.Utils.loadURL.Request>.props</Spry.Utils.loadURL.Request.props></Spry.Utils.loadURL.Request.props>;
 	var <Spry.Utils.loadURL.Request.props.length>numProps = <Spry.Utils.loadURL.Request.props.length><Spry.Utils.loadURL.Request.props>props</Spry.Utils.loadURL.Request.props>.length</Spry.Utils.loadURL.Request.props.length></Spry.Utils.loadURL.Request.props.length>;
-	var <Spry.Utils.loadURL.Request>req = new <Spry.Utils.loadURL.Request><Spry.Utils.loadURL.Request>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.Request</Spry.Utils.loadURL.Request></Spry.Utils.loadURL.Request></Spry.Utils.loadURL.Request>;
+	var <Spry.Utils.loadURL.Request>req = <Spry.Utils.loadURL.Request>new <Spry.Utils.loadURL.Request>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.Request</Spry.Utils.loadURL.Request></Spry.Utils.loadURL.Request></Spry.Utils.loadURL.Request>;
 	for (var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; <Spry.Utils.loadURL.Request.props.length>numProps</Spry.Utils.loadURL.Request.props.length></Boolean>; <Number>i</Number>++)
 		<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>[<Spry.Utils.loadURL.Request.props>props</Spry.Utils.loadURL.Request.props>[<Number>i</Number>]] = this[<Spry.Utils.loadURL.Request.props>props</Spry.Utils.loadURL.Request.props>[<Number>i</Number>]];
 	if (this.headers)
@@ -354,7 +354,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>fixUpIEInnerHTML</String> = <Functio
 	// The idea here is that we only want to fix up attribute values on tags that
 	// are not in any comments or CDATA.
 
-	var <RegExp>regexp = new <RegExp>RegExp(<String>"&lt;\\!--|&lt;\\!\\[CDATA\\[|&lt;\\w+[^&lt;&gt;]*&gt;|--&gt;|\\]\\](&gt;|\&amp;gt;)"</String>, <String>"g"</String>)</RegExp></RegExp>;
+	var <RegExp>regexp = <RegExp>new RegExp(<String>"&lt;\\!--|&lt;\\!\\[CDATA\\[|&lt;\\w+[^&lt;&gt;]*&gt;|--&gt;|\\]\\](&gt;|\&amp;gt;)"</String>, <String>"g"</String>)</RegExp></RegExp>;
 	var <Number>searchStartIndex = <Number>0</Number></Number>;
 	var <Number>skipFixUp = <Number>0</Number></Number>;
 	
@@ -422,7 +422,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>stringToXMLDoc</String> = <Function>
 	{
 		// Attempt to parse the string using the IE method.
 
-		var <ActiveXObject>xmlDOMObj = new <ActiveXObject>ActiveXObject(<String>"Microsoft.XMLDOM"</String>)</ActiveXObject></ActiveXObject>;
+		var <ActiveXObject>xmlDOMObj = <ActiveXObject>new ActiveXObject(<String>"Microsoft.XMLDOM"</String>)</ActiveXObject></ActiveXObject>;
 		<ActiveXObject>xmlDOMObj</ActiveXObject>.<String>async</String> = <Boolean>false</Boolean>;
 		<ActiveXObject.loadXML><ActiveXObject>xmlDOMObj</ActiveXObject>.<ActiveXObject.loadXML>loadXML</ActiveXObject.loadXML>(str)</ActiveXObject.loadXML>;
 		<ActiveXObject>xmlDoc</ActiveXObject> = <ActiveXObject>xmlDOMObj</ActiveXObject>;
@@ -433,7 +433,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>stringToXMLDoc</String> = <Function>
 
 		try
 		{
-			var <DOMParser>domParser = new <DOMParser>DOMParser</DOMParser></DOMParser>;
+			var <DOMParser>domParser = <DOMParser>new DOMParser</DOMParser></DOMParser>;
 			xmlDoc = <DOMParser.parseFromString><DOMParser>domParser</DOMParser>.<DOMParser.parseFromString>parseFromString</DOMParser.parseFromString>(str, <String>'text/xml'</String>)</DOMParser.parseFromString>;
 		}
 		catch (e)
@@ -448,8 +448,8 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>stringToXMLDoc</String> = <Function>
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getNodesByFunc</String> = <Function>function(root, func)
 {
-	var <Array>nodeStack = new <Array>Array</Array></Array>;
-	var <Array>resultArr = new <Array>Array</Array></Array>;
+	var <Array>nodeStack = <Array>new Array</Array></Array>;
+	var <Array>resultArr = <Array>new Array</Array></Array>;
 	var node = root;
 
 	while (node)
@@ -488,16 +488,16 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getNodesByFunc</String> = <Function>
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<String>addClassName</String> = <Function>function(ele, className)
 {
-	if (!ele || !className || (<ele.className>ele.className</ele.className> &amp;&amp; <Boolean><ele.className.search>ele.<ele.className>className</ele.className>.<ele.className.search>search</ele.className.search>(new <RegExp>RegExp(<String>"\\b"</String> + className + <String>"\\b"</String>)</RegExp>)</ele.className.search> != -<Number>1</Number></Boolean>))
+	if (!ele || !className || (<ele.className>ele.className</ele.className> &amp;&amp; <Boolean><ele.className.search>ele.<ele.className>className</ele.className>.<ele.className.search>search</ele.className.search>(<RegExp>new RegExp(<String>"\\b"</String> + className + <String>"\\b"</String>)</RegExp>)</ele.className.search> != -<Number>1</Number></Boolean>))
 		return;
 	ele.<String>className</String> += (<ele.className>ele.className</ele.className> ? <String>" "</String> : <String>""</String>) + className;
 }</Function>;
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<String>removeClassName</String> = <Function>function(ele, className)
 {
-	if (!ele || !className || (<ele.className>ele.className</ele.className> &amp;&amp; <Boolean><ele.className.search>ele.<ele.className>className</ele.className>.<ele.className.search>search</ele.className.search>(new <RegExp>RegExp(<String>"\\b"</String> + className + <String>"\\b"</String>)</RegExp>)</ele.className.search> == -<Number>1</Number></Boolean>))
+	if (!ele || !className || (<ele.className>ele.className</ele.className> &amp;&amp; <Boolean><ele.className.search>ele.<ele.className>className</ele.className>.<ele.className.search>search</ele.className.search>(<RegExp>new RegExp(<String>"\\b"</String> + className + <String>"\\b"</String>)</RegExp>)</ele.className.search> == -<Number>1</Number></Boolean>))
 		return;
-	ele.<String>className</String> = <ele.className.replace>ele.<ele.className>className</ele.className>.<ele.className.replace>replace</ele.className.replace>(new <RegExp>RegExp(<String>"\\s*\\b"</String> + className + <String>"\\b"</String>, <String>"g"</String>)</RegExp>, <String>""</String>)</ele.className.replace>;
+	ele.<String>className</String> = <ele.className.replace>ele.<ele.className>className</ele.className>.<ele.className.replace>replace</ele.className.replace>(<RegExp>new RegExp(<String>"\\s*\\b"</String> + className + <String>"\\b"</String>, <String>"g"</String>)</RegExp>, <String>""</String>)</ele.className.replace>;
 }</Function>;
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<String>removeAllChildren</String> = <Function>function(node)
@@ -584,7 +584,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 			{
 				if (!obj)
 				{
-					<Object>obj</Object> = new <Object>Object()</Object>;
+					<Object>obj</Object> = <Object>new Object()</Object>;
 					if (!<Object>obj</Object>)
 					{
 						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
@@ -611,7 +611,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 
 		if (!<Object>obj</Object>)
 		{
-			<Object>obj</Object> = new <Object>Object()</Object>;
+			<Object>obj</Object> = <Object>new Object()</Object>;
 			if (!<Object>obj</Object>)
 			{
 				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
@@ -635,7 +635,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 				var txt = <Spry.Utils.getNodeText>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.getNodeText>getNodeText</Spry.Utils.getNodeText>(<node.firstChild>child</node.firstChild>)</Spry.Utils.getNodeText>;
 				if (!<Object>obj</Object>)
 				{
-					<Object>obj</Object> = new <Object>Object()</Object>;
+					<Object>obj</Object> = <Object>new Object()</Object>;
 					if (!<Object>obj</Object>)
 					{
 						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
@@ -678,18 +678,18 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getRecordSetFromXMLDoc</String> = <F
 	if (!xmlDoc || !path)
 		return null;
 
-	var <Object>recordSet = new <Object>Object()</Object></Object>;
+	var <Object>recordSet = <Object>new Object()</Object></Object>;
 	<Object>recordSet</Object>.<String>xmlDoc</String> = xmlDoc;
 	<Object>recordSet</Object>.<String>xmlPath</String> = path;
-	<Object>recordSet</Object>.<String>dataHash</String> = new <Object>Object</Object>;
-	<Object>recordSet</Object>.<String>data</String> = new <Array>Array</Array>;
+	<Object>recordSet</Object>.<String>dataHash</String> = <Object>new Object</Object>;
+	<Object>recordSet</Object>.<String>data</String> = <Array>new Array</Array>;
 	<Object>recordSet</Object>.<String>getData</String> = <Function>function() { return this.data; }</Function>;
 
 	// Use the XPath library to find the nodes that will
 	// make up our data set. The result should be an array
 	// of subtrees that we need to flatten.
 
-	var <ExprContext>ctx = new <ExprContext>ExprContext(xmlDoc)</ExprContext></ExprContext>;
+	var <ExprContext>ctx = <ExprContext>new ExprContext(xmlDoc)</ExprContext></ExprContext>;
 	var pathExpr = <xpathParse>xpathParse(path)</xpathParse>;
 	var e = <pathExpr.evaluate>pathExpr.<pathExpr.evaluate>evaluate</pathExpr.evaluate>(<ExprContext>ctx</ExprContext>)</pathExpr.evaluate>;
 
@@ -717,7 +717,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getRecordSetFromXMLDoc</String> = <F
 			rowObj = <Spry.Utils.CreateObjectForNode>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.CreateObjectForNode>CreateObjectForNode</Spry.Utils.CreateObjectForNode>(nodeArray[<Number>i</Number>])</Spry.Utils.CreateObjectForNode>;
 		else // Must be a Node.ATTRIBUTE_NODE array.
 		{
-			<Object>rowObj</Object> = new <Object>Object</Object>;
+			<Object>rowObj</Object> = <Object>new Object</Object>;
 			<Object>rowObj</Object>[<String>"@"</String> + nodeArray[<Number>i</Number>].name] = nodeArray[<Number>i</Number>].value;
 		}
 	
@@ -751,11 +751,11 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>setOptions</String> = <Function>func
 }</Function>;
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<String>SelectionManager</String> = {};
-Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<String>selectionGroups</String> = new <Object>Object</Object>;
+Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<String>selectionGroups</String> = <Object>new Object</Object>;
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<String>SelectionGroup</String> = <Function>function()
 {
-	this.<String>selectedElements</String> = new <Array>Array</Array>;
+	this.<String>selectedElements</String> = <Array>new Array</Array>;
 }</Function>;
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<Spry.Utils.SelectionManager.SelectionGroup>SelectionGroup</Spry.Utils.SelectionManager.SelectionGroup>.<Spry.Utils.SelectionManager.SelectionGroup.prototype>prototype</Spry.Utils.SelectionManager.SelectionGroup.prototype>.<String>select</String> = <Function>function(<HTMLElement>element</HTMLElement>, className, multiSelect)
@@ -793,7 +793,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 
 	// Add the element to our list of selected elements.
 
-	<Object>selObj</Object> = new <Object>Object</Object>;
+	<Object>selObj</Object> = <Object>new Object</Object>;
 	<Object>selObj</Object>.<String>element</String> = <HTMLElement>element</HTMLElement>;
 	<Object>selObj</Object>.<String>className</String> = className;
 	this.selectedElements.push(<Object>selObj</Object>);
@@ -836,7 +836,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 
 	if (!groupObj)
 	{
-		<Spry.Utils.SelectionManager.SelectionGroup>groupObj</Spry.Utils.SelectionManager.SelectionGroup> = new <Spry.Utils.SelectionManager.SelectionGroup><Spry.Utils.SelectionManager.SelectionGroup>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.SelectionGroup</Spry.Utils.SelectionManager.SelectionGroup>()</Spry.Utils.SelectionManager.SelectionGroup>;
+		<Spry.Utils.SelectionManager.SelectionGroup>groupObj</Spry.Utils.SelectionManager.SelectionGroup> = <Spry.Utils.SelectionManager.SelectionGroup>new <Spry.Utils.SelectionManager.SelectionGroup>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.SelectionGroup</Spry.Utils.SelectionManager.SelectionGroup>()</Spry.Utils.SelectionManager.SelectionGroup>;
 		Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<Spry.Utils.SelectionManager.selectionGroups>selectionGroups</Spry.Utils.SelectionManager.selectionGroups>[selectionGroupName] = <Spry.Utils.SelectionManager.SelectionGroup>groupObj</Spry.Utils.SelectionManager.SelectionGroup>;
 	}
 
@@ -881,7 +881,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 
 <Function>function $()
 {
-	var <Array>elements = new <Array>Array()</Array></Array>;
+	var <Array>elements = <Array>new Array()</Array></Array>;
 	
 	for (var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; <arguments.length>arguments.length</arguments.length></Boolean>; <Number>i</Number>++)
 	{
@@ -1238,7 +1238,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>initRegions</String> = <Function>functi
 		}
 
 		// Create a Spry.Data.Region object for this region.
-		var <Spry.Data.Region>region = new <Spry.Data.Region><Spry.Data.Region>Spry.<Spry.Data>Data</Spry.Data>.Region</Spry.Data.Region>(rgn, name, <Boolean>isDetailRegion</Boolean>, dataStr, dataSets, regionStates, <Boolean>hasBehaviorAttributes</Boolean>)</Spry.Data.Region></Spry.Data.Region>;
+		var <Spry.Data.Region>region = <Spry.Data.Region>new <Spry.Data.Region>Spry.<Spry.Data>Data</Spry.Data>.Region</Spry.Data.Region>(rgn, name, <Boolean>isDetailRegion</Boolean>, dataStr, dataSets, regionStates, <Boolean>hasBehaviorAttributes</Boolean>)</Spry.Data.Region></Spry.Data.Region>;
 		Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.regionsArray>regionsArray</Spry.Data.regionsArray>[<Spry.Data.Region.name><Spry.Data.Region>region</Spry.Data.Region>.name</Spry.Data.Region.name>] = <Spry.Data.Region>region</Spry.Data.Region>;
 	}
 
@@ -1287,7 +1287,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>DataSet</String> = <Function>function()
 	this.<String>data</String> = null;
 	this.<String>unfilteredData</String> = null;
 	this.<String>dataHash</String> = null;
-	this.<String>columnTypes</String> = new <Object>Object</Object>;
+	this.<String>columnTypes</String> = <Object>new Object</Object>;
 	this.<String>filterFunc</String> = null;		// non-destructive filter function
 	this.<String>filterDataFunc</String> = null;	// destructive filter function
 
@@ -1305,7 +1305,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>DataSet</String> = <Function>function()
 	this.<String>loadIntervalID</String> = <Number>0</Number>;
 }</Function>;
 
-Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<String>prototype</String> = new <Spry.Utils.Notifier><Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
+Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<String>prototype</String> = <Spry.Utils.Notifier>new <Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<Spry.Data.DataSet.prototype>prototype</Spry.Data.DataSet.prototype>.<String>constructor</String> = <Spry.Data.DataSet>Spry.<Spry.Data>Data</Spry.Data>.DataSet</Spry.Data.DataSet>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<Spry.Data.DataSet.prototype>prototype</Spry.Data.DataSet.prototype>.<String>getData</String> = <Function>function()
@@ -1347,7 +1347,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.
 
 	var self = this;
 
-	this.<String>pendingRequest</String> = new <Object>Object</Object>;
+	this.<String>pendingRequest</String> = <Object>new Object</Object>;
 	this.<String>dataWasLoaded</String> = <Boolean>false</Boolean>;
 	this.pendingRequest.<String>timer</String> = <setTimeout>setTimeout(<Function>function()
 	{
@@ -1566,8 +1566,8 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.
 			{
 				var dA = a[prop];
 				var dB = b[prop];			
-				dA = dA ? (new <Date>Date(dA))</Date> : <Number>0</Number>;
-				dB = dB ? (new <Date>Date(dB))</Date> : <Number>0</Number>;
+				dA = dA ? (<Date>new Date(dA))</Date> : <Number>0</Number>;
+				dB = dB ? (<Date>new Date(dB))</Date> : <Number>0</Number>;
 				return dA - dB;
 			}</Function>;
 		else // order == "descending"
@@ -1575,8 +1575,8 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.
 			{
 				var dA = a[prop];
 				var dB = b[prop];			
-				dA = dA ? (new <Date>Date(dA))</Date> : <Number>0</Number>;
-				dB = dB ? (new <Date>Date(dB))</Date> : <Number>0</Number>;
+				dA = dA ? (<Date>new Date(dA))</Date> : <Number>0</Number>;
+				dB = dB ? (<Date>new Date(dB))</Date> : <Number>0</Number>;
 				return dB - dA;
 			}</Function>;
 	}
@@ -1746,7 +1746,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>XMLDataSet</String> = <Function>functio
 	this.<String>url</String> = dataSetURL;
 	this.<String>xpath</String> = dataSetPath;
 	this.<String>doc</String> = null;
-	this.<String>dataSetsForDataRefStrings</String> = new <Array>Array</Array>;
+	this.<String>dataSetsForDataRefStrings</String> = <Array>new Array</Array>;
 	this.<String>hasDataRefStrings</String> = <Boolean>false</Boolean>;
 	this.<String>useCache</String> = <Boolean>true</Boolean>;
 
@@ -1756,7 +1756,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>XMLDataSet</String> = <Function>functio
 	// to be processed at the last possible minute in case it contains
 	// data references.
 
-	this.<String>requestInfo</String> = new <Spry.Utils.loadURL.Request><Spry.Utils.loadURL.Request>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.Request</Spry.Utils.loadURL.Request>()</Spry.Utils.loadURL.Request>;
+	this.<String>requestInfo</String> = <Spry.Utils.loadURL.Request>new <Spry.Utils.loadURL.Request>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.Request</Spry.Utils.loadURL.Request>()</Spry.Utils.loadURL.Request>;
 	this.requestInfo.extractRequestOptions(dataSetOptions, <Boolean>true</Boolean>);
 
 	// If the caller wants to use "POST" to fetch the data, but didn't
@@ -1778,7 +1778,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>XMLDataSet</String> = <Function>functio
 		this.startLoadInterval(this.loadInterval);
 }</Function>; // End of Spry.Data.XMLDataSet() constructor.
 
-Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<String>prototype</String> = new <Spry.Data.DataSet><Spry.Data.DataSet>Spry.<Spry.Data>Data</Spry.Data>.DataSet</Spry.Data.DataSet>()</Spry.Data.DataSet>;
+Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<String>prototype</String> = <Spry.Data.DataSet>new <Spry.Data.DataSet>Spry.<Spry.Data>Data</Spry.Data>.DataSet</Spry.Data.DataSet>()</Spry.Data.DataSet>;
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.prototype>prototype</Spry.Data.XMLDataSet.prototype>.<String>constructor</String> = <Spry.Data.XMLDataSet>Spry.<Spry.Data>Data</Spry.Data>.XMLDataSet</Spry.Data.XMLDataSet>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.prototype>prototype</Spry.Data.XMLDataSet.prototype>.<String>recalculateDataSetDependencies</String> = <Function>function()
@@ -1802,7 +1802,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 	// out what data sets they require. Note that the data references in these
 	// strings must be fully qualified with a data set name. (ex: {dsDataSetName::columnName})
 
-	this.<String>dataSetsForDataRefStrings</String> = new <Array>Array()</Array>;
+	this.<String>dataSetsForDataRefStrings</String> = <Array>new Array()</Array>;
 
 	var <Array>regionStrs = [ <Array>this.url, this.xpath, this.requestInfo.postData ]</Array></Array>;
 
@@ -1936,7 +1936,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 	req.<String>url</String> = url;
 	req.<String>postData</String> = postData;
 
-	this.<String>pendingRequest</String> = new <Object>Object</Object>;
+	this.<String>pendingRequest</String> = <Object>new Object</Object>;
 	this.pendingRequest.<String>data</String> = <Spry.Data.XMLDataSet.LoadManager.loadData>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.loadData>loadData</Spry.Data.XMLDataSet.LoadManager.loadData>(req, this, this.useCache)</Spry.Data.XMLDataSet.LoadManager.loadData>;
 }</Function>;
 
@@ -2052,7 +2052,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 	this.<String>state</String> = <Spry.Data.XMLDataSet.LoadManager.CachedRequest.NOT_LOADED>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest>CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.NOT_LOADED</Spry.Data.XMLDataSet.LoadManager.CachedRequest.NOT_LOADED>;
 }</Function>;
 
-Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest>CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<String>prototype</String> = new <Spry.Utils.Notifier><Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
+Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest>CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<String>prototype</String> = <Spry.Utils.Notifier>new <Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest>CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest.prototype>prototype</Spry.Data.XMLDataSet.LoadManager.CachedRequest.prototype>.<String>constructor</String> = <Spry.Data.XMLDataSet.LoadManager.CachedRequest>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest>CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<String>NOT_LOADED</String>      = <Number>1</Number>;
@@ -2182,7 +2182,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 
 	if (!cacheObj)
 	{
-		<Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest> = new <Spry.Data.XMLDataSet.LoadManager.CachedRequest><Spry.Data.XMLDataSet.LoadManager.CachedRequest>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>(reqInfo)</Spry.Data.XMLDataSet.LoadManager.CachedRequest>;
+		<Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest> = <Spry.Data.XMLDataSet.LoadManager.CachedRequest>new <Spry.Data.XMLDataSet.LoadManager.CachedRequest>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.CachedRequest</Spry.Data.XMLDataSet.LoadManager.CachedRequest>(reqInfo)</Spry.Data.XMLDataSet.LoadManager.CachedRequest>;
 		if (useCache)
 		{
 			Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.cache>cache</Spry.Data.XMLDataSet.LoadManager.cache>[cacheKey] = <Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>;
@@ -2256,7 +2256,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 	var n = Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifiers>notifiers</Spry.Data.Region.notifiers>[regionID];
 	if (!n)
 	{
-		<Spry.Utils.Notifier>n</Spry.Utils.Notifier> = new <Spry.Utils.Notifier><Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
+		<Spry.Utils.Notifier>n</Spry.Utils.Notifier> = <Spry.Utils.Notifier>new <Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
 		Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifiers>notifiers</Spry.Data.Region.notifiers>[regionID] = <Spry.Utils.Notifier>n</Spry.Utils.Notifier>;
 	}
 	<Spry.Utils.Notifier.addObserver><Spry.Utils.Notifier>n</Spry.Utils.Notifier>.<Spry.Utils.Notifier.addObserver>addObserver</Spry.Utils.Notifier.addObserver>(observer)</Spry.Utils.Notifier.addObserver>;
@@ -2332,7 +2332,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 		return;
 
 	if (!this.dataSets)
-		this.<String>dataSets</String> = new <Array>Array</Array>;
+		this.<String>dataSets</String> = <Array>new Array</Array>;
 
 	// Check to see if the data set is already in our list.
 
@@ -2538,8 +2538,8 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 	if (!dataStr)
 		return null;
 
-	var <Spry.Data.Region.Token>rootToken = new <Spry.Data.Region.Token><Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.LIST_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.LIST_TOKEN</Spry.Data.Region.Token.LIST_TOKEN>, null, null, null)</Spry.Data.Region.Token></Spry.Data.Region.Token>;
-	var <Array>tokenStack = new <Array>Array</Array></Array>;
+	var <Spry.Data.Region.Token>rootToken = <Spry.Data.Region.Token>new <Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.LIST_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.LIST_TOKEN</Spry.Data.Region.Token.LIST_TOKEN>, null, null, null)</Spry.Data.Region.Token></Spry.Data.Region.Token>;
+	var <Array>tokenStack = <Array>new Array</Array></Array>;
 	var parseStr = <Spry.Data.Region.processContentPI>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.processContentPI>processContentPI</Spry.Data.Region.processContentPI>(dataStr)</Spry.Data.Region.processContentPI>;
 
 	<Array.push><Array>tokenStack</Array>.<Array.push>push</Array.push>(<Spry.Data.Region.Token>rootToken</Spry.Data.Region.Token>)</Array.push>;
@@ -2563,7 +2563,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 			// just a plain string. Create a token for it and then
 			// break out of the list.
 			var str = <parseStr.substr>parseStr.<parseStr.substr>substr</parseStr.substr>(<Number>searchStartIndex</Number>, <parseStr.length>parseStr.length</parseStr.length> - <Number>searchStartIndex</Number>)</parseStr.substr>;
-			<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = new <Spry.Data.Region.Token><Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.STRING_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.STRING_TOKEN</Spry.Data.Region.Token.STRING_TOKEN>, null, str, str)</Spry.Data.Region.Token>;
+			<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = <Spry.Data.Region.Token>new <Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.STRING_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.STRING_TOKEN</Spry.Data.Region.Token.STRING_TOKEN>, null, str, str)</Spry.Data.Region.Token>;
 			<Array>tokenStack</Array>[<Array.length><Array>tokenStack</Array>.length</Array.length> - <Number>1</Number>].addChild(<Spry.Data.Region.Token>token</Spry.Data.Region.Token>);
 			break;
 		}
@@ -2573,7 +2573,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 			// We found a match but it's not at the start of the parseStr.
 			// Create a string token for everything that precedes the match.
 			var str = <parseStr.substr>parseStr.<parseStr.substr>substr</parseStr.substr>(<Number>searchStartIndex</Number>, <results.index>results.index</results.index> - <Number>searchStartIndex</Number>)</parseStr.substr>;
-			<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = new <Spry.Data.Region.Token><Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.STRING_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.STRING_TOKEN</Spry.Data.Region.Token.STRING_TOKEN>, null, str, str)</Spry.Data.Region.Token>;
+			<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = <Spry.Data.Region.Token>new <Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.STRING_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.STRING_TOKEN</Spry.Data.Region.Token.STRING_TOKEN>, null, str, str)</Spry.Data.Region.Token>;
 			<Array>tokenStack</Array>[<Array.length><Array>tokenStack</Array>.length</Array.length> - <Number>1</Number>].addChild(<Spry.Data.Region.Token>token</Spry.Data.Region.Token>);
 		}
 
@@ -2610,7 +2610,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 			// Now create a token for the placeholder.
 
-			<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = new <Spry.Data.Region.Token><Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.VALUE_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.VALUE_TOKEN</Spry.Data.Region.Token.VALUE_TOKEN>, dataSetName, valueName, new <String>String(regionStr)</String>)</Spry.Data.Region.Token>;
+			<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = <Spry.Data.Region.Token>new <Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.VALUE_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.VALUE_TOKEN</Spry.Data.Region.Token.VALUE_TOKEN>, dataSetName, valueName, <String>new String(regionStr)</String>)</Spry.Data.Region.Token>;
 			<Array>tokenStack</Array>[<Array.length><Array>tokenStack</Array>.length</Array.length> - <Number>1</Number>].addChild(<Spry.Data.Region.Token>token</Spry.Data.Region.Token>);
 		}
 		else if (<Boolean>results[<Number>0</Number>].charAt(<Number>0</Number>) == <String>'&lt;'</String></Boolean>)
@@ -2685,9 +2685,9 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 						regionState = <Spry.Utils.decodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.decodeEntities>decodeEntities</Spry.Utils.decodeEntities>(regionState)</Spry.Utils.decodeEntities>;
 					}
 
-					var <Spry.Data.Region.Token.PIData>piData = new <Spry.Data.Region.Token.PIData><Spry.Data.Region.Token.PIData>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.PIData</Spry.Data.Region.Token.PIData>(piName, <String>selectedDataSetName</String>, jsExpr, regionState)</Spry.Data.Region.Token.PIData></Spry.Data.Region.Token.PIData>;
+					var <Spry.Data.Region.Token.PIData>piData = <Spry.Data.Region.Token.PIData>new <Spry.Data.Region.Token.PIData>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.PIData</Spry.Data.Region.Token.PIData>(piName, <String>selectedDataSetName</String>, jsExpr, regionState)</Spry.Data.Region.Token.PIData></Spry.Data.Region.Token.PIData>;
 
-					<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = new <Spry.Data.Region.Token><Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.PROCESSING_INSTRUCTION_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.PROCESSING_INSTRUCTION_TOKEN</Spry.Data.Region.Token.PROCESSING_INSTRUCTION_TOKEN>, dataSet, <Spry.Data.Region.Token.PIData>piData</Spry.Data.Region.Token.PIData>, new <String>String(results[<Number>0</Number>])</String>)</Spry.Data.Region.Token>;
+					<Spry.Data.Region.Token>token</Spry.Data.Region.Token> = <Spry.Data.Region.Token>new <Spry.Data.Region.Token>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.Token</Spry.Data.Region.Token>(<Spry.Data.Region.Token.PROCESSING_INSTRUCTION_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.PROCESSING_INSTRUCTION_TOKEN</Spry.Data.Region.Token.PROCESSING_INSTRUCTION_TOKEN>, dataSet, <Spry.Data.Region.Token.PIData>piData</Spry.Data.Region.Token.PIData>, <String>new String(results[<Number>0</Number>])</String>)</Spry.Data.Region.Token>;
 
 					<Array>tokenStack</Array>[<Array.length><Array>tokenStack</Array>.length</Array.length> - <Number>1</Number>].addChild(<Spry.Data.Region.Token>token</Spry.Data.Region.Token>);
 					<Array.push><Array>tokenStack</Array>.<Array.push>push</Array.push>(<Spry.Data.Region.Token>token</Spry.Data.Region.Token>)</Array.push>;
@@ -2738,7 +2738,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 {
 	if (!processContext)
 	{
-		<Spry.Data.Region.ProcessingContext>processContext</Spry.Data.Region.ProcessingContext> = new <Spry.Data.Region.ProcessingContext><Spry.Data.Region.ProcessingContext>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.ProcessingContext</Spry.Data.Region.ProcessingContext>(this)</Spry.Data.Region.ProcessingContext>;
+		<Spry.Data.Region.ProcessingContext>processContext</Spry.Data.Region.ProcessingContext> = <Spry.Data.Region.ProcessingContext>new <Spry.Data.Region.ProcessingContext>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.ProcessingContext</Spry.Data.Region.ProcessingContext>(this)</Spry.Data.Region.ProcessingContext>;
 		if (!<Spry.Data.Region.ProcessingContext>processContext</Spry.Data.Region.ProcessingContext>)
 			return <String>""</String>;
 	}
@@ -3090,7 +3090,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 		return regionStr;
 
 	var <String>resultStr = <String>""</String></String>;
-	var <RegExp>re = new <RegExp>RegExp(<String>"\\{([^\\}:]+::)?[^\\}]+\\}"</String>, <String>"g"</String>)</RegExp></RegExp>;
+	var <RegExp>re = <RegExp>new RegExp(<String>"\\{([^\\}:]+::)?[^\\}]+\\}"</String>, <String>"g"</String>)</RegExp></RegExp>;
 	var <Number>startSearchIndex = <Number>0</Number></Number>;
 
 	while (<Boolean><RegExp.lastIndex>startSearchIndex</RegExp.lastIndex> &lt; <regionStr.length>regionStr.length</regionStr.length></Boolean>)
@@ -3201,7 +3201,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<String>strToDataSetsArray</String> = <Function>function(str, returnRegionNames)
 {
-	var <Array>dataSetsArr = new <Array>Array</Array></Array>;
+	var <Array>dataSetsArr = <Array>new Array</Array></Array>;
 	var foundHash = {};
 
 	if (!str)
@@ -3300,7 +3300,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 	if (region &amp;&amp; <region.dataSets>region.dataSets</region.dataSets>)
 	{
 		for (var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; <region.dataSets.length>region.<region.dataSets>dataSets</region.dataSets>.length</region.dataSets.length></Boolean>; <Number>i</Number>++)
-			<Array.push><Array>m_dataSetContexts</Array>.<Array.push>push</Array.push>(new <Spry.Data.Region.DSContext><Spry.Data.Region.DSContext>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.DSContext</Spry.Data.Region.DSContext>(region.<region.dataSets>dataSets</region.dataSets>[<Number>i</Number>])</Spry.Data.Region.DSContext>)</Array.push>;
+			<Array.push><Array>m_dataSetContexts</Array>.<Array.push>push</Array.push>(<Spry.Data.Region.DSContext>new <Spry.Data.Region.DSContext>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.DSContext</Spry.Data.Region.DSContext>(region.<region.dataSets>dataSets</region.dataSets>[<Number>i</Number>])</Spry.Data.Region.DSContext>)</Array.push>;
 	}
 
 	this.<String>getDataSetContext</String> = <Function>function(dataSet)
@@ -3359,7 +3359,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 		return;
 	
 	if (!this.children)
-		this.<String>children</String> = new <Array>Array</Array>;
+		this.<String>children</String> = <Array>new Array</Array>;
 	
 	this.children.push(child);
 	child.<String>parent</String> = this;

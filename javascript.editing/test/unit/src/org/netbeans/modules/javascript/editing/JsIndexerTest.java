@@ -374,4 +374,8 @@ public class JsIndexerTest extends JsTestBase {
     public void testClassProps() throws Exception {
         checkIndexer("testfiles/classprops.js");
     }
+
+    public void testWebui() throws Exception {
+        checkIndexer("testfiles/bubble.js");
+    }
 }

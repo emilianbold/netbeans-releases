@@ -203,6 +203,7 @@ TranslatedSource translatedSource = null; // TODO
     
     protected String[] JAVASCRIPT_TEST_FILES = new String[] {
         "testfiles/arraytype.js",
+        "testfiles/bubble.js",
         "testfiles/class-inheritance-ext.js",
         "testfiles/class-via-function.js",
         "testfiles/classes.js",

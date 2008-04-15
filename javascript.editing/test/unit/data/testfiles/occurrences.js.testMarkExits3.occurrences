@@ -1,4 +1,3 @@
-|>MARK_OCCURRENCES:<|Object.extend(Object, {
       if (object === undefined) |>MARK_OCCURRENCES:return 'undefined'<|;
       if (object === null) |>MARK_OCCURRENCES:return 'null'<|;
       |>MARK_OCCURRENCES:return object.inspect ? object.inspect() : object.toString()<|;

@@ -11,11 +11,11 @@
 <Function>function method2() {
 }</Function>
 
-var <Foo.Bar>global1 = new <Foo.Bar><Foo.Bar>Foo.Bar</Foo.Bar>()</Foo.Bar></Foo.Bar>;
+var <Foo.Bar>global1 = <Foo.Bar>new <Foo.Bar>Foo.Bar</Foo.Bar>()</Foo.Bar></Foo.Bar>;
 /** my global */
-var <Array>global2 = new <Array>Array()</Array></Array>;
+var <Array>global2 = <Array>new Array()</Array></Array>;
 if (<Boolean>true</Boolean>) {
-   var <org.foo.bar.Baz>global3 = new <org.foo.bar.Baz><org.foo.bar.Baz>org.<org.foo>foo</org.foo>.<org.foo.bar>bar</org.foo.bar>.Baz</org.foo.bar.Baz>()</org.foo.bar.Baz></org.foo.bar.Baz>;
+   var <org.foo.bar.Baz>global3 = <org.foo.bar.Baz>new <org.foo.bar.Baz>org.<org.foo>foo</org.foo>.<org.foo.bar>bar</org.foo.bar>.Baz</org.foo.bar.Baz>()</org.foo.bar.Baz></org.foo.bar.Baz>;
 }
 
 DonaldDuck.<DonaldDuck.Mickey>Mickey</DonaldDuck.Mickey>.<DonaldDuck.Mickey.Baz>Baz</DonaldDuck.Mickey.Baz>.<DonaldDuck.Mickey.Baz.boo>boo</DonaldDuck.Mickey.Baz.boo>.<String>boo</String> = <Function>function(param) {
