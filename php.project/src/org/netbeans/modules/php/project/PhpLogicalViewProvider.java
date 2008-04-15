@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
@@ -416,7 +417,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          * sources change
          */
         public void stateChanged(ChangeEvent e) {
-            createNodes();
+            // #132877 - discussed with tomas zezula
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    createNodes();
+                }
+            });
         }
 
         /*
@@ -425,7 +431,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
             if (PhpProjectProperties.SRC_DIR.equals(property)) {
-                createNodes();
+                // #132877 - discussed with tomas zezula
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        createNodes();
+                    }
+                });
             }
         }
 

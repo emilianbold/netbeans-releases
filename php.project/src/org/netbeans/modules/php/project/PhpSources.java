@@ -45,6 +45,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -67,7 +68,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
      * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots}
      **/
     private boolean externalRootsRegistered;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.myHelper = helper;
@@ -96,15 +97,11 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
-        }
+        changeSupport.addChangeListener(changeListener);
     }
 
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
-        }
+        changeSupport.removeChangeListener(changeListener);
     }
 
     private Sources initSources() {
@@ -190,23 +187,13 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private void fireChange() {
-        ChangeListener[] _listeners;
         synchronized (this) {
             if (delegate != null) {
                 delegate.removeChangeListener(this);
                 delegate = null;
             }
         }
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : _listeners) {
-            l.stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
 
 }
