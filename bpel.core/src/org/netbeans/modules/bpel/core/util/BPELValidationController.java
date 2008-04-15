@@ -73,9 +73,9 @@ public final class BPELValidationController implements ComponentListener {
   public BPELValidationController(Model model) {
     myModel = model;
     myTimer = new Timer();
+    myResult = new LinkedList<ResultItem>();
     myListeners = new WeakHashMap<BPELValidationListener, Object>();
     myAnnotations = new LinkedList<BPELValidationAnnotation>();
-    myValidationResult = new LinkedList<ResultItem>();
   }
 
   public void attach() {
@@ -98,8 +98,8 @@ public final class BPELValidationController implements ComponentListener {
     }
   }
   
-  public List<ResultItem> getValidationResult() {
-    return myValidationResult;
+  public List<ResultItem> getResult() {
+    return myResult;
   }
 
   public void startValidation() {
@@ -174,17 +174,17 @@ public final class BPELValidationController implements ComponentListener {
   }
 
   private void notifyListeners(List<ResultItem> items) {
-    myValidationResult = new LinkedList<ResultItem>();
+    myResult = new LinkedList<ResultItem>();
 
     synchronized (items) {
       for (ResultItem item : items) {
-        myValidationResult.add(item);
+        myResult.add(item);
       }
     }
     synchronized (myListeners) {
       for (BPELValidationListener listener : myListeners.keySet()) {
         if (listener != null) {
-          listener.validationUpdated(myValidationResult);
+          listener.validationUpdated(myResult);
         }
       }
     }
@@ -201,7 +201,7 @@ public final class BPELValidationController implements ComponentListener {
       myAnnotations.clear();
       Map<Line.Part, List<ResultItem>> map = new HashMap<Line.Part, List<ResultItem>>();
   
-      for (ResultItem item : myValidationResult) {
+      for (ResultItem item : myResult) {
         if (item.getType() != ResultType.ERROR) {
           continue;
         }
@@ -251,7 +251,7 @@ public final class BPELValidationController implements ComponentListener {
   
   private Model myModel;
   private Timer myTimer;
-  private List<ResultItem> myValidationResult;
+  private List<ResultItem> myResult;
   private List<BPELValidationAnnotation> myAnnotations;
   private Map<BPELValidationListener, Object> myListeners;
 

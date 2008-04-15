@@ -126,7 +126,7 @@ public final class QuickFixAction extends IconAction {
 //out("CONTROLLER is NULL");
       return quickFixes;
     }
-    List<ResultItem> result = myValidationController.getValidationResult();
+    List<ResultItem> result = myValidationController.getResult();
 
     for (ResultItem item : result) {
       if ( !(item instanceof QuickFixable)) {
