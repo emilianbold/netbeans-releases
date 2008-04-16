@@ -123,6 +123,10 @@ public class PHPCodeCompletion implements Completable {
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
+
+    private final static String[] PHP_CLASS_KEYWORDS = {
+        "$this->", "self::", "parent::"
+    };
     
     private static ImageIcon keywordIcon = null;
     
@@ -371,8 +375,18 @@ public class PHPCodeCompletion implements Completable {
         // CLASS NAMES
         // TODO only show classes with static elements
         autoCompleteClassNames(proposals, request);
+
+        // Special keywords applicable only inside a class
+        ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+        if (classDecl != null) {
+            for (String keyword : PHP_CLASS_KEYWORDS) {
+                if (startsWith(keyword, request.prefix)) {
+                    proposals.add(new KeywordItem(keyword, request));
+                }
+            }
+        }
     }
-    
+
     private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;
