@@ -54,10 +54,11 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-
 import javax.xml.namespace.QName;
+
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -86,7 +87,6 @@ import org.netbeans.modules.reportgenerator.api.ReportElementFactory;
 import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
-import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import static org.netbeans.modules.soa.core.util.UI.*;
 
@@ -96,7 +96,7 @@ import static org.netbeans.modules.soa.core.util.UI.*;
  */
 public class DocumentationGenerator implements ReportCookie {
 
-  public DocumentationGenerator(BPELDataObject dataObject, JComponent canvas) {
+  public DocumentationGenerator(DataObject dataObject, JComponent canvas) {
     myDataObject = dataObject;
     myCanvas = canvas;
   }
@@ -371,16 +371,16 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String i18n(String key) {
-    return org.netbeans.modules.soa.ui.util.UI.i18n(
+    return org.netbeans.modules.soa.core.util.UI.i18n(
       DocumentationGenerator.class, key);
   }
 
   private String i18n(String key, String param) {
-    return org.netbeans.modules.soa.ui.util.UI.i18n(
+    return org.netbeans.modules.soa.core.util.UI.i18n(
       DocumentationGenerator.class, key, param);
   }
 
   private JComponent myCanvas;
-  private BPELDataObject myDataObject;
+  private DataObject myDataObject;
   private ReportElementFactory myFactory;
 }
