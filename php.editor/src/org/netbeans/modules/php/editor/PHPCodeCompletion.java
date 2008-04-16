@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -78,6 +77,7 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -123,10 +123,15 @@ public class PHPCodeCompletion implements Completable {
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
+
+    private final static String[] PHP_CLASS_KEYWORDS = {
+        "$this->", "self::", "parent::"
+    };
     
     private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
+    private NameKind prefixNameKind;
     
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         try {
@@ -185,6 +190,8 @@ public class PHPCodeCompletion implements Completable {
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
+        this.prefixNameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
@@ -230,7 +237,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, prefixNameKind)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
@@ -243,6 +250,8 @@ public class PHPCodeCompletion implements Completable {
             tokenSequence.move(request.anchor);
             if (tokenSequence.movePrevious())
             {
+                boolean instanceContext = !staticContext;
+                boolean includeInherited = true;
                 boolean moreTokens = true;
                 
                 if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
@@ -253,46 +262,71 @@ public class PHPCodeCompletion implements Completable {
                 
                 String varName = tokenSequence.token().text().toString();
                 String typeName = null;
-                
-                if (staticContext){
-                    typeName = varName;
-                } else {
-                    Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
 
-                    if (localVars != null) {
-                        for (IndexedConstant var : localVars){
-                            if (var.getName().equals(varName)){ // can be just a prefix
-                                typeName = var.getTypeName();
-                                break;
+                if (varName.equals("self")) { //NOI18N
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                    if (classDecl != null) {
+                        typeName = classDecl.getName().getName();
+                        staticContext = instanceContext = true;
+                        includeInherited = false;
+                    }
+                } else if (varName.equals("parent")) { //NOI18N
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                    if (classDecl != null) {
+                        Identifier superIdentifier = classDecl.getSuperClass();
+                        if (superIdentifier != null) {
+                            typeName = superIdentifier.getName();
+                            staticContext = instanceContext = true;
+                        }
+                    }
+                } else if (varName.equals("$this")) { //NOI18N
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                    if (classDecl != null) {
+                        typeName = classDecl.getName().getName();
+                        staticContext = false;
+                        instanceContext = true;
+                    }
+                } else {
+                    if (staticContext) {
+                        typeName = varName;
+                    } else {
+                        Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+
+                        if (localVars != null) {
+                            for (IndexedConstant var : localVars){
+                                if (var.getName().equals(varName)){ // can be just a prefix
+                                    typeName = var.getTypeName();
+                                    break;
+                                }
                             }
                         }
                     }
                 }
                 
                 if (typeName != null){
-                    Collection<IndexedFunction> methods = request.index.getAllMethods(
-                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                    Collection<IndexedFunction> methods = includeInherited ?
+                        request.index.getAllMethods(request.result, typeName, request.prefix, prefixNameKind) :
+                        request.index.getMethods(request.result, typeName, request.prefix, prefixNameKind);
                     
                     for (IndexedFunction method : methods){
-                        if (staticContext && method.isStatic() 
-                                || !staticContext && !method.isStatic()){
+                        if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
                             proposals.add(new FunctionItem(method, request));
                         }
                     }
                     
-                    Collection<IndexedConstant> properties = request.index.getAllProperties(
-                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                    Collection<IndexedConstant> properties = includeInherited ?
+                        request.index.getAllProperties(request.result, typeName, request.prefix, prefixNameKind) :
+                        request.index.getProperties(request.result, typeName, request.prefix, prefixNameKind);
                     
                     for (IndexedConstant prop : properties){
-                        if (staticContext && prop.isStatic() 
-                                || !staticContext && !prop.isStatic()){
+                        if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
                             proposals.add(new VariableItem(prop, request));
                         }
                     }
                     
-                    if (staticContext){
+                    if (staticContext) {
                         Collection<IndexedConstant> classConstants = request.index.getClassConstants(
-                                request.result, typeName, request.prefix, NameKind.PREFIX);
+                                request.result, typeName, request.prefix, prefixNameKind);
                         
                         for (IndexedConstant constant : classConstants) {
                             proposals.add(new VariableItem(constant, request));
@@ -305,6 +339,16 @@ public class PHPCodeCompletion implements Completable {
         }
     }
 
+    private ClassDeclaration findEnclosingClass(CompilationInfo info, int offset) {
+        List<ASTNode> nodes = NavUtils.underCaret(info, offset);
+        for(ASTNode node : nodes) {
+            if (node instanceof ClassDeclaration) {
+                return (ClassDeclaration) node;
+            }
+        }
+        return null;
+    }
+    
     private void autoCompleteExpression(List<CompletionProposal> proposals, CompletionRequest request) {
         // KEYWORDS
         for (String keyword : PHP_KEYWORDS) {
@@ -316,12 +360,12 @@ public class PHPCodeCompletion implements Completable {
         // FUNCTIONS
         PHPIndex index = request.index;
 
-        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, prefixNameKind)) {
             proposals.add(new FunctionItem(function, request));
         }
 
         // CONSTANTS
-        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, prefixNameKind)) {
             proposals.add(new ConstantItem(constant, request));
         }
 
@@ -331,8 +375,18 @@ public class PHPCodeCompletion implements Completable {
         // CLASS NAMES
         // TODO only show classes with static elements
         autoCompleteClassNames(proposals, request);
+
+        // Special keywords applicable only inside a class
+        ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+        if (classDecl != null) {
+            for (String keyword : PHP_CLASS_KEYWORDS) {
+                if (startsWith(keyword, request.prefix)) {
+                    proposals.add(new KeywordItem(keyword, request));
+                }
+            }
+        }
     }
-    
+
     private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;

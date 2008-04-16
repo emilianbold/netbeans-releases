@@ -47,6 +47,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.project.Localizer;
 
 public class ChooseLocationDialog extends javax.swing.JDialog {
 

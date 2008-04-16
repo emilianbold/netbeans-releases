@@ -246,7 +246,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "echo \"a\".te|st.\"b\";\n" +
                                          "?>",
                                          "<?php\n" +
-                                         "define(^'test', 'test');\n" +
+                                         "^define('test', 'test');\n" +
                                          "?>");
     }
     
@@ -291,6 +291,24 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "        $this->na|me();\n" +
                                          "    }\n" +
                                          "    ^function name() {}\n" +
+                                         "}\n" +
+                                         "?>");
+    }
+    
+    public void testMethodInOtherFile() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "include \"testa.php\";\n" +
+                                         "$r = new foo();\n" +
+                                         "$r->ffo|o();\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "include \"testb.php\";\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "class foo {\n" +
+                                         "    ^function ffoo() {\n" +
+                                         "    }\n" +
                                          "}\n" +
                                          "?>");
     }

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.util.List;
+import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
@@ -48,6 +50,7 @@ import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.DocumentRoots;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -55,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -264,98 +266,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private MutableComboBoxModel getOSDependentLocalServers() {
         MutableComboBoxModel model = new LocalServer.ComboBoxModel(DEFAULT_LOCAL_SERVER);
 
-        if (isSolaris()) {
-            fillSolarisLocalServers(model);
-        } else if (Utilities.isWindows()) {
-            fillWindowsLocalServers(model);
-        } else if (Utilities.isMac()) {
-            fillMacLocalServers(model);
-        } else if (Utilities.isUnix()) {
-            fillUnixLocalServers(model);
+        List<Root> roots = DocumentRoots.getRoots(getWebFolderName());
+        for (Root root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            model.addElement(ls);
+            if (root.isPreferred()) {
+                model.setSelectedItem(ls);
+                setDefaultUrl(root.getUrl());
+            }
         }
         return model;
-    }
-
-    private boolean isSolaris() {
-        return (Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0
-                || (Utilities.getOperatingSystem() & Utilities.OS_SUNOS) != 0;
-    }
-
-    private void fillUnixLocalServers(final MutableComboBoxModel model) {
-        LocalServer selected = null;
-
-        String webFolderName = getWebFolderName();
-        File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
-        if (userDir.isDirectory()) {
-            LocalServer userDirLS = new LocalServer(getFolderName(userDir, webFolderName));
-            model.addElement(userDirLS);
-            if (selected == null) {
-                selected = userDirLS;
-                String user = System.getProperty("user.name"); // NOI18N
-                setDefaultUrl("~" + user + "/" + webFolderName); // NOI18N
-            }
-        }
-
-        File www = new File("/var/www"); // NOI18N
-        File wwwLocalhost = new File(www, "localhost"); // NOI18N
-        if (wwwLocalhost.isDirectory()) {
-            LocalServer wwwLocalhostLS = new LocalServer(getFolderName(wwwLocalhost, webFolderName));
-            model.addElement(wwwLocalhostLS);
-            if (selected == null) {
-                selected = wwwLocalhostLS;
-                setDefaultUrl(webFolderName);
-            }
-        } else if (www.isDirectory()) {
-            LocalServer wwwLS = new LocalServer(getFolderName(www, webFolderName));
-            model.addElement(wwwLS);
-            if (selected == null) {
-                selected = wwwLS;
-                setDefaultUrl(webFolderName);
-            }
-        }
-
-        if (selected != null) {
-            model.setSelectedItem(selected);
-        }
-    }
-
-    private void fillSolarisLocalServers(final MutableComboBoxModel model) {
-        File htDocs = getSolarisHtDocsDirectory();
-        if (htDocs == null) {
-            return;
-        }
-        String webFolderName = getWebFolderName();
-        LocalServer htDocsLS = new LocalServer(getFolderName(htDocs, webFolderName));
-        model.addElement(htDocsLS);
-        model.setSelectedItem(htDocsLS);
-        setDefaultUrl(webFolderName);
-    }
-
-    private void fillWindowsLocalServers(final MutableComboBoxModel model) {
-        File htDocs = getWindowsHtDocsDirectory();
-        if (htDocs == null) {
-            return;
-        }
-        String webFolderName = getWebFolderName();
-        LocalServer htDocsLS = new LocalServer(getFolderName(htDocs, webFolderName));
-        model.addElement(htDocsLS);
-        model.setSelectedItem(htDocsLS);
-        setDefaultUrl(webFolderName);
-    }
-
-    private void fillMacLocalServers(final MutableComboBoxModel model) {
-        String webFolderName = getWebFolderName();
-        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
-        if (mamp.isDirectory()) {
-            LocalServer mampLS = new LocalServer(getFolderName(mamp, webFolderName));
-            model.addElement(mampLS);
-            model.setSelectedItem(mampLS);
-            setDefaultUrl(webFolderName, 8888);
-        }
-    }
-
-    private String getFolderName(File location, String name) {
-        return new File(location, name).getAbsolutePath();
     }
 
     private String getUrl() {
@@ -370,81 +290,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return "http://localhost/" + getProjectName() + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
     }
 
-    private void setDefaultUrl(String urlPart) {
-        setDefaultUrl(urlPart, null);
-    }
-
-    private void setDefaultUrl(String urlPart, Integer port) {
-        StringBuilder url = new StringBuilder(100);
-        url.append("http://localhost"); // NOI18N
-        if (port != null) {
-            url.append(":"); // NOI18N
-            url.append(port);
-        }
-        url.append("/"); // NOI18N
-        url.append(urlPart);
-        url.append("/"); // NOI18N
-        descriptor.putProperty(URL, url.toString());
-    }
-
-    private File getSolarisHtDocsDirectory() {
-        File varDir = new File("/var/"); // NOI18N
-        if (!varDir.isDirectory()) {
-            return null;
-        }
-        String[] apaches = varDir.list(APACHE_FILENAME_FILTER);
-        if (apaches == null || apaches.length == 0) {
-            return null;
-        }
-        for (String apache : apaches) {
-            File htDocs = findHtDocs(new File(varDir, apache), null);
-            if (htDocs.isDirectory()) {
-                return htDocs;
-            }
-        }
-        return null;
-    }
-
-    private File getWindowsHtDocsDirectory() {
-        File[] roots = File.listRoots();
-        if (roots == null) {
-            return null;
-        }
-        for (File root : roots) {
-            if (isFloppy(root)) {
-                continue;
-            }
-            File programFiles = new File(root, "Program Files"); // NOI18N
-            if (!programFiles.isDirectory()) {
-                continue;
-            }
-            File htDocs = findHtDocs(programFiles, APACHE_FILENAME_FILTER);
-            if (htDocs != null) {
-                return htDocs;
-            }
-        }
-        return null;
-    }
-
-    private boolean isFloppy(File root) {
-        return root.getName().toLowerCase().startsWith("a:") // NOI18N
-                || root.getName().toLowerCase().startsWith("b:"); // NOI18N
-    }
-
-    private File findHtDocs(File startDir, FilenameFilter filenameFilter) {
-        String[] subDirs = startDir.list(filenameFilter);
-        if (subDirs == null || subDirs.length == 0) {
-            return null;
-        }
-        for (String subDir : subDirs) {
-            File apacheDir = new File(startDir, subDir);
-            File htDocs = new File(apacheDir, "htdocs"); // NOI18N
-            if (htDocs.isDirectory()) {
-                return htDocs;
-            }
-            return findHtDocs(apacheDir, filenameFilter);
-        }
-        return null;
+    private void setDefaultUrl(String url) {
+        descriptor.putProperty(URL, url);
     }
 
     private Boolean isCreateIndex() {

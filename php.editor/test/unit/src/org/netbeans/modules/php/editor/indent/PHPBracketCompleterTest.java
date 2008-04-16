@@ -464,6 +464,10 @@ public class PHPBracketCompleterTest extends NbTestCase {
         insertChar("x = '\\^'", '\'', "x = '\\'^'");
     }
 
+    public void testSingleQuotes5() throws Exception {
+        insertChar("x = '\\'^", '\'', "x = '\\''^");
+    }
+
     public void testDoubleQuotes1() throws Exception {
         insertChar("x = ^", '"', "x = \"^\"");
     }
@@ -479,6 +483,11 @@ public class PHPBracketCompleterTest extends NbTestCase {
     public void testDobuleQuotes4() throws Exception {
         insertChar("x = \"\\^\"", '"', "x = \"\\\"^\"");
     }
+    
+    public void testDobuleQuotes5() throws Exception {
+        insertChar("x = \"\\\"^", '"', "x = \"\\\"\"^");
+    }
+    
 // XXX: ruby specific
 //    public void testDocs() throws Exception {
 //        insertBreak("=begin^\n", "=begin\n^\n=end\n");

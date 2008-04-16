@@ -76,11 +76,11 @@ instrument_build() {
 
 buildnum=""`find "$zipdir" -name '*[0-9].zip'`
 buildnum="`expr $buildnum : '.*-\(.*\)\..*'`" 
-installdir="NetBeans 6.1 RC1"
+installdir="NetBeans 6.1 RC2"
 
 ant -f $progdir/build.xml distclean
 
-dmg_postfix=ea-php
+dmg_postfix=php
 license_file=pkg/license.txt
 ant -f $progdir/build.xml clean
 mkdir $progdir/build

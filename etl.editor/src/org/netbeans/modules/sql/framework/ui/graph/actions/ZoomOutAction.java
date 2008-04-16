@@ -60,17 +60,16 @@ public class ZoomOutAction extends GraphAction {
 
     public ZoomOutAction() {
         //action name
-        String nbBundle = mLoc.t("BUND323: Zoom Out...");
+        String nbBundle = mLoc.t("BUND323: Zoom Out");
         this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(zoomOutImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("BUND324: Zoom Out (Shift-Z)");
+        String nbBundle1 = mLoc.t("BUND323: Zoom Out");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
         // Acceleratot Shift-Z
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z', InputEvent.SHIFT_DOWN_MASK));
     }
 
     public void actionPerformed(ActionEvent e) {

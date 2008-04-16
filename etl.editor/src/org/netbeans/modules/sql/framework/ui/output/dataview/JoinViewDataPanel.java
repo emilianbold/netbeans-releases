@@ -56,7 +56,7 @@ public class JoinViewDataPanel extends DataOutputPanel {
     private static transient final Localizer mLoc = Localizer.get();
 
     public JoinViewDataPanel(SQLJoinView etlObject, SQLDefinition sqlDefinition) {
-        super(etlObject, sqlDefinition, false, true);
+        super(etlObject, sqlDefinition, false, false);
     }
 
     public void generateResult() {

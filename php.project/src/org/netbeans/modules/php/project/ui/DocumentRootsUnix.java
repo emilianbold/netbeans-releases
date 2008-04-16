@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.axis2.wizards;
+package org.netbeans.modules.php.project.ui;
 
-import org.openide.WizardDescriptor;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 
 /**
- * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
- * the original wizard panel, that is not finishable
- * 
- *
- * @author mkuchtiak
+ * @author Tomas Mysik
+ * @see DocumentRoots
  */
-public class FinishableProxyWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
-    
-    private WizardDescriptor.Panel<WizardDescriptor> original;
-    /** Creates a new instance of ProxyWizardPanel */
-    public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original) {
-        this.original=original;
-        
+final class DocumentRootsUnix {
+
+    private DocumentRootsUnix() {
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        original.addChangeListener(l);
-    }
+    static List<Root> getDocumentRoots(String projectName) {
+        List<Root> roots = new ArrayList<Root>(2);
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        original.removeChangeListener(l);
-    }
+        // ~/public_html
+        File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
+        if (userDir.isDirectory()) {
+            String documentRoot = DocumentRoots.getFolderName(userDir, projectName);
+            String user = System.getProperty("user.name"); // NOI18N
+            String url = DocumentRoots.getDefaultUrl("~" + user + "/" + projectName); // NOI18N
+            roots.add(new Root(documentRoot, url, true));
+        }
 
-    public void storeSettings(WizardDescriptor settings) {
-        original.storeSettings(settings);
+        // /var/www
+        File www = new File("/var/www"); // NOI18N
+        File wwwLocalhost = new File(www, "localhost"); // NOI18N
+        String documentRoot = null;
+        if (wwwLocalhost.isDirectory()) {
+            documentRoot = DocumentRoots.getFolderName(wwwLocalhost, projectName);
+        } else if (www.isDirectory()) {
+            documentRoot = DocumentRoots.getFolderName(www, projectName);
+        }
+        if (documentRoot != null) {
+            String url = DocumentRoots.getDefaultUrl(projectName);
+            roots.add(new Root(documentRoot, url, roots.isEmpty()));
+        }
+        return roots;
     }
-
-    public void readSettings(WizardDescriptor settings) {
-        original.readSettings(settings);
-    }
-
-    public boolean isValid() {
-        return original.isValid();
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    public java.awt.Component getComponent() {
-        return original.getComponent();
-    }
-
-    public org.openide.util.HelpCtx getHelp() {
-        return original.getHelp();
-    }
-    
 }
