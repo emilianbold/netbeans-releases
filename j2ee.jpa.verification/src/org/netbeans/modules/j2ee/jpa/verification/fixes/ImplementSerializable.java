@@ -42,15 +42,14 @@
 package org.netbeans.modules.j2ee.jpa.verification.fixes;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
 import java.io.IOException;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -81,9 +80,8 @@ public class ImplementSerializable implements Fix {
                 
                 if (clazz != null){    
                     ClassTree clazzTree = workingCopy.getTrees().getTree(clazz);
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    ExpressionTree implementsClause = make.Identifier("java.io.Serializable"); //NOI18N
-                    ClassTree modifiedClazz = make.addClassImplementsClause(clazzTree, implementsClause);
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                    ClassTree modifiedClazz = genUtils.addImplementsClause(clazzTree, "java.io.Serializable"); // NOI18N
                     workingCopy.rewrite(clazzTree, modifiedClazz);
                 }
             }
