@@ -132,8 +132,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-all-dmg" depends="clean,init,build-pkg">                                                    
         <property file="${basedir}/build/sizes.pro"/>  
         <mkdir dir="dist"/>                  
-        <property name="bundles" value="        (./build/*pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
+        <property name="bundles" value="-php(./build/baseide.pkg ./build/php.pkg)"/>
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <ant target="build-dmg"/>                           
         </for-each>         
