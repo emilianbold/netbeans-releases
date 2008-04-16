@@ -279,7 +279,7 @@ public class SvnUtils {
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
     public static boolean isManaged(File file) {
-        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
+        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !isPartOfSubversionMetadata(file);
     }
     
     /**
@@ -345,7 +345,7 @@ public class SvnUtils {
             file = file.getParentFile();
             
         }
-        if(repositoryURL == null & fileIsManaged) {
+        if(repositoryURL == null && fileIsManaged) {
             // The file is managed but we haven't found the repository URL in it's metadata - 
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
@@ -387,7 +387,7 @@ public class SvnUtils {
                 }
             }
             
-            if (info != null && info.getUrl() != null) {
+            if (info != null) {
                 repositoryURL = decode(info.getRepository());
                 if (repositoryURL != null) {
                     break;
@@ -397,7 +397,7 @@ public class SvnUtils {
             file = file.getParentFile();
             
         }
-        if(repositoryURL == null & fileIsManaged) {
+        if(repositoryURL == null && fileIsManaged) {
             // The file is managed but we haven't found the repository URL in it's metadata - 
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
@@ -468,7 +468,7 @@ public class SvnUtils {
             file = file.getParentFile();
             
         }
-        if(fileURL == null & fileIsManaged) {
+        if(fileURL == null && fileIsManaged) {
             // The file is managed but we haven't found the URL in it's metadata - 
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
