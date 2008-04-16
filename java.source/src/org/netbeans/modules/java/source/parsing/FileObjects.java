@@ -558,7 +558,11 @@ public class FileObjects {
         
         public String getExt () {
             return this.ext;
-        }    
+        }
+        
+        public boolean isVirtual () {
+            return false;
+        }
         
         public final String inferBinaryName () {
             final StringBuilder sb = new StringBuilder ();
@@ -1093,6 +1097,7 @@ public class FileObjects {
         private final long lastModified;
         private final CharBuffer cb;
         private final URI uri;
+        private final boolean isVirtual;
         
         public MemoryFileObject(final String packageName, final String fileName,
                 final URI uri, final long lastModified, final CharBuffer cb ) {            
@@ -1100,6 +1105,7 @@ public class FileObjects {
             this.cb = cb;
             this.lastModified = lastModified;
             this.uri = uri;
+            this.isVirtual = uri != null;
         }
         
 
@@ -1125,6 +1131,11 @@ public class FileObjects {
             else {
                 return URI.create (convertPackage2Folder(this.pkgName) + '/' + this.nameWithoutExt);    //NOI18N
             }
+        }
+        
+        @Override
+        public boolean isVirtual () {
+            return isVirtual;
         }
 
         public long getLastModified() {
