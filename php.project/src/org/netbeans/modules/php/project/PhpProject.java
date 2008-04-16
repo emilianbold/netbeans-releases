@@ -82,6 +82,9 @@ import org.w3c.dom.Text;
  *
  */
 public class PhpProject implements Project, AntProjectListener {
+
+    public static final String UI_LOGGER_NAME = "org.netbeans.ui.php.project"; //NOI18N
+
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation()
             + ResourceMarker.PROJECT_ICON));
 
