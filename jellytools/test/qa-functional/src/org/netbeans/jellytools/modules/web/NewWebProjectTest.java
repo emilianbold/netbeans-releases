@@ -54,7 +54,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
@@ -83,7 +83,7 @@ public class NewWebProjectTest extends JellyTestCase {
         System.out.println("### "+getName()+" ###");
     }
         
-    public void createSampleWebProject() {
+    public void createSampleWebProject() throws Exception {
         String prjName = "SampleWebApplication";
         String web = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -121,7 +121,12 @@ public class NewWebProjectTest extends JellyTestCase {
             }
             // wait for opening
             ProjectsTabOperator.invoke().getProjectRootNode(prjName);
-            ProjectSupport.waitScanFinished();
+            try {
+                Class.forName("org.netbeans.api.java.source.SourceUtils", true, Thread.currentThread().getContextClassLoader()).
+                        getMethod("waitScanFinished").invoke(null);
+            } catch (ClassNotFoundException x) {
+                System.err.println("Warning: org.netbeans.api.java.source.SourceUtils could not be found, will not wait for scan to finish");
+            }
         }
     }
     
