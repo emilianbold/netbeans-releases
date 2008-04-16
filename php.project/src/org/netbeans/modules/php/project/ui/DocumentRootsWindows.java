@@ -73,7 +73,7 @@ final class DocumentRootsWindows {
             if (htDocs != null) {
                 String documentRoot = DocumentRoots.getFolderName(htDocs, projectName);
                 String url = DocumentRoots.getDefaultUrl(projectName);
-                roots.add(new Root(documentRoot, url, true));
+                roots.add(new Root(documentRoot, url, htDocs.canWrite()));
                 // one htdocs is enough
                 break;
             }
