@@ -1654,10 +1654,11 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
             boolean insert = onlyWhitespaceFollows;
             if (!insert) {
                 int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, sectionEnd);
-                assert firstNonWhiteFwd != -1;
-                char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
-                insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                         chr == ';' || chr == ']' || chr == '/' || chr == '.'; //NOI18N
+                if (firstNonWhiteFwd != -1) {
+                    char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
+                    insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
+                             chr == ';' || chr == ']' || chr == '/' || chr == '.'; //NOI18N
+                }
             }
             
             if (insert) {
