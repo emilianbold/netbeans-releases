@@ -159,10 +159,13 @@ public class LocalServerController {
      * Validate given local server instance, its source root.
      * @param localServer local server to validate.
      * @param type the type for error messages.
+     * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
+     * @param allowInRoot  <code>true</code> if the folder can exist and can be a root directory "/" (on *NIX only).
      * @return error message or <code>null</null> if source root is ok.
      * @see Utils#validateProjectDirectory(java.lang.String, java.lang.String, boolean)
      */
-    public static String validateLocalServer(final LocalServer localServer, String type, boolean allowNonEmpty) {
+    public static String validateLocalServer(final LocalServer localServer, String type, boolean allowNonEmpty,
+            boolean allowInRoot) {
         if (!localServer.isEditable()) {
             return null;
         }
@@ -170,10 +173,10 @@ public class LocalServerController {
         String sourcesLocation = localServer.getSrcRoot();
         File sources = FileUtil.normalizeFile(new File(sourcesLocation));
         if (sourcesLocation.trim().length() == 0
-                || !Utils.isValidFileName(sources.getName())) {
+                || !Utils.isValidFileName(sources)) {
             err = NbBundle.getMessage(LocalServerController.class, "MSG_Illegal" + type + "Name");
         } else {
-            err = Utils.validateProjectDirectory(sourcesLocation, type, allowNonEmpty);
+            err = Utils.validateProjectDirectory(sourcesLocation, type, allowNonEmpty, allowInRoot);
         }
         return err;
     }

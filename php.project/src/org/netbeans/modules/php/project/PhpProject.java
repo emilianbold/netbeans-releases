@@ -187,8 +187,7 @@ public class PhpProject implements Project, AntProjectListener {
                     data.insertBefore(nameEl, /* OK if null */data
                             .getChildNodes().item(0));
                 }
-                nameEl
-                        .appendChild(data.getOwnerDocument().createTextNode(
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(
                                 name));
                 getHelper().putPrimaryConfigurationData(data, true);
                 return null;
@@ -255,7 +254,7 @@ public class PhpProject implements Project, AntProjectListener {
          * @see org.netbeans.api.project.ProjectInformation#getDisplayName()
          */
         public String getDisplayName() {
-            return PropertyUtils.getUsablePropertyName(getName());
+            return PhpProject.this.getName();
         }
 
         /* (non-Javadoc)

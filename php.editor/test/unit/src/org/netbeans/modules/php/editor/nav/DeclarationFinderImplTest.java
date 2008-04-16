@@ -246,11 +246,11 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "echo \"a\".te|st.\"b\";\n" +
                                          "?>",
                                          "<?php\n" +
-                                         "define(^'test', 'test');\n" +
+                                         "^define('test', 'test');\n" +
                                          "?>");
     }
     
-    public void testGoToinherited() throws Exception {
+    public void testGoToInherited() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
                                          "class foo {\n" +
@@ -260,6 +260,56 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "$r = new bar();\n" +
                                          "$r->te|st();" +
+                                         "?>");
+    }
+    
+    public void testGoToInclude() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include \"te|sta.php\";\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+    
+    public void testGoToInstanceVar() throws Exception {
+        performTestSimpleFindDeclaration("<?php\n" +
+                                         "class test {\n" +
+                                         "    function ftest($name) {\n" +
+                                         "        $this->na|me = $name;\n" +
+                                         "    }\n" +
+                                         "    ^var $name;\n" +
+                                         "}\n" +
+                                         "?>");
+    }
+    
+    public void testGoToForward() throws Exception {
+        performTestSimpleFindDeclaration("<?php\n" +
+                                         "class test {\n" +
+                                         "    function ftest($name) {\n" +
+                                         "        $this->na|me();\n" +
+                                         "    }\n" +
+                                         "    ^function name() {}\n" +
+                                         "}\n" +
+                                         "?>");
+    }
+    
+    public void testMethodInOtherFile() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "include \"testa.php\";\n" +
+                                         "$r = new foo();\n" +
+                                         "$r->ffo|o();\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "include \"testb.php\";\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "class foo {\n" +
+                                         "    ^function ffoo() {\n" +
+                                         "    }\n" +
+                                         "}\n" +
                                          "?>");
     }
     

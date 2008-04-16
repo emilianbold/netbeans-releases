@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans.
+The Initial Developer of the Original Software is Sun Microsystems, Inc.
+Portions Copyright 1997-2007 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
+-->
+<project basedir="." default="netbeans" name="ide.branding">
+
+  <!-- Apparently needed by ML build? -->
+  <property name="nb_all" location="../ide/.."/>
+
+  <import file="${nb_all}/nbbuild/templates/projectized.xml"/>
+
+  <property name="locjar.warnMissingDir" value="true"/>
+
+  <target name="init" depends="default.init,basic-init,files-init,build-init" >
+
+    <patternset id="ide/branding.files">
+      <include name="**/*_php.jar"/>
+      <include name="modules/org-netbeans-modules-php-branding.jar" />
+      <include name="config/Modules/org-netbeans-modules-php-branding.xml" />
+      <include name="netbeans.icns" />
+      <include name="netbeans.png" />
+      <include name="shortcuts.pdf" />
+      <include name="CREDITS.html"/>
+      <include name="LICENSE.txt"/>
+      <include name="LEGALNOTICE.txt"/>
+      <include name="DISTRIBUTION.txt"/>
+      <include name="THIRDPARTYLICENSE.txt"/>
+    </patternset>
+  
+  
+    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="locmakenbm" classname="org.netbeans.nbbuild.LocMakeNBM"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="locjhindexer" classname="org.netbeans.nbbuild.LocJHIndexer"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="makelayer" 
+             classname="org.netbeans.nbbuild.MakeLayer" 
+	     classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef 
+        name="createmodulexml" 
+        classname="org.netbeans.nbbuild.CreateModuleXML" 
+        classpath="${nb_all}/nbbuild/nbantext.jar"
+    />
+  </target>
+  
+  <mkdir dir="src"/>
+  <target name="compile">
+      <mkdir dir="${build.classes.dir}"/>
+  </target>
+
+  <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
+  <!-- Note: jar has to be the last use of locjar so that inferring the        -->
+  <!-- location of the localizing bundle works!					-->
+  <target name="netbeans" depends="init,release,jar">
+    <genlist 
+      outputfiledir="${cluster}" 
+      module="modules/org-netbeans-modules-php-branding.jar"
+      locales="${locales}"
+      brandings="${locjar.brands}"
+    >
+      <fileset dir="${cluster}">
+        <patternset refID="ide/branding.files"/>
+      </fileset>
+    </genlist>
+  </target>
+
+  
+  <target name="netbeans-extra" depends="release"/>
+  <target name="netbeans-extra-ml" depends="release-ml" if="locales"/>
+
+  <target name="release" depends="init">
+    <copy todir="${netbeans.dest.dir}">
+      <fileset dir="release">
+        <exclude name="netbeans.png"/>
+        <exclude name="netbeans.icns"/>
+        <exclude name="shortcuts.pdf"/>
+<!-- Issue 67806
+        <exclude name="LICENSE.txt"/>
+        <exclude name="LEGALNOTICE.txt"/>
+        <exclude name="DISTRIBUTION.txt"/>
+        <exclude name="THIRDPARTYLICENSE.txt"/>
+-->
+      </fileset>
+    </copy>
+    <copy todir="${cluster}" file="release/netbeans.png"/>
+    <copy todir="${cluster}" file="release/netbeans.icns"/>
+    <copy todir="${cluster}" file="release/shortcuts.pdf"/>
+<!-- Issue 67806
+    <copy todir="${cluster}" file="release/LICENSE.txt"/>
+    <copy todir="${cluster}" file="release/LEGALNOTICE.txt"/>
+    <copy todir="${cluster}" file="release/DISTRIBUTION.txt"/>
+    <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
+-->
+  </target>
+  
+  <target name="basic-init" depends="projectized-common.basic-init">
+    <condition property="locjar.locales" value="${locales}">
+      <and>
+        <isset property="locales" />
+        <not>
+          <isset property="locjar.locales"/>
+        </not>
+      </and>
+    </condition>
+  </target>
+  
+  <target name="check-run-mlbuild" depends="basic-init">
+    <available file="${nb_all}/translatedfiles/src/ide/branding" type="dir" property="translated.src.dir.exist"/>
+    <condition property="run.ml.build" value="true">
+      <and>
+        <isset property="translated.src.dir.exist"/>
+        <isset property="locjar.locales"/>
+        <length string="${locjar.locales}" when="greater" length="0"/>
+      </and>
+    </condition>
+  </target>
+
+  <target name="release-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
+      <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
+               classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <repeat target="release-one-locale" name="locale" values="${locales}"/>
+  </target>
+  
+  <target name="release-one-locale" if="locale">
+      <copy todir="${netbeans.dest.dir}">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
+              <include name="**/*_${locale}.*"/>
+              <exclude name="netbeans*.png"/>
+              <exclude name="netbeans*.icns"/>
+              <exclude name="shortcuts*.pdf"/>
+          </fileset>
+      </copy>
+      <copy todir="${cluster}">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
+              <include name="shortcuts_${locale}.pdf"/>
+          </fileset>
+      </copy>
+  </target>
+  
+  <target name="jar" depends="init">
+   <!-- <property name="locjar.writeSrcDir" value="true"/> -->
+
+    <mkdir  dir="build/org/netbeans/modules/php/branding" />
+    <copy file="Bundle.properties" tofile="build/org/netbeans/modules/php/branding/Bundle.properties" />
+    <mkdir  dir="${cluster}/modules" />
+    <!-- core (main core) -->
+    <jar basedir="." 
+      excludes="**/*"
+      manifest="manifest.mf"
+      jarfile="${cluster}/modules/org-netbeans-modules-php-branding.jar" 
+      compress="${build.package.compress}"
+    >
+        <fileset dir="build" >
+            <include name="org/netbeans/modules/php/branding/Bundle.properties" />
+        </fileset>
+    </jar>
+    <createmodulexml xmldir="${cluster}/config/Modules">
+      <autoload dir="${cluster}">
+        <include name="modules/org-netbeans-modules-php-branding.jar"/>
+      </autoload>
+    </createmodulexml>
+    
+    <locjar warnMissingDir="true"
+      basedir="core/startup/src"
+      jarfile="${cluster}/core/core.jar">
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="core/src"
+      jarfile="${cluster}/modules/org-netbeans-core.jar">
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="core/windows/src"
+      jarfile="${cluster}/modules/org-netbeans-core-windows.jar">
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="welcome/src"
+      jarfile="${cluster}/modules/org-netbeans-welcome.jar">
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="autoupdate/libsrc"
+      jarfile="${cluster}/modules/ext/updater.jar">
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="autoupdate/ui/src"
+      jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="updatecenters/src"
+      jarfile="${cluster}/modules/org-netbeans-modules-updatecenters.jar">
+      <branding name="php"/>
+    </locjar>
+  </target>
+  
+  <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
+      <locjar basedir="build/classes-ml"
+              jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar"/>      
+  </target>
+
+  <target name="jar-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
+      <mkdir  dir="build/classes-ml/org/netbeans/modules/ide/branding" />
+      <copy todir="build/classes-ml/org/netbeans/modules/ide/branding">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding">
+              <include name="Bundle_*.properties"/>
+          </fileset>
+      </copy>
+      <mkdir  dir="${cluster}/modules" />
+      <locjar basedir="build/classes-ml"
+              jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar"/>      
+      <mkdir dir="build/classes-ml/core/startup/src"/>
+      <copy todir="build/classes-ml/core/startup/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/core/startup/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/core/startup/src"
+              jarfile="${cluster}/core/core.jar">
+        <branding name="nb"/>
+      </locjar>
+      
+      <mkdir dir="build/classes-ml/core/src"/>
+      <copy todir="build/classes-ml/core/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/core/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/core/src"
+              jarfile="${cluster}/modules/org-netbeans-core.jar">
+        <branding name="nb"/>
+      </locjar>
+      
+      <mkdir dir="build/classes-ml/core/windows/src"/>
+      <copy todir="build/classes-ml/core/windows/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/core/windows/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/core/windows/src"
+              jarfile="${cluster}/modules/org-netbeans-core-windows.jar">
+        <branding name="nb"/>
+      </locjar>
+      
+      <mkdir dir="build/classes-ml/autoupdate/libsrc"/>
+      <copy todir="build/classes-ml/autoupdate/libsrc">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/autoupdate/libsrc">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/autoupdate/libsrc"
+              jarfile="${cluster}/modules/ext/updater.jar">
+        <branding name="nb"/>
+      </locjar>
+      
+      <mkdir dir="build/classes-ml/autoupdate/ui/src"/>
+      <copy todir="build/classes-ml/autoupdate/ui/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/autoupdate/ui/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/autoupdate/ui/src"
+              jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
+        <branding name="nb"/>
+      </locjar>
+    </target>
+  
+    <target name="clean" depends="init" >
+        <delete dir="build" />
+        <delete>
+            <fileset dir="${cluster}">
+                <patternset refID="ide/branding.files"/>
+            </fileset>
+        </delete>
+    </target>
+
+</project>

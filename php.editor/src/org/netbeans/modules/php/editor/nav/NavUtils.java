@@ -43,17 +43,30 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -105,10 +118,12 @@ public class NavUtils {
         Collections.reverse(path);
 
         AttributedElement result = null;
+        ASTNode previous = null;
 
         for (final ASTNode leaf : path) {
             if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {
                 result = a.getElement(leaf);
+                previous = leaf;
                 continue;
             }
 
@@ -135,10 +150,28 @@ public class NavUtils {
                     return e;
                 }
             }
+            
+            if (leaf instanceof FunctionDeclaration && ((FunctionDeclaration) leaf).getFunctionName() == previous) {
+                return a.getElement(leaf);
+            }
 
+            if (leaf instanceof ClassDeclaration && ((ClassDeclaration) leaf).getName() == previous) {
+                return a.getElement(leaf);
+            }
+            
+            if (leaf instanceof FieldAccess) {
+                FieldAccess i = (FieldAccess) leaf;
+
+                if (i.getMember().getStartOffset() <= offset && offset <= i.getMember().getEndOffset()) {
+                    return a.getElement(leaf);
+                }
+            }
+            
             if (result != null) {
                 return result;
             }
+            
+            previous = leaf;
         }
 
         return null;
@@ -154,6 +187,71 @@ public class NavUtils {
         assert isQuoted(value);
         
         return value.substring(1, value.length() - 1);
+    }
+    
+    public static FileObject resolveInclude(CompilationInfo info, Include include) {
+        Expression e = include.getExpression();
+
+        if (e instanceof ParenthesisExpression) {
+            e = ((ParenthesisExpression) e).getExpression();
+        }
+
+        if (e instanceof Scalar) {
+            Scalar s = (Scalar) e;
+
+            if (Type.STRING == s.getScalarType()) {
+                String fileName = s.getStringValue();
+                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
+
+                return resolveRelativeFile(info, fileName);
+            }
+        }
+        
+        return null;
+    }
+    
+    private static FileObject resolveRelativeFile(CompilationInfo info, String name) {
+        PhpSourcePath psp = null;
+        Project p = FileOwnerQuery.getOwner(info.getFileObject());
+
+        if (p != null) {
+            psp = p.getLookup().lookup(PhpSourcePath.class);
+        }
+        
+        while (true) {
+            FileObject result;
+            
+            if (psp != null) {
+                result = psp.resolveFile(info.getFileObject().getParent(), name);
+            } else {
+                result = info.getFileObject().getParent().getFileObject(name);
+            }
+            
+            if (result != null) {
+                return result;
+            }
+            
+            //try to strip a directory from the "name":
+            int slash = name.indexOf('/');
+            
+            if (slash != (-1)) {
+                name = name.substring(slash + 1);
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    public static FileObject getFile(Document doc) {
+        Object o = doc.getProperty(Document.StreamDescriptionProperty);
+        
+        if (o instanceof DataObject) {
+            DataObject od = (DataObject) o;
+            
+            return od.getPrimaryFile();
+        }
+        
+        return null;
     }
     
 }

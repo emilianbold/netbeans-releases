@@ -1,6 +1,7 @@
 # platform cluster first
 platform8
 # application cluster second
+php1
 nb6.1
 # and now the rest
 ide9
@@ -12,7 +13,6 @@ mobility8
 profiler3
 gsf1
 ruby2
-php1
 visualweb2
 soa2
 identity2

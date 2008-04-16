@@ -43,19 +43,19 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -92,16 +92,15 @@ end
  *
  * @author Tor Norbye
  */
-public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, SettingsChangeListener {
+public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
     
-    private int indentSize;
-    private int hangingIndentSize;
+    private final DocSyncedCodeStyle codeStyle;
     
     public PHPFormatter() {
         LOG.fine("PHP Formatter: " + this);
-        settingsChange(null);
+        this.codeStyle = new DocSyncedCodeStyle();
     }
     
     public boolean needsParserResult() {
@@ -118,11 +117,11 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
     }
     
     public int indentSize() {
-        return indentSize;
+        return codeStyle.getIndentSize();
     }
     
     public int hangingIndentSize() {
-        return hangingIndentSize;
+        return codeStyle.getContinuationIndentSize();
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -517,9 +516,9 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
             
-            int iSize = this.indentSize;
-            int hiSize = this.hangingIndentSize;
-            
+            int iSize = codeStyle.getIndentSize();
+            int hiSize = codeStyle.getContinuationIndentSize();
+
             // Pending - apply comment formatting too?
 
             // XXX Look up RHTML too
@@ -597,27 +596,62 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter, Set
 //        }
 //    }
     
-    // ----------------------------------------------------------------------
-    // SettingsChangeListener implementation
-    // ----------------------------------------------------------------------
+    private static final class DocSyncedCodeStyle extends CodeStyle {
+        private DocSyncedCodeStyle() {
+            super(null);
+        }
+        
+        private int rightMargin = 80;
+        private Class kitClass;
+        
+        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
+        private Class getEditorKitClass() {
+            if(kitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
+                if (kit != null) {
+                    kitClass = kit.getClass();
+                } else {
+                    kitClass = BaseKit.class;
+                }
+            }
+            return kitClass;
+        }
 
-    public void settingsChange(SettingsChangeEvent evt) {
-        String settingName = evt == null ? null : evt.getSettingName();
-        if (settingName == null || SettingsNames.INDENT_SHIFT_WIDTH.equals(settingName)) {
-            Integer value = (Integer) Settings.getValue(BaseKit.class, SettingsNames.INDENT_SHIFT_WIDTH);
-            if (value != null && value.intValue() > 0) {
-                indentSize = value.intValue();
-            } else {
-                indentSize = 4;
+        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
+        private int getSpacesPerTab() {
+            Integer sp = (Integer) Settings.getValue(getEditorKitClass(), SettingsNames.SPACES_PER_TAB);
+            int indent = 4;
+            if (sp != null && sp.intValue() >= 0) {
+                indent = sp.intValue();
             }
-            hangingIndentSize = indentSize * 2;
-            if (hangingIndentSize > 8) {
-                hangingIndentSize = 8;
-            }
-            
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Settings changed: indentSize=" + indentSize + ", hangingIndentSize=" + hangingIndentSize);
-            }
+            return indent;
+        }
+        
+        @Override
+        public int getIndentSize() {
+            return getSpacesPerTab();
+        }
+
+        @Override
+        public int getContinuationIndentSize() {
+            return getSpacesPerTab();
+        }
+
+        @Override
+        public boolean reformatComments() {
+            // This isn't used in JavaScript yet
+            return false;
+        }
+
+        @Override
+        public boolean indentHtml() {
+            // This isn't used in JavaScript yet
+            return false;
+        }
+
+        @Override
+        public int getRightMargin() {
+            return rightMargin;
         }
     }
 }

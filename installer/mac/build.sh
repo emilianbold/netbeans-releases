@@ -80,71 +80,10 @@ installdir="NetBeans 6.1 RC2"
 
 ant -f $progdir/build.xml distclean
 
-# build GF package.  The GF dir image must already exists as $progdir/glassfish/glassfish
-# ie after running java -Xmx256m -jar glassfish-installer.jar but before running ant -f setup.xml
-
-#ant -f $progdir/glassfish/build.xml distclean build-pkg
-
-# full download
-
+dmg_postfix=php
+license_file=pkg/license.txt
 ant -f $progdir/build.xml clean
 mkdir $progdir/build
-unzip -d $progdir/build $zipdir/$basename.zip
-# remove uml, it has serious performance problem on Mac
-rm -rf $progdir/build/netbeans/uml*
-# remove mobility, there is no WTK on Mac
-rm -rf $progdir/build/netbeans/mobility*
-# copy over GlassFish.pkg
-#mkdir -p $progdir build/pkg
-#rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
-#instrument
-if [ -n "$INSTRUMENT_SH" ]; then
-    instrument_build $progdir/build/netbeans
-fi
-
-# build dmg
-ant -f $progdir/build.xml -Ddmgname=_$dmgname-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION" -Djbicore_location="$JBICORE_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_Global_License.txt"
-
-# javaee
-
-ant -f $progdir/build.xml clean
-mkdir $progdir/build
-unzip -d $progdir/build $zipdir/$basename-javaee.zip
-# copy over GlassFish.pkg
-#mkdir -p $progdir build/pkg
-#rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
-if [ -n "$INSTRUMENT_SH" ]; then
-    instrument_build $progdir/build/netbeans
-fi
-ant -f $progdir/build.xml -Ddmgname=_$dmgname-javaee-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_WebAndJavaEE.txt"
-
-
-# all others
-
-for pkg in javase ruby cpp php ; do
-    dmg_postfix=$pkg
-    license_file=pkg/license.txt
-    if [ $pkg = cpp ]
-    then
-      license_file="licenses/NetBeans_6_Beta_1_CC++.txt"
-    else
-      if [ $pkg = javase ]
-      then
-        license_file="licenses/NetBeans_6_Beta_1_Java_SE.txt"
-      else
-        if [ $pkg = ruby ]
-        then
-          license_file="licenses/NetBeans_6_Beta_1_Ruby.txt"
-        fi
-      fi
-    fi
-    ant -f $progdir/build.xml clean
-    mkdir $progdir/build
-    unzip -d $progdir/build $zipdir/$basename-$pkg.zip
-
-    if [ -n "$INSTRUMENT_SH" ]; then
-	instrument_build $progdir/build/netbeans
-    fi
-    ant -f $progdir/build.xml -Ddmgname=_$dmgname-$dmg_postfix-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dnetbeans_license_file="$progdir/$license_file"
-done
+unzip -d $progdir/build $zipdir/$basename-php.zip
+ant -f $progdir/build.xml -Ddmgname=_$dmgname-$dmg_postfix-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dnetbeans_license_file="$progdir/$license_file"
 

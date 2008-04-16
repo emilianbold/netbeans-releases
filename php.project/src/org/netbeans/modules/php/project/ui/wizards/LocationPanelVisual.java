@@ -67,8 +67,7 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     public LocationPanelVisual() {
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"),
-                ConfigureProjectPanel.DEFAULT_LOCAL_SERVER);
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         init();
     }
 
@@ -223,7 +222,9 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
                 NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
-        setProjectLocation(newLocation);
+        if (newLocation != null) {
+            setProjectLocation(newLocation);
+        }
     }//GEN-LAST:event_browseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -109,6 +109,11 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
     // Store map of class names, where each entry has a map of fields and values (fields might be "name", "fqn", "case insensitive name", etc.
     // The same fields can be looked up later.
     public abstract void store(String fileUrl, List<IndexDocument> documents) throws IOException;
+    /** 
+     * Update the index. If create is true, there is no need to look for existing
+     * old documents for the same files to update them.
+     */
+    public abstract void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException;
     // END TOR MODIFICATIONS
     
     public abstract boolean isValid (boolean tryOpen) throws IOException;    

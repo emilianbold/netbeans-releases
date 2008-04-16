@@ -45,11 +45,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete dir="${basedir}/build"/>
         <delete dir="${basedir}/dist"/>             
-        <delete dir="${basedir}/netBeans/soa/build"/>
-        <delete dir="${basedir}/netBeans/ruby/build"/>
-        <delete dir="${basedir}/netBeans/cpp/build"/>
-        <delete dir="${basedir}/netBeans/javase/build"/>
-        <delete dir="${basedir}/netBeans/javaee/build"/>
         <delete dir="${basedir}/netBeans/baseide/build"/>    
         <delete dir="${basedir}/netBeans/php/build"/> 
         <delete dir="${basedir}/tools/classes"/>           
@@ -69,12 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
         <mkdir dir="build"/> 
-        <property name="clusters" value="cnd(cpp),
-                                         apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                         soa(soa),
-                                         ruby(ruby),                                       
-                                         php(php), 
-                                         enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee),
+        <property name="clusters" value="php(php),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
@@ -110,12 +100,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-modules">        
-        <property name="modules" value="javase(${javase-title}),
-                                        javaee(${javaee-title}),
-                                        cpp(${cpp-title}),
-                                        ruby(${ruby-title}),
-                                        soa(${soa-title}),
-                                        php(${php-title})"/>        
+        <property name="modules" value="php(${php-title})"/>
         <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
             <ant target="build-module"/>                           
         </for-each>                        
@@ -147,14 +132,10 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                        
+    <target name="build-all-dmg" depends="clean,init,build-pkg">                                                    
+        <property file="${basedir}/build/sizes.pro"/>  
         <mkdir dir="dist"/>                  
-        <property name="bundles" value="        (./build/*pkg),
-                                             -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg),
-                                             -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/ruby.pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
+        <property name="bundles" value="-php(./build/baseide.pkg ./build/php.pkg)"/>
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
@@ -337,14 +318,6 @@ fi"
         <mkdir dir="${mpkgfile}/Contents/Packages"/>        
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">                                    
             <filterset>                      
-                <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
-                <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
-                <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
-                <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
-                <filter token="SIZE_SOA" value="${sizeof.soa}"/>
-                <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
-                <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
-                <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    
                 <filter token="SIZE_MYSQL" value="${sizeof.mysql}"/> 

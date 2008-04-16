@@ -443,6 +443,11 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                 PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
             boolean isEmptyComment = (Boolean) ret[1];
             
+            if (isEmptyComment) {
+                int indent = LexUtilities.getLineIndent(doc, ts.offset());
+                GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+            }
+            
             // XXX: hook up the doc fields auto-generation here, if isEmptyComment == true
             
             return (Integer) ret[0];
@@ -456,7 +461,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         
         return -1;
     }
-
+    
     private static Object [] beforeBreakInComments(
         BaseDocument doc, TokenSequence<? extends PHPTokenId> ts, int offset, Caret caret,
         PHPTokenId commentStart, PHPTokenId commentBody, PHPTokenId commentEnd
@@ -1603,7 +1608,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         // Check if we are inside a comment
         if (token.id() == PHPTokenId.PHP_COMMENT || 
             token.id() == PHPTokenId.PHP_LINE_COMMENT ||
-            token.id() == PHPTokenId.PHPDOC_COMMENT
+            token.id() == PHPTokenId.PHPDOC_COMMENT ||
+            token.id() == PHPTokenId.T_INLINE_HTML // #132981
         ) {
             return false;
         } else if (onlyWhitespaceFollows && previousToken != null && previousToken.id() == PHPTokenId.PHP_LINE_COMMENT) {
@@ -1651,7 +1657,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
                 assert firstNonWhiteFwd != -1;
                 char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
                 insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                         chr == ';' || chr == ']' || chr == '/'; //NOI18N
+                         chr == ';' || chr == ']' || chr == '/' || chr == '.'; //NOI18N
             }
             
             if (insert) {
@@ -1679,7 +1685,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         int highest = doc.getLength();
         if (currentLineOnly) {
             lowest = doc.getParagraphElement(offset).getStartOffset();
-            highest = doc.getParagraphElement(offset).getEndOffset();
+            highest = Math.max(doc.getParagraphElement(offset).getEndOffset() - 1, lowest);
         }
         
         // find the section end

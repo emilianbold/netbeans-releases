@@ -80,10 +80,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         descriptor = wizard;
         index = 0;
         panels = createPanels();
-
-        // wizard title
-        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, "TXT_PhpProject");
-        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -173,6 +169,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public WizardDescriptor.Panel current() {
+        // wizard title
+        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, "TXT_PhpProject");
+        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
         return panels[index];
     }
 

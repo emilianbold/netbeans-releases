@@ -8,12 +8,12 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="6.1"/>
-    <property name="mpkgname_nb" value="NetBeans IDE 6.1 RC2"/> 
-    <property name="appname" value="NetBeans 6.1 RC2"/> 
+    <property name="mpkgname" value="NetBeans EA for PHP"/> 
+    <property name="appname" value="NetBeans EA for PHP"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
-    <property name="nbClusterDir" value="nb6.1"/>      
+    <property name="nbClusterDir" value="nb6.1"/>
 
-    <property name="appversion" value="6.1 RC2"/>
+    <property name="appversion" value="6.1 EA for PHP"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-6.0.16"/>

@@ -113,8 +113,9 @@ public class PHPIndexTest extends NbTestCase {
             public void run(CompilationInfo parameter) throws Exception {
                 Index i = parameter.getIndex(PHPLanguage.PHP_MIME_TYPE);
                 PHPIndex phpIndex = PHPIndex.get(i);
+                PHPParseResult ppr = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
 
-                Collection<IndexedClass> classes = phpIndex.getClasses((PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0), "te", NameKind.CASE_INSENSITIVE_PREFIX);
+                Collection<IndexedClass> classes = phpIndex.getClasses(ppr, "te", NameKind.CASE_INSENSITIVE_PREFIX);
                 
                 assertEquals(1, classes.size());
             }
@@ -130,8 +131,9 @@ public class PHPIndexTest extends NbTestCase {
             public void run(CompilationInfo parameter) throws Exception {
                 Index i = parameter.getIndex(PHPLanguage.PHP_MIME_TYPE);
                 PHPIndex phpIndex = PHPIndex.get(i);
+                PHPParseResult ppr = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
 
-                Collection<IndexedClass> classes = phpIndex.getClasses((PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0), "TE", NameKind.CASE_INSENSITIVE_PREFIX);
+                Collection<IndexedClass> classes = phpIndex.getClasses(ppr, "TE", NameKind.CASE_INSENSITIVE_PREFIX);
                 
                 assertEquals(1, classes.size());
             }
@@ -147,8 +149,9 @@ public class PHPIndexTest extends NbTestCase {
             public void run(CompilationInfo parameter) throws Exception {
                 Index i = parameter.getIndex(PHPLanguage.PHP_MIME_TYPE);
                 PHPIndex phpIndex = PHPIndex.get(i);
+                PHPParseResult ppr = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
 
-                Collection<IndexedClass> classes = phpIndex.getClasses((PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0), "te", NameKind.CASE_INSENSITIVE_PREFIX);
+                Collection<IndexedClass> classes = phpIndex.getClasses(ppr, "te", NameKind.CASE_INSENSITIVE_PREFIX);
                 
                 assertEquals(1, classes.size());
             }

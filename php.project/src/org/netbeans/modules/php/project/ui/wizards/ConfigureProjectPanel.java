@@ -39,14 +39,18 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.util.List;
+import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.DocumentRoots;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -74,6 +78,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
+
+    private static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().startsWith("apache"); // NOI18N
+        }
+    };
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
@@ -116,10 +126,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         locationPanelVisual.setProjectName(getProjectName());
 
         // sources
-        MutableComboBoxModel localServers = getLocalServers();
-        if (localServers != null) {
-            locationPanelVisual.setLocalServerModel(localServers);
-        }
+        locationPanelVisual.setLocalServerModel(getLocalServers());
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
             locationPanelVisual.selectSourcesLocation(wwwFolder);
@@ -249,15 +256,42 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServers() {
-        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+        if (model != null) {
+            return model;
+        }
+        return getOSDependentLocalServers();
+    }
+
+    private MutableComboBoxModel getOSDependentLocalServers() {
+        MutableComboBoxModel model = new LocalServer.ComboBoxModel(DEFAULT_LOCAL_SERVER);
+
+        List<Root> roots = DocumentRoots.getRoots(getWebFolderName());
+        for (Root root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            model.addElement(ls);
+            if (root.isPreferred()) {
+                model.setSelectedItem(ls);
+                setDefaultUrl(root.getUrl());
+            }
+        }
+        return model;
     }
 
     private String getUrl() {
         String url = (String) descriptor.getProperty(URL);
         if (url == null) {
-            url = "http://localhost/" + getProjectName() + "/"; // NOI18N
+            url = getDefaultUrl();
         }
         return url;
+    }
+
+    private String getDefaultUrl() {
+        return "http://localhost/" + getProjectName() + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
+    }
+
+    private void setDefaultUrl(String url) {
+        descriptor.putProperty(URL, url);
     }
 
     private Boolean isCreateIndex() {
@@ -307,7 +341,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        return Utils.validateProjectDirectory(projectPath, "Project", false); // NOI18N
+        return Utils.validateProjectDirectory(projectPath, "Project", false, false); // NOI18N
     }
 
     private String validateSources() {
@@ -318,11 +352,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
             File sources = FileUtil.normalizeFile(new File(sourcesLocation));
             if (sourcesLocation.trim().length() == 0
-                    || !Utils.isValidFileName(sources.getName())) {
+                    || !Utils.isValidFileName(sources)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
+            err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
             if (err != null) {
                 return err;
             }
@@ -371,8 +405,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
-        if (copyTarget == null) {
+        Boolean isValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
+        if (isValid != null && !isValid) {
+            // some error there, need to be fixed, so do not compare
+            return null;
+        }
+        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        if (copyFiles == null || !copyFiles) {
             return null;
         }
         LocalServer sources = locationPanelVisual.getSourcesLocation();
@@ -382,6 +421,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCE_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
+        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
         File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);

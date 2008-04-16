@@ -55,6 +55,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -65,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -120,6 +122,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
     static final String FIELD_CONST = "const"; //NOI18N
+    static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
@@ -169,7 +172,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.9"; // NOI18N
+        return "0.3.0"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -237,11 +240,19 @@ public class PHPIndexer implements Indexer {
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
                     if (expressionStatement.getExpression() instanceof Include) {
                         Include include = (Include) expressionStatement.getExpression();
-                        if (include.getExpression() instanceof Scalar) {
-                            Scalar scalar = (Scalar) include.getExpression();
+                        
+                        Expression argExpression = include.getExpression();
+                        
+                        if (argExpression instanceof ParenthesisExpression) {
+                            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
+                            argExpression = parenthesisExpression.getExpression();
+                        }
+
+                        if (argExpression instanceof Scalar) {
+                            Scalar scalar = (Scalar) argExpression;
                             String rawInclude = scalar.getStringValue();
                             String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath , PHPIndex.dequote(rawInclude));
-                            includes.append(incl + ";");
+                            includes.append(incl + ";"); //NOI18N
                         }
                     }
                     
@@ -276,9 +287,7 @@ public class PHPIndexer implements Indexer {
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
                     indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
-                }
-                
-                if (statement instanceof FieldsDeclaration) {
+                } else if (statement instanceof FieldsDeclaration) {
                     FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
                     
                     for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
@@ -289,8 +298,17 @@ public class PHPIndexer implements Indexer {
                             fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
                             fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
                                      
-                            document.addPair(FIELD_FIELD, fieldSignature.toString(), true);
+                            document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
                         }
+                    }
+                } else if (statement instanceof ClassConstantDeclaration) {
+                    ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+                    
+                    for (Identifier id : constDeclaration.getNames()){
+                        StringBuilder signature = new StringBuilder();
+                        signature.append(id.getName() + ";");
+                        signature.append(constDeclaration.getStartOffset() + ";");
+                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
                     }
                 }
 

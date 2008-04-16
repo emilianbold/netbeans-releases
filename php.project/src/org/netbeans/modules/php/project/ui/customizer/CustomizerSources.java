@@ -44,6 +44,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -51,6 +53,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
+import org.netbeans.modules.php.project.ui.DocumentRoots;
+import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -75,6 +79,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     final PropertyEvaluator evaluator;
     private final LocalServerController localServerController;
     private final CopyFilesVisual copyFilesVisual;
+    private final boolean originalCopySrcFiles;
+    private final String originalCopySrcTarget;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -85,8 +91,10 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         initEncoding();
         LocalServer sources = initSources();
-        boolean copyFiles = initCopyFiles();
+        originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
+        LocalServer[] copyTargets = getCopyTargets(copyTarget);
+        originalCopySrcTarget = copyTarget.getSrcRoot();
         initUrl();
         initIndexFile();
 
@@ -94,8 +102,9 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                 NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
         localServerController.selectLocalServer(sources);
 
-        copyFilesVisual = new CopyFilesVisual(this, copyTarget);
-        copyFilesVisual.setCopyFiles(copyFiles);
+        copyFilesVisual = new CopyFilesVisual(this, copyTargets);
+        copyFilesVisual.selectLocalServer(copyTarget);
+        copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         encodingComboBox.addActionListener(new ActionListener() {
@@ -163,6 +172,19 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
     }
 
+    private LocalServer[] getCopyTargets(LocalServer initialLocalServer) {
+        List<Root> roots = DocumentRoots.getRoots(getWebFolderName());
+
+        int size = roots.size() + 1;
+        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        localServers.add(initialLocalServer);
+        for (Root root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            localServers.add(ls);
+        }
+        return localServers.toArray(new LocalServer[size]);
+    }
+
     private void initUrl() {
         urlTextField.setText(properties.getUrl());
     }
@@ -180,7 +202,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         category.setValid(true);
 
         // sources
-        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true); // NOI18N
+        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true, // NOI18N
+                true);
         if (err != null) {
             category.setErrorMessage(err);
             category.setValid(false);
@@ -192,7 +215,14 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
-            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true); // NOI18N
+            if (copyTargetDir == null) {
+                // nothing selected
+                category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalFolderName"));
+                category.setValid(false);
+                return;
+            }
+            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
+                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath()), true);
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -233,13 +263,13 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         // everything ok
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        if (srcPath.startsWith("../")) { // NOI18N
+        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
         properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
-        properties.setCopySrcTarget(copyTargetDir.getAbsolutePath());
+        properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
         properties.setUrl(url);
         properties.setIndexFile(indexFile);
     }
@@ -251,7 +281,16 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
     private File getCopyTargetDir() {
         LocalServer localServer = copyFilesVisual.getLocalServer();
-        return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+        // #132864
+        String srcRoot = localServer.getSrcRoot();
+        if (srcRoot == null || srcRoot.length() == 0) {
+            return null;
+        }
+        return FileUtil.normalizeFile(new File(srcRoot));
+    }
+
+    private boolean allowNonEmptyDirectory(String copyTargetDir) {
+        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir);
     }
 
     /** This method is called from within the constructor to
@@ -305,29 +344,26 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectFolderLabel)
+                    .add(sourceFolderLabel)
+                    .add(urlLabel)
+                    .add(indexFileLabel)
+                    .add(encodingLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
+                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(projectFolderLabel)
+                        .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(sourceFolderLabel)
-                            .add(urlLabel)
-                            .add(indexFileLabel)
-                            .add(encodingLabel))
-                        .add(13, 13, 13)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
-                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(localServerButton))
-                            .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
+                        .add(localServerButton))
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

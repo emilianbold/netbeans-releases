@@ -71,18 +71,23 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Dispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
@@ -143,13 +148,7 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(Program program) {
         //functions defined on top-level of the current file are visible before declared:
-        for (Statement s : program.getStatements()) {
-            if (s instanceof FunctionDeclaration) {
-                String name = ((FunctionDeclaration) s).getFunctionName().getName();
-
-                node2Element.put(s, global.enterWrite(name, Kind.FUNC, s));
-            }
-        }
+        performEnterPass(global, program.getStatements());
         super.visit(program);
     }
 
@@ -189,21 +188,23 @@ public class SemiAttribute extends DefaultVisitor {
     
     @Override
     public void visit(FunctionDeclaration node) {
+        DefinitionScope top = scopes.peek();
+
         if (!node2Element.containsKey(node)) {
             String name = node.getFunctionName().getName();
-            DefinitionScope top = scopes.peek();
-            AttributedElement func;
 
-            if (top.classScope) {
-                func = top.enterWrite(name, Kind.FUNC, node);
-            } else {
-                func = global.enterWrite(name, Kind.FUNC, node);
-            }
+            assert !top.classScope;
 
-            node2Element.put(node, func);
+            node2Element.put(node, global.enterWrite(name, Kind.FUNC, node));
         }
         
         scopes.push(new DefinitionScope());
+        
+        if (top.classScope) {
+            assert top.thisVar != null;
+            
+            scopes.peek().enter(top.thisVar.name, top.thisVar.getKind(), top.thisVar);
+        }
         
         super.visit(node);
         
@@ -262,16 +263,7 @@ public class SemiAttribute extends DefaultVisitor {
             nodes.push(n);
 
             if (parent instanceof MethodInvocation) {
-                ClassElement ce = null;
-                AttributedElement el = node2Element.get(((MethodInvocation) parent).getDispatcher());
-                
-                if (el != null) {
-                    AttributedType type = el.writesTypes.get(el.getWrites().size() - 1);
-                    
-                    if (type instanceof ClassType) {
-                        ce = ((ClassType) type).getElement();
-                    }
-                }
+                ClassElement ce = resolveTypeSimple((MethodInvocation) parent);
 
                 if (ce != null) {
                     thisEl = ce.lookup(name, Kind.FUNC);
@@ -306,15 +298,19 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         String name = node.getName().getName();
-        ClassElement func = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
+        ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
 
-        node2Element.put(node, func);
+        node2Element.put(node, ce);
         
         if (node.getSuperClass() != null) {
-            func.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+            ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
         }
                 
-        scopes.push(func.enclosedElements);
+        scopes.push(ce.enclosedElements);
+        
+        if (node.getBody() != null) {
+            performEnterPass(ce.enclosedElements, node.getBody().getStatements());
+        }
         
         super.visit(node);
         
@@ -334,22 +330,10 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(Include node) {
-        Expression e = node.getExpression();
-        
-        if (e instanceof ParenthesisExpression) {
-            e = ((ParenthesisExpression) e).getExpression();
-        }
-        
-        if (e instanceof Scalar) {
-            Scalar s = (Scalar) e;
-            
-            if (Type.STRING == s.getScalarType()) {
-                String fileName = s.getStringValue();
-                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
-                FileObject toInclude = info.getFileObject().getParent().getFileObject(fileName);
-                
-                enterInclude(toInclude);
-            }
+        FileObject toInclude = NavUtils.resolveInclude(info, node);
+
+        if (toInclude != null) {
+            enterInclude(toInclude);
         }
         
         super.visit(node);
@@ -376,6 +360,23 @@ public class SemiAttribute extends DefaultVisitor {
         }
         
         super.visit(scalar);
+    }
+
+    @Override
+    public void visit(FieldAccess node) {
+        scan(node.getDispatcher());
+        
+        ClassElement ce = resolveTypeSimple(node);
+        String name = extractVariableName(node.getField());
+
+        if (ce != null && name != null) {
+            AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
+            
+            node2Element.put(node, thisEl);
+            node2Element.put(node.getField(), thisEl);
+        }
+        
+        scan(node.getField());
     }
 
     private AttributedElement enterGlobalVariable(String name) {
@@ -492,11 +493,48 @@ public class SemiAttribute extends DefaultVisitor {
                 }
                 
                 if (f instanceof IndexedClass) {
-                    k = Kind.CLASS;
+                    ClassElement ce = (ClassElement) global.enterWrite(f.getName(), Kind.CLASS, f);
+
+                    //TODO: superclass
+
+                    if (!ce.isInitialized()) {
+                        for (IndexedFunction m : index.getMethods(null, f.getName(), "", NameKind.PREFIX)) {
+                            ce.enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
+                        }
+                        for (IndexedConstant m : index.getClassConstants(null, f.getName(), "", NameKind.PREFIX)) {
+                            ce.enclosedElements.enterWrite(m.getName(), Kind.CONST, m);
+                        }
+                        
+                        ce.initialized();
+                    }
                 }
                 
                 if (k != null) {
                     global.enterWrite(f.getName(), k, f);
+                }
+            }
+        }
+    }
+    
+    private void performEnterPass(DefinitionScope scope, Collection<? extends ASTNode> nodes) {
+        for (ASTNode n : nodes) {
+            if (n instanceof MethodDeclaration) {
+                n = ((MethodDeclaration) n).getFunction();
+            }
+            
+            if (n instanceof FunctionDeclaration) {
+                String name = ((FunctionDeclaration) n).getFunctionName().getName();
+
+                node2Element.put(n, scope.enterWrite(name, Kind.FUNC, n));
+            }
+            
+            if (n instanceof FieldsDeclaration) {
+                for (SingleFieldDeclaration f : ((FieldsDeclaration) n).getFields()) {
+                    String name = extractVariableName(f.getName());
+
+                    if (name != null) {
+                        node2Element.put(n, scope.enterWrite(name, Kind.VARIABLE, n));
+                    }
                 }
             }
         }
@@ -553,6 +591,21 @@ public class SemiAttribute extends DefaultVisitor {
 
         return null;
     }
+
+    private ClassElement resolveTypeSimple(Dispatch node) {
+        ClassElement ce = null;
+        AttributedElement el = node2Element.get(node.getDispatcher());
+
+        if (el != null) {
+            AttributedType type = el.writesTypes.get(el.getWrites().size() - 1);
+
+            if (type instanceof ClassType) {
+                ce = ((ClassType) type).getElement();
+            }
+        }
+
+        return ce;
+    }
     
     public static class AttributedElement {
         private List<Union2<ASTNode, IndexedElement>> writes; //aka declarations
@@ -597,11 +650,13 @@ public class SemiAttribute extends DefaultVisitor {
     
     public static class ClassElement extends AttributedElement {
         
-        private final DefinitionScope enclosedElements = new DefinitionScope(true);
+        private final DefinitionScope enclosedElements;
         private ClassElement superClass;
+        private boolean initialized;
         
         public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
             super(n, name, k);
+            enclosedElements = new DefinitionScope(this);
         }
         
         public AttributedElement lookup(String name, Kind k) {
@@ -617,6 +672,14 @@ public class SemiAttribute extends DefaultVisitor {
             
             return null;
         }
+
+        boolean isInitialized() {
+            return initialized;
+        }
+        
+        void initialized() {
+            initialized = true;
+        }
     }
     
     public static class DefinitionScope {
@@ -624,13 +687,18 @@ public class SemiAttribute extends DefaultVisitor {
 //        private final Map<AttributedElement, ASTNode> reads = new HashMap<AttributedElement, ASTNode>();
         
         private boolean classScope;
+        private AttributedElement thisVar;
 
         public DefinitionScope() {
-            this(false);
+            this(null);
         }
 
-        public DefinitionScope(boolean classScope) {
-            this.classScope = classScope;
+        public DefinitionScope(ClassElement enclosingClass) {
+            this.classScope = enclosingClass != null;
+            
+            if (classScope) {
+                thisVar = enterWrite("this", Kind.VARIABLE, (ASTNode) null, new ClassType(enclosingClass));
+            }
         }
         
         public AttributedElement enterWrite(String name, Kind k, ASTNode node) {
@@ -694,7 +762,9 @@ public class SemiAttribute extends DefaultVisitor {
     
     private static final class Stop extends Error {}
     
-    public static class AttributedType {
+    public static abstract class AttributedType {
+        
+        public abstract String getTypeName();
         
     }
     
@@ -708,6 +778,11 @@ public class SemiAttribute extends DefaultVisitor {
 
         public ClassElement getElement() {
             return element;
+        }
+
+        @Override
+        public String getTypeName() {
+            return getElement().getName();
         }
         
     }

@@ -54,11 +54,13 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
@@ -415,7 +417,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          * sources change
          */
         public void stateChanged(ChangeEvent e) {
-            createNodes();
+            // #132877 - discussed with tomas zezula
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    createNodes();
+                }
+            });
         }
 
         /*
@@ -424,7 +431,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
             if (PhpProjectProperties.SRC_DIR.equals(property)) {
-                createNodes();
+                // #132877 - discussed with tomas zezula
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        createNodes();
+                    }
+                });
             }
         }
 
@@ -785,7 +797,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
                     public void perform(Object[] nodes) {
                         PhpActionProvider.PhpCommandRunner
-                                .runCommand(command);
+                                .runCommand(command,getProject());
                     }
                 },
                 Models.MULTISELECTION_TYPE_ANY);
@@ -910,7 +922,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          */
         public boolean acceptDataObject(DataObject object) {
                 return     isNotTemporaryFile(object)
-                        && isNotProjectFile(object);
+                        && isNotProjectFile(object)
+                        && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
         }
 
         private boolean isNotProjectFile(DataObject object){

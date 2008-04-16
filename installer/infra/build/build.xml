@@ -670,7 +670,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="build-engine"/>
 
         <antcall target="build-netbeans"/>
-        <antcall target="build-runtimes"/>
+        <!--<antcall target="build-runtimes"/>-->
 	<antcall target="build-mysql-components"/>
 
 	<!--<antcall target="build-wtk"/>-->
@@ -681,7 +681,7 @@ jarsigner.storepass=${jarsigner.storepass}
         
 	<antcall target="generate-bundles"/>
 
-	<antcall target="prepare-web-page"/>
+	<!--<antcall target="prepare-web-page"/>-->
         
         <delete dir="${output.dir}/registry-temp"/>        
         <delete dir="${output.dir}/components"/>
@@ -700,14 +700,14 @@ jarsigner.storepass=${jarsigner.storepass}
 	<set property="netbeans.group.uid" value=""/>
 
         <antcall target="build-nb-base"/>
-        <antcall target="build-nb-javase"/>        
+        <!--<antcall target="build-nb-javase"/>-->
 	<!--<antcall target="build-nb-addons-group"/>-->
-	<antcall target="build-nb-javaee"/>
+	<!--<antcall target="build-nb-javaee"/>
         <antcall target="build-nb-javame"/>
         <antcall target="build-nb-soa"/>
         <antcall target="build-nb-uml"/>
         <antcall target="build-nb-ruby"/>
-        <antcall target="build-nb-cnd"/>
+        <antcall target="build-nb-cnd"/>-->
         <antcall target="build-nb-php"/>
     </target>
 
@@ -768,13 +768,13 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-	<antcall target="generate-netbeans-javase-bundles"/>
+	<!--<antcall target="generate-netbeans-javase-bundles"/>
         <antcall target="generate-netbeans-javaee-bundles"/>
         <antcall target="generate-netbeans-javame-bundles"/>
         <antcall target="generate-netbeans-ruby-bundles"/>
-        <antcall target="generate-netbeans-cpp-bundles"/>
+        <antcall target="generate-netbeans-cpp-bundles"/>-->
         <antcall target="generate-netbeans-php-bundles"/>
-        <antcall target="generate-netbeans-full-bundles"/>
+        <!--<antcall target="generate-netbeans-full-bundles"/>-->
     </target>
 
     <target name="generate-bundles">

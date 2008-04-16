@@ -136,4 +136,10 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
         
         return super.getOffset();
     }
+
+    @Override
+    public String getDisplayName() {
+        String modifierStr = getModifiersString();
+        return modifierStr.length() == 0 ? getSignature() : (getModifiersString() + " " + getSignature());
+    }
 }
