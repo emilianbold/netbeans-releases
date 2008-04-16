@@ -71,6 +71,7 @@ public class JavaScriptLibraryTypeProvider
     private static final String LIB_PREFIX = "libs.";
     public static final String LIBRARY_TYPE = "javascript";       //NOI18N
 
+    public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
     public static final String VOLUME_TYPE_SCRIPTPATH = "scriptpath";       //NOI18N
 
     // public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
@@ -79,6 +80,7 @@ public class JavaScriptLibraryTypeProvider
 
     // public static final String VOLUME_TYPE_RUNTIME = "runtime";       //NOI18N
     public static final String[] VOLUME_TYPES = new String[]{
+        VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SCRIPTPATH /*,
     VOLUME_TYPE_SRC,
     VOLUME_TYPE_JAVADOC,
@@ -150,8 +152,8 @@ public class JavaScriptLibraryTypeProvider
     }
 
     public Customizer getCustomizer(String volumeType) {
-        if (VOLUME_TYPES[0].equals(volumeType) /* ||
-                VOLUME_TYPES[1].equals(volumeType) ||
+        if (VOLUME_TYPES[0].equals(volumeType) ||
+                VOLUME_TYPES[1].equals(volumeType) /* ||
                 VOLUME_TYPES[2].equals(volumeType) ||
                 VOLUME_TYPES[3].equals(volumeType)*/) {
             return new JavaScriptVolumeCustomizer(volumeType);
