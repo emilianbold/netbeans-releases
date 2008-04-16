@@ -181,6 +181,7 @@
             <buildpath location="${home}/print"/>
             <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
             <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
+            <buildpath location="${home}/xml.validation"/> <!-- todo r -->
         </subant>
     </target>
 
@@ -218,6 +219,7 @@
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/soa.ui/build.xml"/>
+            <buildpath location="${home}/soa.core/build.xml"/>
             <buildpath location="${home}/soa.mappercore/build.xml"/>
             <buildpath location="${home}/soa.mapper/build.xml"/>
             <buildpath location="${home}/soa.reportgenerator/build.xml"/>
