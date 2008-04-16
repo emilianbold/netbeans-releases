@@ -53,7 +53,6 @@ import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsfret.source.GlobalSourcePath;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexFactory;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexImpl;
@@ -120,7 +119,12 @@ public final class ClassIndex extends Index {
             LOGGER.fine(String.format("ClassIndex.search returned %d elements\n", result.size()));
         }
     }
-
+    
+    /** For test infrastructure only */
+    public void initForTest(Set<ClassIndexImpl> sources) {
+        this.sourceIndeces = sources;
+    }
+    
     private static class ClassIndexFactoryImpl implements ClassIndexFactory {
         
 	public ClassIndex create(final Language language, final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {            

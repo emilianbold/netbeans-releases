@@ -78,11 +78,11 @@ import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.model.spi.NameGenerator;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -298,7 +298,7 @@ public final class Iterator implements TemplateWizard.Iterator {
                 if (!isCreatedDir) {
                     createdFos.add(xslFo);
                 }
-                SoaUiUtil.fixEncoding(DataObject.find(xslFo), dirFo);
+                SoaUtil.fixEncoding(DataObject.find(xslFo), dirFo);
             }
         }
         return xslFo;

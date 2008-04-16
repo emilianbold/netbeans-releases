@@ -1788,6 +1788,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
+        initializeClassPaths();
+
         // TODO call TestCompilationInfo.setCaretOffset!        
         QueryType type = QueryType.COMPLETION;
         boolean caseSensitive = true;
@@ -1897,9 +1899,13 @@ public abstract class GsfTestBase extends NbTestCase {
     
     protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String param, boolean expectSuccess) {
     }
-    
+
+    protected void initializeClassPaths() {
+    }
     
     public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+        initializeClassPaths();
+        
         QueryType type = QueryType.COMPLETION;
         //boolean caseSensitive = true;
 

@@ -43,9 +43,9 @@ package org.netbeans.modules.bpel.search.impl.model;
 import javax.swing.Icon;
 import org.netbeans.modules.xml.xam.Component;
 
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.search.api.SearchElement;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

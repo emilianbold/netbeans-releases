@@ -75,3 +75,4 @@ include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
 include JSPPalette/.*
 include HTMLPalette/.*
 include J2EE/.*
+include org-netbeans-api-project-libraries/Libraries/.*\.xml

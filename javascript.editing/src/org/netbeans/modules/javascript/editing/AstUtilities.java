@@ -355,6 +355,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return 0;
         }
         child = child.getNext();
+        
+        if (child != null && astOffset < child.getSourceStart()) {
+            return -1;
+        }
 
         int index = 0;
         while (child != null) {

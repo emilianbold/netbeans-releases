@@ -19,11 +19,11 @@
 package org.netbeans.modules.bpel.nodes.refactoring;
 
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -106,7 +106,7 @@ public class UsageContextNode extends UsageFilterNode {
         int lastSepPosition = contextPathName.lastIndexOf(EditorUtil.ENTITY_SEPARATOR);
         if (lastSepPosition > 0) {
             lastSepPosition++;
-            contextPathName = SoaUiUtil.getGrayString(
+            contextPathName = SoaUtil.getGrayString(
                     "",contextPathName.substring(0,lastSepPosition)// NOI18N
                     ,contextPathName.substring(lastSepPosition), false);
         }
