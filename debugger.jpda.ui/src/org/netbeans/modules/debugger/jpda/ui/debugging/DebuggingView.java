@@ -81,6 +81,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private Session session;
     private JPDADebugger previousDebugger;
     
+    private ThreadsListener threadsListener;
+    
     /**
      * instance/singleton of this class
      *
@@ -97,6 +99,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         initComponents();
     
+        threadsListener = new ThreadsListener(this);
+        
         resumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
         focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
         pressedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png"));
@@ -197,6 +201,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.session = engine.lookupFirst(null, Session.class);
                 deb.addPropertyChangeListener(this);
             }
+            threadsListener.changeDebugger(deb);
         } else {
             synchronized (this) {
                 if (previousDebugger != null) {
@@ -206,6 +211,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
+            threadsListener.changeDebugger(null);
         }
         Node root;
         if (model == null) {
@@ -367,7 +373,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // **************************************************************************
     // **************************************************************************
     
-    private void refreshView() {
+    void refreshView() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 leftPanel.removeAll();
@@ -426,6 +432,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
                         comboItemText : "Java Project"); // NOI18N [TODO]
                 }
+            }
+        });
+    }
+    
+    void refreshBreakpointHits() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                infoPanel.refreshBreakpointHits(threadsListener.getHitsCount());
             }
         });
     }
