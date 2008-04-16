@@ -285,12 +285,13 @@ public class AstUtilities {
             VariableExpression variableExpression = (VariableExpression) node;
             return new OffsetRange(start, start + variableExpression.getName().length());
         } else if (node instanceof Parameter) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int end = getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
             Parameter parameter = (Parameter) node;
-            return new OffsetRange(start, start + parameter.getName().length());
+            String name = parameter.getName();
+            if (end - name.length() < 0) {
+                return OffsetRange.NONE;
+            }
+            return new OffsetRange(end - name.length(), end);
         }
         return OffsetRange.NONE;
     }

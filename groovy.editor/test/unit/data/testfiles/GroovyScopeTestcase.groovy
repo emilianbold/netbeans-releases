@@ -5,7 +5,7 @@
  2) Class usage (TestCase)       : MISSING
  3) Local vars (localvar[1|2])   : MISSING
  4) Member vars (membervar1)     : OK
- 5) Parameter (param1)           : ERROR, shifted
+ 5) Parameter (param1)           : OK
  */
 
 println "Starting testcase"
