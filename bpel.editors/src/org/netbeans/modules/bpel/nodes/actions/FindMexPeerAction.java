@@ -22,7 +22,7 @@ import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.MessageExchange;

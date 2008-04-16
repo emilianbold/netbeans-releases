@@ -27,7 +27,7 @@ import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
 import org.netbeans.modules.bpel.core.annotations.DiagramAnnotation;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;

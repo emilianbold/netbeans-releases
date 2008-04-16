@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.tree.models;
 
 import java.util.List;
@@ -25,7 +24,7 @@ import javax.swing.Icon;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.mapper.tree.images.NodeIcons;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
