@@ -226,17 +226,23 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <branding name="php"/>
     </locjar>
 
-<!--    <locjar warnMissingDir="true"
+    <locjar warnMissingDir="true"
       basedir="autoupdate/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar">
-      <branding name="nb"/>
+      <branding name="php"/>
     </locjar>
 
     <locjar warnMissingDir="true"
       basedir="autoupdate/ui/src"
       jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
-      <branding name="nb"/>
-    </locjar>-->
+      <branding name="php"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="updatecenters/src"
+      jarfile="${cluster}/modules/org-netbeans-modules-updatecenters.jar">
+      <branding name="php"/>
+    </locjar>
   </target>
   
   <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
