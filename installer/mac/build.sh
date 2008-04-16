@@ -80,7 +80,7 @@ installdir="NetBeans 6.1 RC1"
 
 ant -f $progdir/build.xml distclean
 
-dmg_postfix=ea-php
+dmg_postfix=php
 license_file=pkg/license.txt
 ant -f $progdir/build.xml clean
 mkdir $progdir/build
