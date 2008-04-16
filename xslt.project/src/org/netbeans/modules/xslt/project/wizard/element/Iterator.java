@@ -82,7 +82,7 @@ import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.model.spi.NameGenerator;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

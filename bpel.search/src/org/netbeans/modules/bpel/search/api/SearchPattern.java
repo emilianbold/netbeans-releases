@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.bpel.search.api;
 
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

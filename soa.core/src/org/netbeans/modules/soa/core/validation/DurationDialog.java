@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.ui.util;
+package org.netbeans.modules.soa.core.validation;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -70,8 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.openide.util.Utilities;
-
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

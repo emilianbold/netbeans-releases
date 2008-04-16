@@ -61,9 +61,6 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
-import org.netbeans.modules.soa.ui.SoaUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
-
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.01.17
@@ -103,22 +100,22 @@ public final class BPELValidationController implements ComponentListener {
   }
 
   public void startValidation() {
-    log();
-    log("START ..."); // NOI18N
+//    log();
+//    log("START ..."); // NOI18N
     doValidation(true, true);
   }
 
   public void runValidation() {
-    log();
-    log("RUN ..."); // NOI18N
+//    log();
+//    log("RUN ..."); // NOI18N
     doValidation(true, false);
   }
 
   public void triggerValidation() {
 //stackTrace();
-    log();
-    log("TIMER-TRIGGER"); // NOI18N
-    log();
+//    log();
+//    log("TIMER-TRIGGER"); // NOI18N
+//    log();
 
     cancelTimer();
     myTimer.schedule(new TimerTask() {
@@ -143,9 +140,9 @@ public final class BPELValidationController implements ComponentListener {
       Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
       type = ValidationType.PARTIAL;
     }
-    log();
-    log("VALIDATION: " + type); // NOI18N
-    startTimeln();
+//    log();
+//    log("VALIDATION: " + type); // NOI18N
+//    startTimeln();
 
     if (isOutput) {
       RunAction action = new ValidateAction(myModel).new RunAction();
@@ -162,8 +159,8 @@ public final class BPELValidationController implements ComponentListener {
         items = validation.getValidationResult();
       }
     }
-    endTime("validation"); // NOI18N
-    log("."); // NOI18N
+//    endTime("validation"); // NOI18N
+//    log("."); // NOI18N
 
     notifyListeners(items);
   }
@@ -205,7 +202,7 @@ public final class BPELValidationController implements ComponentListener {
         if (item.getType() != ResultType.ERROR) {
           continue;
         }
-        Line.Part part = SoaUtil.getLinePart(item);
+        Line.Part part = null;
 
         if (part == null) {
           continue;
