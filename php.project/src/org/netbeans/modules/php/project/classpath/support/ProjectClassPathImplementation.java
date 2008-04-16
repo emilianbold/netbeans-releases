@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
@@ -146,6 +147,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                 }
             }
         }
+
+        // Additional libraries - such as the JavaScript ones
+        for (URL url : LanguageRegistry.getInstance().getLibraryUrls()) {
+            result.add(ClassPathSupport.createResource(url));
+        }
+        
         return Collections.unmodifiableList(result);
     }
 

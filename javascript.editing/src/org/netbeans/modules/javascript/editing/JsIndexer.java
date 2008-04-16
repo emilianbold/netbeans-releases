@@ -151,7 +151,7 @@ public class JsIndexer implements Indexer {
                 return false;
             }
             return true;
-        } else if (extension.equals("rhtml") || extension.equals("jsp")) { // NOI18N
+        } else if (extension.equals("rhtml") || extension.equals("jsp") || extension.equals("php") || extension.equals("phtml")) { // NOI18N
             return true;
         } else if (extension.equals("js"))  {
             String name = file.getNameExt();
