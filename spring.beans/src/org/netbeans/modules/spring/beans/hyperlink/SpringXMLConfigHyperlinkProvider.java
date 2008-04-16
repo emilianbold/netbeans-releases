@@ -63,62 +63,56 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
 
     private static final String P_NAMESPACE = "http://www.springframework.org/schema/p"; // NOI18N
     
-    private BaseDocument lastDocument;
-
-    private HyperlinkProcessor currentProcessor;
-
     private Map<String, HyperlinkProcessor> attribValueProcessors = 
             new HashMap<String, HyperlinkProcessor>();
     
     private PHyperlinkProcessor pHyperlinkProcessor = new PHyperlinkProcessor();
     
     public SpringXMLConfigHyperlinkProvider() {
-        this.lastDocument = null;
-        
         JavaClassHyperlinkProcessor classHyperlinkProcessor = new JavaClassHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.CLASS, classHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.CLASS, classHyperlinkProcessor);
         
         JavaMethodHyperlinkProcessor methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, 0);
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.INIT_METHOD, methodHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.DESTROY_METHOD, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.INIT_METHOD, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.DESTROY_METHOD, methodHyperlinkProcessor);
         
         FactoryMethodHyperlinkProcessor factoryMethodHyperlinkProcessor 
                 = new FactoryMethodHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.FACTORY_METHOD, factoryMethodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.FACTORY_METHOD, factoryMethodHyperlinkProcessor);
         
         methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, 0);
-        registerAttribValueHyperlinkPoint(BeansElements.LOOKUP_METHOD, BeansAttributes.NAME, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.LOOKUP_METHOD, BeansAttributes.NAME, methodHyperlinkProcessor);
         
         methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, -1);
-        registerAttribValueHyperlinkPoint(BeansElements.REPLACED_METHOD, BeansAttributes.NAME, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REPLACED_METHOD, BeansAttributes.NAME, methodHyperlinkProcessor);
         
         ResourceHyperlinkProcessor resourceHyperlinkProcessor = new ResourceHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(BeansElements.IMPORT, BeansAttributes.RESOURCE, resourceHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.IMPORT, BeansAttributes.RESOURCE, resourceHyperlinkProcessor);
         
         PropertyHyperlinkProcessor propertyHyperlinkProcessor = new PropertyHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(BeansElements.PROPERTY, BeansAttributes.NAME, propertyHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.PROPERTY, BeansAttributes.NAME, propertyHyperlinkProcessor);
         
         BeansRefHyperlinkProcessor beansRefHyperlinkProcessor = new BeansRefHyperlinkProcessor(true);
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.FACTORY_BEAN, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.DEPENDS_ON, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.BEAN, BeansAttributes.PARENT, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.LOOKUP_METHOD, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.REPLACED_METHOD, BeansAttributes.REPLACER, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.PROPERTY, BeansAttributes.REF, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.ALIAS, BeansAttributes.NAME, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.REF, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.REF, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.IDREF, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.FACTORY_BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.DEPENDS_ON, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.PARENT, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.LOOKUP_METHOD, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REPLACED_METHOD, BeansAttributes.REPLACER, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.PROPERTY, BeansAttributes.REF, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.ALIAS, BeansAttributes.NAME, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.REF, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REF, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.IDREF, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
         
         beansRefHyperlinkProcessor = new BeansRefHyperlinkProcessor(false);
-        registerAttribValueHyperlinkPoint(BeansElements.IDREF, BeansAttributes.LOCAL, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BeansElements.REF, BeansAttributes.LOCAL, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.IDREF, BeansAttributes.LOCAL, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REF, BeansAttributes.LOCAL, beansRefHyperlinkProcessor);
     }
     
-    private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 
+    private void registerAttribValueProcessor(String tagName, String attribName, 
             HyperlinkProcessor processor) {
         attribValueProcessors.put(createRegisteredName(tagName, attribName), processor);
     }
@@ -134,22 +128,8 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         }
 
         HyperlinkEnv env = new HyperlinkEnv(document, offset);
-        if(env.getType().isValueHyperlink()) {
-            currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
-            if(currentProcessor == null && isPNamespaceName(env, env.getAttribName())) {
-                currentProcessor = pHyperlinkProcessor;
-            }
-        } else if(env.getType().isAttributeHyperlink()) {
-            if (isPNamespaceName(env, env.getAttribName())) {
-                currentProcessor = pHyperlinkProcessor;
-            } else {
-                currentProcessor = null;
-            }
-        } else {
-            currentProcessor = null;
-        }
-        
-        return currentProcessor != null;
+        HyperlinkProcessor processor = locateProcessor(env);
+        return processor != null;
     }
 
     public int[] getHyperlinkSpan(Document document, int offset) {
@@ -157,19 +137,37 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
             return null;
         }
         
-        if(currentProcessor == null) {
-            return null;
-        }
-
         HyperlinkEnv env = new HyperlinkEnv(document, offset);
-        return currentProcessor.getSpan(env);
+        HyperlinkProcessor processor = locateProcessor(env);
+        if(processor == null) {
+            return new int[] { -1, -1 };
+        }
+        
+        return processor.getSpan(env);
     }
 
     public void performClickAction(Document document, int offset) {
         HyperlinkEnv env = new HyperlinkEnv(document, offset);
-        if(currentProcessor != null) {
-            currentProcessor.process(env);
+        HyperlinkProcessor processor = locateProcessor(env);
+        if(processor != null) {
+            processor.process(env);
         }
+    }
+    
+    private HyperlinkProcessor locateProcessor(HyperlinkEnv env) {
+        HyperlinkProcessor processor = null;
+        if(env.getType().isValueHyperlink()) {
+            processor = locateAttributeValueProcessor(env.getTagName(), env.getAttribName());
+            if(processor == null && isPNamespaceName(env, env.getAttribName())) {
+                processor = pHyperlinkProcessor;
+            }
+        } else if(env.getType().isAttributeHyperlink()) {
+            if (isPNamespaceName(env, env.getAttribName())) {
+                processor = pHyperlinkProcessor;
+            }
+        }
+        
+        return processor;
     }
     
     protected String createRegisteredName(String nodeName, String attributeName) {
@@ -190,16 +188,16 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         return builder.toString();
     }
     
-    private HyperlinkProcessor locateHyperlinkProcessor(String nodeName, 
-            String attributeName, Map<String, HyperlinkProcessor> processors) {
+    private HyperlinkProcessor locateAttributeValueProcessor(String nodeName, 
+            String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
-        if(processors.containsKey(key)) {
-            return processors.get(key);
+        if(attribValueProcessors.containsKey(key)) {
+            return attribValueProcessors.get(key);
         }
                
         key = createRegisteredName("*", attributeName); // NOI18N
-        if(processors.containsKey(key)) {
-            return processors.get(key);
+        if(attribValueProcessors.containsKey(key)) {
+            return attribValueProcessors.get(key);
         }
         
         return null;
