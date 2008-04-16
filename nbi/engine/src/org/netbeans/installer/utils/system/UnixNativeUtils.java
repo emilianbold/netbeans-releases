@@ -742,7 +742,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
             setEnvironmentVariable(
                     "LC_TIME", "C", EnvironmentScope.PROCESS, false);
             
-            final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
+            final String stdout = SystemUtils.executeCommand("df", "-k").getStdOut();
             final String[] lines = StringUtils.splitByLines(stdout);
             
             // a quick and dirty solution - we assume that % is present only once in
