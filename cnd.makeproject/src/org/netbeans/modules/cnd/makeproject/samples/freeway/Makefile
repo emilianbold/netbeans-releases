@@ -39,7 +39,8 @@
 # made subject to such option by the copyright holder.
 #
  
-CCFLAGS = -g `pkg-config --cflags gtk+-2.0`
+INCLUDES = `pkg-config --cflags gtk+-2.0`
+CCFLAGS = -g3 -gdwarf-2 $(INCLUDES)
 CXXFLAGS = $(CCFLAGS)
 LINKFLAGS = `pkg-config --libs gtk+-2.0`
 
