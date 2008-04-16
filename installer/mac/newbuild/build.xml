@@ -129,11 +129,10 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
+    <target name="build-all-dmg" depends="clean,init,build-pkg">                                                    
         <property file="${basedir}/build/sizes.pro"/>  
         <mkdir dir="dist"/>                  
-        <property name="bundles" value="        (./build/*pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
+        <property name="bundles" value="-php(./build/baseide.pkg ./build/php.pkg)"/>
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <ant target="build-dmg"/>                           
         </for-each>         
@@ -241,7 +240,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-ea-macosx.dmg '${mpkgname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${ml.suffix}${bundle.type}'-macosx.dmg '${mpkgname}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
     </target>             
