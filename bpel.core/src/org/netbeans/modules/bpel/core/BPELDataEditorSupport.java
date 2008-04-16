@@ -78,7 +78,6 @@ import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
-import org.netbeans.modules.soa.core.validation.LineUtil;
 
 /**
  * @author ads
@@ -444,11 +443,11 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 else if (mvp.preferredID().equals(
                         BPELSourceMultiViewElementDesc.PREFERED_ID))
                 {
-                    Line line = LineUtil.getLine(resultItem);
-
-                    if (line != null) {
-                      line.show(Line.SHOW_GOTO);
-                    }
+//                    Line line = SoaUtil.getLine(resultItem);
+//
+//                    if (line != null) {
+//                      line.show(Line.SHOW_GOTO);
+//                    }
                 }
             }
         });
