@@ -55,15 +55,15 @@ public class ProjectDescriptor implements Descriptor{
     private final static String bundle = "org.netbeans.modules.visualweb.gravy.model.project.Bundle";
     
     public final static String J2EE13 = Bundle.getStringTrimmed(
-                                                  Bundle.getStringTrimmed(bundle, "ProjectWizardBundle"),
+                                                  Bundle.getStringTrimmed(bundle, "CustomizerBundle"),
                                                   Bundle.getStringTrimmed(bundle, "J2EE13"));
     
     public final static String J2EE14 = Bundle.getStringTrimmed(
-                                                  Bundle.getStringTrimmed(bundle, "ProjectWizardBundle"),
+                                                  Bundle.getStringTrimmed(bundle, "CustomizerBundle"),
                                                   Bundle.getStringTrimmed(bundle, "J2EE14"));
     
     public final static String JavaEE5 = Bundle.getStringTrimmed(
-                                                  Bundle.getStringTrimmed(bundle, "ProjectWizardBundle"),
+                                                  Bundle.getStringTrimmed(bundle, "CustomizerBundle"),
                                                   Bundle.getStringTrimmed(bundle, "JavaEE5"));
     
     /**
