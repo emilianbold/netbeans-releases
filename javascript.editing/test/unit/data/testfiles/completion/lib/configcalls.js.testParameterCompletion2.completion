@@ -1,0 +1,3 @@
+Results for somefunction({}, {}, {}); with queryType=COMPLETION and nameKind=PREFIX
+PARAMETER  ghiconfig1                                 <i>First config</i>
+CALL       somefunction(... , ghi)                    configcalls.js

@@ -54,6 +54,9 @@ cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
 mkdir -p var
 touch var/license_accepted
 
+#add Product ID
+"$dirname"/addproduct_id.sh "NB"
+
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"
 fi

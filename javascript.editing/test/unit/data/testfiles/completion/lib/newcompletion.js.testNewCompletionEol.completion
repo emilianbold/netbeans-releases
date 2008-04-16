@@ -6,6 +6,7 @@ CONSTRUCTO Array                                      Core JS
 CONSTRUCTO Array(arrayLength)                         Core JS
 CONSTRUCTO Array(element0, element1, elem             Core JS
 CONSTRUCTO Attr                                       DOM
+CONSTRUCTO Base()                                     Autocompleter
 CONSTRUCTO Boolean                                    Core JS
 CONSTRUCTO Boolean(val)                               Core JS
 CONSTRUCTO Boolean(value)                             Core JS

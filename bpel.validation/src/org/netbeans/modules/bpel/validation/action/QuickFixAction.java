@@ -57,7 +57,6 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
 import org.netbeans.modules.bpel.validation.core.QuickFixable;
@@ -117,10 +116,12 @@ public final class QuickFixAction extends IconAction {
     if (node == null) {
       return quickFixes;
     }
-//out("MODE: " + node);
+//out();
+//out("NODE: " + node);
+
     if (myValidationController == null) {
-      BPELDataEditorSupport support = (BPELDataEditorSupport) node.getLookup().lookup(DataEditorSupport.class);
-      myValidationController = support.getValidationController();
+      myValidationController = node.getLookup().lookup(BPELValidationController.class);
+//out("CONTROLLER: " + myValidationController);
     }
     if (myValidationController == null) {
 //out("CONTROLLER is NULL");

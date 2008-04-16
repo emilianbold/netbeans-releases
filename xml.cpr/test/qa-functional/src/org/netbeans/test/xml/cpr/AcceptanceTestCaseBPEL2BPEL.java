@@ -52,6 +52,11 @@ import org.netbeans.test.xml.schema.lib.util.Helpers;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.EditorOperator;
+import java.awt.event.KeyEvent;
+import java.awt.Point;
+import java.awt.event.InputEvent;
 
 
 
@@ -75,8 +80,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "ValidateAndBuild",
         "AddAttribute",
         "ExploreAttribute",
-        "DeleteAttribute",
-        "UndoRedoAttribute",
+        "ManipulateAttribute",
         "AddComplex",
         "ExploreComplex",
         "DeleteComplex",
@@ -87,8 +91,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "UndoRedoElement",
         "AddSimple",
         "ExploreSimple",
-        "DeleteSimple",
-        "UndoRedoSimple",
+        "ManipulateSimple",
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
@@ -348,7 +351,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Attribute",
           null, 
           "Referenced Schemas|import|Simple Types|StateType",
-          "newAttribute"
+          ATTRIBUTES_NAMES[ 0 ]
         );
 
       endTest( );
@@ -359,7 +362,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreSimpleInternal(
-          "newAttribute",
+          ATTRIBUTES_NAMES[ 0 ],
           "StateType",
           "attribute",
           "ns2:"
@@ -368,20 +371,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void DeleteAttribute( )
+    public void ManipulateAttribute( )
     {
       startTest( );
 
-
-
-      endTest( );
-    }
-
-    public void UndoRedoAttribute( )
-    {
-      startTest( );
-
-
+      ManipulateAttributeInternal( SAMPLE_NAME );
 
       endTest( );
     }
@@ -479,7 +473,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Simple Type",
           null, 
           "Referenced Schemas|import|Simple Types|LoanType",
-          "newSimpleType"
+          SIMPLE_NAMES[ 0 ]
         );
 
       endTest( );
@@ -490,7 +484,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreSimpleInternal(
-          "newSimpleType",
+          SIMPLE_NAMES[ 0 ],
           "LoanType",
           "simpleType",
           null
@@ -499,20 +493,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void DeleteSimple( )
+    public void ManipulateSimple( )
     {
       startTest( );
 
-
-
-      endTest( );
-    }
-
-    public void UndoRedoSimple( )
-    {
-      startTest( );
-
-
+      ManipulateSimpleInternal( SAMPLE_NAME );
 
       endTest( );
     }

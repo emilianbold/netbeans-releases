@@ -148,7 +148,10 @@ public final class View extends TopComponent implements SearchListener {
   protected void componentClosed()
   {
     super.componentClosed();
-    myTabbed.closeAllTabs();
+
+    if (myTabbed != null) {
+      myTabbed.closeAllTabs();
+    }
     myList = null;
     myTree = null;
   }
