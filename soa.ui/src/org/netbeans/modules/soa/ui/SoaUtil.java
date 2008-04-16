@@ -411,4 +411,21 @@ public class SoaUtil {
             }
         }
     }
+
+    public static FileObject getFileObjectByModel(Model model) {
+      if (model == null) {
+        return null;
+      }
+      ModelSource src = model.getModelSource();
+
+      if (src == null) {
+       return null;
+      }
+      Lookup lookup = src.getLookup();
+
+      if (lookup == null) {
+        return null;
+      }
+      return lookup.lookup(FileObject.class);
+    }
 }
