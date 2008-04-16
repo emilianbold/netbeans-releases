@@ -49,9 +49,9 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.RequestProcessor;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -129,8 +129,8 @@ public class MapperContextImpl implements MapperContext {
         myTargetPart = getTargetPart(myTransformContextComponent);
         myTargetModel = getWsdlModel(myTargetPart);
 
-        myTMapFo = org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myTMapModel);
-        myXslFo = myXslModel == null ? null : org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myXslModel);
+        myTMapFo = SoaUtil.getFileObjectByModel(myTMapModel);
+        myXslFo = myXslModel == null ? null : SoaUtil.getFileObjectByModel(myXslModel);
     }
 
     private void init(Transform transform, XslModel xslModel, AXIComponent sourceComponent, AXIComponent targetComponent) {
@@ -226,7 +226,7 @@ public class MapperContextImpl implements MapperContext {
                 myTMapFo.removeFileChangeListener(myFileChangeListener);
             }
 
-            myTMapFo = org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myTMapModel);
+            myTMapFo = SoaUtil.getFileObjectByModel(myTMapModel);
             if (myTMapFo != null) {
                 myTMapFo.addFileChangeListener(myFileChangeListener);
             }
@@ -249,7 +249,7 @@ public class MapperContextImpl implements MapperContext {
                 myXslFo.removeFileChangeListener(myFileChangeListener);
             }
 
-            myXslFo = myXslModel == null ? null : org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myXslModel);
+            myXslFo = myXslModel == null ? null : SoaUtil.getFileObjectByModel(myXslModel);
             if (myXslFo != null) {
                 myXslFo.addFileChangeListener(myFileChangeListener);
             }

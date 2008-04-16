@@ -33,6 +33,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  *
@@ -102,7 +103,7 @@ public class ImportRegistrationHelper {
     }
     
     public Import createImport(Model model){
-        FileObject modelFo = Util.getFileObjectByModel(model);
+        FileObject modelFo = SoaUtil.getFileObjectByModel(model);
         if (modelFo != null) {
             return createImport(modelFo);
         }
