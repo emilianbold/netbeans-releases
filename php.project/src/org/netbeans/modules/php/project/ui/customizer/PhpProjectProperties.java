@@ -45,6 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
@@ -53,13 +56,14 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 // XXX remove package org.netbeans.modules.php.project.customizer and make this class package private
+import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
@@ -251,12 +255,31 @@ public class PhpProjectProperties {
         }
 
         // check whether src directory exists - if not, create it (can happen using customizer)
+        FileObject srcDirectory = null;
+        File srcFolder = helper.resolveFile(srcDir);
         if (srcDir != null) {
-            File srcFolder = PropertyUtils.resolveFile(FileUtil.toFile(getProject().getProjectDirectory()), srcDir);
             if (!srcFolder.exists()) {
-                FileUtil.createFolder(srcFolder);
+                srcDirectory = FileUtil.createFolder(srcFolder);
             }
         }
+
+        // UI log
+        if (srcDirectory == null) {
+            srcDirectory = FileUtil.toFileObject(srcFolder);
+        }
+        logUI(helper.getProjectDirectory(), srcDirectory, Boolean.valueOf(getCopySrcFiles()));
+    }
+
+    // http://wiki.netbeans.org/UILoggingInPHP
+    private void logUI(FileObject projectDir, FileObject sourceDir, Boolean copyFiles) {
+        LogRecord logRecord = new LogRecord(Level.INFO, "UI_PHP_PROJECT_CUSTOMIZED"); //NOI18N
+        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+        logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
+        logRecord.setParameters(new Object[] {
+            FileUtil.isParentOf(projectDir, sourceDir),
+            copyFiles != null && copyFiles
+        });
+        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
     }
 
     public PhpProject getProject() {

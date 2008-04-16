@@ -62,21 +62,24 @@ final class DocumentRootsUnix {
             String documentRoot = DocumentRoots.getFolderName(userDir, projectName);
             String user = System.getProperty("user.name"); // NOI18N
             String url = DocumentRoots.getDefaultUrl("~" + user + "/" + projectName); // NOI18N
-            roots.add(new Root(documentRoot, url, true));
+            roots.add(new Root(documentRoot, url, userDir.canWrite()));
         }
 
         // /var/www
         File www = new File("/var/www"); // NOI18N
         File wwwLocalhost = new File(www, "localhost"); // NOI18N
         String documentRoot = null;
+        boolean canWrite = false;
         if (wwwLocalhost.isDirectory()) {
             documentRoot = DocumentRoots.getFolderName(wwwLocalhost, projectName);
+            canWrite = wwwLocalhost.canWrite();
         } else if (www.isDirectory()) {
             documentRoot = DocumentRoots.getFolderName(www, projectName);
+            canWrite = www.canWrite();
         }
         if (documentRoot != null) {
             String url = DocumentRoots.getDefaultUrl(projectName);
-            roots.add(new Root(documentRoot, url, roots.isEmpty()));
+            roots.add(new Root(documentRoot, url, roots.isEmpty() && canWrite));
         }
         return roots;
     }
