@@ -61,6 +61,7 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.java.JavaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -186,7 +187,7 @@ public class BeanClassFinder {
         }
         
         try {
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(fileObject);
+            JavaSource js = JavaUtils.getJavaSource(fileObject);
             if (js == null) {
                 return null;
             }
@@ -194,7 +195,7 @@ public class BeanClassFinder {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController cc) throws Exception {
-                    TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(implClass, cc);
+                    TypeElement te = JavaUtils.findClassElementByBinaryName(implClass, cc);
                     if (te == null) {
                         return;
                     }

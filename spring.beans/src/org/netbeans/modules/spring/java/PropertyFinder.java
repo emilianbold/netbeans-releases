@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spring.beans.editor;
+package org.netbeans.modules.spring.java;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,8 +51,6 @@ import org.netbeans.api.java.source.ElementUtilities;
 
 /**
  * Finds all simple bean properties starting with a specified prefix on the specified type
- * 
- * XXX: Should be in a separate utils package and not in editor package. 
  * 
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */

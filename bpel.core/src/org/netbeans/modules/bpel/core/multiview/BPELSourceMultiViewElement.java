@@ -185,7 +185,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         setCaretAssocActiveNodes();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
         editor.addUndoManagerToDocument();
-//        getValidationController().triggerValidation();
+//      getValidationController().triggerValidation();
     }
     
     private BPELValidationController getValidationController() {

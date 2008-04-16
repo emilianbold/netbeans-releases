@@ -51,9 +51,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyFinder;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyFinder;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,7 +78,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                 return;
             }
 
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getFileObject());
+            JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
             if (js == null) {
                 return;
             }
@@ -87,7 +87,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController cc) throws Exception {
-                    TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                    TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
                     if (te == null) {
                         return;
                     }

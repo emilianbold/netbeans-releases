@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,58 +37,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.clearcase.client;
 
-package org.netbeans.modules.spring.beans.editor;
+import org.netbeans.modules.clearcase.ClearcaseException;
 
-import javax.lang.model.element.ExecutableElement;
+import java.util.*;
 
 /**
- *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * Simple "lsvob" command.
+ * 
+ * @author Maros Sandor
  */
-public class Property {
-    private String name;
-    private ExecutableElement getter;
-    private ExecutableElement setter;
+public class LsVobCommand extends ClearcaseCommand {
 
-    public Property(String name) {
-        this.name = name;
+    private final List<String> vobs = new ArrayList<String>(5);
+    
+    public void prepareCommand(Arguments arguments) throws ClearcaseException {
+        arguments.add("lsvob");
+        //arguments.add("-short");
     }
 
-    public ExecutableElement getGetter() {
-        return getter;
+    public void commandStarted() {
+        super.commandStarted();
+        vobs.clear();
     }
 
-    public void setGetter(ExecutableElement getter) {
-        this.getter = getter;
+    public void outputText(String line) {
+        super.outputText(line);
+        vobs.add(line);
     }
 
-    public ExecutableElement getSetter() {
-        return setter;
-    }
-
-    public void setSetter(ExecutableElement setter) {
-        this.setter = setter;
-    }
-
-    public String getName() {
-        return name;
+    public List<String> getVobs() {
+        return vobs;
     }
     
-    public PropertyType getType() {
-        if(this.getter != null && this.setter != null) {
-            return PropertyType.READ_WRITE;
-        } else if(this.getter != null) {
-            return PropertyType.READ_ONLY;
-        } else if(this.setter != null) {
-            return PropertyType.WRITE_ONLY;
-        }
+    public List<String> getMountedVobs() {
+        List<String> mountedVobs = new ArrayList<String>(5);
+        Object [] tempArray = vobs.toArray();
         
-        return null; // Should never occur
+        for (int i = 0; i < tempArray.length; i++) {
+            if (tempArray[i].toString().charAt(0) == '*') {
+                StringTokenizer tokenizer = new StringTokenizer(tempArray[i].toString());
+                while(tokenizer.hasMoreElements()) {
+                    tokenizer.nextToken();  //will be the '*' character
+                    mountedVobs.add(tokenizer.nextToken());
+                    break;
+                }
+            }
+        }
+       
+        return mountedVobs;
     }
 }

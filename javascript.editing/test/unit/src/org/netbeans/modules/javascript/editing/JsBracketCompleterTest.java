@@ -685,13 +685,13 @@ public class JsBracketCompleterTest extends JsTestBase {
         // Weird AST offset error - doesn't include the correct endpoint, just
         // end of last statement in the method
         //String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n}%>%";
-        String next = "function foo() %<%{\nif (true) {\n  fo^o\n}%>%\n}";
+        String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
     
     public void testLogicalRange3d() throws Exception {
-        String code = "function foo() %<%{\nif (true) {\n  fo^o\n}%>%\n}";
+        String code = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
         // Weird AST offset error - doesn't include the correct endpoint, just
         // end of last statement in the method
         String next = "%<%function foo() {\nif (true) {\n  fo^o\n}\n}%>%";

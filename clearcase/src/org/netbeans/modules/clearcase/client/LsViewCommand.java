@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,57 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.clearcase.client;
 
-package org.netbeans.modules.websvc.axis2.wizards;
+import org.netbeans.modules.clearcase.ClearcaseException;
 
-import org.openide.WizardDescriptor;
+import java.util.*;
 
 /**
- * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
- * the original wizard panel, that is not finishable
+ * Simple "lsview" command.
  * 
- *
- * @author mkuchtiak
+ * @author Maros Sandor
  */
-public class FinishableProxyWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
+public class LsViewCommand extends ClearcaseCommand {
+
+    private final List<String> views = new ArrayList<String>(5);
     
-    private WizardDescriptor.Panel<WizardDescriptor> original;
-    /** Creates a new instance of ProxyWizardPanel */
-    public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original) {
-        this.original=original;
-        
+    public void prepareCommand(Arguments arguments) throws ClearcaseException {
+        arguments.add("lsview");
+        //arguments.add("-short");
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        original.addChangeListener(l);
+    public void commandStarted() {
+        super.commandStarted();
+        views.clear();
     }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        original.removeChangeListener(l);
+    public void outputText(String line) {
+        super.outputText(line);
+        views.add(line);
     }
 
-    public void storeSettings(WizardDescriptor settings) {
-        original.storeSettings(settings);
+    public List<String> getViews() {
+        return views;
     }
-
-    public void readSettings(WizardDescriptor settings) {
-        original.readSettings(settings);
-    }
-
-    public boolean isValid() {
-        return original.isValid();
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    public java.awt.Component getComponent() {
-        return original.getComponent();
-    }
-
-    public org.openide.util.HelpCtx getHelp() {
-        return original.getHelp();
-    }
-    
 }

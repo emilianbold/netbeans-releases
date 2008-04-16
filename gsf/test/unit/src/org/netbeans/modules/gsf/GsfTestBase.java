@@ -339,6 +339,10 @@ public abstract class GsfTestBase extends NbTestCase {
         File inputFile = new File(getDataSourceDir(), relFilePath);
         return inputFile;
     }
+    
+    protected boolean failOnMissingGoldenFile() {
+        return true;
+    }
 
     protected void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
@@ -359,7 +363,10 @@ public abstract class GsfTestBase extends NbTestCase {
             finally{
                 fw.close();
             }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+            if (failOnMissingGoldenFile()) {
+                NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+            }
+            return;
         }
 
         String expected = readFile(goldenFile);
@@ -874,7 +881,7 @@ public abstract class GsfTestBase extends NbTestCase {
                     }
                 }
             }
-            fail("Selection range " + selected + " is not in the range");
+            fail("Selection range " + selected + " is not in the range; ranges=" + ranges);
         } else {
             assert ranges.size() > 0;
             OffsetRange was = ranges.get(0);
@@ -1781,6 +1788,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
+        initializeClassPaths();
+
         // TODO call TestCompilationInfo.setCaretOffset!        
         QueryType type = QueryType.COMPLETION;
         boolean caseSensitive = true;
@@ -1890,9 +1899,13 @@ public abstract class GsfTestBase extends NbTestCase {
     
     protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String param, boolean expectSuccess) {
     }
-    
+
+    protected void initializeClassPaths() {
+    }
     
     public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+        initializeClassPaths();
+        
         QueryType type = QueryType.COMPLETION;
         //boolean caseSensitive = true;
 

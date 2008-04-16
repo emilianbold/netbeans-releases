@@ -44,6 +44,8 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -105,21 +107,28 @@ public class RailsProjectGenerator {
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
             String railsDbArg = railsDb.railsGenerationParam() == null ? null : "--database=" + railsDb.railsGenerationParam();
+            String railsVersionArg = data.getRailsVersion() == null ? null : "_" + data.getRailsVersion() + "_";
             File pwd = data.getDir().getParentFile();
+            List<String> argList = new ArrayList<String>();
+            if (railsVersionArg != null) {
+                argList.add(railsVersionArg);
+            }
+            if (runThroughRuby) {
+                argList.add(data.getName());
+            }
+            if (railsDbArg != null) {
+                argList.add(railsDbArg);
+            }
+            String[] args = argList.toArray(new String[argList.size()]);
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
-                if (railsDbArg != null) {
-                    desc.additionalArgs(data.getName(), railsDbArg);
-                } else {
-                    desc.additionalArgs(data.getName());
-                }
+                desc.additionalArgs(args);
             } else {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, data.getName());
-                if (railsDbArg != null) {
-                    desc.additionalArgs(railsDbArg);
-                }
+                desc.additionalArgs(args);
                 desc.cmd(railsF);
             }
+            
             desc.fileLocator(new DirectoryFileLocator(dirFO));
             desc.addOutputRecognizer(RAILS_GENERATOR);
             ExecutionService service = null;
