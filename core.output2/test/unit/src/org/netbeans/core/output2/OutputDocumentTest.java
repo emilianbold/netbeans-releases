@@ -221,14 +221,14 @@ public class OutputDocumentTest extends NbTestCase {
         assertTrue ("With three 80 character lines of data, wrapped at 50 characters, there should be 4 logical lines above 2, not " + val, val == 4);
         
         int[] wrapData = new int[] {5, 0, 0};
-        doc.getLines().toLogicalLineIndex(wrapData, 50);
-        assertTrue("The logical line index of the 5th phys line with three 80 char lines wrapped at 50 chars should be 2 in the document, not " + wrapData[0], wrapData[0] == 2);
+        doc.getLines().toPhysicalLineIndex(wrapData, 50);
+        assertTrue("The physical line index of the 5th logical line with three 80 char lines wrapped at 50 chars should be 2 in the document, not " + wrapData[0], wrapData[0] == 2);
         assertTrue("An 80 char line should wrap twice, not " + wrapData[2], wrapData[2] == 2);
-        assertTrue("On the 5th physical line with three 80 char lines wrapped at 50 chars should be the 1st line of actual line 3, not " + wrapData[1], wrapData[1] == 1);
+        assertTrue("On the 5th logical line with three 80 char lines wrapped at 50 chars should be the 1st line of actual line 3, not " + wrapData[1], wrapData[1] == 1);
         
         wrapData[0] = 6;
-        doc.getLines().toLogicalLineIndex(wrapData, 50);
-        assertTrue("On the 5th physical line with three 80 char lines wrapped at 50 chars should be the 2nd line of actual line 3, not " + wrapData[1], wrapData[1] == 2);
+        doc.getLines().toPhysicalLineIndex(wrapData, 50);
+        assertTrue("On the 6th logical line with three 80 char lines wrapped at 50 chars should be the 2nd line of actual line 3, not " + wrapData[1], wrapData[1] == 2);
         
         ow.println(c20);
         ow.println(c80);
@@ -237,7 +237,7 @@ public class OutputDocumentTest extends NbTestCase {
         assertTrue ("There should be 6 logical lines above a 20 char line following three 80 char lines when wrapped at 50 chars", val == 6);
         
         wrapData[0] = 6;
-        doc.getLines().toLogicalLineIndex(wrapData, 50);
+        doc.getLines().toPhysicalLineIndex(wrapData, 50);
         assertTrue ("20 char line should not be wrapped, but shows " + wrapData[2] + " wraps", wrapData[2] == 1);
     }
     

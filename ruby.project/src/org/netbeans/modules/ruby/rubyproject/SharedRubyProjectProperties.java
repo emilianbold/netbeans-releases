@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.rubyproject;
 
@@ -32,13 +32,14 @@ import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 
 /**
- *
  * @author Tor Norbye
  */
 public abstract class SharedRubyProjectProperties {
+    
     public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
     public static final String INCLUDE_JAVA = "ruby.includejava"; // NOI18N
     public static final String RAKE_ARGS = "rake.args"; // NOI18N
+    public static final String JRUBY_PROPS = "jruby.props"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
 
     // External Java integration

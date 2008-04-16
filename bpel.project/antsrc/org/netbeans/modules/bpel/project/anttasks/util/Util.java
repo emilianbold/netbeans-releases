@@ -47,12 +47,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.spi.Validation;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -64,6 +71,12 @@ public final class Util {
     public static final String BPEL_FILE_EXTENSION = "bpel"; // NOI18N
     public static final String FOUND_VALIDATION_ERRORS = "Found validation error(s)."; // NOI18N
             
+    public static List<ResultItem> validate(Model model) {
+      Validation validation = new Validation();
+      validation.validate(model, ValidationType.COMPLETE);
+      return validation.getValidationResult();
+    }
+
     public static String getError(File file, int column, int line, String description, String type) {
         StringBuffer buffer = new StringBuffer();
 
@@ -335,25 +348,19 @@ public final class Util {
 
         public boolean accept(File pathname) {
             boolean result = false;
-
             String fileName = pathname.getName();
             String fileExtension = null;
             int dotIndex = fileName.lastIndexOf('.');
+
             if (dotIndex != -1) {
                 fileExtension = fileName.substring(dotIndex + 1);
             }
-
             if (fileExtension != null && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION))) {
                 result = true;
             }
-
             return result;
         }
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance
-    private Util() {
-        // Does nothing
-    }
+    private Util() {}
 }

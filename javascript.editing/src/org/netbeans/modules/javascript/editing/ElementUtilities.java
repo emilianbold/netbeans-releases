@@ -61,7 +61,10 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
-public class ElementUtilities {
+public final class ElementUtilities {
+    private ElementUtilities() {
+        // Utility class, not instantiatable
+    }
 
     public static Element getElement(CompilationInfo info, ElementHandle handle) {
         Element element = null;
@@ -92,7 +95,7 @@ public class ElementUtilities {
      *   better be an IndexedElement.
      */
     public static List<String> getComments(CompilationInfo info, Element element) {
-        assert info != null || element instanceof IndexedFunction;
+        assert info != null || element instanceof IndexedElement;
         
         if (element == null) {
             return null;

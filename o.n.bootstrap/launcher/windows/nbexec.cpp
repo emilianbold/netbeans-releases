@@ -804,7 +804,15 @@ void addOption(char *str)
             options = tmp;
         }
     }
-    options[numOptions++] = strdup(str);
+    int len = strlen(str);
+    char *strOpt = (char *) malloc(len+1);
+    int k = 0;
+    for (int i = 0; i < len; i++) {
+        if (str[i] != '\"')
+            strOpt[k++] = str[i];
+    }
+    strOpt[k] = '\0';
+    options[numOptions++] = strOpt;
 }
 
 void parseArgs(int argc, char *argv[]) {

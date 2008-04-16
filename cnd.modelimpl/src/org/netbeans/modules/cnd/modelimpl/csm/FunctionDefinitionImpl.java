@@ -124,7 +124,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	    }
 	    else if( owner instanceof CsmNamespace ) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace) owner),
-                          CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(getName().toString(),true, true, false));
+                          CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(),true, true, false));
 		def = findByName(it,getName());
 	    }
 	}

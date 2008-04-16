@@ -26,9 +26,7 @@ import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.util.Lookup;
 
-
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -42,18 +40,5 @@ public class Util {
         }
         
         return model;
-    }
-
-    public static FileObject getFileObjectByModel(Model model){
-        if (model != null){
-            ModelSource src = model.getModelSource();
-            if (src != null){
-                Lookup lookup = src.getLookup();
-                if (lookup != null){
-                    return lookup.lookup(FileObject.class);
-                }
-            }
-        }
-        return null;
     }
 }

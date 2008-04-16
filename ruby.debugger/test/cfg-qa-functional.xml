@@ -40,10 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<mconfig name="Ruby Debugger gui functional test config">
 
-<mconfig name="Debugger gui functional test config">
-
-    <testbag testattribs="unstable" executor="ide" name="Debugger overall">
+    <testbag testattribs="stable" executor="ide" name="Ruby Debugger">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/ruby/debugger/BasicTests.class"/>

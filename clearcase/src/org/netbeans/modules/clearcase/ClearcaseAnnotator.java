@@ -49,6 +49,7 @@ import org.netbeans.modules.clearcase.ui.checkin.CheckinAction;
 import org.netbeans.modules.clearcase.ui.status.RefreshAction;
 import org.netbeans.modules.clearcase.ui.status.ShowPropertiesAction;
 import org.netbeans.modules.clearcase.ui.add.AddAction;
+import org.netbeans.modules.clearcase.ui.add.AddToRepositoryAction;
 import org.netbeans.modules.clearcase.ui.checkout.CheckoutAction;
 import org.netbeans.modules.clearcase.ui.update.UpdateAction;
 import org.netbeans.modules.clearcase.ui.diff.DiffAction;
@@ -280,6 +281,7 @@ public class ClearcaseAnnotator extends VCSAnnotator {
             actions.add(new ReserveAction(ctx));
             actions.add(new HijackAction(ctx));
             actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N
+            actions.add(new AddToRepositoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Import_into_Clea&rcase_Repository"), ctx)); //NOI18N
             actions.add(null);
             actions.add(new DiffAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Diff"), ctx)); //NOI18N
             actions.add(new UpdateAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Update"), ctx)); //NOI18N
@@ -303,6 +305,7 @@ public class ClearcaseAnnotator extends VCSAnnotator {
             actions.add(new ReserveAction(ctx));
             actions.add(new HijackAction(ctx));
             actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N
+            actions.add(new AddToRepositoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Import_into_Clea&rcase_Repository"), ctx)); //NOI18N
             actions.add(null);
             actions.add(SystemActionBridge.createAction(SystemAction.get(RefreshAction.class), NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowChanges"), context)); //NOI18N
             actions.add(new DiffAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Diff"), ctx)); //NOI18N

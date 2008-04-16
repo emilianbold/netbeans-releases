@@ -143,6 +143,7 @@ final class MIMESupport extends Object {
         
         String mimeType;
         java.util.Date lastModified;
+        Long size;
         CachedInputStream fixIt;
 
         /*All calls delegated to this object.
@@ -413,7 +414,11 @@ final class MIMESupport extends Object {
         }
 
         public long getSize() {
-            return fileObj.getSize();
+            if (size != null) {
+                return size;
+            }
+            
+            return size = fileObj.getSize();
         }
 
         public Enumeration<String> getAttributes() {

@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
-import org.netbeans.modules.ruby.hints.HintTestBase;
 import org.openide.filesystems.FileObject;
 
 /**

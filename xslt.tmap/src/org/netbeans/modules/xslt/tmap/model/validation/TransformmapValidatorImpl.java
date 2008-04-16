@@ -22,6 +22,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.tmap.TMapConstants;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
@@ -171,7 +172,7 @@ public class TransformmapValidatorImpl implements TransformmapValidator {
                     : validate((Project)valObject);
         }
     }
-    
+
     private class IsCorrectNs implements ValidationRule {
         private String validate(File transformDescriptor) {
             if (transformDescriptor == null) {
@@ -190,8 +191,14 @@ public class TransformmapValidatorImpl implements TransformmapValidator {
 
             String ns = rootElement.getNamespaceURI();
             ns = ns == null ? "" : ns;
-            if (!TMapComponent.TRANSFORM_MAP_NS_URI.equals(ns)) {
+            
+            // TODO remove after migration support will be ready
+            if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(ns)) {
                 return NbBundle.getMessage(TransformmapValidatorImpl.class, "Msg_IncorrectNamespace", ns);
+            }
+
+            if (!TMapComponent.TRANSFORM_MAP_NS_URI.equals(ns)) {
+                return NbBundle.getMessage(TransformmapValidatorImpl.class, "Msg_DeprecatedTMap", ns);
             }
             return null;
         }

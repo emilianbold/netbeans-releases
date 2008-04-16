@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xslt.core.multiview.mapper;
 
 import java.awt.BorderLayout;
@@ -481,7 +480,6 @@ public class MapperMultiViewElement extends TopComponent
         if (mapperContext != null) {
 //            System.out.println("sourceComponent: "+mapperContext.getSourceType());
 //            System.out.println("targetComponent "+mapperContext.getTargetType());
-//            System.out.println("xslModel "+mapperContext.getXSLModel());
         }
         ActionMap actionMap = getActionMap();
         actionMap.put(DefaultEditorKit.copyAction, null);

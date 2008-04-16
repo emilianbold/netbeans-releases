@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
@@ -64,8 +66,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -78,8 +78,11 @@ import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
+import org.netbeans.modules.xslt.tmap.model.spi.NameGenerator;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -88,6 +91,8 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class Iterator implements TemplateWizard.Iterator {
 
   private static final long serialVersionUID = 1L;
+  
+  private static final Logger LOGGGER = Logger.getLogger("xslt.project");
 
   public static Iterator createXsl() {
     return new Iterator();
@@ -293,7 +298,7 @@ public final class Iterator implements TemplateWizard.Iterator {
                 if (!isCreatedDir) {
                     createdFos.add(xslFo);
                 }
-                SoaUiUtil.fixEncoding(DataObject.find(xslFo), dirFo);
+                SoaUtil.fixEncoding(DataObject.find(xslFo), dirFo);
             }
         }
         return xslFo;
@@ -529,10 +534,8 @@ public final class Iterator implements TemplateWizard.Iterator {
         return varPrefix + varNumber;
     }
 
-    private Service getTMapService(TMapModel model, 
-            PartnerLinkType wizardInPlt, Role wizardInRole) 
-    {
-        if (model == null || wizardInPlt == null || wizardInRole == null) {
+    private Service getTMapService(TMapModel model, PortType wizardInPortType) {
+        if (model == null || wizardInPortType == null) {
             return null;
         }
 
@@ -548,12 +551,10 @@ public final class Iterator implements TemplateWizard.Iterator {
         }
 
         for (Service serviceElem : services) {
-            WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
-            WSDLReference<Role> roleRef = serviceElem.getRole();
+            WSDLReference<PortType> portTypeRef = serviceElem.getPortType();
 
-            if (roleRef != null && pltRef != null 
-                    && wizardInPlt.equals(pltRef.get()) 
-                    && wizardInRole.equals(roleRef.get())) 
+            if (portTypeRef != null 
+                    && wizardInPortType.equals(portTypeRef.get())) 
             {
                 service = serviceElem;
                 break;
@@ -589,11 +590,10 @@ public final class Iterator implements TemplateWizard.Iterator {
   }
 
     private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
-            TMapModel model, PartnerLinkType wizardInPlt, Role wizardInRole, 
+            TMapModel model, PortType wizardInPortType, 
             Operation wizardInputOperation) 
     {
-        return getTMapOperation(
-                getTMapService(model, wizardInPlt, wizardInRole), 
+        return getTMapOperation(getTMapService(model, wizardInPortType), 
                 wizardInputOperation);
     }
 
@@ -606,24 +606,17 @@ public final class Iterator implements TemplateWizard.Iterator {
         String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
         Operation wizardInputOperation = 
                 (Operation) wizard.getProperty(Panel.INPUT_OPERATION);
-        Panel.PartnerRolePort wizardInputPartnerRolePort = 
-                (Panel.PartnerRolePort) wizard.getProperty(Panel.INPUT_PARTNER_ROLE_PORT);
+        PortType wizardInputPortType = 
+                (PortType) wizard.getProperty(Panel.INPUT_PORT_TYPE);
 
-        PartnerLinkType wizardInPlt = wizardInputPartnerRolePort == null 
-                ? null : wizardInputPartnerRolePort.getPartnerLinkType();
-        Role wizardInRole = wizardInputPartnerRolePort == null 
-                ? null : wizardInputPartnerRolePort.getRole();
-
-        if (wizardInPlt == null || wizardInRole == null 
-                || wizardInputOperation == null) 
-        {
+        if (wizardInputPortType == null || wizardInputOperation == null) {
             return null;
         }
 
-        Service tMapService = getTMapService(tMapModel, wizardInPlt, wizardInRole);
+        Service tMapService = getTMapService(tMapModel, wizardInputPortType);
         if (tMapService == null) {
             tMapService = createTMapService(componentFactory, tMapModel, 
-                    wizardInPlt, wizardInRole);
+                    wizardInputPortType);
         }
         if (tMapService == null) {
             return null;
@@ -646,8 +639,10 @@ public final class Iterator implements TemplateWizard.Iterator {
         return tMapOp;
     }
 
-    private Service createTMapService(TMapComponentFactory componentFactory, TMapModel tMapModel, PartnerLinkType wizardInPlt, Role wizardInRole) {
-        assert componentFactory != null && tMapModel != null && wizardInPlt != null && wizardInRole != null;
+    private Service createTMapService(TMapComponentFactory componentFactory, 
+            TMapModel tMapModel, PortType wizardInPortType) 
+    {
+        assert componentFactory != null && tMapModel != null && wizardInPortType != null;
         Service tMapService = null;
 
         TransformMap root = tMapModel.getTransformMap();
@@ -660,8 +655,17 @@ public final class Iterator implements TemplateWizard.Iterator {
             return null;
         }
         tMapService = componentFactory.createService();
-        tMapService.setPartnerLinkType(tMapService.createWSDLReference(wizardInPlt, PartnerLinkType.class));
-        tMapService.setRole(tMapService.createWSDLReference(wizardInRole, Role.class));
+        tMapService.setPortType(
+                tMapService.createWSDLReference(wizardInPortType, PortType.class));
+        
+        String name = NameGenerator.getUniqueName(tMapService);
+        if (name != null) {
+            try {
+                tMapService.setName(name);
+            } catch (VetoException ex) {
+                LOGGGER.log(Level.WARNING, "couldn't set unique name to service: "+name);
+            }
+        }
 
         root.addService(tMapService);
 
@@ -684,6 +688,16 @@ public final class Iterator implements TemplateWizard.Iterator {
 
         String resultPartName = getFirstPartName(result);
         transform.setResult(getTMapVarRef(result, resultPartName));
+        
+        String name = NameGenerator.getUniqueName(transform);
+        if (name != null) {
+            try {
+                transform.setName(name);
+            } catch (VetoException ex) {
+                LOGGGER.log(Level.WARNING, "couldn't set unique name to transform: "+name);
+            }
+        }
+        
         return transform;
     }
 
@@ -770,23 +784,13 @@ public final class Iterator implements TemplateWizard.Iterator {
 
         Operation wizardOutputOperation = 
                 (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
-        Panel.PartnerRolePort wizardOutputPartnerRolePort = 
-                (Panel.PartnerRolePort) wizard.getProperty(Panel.OUTPUT_PARTNER_ROLE_PORT);
+        PortType wizardOutputPortType = 
+                (PortType) wizard.getProperty(Panel.OUTPUT_PORT_TYPE);
 
-        PartnerLinkType wizardOutPlt = wizardOutputPartnerRolePort == null 
-                ? null : wizardOutputPartnerRolePort.getPartnerLinkType();
-        Role wizardOutRole = wizardOutputPartnerRolePort == null 
-                ? null : wizardOutputPartnerRolePort.getRole();
-
-        if (wizardOutPlt != null 
-                && wizardOutRole != null 
-                && wizardOutputOperation != null) 
-        {
+        if (wizardOutputPortType != null && wizardOutputOperation != null) {
           invoke = componentFactory.createInvoke();
-          invoke.setPartnerLinkType(
-                  invoke.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
-          invoke.setRole(
-                  invoke.createWSDLReference(wizardOutRole, Role.class));
+          invoke.setPortType(
+                  invoke.createWSDLReference(wizardOutputPortType, PortType.class));
           invoke.setOperation(
                   invoke.createWSDLReference(wizardOutputOperation, Operation.class));
 
@@ -800,6 +804,15 @@ public final class Iterator implements TemplateWizard.Iterator {
           }
           invoke.setInputVariableName(inputInvokeVar);
           invoke.setOutputVariableName(outputInvokeVar);
+        }
+        
+        String name = NameGenerator.getUniqueName(invoke);
+        if (name != null) {
+            try {
+                invoke.setName(name);
+            } catch (VetoException ex) {
+                LOGGGER.log(Level.WARNING, "couldn't set unique name to invoke: "+name);
+            }
         }
         return invoke;
     }

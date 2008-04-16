@@ -53,7 +53,7 @@ import org.netbeans.modules.bpel.search.spi.SearchEngine;
 import org.netbeans.modules.bpel.search.impl.action.SearchAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
-import org.netbeans.modules.bpel.search.impl.util.Util;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -62,7 +62,7 @@ import org.netbeans.modules.bpel.search.impl.util.Util;
 public final class Manager extends SearchManager {
 
   public Manager() {
-    myEngines = Util.getInstances(SearchEngine.class);
+    myEngines = getInstances(SearchEngine.class);
     mySearch = new Search();
   }
 

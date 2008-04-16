@@ -2302,10 +2302,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 int row,
                 boolean hasFocus) {
             
-            if (!tree.isFocusOwner()) {
-                isSelected = false;
-            }
-            
             Component stringDisplayer = renderer.getTreeCellRendererComponent(tree,
                     value,
                     isSelected,

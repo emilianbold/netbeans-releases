@@ -96,6 +96,11 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract List<CsmReference> getMacroUsages(CsmFile file);
 
+    /**
+     * @return dwarf block offset or null if there are no dwarf blocks in file
+     */
+    public abstract CsmOffsetable getGuardOffset(CsmFile file);
+
     //
     // Implementation of the default query
     //
@@ -117,6 +122,10 @@ public abstract class CsmFileInfoQuery {
 
         public List<CsmReference> getMacroUsages(CsmFile file) {
             return Collections.<CsmReference>emptyList();
+        }
+
+        public CsmOffsetable getGuardOffset(CsmFile file) {
+            return null;
         }
     } 
 }

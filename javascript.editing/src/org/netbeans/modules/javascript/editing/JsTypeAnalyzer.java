@@ -178,6 +178,9 @@ public class JsTypeAnalyzer {
         
         if (n == null) {
             n = prev;
+            if (n == null) {
+                return false;
+            }
         }
         
         // See if the tree contain any local-variable references
@@ -477,6 +480,7 @@ public class JsTypeAnalyzer {
     
     private String getCallExpressionType(Node node) {
         switch (node.getType()) {
+        case Token.NEW:
         case Token.CALL: {
             Node first = node.getFirstChild();
             if (first.getType() == Token.NAME) {

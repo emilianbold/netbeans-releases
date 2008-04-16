@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -94,7 +95,8 @@ public class CustomizerJarContent extends JPanel implements HelpCtx.Provider {
                 (new JButton()).getModel(), // no button in UI
                 uiProperties.SHARED_LIBRARIES_MODEL,
                 callback,
-                new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, JavaProjectConstants.ARTIFACT_TYPE_JAR});
+                new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, JavaProjectConstants.ARTIFACT_TYPE_JAR},
+                null, JFileChooser.FILES_ONLY);
         jTableAddContent.setModel( uiProperties.EAR_CONTENT_ADDITIONAL_MODEL);
         jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_RENDERER);
         initTableVisualProperties(jTableAddContent);

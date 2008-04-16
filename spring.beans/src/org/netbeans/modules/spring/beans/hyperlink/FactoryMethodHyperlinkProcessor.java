@@ -46,8 +46,9 @@ import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -96,7 +97,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
         
         if (className[0] != null) {
             String methodName = mergedBean.getFactoryMethod();
-            SpringXMLConfigEditorUtils.openMethodInEditor(env.getFileObject(), className[0], methodName, -1,
+            JavaUtils.openMethodInEditor(env.getFileObject(), className[0], methodName, -1,
                     Public.DONT_CARE, staticFlag);
         }
     }

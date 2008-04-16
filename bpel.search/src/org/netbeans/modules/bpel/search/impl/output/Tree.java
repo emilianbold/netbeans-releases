@@ -42,8 +42,6 @@ package org.netbeans.modules.bpel.search.impl.output;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -81,8 +79,7 @@ import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 
 import org.netbeans.modules.bpel.search.impl.ui.Export;
-import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -146,7 +143,7 @@ final class Tree extends JTree {
     String tooltip = getHtml(title);
 
     myRoot.setUserObject(new SearchElement.Adapter(
-      title, tooltip, icon(Util.class, "find"), null)); // NOI18N
+      title, tooltip, icon(Tree.class, "find"), null)); // NOI18N
 
     // vlv: print
     putClientProperty(java.awt.print.Printable.class, print);
@@ -278,7 +275,7 @@ final class Tree extends JTree {
     // previous occurence
     item = createItem("LBL_Previous_Occurence"); // NOI18N
     item.setEnabled(true);
-    item.setIcon(icon(Util.class, "previous")); // NOI18N
+    item.setIcon(icon(Tree.class, "previous")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         previousOccurence(node);
@@ -290,7 +287,7 @@ final class Tree extends JTree {
     // next occurence
     item = createItem("LBL_Next_Occurence"); // NOI18N
     item.setEnabled(true);
-    item.setIcon(icon(Util.class, "next")); // NOI18N
+    item.setIcon(icon(Tree.class, "next")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         nextOccurence(node);
@@ -303,7 +300,7 @@ final class Tree extends JTree {
 
     // export
     item = createItem("LBL_Export"); // NOI18N
-    item.setIcon(icon(Util.class, "export")); // NOI18N
+    item.setIcon(icon(Tree.class, "export")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         export(node);
@@ -357,7 +354,7 @@ final class Tree extends JTree {
 
     // copy
     item = createItem("LBL_Copy"); // NOI18N
-    item.setIcon(icon(Util.class, "copy")); // NOI18N
+    item.setIcon(icon(Tree.class, "copy")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         copy(node);
@@ -368,7 +365,7 @@ final class Tree extends JTree {
     // collapse / expand
     item = createItem("LBL_Collapse_Expand"); // NOI18N
     item.setEnabled( !node.isLeaf());
-    item.setIcon(icon(Util.class, "expose")); // NOI18N
+    item.setIcon(icon(Tree.class, "expose")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         expose(node);
@@ -465,8 +462,7 @@ final class Tree extends JTree {
   private void copy(TreeNode node) {
     StringBuffer buffer = new StringBuffer();
     copy(node, buffer, ""); // NOI18N
-    StringSelection selection = new StringSelection(buffer.toString());
-    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+    copyToClipboard(buffer.toString());
   }
 
   private void copy(TreeNode node, StringBuffer buffer, String indent) {
@@ -750,5 +746,5 @@ final class Tree extends JTree {
 
   private static final int POPUP_MENU_X = 16;
   private static final int POPUP_MENU_Y = 16;
-  private static final Icon EMPTY = icon(Util.class, "empty"); // NOI18N
+  private static final Icon EMPTY = icon(Tree.class, "empty"); // NOI18N
 }

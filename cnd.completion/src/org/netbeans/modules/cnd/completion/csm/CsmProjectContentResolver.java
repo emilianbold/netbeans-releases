@@ -848,13 +848,13 @@ public final class CsmProjectContentResolver {
     /*package*/ void filterDeclarations(final CsmNamespace ns, final Collection out, final CsmDeclaration.Kind kinds[], final String strPrefix, final boolean match, final boolean returnUnnamedMembers) {
         CsmFilter filter = null;
         if (kinds != null && strPrefix != null){
-            filter = CsmSelect.getDefault().getFilterBuilder().getCompoundAcceptor(
-                     CsmSelect.getDefault().getFilterBuilder().getKindAcceptor(kinds),
-                     CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(strPrefix, match, caseSensitive, returnUnnamedMembers));
+            filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
+                     CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds),
+                     CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers));
         } else if (kinds != null){
-            filter = CsmSelect.getDefault().getFilterBuilder().getKindAcceptor(kinds);
+            filter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds);
         } else if (strPrefix != null){
-            filter = CsmSelect.getDefault().getFilterBuilder().getNameAcceptor(strPrefix, match, caseSensitive, returnUnnamedMembers);
+            filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers);
         }
         Iterator in = CsmSelect.getDefault().getDeclarations(ns, filter);
         while (in.hasNext()) {

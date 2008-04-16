@@ -116,10 +116,4 @@ public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
         clearWorkDir();
     }
 
-    private void writeFile(File file, String text) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileOutputStream(file));
-        writer.append(text);
-        writer.close();
-    }
-    
 }

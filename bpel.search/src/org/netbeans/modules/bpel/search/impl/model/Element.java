@@ -43,10 +43,9 @@ package org.netbeans.modules.bpel.search.impl.model;
 import javax.swing.Icon;
 import org.netbeans.modules.xml.xam.Component;
 
-import org.netbeans.modules.bpel.editors.api.utils.Util;
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.search.api.SearchElement;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -69,14 +68,14 @@ final class Element extends SearchElement.Adapter {
   @Override
   public void gotoSource()
   {
-    Util.goToSource(myComponent);
+    EditorUtil.goToSource(myComponent);
   }
 
   @Override
   public void gotoVisual()
   {
 //out("GO TO VISUAL");
-    Util.goToDesign(myComponent, myCookie, myView);
+    EditorUtil.goToDesign(myComponent, myCookie, myView);
   }
 
   @Override
@@ -95,11 +94,11 @@ final class Element extends SearchElement.Adapter {
   }
 
   private static String getName(Component component) {
-    return RefactorUtil.getName(component);
+    return EditorUtil.getName(component);
   }
 
   private static String getToolTip(Component component) {
-    return RefactorUtil.getToolTip(component);
+    return EditorUtil.getToolTip(component);
   }
 
   private static SearchElement getParent(
@@ -116,7 +115,7 @@ final class Element extends SearchElement.Adapter {
   }
 
   private static Icon getIcon(Component component) {
-    return RefactorUtil.getIcon(component);
+    return EditorUtil.getIcon(component);
   }
 
   private Component myComponent;

@@ -618,8 +618,12 @@ public class JsIndexer implements Indexer {
                                 } else if (TokenUtilities.textEquals("@name", text)) { // NOI18N
                                     fullName = JsCommentLexer.nextIdentGroup(cts);
                                 } else if (TokenUtilities.textEquals("@param", text)) { // NOI18N
-                                    int index = cts.index();
+                                    int index = cts.index()+1;
                                     String paramType = JsCommentLexer.nextType(cts);
+                                    if (paramType == null) {
+                                        cts.moveIndex(index);
+                                        cts.moveNext();
+                                    }
                                     String paramName = JsCommentLexer.nextIdent(cts);
                                     if (paramName != null) {
                                         if (argList.length() > 0) {

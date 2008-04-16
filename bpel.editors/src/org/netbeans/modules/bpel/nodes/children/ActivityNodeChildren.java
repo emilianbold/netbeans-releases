@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BaseFaultHandlers;
@@ -251,7 +251,7 @@ public class ActivityNodeChildren extends BpelNodeChildren<BpelContainer> implem
             if (activity == null) {
                 return null;
             }
-            NodeType nodeType = Util.getBasicNodeType(activity);
+            NodeType nodeType = EditorUtil.getBasicNodeType(activity);
             NodeFactory factory = getNodeFactory();
             
             if (factory != null){

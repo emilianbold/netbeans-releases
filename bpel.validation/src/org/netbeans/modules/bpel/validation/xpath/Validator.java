@@ -75,8 +75,8 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
-import org.netbeans.modules.soa.ui.util.Duration;
-import org.netbeans.modules.soa.ui.util.DurationUtil;
+import org.netbeans.modules.soa.core.validation.Duration;
+import org.netbeans.modules.soa.core.validation.DurationUtil;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -326,6 +326,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     try {
       Duration duration = DurationUtil.parseDuration(value, true);
 
+      if (duration == null) {
+        return;
+      }
       if (duration.hasMinus() || isZero(duration)) {
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }

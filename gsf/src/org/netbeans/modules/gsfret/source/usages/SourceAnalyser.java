@@ -88,7 +88,7 @@ public class SourceAnalyser implements IndexDocumentFactory {
         return this.index.isValid(true);
     }
 
-    public void analyse(Language language, final Iterable<ParserResult/*? extends CompilationUnitTree*/> data, ParserTaskImpl jt, /*JavaFileManager manager, */ParserFile sibling) throws IOException {
+    public void analyse(Language language, final Iterable<ParserResult> data) throws IOException {
         // I should stash some shit into this.references here such that I can try storing them later, for example
         // all the class names I can find. This would be a good place to look for the desired language...
         // Of course, I can have multiple, so I have to index these by the language type, right? Otherwise
@@ -148,5 +148,17 @@ public class SourceAnalyser implements IndexDocumentFactory {
     @Override
     public String toString() {
         return "SourceAnalyzer(" + this.index.toString().substring(this.index.toString().indexOf("@")+1) + ")";
+    }
+    
+    boolean hasData() {
+        try {
+            return !index.isValid(false);
+        } catch (IOException ioe) {
+            return true;
+        }
+    }
+
+    void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException {
+        index.batchStore(list, create);
     }
 }

@@ -1368,7 +1368,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
-        assert ns != null : "Failed to get global namespace by key " + globalNamespaceUID;
+        if (ns == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get global namespace by key " + globalNamespaceUID));
+        }
         return ns;
     }
     
@@ -2030,18 +2032,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     DeclarationContainer getDeclarationsSorage() {
-        return (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        if (dc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+        }
+        return dc;       
     }
     
     FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-	assert fc != null : "Failed to get FileContainer by key " + fileContainerKey;
+        if (fc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
+        }
         return fc;
     }
     
     public GraphContainer getGraphStorage() {
         GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
-	assert gc != null : "Failed to get GraphContainer by key " + graphStorageKey;
+        if (gc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
+        }
 	return gc;
     }
 }
