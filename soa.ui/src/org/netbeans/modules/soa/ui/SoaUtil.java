@@ -89,7 +89,7 @@ import org.w3c.dom.NodeList;
 /**
  * @author nk160297
  */
-public class SoaUiUtil {
+public class SoaUtil {
     
     public static Color MISTAKE_RED = new Color(204, 0, 0);
     public static Color INACTIVE_BLUE = new Color(0, 102, 153);
@@ -97,7 +97,7 @@ public class SoaUiUtil {
     
     private static String GRAY_COLOR = "#999999";
     
-    private SoaUiUtil() {}
+    private SoaUtil() {}
 
     public static String getGrayString(String message) {
         return getGrayString("", message);

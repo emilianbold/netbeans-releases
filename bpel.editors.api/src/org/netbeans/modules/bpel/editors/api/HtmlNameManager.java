@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.editors.api.utils;
+package org.netbeans.modules.bpel.editors.api;
 
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.xml.xam.Component;

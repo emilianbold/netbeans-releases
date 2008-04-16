@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.impl.output.View;

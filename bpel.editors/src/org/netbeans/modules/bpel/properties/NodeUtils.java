@@ -30,7 +30,7 @@ import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.bpel.editors.api.ui.valid.NodeEditorDescriptor;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.ContainerBpelNode;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -83,7 +83,7 @@ public class NodeUtils {
             CustomNodeEditor editor = (CustomNodeEditor)c;
             NodeEditorDescriptor descriptor = new NodeEditorDescriptor(editor, title);
             Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
-            SoaUiUtil.setInitialFocusComponentFor((Container)c);
+            SoaUtil.setInitialFocusComponentFor((Container)c);
             dialog.setVisible(true);
             
             return descriptor.isOkHasPressed();

@@ -61,7 +61,7 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -205,7 +205,7 @@ public final class BPELValidationController implements ComponentListener {
         if (item.getType() != ResultType.ERROR) {
           continue;
         }
-        Line.Part part = EditorUtil.getLinePart(item);
+        Line.Part part = SoaUtil.getLinePart(item);
 
         if (part == null) {
           continue;

@@ -25,7 +25,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;

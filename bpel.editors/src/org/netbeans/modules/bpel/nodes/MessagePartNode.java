@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.nodes;
 
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -50,7 +50,7 @@ public class MessagePartNode extends BpelNode<Part> {
     protected String getImplHtmlDisplayName() {
         String result;
         String typeName = getTypeName();
-        result = SoaUiUtil.getGrayString(
+        result = SoaUtil.getGrayString(
                 getName(),
                 typeName == null ? "" : " " + typeName); // NOI18N
         //

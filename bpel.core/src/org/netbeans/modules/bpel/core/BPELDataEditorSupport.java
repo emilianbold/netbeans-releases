@@ -75,9 +75,10 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  * @author ads
@@ -132,7 +133,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
 
-        EventQueue.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable(){
             public void run() {
                 updateTitles();
             }
@@ -443,7 +444,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 else if (mvp.preferredID().equals(
                         BPELSourceMultiViewElementDesc.PREFERED_ID))
                 {
-                    Line line = EditorUtil.getLine(resultItem);
+                    Line line = SoaUtil.getLine(resultItem);
 
                     if (line != null) {
                       line.show(Line.SHOW_GOTO);

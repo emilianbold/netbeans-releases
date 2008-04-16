@@ -28,7 +28,7 @@ import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractCustomNodeEditor;
 import org.netbeans.modules.bpel.nodes.InvokeNode;
 import org.netbeans.modules.bpel.properties.editors.controls.MessageConfigurationController;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -75,7 +75,7 @@ public class InvokeCustomEditor extends AbstractCustomNodeEditor<Invoke> {
             }
         });
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
 
     public HelpCtx getHelpCtx() {
