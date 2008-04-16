@@ -147,7 +147,7 @@ public class Commands {
                 return true;
             }
 
-            String [] apps = appsList.split("[,;]"); // NOI18N
+            String [] apps = appsList.split(";"); // NOI18N
             for(String appKey: apps) {
                 if("null".equals(appKey)) {
                     Logger.getLogger("glassfish").log(Level.WARNING, 
@@ -161,10 +161,7 @@ public class Commands {
                     continue;
                 }
                 
-                String engine = appAttrs.getValue("nb-engine_value");
-                if(skipContainer(engine)) {
-                    continue;
-                }
+                String engine = getFirstEngine(appAttrs.getValue("nb-engine_value"));
                 
                 String name = appAttrs.getValue("nb-name_value");
                 if(name == null || name.length() == 0) {
@@ -192,7 +189,19 @@ public class Commands {
 
             return true;
         }
-    
+
+        // XXX temporary patch to handle engine descriptions like <web, ejb>
+        // until we have better display semantics for such things.
+        private String getFirstEngine(String engineList) {
+            String [] engines = engineList.split(",");
+            for(String engine: engines) {
+                if(!skipContainer(engine)) {
+                    return engine;
+                }
+            }
+            return "unknown";
+        }
+
         /**
          * For skipping containers we don't care about.
          * 
