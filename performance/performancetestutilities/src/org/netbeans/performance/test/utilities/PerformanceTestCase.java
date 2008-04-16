@@ -849,6 +849,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             
             try {                
                 for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+                    if (tuple == null) {
+                        // TODO: Investigate how can this happen?
+                        continue;
+                    }
                     int code = tuple.getCode();
 
                     // start 
