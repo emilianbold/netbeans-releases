@@ -495,13 +495,12 @@ public class SemiAttribute extends DefaultVisitor {
                 if (f instanceof IndexedClass) {
                     ClassElement ce = (ClassElement) global.enterWrite(f.getName(), Kind.CLASS, f);
 
-                    //TODO: superclass
-
                     if (!ce.isInitialized()) {
-                        for (IndexedFunction m : index.getMethods(null, f.getName(), "", NameKind.PREFIX)) {
+                        //HACK: should create correct hierarchy, not use All* methods:
+                        for (IndexedFunction m : index.getAllMethods(null, f.getName(), "", NameKind.PREFIX)) {
                             ce.enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                         }
-                        for (IndexedConstant m : index.getClassConstants(null, f.getName(), "", NameKind.PREFIX)) {
+                        for (IndexedConstant m : index.getAllProperties(null, f.getName(), "", NameKind.PREFIX)) {
                             ce.enclosedElements.enterWrite(m.getName(), Kind.CONST, m);
                         }
                         
