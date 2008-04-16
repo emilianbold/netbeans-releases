@@ -51,6 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
@@ -162,7 +163,12 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                 ComboBoxModel m = configListCombo.getModel();
                 for (int i = 0; i < m.getSize(); i++) {
                     if (config.equals(m.getElementAt(i))) {
-                        configListCombo.setSelectedIndex(i);
+                        final int selIndex = i;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                configListCombo.setSelectedIndex(selIndex);
+                            }
+                        });
                         break;
                     }
                 }

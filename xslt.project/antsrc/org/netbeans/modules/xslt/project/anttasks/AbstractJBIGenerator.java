@@ -308,7 +308,8 @@ public abstract class AbstractJBIGenerator {
             }
         }
         
-        entry = new ServiceEntry(
+        try {
+            entry = new ServiceEntry(
                 targetNs,
                 name,
                 portName,
@@ -319,7 +320,10 @@ public abstract class AbstractJBIGenerator {
                 processName,
                 filePath
                 );
-        
+        } catch (IllegalStateException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
+        }
         
         return entry;
     }
@@ -341,6 +345,7 @@ public abstract class AbstractJBIGenerator {
             logger.log(Level.WARNING, "targetNamespace of transformMap is null");
             return;
         }
+        populateNamespace(targetNs);
         
         List<Service> services = root.getServices();
         if (services == null) {
@@ -375,6 +380,13 @@ public abstract class AbstractJBIGenerator {
                 }
             }
         }
+    }
+    
+    private String getServiceName(ServiceEntry service) {
+        assert service != null;
+        String serviceName = mNameSpacePrefix.get(service.getTargetNamespace())+COLON_SEPARATOR+"xsltse";
+        System.out.println("tmpService.getTargetNamespace():"+service.getTargetNamespace()+"; prefix:"+mNameSpacePrefix.get(service.getTargetNamespace())+";  serviceName: "+serviceName);                    
+        return serviceName;
     }
     
     private void generateJBIDescriptor() throws IOException {
@@ -412,9 +424,11 @@ public abstract class AbstractJBIGenerator {
             if (mProviders != null) {
                 for (int j = 0; j < mProviders.size(); j++) {
                     ServiceEntry tmpService = mProviders.get(j); 
+            
                     sb.append("        <provides interface-name=\"" + getColonedQName(tmpService.getPortNameQname(), mNameSpacePrefix));
 //                    sb.append("\" service-name=\"" + getColonedQName(tmpService.getTargetNamespace(), mNameSpacePrefix));
-                    sb.append("\" service-name=\"" + tmpService.getTargetNamespace());
+//                    sb.append("\" service-name=\"" + tmpService.getTargetNamespace());
+                    sb.append("\" service-name=\"" + getServiceName(tmpService));
                     sb.append("\" endpoint-name=\"" + tmpService.getName());
                     sb.append("\">\n");
                     sb.append("            <" + extDnElem + ">" + escapeXml(tmpService.getDisplayName()) + "</" + extDnElem + ">\n");
@@ -427,9 +441,11 @@ public abstract class AbstractJBIGenerator {
             if (mConsumers != null) {
                 for (int j = 0; j < mConsumers.size(); j++) {
                     ServiceEntry tmpService = mConsumers.get(j); 
+            
                     sb.append("        <consumes interface-name=\"" + getColonedQName(tmpService.getPortNameQname(), mNameSpacePrefix));
 //                    sb.append("\" service-name=\"" + getColonedQName(tmpService.getTargetNamespace(), mNameSpacePrefix));
-                    sb.append("\" service-name=\"" + tmpService.getTargetNamespace());
+//                    sb.append("\" service-name=\"" + tmpService.getTargetNamespace());
+                    sb.append("\" service-name=\"" + getServiceName(tmpService));
                     sb.append("\" endpoint-name=\"" + tmpService.getName());
 //                    sb.append("\" link-type=\"standard\"/>\n");
                     sb.append("\">\n");

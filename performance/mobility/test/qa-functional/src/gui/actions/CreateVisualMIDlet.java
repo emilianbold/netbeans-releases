@@ -41,21 +41,20 @@
 
 package gui.actions;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.NewFileAction;
 
 
+import gui.window.MIDletEditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 /**
  * Test Create Visual MIDlet
  *
@@ -67,6 +66,7 @@ public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.
     private NewFileWizardOperator wizard ;
         
     private static String testProjectName = "MobileApplicationVisualMIDlet";  
+    private String midletName;
     
     /**
      * Creates a new instance of CreateVisualMIDlet
@@ -110,7 +110,8 @@ public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("VisualMIDlet_"+System.currentTimeMillis());
+        midletName = "VisualMIDlet_"+System.currentTimeMillis();
+        location.txtObjectName().setText(midletName);
     
     }
     
@@ -120,7 +121,21 @@ public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.
     }
     
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        //new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        new Thread("Question dialog discarder") {
+
+            @Override
+            public void run() {
+                try {
+                    new JButtonOperator(new JDialogOperator("Question"), "Discard").push();
+                } catch (Exception e) {
+                    // There is no need to care about this exception as this dialog is optional 
+                    e.printStackTrace();
+                }
+            }
+
+        }.start();
+        MIDletEditorOperator.findMIDletEditorOperator(midletName + ".java").close();
     }
 
     protected void shutdown() {

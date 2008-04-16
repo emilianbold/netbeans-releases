@@ -18,13 +18,20 @@
  */
 package org.netbeans.modules.xslt.tmap.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.namespace.QName;
@@ -33,6 +40,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -81,6 +89,7 @@ public class Util {
     public static final String WSDL = "wsdl"; // NOI18N
     // TODO m
     public static final String SRC = "src"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     private Util() {
     }
@@ -301,6 +310,9 @@ public class Util {
             tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
                     .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     projectSource, "transformmap"); //NOI18N
+
+            String projectNamespace = "http://enterprise.netbeans.org/transformmap/"+ProjectUtils.getInformation(project).getName(); // NOI18N
+            initialiseNamespace(tMapFo, projectNamespace);
             
             if (tMapFo != null) {
                 SoaUiUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
@@ -311,6 +323,45 @@ public class Util {
             return null;
         }
         return tMapFo;
+    }
+    
+    /**
+     *   Basically acts like a xslt tranformer by
+     *   replaceing _NS_ in fileObject contents with 'namespace'
+     * 
+     * @param fileObject to set namespase matshed as _NS_ 
+     * @param namespace value of namspece to replace with _NS_ in fileobject
+     */
+    public static void  initialiseNamespace(FileObject fileObject, String namespace) {
+        String line;
+        StringBuffer buffer = new StringBuffer();
+        String separator = System.getProperty("line.separator"); // NOI18N
+        
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    fileObject.getInputStream(), "UTF-8")); // NOI18N
+            
+            try {
+                while((line = reader.readLine()) != null) {
+                    line = line.replace("_NS_", namespace); // NOI18N
+                    buffer.append(line);
+                    buffer.append(separator);
+                }
+            } finally {
+                reader.close();
+            }
+
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    fileObject.getOutputStream(), 
+                    FileEncodingQuery.getDefaultEncoding())); //NOI18N
+            try {
+                writer.write(buffer.toString());
+            } finally {
+                writer.close();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        }
     }
     
     public static File getXsltMapFile(File projectFile) {

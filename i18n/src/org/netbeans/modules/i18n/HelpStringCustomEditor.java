@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,7 +52,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
@@ -96,14 +95,7 @@ public class HelpStringCustomEditor extends JPanel {
     * @return property value that is result of <code>CodeCustomEditor</code>.
     */
     public Object getPropertyValue() {
-        Document d = ((JTextField) combo.getEditor().getEditorComponent()).getDocument();
-        String res = "";
-        try {
-            res = d.getText(0, d.getLength());
-        } catch (BadLocationException ble) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
-        }
-        return res;
+        return ((JTextField) combo.getEditor().getEditorComponent()).getText();
     }
     
     

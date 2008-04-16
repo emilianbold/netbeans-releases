@@ -53,27 +53,25 @@ import org.openide.text.Line;
  */
 final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
     
+  public BPELValidationAnnotation(Annotatable annotatable, String message) {
+    myMessage = message;
+
+    if (annotatable != null) {
+//    if (annotatable instanceof Line.Part) {
+//      Line.Part part = (Line.Part) annotatable;
+//      System.out.println(" *** attach: " + part.getColumn() + ":" + part.getLength());
+//    }
+      attach(annotatable);
+      annotatable.addPropertyChangeListener(this);
+    }
+  }
+
   public String getAnnotationType() {
     return "bpel-validation-annotation"; // NOI18N
   }
   
   public String getShortDescription() {
     return myMessage;
-  }
-  
-  public void show(Annotatable annotatable, String message) {
-    myMessage = message;
-
-    if (annotatable != null) {
-/*
-      if (annotatable instanceof Line.Part) {
-        Line.Part part = (Line.Part) annotatable;
-        System.out.println(" *** attach: " + part.getColumn() + ":" + part.getLength());
-      }
-*/
-      attach(annotatable);
-      annotatable.addPropertyChangeListener(this);
-    }
   }
   
   public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {

@@ -49,6 +49,9 @@ public class ServiceEntry {
             String portNameNS, String portNameNSPrefix, QName portNameQname, 
             String displayName, String processName, String filePath) 
     {
+        if (targetNs == null) {
+            throw new IllegalStateException("target namespace should not be null");
+        }
         mTargetNs = targetNs;
         mName = name;
         

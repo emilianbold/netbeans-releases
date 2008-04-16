@@ -60,7 +60,7 @@ public abstract class RefactoringNodeCreatorAbstract
         } else if (reference instanceof BpelEntity) {
             bpelNodeType = 
                     org.netbeans.modules.bpel.editors.api.utils.
-                        Util.getBasicNodeType((BpelEntity) reference);
+                        EditorUtil.getBasicNodeType((BpelEntity) reference);
             if (bpelNodeType == NodeType.VARIABLE_CONTAINER 
                     || bpelNodeType == NodeType.VARIABLE_CONTAINER 
                     || bpelNodeType == NodeType.CORRELATION_SET_CONTAINER

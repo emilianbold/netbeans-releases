@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -97,7 +97,7 @@ import static org.netbeans.modules.junit.output.RegexpUtils.XML_DECL_PREFIX;
  */
 final class JUnitOutputReader {
 
-    private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
+    private static final int MAX_REPORT_FILE_SIZE = 1 << 22;    //2 MiB
     /** number of progress bar workunits */
     private static final int PROGRESS_WORKUNITS = (1 << 15) / 100 * 100;    //sqrt(Integer.MAX), rounded down to hundreds
     /** */

@@ -82,6 +82,9 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 
+import javax.swing.text.Document;
+import org.openide.util.Task;
+
 /**
  *
  * @author Ahimanikya Satapathy

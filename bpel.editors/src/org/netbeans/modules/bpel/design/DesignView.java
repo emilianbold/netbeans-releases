@@ -50,7 +50,7 @@ import org.netbeans.modules.bpel.design.decoration.providers.ToolbarDecorationPr
 import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
 import org.netbeans.modules.bpel.design.model.patterns.SequencePattern;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.editors.multiview.DesignerMultiViewElement;
 import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -346,14 +346,9 @@ public class DesignView extends JPanel implements
         return selectionModel;
     }
 
-
-
-
     public FlowlinkTool getFlowLinkTool() {
         return flowLinkTool;
     }
-
-
 
     public DecorationManager getDecorationManager() {
         return decorationManager;
@@ -396,8 +391,7 @@ public class DesignView extends JPanel implements
             return null;
         }
 
-        NodeType nodeType = Util.getBasicNodeType(pattern
-                .getOMReference());
+        NodeType nodeType = EditorUtil.getBasicNodeType(pattern.getOMReference());
 
         NodeFactory factory = getNodeFactory();
 
@@ -716,7 +710,6 @@ public class DesignView extends JPanel implements
     public double getCorrectedZoom() {
         return zoomManager.getScale() * DiagramFontUtil.getZoomCorrection();
     }
-
 
     public Pattern getRootPattern() {
         return diagramModel.getRootPattern();

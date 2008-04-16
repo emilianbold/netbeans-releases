@@ -103,49 +103,13 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
                     srcFo, "transformmap"); //NOI18N
 
             // TODO m
-            String projectName = "http://enterprise.netbeans.org/transformmap/"+ProjectUtils.getInformation(p).getName(); // NOI18N
-            initialiseNames(tMapFo, projectName);
+            String projectNamespace = "http://enterprise.netbeans.org/transformmap/"+ProjectUtils.getInformation(p).getName(); // NOI18N
+            Util.initialiseNamespace(tMapFo, projectNamespace);
             
             SoaUiUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
         }
     }
     
     private void filterOutWrongCharacters() {
-    }
-    
-    /**
-     *   Basically acts like a xslt tranformer by
-     *   replaceing _NS_ in fileObject contents with 'namespace'
-     */
-    private void initialiseNames(FileObject fileObject, String namespace) {
-        String line;
-        StringBuffer buffer = new StringBuffer();
-        String separator = System.getProperty("line.separator"); // NOI18N
-        
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    fileObject.getInputStream(), "UTF-8")); // NOI18N
-            
-            try {
-                while((line = reader.readLine()) != null) {
-                    line = line.replace("_NS_", namespace); // NOI18N
-                    buffer.append(line);
-                    buffer.append(separator);
-                }
-            } finally {
-                reader.close();
-            }
-
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    fileObject.getOutputStream(), 
-                    FileEncodingQuery.getDefaultEncoding())); //NOI18N
-            try {
-                writer.write(buffer.toString());
-            } finally {
-                writer.close();
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-        }
     }
 }

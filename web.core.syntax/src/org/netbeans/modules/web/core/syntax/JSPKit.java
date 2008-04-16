@@ -586,7 +586,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
-                        Action action = jkit.getActionByName(DefaultEditorKit.deletePrevCharAction);
+                        Action action = jkit.getActionByName(nextChar ? DefaultEditorKit.deleteNextCharAction : DefaultEditorKit.deletePrevCharAction);
                         if (action != null && action instanceof JavaKit.JavaDeleteCharAction){
                             ((JavaKit.JavaDeleteCharAction)action).actionPerformed(e, target);
                             return;

@@ -48,6 +48,8 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
@@ -60,6 +62,8 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
     private String targetProject;
     private String midletName;
     private ProjectsTabOperator pto;
+    // Since Loading Document label is shown it is okay to load document for 10 sec
+    public final static long EXPECTED_TIME = 10000;
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
     /**
@@ -70,7 +74,7 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
         super(testName);
         targetProject = "MobileApplicationVisualMIDlet";
         midletName = "VisualMIDletMIDP20.java";
-        expectedTime = WINDOW_OPEN;
+        expectedTime = EXPECTED_TIME;
         WAIT_AFTER_OPEN=20000;        
     }
 
@@ -83,7 +87,7 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
         super(testName,performanceDataName);
         targetProject = "MobileApplicationVisualMIDlet";        
         midletName = "VisualMIDletMIDP20.java";        
-        expectedTime = WINDOW_OPEN;
+        expectedTime = EXPECTED_TIME;
         WAIT_AFTER_OPEN=20000;        
     }
     public void initialize() {
@@ -119,7 +123,7 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
         if (popup == null) {
             throw new Error("Cannot get context menu for node ");
         }
-        log("------------------------- after popup invocation ------------");
+        log("   -- after popup invocation --");
         popup.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout", 90000);
         try {
             popup.pushMenu(OPEN);
@@ -132,7 +136,22 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
     
     public void close() {
         log(":: close");
-        ((MIDletEditorOperator)testedComponentOperator).close();
+        if (testedComponentOperator != null) {
+            new Thread("Question dialog discarder") {
+
+                @Override
+                public void run() {
+                    try {
+                        new JButtonOperator(new JDialogOperator("Question"), "Discard").push();
+                    } catch (Exception e) {
+                        // There is no need to care about this exception as this dialog is optional 
+                        e.printStackTrace();
+                    }
+                }
+                
+            }.start();
+            ((MIDletEditorOperator)testedComponentOperator).close();
+        }
     }
     
     public void shutdown() {

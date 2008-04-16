@@ -40,16 +40,9 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.List;
-import java.util.prefs.Preferences;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.gsf.api.Formatter;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbPreferences;
 
-/**
- *
- * @author tor
- */
 public class JsFormatterTest extends JsTestBase {
     
     public JsFormatterTest(String testName) {
@@ -77,94 +70,6 @@ public class JsFormatterTest extends JsTestBase {
         }
     }
     
-//    public void testReformatAll() {
-//        // Find ruby files
-//        List<FileObject> files = findJRubyRubyFiles();
-//        assertTrue(files.size() > 0);
-//        
-//        reformatAll(files);
-//    }
-//    
-//    private void reformatAll(List<FileObject> files) {
-//        IndentPrefs preferences = new IndentPrefs(2,2);
-//        JsFormatter JsFormatter = getFormatter(preferences);
-//        
-//        int fileCount = files.size();
-//        int count = 0;
-//        
-//        // indent each one
-//        for (FileObject fo : files) {
-//            count++;
-//
-//// This bug triggers #108889
-//if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
-//    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-//    continue;
-//}
-//// This bug triggers #108889
-//if (fo.getName().equals("parse_f95") && fo.getParent().getName().equals("parsers")) {
-//    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-//    continue;
-//}
-//// Tested by RubyLexerTest#testDefRegexp 
-//if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick")) {
-//    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-//    continue;
-//}
-//            System.err.println("Formatting file " + count + "/" + files.size() + " : " + FileUtil.getFileDisplayName(fo));
-//            
-//            // check that we end up at indentation level 0
-//            BaseDocument doc = getDocument(fo);
-//            
-//            ParserResult result =  null;// parse(fo);
-//
-//            try {
-//                JsFormatter.reindent(doc, 0, doc.getLength(), result);
-//            } catch (Exception ex) {
-//                System.err.println("Exception processing " + FileUtil.getFileDisplayName(fo));
-//                fail(ex.toString());
-//                throw new RuntimeException(ex);
-//            }
-//            
-//            // Make sure that we end up on column 0, as all balanced Ruby files typically do
-//            // (check for special exceptions, e.g. formatted strings and whatnot)
-//            try {
-//                int offset = doc.getLength();
-//                while (offset > 0) {
-//                    offset = Utilities.getRowStart(doc, offset);
-//                    if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
-//                        offset = offset-1;
-//                        continue;
-//                    }
-//
-//                    int indentation = Utilities.getRowFirstNonWhite(doc, offset) - offset;
-//                    
-//                    if (indentation != 0) {
-//                        // Make sure the file actually compiles - we might be picking up some testfiles in the
-//                        // JRuby tree which don't actually pass
-//                        result = parse(fo);
-//                        RubyParseResult rpr = (RubyParseResult)result;
-//                        
-//                        if (rpr.getRootNode() == null) {
-//                            System.err.println("WARNING - invalid formatting for " + FileUtil.getFileDisplayName(fo) + " " +
-//                                    "but it also doesn't parse with JRuby so ignoring");
-//                            break;
-//                        }
-//                    }
-//                    
-//                    
-//                    assertEquals("Failed formatting file " + count + "/" + fileCount + " \n" + fo.getNameExt() + "\n: Last line not at 0 indentation in " + FileUtil.getFileDisplayName(fo) + " indent=" + indentation + " line=" +
-//                            doc.getText(offset, Utilities.getRowEnd(doc, offset)-offset), 0, indentation);
-//                    break;
-//                }
-//            } catch (Exception ex) {
-//                fail(ex.toString());
-//            }
-//            
-//            // Also try re-lexing buffer incrementally and make sure it makes sense! (and handle bracket completion stuff)
-//        }
-//    }
-
     public void testFormat1() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/prototype.js",new IndentPrefs(2,2));
@@ -180,6 +85,34 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFormat4() throws Exception {
         reformatFileContents("testfiles/orig-dojo.js.uncompressed.js",new IndentPrefs(2,2));
+    }
+    
+    public void testFormatE4x() throws Exception {
+        reformatFileContents("testfiles/e4x.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatE4x2() throws Exception {
+        reformatFileContents("testfiles/e4x2.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatTryCatch() throws Exception {
+        reformatFileContents("testfiles/tryblocks.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatPrototypeNew() throws Exception {
+        reformatFileContents("testfiles/prototype-new.js", new IndentPrefs(2,2));
+    }
+
+    public void testFormatSwitches() throws Exception {
+        reformatFileContents("testfiles/switches.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatWebui() throws Exception {
+        reformatFileContents("testfiles/bubble.js", new IndentPrefs(4,4));
+    }
+
+    public void testFormatWebui2() throws Exception {
+        reformatFileContents("testfiles/woodstock-body.js", new IndentPrefs(4,4));
     }
 
     public void testSimpleBlock() throws Exception {

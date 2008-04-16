@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -291,13 +292,23 @@ class PortTypeResolver extends AbstractGlobalReferenceFactory {
         Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, 
                 splited[0] );
         for (WSDLModel model : models) {
-            List<PartnerLinkType> list = model.getDefinitions()
-                .getExtensibilityElements(PartnerLinkType.class);
-            for (PartnerLinkType  partnerLink : list) {
-                if ( splited[1].equals( partnerLink.getName()) ){
-                    return clazz.cast(partnerLink);
+            Definitions defs = model.getDefinitions();
+            if (defs == null) {
+                break;
+            }
+            Collection<PortType> portTypes = defs.getPortTypes();
+            for (PortType portType : portTypes) {
+                if ( splited[1].equals( portType.getName()) ){
+                    return clazz.cast(portType);
                 }
             }
+//            List<PartnerLinkType> list = model.getDefinitions()
+//                .getExtensibilityElements(PartnerLinkType.class);
+//            for (PartnerLinkType  partnerLink : list) {
+//                if ( splited[1].equals( partnerLink.getName()) ){
+//                    return clazz.cast(partnerLink);
+//                }
+//            }
         }
         return null;
     }
@@ -440,10 +451,10 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         }
         
         assert parent instanceof AbstractDocumentComponent;
-        return resolveByPartnerLink((AbstractDocumentComponent)parent);
+        return resolveByPortType((AbstractDocumentComponent)parent);
     }
     
-    private Collection<Operation> resolveByPartnerLink( 
+    private Collection<Operation> resolveByPortType( 
             AbstractDocumentComponent entity ) 
     {
         if ( ! (entity instanceof PortTypeReference) ){

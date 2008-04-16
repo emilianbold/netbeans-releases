@@ -161,12 +161,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                     if (src_fo != null) {
                         try {
-                            text.addLine("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                            text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
                         } catch (DataObjectNotFoundException doe) {
                             // do nothing
                         }
                     } else {
-                        text.addLine("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
+                        text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                     }
                     pos = combinedPos+1;
                 } else {
