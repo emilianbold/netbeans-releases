@@ -159,7 +159,6 @@
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
-                <friend>org.netbeans.modules.soa.core</friend>
                 <friend>org.netbeans.modules.soa.mapper</friend>
                 <friend>org.netbeans.modules.etl.editor</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>

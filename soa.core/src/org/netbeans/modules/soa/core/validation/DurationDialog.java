@@ -76,11 +76,11 @@ import static org.netbeans.modules.soa.core.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.11.27
  */
-public final class ValidationDurationDialog extends JDialog {
+public final class DurationDialog extends JDialog {
 
-  public ValidationDurationDialog() {
-    super((Frame) null, i18n(ValidationDurationDialog.class, "LBL_Duration"), true); // NOI18N
-    a11y(this, i18n(ValidationDurationDialog.class, "ACS_Duration")); // NOI18N
+  public DurationDialog() {
+    super((Frame) null, i18n(DurationDialog.class, "LBL_Duration"), true); // NOI18N
+    a11y(this, i18n(DurationDialog.class, "ACS_Duration")); // NOI18N
     setLayout(new BorderLayout());
     add(getResizable(createPanel()), BorderLayout.CENTER);
     add(createButtonPanel(), BorderLayout.SOUTH);
@@ -135,8 +135,8 @@ public final class ValidationDurationDialog extends JDialog {
   }
 
   private JButton createButton(String key, String a11y) {
-    JButton button = new JButton(i18n(ValidationDurationDialog.class, key));
-    a11y(button, i18n(ValidationDurationDialog.class, a11y));
+    JButton button = new JButton(i18n(DurationDialog.class, key));
+    a11y(button, i18n(DurationDialog.class, a11y));
     return button;
   }
 
@@ -163,7 +163,7 @@ public final class ValidationDurationDialog extends JDialog {
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(10, 10, 0, 0);
     c.anchor = GridBagConstraints.EAST;
-    JLabel label = createLabel(i18n(ValidationDurationDialog.class, key));
+    JLabel label = createLabel(i18n(DurationDialog.class, key));
     panel.add(label, c);
 
     c.weightx = 1.0;
@@ -171,7 +171,7 @@ public final class ValidationDurationDialog extends JDialog {
     c.insets = new Insets(10, 10, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     JTextField field = new JTextField(DEFAULT_VALUE);
-    a11y(field, i18n(ValidationDurationDialog.class, a11y));
+    a11y(field, i18n(DurationDialog.class, a11y));
     setWidth(field, TEXT_WIDTH);
     panel.add(field, c);
     label.setLabelFor(field);
@@ -199,7 +199,7 @@ public final class ValidationDurationDialog extends JDialog {
       check(minute, "ERR_invalid_minute", myMinute) && // NOI18N
       check(second, "ERR_invalid_second", mySecond)) // NOI18N
     {
-      myDuration = ValidationDurationUtil.getContent(true, year, month, day, hour, minute, second);
+      myDuration = DurationUtil.getContent(true, year, month, day, hour, minute, second);
       return true;
     }
     else {
@@ -220,7 +220,7 @@ public final class ValidationDurationDialog extends JDialog {
     if (condition) {
       return true;
     }
-    printError(i18n(ValidationDurationDialog.class, key, field.getText()));
+    printError(i18n(DurationDialog.class, key, field.getText()));
     field.requestFocus();
     field.selectAll();
 

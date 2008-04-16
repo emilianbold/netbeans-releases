@@ -46,8 +46,8 @@ import static org.netbeans.modules.soa.core.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.11.27
  */
-public class ValidationDuration {
-  public ValidationDuration(
+public class Duration {
+  public Duration(
     boolean hasMinus,
     int years,
     int months,

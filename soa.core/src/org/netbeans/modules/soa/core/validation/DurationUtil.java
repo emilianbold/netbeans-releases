@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.soa.core.validation;
 
@@ -24,11 +46,11 @@ import static org.netbeans.modules.soa.core.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.04.14
  */
-public final class ValidationDurationUtil {
+public final class DurationUtil {
 
-  private ValidationDurationUtil() {}
+  private DurationUtil() {}
 
-  public static ValidationDuration parseDuration(String value, boolean throwException) {
+  public static Duration parseDuration(String value, boolean throwException) {
 //out();
 //out("PARSE duration: " + value);
     boolean hasMinus = false;
@@ -47,7 +69,7 @@ public final class ValidationDurationUtil {
       if (throwException) {
         return null;
       }
-      return new ValidationDuration(hasMinus, years, months, days, hours, minutes, seconds);
+      return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
     }
     if (value.length() == 1 && value.startsWith(QUOTE)) {
       return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
@@ -126,7 +148,7 @@ public final class ValidationDurationUtil {
       if ( !wasDesignator) {
         return throwException("FIX_Designator", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
       }
-      return new ValidationDuration(hasMinus, years, months, days, hours, minutes, seconds);
+      return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
     }
 //out("T: " + value);
     // T
@@ -181,22 +203,22 @@ public final class ValidationDurationUtil {
       return throwException("FIX_Designator", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
 //out("6: " + years + " " + months + " " + days + " " + hours + " " + minutes + " " + seconds);
-    return new ValidationDuration(hasMinus, years, months, days, hours, minutes, seconds);
+    return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
   }
 
-  private static ValidationDuration throwException(String key, boolean throwException, 
+  private static Duration throwException(String key, boolean throwException, 
     boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds)
   {
-    return throwExceptionMsg(i18n(ValidationDurationUtil.class, key), throwException, hasMinus, years, months, days, hours, minutes, seconds);
+    return throwExceptionMsg(i18n(DurationUtil.class, key), throwException, hasMinus, years, months, days, hours, minutes, seconds);
   }
 
-  private static ValidationDuration throwException(String key, String param, boolean throwException, 
+  private static Duration throwException(String key, String param, boolean throwException, 
     boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds)
   {
-    return throwExceptionMsg(i18n(ValidationDurationUtil.class, key, param), throwException, hasMinus, years, months, days, hours, minutes, seconds);
+    return throwExceptionMsg(i18n(DurationUtil.class, key, param), throwException, hasMinus, years, months, days, hours, minutes, seconds);
   }
 
-  private static ValidationDuration throwExceptionMsg(String message, boolean throwException, 
+  private static Duration throwExceptionMsg(String message, boolean throwException, 
     boolean hasMinus,
     int years,
     int months,
@@ -209,7 +231,7 @@ public final class ValidationDurationUtil {
     if (throwException) {
       throw new IllegalArgumentException(message);
     }
-    return new ValidationDuration(hasMinus, years, months, days, hours, minutes, seconds);
+    return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
   }
 
   public static String addQuotes(String value) {

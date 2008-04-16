@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,14 +40,24 @@
  */
 package org.netbeans.modules.soa.core.validation;
 
-import java.util.List;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.04.14
+ * @version 2008.04.15
  */
-public interface ValidationListener {
+public final class Action extends ValidateAction {
 
-  void validationUpdated(List<ResultItem> result);
+  public Action(Controller controller) {
+    super(null);
+    myController = controller;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
+  }
+
+  private Controller myController;
 }
