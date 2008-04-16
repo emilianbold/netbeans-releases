@@ -1608,7 +1608,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         // Check if we are inside a comment
         if (token.id() == PHPTokenId.PHP_COMMENT || 
             token.id() == PHPTokenId.PHP_LINE_COMMENT ||
-            token.id() == PHPTokenId.PHPDOC_COMMENT
+            token.id() == PHPTokenId.PHPDOC_COMMENT ||
+            token.id() == PHPTokenId.T_INLINE_HTML // #132981
         ) {
             return false;
         } else if (onlyWhitespaceFollows && previousToken != null && previousToken.id() == PHPTokenId.PHP_LINE_COMMENT) {
