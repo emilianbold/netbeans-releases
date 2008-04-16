@@ -955,6 +955,12 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public boolean isSmart() {
+
+            if (getElement() instanceof IndexedElement) {
+                IndexedElement indexedElement = (IndexedElement) getElement();
+                return request.result.getFile().getFile().equals(indexedElement.getFile().getFile());
+            }
+
             return false;
         }
 
