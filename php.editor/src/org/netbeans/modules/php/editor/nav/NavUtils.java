@@ -218,10 +218,27 @@ public class NavUtils {
             psp = p.getLookup().lookup(PhpSourcePath.class);
         }
         
-        if (psp != null) {
-            return psp.resolveFile(info.getFileObject().getParent(), name);
-        } else {
-            return info.getFileObject().getParent().getFileObject(name);
+        while (true) {
+            FileObject result;
+            
+            if (psp != null) {
+                result = psp.resolveFile(info.getFileObject().getParent(), name);
+            } else {
+                result = info.getFileObject().getParent().getFileObject(name);
+            }
+            
+            if (result != null) {
+                return result;
+            }
+            
+            //try to strip a directory from the "name":
+            int slash = name.indexOf('/');
+            
+            if (slash != (-1)) {
+                name = name.substring(slash + 1);
+            } else {
+                return null;
+            }
         }
     }
     
