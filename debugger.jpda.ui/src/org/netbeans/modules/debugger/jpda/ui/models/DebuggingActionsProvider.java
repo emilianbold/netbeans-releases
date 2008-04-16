@@ -82,11 +82,13 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 if (nodes.length == 0) return ;
                 if (nodes[0] instanceof JPDAThread) {
                     ((JPDAThread) nodes [0]).makeCurrent ();
+                    goToSource((JPDAThread) nodes [0]);
                 }
                 if (nodes[0] instanceof CallStackFrame) {
                     CallStackFrame f = (CallStackFrame) nodes[0];
                     f.getThread().makeCurrent();
                     f.makeCurrent ();
+                    goToSource(f);
                 }
             }
         },
@@ -105,10 +107,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             }
             
             public void perform (Object[] nodes) {
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-                sp.showSource ((CallStackFrame) nodes [0], language);
+                goToSource((CallStackFrame) nodes [0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -277,5 +276,19 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             getCurrentSession ().getCurrentLanguage ();
         SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
         return sp.sourceAvailable (f, language);
+    }
+    
+    private static void goToSource(CallStackFrame frame) {
+        String language = DebuggerManager.getDebuggerManager ().
+            getCurrentSession ().getCurrentLanguage ();
+        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+        sp.showSource (frame, language);
+    }
+    
+    private static void goToSource(JPDAThread thread) {
+        String language = DebuggerManager.getDebuggerManager ().
+            getCurrentSession ().getCurrentLanguage ();
+        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+        sp.showSource (thread, language);
     }
 }
