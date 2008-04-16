@@ -36,53 +36,14 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.spring.beans.editor;
-
-import javax.lang.model.element.ExecutableElement;
+package org.netbeans.modules.spring.java;
 
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class Property {
-    private String name;
-    private ExecutableElement getter;
-    private ExecutableElement setter;
-
-    public Property(String name) {
-        this.name = name;
-    }
-
-    public ExecutableElement getGetter() {
-        return getter;
-    }
-
-    public void setGetter(ExecutableElement getter) {
-        this.getter = getter;
-    }
-
-    public ExecutableElement getSetter() {
-        return setter;
-    }
-
-    public void setSetter(ExecutableElement setter) {
-        this.setter = setter;
-    }
-
-    public String getName() {
-        return name;
-    }
-    
-    public PropertyType getType() {
-        if(this.getter != null && this.setter != null) {
-            return PropertyType.READ_WRITE;
-        } else if(this.getter != null) {
-            return PropertyType.READ_ONLY;
-        } else if(this.setter != null) {
-            return PropertyType.WRITE_ONLY;
-        }
-        
-        return null; // Should never occur
-    }
+public enum Static {
+    YES,
+    NO,
+    DONT_CARE
 }
