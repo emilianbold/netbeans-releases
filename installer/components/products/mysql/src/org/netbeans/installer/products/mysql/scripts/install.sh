@@ -49,7 +49,11 @@ do_query() {
     tmpFile=./query.tmp
     echo "$1" > $tmpFile
     if [ 1 -eq $ISROOT ] ; then
-        ./bin/mysql --defaults-file=./my.cnf <$tmpFile
+        if [ -n "$PASSWORD" ] ; then
+            ./bin/mysql --defaults-file=./my.cnf --password="$PASSWORD" <$tmpFile
+	else
+            ./bin/mysql --defaults-file=./my.cnf <$tmpFile
+        fi
     else
         if [ -n "$PASSWORD" ] ; then
             ./bin/mysql --defaults-file=./my.cnf --user=root --password="$PASSWORD" <$tmpFile
@@ -149,7 +153,7 @@ if [ 1 -eq $ISROOT ] ; then
 fi
 
 if [ 1 -eq $ISROOT ] ; then
-    ./scripts/mysql_install_db --user=mysql --no-defaults --defaults-file="$INSTALLDIR"/my.cnf
+    ./scripts/mysql_install_db --no-defaults --defaults-file="$INSTALLDIR"/my.cnf --user=mysql 
     echo "Result : $?"
 else 
     ./scripts/mysql_install_db --no-defaults --defaults-file="$INSTALLDIR"/my.cnf
@@ -175,17 +179,18 @@ if [ 1 -eq $ISROOT ] ; then
 fi
 
 if [ 1 -eq $ISROOT ] ; then
-    ./bin/mysqld_safe --user=mysql --defaults-file="$INSTALLDIR"/my.cnf &
+    ./bin/mysqld_safe --defaults-file="$INSTALLDIR"/my.cnf --user=mysql &
 else 
     ./bin/mysqld_safe --defaults-file="$INSTALLDIR"/my.cnf &
 fi
 
 sleep 3
+sleep 2
 
 if [ -n "$PASSWORD" ] ; then
-    ./bin/mysqladmin -u root password "$PASSWORD"
+    ./bin/mysqladmin --defaults-file=./my.cnf -u root password "$PASSWORD"
     echo "Result : $?"
-    ./bin/mysqladmin -u root -h `hostname` password "$PASSWORD"
+    ./bin/mysqladmin --defaults-file=./my.cnf -u root -h `hostname` password "$PASSWORD"
     echo "Result : $?"
 fi
 

@@ -19,6 +19,12 @@
 
 set -e
 
+script_dir=`dirname "$0"`
+. "$script_dir"/env.sh
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "JAVA"
+
 if [ -d "/Library/Receipts/javase.pkg" ] ; then
     rm -rf "/Library/Receipts/javase.pkg"
 fi

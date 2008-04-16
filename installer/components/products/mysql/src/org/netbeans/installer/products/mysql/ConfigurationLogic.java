@@ -56,6 +56,7 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
@@ -163,6 +164,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 ResourceUtils.getString(ConfigurationLogic.class,
                                 ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY));
                 }
+                SystemUtils.sleep(3000);//wait for 3 seconds so that mysql really starts
+                fixSecuritySettingsWindows(location);
+
             //createWindowsShortcuts(location);
 
             }
@@ -184,7 +188,52 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
+    private void fixSecuritySettingsWindows(File location) throws InstallationException {        
+        if (!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
+            query(location, REMOVE_ANONYMOUS_QUERY);
+        }
+        query(location, REMOVE_REMOTE_ROOT_QUERY);
+        query(location, FLUSH_PRIVILEGES_QUERY);
+    }
+
+    private void query(File location, String query) {
+        final File exe = new File(location, MYSQL_EXE);
+        
+
+        try {
+            LogManager.log("... query : " + query);
+            List<String> commands = new ArrayList<String>();
+            commands.add(exe.getAbsolutePath());
+            commands.add("--defaults-file=" + new File(location, TARGET_CONFIGURATION_FILE));
+            commands.add("--user=root");
+            if (!getProperty(MySQLPanel.PASSWORD_PROPERTY).equals(StringUtils.EMPTY_STRING)) {
+                commands.add("--password=" + getProperty(MySQLPanel.PASSWORD_PROPERTY));
+            }
+            commands.add("--connect_timeout=3");
+            commands.add("-v");
+            ProcessBuilder pb = new ProcessBuilder(commands).directory(location).redirectErrorStream(true);
+            LogManager.log("... starting process : " + StringUtils.asString(commands, " "));
+            Process p = pb.start();
+            LogManager.log("... started, write query to stdin");
+            p.getOutputStream().write(query.getBytes());
+            p.getOutputStream().flush();
+            p.getOutputStream().close();
+            LogManager.log("... wait for termination");
+            try {
+                p.waitFor();
+            } catch (InterruptedException e) {
+                LogManager.log(e);
+            }
+            LogManager.log("... query output: " + StreamUtils.readStream(p.getInputStream()));
+            LogManager.log("... query errorcode: " + p.exitValue());
+            p.destroy();
+        } catch (IOException e) {
+            LogManager.log(e);
+        } 
+    }
+
     private void installUnix(Progress progress) throws InstallationException {
+        progress.setDetail(PROGRESS_DETAIL_RUNNING_MYSQL_INSTANCE_CONFIGURATION);
         final File location = getProduct().getInstallationLocation();
         final File installScript = new File(location, "configure-mysql.sh");
         try {
@@ -553,7 +602,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setPercentage(progress.COMPLETE);
         }
     }
+
     private void uninstallUnix(Progress progress, File location) throws UninstallationException {
+        
         final File uninstallScript = new File(location, "uninstall-mysql.sh");
         try {
             InputStream is = ResourceUtils.getResource(UNINSTALL_SCRIPT_UNIX,
@@ -776,4 +827,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "org/netbeans/installer/products/mysql/scripts/install.sh";
     public static final String UNINSTALL_SCRIPT_UNIX =
             "org/netbeans/installer/products/mysql/scripts/uninstall.sh";
+    final public static String REMOVE_ANONYMOUS_QUERY =
+            "DELETE FROM mysql.user WHERE User='';";
+    final public static String REMOVE_REMOTE_ROOT_QUERY =
+            "DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';";
+    final public static String FLUSH_PRIVILEGES_QUERY =
+            "FLUSH PRIVILEGES;";
+    final public static String MYSQL_EXE = SystemUtils.isWindows() ? "bin/mysql.exe" : "bin/mysql";
 }

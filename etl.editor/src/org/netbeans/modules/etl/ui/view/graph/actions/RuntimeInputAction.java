@@ -42,14 +42,12 @@
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.net.URL;
 
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
-import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
@@ -72,17 +70,16 @@ public class RuntimeInputAction extends GraphAction {
     
     public RuntimeInputAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND029: Runtime Inputs...");
+        String nbBundle1 = mLoc.t("BUND029: Runtime Inputs");
         this.putValue(Action.NAME, nbBundle1.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeInputImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND030: Add/Edit Runtime Inputs (Shift-I)");
+        String nbBundle2 = mLoc.t("BUND030: Add/Edit Runtime Inputs");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
         // Acceleratot Shift-I
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('I', InputEvent.SHIFT_DOWN_MASK ));
     }
 
     /**
