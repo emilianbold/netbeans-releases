@@ -44,6 +44,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -51,6 +53,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
+import org.netbeans.modules.php.project.ui.DocumentRoots;
+import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -89,6 +93,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         LocalServer sources = initSources();
         originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
+        LocalServer[] copyTargets = getCopyTargets(copyTarget);
         originalCopySrcTarget = copyTarget.getSrcRoot();
         initUrl();
         initIndexFile();
@@ -97,7 +102,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                 NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
         localServerController.selectLocalServer(sources);
 
-        copyFilesVisual = new CopyFilesVisual(this, copyTarget);
+        copyFilesVisual = new CopyFilesVisual(this, copyTargets);
+        copyFilesVisual.selectLocalServer(copyTarget);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
@@ -164,6 +170,19 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             return new LocalServer(resolvedFile.getAbsolutePath());
         }
         return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
+    }
+
+    private LocalServer[] getCopyTargets(LocalServer initialLocalServer) {
+        List<Root> roots = DocumentRoots.getRoots(getWebFolderName());
+
+        int size = roots.size() + 1;
+        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        localServers.add(initialLocalServer);
+        for (Root root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            localServers.add(ls);
+        }
+        return localServers.toArray(new LocalServer[size]);
     }
 
     private void initUrl() {
