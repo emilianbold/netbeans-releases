@@ -45,10 +45,14 @@ import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -123,6 +127,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // sources
         FileObject sourceDir = createSourceRoot(helper);
         resultSet.add(sourceDir);
+
+        // UI Logging
+        logUI(helper.getProjectDirectory(), sourceDir, isCopyFiles());
 
         // index file
         Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
@@ -257,7 +264,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private void configureCopyFiles(EditableProperties properties) {
         String copyFilesString = Boolean.FALSE.toString();
-        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        Boolean copyFiles = isCopyFiles();
         if (copyFiles != null && copyFiles) {
             copyFilesString = Boolean.TRUE.toString();
         }
@@ -286,6 +293,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return dataTemplate.createFromTemplate(dataFolder, indexFileName);
     }
 
+    private Boolean isCopyFiles() {
+        return (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+    }
+
     private String getIndexFileName(String plannedExt) {
         String name = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
         String ext = "." + plannedExt; // NOI18N
@@ -293,5 +304,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return name.substring(0, name.length() - ext.length());
         }
         return name;
+    }
+
+    // http://wiki.netbeans.org/UILoggingInPHP
+    private void logUI(FileObject projectDir, FileObject sourceDir, Boolean copyFiles) {
+        LogRecord logRecord = new LogRecord(Level.INFO, "UI_NEW_PHP_PROJECT"); //NOI18N
+        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+        logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
+        logRecord.setParameters(new Object[] {
+            FileUtil.isParentOf(projectDir, sourceDir),
+            copyFiles != null && copyFiles
+        });
+        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
     }
 }
