@@ -1056,6 +1056,65 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       return;
     }
 
+    public void ExploreComplexInternal(
+        String sName,
+        String sType
+      )
+    {
+      // Select in schema
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      // Go to : schema -> definition
+      // Check definition view
+      // Check definition selection
+      // Close definition
+      CheckSchemaViewDefinition( opList, sName, sType );
+
+      // Go to : Schema -> Design
+      GotoSchemaDesign( opList, sName );
+
+      // Check selected element
+
+      // Go to : Design -> Source
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+
+      // Check selected code line
+
+      // Go to : source -> definition
+      // Check definition view
+      // Check definition selection
+      // Close definition
+      /*
+      CheckSourceViewDefinition(
+          "<xs:complexType name=\"" + sName + "\">"
+        );
+      */
+
+      // Go to : Source -> Schema
+      // Check selected element
+      //GotoSourceSchema( COMPLEX_NAMES[ 0 ] );
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Go to : Schema -> Source
+      // Check selected element
+      GotoSchemaSource(
+          opList,
+          COMPLEX_NAMES[ 0 ],
+          "<xs:complexType name=\"" + sName + "\">"
+        );
+
+      // Go to : Source -> Design
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
+
+      // Check selected element
+
+      // Go to : Design -> Schema
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+    }
+
     public void RenameSampleSchemaInternal( String sModule, String sPath )
     {
       // Select schema
