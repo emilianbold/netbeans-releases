@@ -244,28 +244,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             
             assert file != null;
             
-            final DeclarationLocation[] result = new DeclarationLocation[1];
-
-            try {
-                SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
-                    public void cancel() {}
-                    public void run(CompilationInfo parameter) throws Exception {
-                        SemiAttribute a = SemiAttribute.semiAttribute(parameter);
-
-                        AttributedElement e = a.lookup(indexed.getName(), el.getKind());
-
-                        result[0] = create(parameter, e);
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
-            if (result[0] == null) {
-                return DeclarationLocation.NONE;
-            } else {
-                return result[0];
-            }
+            return new DeclarationLocation(file, indexed.getOffset());
         }
     }
     

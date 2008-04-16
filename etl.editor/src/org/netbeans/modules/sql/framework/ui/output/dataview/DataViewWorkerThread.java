@@ -226,7 +226,7 @@ class DataViewWorkerThread extends SwingWorker {
             ResultSet rs = pstmt.executeQuery();
 
             dataOutputPanel.queryView.setEditable(true);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount - 1);
+            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount+1);
 
             rs.close();
             pstmt.close();
@@ -251,7 +251,7 @@ class DataViewWorkerThread extends SwingWorker {
 
         } catch (Exception e) {
             this.errMsg = e.getMessage();
-            mLogger.errorNoloc(mLoc.t("EDIT177: Can\'t get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
+            mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {
@@ -354,7 +354,7 @@ class DataViewWorkerThread extends SwingWorker {
             } catch (SQLException e) {
             }
         } catch (Exception ex1) {
-            mLogger.errorNoloc(mLoc.t("EDIT177: Can\'t get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), ex1);
+            mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), ex1);
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {
@@ -446,7 +446,7 @@ class DataViewWorkerThread extends SwingWorker {
             } catch (SQLException e) {
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT177: Can\'t get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
+            mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {

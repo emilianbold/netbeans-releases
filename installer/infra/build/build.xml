@@ -1947,57 +1947,57 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- PHP bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-windows.exe">
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-windows.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-linux.sh">
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-linux.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-solaris-x86.sh">
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-solaris-x86.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-solaris-sparc.sh">
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-solaris-sparc.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-macosx-x86.zip">
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-macosx-ppc.zip">
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-ppc.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
         </create-bundle>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-macosx-x86.tgz"/>
+            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.zip"/>
+            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ea-php-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-ppc.zip"/>
+            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-ppc.tgz"/>
         </antcall>
 	<delete>
             <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-ea-php-macosx-*zip"/>
+		<include name="${nb.bundle.files.prefix}-php-macosx-*zip"/>
             </fileset>
         </delete>
     </target>

@@ -797,7 +797,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
                     public void perform(Object[] nodes) {
                         PhpActionProvider.PhpCommandRunner
-                                .runCommand(command);
+                                .runCommand(command,getProject());
                     }
                 },
                 Models.MULTISELECTION_TYPE_ANY);

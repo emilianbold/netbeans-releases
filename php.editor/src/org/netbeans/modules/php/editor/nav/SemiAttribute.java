@@ -493,7 +493,20 @@ public class SemiAttribute extends DefaultVisitor {
                 }
                 
                 if (f instanceof IndexedClass) {
-                    k = Kind.CLASS;
+                    ClassElement ce = (ClassElement) global.enterWrite(f.getName(), Kind.CLASS, f);
+
+                    //TODO: superclass
+
+                    if (!ce.isInitialized()) {
+                        for (IndexedFunction m : index.getMethods(null, f.getName(), "", NameKind.PREFIX)) {
+                            ce.enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
+                        }
+                        for (IndexedConstant m : index.getClassConstants(null, f.getName(), "", NameKind.PREFIX)) {
+                            ce.enclosedElements.enterWrite(m.getName(), Kind.CONST, m);
+                        }
+                        
+                        ce.initialized();
+                    }
                 }
                 
                 if (k != null) {
@@ -639,6 +652,7 @@ public class SemiAttribute extends DefaultVisitor {
         
         private final DefinitionScope enclosedElements;
         private ClassElement superClass;
+        private boolean initialized;
         
         public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
             super(n, name, k);
@@ -657,6 +671,14 @@ public class SemiAttribute extends DefaultVisitor {
             }
             
             return null;
+        }
+
+        boolean isInitialized() {
+            return initialized;
+        }
+        
+        void initialized() {
+            initialized = true;
         }
     }
     
