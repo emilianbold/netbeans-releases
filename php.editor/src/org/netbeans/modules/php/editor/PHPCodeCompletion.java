@@ -127,6 +127,7 @@ public class PHPCodeCompletion implements Completable {
     private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
+    private NameKind prefixNameKind;
     
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         try {
@@ -185,6 +186,8 @@ public class PHPCodeCompletion implements Completable {
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
+        this.prefixNameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
@@ -230,7 +233,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, prefixNameKind)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
@@ -271,7 +274,7 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (typeName != null){
                     Collection<IndexedFunction> methods = request.index.getAllMethods(
-                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                            request.result, typeName, request.prefix, prefixNameKind);
                     
                     for (IndexedFunction method : methods){
                         if (staticContext && method.isStatic() 
@@ -281,7 +284,7 @@ public class PHPCodeCompletion implements Completable {
                     }
                     
                     Collection<IndexedConstant> properties = request.index.getAllProperties(
-                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                            request.result, typeName, request.prefix, prefixNameKind);
                     
                     for (IndexedConstant prop : properties){
                         if (staticContext && prop.isStatic() 
@@ -292,7 +295,7 @@ public class PHPCodeCompletion implements Completable {
                     
                     if (staticContext){
                         Collection<IndexedConstant> classConstants = request.index.getClassConstants(
-                                request.result, typeName, request.prefix, NameKind.PREFIX);
+                                request.result, typeName, request.prefix, prefixNameKind);
                         
                         for (IndexedConstant constant : classConstants) {
                             proposals.add(new VariableItem(constant, request));
@@ -316,12 +319,12 @@ public class PHPCodeCompletion implements Completable {
         // FUNCTIONS
         PHPIndex index = request.index;
 
-        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, prefixNameKind)) {
             proposals.add(new FunctionItem(function, request));
         }
 
         // CONSTANTS
-        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, NameKind.PREFIX)) {
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, prefixNameKind)) {
             proposals.add(new ConstantItem(constant, request));
         }
 
