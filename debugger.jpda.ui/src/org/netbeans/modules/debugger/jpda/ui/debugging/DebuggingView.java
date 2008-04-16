@@ -39,6 +39,7 @@ import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -290,6 +291,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         super.componentHidden ();
         viewModelListener.destroy ();
     }
+
+    @Override
+    protected void componentActivated() {
+        ExplorerUtils.activateActions(manager, true);
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        ExplorerUtils.activateActions(manager, false);
+    }
     
 //    public org.openide.util.HelpCtx getHelpCtx() {
 //        return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N
@@ -324,6 +335,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             refreshView();
         } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
             refreshView();
+        } else if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
+            setActivatedNodes ((Node[]) evt.getNewValue ());
         }
     }
 
