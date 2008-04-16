@@ -79,12 +79,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
 
-    private static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-            return name.toLowerCase().startsWith("apache"); // NOI18N
-        }
-    };
-
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
     private LocationPanelVisual locationPanelVisual;
