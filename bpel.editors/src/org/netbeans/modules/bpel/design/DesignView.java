@@ -72,7 +72,7 @@ import org.openide.util.Lookup;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.core.validation.Controller;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.components.GlassPane;
@@ -338,8 +338,8 @@ public class DesignView extends JPanel implements
         selectionBridge.release();
     }
 
-    public BPELValidationController getValidationController() {
-        return getLookup().lookup(BPELValidationController.class);
+    public Controller getValidationController() {
+        return getLookup().lookup(Controller.class);
     }
 
     public EntitySelectionModel getSelectionModel() {

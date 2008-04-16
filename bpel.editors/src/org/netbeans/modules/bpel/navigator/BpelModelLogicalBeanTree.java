@@ -26,7 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.core.validation.Controller;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -311,7 +311,7 @@ public class BpelModelLogicalBeanTree
     }
     
     private void triggerValidation() {
-        BPELValidationController controller = (BPELValidationController) myContextLookup.lookup(BPELValidationController.class);
+        Controller controller = (Controller) myContextLookup.lookup(Controller.class);
 
         if (controller != null) {
             controller.triggerValidation();

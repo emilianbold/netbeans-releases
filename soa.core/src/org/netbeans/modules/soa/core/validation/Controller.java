@@ -85,13 +85,13 @@ public final class Controller implements ComponentListener {
     myModel.removeComponentListener(this);
   }
 
-  public void addValidationListener(Listener listener) {
+  public void addListener(Listener listener) {
     synchronized(myListeners) {
       myListeners.put(listener, null);
     }
   }
   
-  public void removeValidationListener(Listener listener) {
+  public void removeListener(Listener listener) {
     synchronized(myListeners) {
       myListeners.remove(listener);
     }

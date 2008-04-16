@@ -104,6 +104,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.soa.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.soa.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -262,13 +271,11 @@
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
-                <friend>org.netbeans.modules.bpel.validation</friend>
                 <package>org.netbeans.modules.bpel.core</package>
                 <package>org.netbeans.modules.bpel.core.annotations</package>
+                <package>org.netbeans.modules.bpel.core.debugger</package>
                 <package>org.netbeans.modules.bpel.core.helper.api</package>
                 <package>org.netbeans.modules.bpel.core.multiview.spi</package>
-                <package>org.netbeans.modules.bpel.core.util</package>
-                <package>org.netbeans.modules.bpel.core.debugger</package>
             </friend-packages>
         </data>
     </configuration>

@@ -127,6 +127,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
