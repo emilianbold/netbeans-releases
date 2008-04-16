@@ -87,7 +87,7 @@ public final class DocumentRoots {
 
     /**
      * Holder for pair: document root - its URL. It also contains flag whether this pair is preferred or not
-     * (e.g. "~/public_html" is preferred to "/var/www" on Linux).
+     * (e.g. "~/public_html" is preferred to "/var/www" on Linux). Only writable directories can be preferred.
      */
     public static final class Root {
         private final String documentRoot;
@@ -149,6 +149,9 @@ public final class DocumentRoots {
         return url.toString();
     }
 
+    /**
+     * Return "htdocs" directory or null.
+     */
     static File findHtDocsDirectory(File startDir, FilenameFilter filenameFilter) {
         String[] subDirNames = startDir.list(filenameFilter);
         if (subDirNames == null || subDirNames.length == 0) {
