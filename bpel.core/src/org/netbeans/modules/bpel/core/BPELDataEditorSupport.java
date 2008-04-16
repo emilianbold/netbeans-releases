@@ -43,6 +43,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.bpel.core.multiview.BPELSourceMultiViewElementDesc;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
 import org.netbeans.modules.soa.core.validation.Controller;
+import org.netbeans.modules.soa.core.validation.LineUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
@@ -443,11 +444,11 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 else if (mvp.preferredID().equals(
                         BPELSourceMultiViewElementDesc.PREFERED_ID))
                 {
-//                    Line line = SoaUtil.getLine(resultItem);
-//
-//                    if (line != null) {
-//                      line.show(Line.SHOW_GOTO);
-//                    }
+                    Line line = LineUtil.getLine(resultItem);
+
+                    if (line != null) {
+                      line.show(Line.SHOW_GOTO);
+                    }
                 }
             }
         });
