@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.core.util;
+package org.netbeans.modules.soa.core.validation;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -61,21 +61,20 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.01.17
  */
-public final class BPELValidationController implements ComponentListener {
+public final class Controller implements ComponentListener {
     
-  public BPELValidationController(Model model) {
+  public Controller(Model model) {
     myModel = model;
     myTimer = new Timer();
     myResult = new LinkedList<ResultItem>();
-    myListeners = new WeakHashMap<BPELValidationListener, Object>();
-    myAnnotations = new LinkedList<BPELValidationAnnotation>();
+    myListeners = new WeakHashMap<Listener, Object>();
+    myAnnotations = new LinkedList<Annotation>();
   }
 
   public void attach() {
@@ -86,13 +85,13 @@ public final class BPELValidationController implements ComponentListener {
     myModel.removeComponentListener(this);
   }
 
-  public void addValidationListener(BPELValidationListener listener) {
+  public void addListener(Listener listener) {
     synchronized(myListeners) {
       myListeners.put(listener, null);
     }
   }
   
-  public void removeValidationListener(BPELValidationListener listener) {
+  public void removeListener(Listener listener) {
     synchronized(myListeners) {
       myListeners.remove(listener);
     }
@@ -182,7 +181,7 @@ public final class BPELValidationController implements ComponentListener {
       }
     }
     synchronized (myListeners) {
-      for (BPELValidationListener listener : myListeners.keySet()) {
+      for (Listener listener : myListeners.keySet()) {
         if (listener != null) {
           listener.validationUpdated(myResult);
         }
@@ -193,7 +192,7 @@ public final class BPELValidationController implements ComponentListener {
   
   private void showAnnotations() {
     synchronized (myAnnotations) {
-      for (BPELValidationAnnotation annotation : myAnnotations) {
+      for (Annotation annotation : myAnnotations) {
         annotation.detach();
       }
 //out();
@@ -205,7 +204,7 @@ public final class BPELValidationController implements ComponentListener {
         if (item.getType() != ResultType.ERROR) {
           continue;
         }
-        Line.Part part = EditorUtil.getLinePart(item);
+        Line.Part part = LineUtil.getLinePart(item);
 
         if (part == null) {
           continue;
@@ -229,7 +228,7 @@ public final class BPELValidationController implements ComponentListener {
             description.append("\n\n"); // NOI18N
           }
         }
-        myAnnotations.add(new BPELValidationAnnotation(part, description.toString()));
+        myAnnotations.add(new Annotation(part, description.toString()));
       }
     }
   }
@@ -252,9 +251,8 @@ public final class BPELValidationController implements ComponentListener {
   private Model myModel;
   private Timer myTimer;
   private List<ResultItem> myResult;
-  private List<BPELValidationAnnotation> myAnnotations;
-  private Map<BPELValidationListener, Object> myListeners;
+  private List<Annotation> myAnnotations;
+  private Map<Listener, Object> myListeners;
 
-  // vlv
   private static final long DELAY = 5432L;
 }

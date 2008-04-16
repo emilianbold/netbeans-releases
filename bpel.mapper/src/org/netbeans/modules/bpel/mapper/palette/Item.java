@@ -56,7 +56,7 @@ import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

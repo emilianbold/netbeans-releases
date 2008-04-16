@@ -81,8 +81,8 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.bpel.core.util.BPELValidationAction;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.core.validation.Action;
+import org.netbeans.modules.soa.core.validation.Controller;
 import org.netbeans.modules.bpel.core.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDeleteAction;
@@ -254,8 +254,8 @@ public class DesignerMultiViewElement extends TopComponent
 //      getValidationController().triggerValidation();
     }
     
-    private BPELValidationController getValidationController() {
-        return (BPELValidationController) getDataObject().getLookup().lookup(BPELValidationController.class);
+    private Controller getValidationController() {
+        return (Controller) getDataObject().getLookup().lookup(Controller.class);
     }
 
     public void componentClosed() {
@@ -351,7 +351,7 @@ public class DesignerMultiViewElement extends TopComponent
             }
             // vlv: valdiation
             toolbar.addSeparator();
-            toolbar.add(new BPELValidationAction(getValidationController()));
+            toolbar.add(new Action(getValidationController()));
             
             // ksorokin: breakpoints
             toolbar.addSeparator();

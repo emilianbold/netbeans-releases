@@ -61,6 +61,7 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -96,9 +97,6 @@ import org.openide.util.Exceptions;
  */
 public class BeanClassFinder {
 
-    private static final String ID_ATTRIB = "id"; // NOI18N
-    private static final String NAME_ATTRIB = "name"; // NOI18N
-    
     private FileObject fileObject;
     private Set<String> walkedBeanNames;  
     private String startBeanName;
@@ -286,12 +284,12 @@ public class BeanClassFinder {
     }
     
     private String getBeanIdOrName(Map<String, String> beanAttribs) {
-        String name = beanAttribs.get(ID_ATTRIB);
+        String name = beanAttribs.get(BeansAttributes.ID);
         if(name != null) {
             return name;
         }
         
-        name = beanAttribs.get(NAME_ATTRIB);
+        name = beanAttribs.get(BeansAttributes.NAME);
         if(name != null) {
             name = StringUtils.tokenize(name, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS).get(0);
         }

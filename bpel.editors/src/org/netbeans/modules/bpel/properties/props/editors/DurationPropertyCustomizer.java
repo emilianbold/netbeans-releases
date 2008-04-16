@@ -43,9 +43,9 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.soa.ui.util.Duration;
-import org.netbeans.modules.soa.ui.util.DurationUtil;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.core.validation.Duration;
+import org.netbeans.modules.soa.core.validation.DurationUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
@@ -129,7 +129,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         HelpCtx.setHelpIDString(this, this.getClass().getName());
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     @Override
@@ -167,7 +167,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         }
         if (newHelpCtxID != null && newHelpCtxID.length() != 0) {
             HelpCtx.setHelpIDString(this, newHelpCtxID); // NOI18N
-            SoaUiUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
+            SoaUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
         }
     }
     
