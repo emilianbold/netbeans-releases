@@ -87,7 +87,7 @@ import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**

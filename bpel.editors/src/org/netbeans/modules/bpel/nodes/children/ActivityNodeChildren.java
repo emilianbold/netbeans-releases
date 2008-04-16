@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BaseFaultHandlers;

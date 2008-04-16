@@ -25,7 +25,7 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;

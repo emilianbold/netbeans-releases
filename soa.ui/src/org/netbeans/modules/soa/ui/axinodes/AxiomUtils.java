@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -500,10 +500,10 @@ public class AxiomUtils {
         if (typeName == null) {
             result = attribute.getName(); // NOI18N
         } else {
-            result = SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(attribute.getName()),
-                    new SoaUiUtil.TextChunk(isOptionalText, SoaUiUtil.HTML_GRAY),
-                    new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY));
+            result = SoaUtil.getFormattedHtmlString(true,
+                    new SoaUtil.TextChunk(attribute.getName()),
+                    new SoaUtil.TextChunk(isOptionalText, SoaUtil.HTML_GRAY),
+                    new SoaUtil.TextChunk(typeName, SoaUtil.HTML_GRAY));
         }
         //
         return result;
@@ -519,10 +519,10 @@ public class AxiomUtils {
         String typeName = type != null ? type.getName() : null;
         String multiplisity = getElementMultiplicityStr(element);
         //
-        result = SoaUiUtil.getFormattedHtmlString(true,
-                new SoaUiUtil.TextChunk(element.getName()),
-                new SoaUiUtil.TextChunk(multiplisity, SoaUiUtil.HTML_GRAY),
-                new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY));
+        result = SoaUtil.getFormattedHtmlString(true,
+                new SoaUtil.TextChunk(element.getName()),
+                new SoaUtil.TextChunk(multiplisity, SoaUtil.HTML_GRAY),
+                new SoaUtil.TextChunk(typeName, SoaUtil.HTML_GRAY));
         //
         return result;
     }
