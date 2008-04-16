@@ -43,9 +43,12 @@ import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.util.List;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.DocumentRoots;
+import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -103,10 +106,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
             }
         }
 
-        MutableComboBoxModel localServers = getLocalServers();
-        if (localServers != null) {
-            configureServerPanelVisual.setLocalServerModel(localServers);
-        }
+        configureServerPanelVisual.setLocalServerModel(getLocalServerModel());
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
             configureServerPanelVisual.selectLocalServer(wwwFolder);
@@ -168,8 +168,19 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
         return (LocalServer) descriptor.getProperty(COPY_TARGET);
     }
 
-    private MutableComboBoxModel getLocalServers() {
-        return (MutableComboBoxModel) descriptor.getProperty(COPY_TARGETS);
+    private MutableComboBoxModel getLocalServerModel() {
+        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(COPY_TARGETS);
+        if (model != null) {
+            return model;
+        }
+        model = new LocalServer.ComboBoxModel();
+
+        List<Root> roots = DocumentRoots.getRoots(webFolderNameProvider.getWebFolderName());
+        for (Root root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            model.addElement(ls);
+        }
+        return model;
     }
 
     private String validateServerLocation() {
