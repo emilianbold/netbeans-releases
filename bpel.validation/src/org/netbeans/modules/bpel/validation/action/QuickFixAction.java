@@ -61,7 +61,7 @@ import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
 import org.netbeans.modules.bpel.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.validation.core.Util;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

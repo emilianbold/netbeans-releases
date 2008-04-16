@@ -42,7 +42,7 @@ package org.netbeans.modules.bpel.search.impl.action;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

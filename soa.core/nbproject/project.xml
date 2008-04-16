@@ -128,7 +128,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.bpel.mapper</friend>
+                <friend>org.netbeans.modules.bpel.refactoring</friend>
+                <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
+                <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.soa.core.util</package>
                 <package>org.netbeans.modules.soa.core.validation</package>
             </friend-packages>

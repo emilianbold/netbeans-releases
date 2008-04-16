@@ -76,7 +76,7 @@ import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xslt.project.XsltproConstants;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.core.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

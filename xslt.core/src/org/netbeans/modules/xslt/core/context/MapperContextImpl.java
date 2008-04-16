@@ -63,14 +63,12 @@ public class MapperContextImpl implements MapperContext {
     private Transform myTransformContextComponent;
     private XslModel myXslModel;
     private AXIComponent mySourceComponent;
-//    private SchemaModel mySourceSchemaModel;
     private AXIModel mySourceAxiModel;
     
     private WSDLReference<Part> mySourcePart;
     private WSDLModel mySourceModel;
 
     private AXIComponent myTargetComponent;
-//    private SchemaModel myTargetSchemaModel;
     private AXIModel myTargetAxiModel;
     
     private WSDLReference<Part> myTargetPart;
@@ -769,8 +767,6 @@ public class MapperContextImpl implements MapperContext {
                 result = validator.validate(typeOut, "target"); // NOI18N
             }
         }
-        
-            
         return result;
     }
 }
