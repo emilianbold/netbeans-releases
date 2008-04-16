@@ -52,10 +52,13 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.ruby.options.CodeStyle;
@@ -72,6 +75,27 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 
     public RubyTestBase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        RubyIndex.setClusterUrl("file:/bogus"); // No translation
+    }
+    
+    @Override
+    protected void initializeClassPaths() {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
+        assertNotNull(jrubyHome);
+        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
+        RubyIndexer.setPreindexedDb(preindexed);
+        initializeRegistry();
+        // Force classpath initialization
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        platform.getGemManager().getNonGemLoadPath();
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
     }
 
     protected ParserResult parse(FileObject fileObject) {

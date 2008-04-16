@@ -707,24 +707,6 @@ public class EditorUtil {
         }
     }
 
-    public static FileObject getFileObjectByModel(Model model) {
-      if (model == null) {
-        return null;
-      }
-      ModelSource src = model.getModelSource();
-
-      if (src == null) {
-       return null;
-      }
-      Lookup lookup = src.getLookup();
-
-      if (lookup == null) {
-        return null;
-      }
-      return lookup.lookup(FileObject.class);
-    }
-
-    // TODO r|m
     public static String getTextForBpelEntity(final Component comp){
         BpelEntity entity = null;
         if (comp instanceof BpelEntity){
@@ -748,8 +730,6 @@ public class EditorUtil {
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
-
-
         int line = getLineNum(entity);
         int col = getColumnNum(entity);
         ModelSource modelSource = entity.getBpelModel().getModelSource();
@@ -776,7 +756,6 @@ public class EditorUtil {
         return boldenRefOrType(nodeLabel);
     }
 
-    // private methods
     private static int getLineNum(DocumentComponent entity) {
         int position = entity.findPosition();
         ModelSource modelSource = entity.getModel().getModelSource();
@@ -1173,6 +1152,25 @@ public class EditorUtil {
         return false;
     }
 
+    //!
+    public static FileObject getFileObjectByModel(Model model) {
+      if (model == null) {
+        return null;
+      }
+      ModelSource src = model.getModelSource();
+
+      if (src == null) {
+       return null;
+      }
+      Lookup lookup = src.getLookup();
+
+      if (lookup == null) {
+        return null;
+      }
+      return lookup.lookup(FileObject.class);
+    }
+
+    //!
     public static Line getLine(ResultItem item) {
       int number;
       Component component = item.getComponents();
@@ -1217,6 +1215,7 @@ public class EditorUtil {
       return cookie.getLineSet().getCurrent(number);
     }
     
+    //!
     public static Line.Part getLinePart(ResultItem item) {
       Line line = getLine(item);
 
@@ -1233,6 +1232,7 @@ public class EditorUtil {
       return line.createPart(column, length);
     }
     
+    //!
     private static int getColumn(Component component) {
       AbstractDocument doc = getAbstractDocument(component);
 
@@ -1243,6 +1243,7 @@ public class EditorUtil {
       return findColumn(doc, position);
     }
     
+    //!
     private static AbstractDocument getAbstractDocument(Component component) {
       if (component == null) {
         return null;
@@ -1260,12 +1261,14 @@ public class EditorUtil {
       return (AbstractDocument) source.getLookup().lookup(AbstractDocument.class);
     }
 
+    //!
     private static int findColumn(AbstractDocument doc, int argInt) {
       javax.swing.text.Element paragraphsParent = findLineRootElement(doc);
       int indx = paragraphsParent.getElementIndex(argInt);
       return argInt - paragraphsParent.getElement(indx).getStartOffset();
     }
 
+    //!
     private static javax.swing.text.Element findLineRootElement(AbstractDocument doc) {
       javax.swing.text.Element element = doc.getParagraphElement(0).getParentElement();
 
@@ -1275,6 +1278,7 @@ public class EditorUtil {
       return element;
     }
 
+    //!
     private static int findPosition(AbstractDocumentModel model, org.w3c.dom.Node node) {
       Element root = ((DocumentComponent) model.getRootComponent()).getPeer();
       javax.swing.text.Document doc = model.getBaseDocument();
@@ -1291,6 +1295,7 @@ public class EditorUtil {
       return -1;
     }
 
+    //!
     private static int findPosition(Element target, String buf, Element base, Integer fromPos) {
       if (target == base) {
         return fromPos;
@@ -1327,6 +1332,7 @@ public class EditorUtil {
       return -1;
     }
 
+    //!
     private static int getRootElementPosition(String buf, Element root) {
       NodeList children = root.getOwnerDocument().getChildNodes();
       int pos = 0;
@@ -1348,6 +1354,7 @@ public class EditorUtil {
       return buf.indexOf(root.getTagName(), pos);
     }
 
+    //!
     private static int getLineNumber(DocumentComponent entity) {
       if (entity == null) {
         return -1;
@@ -1375,6 +1382,6 @@ public class EditorUtil {
       return NbDocument.findLineNumber(document, entity.findPosition());
     }
 
-    public static final String ENTITY_SEPARATOR = "."; // NOI18N
     private static final int MAX_SIMPLE_NAME_LENGTH = 50;
+    public static final String ENTITY_SEPARATOR = "."; // NOI18N
 }

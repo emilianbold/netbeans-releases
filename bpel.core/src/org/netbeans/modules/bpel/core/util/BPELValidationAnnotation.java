@@ -57,12 +57,10 @@ final class BPELValidationAnnotation extends Annotation implements PropertyChang
     myMessage = message;
 
     if (annotatable != null) {
-/*
-      if (annotatable instanceof Line.Part) {
-        Line.Part part = (Line.Part) annotatable;
-        System.out.println(" *** attach: " + part.getColumn() + ":" + part.getLength());
-      }
-*/
+//    if (annotatable instanceof Line.Part) {
+//      Line.Part part = (Line.Part) annotatable;
+//      System.out.println(" *** attach: " + part.getColumn() + ":" + part.getLength());
+//    }
       attach(annotatable);
       annotatable.addPropertyChangeListener(this);
     }

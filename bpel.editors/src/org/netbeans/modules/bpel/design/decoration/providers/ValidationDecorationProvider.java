@@ -55,12 +55,12 @@ public class ValidationDecorationProvider extends DecorationProvider implements 
     
     public ValidationDecorationProvider(DesignView designView) {
         super(designView);
-        final BPELValidationController vc = getDesignView().getValidationController();
-        vc.addValidationListener(this);
+        final BPELValidationController controller = getDesignView().getValidationController();
+        controller.addValidationListener(this);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                vc.triggerValidation();
+                controller.triggerValidation();
             }
         });
     }

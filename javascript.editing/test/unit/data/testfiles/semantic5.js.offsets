@@ -1,5 +1,3 @@
-Missing position for node SCRIPT[0:0]:FUNCTION[1:0]:BLOCK[1:31]:EXPR_VOID[3:4]:CALL[3:4]:FUNCTION[3:14]:BLOCK[3:37]:BLOCK[4:12]:TARGET[0:0]:TARGET
-Missing position for node SCRIPT[0:0]:FUNCTION[1:0]:BLOCK[1:31]:EXPR_VOID[3:4]:CALL[3:4]:FUNCTION[3:14]:BLOCK[3:37]:RETURN[0:0]:RETURN
 
 <SCRIPT>/* Make sure call-parameters are considered reads as well - but not globals! */
 <FUNCTION>function <FUNCNAME>dosomething</FUNCNAME>(<PARAMETER>iterator</PARAMETER>) <BLOCK>{
@@ -9,8 +7,8 @@ Missing position for node SCRIPT[0:0]:FUNCTION[1:0]:BLOCK[1:31]:EXPR_VOID[3:4]:C
                 <EXPR_VOID><SETNAME><BINDNAME>result</BINDNAME> = <NAME>value</NAME></SETNAME></EXPR_VOID>;
                 <THROW>throw <NAME>$break</NAME></THROW>;
                 <EXPR_VOID><SETNAME><BINDNAME>global</BINDNAME> = <NAME>result</NAME></SETNAME></EXPR_VOID>;
-            }</BLOCK></BLOCK></BLOCK>
-    }</FUNCTION>)</CALL></EXPR_VOID>;
+            }<TARGET></TARGET></BLOCK></BLOCK>
+    <RETURN></RETURN></BLOCK>}</FUNCTION>)</CALL></EXPR_VOID>;
     <RETURN>return <NAME>result</NAME></RETURN>;</BLOCK>
 }</FUNCTION></SCRIPT>  
 
