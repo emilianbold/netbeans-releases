@@ -586,10 +586,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <pathelement path="${cp.extra}"/>
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
+            <pathelement path="${module.run.classpath}"/>
             <pathelement path="${test.qa-functional.cp.extra}"/>
         </path>
         <path id="test.qa-functional.run.cp">
             <pathelement path="${test.qa-functional.runtime.cp}"/>
+            <pathelement path="${module.run.classpath}"/>
             <pathelement path="${test.qa-functional.run.cp.extra}"/>
         </path>
     </target>
@@ -676,10 +678,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <pathelement path="${cp.extra}"/>
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
+            <pathelement path="${module.run.classpath}"/>
             <pathelement path="${test.qa-performance.cp.extra}"/>
         </path>
         <path id="test.qa-performance.run.cp">
             <pathelement path="${test.qa-performance.runtime.cp}"/>
+            <pathelement path="${module.run.classpath}"/>
             <pathelement path="${test.qa-performance.run.cp.extra}"/>
         </path>
     </target>
