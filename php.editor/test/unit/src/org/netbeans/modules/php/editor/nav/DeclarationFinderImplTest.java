@@ -313,6 +313,25 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testMethodInOtherFileWithInheritance() throws Exception {
+        performTestSimpleFindDeclaration(-1,
+                                         "<?php\n" +
+                                         "include \"testa.php\";\n" +
+                                         "$r = new foo2();\n" +
+                                         "$r->ffo|o();\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "include \"testb.php\";\n" +
+                                         "class foo2 extends foo3 {}\n" +
+                                         "?>",
+                                         "<?php\n" +
+                                         "class foo3 {\n" +
+                                         "    ^function ffoo() {\n" +
+                                         "    }\n" +
+                                         "}\n" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         
