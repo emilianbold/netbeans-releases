@@ -105,8 +105,7 @@ public class AcceptanceTestCaseBPEL2XSLT extends AcceptanceTestCaseXMLCPR {
         "ValidateAndBuild",
         "AddAttribute",
         "ExploreAttribute",
-        "DeleteAttribute",
-        "UndoRedoAttribute",
+        "ManipulateAttribute",
         "AddComplex",
         "ExploreComplex",
         "DeleteComplex",
@@ -402,7 +401,7 @@ public class AcceptanceTestCaseBPEL2XSLT extends AcceptanceTestCaseXMLCPR {
           "Add Complex Type",
           "Use Existing Definition", 
           "Referenced Schemas|import|Complex Types|CarType",
-          "newComplexType"
+          COMPLEX_NAMES[ 0 ]
         );
 
       endTest( );

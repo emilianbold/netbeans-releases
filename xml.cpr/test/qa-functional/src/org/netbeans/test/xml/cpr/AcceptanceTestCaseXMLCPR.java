@@ -95,6 +95,16 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       "newSimpleTypeA", "newSimpleTypeB", "newSimpleTypeC"
     };
     
+    protected final String COMPLEX_NAMES[] =
+    {
+      "newComplexTypeA", "newComplexTypeB", "newComplexTypeC"
+    };
+    
+    protected final String ELEMENT_NAMES[] =
+    {
+      "newElementA", "newElementB", "newElementC"
+    };
+    
     // Ideal code lines
     protected final String[] asIdealAttributeLines =
     {
@@ -607,24 +617,16 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     }
 
-    protected void ExploreSimpleInternal(
+    protected void CheckSchemaViewDefinition(
+        JListOperator opListOriginal,
         String sName,
-        String sType,
-        String sIncode,
-        String sNamespace
+        String sType
       )
     {
-      // Explore added with Go to <> menus
-
-      // Select newAttribute
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      JListOperator opList = opMultiView.getColumnListOperator( 1 );
-      opList.selectItem( sName );
-
       // Right click on item
-      int iIndex = opList.findItemIndex( sName );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
+      int iIndex = opListOriginal.findItemIndex( sName );
+      Point pt = opListOriginal.getClickPoint( iIndex );
+      opListOriginal.clickForPopup( pt.x, pt.y );
 
       // Click go to definition
       JPopupMenuOperator popup = new JPopupMenuOperator( );
@@ -642,26 +644,17 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Close definition
       opMultiViewDef.close( );
+    }
 
-      // Click go to code
-      opList.clickForPopup( pt.x, pt.y );
-      popup = new JPopupMenuOperator( );
-      popup.pushMenu( "Go To|Source" );
-
-      // Check selected code line
-      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
-      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
-
-      String sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\">";
-      if( null != sNamespace )
-        sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>";
-
-      if( -1 == sSelectedText.indexOf( sRequiredText ) )
-        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+    protected void CheckSourceViewDefinition(
+        String sIdealCode
+      )
+    {
+      EditorOperator eoXsdCodeOriginal = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
 
       // Click go to definition
-      ClickForTextPopup( eoXsdCode );
-      popup = new JPopupMenuOperator( );
+      ClickForTextPopup( eoXsdCodeOriginal );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenu( "Go To|Definition" );
 
       // Check opened view
@@ -670,29 +663,101 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Check selected code line
       EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
-      sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
-      if( -1 == sSelectedText.indexOf( "<xs:simpleType name=\"" + sType + "\">" ) )
+      String sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( sIdealCode ) )
         fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
 
       // Close definition
       eoXsdCodeDef.close( );
+    }
 
-      // Click go to schema
+    protected void GotoSchemaSource(
+        JListOperator opListOriginal,
+        String sName,
+        String sRequiredText
+      )
+    {
+      int iIndex = opListOriginal.findItemIndex( sName );
+      Point pt = opListOriginal.getClickPoint( iIndex );
+      opListOriginal.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+
+    }
+
+    protected void GotoSchemaDesign(
+        JListOperator opListOriginal,
+        String sName
+      )
+    {
+      int iIndex = opListOriginal.findItemIndex( sName );
+      Point pt = opListOriginal.getClickPoint( iIndex );
+      opListOriginal.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Design" );
+    }
+
+    protected void GotoSourceSchema(
+        String sName
+      )
+    {
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+
       ClickForTextPopup( eoXsdCode );
-      popup = new JPopupMenuOperator( );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenu( "Go To|Schema" );
-      //try { Thread.sleep( 2000 ); } catch( InterruptedException ex ) { }
 
-      // Check sche,a view opened
+      // Check schema view opened
       if( !CheckSchemaView( "Schema" ) )
         fail( "Go To Schema option for Source view opened not on source view." );
 
       // Check selected schema item
-      opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      if( null == opList )
         fail( "Incorrect (no) selection after Go To Schema option." );
       if( !opList.getSelectedValue( ).toString( ).startsWith( sName ) )
         fail( sName + " did not selected with Go To Schema option." );
+    }
+
+    protected void ExploreSimpleInternal(
+        String sName,
+        String sType,
+        String sIncode,
+        String sNamespace
+      )
+    {
+      // Explore added with Go to <> menus
+
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      // Check definition
+      CheckSchemaViewDefinition( opList, sName, sType );
+
+      // Click go to code
+      String sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\">";
+      if( null != sNamespace )
+        sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>";
+
+      GotoSchemaSource( opList, sName, sRequiredText );
+
+      // Click go to definition
+      CheckSourceViewDefinition(
+          "<xs:simpleType name=\"" + sType + "\">"
+        );
+
+      // Click go to schema
+      GotoSourceSchema( sName );
     }
 
     public void ManipulateAttributeInternal( String sSample )
@@ -781,10 +846,12 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
 
       // Check schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
       //SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
       opList = opMultiView.getColumnListOperator( 0 );
       opList.selectItem( "Attributes" );
-      opList = opMultiView.getColumnListOperator( 1 );
+      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+        System.out.println( "*** NULL LIST ***" );
       if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
         fail( "Wrong attribute restored after deletion." );
       if( -1 == opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] ) )
@@ -914,6 +981,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [Delete " + SIMPLE_NAMES[ 1 ] + "]");
 
       // Check schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
       //SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
       opList = opMultiView.getColumnListOperator( 0 );
       opList.selectItem( "Simple Types" );
