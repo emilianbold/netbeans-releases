@@ -101,6 +101,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
                 </file>
                 
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyIndexer"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>

@@ -54,7 +54,14 @@ import java.io.OutputStream;
 import java.nio.CharBuffer;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.groovy.editor.GroovyIndex;
+import org.netbeans.modules.groovy.editor.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.gsf.GsfTestBase;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -65,7 +72,7 @@ import org.openide.util.Utilities;
  *
  * @author Martin Adamek
  */
-public class GroovyTestBase extends NbTestCase {
+public class GroovyTestBase extends GsfTestBase {
 
     protected FileObject testFO;
 
@@ -73,12 +80,26 @@ public class GroovyTestBase extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws IOException {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         clearWorkDir();
+        GroovyIndex.setClusterUrl("file:/bogus"); // No translation
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");
     }
 
+    @Override
+    protected GsfLanguage getPreferredLanguage() {
+        return new GroovyLanguage();
+    }
+    
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/x-groovy";
+    }
+
+    @Override
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {
@@ -90,23 +111,11 @@ public class GroovyTestBase extends NbTestCase {
         return fo;
     }
 
-    protected TestCompilationInfo getInfo(String file) throws Exception {
-        FileObject fileObject = getTestFile(file);
-        return getInfo(fileObject);
+    @Override
+    protected GsfTestCompilationInfo getInfo(FileObject fo, BaseDocument doc, String source) throws Exception {
+        return new TestCompilationInfo(this, fo, doc, source);
     }
 
-    public TestCompilationInfo getInfo(FileObject fileObject) throws IOException {
-        String text = readFile(fileObject);
-        if (text == null) {
-            text = "";
-        }
-        BaseDocument doc = getDocument(text);
-
-        TestCompilationInfo info = new TestCompilationInfo(this, fileObject, doc, text);
-
-        return info;
-    }
-    
     public static BaseDocument getDocumentFor(FileObject fo) {
         return createDocument(read(fo));
     }
@@ -290,6 +299,17 @@ public class GroovyTestBase extends NbTestCase {
             cb.rewind();
             return cb.toString();
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Indexing Tests
+    ////////////////////////////////////////////////////////////////////////////
+    public Indexer getIndexer() {
+        return null;
+    }
+
+    protected String prettyPrintValue(String key, String value) {
+        return value;
     }
 
 }

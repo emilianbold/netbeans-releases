@@ -66,7 +66,7 @@ public class GroovyParserTest extends GroovyTestBase {
     }
     
     @Override
-    protected void setUp() throws IOException {
+    protected void setUp() throws Exception {
         super.setUp();
         Logger.getLogger(org.netbeans.modules.groovy.editor.parser.GroovyParser.class.getName())
                 .setLevel(Level.FINEST);
@@ -75,7 +75,7 @@ public class GroovyParserTest extends GroovyTestBase {
     
     
     
-    private void checkParseTree(FileObject file, String caretLine, String nodeName) throws IOException {
+    private void checkParseTree(FileObject file, String caretLine, String nodeName) throws Exception {
         CompilationInfo info = getInfo(file);
         
         String text = info.getText();
@@ -126,7 +126,7 @@ public class GroovyParserTest extends GroovyTestBase {
         }
     }
 
-    public void test1() throws IOException {
+    public void test1() throws Exception {
         copyStringToFileObject(testFO,
                 "class Hello {\n" +
                 "\tstatic void main(args) {\n" +
@@ -137,7 +137,7 @@ public class GroovyParserTest extends GroovyTestBase {
         checkParseTree(testFO, "void ^main", "MethodNode");
     }
     
-    public void test2() throws IOException {
+    public void test2() throws Exception {
         copyStringToFileObject(testFO,
                 "class Hello {\n" +
                 "\tdef name = 'aaa'\n" +
@@ -149,7 +149,7 @@ public class GroovyParserTest extends GroovyTestBase {
         checkParseTree(testFO, "void ^main", "MethodNode");
     }
     
-    public void testAstUtilitiesGetRoot() throws IOException {
+    public void testAstUtilitiesGetRoot() throws Exception {
         copyStringToFileObject(testFO,
                 "class Hello {\n" +
                 "\tdef name = 'aaa'\n" +
@@ -166,7 +166,7 @@ public class GroovyParserTest extends GroovyTestBase {
     }    
     
     
-    public void testSanatizerLimitations() throws IOException {
+    public void testSanatizerLimitations() throws Exception {
         
         copyStringToFileObject(testFO,
                 "def m() {\n" +

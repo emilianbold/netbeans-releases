@@ -41,19 +41,11 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
 
 /**
  *
@@ -66,7 +58,12 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
     }
 
     @Override
-    protected void setUp() throws IOException {
+    protected OccurrencesFinder getOccurrencesFinder() {
+        return new GroovyOccurrencesFinder();
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
         super.setUp();
         Logger.getLogger(PathFinderVisitor.class.getName()).setLevel(Level.FINEST);
     }
@@ -122,97 +119,4 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         doTest("        def localvar3 = membervar1 + par^am1 + localvar1 + localvar2");
     }
     
-    private String annotate(BaseDocument doc, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
-        Set<OffsetRange> ranges = highlights.keySet();
-        StringBuilder sb = new StringBuilder();
-        String text = doc.getText(0, doc.getLength());
-        Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
-        Map<Integer, OffsetRange> ends = new HashMap<Integer, OffsetRange>(100);
-        for (OffsetRange range : ranges) {
-            starts.put(range.getStart(), range);
-            ends.put(range.getEnd(), range);
-        }
-
-        int index = 0;
-        int length = text.length();
-        while (index < length) {
-            int lineStart = Utilities.getRowStart(doc, index);
-            int lineEnd = Utilities.getRowEnd(doc, index);
-            OffsetRange lineRange = new OffsetRange(lineStart, lineEnd);
-            boolean skipLine = true;
-            for (OffsetRange range : ranges) {
-                if (lineRange.containsInclusive(range.getStart()) || lineRange.containsInclusive(range.getEnd())) {
-                    skipLine = false;
-                }
-            }
-            if (!skipLine) {
-                for (int i = lineStart; i <= lineEnd; i++) {
-                    if (i == caretOffset) {
-                        sb.append("^");
-                    }
-                    if (starts.containsKey(i)) {
-                        sb.append("|>");
-                        OffsetRange range = starts.get(i);
-                        ColoringAttributes ca = highlights.get(range);
-                        if (ca != null) {
-                            sb.append(ca.name());
-                            sb.append(':');
-                        }
-                    }
-                    if (ends.containsKey(i)) {
-                        sb.append("<|");
-                    }
-                    sb.append(text.charAt(i));
-                }
-            }
-            index = lineEnd + 1;
-        }
-
-        return sb.toString();
-    }
-
-    /** Test the occurrences to make sure they equal the golden file.
-     * If the symmetric parameter is set, this test will also ensure that asking for
-     * occurrences on ANY of the matches produced by the original caret position will
-     * produce the exact same map. This is obviously not appropriate for things like
-     * occurrences on the exit points.
-     */
-    private void checkOccurrences(String relFilePath, String caretLine, boolean symmetric) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-
-        String text = info.getText();
-
-        int caretDelta = caretLine.indexOf('^');
-        assertTrue(caretDelta != -1);
-        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-        int lineOffset = text.indexOf(caretLine);
-        assertTrue(lineOffset != -1);
-
-        int caretOffset = lineOffset + caretDelta;
-
-        GroovyOccurrencesFinder finder = new GroovyOccurrencesFinder();
-        finder.setCaretPosition(caretOffset);
-        finder.run(info);
-        Map<OffsetRange, ColoringAttributes> occurrences = finder.getOccurrences();
-
-        assertNotNull(occurrences);
-        
-        String annotatedSource = annotate((BaseDocument)info.getDocument(), occurrences, caretOffset);
-
-        assertDescriptionMatches(relFilePath, annotatedSource, true, ".occurrences");
-        
-        if (symmetric) {
-            // Extra check: Ensure that occurrences are symmetric: Placing the caret on ANY of the occurrences
-            // should produce the same set!!
-            for (OffsetRange range : occurrences.keySet()) {
-                finder.setCaretPosition(range.getStart()+range.getLength()/2);
-                finder.run(info);
-                Map<OffsetRange, ColoringAttributes> alternates = finder.getOccurrences();
-                assertEquals("Marks differ between caret positions", occurrences, alternates);
-            }
-        }
-    }
-
-
-
 }

@@ -132,4 +132,9 @@ public abstract class AstElement extends GroovyElement {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return getKind() + "<" + getName() + ">";
+    }
+
 }
