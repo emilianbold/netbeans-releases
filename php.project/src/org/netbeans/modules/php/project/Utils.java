@@ -90,24 +90,7 @@ public final class Utils {
             }
         }
         String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);
-        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot) : getOriginalProvider(project);
-    }
-
-    public static WebServerProvider getOriginalProvider(PhpProject project) {
-         String provider = project.getEvaluator().getProperty(PhpProjectProperties.PROVIDER_ID);
-        if (provider == null) {
-            // TODO realize fake provider that will return commands but will
-            // suggest to setup real server
-            return new AbsentServerProvider();
-            //return null;
-        }
-        WebServerProvider[] providers = WebServerProvider.ServerFactory.getProviders();
-        for (WebServerProvider prov : providers) {
-            if (prov.getClass().getCanonicalName().equals(provider)) {
-                return prov;
-            }
-        }
-        return null;
+        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot) : null;
     }
 
 
