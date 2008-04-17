@@ -128,6 +128,9 @@ public final class DocumentRoots {
     }
 
     static String getFolderName(File location, String name) {
+        if (name == null) {
+            return location.getAbsolutePath();
+        }
         return new File(location, name).getAbsolutePath();
     }
 
@@ -136,7 +139,6 @@ public final class DocumentRoots {
     }
 
     static String getDefaultUrl(String urlPart, Integer port) {
-        assert urlPart != null;
         StringBuilder url = new StringBuilder(100);
         url.append("http://localhost"); // NOI18N
         if (port != null) {
@@ -144,8 +146,10 @@ public final class DocumentRoots {
             url.append(port);
         }
         url.append("/"); // NOI18N
-        url.append(urlPart);
-        url.append("/"); // NOI18N
+        if (urlPart != null) {
+            url.append(urlPart);
+            url.append("/"); // NOI18N
+        }
         return url.toString();
     }
 

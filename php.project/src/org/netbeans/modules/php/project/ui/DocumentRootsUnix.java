@@ -61,7 +61,8 @@ final class DocumentRootsUnix {
         if (userDir.isDirectory()) {
             String documentRoot = DocumentRoots.getFolderName(userDir, projectName);
             String user = System.getProperty("user.name"); // NOI18N
-            String url = DocumentRoots.getDefaultUrl("~" + user + "/" + projectName); // NOI18N
+            String urlSuffix = projectName != null ? "/" + projectName : ""; // NOI18N
+            String url = DocumentRoots.getDefaultUrl("~" + user + urlSuffix); // NOI18N
             roots.add(new Root(documentRoot, url, userDir.canWrite()));
         }
 
