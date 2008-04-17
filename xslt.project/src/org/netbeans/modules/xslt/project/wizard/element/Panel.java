@@ -417,32 +417,20 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
 
   protected static final String EMPTY = ""; // NOI18N
 
-  protected static final String NAME_TYPE =
-    org.netbeans.modules.soa.ui.UI.i18n(Panel.class,
-    "LBL_Service_Type"); // NOI18N
-
-  protected static final String NAME_WSDL =
-    org.netbeans.modules.soa.ui.UI.i18n(Panel.class,
-    "LBL_WSDL_File"); // NOI18N
-
-  protected static final String NAME_XSLT =
-    org.netbeans.modules.soa.ui.UI.i18n(Panel.class,
-    "LBL_XSLT_Configuration"); // NOI18N
+  protected static final String NAME_TYPE = org.netbeans.modules.soa.ui.UI.i18n(Panel.class, "LBL_Service_Type"); // NOI18N
+  protected static final String NAME_WSDL = org.netbeans.modules.soa.ui.UI.i18n(Panel.class, "LBL_WSDL_File"); // NOI18N
+  protected static final String NAME_XSLT = org.netbeans.modules.soa.ui.UI.i18n(Panel.class, "LBL_XSLT_Configuration"); // NOI18N
 
   public static final String INPUT_FILE = "input.file"; // NOI18N
   public static final String INPUT_OPERATION = "input.operation"; // NOI18N
-  public static final String INPUT_PORT_TYPE =
-    "input.porttype"; // NOI18N
+  public static final String INPUT_PORT_TYPE = "input.porttype"; // NOI18N
 
   public static final String OUTPUT_FILE = "output.file"; // NOI18N
   public static final String OUTPUT_OPERATION = "output.operation"; // NOI18N
-  public static final String OUTPUT_PORT_TYPE =
-    "output.porttype"; // NOI18N
+  public static final String OUTPUT_PORT_TYPE = "output.porttype"; // NOI18N
 
   public static final String CHOICE = "choice"; // NOI18N
   public static final String CHOICE_REQUEST_REPLY = "choice.request.reply"; // NOI18N
-  public static final String CHOICE_FILTER_ONE_WAY =
-    "choice.filter.one.way"; // NOI18N
-  public static final String CHOICE_FILTER_REQUEST_REPLY =
-    "choice.filter.request.reply"; // NOI18N
+  public static final String CHOICE_FILTER_ONE_WAY = "choice.filter.one.way"; // NOI18N
+  public static final String CHOICE_FILTER_REQUEST_REPLY = "choice.filter.request.reply"; // NOI18N
 }
