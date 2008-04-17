@@ -424,9 +424,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         useTwoOrderTypes = false;
 
-        // issue 56091 and applied workarround on the next line
-        // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
 

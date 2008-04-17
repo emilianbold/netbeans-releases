@@ -47,6 +47,7 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.TopComponentOperator;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
@@ -92,6 +93,7 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
 
     public ComponentOperator open() {
         log("::open");
+        new EventTool().waitNoEvent(2000);
         diag.performPopupAction("Generate Dependency Diagram");
         return new TopComponentOperator("jEditDependencies");
 
