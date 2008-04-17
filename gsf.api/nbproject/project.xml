@@ -86,6 +86,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>
+                <friend>org.netbeans.modules.erlang.editing</friend>
+                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.erlang.platform</friend>
+                <friend>org.netbeans.modules.fortress.editing</friend>
+                <friend>org.netbeans.modules.fortress.project</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.gsf</friend>
