@@ -41,10 +41,12 @@ package org.netbeans.modules.php.editor;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +58,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -111,6 +114,29 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
+    private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
+        new PHPTokenId[]{PHPTokenId.PHP_NEW},
+        new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS},
+        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+        );
+    
+    private static final List<PHPTokenId[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_VARIABLE},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN}
+        );
+    
+    private static final List<PHPTokenId[]> STATIC_CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_VARIABLE},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
+        );
+    
     private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, UNKNOWN};
 
@@ -151,42 +177,68 @@ public class PHPCodeCompletion implements Completable {
                 default:
             }
             
-            if (tokenSequence.movePrevious())
-            {
-                boolean moreTokens = true;
+            if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS)){
+                return CompletionContext.CLASS_NAME;
                 
-                if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
-                    moreTokens = tokenSequence.movePrevious();
-                }
+            } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS)){
+                return CompletionContext.CLASS_MEMBER;
                 
-                if (moreTokens) {
-                    TokenId tokenId = tokenSequence.token().id();
-
-                    if (tokenId == PHPTokenId.PHP_NEW || tokenId == PHPTokenId.PHP_EXTENDS) {
-                        return CompletionContext.CLASS_NAME;
-                    } else if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
-                        return CompletionContext.CLASS_MEMBER;
-                    } else if (tokenId == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
-                        return CompletionContext.STATIC_CLASS_MEMBER;
-                    } else if (tokenId == PHPTokenId.PHP_STRING) {
-                        if (tokenSequence.movePrevious()) {
-                            tokenId = tokenSequence.token().id();
-                            
-                            if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
-                                return CompletionContext.CLASS_MEMBER;
-                            } else if (tokenId == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM){
-                                return CompletionContext.STATIC_CLASS_MEMBER;
-                            }
-                        }
-                    }
-                }
+            } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
+                return CompletionContext.STATIC_CLASS_MEMBER;
+                
             }
-            
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         
         return CompletionContext.EXPRESSION;
+    }
+    
+    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains){
+        int maxLen = 0;
+        
+        for (PHPTokenId tokenIds[] : tokenIdChains){
+            if (maxLen < tokenIds.length){
+                maxLen = tokenIds.length;
+            }
+        }
+        
+        Token preceedingTokens[] = getPreceedingTokens(tokenSequence, maxLen);
+        
+        chain_search:
+        for (PHPTokenId tokenIds[] : tokenIdChains){
+            
+            int startWithinPrefix = preceedingTokens.length - tokenIds.length;
+            
+            if (startWithinPrefix >= 0){
+                for (int i = 0; i < tokenIds.length; i ++){
+                    if (tokenIds[i] != preceedingTokens[i + startWithinPrefix].id()){
+                        continue chain_search;
+                    }
+                }
+                
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private static Token[] getPreceedingTokens(TokenSequence tokenSequence, int maxNumberOfTokens){
+        int orgOffset = tokenSequence.offset();
+        LinkedList<Token> tokens = new LinkedList<Token>();
+        
+        for (int i = 0; i < maxNumberOfTokens; i++) {
+            if (!tokenSequence.movePrevious()){
+                break;
+            }
+            
+            tokens.addFirst(tokenSequence.token());
+        }
+        
+        tokenSequence.move(orgOffset);
+        tokenSequence.moveNext();
+        return tokens.toArray(new Token[tokens.size()]);
     }
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
