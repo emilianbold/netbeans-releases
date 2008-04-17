@@ -159,6 +159,7 @@ Microsystems, Inc. All Rights Reserved.
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+                 <property name="mpkgname" value="${mpkgname_nb}"/>
             </ant>     
         </for-each>         
         <delete file="${basedir}/build/sizes.pro"/>
@@ -305,7 +306,9 @@ fi"
               
         <ant target="build-dmg">             
              <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
-             <property name="bundle.type" value="-mysql"/>               
+             <property name="bundle.type" value="-mysql"/> 
+             <property name="mpkgname" value="${mpkgname_nb_mysql}"/> 
+             
         </ant>          
     </target>
     

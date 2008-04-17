@@ -114,6 +114,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 }
             }
         }
+        try {
+            ClassLoader cl = getClass().getClassLoader();
+            FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_LICENSE),
+                    ResourceUtils.getResource(LEGAL_RESOURCE_PREFIX + NBGFMYSQL_LICENSE,
+                    cl));
+            FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_THIRDPARTY_README),
+                    ResourceUtils.getResource(LEGAL_RESOURCE_PREFIX + NBGFMYSQL_THIRDPARTY_README,
+                    cl));
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.legal.creation"), // NOI18N
+                    e);
+        }
+
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -164,7 +178,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 ResourceUtils.getString(ConfigurationLogic.class,
                                 ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY));
                 }
-
+                SystemUtils.sleep(3000);//wait for 3 seconds so that mysql really starts
                 fixSecuritySettingsWindows(location);
 
             //createWindowsShortcuts(location);
@@ -188,7 +202,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
-    private void fixSecuritySettingsWindows(File location) throws InstallationException {
+    private void fixSecuritySettingsWindows(File location) throws InstallationException {        
         if (!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
             query(location, REMOVE_ANONYMOUS_QUERY);
         }
@@ -209,7 +223,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (!getProperty(MySQLPanel.PASSWORD_PROPERTY).equals(StringUtils.EMPTY_STRING)) {
                 commands.add("--password=" + getProperty(MySQLPanel.PASSWORD_PROPERTY));
             }
-            
+            commands.add("--connect_timeout=3");
+            commands.add("-v");
             ProcessBuilder pb = new ProcessBuilder(commands).directory(location).redirectErrorStream(true);
             LogManager.log("... starting process : " + StringUtils.asString(commands, " "));
             Process p = pb.start();
@@ -232,6 +247,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private void installUnix(Progress progress) throws InstallationException {
+        progress.setDetail(PROGRESS_DETAIL_RUNNING_MYSQL_INSTANCE_CONFIGURATION);
         final File location = getProduct().getInstallationLocation();
         final File installScript = new File(location, "configure-mysql.sh");
         try {
@@ -602,6 +618,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private void uninstallUnix(Progress progress, File location) throws UninstallationException {
+        
         final File uninstallScript = new File(location, "uninstall-mysql.sh");
         try {
             InputStream is = ResourceUtils.getResource(UNINSTALL_SCRIPT_UNIX,
@@ -831,4 +848,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     final public static String FLUSH_PRIVILEGES_QUERY =
             "FLUSH PRIVILEGES;";
     final public static String MYSQL_EXE = SystemUtils.isWindows() ? "bin/mysql.exe" : "bin/mysql";
+
+    public static final String LEGAL_RESOURCE_PREFIX =
+            "org/netbeans/installer/products/mysql/";
+    public static final String NBGFMYSQL_LICENSE =
+            "NB_GF_MySQL.txt";//NOI18N
+    public static final String NBGFMYSQL_THIRDPARTY_README =
+            "NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt";
 }

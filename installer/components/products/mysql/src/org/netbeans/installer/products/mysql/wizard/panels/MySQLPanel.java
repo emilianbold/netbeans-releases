@@ -85,6 +85,8 @@ public class MySQLPanel extends DestinationPanel {
                 DEFAULT_REPEAT_PASSWORD_LABEL_TEXT);
         setProperty(ANONYMOUS_ACCOUNT_TEXT_PROPERTY,
                 DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT);
+        setProperty(ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY,
+                DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT_DISABLED);
         setProperty(NETWORK_TEXT_PROPERTY,
                 DEFAULT_NETWORK_LABEL_TEXT);
         setProperty(PORT_TEXT_PROPERTY,
@@ -112,6 +114,9 @@ public class MySQLPanel extends DestinationPanel {
                 DEFAULT_ERROR_PORT_OCCUPIED);
         setProperty(MODIFY_SECURITY_TEXT_PROPERTY,
                 DEFAULT_MODIFY_SECURITY_TEXT);
+        setProperty(DEFAULT_PASSWORD_LABEL_TEXT_PROPERTY,
+                DEFAULT_DEFAULT_PASSWORD_LABEL_TEXT);
+
     }
 
     @Override
@@ -202,6 +207,7 @@ public class MySQLPanel extends DestinationPanel {
         private NbiTextField portField;
         private NbiLabel portLabel;
         private NbiCheckBox securitySettingsCheckbox;
+        private NbiLabel defaultsLabel;
 
         public MySQLPanelSwingUi(
                 final MySQLPanel panel,
@@ -224,7 +230,7 @@ public class MySQLPanel extends DestinationPanel {
             repeatPasswordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
 
             anonymousCheckBox.setText(
-                    panel.getProperty(ANONYMOUS_ACCOUNT_TEXT_PROPERTY));
+                    panel.getProperty(ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY));
 
             anonymousCheckBox.setSelected(false);
             if (Boolean.parseBoolean(
@@ -256,7 +262,8 @@ public class MySQLPanel extends DestinationPanel {
 
             portLabel.setText(panel.getProperty(PORT_TEXT_PROPERTY));
             portField.setText(panel.getWizard().getProperty(PORT_PROPERTY));
-
+            defaultsLabel.setText(panel.getProperty(DEFAULT_PASSWORD_LABEL_TEXT_PROPERTY));
+            
             super.initialize();
         }
 
@@ -405,6 +412,8 @@ public class MySQLPanel extends DestinationPanel {
             portLabel = new NbiLabel();
             portLabel.setLabelFor(portField);
 
+            defaultsLabel = new NbiLabel();
+            
             securitySettingsCheckbox = new NbiCheckBox();
             securitySettingsCheckbox.addActionListener(new ActionListener() {
 
@@ -417,7 +426,11 @@ public class MySQLPanel extends DestinationPanel {
                     for (JComponent c : securityComponents) {
                         c.setEnabled(securitySettingsCheckbox.isSelected());
                     }
-
+                    anonymousCheckBox.setText(
+                            panel.getProperty(
+                            securitySettingsCheckbox.isSelected() ? 
+                                ANONYMOUS_ACCOUNT_TEXT_PROPERTY :
+                                    ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY));
                     panel.getWizard().setProperty(MODIFY_SECURITY_PROPERTY,
                             StringUtils.EMPTY_STRING + securitySettingsCheckbox.isSelected());
                     updateErrorMessage();
@@ -431,7 +444,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(0, 11, 4, 0), // padding
+                    new Insets(4, 11, 4, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(passwordLabel, new GridBagConstraints(
@@ -452,13 +465,13 @@ public class MySQLPanel extends DestinationPanel {
                     new Insets(4, 6, 0, 11), // padding
                     0, 0));                           // padx, pady - ???
 
-            containerPanel.add(new NbiPanel(), new GridBagConstraints(
+            containerPanel.add(defaultsLabel, new GridBagConstraints(
                     3, 1, // x, y
                     1, 1, // width, height
                     1.0, 0.0, // weight-x, weight-y
-                    GridBagConstraints.CENTER, // anchor
-                    GridBagConstraints.BOTH, // fill
-                    new Insets(0, 0, 0, 0), // padding
+                    GridBagConstraints.LINE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(4, 0, 0, 11), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(repeatPasswordLabel, new GridBagConstraints(
@@ -494,7 +507,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(4, securityPadding + 8, 20, 0), // padding
+                    new Insets(4, securityPadding + 8, 11, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(networkCheckBox, new GridBagConstraints(
@@ -503,7 +516,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(10, 11, 0, 0), // padding
+                    new Insets(4, 11, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(portLabel, new GridBagConstraints(
@@ -512,7 +525,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(4, 40, 0, 0), // padding
+                    new Insets(4, securityPadding + 8, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(portField, new GridBagConstraints(
@@ -601,6 +614,8 @@ public class MySQLPanel extends DestinationPanel {
 
     public static final String ANONYMOUS_ACCOUNT_TEXT_PROPERTY =
             "anonymous.account.text";
+    public static final String ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY =
+            "anonymous.account.disabled.text";
     public static final String NETWORK_TEXT_PROPERTY =
             "network.text";
     public static final String PORT_TEXT_PROPERTY =
@@ -617,6 +632,10 @@ public class MySQLPanel extends DestinationPanel {
             "network";
     public static final String MODIFY_SECURITY_PROPERTY =
             "modify.security";
+    
+    public static final String DEFAULT_PASSWORD_LABEL_TEXT_PROPERTY =
+            "default.password.text";
+            
     public static final String DEFAULT_PASSWORD_LABEL_TEXT =
             ResourceUtils.getString(MySQLPanel.class,
             "MSP.password.label.text"); // NOI18N
@@ -628,6 +647,9 @@ public class MySQLPanel extends DestinationPanel {
     public static final String DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT =
             ResourceUtils.getString(MySQLPanel.class,
             "MSP.anonymous.account.label.text"); // NOI18N
+    public static final String DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT_DISABLED =
+            ResourceUtils.getString(MySQLPanel.class,
+            "MSP.anonymous.account.label.text.disabled"); // NOI18N
 
     public static final String DEFAULT_NETWORK_LABEL_TEXT =
             ResourceUtils.getString(MySQLPanel.class,
@@ -680,5 +702,8 @@ public class MySQLPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_PORT_OCCUPIED =
             ResourceUtils.getString(MySQLPanel.class,
             "MSP.error.port.occupied"); //NOI18N
+    public static final String DEFAULT_DEFAULT_PASSWORD_LABEL_TEXT =
+            ResourceUtils.getString(MySQLPanel.class,
+            "MSP.default.password.text"); //NOI18N
 
 }

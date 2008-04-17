@@ -323,6 +323,12 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   private void checkNegative(RepeatEvery repeatEvery) {
     String value = repeatEvery.getContent();
 
+    if (value == null) {
+      return;
+    }
+    if ( !(value.startsWith("'") && value.endsWith("'"))) {
+      return;
+    }
     try {
       Duration duration = DurationUtil.parseDuration(value, true);
 
