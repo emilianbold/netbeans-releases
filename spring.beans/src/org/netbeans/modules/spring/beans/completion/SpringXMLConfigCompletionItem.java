@@ -89,9 +89,9 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyType;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyType;
 import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -1116,7 +1116,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                JavaSource js = JavaUtils.getJavaSource(doc);
                 if (js == null) {
                     return;
                 }

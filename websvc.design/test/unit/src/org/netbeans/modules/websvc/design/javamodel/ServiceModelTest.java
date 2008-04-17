@@ -46,7 +46,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.AssertionError;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam.Mode;
@@ -71,7 +70,7 @@ import org.openide.util.SharedClassObject;
  */
 public class ServiceModelTest extends NbTestCase {
 
-    private static ServiceModelTest DEFAULT_LOOKUP = null;
+    //private static ServiceModelTest DEFAULT_LOOKUP = null;
     private static final String NAME = "AddNumbers";
     private static final String SERVICE_NAME = "AddNumbersService";
     private static final String PORT_NAME = "AddNumbersPort";
@@ -137,9 +136,9 @@ public class ServiceModelTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-
         // workaround for JavaSource class
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         dataDir = FileUtil.toFileObject(getDataDir());
@@ -147,10 +146,10 @@ public class ServiceModelTest extends NbTestCase {
         ClassPathProvider cpp = new ClassPathProvider() {
 
             public ClassPath findClassPath(FileObject file, String type) {
-                if (type == ClassPath.SOURCE) {
+                if (ClassPath.SOURCE.equals(type)) {
                     return ClassPathSupport.createClassPath(new FileObject[]{dataDir});
                 }
-                if (type == ClassPath.COMPILE) {
+                if (ClassPath.COMPILE.equals(type)) {
                     return ClassPathSupport.createClassPath(new FileObject[0]);
                 }
                 //if (type == ClassPath.BOOT)
@@ -158,7 +157,8 @@ public class ServiceModelTest extends NbTestCase {
                 return null;
             }
         };
-
+        
+        SourceUtilsTestUtil.compileRecursively(dataDir);
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{loader, cpp});
 

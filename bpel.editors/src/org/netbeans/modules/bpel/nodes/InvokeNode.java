@@ -36,7 +36,7 @@ import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.properties.editors.InvokeCustomEditor;
 import org.netbeans.modules.bpel.properties.props.CustomEditorProperty;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.util.Lookup;
 import org.openide.nodes.Children;
@@ -150,7 +150,7 @@ public class InvokeNode extends BpelNode<Invoke> {
         }
         StringBuffer result = new StringBuffer();
 
-        return SoaUiUtil.getGrayString(super.getImplHtmlDisplayName(), result.toString());
+        return SoaUtil.getGrayString(super.getImplHtmlDisplayName(), result.toString());
     }
 
 //    protected String getImplShortDescription() {

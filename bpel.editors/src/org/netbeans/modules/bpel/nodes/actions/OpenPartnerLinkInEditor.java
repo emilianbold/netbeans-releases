@@ -36,6 +36,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  *
@@ -65,7 +66,7 @@ public class OpenPartnerLinkInEditor extends BpelNodeAction {
         }
         
         WSDLModel wsdlModel = plt.get().getModel();
-        FileObject fo = Util.getFileObjectByModel(wsdlModel);
+        FileObject fo = SoaUtil.getFileObjectByModel(wsdlModel);
         try {
             DataObject d = DataObject.find(fo);
             LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);

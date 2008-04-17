@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.GsfLanguage;
@@ -62,6 +64,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**
@@ -72,10 +75,32 @@ public abstract class JsTestBase extends GsfTestBase {
     public JsTestBase(String testName) {
         super(testName);
     }
+    
+    @Override
+    protected void initializeClassPaths() {
+        String jsDir = System.getProperty("xtest.js.home");
+        if (jsDir == null) {
+            throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
+        }
+        File clusterDir = new File(jsDir);
+        if (clusterDir.exists()) {
+            FileObject preindexed = FileUtil.toFileObject(clusterDir).getFileObject("preindexed");
+            if (preindexed != null) {
+                JsIndexer.setPreindexedDb(preindexed);
+            }
+        }
+        
+        initializeRegistry();
+        // Force classpath initialization
+        LanguageRegistry.getInstance().getLibraryUrls();
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
+    }    
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        JsIndex.setClusterUrl("file:/bogus"); // No translation
         getXTestJsCluster();
         
 //        TestLanguageProvider.register(RhtmlTokenId.language());
@@ -203,6 +228,7 @@ TranslatedSource translatedSource = null; // TODO
     
     protected String[] JAVASCRIPT_TEST_FILES = new String[] {
         "testfiles/arraytype.js",
+        "testfiles/bubble.js",
         "testfiles/class-inheritance-ext.js",
         "testfiles/class-via-function.js",
         "testfiles/classes.js",

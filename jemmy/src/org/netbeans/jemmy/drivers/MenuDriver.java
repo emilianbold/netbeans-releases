@@ -49,7 +49,7 @@ package org.netbeans.jemmy.drivers;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
- * Defines how to work with manus.
+ * Defines how to work with menus.
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
