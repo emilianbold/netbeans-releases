@@ -83,9 +83,9 @@ import org.openide.util.WeakListeners;
  */
 public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
-    private static final String SORT_ALPHABET = "sort.alphabet";
-    private static final String SORT_SUSPEND = "sort.suspend";
-    private static final String SHOW_SYSTEM_THREADS = "show.systemThreads";
+    public static final String SORT_ALPHABET = "sort.alphabet";
+    public static final String SORT_SUSPEND = "sort.suspend";
+    public static final String SHOW_SYSTEM_THREADS = "show.systemThreads";
     
     private static final Set<String> SYSTEM_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
                                                            "Reference Handler",
@@ -553,7 +553,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
-            if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key)) {
+            if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) || SHOW_SYSTEM_THREADS.equals(key)) {
                 fireThreadStateChanged(ROOT);
             }
         }

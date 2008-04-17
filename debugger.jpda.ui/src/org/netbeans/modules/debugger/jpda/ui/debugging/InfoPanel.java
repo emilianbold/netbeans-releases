@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -111,7 +110,7 @@ public class InfoPanel extends javax.swing.JPanel {
     
     private void initFilterPanel (JPanel filterPanel) {
         filterPanel.setBorder(new EmptyBorder(1, 2, 1, 5));
-        FiltersDescriptor filtersDesc = FiltersDescriptor.createDebuggingViewFilters();
+        final FiltersDescriptor filtersDesc = FiltersDescriptor.createDebuggingViewFilters();
         // configure toolbar
         JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
         toolbar.setFloatable(false);
@@ -128,11 +127,15 @@ public class InfoPanel extends javax.swing.JPanel {
         }
 
         // add toggle buttons
-        JToggleButton curToggle;
         Dimension space = new Dimension(3, 0);
         for (int i = 0; i < toggles.size(); i++) {
-            curToggle = toggles.get(i);
-            // curToggle.addActionListener(this); [TODO]
+            final int index = i;
+            final JToggleButton curToggle = toggles.get(i);
+            curToggle.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    filtersDesc.setSelected(index, curToggle.isSelected());
+                }
+            });
             toolbar.add(curToggle);
             if (i != toggles.size() - 1) {
                 toolbar.addSeparator(space);
@@ -151,6 +154,7 @@ public class InfoPanel extends javax.swing.JPanel {
         toggleButton.setMargin(new Insets(2,3,2,3));
         toggleButton.setToolTipText(filtersDesc.getTooltip(index));
         toggleButton.setFocusable(false);
+        filtersDesc.connectToggleButton(index, toggleButton); // [TODO] ?
         return toggleButton;
     }
     

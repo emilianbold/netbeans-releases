@@ -122,7 +122,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         tapPanel = new TapPanel();
         tapPanel.setBackground(hitsPanelColor);
         tapPanel.setOrientation(TapPanel.DOWN);
-        tapPanel.setExpanded(false);
+        // tapPanel.setExpanded(false);
         // tooltip
         KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
