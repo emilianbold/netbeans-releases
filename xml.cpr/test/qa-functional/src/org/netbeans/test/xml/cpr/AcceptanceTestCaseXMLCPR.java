@@ -672,6 +672,35 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     protected void GotoSchemaSource(
+        //JListOperator opListOriginal,
+        String sSection,
+        String sName,
+        String sRequiredText
+      )
+    {
+      System.out.println( "***" + sSection + "***" + sName + "***" );
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sSection );
+      opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      int iIndex = opList.findItemIndex( sName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+
+    }
+
+    protected void GotoSchemaSource(
         JListOperator opListOriginal,
         String sName,
         String sRequiredText
@@ -1057,14 +1086,18 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     public void ExploreComplexInternal(
+        String sSection,
         String sName,
-        String sType
+        String sType,
+        String sIncode
       )
     {
       // Select in schema
       // Select newAttribute
       SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sSection );
+      opList = opMultiView.getColumnListOperator( 1 );
       opList.selectItem( sName );
 
       // Go to : schema -> definition
@@ -1101,9 +1134,9 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Go to : Schema -> Source
       // Check selected element
       GotoSchemaSource(
-          opList,
-          COMPLEX_NAMES[ 0 ],
-          "<xs:complexType name=\"" + sName + "\">"
+          sSection,//opList,
+          sName,
+          sIncode
         );
 
       // Go to : Source -> Design

@@ -111,11 +111,8 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     }
 
     public ComponentOperator open() {
-        OutputOperator oot = new OutputOperator();
-        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-
-        OutputTabOperator asot = oot.getOutputTab("Reverse Engineering");
-        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
+        OutputTabOperator asot = new OutputOperator().getOutputTab("Reverse Engineering");
+        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 500000);
         asot.waitText("Task Successful");
         return null;
     }
@@ -123,8 +120,7 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     @Override
     public void close() {
         ProjectSupport.closeProject("jEdit-Model_" + suffix);
-        System.gc();
-        new EventTool().waitNoEvent(3000);
+        runGC(1);
 
     }
 

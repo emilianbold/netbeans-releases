@@ -42,11 +42,14 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,10 +80,7 @@ public class AutoupdateSettings {
     public static final int NEVER = 5;
     public static final int CUSTOM_CHECK_INTERVAL = 6;
     private static final String EXPIRATION_RECORD = "expiration";
-    private static final String CURRENT_VERSION = "6.1";
-    private static final String [] SUPPORTED_VERSIONS = {
-        "6.1"
-    };
+    private static final String [] VERSIONS_FOR_IMPORT = new String[0];
     
     private static final String [][] KNOWN = {
         {"EVERY_STARTUP", "0"},
@@ -237,18 +237,22 @@ public class AutoupdateSettings {
     
     private static void expirationCheck () {
         Preferences p = getPreferences ();
-        String exp = p.get (EXPIRATION_RECORD, null); 
-        if (exp == null || ! Arrays.asList (SUPPORTED_VERSIONS).contains (exp)) {
+        String exp = p.get (EXPIRATION_RECORD, null);
+        Collection<String> forImport = new HashSet<String> (Arrays.asList (VERSIONS_FOR_IMPORT));
+        String currentVersion = new File (System.getProperty ("netbeans.user")).getName ();
+        forImport.add (currentVersion);
+        if (exp == null || ! forImport.contains (exp)) {
             try {
                 p.removeNode ();
-                err.log (Level.FINE, "Don't import preferences for version " + exp);
+                err.log (Level.FINE, "Don't read preferences from userdir " + exp);
             } catch (BackingStoreException ex) {
                 err.log (Level.INFO, ex.getLocalizedMessage (), ex);
             }
         } else {
-            err.log (Level.FINEST, "Import preferences for version " + exp);
+            err.log (Level.FINEST, "Read preferences from userdir " + exp);
         }
-        getPreferences ().put (EXPIRATION_RECORD, CURRENT_VERSION);
+        err.log (Level.FINEST, "Store current version " + currentVersion + " for future import.");
+        getPreferences ().put (EXPIRATION_RECORD, currentVersion);
     }
 
     
