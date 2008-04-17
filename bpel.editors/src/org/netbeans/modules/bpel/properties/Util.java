@@ -55,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  *
@@ -222,27 +223,10 @@ public class Util {
         return false;
     } //-- isExtender
     
-    /**
-     *
-     *
-     */
-    public static FileObject getFileObjectByModel(Model model){
-        if (model != null){
-            ModelSource src = model.getModelSource();
-            if (src != null){
-                Lookup lookup = src.getLookup();
-                if (lookup != null){
-                    return (FileObject) lookup.lookup(FileObject.class);
-                }
-            }
-        }
-        return null;
-    }
-    
     public static String getNewModelLocation(Model mainModel, FileObject newModelFo){
         Lookup lookup = mainModel.getModelSource().getLookup();
         if (lookup != null){
-            FileObject mainModelFo = getFileObjectByModel(mainModel);
+            FileObject mainModelFo = SoaUtil.getFileObjectByModel(mainModel);
             return getRelativePath(mainModelFo.getParent(), newModelFo);
         }
         return null;

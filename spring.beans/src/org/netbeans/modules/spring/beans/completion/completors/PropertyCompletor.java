@@ -54,9 +54,10 @@ import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.util.Exceptions;
 
@@ -73,7 +74,7 @@ public class PropertyCompletor extends Completor {
     public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
         final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
         final String propertyPrefix = context.getTypedPrefix();
-        final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
+        final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
         if (js == null) {
             return Collections.emptyList();
         }
@@ -92,7 +93,7 @@ public class PropertyCompletor extends Completor {
                     if (className == null) {
                         return;
                     }
-                    TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                    TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
                     if (te == null) {
                         return;
                     }

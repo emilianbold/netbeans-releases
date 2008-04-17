@@ -20,7 +20,6 @@ package org.netbeans.modules.bpel.properties;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.core.BPELCatalog;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
@@ -46,14 +45,11 @@ import org.xml.sax.SAXException;
  */
 public class WsAddressingImportHelper {
 
-    private static String WS_ADDRESSING_FILE_NAME = "addressing"; // NOI18N
-    private static String SCHEMA_EXT = "xsd"; // NOI18N
+    private static final String WS_ADDRESSING_FILE_NAME = "addressing"; // NOI18N
+    private static final String SCHEMA_EXT = "xsd"; // NOI18N
 
-    private BpelModel myModel;
-    private ImportRegistrationHelper myImportHelper;
-
-    private static AtomicReference<WsAddressingImportHelper> instanceRef =
-            new AtomicReference<WsAddressingImportHelper>();
+    private final BpelModel myModel;
+    private final ImportRegistrationHelper myImportHelper;
 
     private WsAddressingImportHelper(BpelModel bpelModel,
             ImportRegistrationHelper importHelper)
@@ -69,12 +65,7 @@ public class WsAddressingImportHelper {
     public static WsAddressingImportHelper getInstance(BpelModel model,
             ImportRegistrationHelper importHelper)
     {
-        if (model == null || importHelper == null) {
-            return null;
-        }
-        instanceRef.compareAndSet(null, new WsAddressingImportHelper(
-                                         model, importHelper));
-        return instanceRef.get();
+        return new WsAddressingImportHelper(model, importHelper);
     }
 
     public BpelModel getModel() {

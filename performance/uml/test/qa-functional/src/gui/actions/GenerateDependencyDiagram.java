@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
 import java.io.File;
@@ -60,41 +58,36 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class GenerateDependencyDiagram extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-    private static String testDiagramName = "jEdit";    
+    private static String testDiagramName = "jEdit";
     private Node diag;
-    
-   
+    public static final long EXPECTED_TIME = 5000;
+
     /** Creates a new instance of GenerateDependencyDiagram */
     public GenerateDependencyDiagram(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
-        expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;        
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 4000;
     }
-    public GenerateDependencyDiagram(String testName, String  performanceDataName) {
+
+    public GenerateDependencyDiagram(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
-        expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;                
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
-        
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        diag = new Node(pNode,"Model"+"|"+"org"+"|"+"gjt"+"|"+"sp"+"|"+"jedit"+"|"+testDiagramName);
+        diag = new Node(pNode, "Model" + "|" + "org" + "|" + "gjt" + "|" + "sp" + "|" + "jedit" + "|" + testDiagramName);
         diag.select();
-       
-         
     }
 
     public ComponentOperator open() {
@@ -103,22 +96,22 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
         return new TopComponentOperator("jEditDependencies");
 
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
 //        new CloseAllDocumentsAction().performAPI();
     }
-   
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-     new CloseAllDocumentsAction().performAPI();
- 
-    } 
+        new CloseAllDocumentsAction().performAPI();
+
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new GenerateDependencyDiagram("measureTime"));
-    }      
-
-
+    }
 }

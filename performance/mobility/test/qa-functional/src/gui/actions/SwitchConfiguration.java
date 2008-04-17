@@ -121,18 +121,22 @@ public class SwitchConfiguration extends org.netbeans.performance.test.utilities
     
     public void close() {
         log(":: close");
-        projectNode.properties();
-        propertiesWindow = new WizardOperator(targetProject);
-        
-        // switch back to default config
-        JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow,0);
-        combo.selectItem(0); //DefaultConfiguration
-        propertiesWindow.ok();
+        if (projectNode != null) {
+            projectNode.properties();
+            propertiesWindow = new WizardOperator(targetProject);
+
+            // switch back to default config
+            JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow,0);
+            combo.selectItem(0); //DefaultConfiguration
+            propertiesWindow.ok();
+        }            
     }
     
     public void shutdown() {
         log("::shutdown");
-        editor.close();
+        if (editor != null) {
+            editor.close();
+        }
     }
 
     public static void main(java.lang.String[] args) {

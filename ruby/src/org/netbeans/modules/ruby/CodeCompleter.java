@@ -180,9 +180,6 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class CodeCompleter implements Completable {
-    /** Include call items in code completion? */
-    private static final boolean INCLUDE_CALL_ITEMS = true;
-    
     /** Another good logical parameter would be SINGLE_WHITESPACE which would insert a whitespace separator IF NEEDED */
     /** Live code template parameter: require the given file, if not already done so */
     private static final String KEY_REQUIRE = "require"; // NOI18N
@@ -1624,22 +1621,20 @@ public class CodeCompleter implements Completable {
         IndexedMethod targetMethod = methodHolder[0];
         int index = paramIndexHolder[0];
         
-        if (INCLUDE_CALL_ITEMS) {
-            CallItem callItem = new CallItem(targetMethod, index, anchor, request);
-            proposals.add(callItem);
-            // Also show other documented, not nodoc'ed items (except for those
-            // with identical signatures, such as overrides of the same method)
-            if (alternatesHolder[0] != null) {
-                Set<String> signatures = new HashSet<String>();
-                signatures.add(targetMethod.getSignature().substring(targetMethod.getSignature().indexOf('#')+1));
-                for (IndexedMethod m : alternatesHolder[0]) {
-                    if (m != targetMethod && m.isDocumented() && !m.isNoDoc()) {
-                        String sig = m.getSignature().substring(m.getSignature().indexOf('#')+1);
-                        if (!signatures.contains(sig)) {
-                            CallItem item = new CallItem(m, index, anchor, request);
-                            proposals.add(item);
-                            signatures.add(sig);
-                        }
+        CallItem callItem = new CallItem(targetMethod, index, anchor, request);
+        proposals.add(callItem);
+        // Also show other documented, not nodoc'ed items (except for those
+        // with identical signatures, such as overrides of the same method)
+        if (alternatesHolder[0] != null) {
+            Set<String> signatures = new HashSet<String>();
+            signatures.add(targetMethod.getSignature().substring(targetMethod.getSignature().indexOf('#')+1));
+            for (IndexedMethod m : alternatesHolder[0]) {
+                if (m != targetMethod && m.isDocumented() && !m.isNoDoc()) {
+                    String sig = m.getSignature().substring(m.getSignature().indexOf('#')+1);
+                    if (!signatures.contains(sig)) {
+                        CallItem item = new CallItem(m, index, anchor, request);
+                        proposals.add(item);
+                        signatures.add(sig);
                     }
                 }
             }
@@ -3155,7 +3150,7 @@ public class CodeCompleter implements Completable {
             final RubyParser parser = new RubyParser();
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
-                Element surrounding = parser.resolveHandle(null, elementHandle);
+                Element surrounding = RubyParser.resolveHandle(null, elementHandle);
                 if (surrounding != null && surrounding.getKind() != ElementKind.KEYWORD) {
                     String name = surrounding.getName();
                     ElementKind kind = surrounding.getKind();
@@ -4120,11 +4115,6 @@ public class CodeCompleter implements Completable {
             this.index = parameterIndex;
         }
 
-        @Override
-        public String getRhsHtml() {
-            return super.getRhsHtml();//null;
-        }
-        
         @Override
         public ElementKind getKind() {
             return ElementKind.CALL;

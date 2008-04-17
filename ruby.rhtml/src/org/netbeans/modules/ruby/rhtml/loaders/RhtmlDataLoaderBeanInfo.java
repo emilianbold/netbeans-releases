@@ -51,6 +51,7 @@ import org.openide.util.Utilities;
 
 public class RhtmlDataLoaderBeanInfo extends SimpleBeanInfo {
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
@@ -59,6 +60,7 @@ public class RhtmlDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return Utilities.loadImage("org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif");

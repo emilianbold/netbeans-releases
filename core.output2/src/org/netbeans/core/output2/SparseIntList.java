@@ -109,8 +109,8 @@ final class SparseIntList {
         lastIndex = idx;
         
         // clear cached result
-        lastGetIndex = -1;
-        lastGetResult = -1;
+        lastGetIndex = lastGetResult = -1;
+        lastGetNextKeyValue = lastGetNextKeyResult = -1;
     }
     
     int lastAdded() {
@@ -127,7 +127,7 @@ final class SparseIntList {
         //Fill it with Integer.MAX_VALUE so binarySearch works properly (must
         //be sorted, cannot have 0's after the actual data
         Arrays.fill(keys, Integer.MAX_VALUE);
-        Arrays.fill(values, -1);
+        Arrays.fill(values, Integer.MAX_VALUE);
     }
 
 
@@ -170,8 +170,71 @@ final class SparseIntList {
             pos = -pos - 2;         // nearest element
             return lastGetResult = values[pos] + index - keys[pos];
         }
-    }    
+    }
     
+    
+    /** Caches the last requested getNextKey() value. Often we will be called 
+     * repeatedly for the same value - cache it */
+    private int lastGetNextKeyValue = -1;
+    /** Caches the last requested result for the same reasons. */
+    private int lastGetNextKeyResult;
+    
+    /** Finds key which is next to key corresponding to supplied value, 
+     *  if value does not exit, the key is interpolated in similar manner as in get().
+     *  This is used to locate physical line which corresponds to logical line
+     */ 
+    public synchronized int getNextKey(int val) {
+        if (val < 0) {
+            return 0;
+        }
+        if (used == 0) {
+            return val;
+        }        
+        if (used > 0 && val < values[0]) {
+            return val < keys[0] ? val : keys[0];
+        }
+        
+        if (val == lastGetNextKeyValue) {
+            return lastGetNextKeyResult;
+        } else {
+            lastGetNextKeyValue = val;
+        }
+
+        int pos = Arrays.binarySearch(values, val);
+        if (pos < 0) {
+            pos = -pos - 1;
+            int key = val - values[pos - 1] + keys[pos - 1] + 1;
+            return lastGetNextKeyResult = pos < used ? Math.min(key, keys[pos]) : key;
+        } else {
+            return lastGetNextKeyResult = keys[pos] + 1;
+        }
+    }
+    
+    /** Finds key for supplied value, if value does not exit, the key is 
+     *  interpolated in similar manner as in get()
+     */ 
+    public synchronized int getKey(int val) {
+        if (val < 0) {
+            return 0;
+        }
+        if (used == 0) {
+            return val - 1;
+        }
+        
+        if (used > 0 && val < values[0]) {
+            return val < keys[0] ? val - 1 : keys[0];
+        }
+
+        int pos = Arrays.binarySearch(values, val);
+        if (pos < 0) {
+            pos = -pos - 1;
+            int key = val - values[pos - 1] + keys[pos - 1];
+            return pos < used ? Math.min(key, keys[pos]) : key;
+        } else {
+            return keys[pos];
+        }
+    }    
+
     /**
      * Grow the arrays we're using to store keys/values
      */

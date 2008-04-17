@@ -52,9 +52,14 @@ import java.util.Set;
  * @author Tor Norbye
  */
 public class DuplicateElementSet implements Set<IndexedElement> {
-    private List<IndexedElement> elements = new ArrayList<IndexedElement>();
+    private final List<IndexedElement> elements;
 
     public DuplicateElementSet() {
+        elements = new ArrayList<IndexedElement>();
+    }
+    
+    public DuplicateElementSet(int initialSize) {
+        elements = new ArrayList<IndexedElement>(initialSize);
     }
 
     public int size() {

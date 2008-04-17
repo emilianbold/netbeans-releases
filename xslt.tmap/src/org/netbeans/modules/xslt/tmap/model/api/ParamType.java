@@ -25,7 +25,6 @@ package org.netbeans.modules.xslt.tmap.model.api;
  */
 public enum ParamType {
     PART("part"),
-    URI("uri"),
     LITERAL("literal"),
     INVALID;
     
@@ -53,8 +52,6 @@ public enum ParamType {
         
         if (PART.getStringValue().equals(type)) {
             paramType = PART;
-        } else if (URI.getStringValue().equals(type)) {
-            paramType = URI;
         } else if (LITERAL.getStringValue().equals(type)) {
             paramType = LITERAL;
         }

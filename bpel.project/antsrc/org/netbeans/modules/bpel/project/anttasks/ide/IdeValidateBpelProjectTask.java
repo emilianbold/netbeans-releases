@@ -45,12 +45,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Reference;
@@ -59,8 +59,6 @@ import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
 import org.netbeans.modules.bpel.project.anttasks.util.Util;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.filesystems.FileObject;
@@ -161,10 +159,10 @@ public class IdeValidateBpelProjectTask extends Task {
     }
 
     private void processSourceDirs(List sourceDirs) {
-        Iterator it = sourceDirs.iterator();
+        Iterator iterator = sourceDirs.iterator();
 
-        while (it.hasNext()) {
-            File sourceDir = (File) it.next();
+        while (iterator.hasNext()) {
+            File sourceDir = (File) iterator.next();
             processSourceDir(sourceDir);
         }
     }
@@ -245,21 +243,18 @@ public class IdeValidateBpelProjectTask extends Task {
 
         try {
             model = IdeBpelCatalogModel.getDefault().getBPELModel(bpel);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Error while trying to create BPEL Model", e);
         }
-        Validation validation = new Validation();
-        validation.validate((org.netbeans.modules.xml.xam.Model) model, ValidationType.COMPLETE);
-        Collection col = validation.getValidationResult();
+        List<ResultItem> result = Util.validate(model);
         boolean isError = false;
 
-        for (Iterator itr = col.iterator(); itr.hasNext();) {
-            ResultItem resultItem = (ResultItem) itr.next();
-
-            System.err.println(getValidationError(bpel, resultItem));
+        for (ResultItem item : result) {
+            System.err.println(getValidationError(bpel, item));
             System.err.println();
 
-            if (resultItem.getType() == Validator.ResultType.ERROR) {
+            if (item.getType() == Validator.ResultType.ERROR) {
                 isError = true;
             }
         }

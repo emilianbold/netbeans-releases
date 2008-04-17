@@ -211,7 +211,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("JApplet Form");
         Thread.sleep(10000);
         System.out.println(getWorkDir());
-        testFormFile("NewJApplet");
+        //testFormFile("NewJApplet");
         testJavaFile("NewJApplet");
 
     }
@@ -224,7 +224,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("JDialog Form");
 
         //check if template is generated correctly
-        testFormFile("NewJDialog");
+        //testFormFile("NewJDialog");
         testJavaFile("NewJDialog");
 
     }
@@ -236,7 +236,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
 
         openTemplate("JFrame Form");
         //check if template is generated correctly
-        testFormFile("NewJFrame");
+        //testFormFile("NewJFrame");
         testJavaFile("NewJFrame");
     }
 
@@ -249,7 +249,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
 
         //check if template is generated correctly
         System.out.println(getWorkDir().getAbsolutePath());
-        testFormFile("NewJInternalFrame");
+        //testFormFile("NewJInternalFrame");
         testJavaFile("NewJInternalFrame");
     }
 
@@ -258,7 +258,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("Application Sample Form");
 
         //check if template is generated correctly
-        testFormFile("NewApplication");
+        //testFormFile("NewApplication");
         testJavaFile("NewApplication");
 
     }
@@ -268,7 +268,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("MDI Application Sample Form");
 
         //check if template is generated correctly
-        testFormFile("NewMDIApplication");
+        //testFormFile("NewMDIApplication");
         testJavaFile("NewMDIApplication");
 
     }
@@ -281,7 +281,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("JPanel Form");
 
         //check if template is generated correctly
-        testFormFile("NewJPanel");
+        //testFormFile("NewJPanel");
         testJavaFile("NewJPanel");
 
     }
@@ -294,7 +294,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("Bean Form");
 
 
-        testFormFile("NewBeanForm");
+        //testFormFile("NewBeanForm");
         //Bug in generating of new Bean Form template 95403
         //testJavaFile("NewBeanForm");
         Thread.sleep(1000);

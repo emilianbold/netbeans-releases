@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.settings;
 
+import junit.framework.Test;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 import org.netbeans.core.startup.layers.NamedFSServicesLookupTest;
 
 
@@ -56,4 +59,20 @@ public class RecognizeInstanceObjectsTest extends NamedFSServicesLookupTest{
     protected int timeOut() {
         return 20000;
     }
+
+    public static Test suite() {
+        // From time to time RecognizeInstanceObjectsTest.testOrderingAttributes fails, no idea why. -jglick
+        // And in #417 all the tests deadlocked somewhere in folder ordering, apparently at random.
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return new Test() {
+                public int countTestCases() {
+                    return 0;
+                }
+                public void run(TestResult r) {}
+            };
+        } else {
+            return new TestSuite(RecognizeInstanceObjectsTest.class);
+        }
+    }
+
 }

@@ -87,7 +87,7 @@ public final class RubyPlatform {
     
     /** Required version of ruby-debug-base gem. */
     static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
-    
+
     private final Info info;
     
     private final String id;
@@ -448,6 +448,15 @@ public final class RubyPlatform {
 
     public boolean isValid() {
         return new File(interpreter).isFile();
+    }
+
+    public boolean showWarningIfInvalid() {
+        boolean valid = isValid();
+        if (!valid) {
+            Util.notifyLocalized(RubyPlatform.class, "RubyPlatform.InvalidInterpreter", // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE, getInterpreter());
+        }
+        return valid;
     }
 
     /**

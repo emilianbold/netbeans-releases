@@ -67,6 +67,7 @@ public class EPMeasureActions2  {
         suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
         suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
         suite.addTest(new SchemaNavigatorDesignView("measureTime", "Schema Navigator Design View"));
+        suite.addTest(new ApplyDesignPattern("measureTime", "Apply Design Pattern"));
 // No objects to track reported when OpenSchemaView is disabled
 //        suite.addTest(new WatchProjects("testGCProjects"));
         return suite;

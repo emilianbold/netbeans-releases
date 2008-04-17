@@ -169,7 +169,6 @@ public class Context implements Serializable {
     }
 
     public static final List<File> getEmptyList() {
-        // XXX
         return Collections.emptyList();
     }
 }

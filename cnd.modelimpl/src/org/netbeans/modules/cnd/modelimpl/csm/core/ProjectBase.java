@@ -126,6 +126,27 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         needParseOrphan = ModelSupport.needParseOrphan(platformProject);
     }
     
+    
+    private boolean checkConsistency() {
+        long time = TraceFlags.TIMING ? System.currentTimeMillis() : 0;
+        if( getFileContainer() == null ) {
+            return false;
+        }
+        if( getDeclarationsSorage() == null ) {
+            return false;
+        }
+        if( getGraph() == null ) {
+            return false;
+        }
+        if( getGlobalNamespace() == null ) {
+            return false;
+        }
+        if( TraceFlags.TIMING ) {
+            System.err.printf("Consistency check took %d ms\n", System.currentTimeMillis() - time);
+        }
+        return true;
+    }
+    
     private void setStatus(Status newStatus) {
 	//System.err.printf("CHANGING STATUS %s -> %s for %s (%s)\n", status, newStatus, name, getClass().getName());
 	status = newStatus;
@@ -159,8 +180,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis() - time;
                 System.err.printf("Project %s: loaded. %d ms\n", name, time);
             }
-            
-            return impl;
+            if( impl.checkConsistency() ) {
+                return impl;
+            }
         }
         return null;
     }
@@ -1346,7 +1368,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
-        assert ns != null : "Failed to get global namespace by key " + globalNamespaceUID;
+        if (ns == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get global namespace by key " + globalNamespaceUID));
+        }
         return ns;
     }
     
@@ -1924,9 +1948,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
-    private Key declarationsSorageKey;
-    private Key fileContainerKey;
-    private Key graphStorageKey;
+    private final Key declarationsSorageKey;
+    private final Key fileContainerKey;
+    private final Key graphStorageKey;
     
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
     
@@ -2008,18 +2032,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     DeclarationContainer getDeclarationsSorage() {
-        return (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        if (dc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+        }
+        return dc;       
     }
     
     FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-	assert fc != null : "Failed to get FileContainer by key " + fileContainerKey;
+        if (fc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
+        }
         return fc;
     }
     
     public GraphContainer getGraphStorage() {
         GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
-	assert gc != null : "Failed to get GraphContainer by key " + graphStorageKey;
+        if (gc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
+        }
 	return gc;
     }
 }

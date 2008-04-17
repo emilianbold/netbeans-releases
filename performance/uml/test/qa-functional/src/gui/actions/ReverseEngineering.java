@@ -38,13 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
 import java.io.File;
 
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -65,9 +62,9 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
  */
 public class ReverseEngineering extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
-            
-    private static String testProjectName = "jEdit";  
+    private static String testProjectName = "jEdit";
     private static long suffix;
+
     /**
      * Creates a new instance of ReverseEngineering
      * @param testName the name of the test
@@ -75,9 +72,9 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     public ReverseEngineering(String testName) {
         super(testName);
         expectedTime = 300000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
+
     /**
      * Creates a new instance of ReverseEngineering
      * @param testName the name of the test
@@ -86,54 +83,51 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     public ReverseEngineering(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 300000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
+
+    @Override
+    public void initialize() {
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        System.gc();
+        new EventTool().waitNoEvent(3000);
     }
-    
-    public void prepare(){
-  
+
+    public void prepare() {
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.select();
         pNode.performPopupAction("Reverse Engineer...");
-               
+
         new EventTool().waitNoEvent(1000);
         NbDialogOperator reng = new NbDialogOperator("Reverse Engineer");
-        JRadioButtonOperator newUMLradio = new JRadioButtonOperator(reng,"Create New UML Project");
+        JRadioButtonOperator newUMLradio = new JRadioButtonOperator(reng, "Create New UML Project");
         newUMLradio.push();
         new EventTool().waitNoEvent(1000);
-        suffix = System.currentTimeMillis(); 
-        JTextFieldOperator textProject = new JTextFieldOperator(reng,2);
+        suffix = System.currentTimeMillis();
+        JTextFieldOperator textProject = new JTextFieldOperator(reng, 2);
         textProject.clearText();
-        textProject.typeText("jEdit-Model_"+ suffix); 
+        textProject.typeText("jEdit-Model_" + suffix);
         reng.ok();
-    
     }
-    
-    public ComponentOperator open(){
-            OutputOperator oot = new OutputOperator();
-            oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
 
-          OutputTabOperator asot = oot.getOutputTab("Reverse Engineering");
-          asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-          asot.waitText("Task Successful");  
+    public ComponentOperator open() {
+        OutputOperator oot = new OutputOperator();
+        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
 
-       return null;
+        OutputTabOperator asot = oot.getOutputTab("Reverse Engineering");
+        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
+        asot.waitText("Task Successful");
+        return null;
     }
-    
-    public void close(){
-//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        ProjectSupport.closeProject("jEdit-Model_"+ suffix);
- }
 
-    protected void shutdown() {
+    @Override
+    public void close() {
+        ProjectSupport.closeProject("jEdit-Model_" + suffix);
+        System.gc();
+        new EventTool().waitNoEvent(3000);
 
-//    new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport      
     }
-    
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new ReverseEngineering("measureTime"));
     }

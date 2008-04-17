@@ -193,7 +193,7 @@ public class JsIndex {
         return classes;
     }
     
-    private String getExtends(String className, Set<Index.SearchScope> scope) {
+    public String getExtends(String className, Set<Index.SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         search(JsIndexer.FIELD_EXTEND, className.toLowerCase(), NameKind.CASE_INSENSITIVE_PREFIX, result, scope, TERMS_EXTEND);
         String target = className.toLowerCase()+";";
@@ -225,6 +225,18 @@ public class JsIndex {
         return getByFqn(prefix, type, kind, scope, false, context, true, true, false);
     }
 
+    public Set<IndexedElement> getElementsByFqn(String fqn,
+            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
+        String name = fqn;
+        int dot = name.lastIndexOf('.');
+        String type = null;
+        if (dot != -1) {
+            type = name.substring(0, dot);
+            name = name.substring(dot+1);
+        }
+        return getByFqn(name, type, kind, scope, false, context, true, true, false);
+    }
+    
     public Set<IndexedElement> getAllElements(String prefix, String type,
             NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
         return getByFqn(prefix, type, kind, scope, false, context, true, true, true);

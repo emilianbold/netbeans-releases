@@ -25,7 +25,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -141,7 +141,7 @@ public class VariableDeclarationScopesChildren extends Children.Keys
     private Node createVdScopeNode(
             VariableDeclarationScope vdScope, NodeFactory nodeFactory) {
         //
-        NodeType bpelNodeType = Util.getBasicNodeType(vdScope);
+        NodeType bpelNodeType = EditorUtil.getBasicNodeType(vdScope);
         Node newNode = nodeFactory.createNode(bpelNodeType, vdScope, myLookup);
         //
         return newNode;
@@ -208,11 +208,11 @@ public class VariableDeclarationScopesChildren extends Children.Keys
         }
         
         public VariableStereotype getVariableStereotype() {
-            return Util.getVariableStereotype(varDecl);
+            return EditorUtil.getVariableStereotype(varDecl);
         }
         
         public Object getVariableType() {
-            return Util.getVariableType(varDecl);
+            return EditorUtil.getVariableType(varDecl);
         }
         
         public QName getVariableQNameType() {

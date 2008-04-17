@@ -40,8 +40,8 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
-import javax.swing.text.JTextComponent;
 
+import javax.swing.text.JTextComponent;
 
 
 /**
@@ -62,7 +62,6 @@ public class SQLStmt {
     private String helpID;
 
     public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt, String helpID) {
-                   
         this.variable = variable;
         this.scopeIndex = scopeIndex;
         this.dataSource = dataSource;
@@ -72,11 +71,8 @@ public class SQLStmt {
     }
 
     public boolean customize(JTextComponent target, String displayName, String stmtLabel, String stmtACSN, String stmtACSD) {
-
         SQLStmtCustomizer c = new SQLStmtCustomizer(this, target, displayName, stmtLabel, stmtACSN, stmtACSD, helpID);
-        boolean accept = c.showDialog();
-        
-        return accept;
+        return c.showDialog();
     }
 
     public String getVariable() {

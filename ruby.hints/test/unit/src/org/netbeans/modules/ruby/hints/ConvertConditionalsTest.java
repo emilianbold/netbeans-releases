@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import org.netbeans.modules.ruby.hints.HintTestBase;
-
 public class ConvertConditionalsTest extends HintTestBase {
     
     public ConvertConditionalsTest(String testName) {

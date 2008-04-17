@@ -173,7 +173,7 @@ public class CsmRefactoringUtils {
         CsmUID<T> uid = null;
         if (CsmKindUtilities.isIdentifiable(element)) {
             uid = ((CsmIdentifiable<T>)element).getUID();
-            boolean checkAssert = false;
+            boolean checkAssert = true;
             assert checkAssert = true;
             if (checkAssert && (uid.getObject() == null)) {
                 System.err.println("UID " + uid + "can't return object " + element);

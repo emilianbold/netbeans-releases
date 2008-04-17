@@ -52,7 +52,7 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -220,7 +220,7 @@ public class FaultNamePropertyCustomizer extends ValidablePropertyCustomizer
         FaultNameChooserPanel chooserPanel = getChooserPanel();
         Util.attachDefaultDblClickAction(chooserPanel, chooserPanel);
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
         //
         HelpCtx.setHelpIDString(this, this.getClass().getName());
     }

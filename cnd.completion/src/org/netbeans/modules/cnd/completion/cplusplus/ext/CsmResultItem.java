@@ -84,7 +84,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -412,11 +414,17 @@ public abstract class CsmResultItem
                     doc.insertString(lastInclude.getStartOffset(), include + "\n\n", null); // NOI18N
                 }
             } else {
+                CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+                CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
                 TokenSequence<CppTokenId> ts;
-                ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                if(guardOffset != null) {
+                    ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset());
+                } else {
+                    ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                }
                 if (ts != null) {
                     int offset = getIncludeOffsetFromTokenSequence(ts);
-                    if (offset == 0) {
+                    if (offset == 0 || guardOffset != null) {
                         doc.insertString(offset, "\n" + include + "\n\n", null); // NOI18N
                     } else {
                         doc.insertString(offset, "\n\n" + include + "\n", null); // NOI18N
@@ -432,43 +440,58 @@ public abstract class CsmResultItem
 
     // Finds place for include insertion in case if there is no other includes in document
     private int getIncludeOffsetFromTokenSequence(TokenSequence<CppTokenId> ts) {
-        ts.moveStart();
         if (!ts.moveNext()) {
             return 0;
         }
-        while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
-                ts.token().id().equals(CppTokenId.NEW_LINE)) {
-            if (!ts.moveNext()) {
-                return 0;
-            }
-        }
-        if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
-                ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
-            if (!ts.moveNext()) {
-                return 0;
-            }
-            int firstCommentEndOffset = ts.offset();
-            int newLineNumber = 0;
-            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
-                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
-                if (ts.token().id().equals(CppTokenId.NEW_LINE)) {
-                    newLineNumber++;
-                }
+        int offset = ts.offset();
+
+        if (offset != 0) {
+            if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
                 if (!ts.moveNext()) {
                     return 0;
+                }
+                offset = ts.offset();
+                if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                    if (!ts.moveNext()) {
+                        return 0;
+                    }
+                    offset = ts.offset();
+                }
+            }
+        } else {
+            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                if (!ts.moveNext()) {
+                    return offset;
                 }
             }
             if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
                     ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
-                return firstCommentEndOffset;
-            } else {
-                if (newLineNumber > 1) {
-                    return firstCommentEndOffset;
+                if (!ts.moveNext()) {
+                    return offset;
                 }
-                return 0;
+                int firstCommentEndOffset = ts.offset();
+                int newLineNumber = 0;
+                while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                        ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                    if (ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                        newLineNumber++;
+                    }
+                    if (!ts.moveNext()) {
+                        return offset;
+                    }
+                }
+                if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
+                        ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
+                    return firstCommentEndOffset;
+                } else {
+                    if (newLineNumber > 1) {
+                        return firstCommentEndOffset;
+                    }
+                }
             }
         }
-        return 0;
+        return offset;
     }
     
     protected String getReplaceText() {

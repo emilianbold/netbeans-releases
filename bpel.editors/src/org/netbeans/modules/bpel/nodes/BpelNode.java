@@ -113,7 +113,7 @@ import org.netbeans.modules.bpel.nodes.dnd.Util;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -663,26 +663,26 @@ public abstract class BpelNode<T>
     }
     
     private Image getDebuggerBadgedImage(Image nodeImage ) {
-        return SoaUiUtil.getBadgedIcon(
+        return SoaUtil.getBadgedIcon(
                 nodeImage,getBreakpointBadge(), 9, 9);
     }
     
     private Image getAnnotationIcon(Image nodeImage, AnnotationType type) {
         switch (type) {
             case BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getBreakpointBadge(), 9, 9);
             case CURRENT_BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getCurrentBreakpointBadge(), 9, 9);
             case DISABLED_BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getDisabledBreakpointBadge(), 9, 9);
             case CURRENT_DISABLED_BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getCurrentDisabledBreakpointBadge(), 9, 9);
             case CURRENT_POSITION :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getCurrentPositionBadge(), 9, 9);
         }
         
@@ -701,12 +701,12 @@ public abstract class BpelNode<T>
         
         if (isErrorBadged) {
             return getErrorBadge() != null
-                    ? SoaUiUtil.getBadgedIcon(
+                    ? SoaUtil.getBadgedIcon(
                     vrgnImage/*getNodeType().getImage()*/,getErrorBadge())
                     : vrgnImage;//getNodeType().getImage();
         } else if (isWarningBadged) {
             return getWarningBadge() != null
-                    ? SoaUiUtil.getBadgedIcon(
+                    ? SoaUtil.getBadgedIcon(
                     vrgnImage/*getNodeType().getImage()*/,getWarningBadge())
                     : vrgnImage;//getNodeType().getImage();
         }
@@ -784,7 +784,7 @@ public abstract class BpelNode<T>
         htmlDisplayName = htmlDisplayName != null && htmlDisplayName.length() > 0 ?
             htmlDisplayName : getNodeType().getDisplayName();
         
-        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(htmlDisplayName);
+        return org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(htmlDisplayName);
     }
     
     protected String getImplShortDescription() {

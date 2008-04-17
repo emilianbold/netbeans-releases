@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.diagram;
 import org.netbeans.modules.xml.xam.Component;
 
 import org.netbeans.modules.bpel.editors.api.diagram.DiagramElement;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
@@ -42,7 +42,7 @@ final class DiagramElementImpl implements DiagramElement {
   }
 
   public void gotoSource() {
-    Util.goToSource(getComponent());
+    EditorUtil.goToSource(getComponent());
   }
 
   public void gotoDesign() {

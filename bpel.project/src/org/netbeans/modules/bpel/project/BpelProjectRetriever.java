@@ -220,7 +220,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                 displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog_Error" ));
             }
             finally {
-                File localCatalogFile = new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog());
+                File localCatalogFile = new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri());
                 if (localCatalogFile.exists() && localCatalogFile.length() == 0) {
                     localCatalogFile.delete();
                 }
@@ -446,7 +446,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        }
                        URI resourceURI = externalResource(resourceName, importLocationLowerCase);
                        if (resourceURI != null) {
-                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog()).getAbsolutePath(),
+                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
                                                                resourceURI.toString())) {
                                try {
                                    FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
@@ -454,7 +454,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
 
 
                                     Retriever.getDefault().retrieveResource(catalogFO,
-                                                                   FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog())).toURI(),
+                                                                   FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
                                                                             resourceURI);
 
                                } catch (Exception ex) {
@@ -492,7 +492,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                            }
                            URI resourceURI = externalResource(resourceName, importLocationLowerCase);
                            if (resourceURI != null) {
-                               if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog()).getAbsolutePath(),
+                               if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
                                                                    resourceURI.toString())) {
                                    try {
                  /*                      Retriever.getDefault().retrieveResource(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath()), 
@@ -503,7 +503,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
 
 
                                         Retriever.getDefault().retrieveResource(catalogFO,
-                                                                       FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog())).toURI(),
+                                                                       FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
                                                                                 resourceURI);
 
                                    } catch (Exception ex) {
@@ -556,7 +556,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                    }
                    URI resourceURI = externalResource(wsdlModel.getDocument().getLocalName(), importLocationLowerCase);
                    if (resourceURI != null) {
-                       if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog()).getAbsolutePath(),
+                       if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
                                                            resourceURI.toString())) {
                            try {
                                /*                        Retriever.getDefault().retrieveResource(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath()),
@@ -567,7 +567,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                displayStatus(importLocationLowerCase);
 
                                Retriever.getDefault().retrieveResource(catalogFO,
-                                                                       FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog())).toURI(),
+                                                                       FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
                                                                        resourceURI);
 
                            } catch (Exception ex) {
@@ -619,7 +619,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        }
                        URI resourceURI = externalResource(wsdlModel.getDocument().getLocalName(), importLocationLowerCase);
                        if (resourceURI != null) {
-                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog()).getAbsolutePath(),
+                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
                                                                resourceURI.toString())) {
                                try {
                                    /*                        Retriever.getDefault().retrieveResource(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath()),
@@ -630,7 +630,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                    displayStatus(importLocationLowerCase);
 
                                    Retriever.getDefault().retrieveResource(catalogFO,
-                                                                           FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalog())).toURI(),
+                                                                           FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
                                                                            resourceURI);
 
                                } catch (Exception ex) {

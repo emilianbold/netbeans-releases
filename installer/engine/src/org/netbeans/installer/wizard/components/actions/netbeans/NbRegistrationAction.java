@@ -52,6 +52,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
@@ -71,6 +72,10 @@ import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_WITH_
 public class NbRegistrationAction extends WizardAction {
 
     public NbRegistrationAction() {
+        if(UiMode.getCurrentUiMode() == UiMode.SILENT) {
+            System.setProperty(NbPostInstallSummaryPanel.
+                ALLOW_SERVICETAG_REGISTRATION_PROPERTY, "" + false);
+        }
     }
 
     public void execute() {

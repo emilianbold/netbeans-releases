@@ -61,7 +61,7 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl impl
 
     private List<CsmExpression> initializers;
     
-    public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
+    public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         super(ast, file, scope, true);
         
         initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());

@@ -28,13 +28,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  *
@@ -81,5 +75,41 @@ public class JsRenameHandlerTest extends JsTestBase {
     
     public void testRename8() throws Exception {
         checkRenameSections("testfiles/rename.js", "funct^ion");
+    }
+    
+    public void testRename9a() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "function(dom^Node, props");
+    }
+
+    public void testRename9b() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "@param {Node} dom^Node The DOM node");
+    }
+
+    public void testRename9c() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "if (dom^Node == null || props == null) {");
+    }
+
+    public void testRename10() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "function(domNode, pro^ps");
+    }
+
+    public void testRename11a() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "third^param)");
+    }
+    
+    public void testRename11b() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "{Object}  third^param");
+    }
+
+    public void testRename12() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "@param f^oo");
+    }
+
+    public void testRename13() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", "* n^ew @param");
+    }
+
+    public void testRename14() throws Exception {
+        checkRenameSections("testfiles/webuifunc.js", " @param test^param");
     }
 }

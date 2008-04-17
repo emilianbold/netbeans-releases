@@ -51,8 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -113,7 +112,7 @@ final class Tabbed extends JTabbedPane {
     }
   }
 
-  private void closeAllTabs() {
+  public void closeAllTabs() {
     removeAll();
   }
 

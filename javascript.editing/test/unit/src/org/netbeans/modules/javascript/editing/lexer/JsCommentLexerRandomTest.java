@@ -60,9 +60,11 @@ public class JsCommentLexerRandomTest extends TestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
     }
 
+    @Override
     protected void tearDown() throws java.lang.Exception {
     }
 

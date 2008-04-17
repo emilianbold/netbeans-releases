@@ -28,12 +28,15 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
@@ -44,6 +47,14 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfret.source.GlobalSourcePath;
+import org.netbeans.modules.gsfret.source.usages.ClassIndexImpl;
+import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
+import org.netbeans.napi.gsfret.source.ClassIndex;
+import org.netbeans.napi.gsfret.source.ClasspathInfo.PathKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -58,7 +69,8 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     protected int caretOffset = -1;
     protected Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
     protected GsfTestBase test;
-    
+    protected Index index;
+
     public GsfTestCompilationInfo(GsfTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
         super(fileObject);
         this.test = test;
@@ -67,7 +79,8 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
         this.doc = doc;
         if (fileObject != null) {
             //source = Source.forFileObject(fileObject);
-            ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
+            //ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
+            ClasspathInfo cpInfo = createForTest(fileObject);
             source = Source.create(cpInfo, Collections.singletonList(fileObject));
         }
     }
@@ -85,15 +98,19 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     }
 
     public Index getIndex(String mimeType) {
-        test.initializeRegistry();
-        ClasspathInfo cpi = source.getClasspathInfo();
-        if (cpi != null) {
-            return cpi.getClassIndex(mimeType);
+        if (index == null) {
+            test.initializeRegistry();
+            ClasspathInfo cpi = source.getClasspathInfo();
+            if (cpi != null) {
+                index = cpi.getClassIndex(mimeType);
+                ClassIndex classIndex = (ClassIndex)index;
+                updateIndexForTests(cpi, classIndex, source);
+            }
         }
         
-        return null;
+        return index;
     }
-
+    
     @Override
     public Document getDocument() throws IOException {
         return this.doc;
@@ -125,6 +142,81 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
         }
 
         return errors;
+    }
+    
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+    
+    public static ClasspathInfo createForTest(FileObject fo) {
+        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        if (bootPath == null) {
+            bootPath = EMPTY_PATH;
+        }
+        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        if (compilePath == null) {
+            compilePath = EMPTY_PATH;
+        }
+        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (srcPath == null) {
+            //srcPath = EMPTY_PATH;
+            srcPath = ClassPathSupport.createClassPath(fo.getParent());
+        }
+        return ClasspathInfo.create(bootPath, compilePath, srcPath);
+    }
+   
+    // Ensure that we have a proper index for the given source
+    public void updateIndexForTests(ClasspathInfo cpInfo, ClassIndex classIndex, Source js) { // TESTS ONLY
+        ClassPath sourcePath = cpInfo.getClassPath(PathKind.SOURCE);
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+        GsfTestBase.assertNotNull(language);
+        //final Iterable<? extends ClassIndexImpl> queries = this.getQueries(EnumSet.of(SearchScope.SOURCE));
+        HashSet<ClassIndexImpl> sourceIndeces = new HashSet<ClassIndexImpl>();
+        createQueriesForTest (language, sourcePath, true, sourceIndeces);
+        for (ClassIndexImpl query : sourceIndeces) {
+            query.setDirty(js);
+        }
+        classIndex.initForTest(sourceIndeces);
+    }
+
+    // Copied from createQueriesForRoot in ClassIndex, tweaked to create query unconditionally
+    private static void createQueriesForTest(final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
+        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+        List<ClassPath.Entry> entries = cp.entries();
+        Indexer indexer = language.getIndexer();
+        if (indexer == null) {
+            return;
+        }
+
+        for (ClassPath.Entry entry : entries) {
+            try {
+                if (!indexer.acceptQueryPath(entry.getURL().toExternalForm())) {
+                    continue;
+                }
+                URL[] srcRoots;
+                if (!sources) {
+                    URL srcRoot = org.netbeans.modules.gsfret.source.usages.Index.getSourceRootForClassFolder(language, entry.getURL());
+                    if (srcRoot != null) {
+                        srcRoots = new URL[]{srcRoot};
+                    } else {
+                        srcRoots = gsp.getSourceRootForBinaryRoot(entry.getURL(), cp, true);
+                        if (srcRoots == null) {
+                            srcRoots = new URL[]{entry.getURL()};
+                        }
+                    }
+                //End to be removed
+                } else {
+                    srcRoots = new URL[]{entry.getURL()};
+                }
+                for (URL srcRoot : srcRoots) {
+                    //ClassIndexImpl ci = ClassIndexManager.get(language).getUsagesQuery(srcRoot);
+                    ClassIndexImpl ci = ClassIndexManager.get(language).createUsagesQuery(srcRoot, true);
+                    if (ci != null) {
+                        queries.add(ci);
+                    }
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
     }
 
     public static class GsfTestParseListener implements ParseListener {

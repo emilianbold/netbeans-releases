@@ -92,9 +92,15 @@ public class Validation {
         
         validatedModels.add(model);
         // Call each provider and accumulate results.
+//System.out.println();
+//System.out.println();
+
         for(Validator provider: validators) {
+//System.out.println("see provider: " + provider.getClass().getName());
             ValidationResult result = provider.validate(model, this, validationType);
+
             if (result != null) {
+//System.out.println("            : errors found");
                 // Gather validation results.
                 validationResult.addAll(result.getValidationResult());
 
@@ -102,9 +108,8 @@ public class Validation {
                 validatedModels.addAll(result.getValidatedModels());
             }
         }
+//System.out.println();
     }
-    
-    
     
     /**
      *  Returns the last validationResult.
@@ -164,7 +169,4 @@ public class Validation {
         }
 //        System.out.println("providers are: " + validators);
     }
-    
-    
-
 }

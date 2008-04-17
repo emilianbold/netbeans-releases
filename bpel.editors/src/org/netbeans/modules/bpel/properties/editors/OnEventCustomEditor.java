@@ -27,7 +27,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.nodes.OnEventNode;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractCustomNodeEditor;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -74,7 +74,7 @@ public class OnEventCustomEditor extends AbstractCustomNodeEditor<OnEvent> {
             }
         });
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     public HelpCtx getHelpCtx() {

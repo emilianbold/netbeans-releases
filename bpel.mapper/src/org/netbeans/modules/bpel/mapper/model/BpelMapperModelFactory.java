@@ -31,6 +31,7 @@ import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEntit
 import org.netbeans.modules.bpel.mapper.predicates.PredicateFinderVisitor;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextControllerImpl2;
 import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
@@ -215,7 +216,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                             timeEH, castList);
                 } else if (timeEvent instanceof DeadlineExpression) {
                     DeadlineExpression expr = (DeadlineExpression)timeEvent;
-                    BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                    BpelEntityCasts castList = editorExtProcessor.getCastList(bpelEntity);
                     addExpressionGraph(expr, newMapperModel, 
                             DateValueTreeModel.DEADLINE_CONDITION, 
                             timeEH, castList);
@@ -247,7 +248,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             assert bpelEntity instanceof ConditionHolder;
             Expression expr = ((ConditionHolder)bpelEntity).getCondition();
             if (expr != null) {
-                BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                BpelEntityCasts castList = editorExtProcessor.getCastList(bpelEntity);
                 addExpressionGraph(expr, newMapperModel, 
                         ConditionValueTreeModel.BOOLEAN_CONDITION, 
                         bpelEntity, castList);
@@ -274,8 +275,8 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             //
             // Add Graphs
             Expression expr = forEach.getStartCounterValue();
+            BpelEntityCasts castList = editorExtProcessor.getCastList(bpelEntity);
             if (expr != null) {
-                BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
                 addExpressionGraph(expr, newMapperModel, 
                         ForEachConditionsTreeModel.START_VALUE, 
                         forEach, castList);
@@ -283,7 +284,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             //
             expr = forEach.getFinalCounterValue();
             if (expr != null) {
-                BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
                 addExpressionGraph(expr, newMapperModel, 
                         ForEachConditionsTreeModel.FINAL_VALUE, 
                         forEach, castList);
@@ -293,7 +293,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             if (cc != null) {
                 expr = cc.getBranches();
                 if (expr != null) {
-                    BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
                     addExpressionGraph(expr, newMapperModel, 
                             ForEachConditionsTreeModel.COMPLETION_CONDITION, 
                             forEach, castList);
@@ -344,6 +343,13 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
         ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.constructFindersList(
             form, copy, copyTo, toExpr, castList.getToCasts(), this);
+        
+        if (toNodeFinderList.isEmpty() && (currentBpelDesignContext != null)) {
+            // add warning message about wrong "toExpr"
+            DesignContextControllerImpl2.addErrMessage(
+                currentBpelDesignContext.getValidationErrMsgBuffer(), 
+                toExpr.getExpressionString(), "to");
+        }
         //
         PreprocessedGraphLocation graphLocation = 
                 new PreprocessedGraphLocation(newGraph, toNodeFinderList);

@@ -439,6 +439,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
+            if(attr == null){
+                template = "FFSourceTable";
+                return template;
+            }
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSSourceTable";
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
@@ -452,6 +456,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 template = "FFSourceTable";
             }
         } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
+            if(attr == null){
+                template = "FFTargetTable";
+                return template;
+            }
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSTargetTable";
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {

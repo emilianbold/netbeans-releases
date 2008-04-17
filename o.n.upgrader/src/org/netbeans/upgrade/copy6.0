@@ -54,6 +54,9 @@ exclude Editors/.*/Popup.*
 exclude Editors/.*/.*\.instance
 exclude Editors/.*/Settings\.settings
 include Services/IndentEngine/.*
+#does not import C/C++ indent settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
 include Keymaps/.*
 include Shortcuts/.*
 include Services/DiffProviders/.*
@@ -72,3 +75,4 @@ include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
 include JSPPalette/.*
 include HTMLPalette/.*
 include J2EE/.*
+include org-netbeans-api-project-libraries/Libraries/.*\.xml

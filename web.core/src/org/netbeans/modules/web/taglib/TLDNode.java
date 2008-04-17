@@ -43,16 +43,15 @@ package  org.netbeans.modules.web.taglib;
 
 import org.openide.loaders.*;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
 
 /** TLD Node
  * @author  mk115033
  */
 
+// FIXME: this class may be simplified, most of the stuff is not used!
 public class TLDNode extends DataNode {
 
-    private static final boolean debug = false;
-
+    // FIXME: no usage
     public static final int TLD_NODE        = 0;
     public static final int TAG_NODE        = 2;
     public static final int ATTRIBUTES_NODE = 3;
@@ -63,8 +62,7 @@ public class TLDNode extends DataNode {
     ///
     ///   ICON specifications for the various node types.
     ///
-    public static final String ICON_BASE_CLASSES = 
-        "org/netbeans/modules/web/taglib/default";     //NOI18N
+    // FIXME: icon constants should be private
     public static final String ICON_BASE_DEFAULT = 
         "org/netbeans/modules/web/taglib/default";  // NOI18N
     
@@ -72,35 +70,35 @@ public class TLDNode extends DataNode {
         "org/netbeans/modules/web/taglib/resources/tags";        //NOI18N
     public static final String ICON_BASE_TAG = 
         "org/netbeans/modules/web/taglib/resources/tag";         //NOI18N
+    // FIXME: no such resource
     public static final String ICON_BASE_ATTRIBUTES = 
         "org/netbeans/modules/web/taglib/resources/attributes";  //NOI18N
+    // FIXME: no such resource
     public static final String ICON_BASE_ATTRIBUTE = 
         "org/netbeans/modules/web/taglib/resources/attribute";   //NOI18N
+    // FIXME: no such resource
     public static final String ICON_BASE_TEI = 
         "org/netbeans/modules/web/taglib/resources/variables";   //NOI18N
+    // FIXME: no such resource
     public static final String ICON_BASE_VARIABLES = 
         "org/netbeans/modules/web/taglib/resources/variables";   //NOI18N
+    // FIXME: no such resource
     public static final String ICON_BASE_VARIABLE = 
         "org/netbeans/modules/web/taglib/resources/variable";    //NOI18N
+    
+    private static final String DEFAULT_ICON_EXTENSION = ".gif";  //NOI18N
 
     public TLDNode (final TLDDataObject dataObject) {
 	super(dataObject,Children.LEAF);
-        setIconBase(ICON_BASE_TLD);
+        setIconBaseWithExtension(ICON_BASE_TLD + DEFAULT_ICON_EXTENSION);
     }
     
-    //
-    // We return null in createActions to signal that actions should be gotten from getActions(),
-    // so that we can vary the actions depending on the state of node.
-    //
-    
-    protected SystemAction[] createActions () {
-	return null;
-    }
-
+    // FIXME: no usage
     protected String getIconBase() {
 	return getIconBase(TLD_NODE);
     }
 
+    // FIXME: no usage (if getIconBase() deleted)
     public static String getIconBase(int type) {
 	switch (type) {
 	case TLD_NODE:
@@ -120,12 +118,8 @@ public class TLDNode extends DataNode {
 	return ICON_BASE_DEFAULT;
     }
 
-    public String getDisplayName() {
-	String dn = super.getDisplayName();
-	return dn; 
-    }
-
     // test to see if we can use DeleteAction
+    @Override
     public boolean canDestroy() {
 	return true;
     }

@@ -648,9 +648,12 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         int prevOffset = offsets.get(i-1);
                         int prevIndent = indents.get(i-1);
                         int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
+                        // NOTE: in embedding this is usually true as we have some nonzero initial indent,
+                        // I am just not sure if it is better to add indentOnly check (as I did) or
+                        // remove blank lines condition completely?
                         if (actualPrevIndent != prevIndent) {
                             // For blank lines, indentation may be 0, so don't adjust in that case
-                            if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                            if (indentOnly || !(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
                                 indent = actualPrevIndent + (indent-prevIndent);
                             }
                         }
@@ -891,8 +894,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         
         // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
         private EditorKit getEditorKit() {
-            if(kit == null)
+            if(kit == null) {
                 kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
+            } // NOI18N
             return kit;
         }
 

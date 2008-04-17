@@ -51,8 +51,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.print.api.PrintManager;
-import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -107,7 +106,7 @@ final class Panel extends JPanel {
     // collapse / expand
     button = createButton(
       new ButtonAction(
-        icon(Util.class, "expose"), // NOI18N
+        icon(Panel.class, "expose"), // NOI18N
         i18n(Panel.class, "TLT_Expose")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myCurrent.expose();
@@ -119,7 +118,7 @@ final class Panel extends JPanel {
     // view
     button = createButton(
       new ButtonAction(
-        icon(Util.class, "view"), // NOI18N
+        icon(Panel.class, "view"), // NOI18N
         i18n(Panel.class, "TLT_Change_View")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           changeView();
@@ -131,7 +130,7 @@ final class Panel extends JPanel {
     // previous occurence
     button = createButton(
       new ButtonAction(
-        icon(Util.class, "previous"), // NOI18N
+        icon(Panel.class, "previous"), // NOI18N
         i18n(Panel.class, "TLT_Previous_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myCurrent.previousOccurence();
@@ -143,7 +142,7 @@ final class Panel extends JPanel {
     // next occurence
     button = createButton(
       new ButtonAction(
-        icon(Util.class, "next"), // NOI18N
+        icon(Panel.class, "next"), // NOI18N
         i18n(Panel.class, "TLT_Next_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myCurrent.nextOccurence();
@@ -159,7 +158,7 @@ final class Panel extends JPanel {
     // export
     button = createButton(
       new ButtonAction(
-        icon(Util.class, "export"), // NOI18N
+        icon(Panel.class, "export"), // NOI18N
         i18n(Panel.class, "TLT_Export")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myCurrent.export();
