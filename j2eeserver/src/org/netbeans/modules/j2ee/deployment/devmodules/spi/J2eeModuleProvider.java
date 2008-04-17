@@ -652,13 +652,6 @@ public abstract class J2eeModuleProvider {
         return new DefaultSourceMap(this);
     }
     
-    /** If the module wants to specify a target server instance for deployment 
-     * it needs to override this method to return false. 
-     */
-    public boolean useDefaultServer () {
-        return true;
-    }
-    
     /**
      * Set ID of the server instance that will be used for deployment.
      * 
@@ -667,20 +660,24 @@ public abstract class J2eeModuleProvider {
      */
     public abstract void setServerInstanceID(String severInstanceID);
     
-    /** Id of server isntance for deployment. The default implementation returns
-     * the default server instance selected in Server Registry. 
-     * The return value may not be null.
-     * If modules override this method they also need to override {@link #useDefaultServer}.
+    /** 
+     * Id of server instance for deployment or null if the module has no server
+     * instance set.
+     *
+     * @return Id of server instance for deployment or <code>null</code> if the module has no server
+     *         instance set.
      */
-    public String getServerInstanceID () {
-        return ServerRegistry.getInstance ().getDefaultInstance ().getUrl ();
-    }
+    public abstract String getServerInstanceID();
     
     /**
      * Return InstanceProperties of the server instance
      **/
-    public InstanceProperties getInstanceProperties(){
-        InstanceProperties props = InstanceProperties.getInstanceProperties(getServerInstanceID());
+    public InstanceProperties getInstanceProperties() {
+        String serverInstanceID = getServerInstanceID();
+        if (serverInstanceID == null) {
+            return null;
+        }
+        InstanceProperties props = InstanceProperties.getInstanceProperties(serverInstanceID);
 
         boolean asserts = false;
         assert asserts = true;
@@ -691,12 +688,14 @@ public abstract class J2eeModuleProvider {
         return props;
     }
 
-    /** This method is used to determin type of target server.
-     * The return value must correspond to value returned from {@link #getServerInstanceID}.
+    /** 
+     * This method is used to determin type of target server. The return value 
+     * must correspond to the value returned from {@link getServerInstanceID}.
+     *
+     * @return the target server type or null if the module has no target server
+     *         type set.
      */
-    public String getServerID () {
-        return ServerRegistry.getInstance ().getDefaultInstance ().getServer ().getShortName ();
-    }
+    public abstract String getServerID();
     
     /**
      * Return name to be used in deployment of the module.
@@ -886,10 +885,6 @@ public abstract class J2eeModuleProvider {
             delegate.setProperties(props);
         }
 
-        public void setAsDefaultServer(String targetName) {
-            delegate.setAsDefaultServer(targetName);
-        }
-
         public void refreshServerInstance() {
             delegate.refreshServerInstance();
         }
@@ -898,16 +893,8 @@ public abstract class J2eeModuleProvider {
             return delegate.propertyNames();
         }
 
-        public boolean isDefaultInstance() {
-            return delegate.isDefaultInstance();
-        }
-
         public DeploymentManager getDeploymentManager() {
             return delegate.getDeploymentManager();
-        }
-
-        public Target getDefaultTarget() {
-            return delegate.getDefaultTarget();
         }
 
         @Override
