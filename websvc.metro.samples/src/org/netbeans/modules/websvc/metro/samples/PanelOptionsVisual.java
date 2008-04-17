@@ -123,7 +123,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
 
     void store(WizardDescriptor d) {
-        d.putProperty(WizardProperties.SERVER, ((ServerWrapper)serverInstanceComboBox.getSelectedItem()).getServerID());
+        ServerWrapper sw = (ServerWrapper) serverInstanceComboBox.getSelectedItem();
+        if (sw != null) {
+            d.putProperty(WizardProperties.SERVER, sw.getServerID());
+        }
     }
     
     void read(WizardDescriptor d) {
