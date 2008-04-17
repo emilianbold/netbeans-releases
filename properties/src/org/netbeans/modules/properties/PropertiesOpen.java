@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,17 +41,29 @@
 
 package org.netbeans.modules.properties;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
@@ -66,15 +78,18 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.OpenSupport;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.*;
-import org.openide.windows.*;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
