@@ -49,14 +49,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -113,7 +108,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     }
     
     public void notifyCopying() {
-        //nothing.
+        // nothing needed in the meantime
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -122,9 +117,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
             return ;
         }
         
-        fixDistJarProperty (nueName);
         project.getReferenceHelper().fixReferences(originalPath);
-        
         project.setName(nueName);
     }
     
@@ -142,23 +135,8 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
             return ;
         }                
         
-        fixDistJarProperty (nueName);
         project.setName(nueName);        
         project.getReferenceHelper().fixReferences(originalPath);
     }
     
-    private void fixDistJarProperty (final String newName) {
-        ProjectManager.mutex().writeAccess(new Runnable () {
-            public void run () {
-                ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
-                String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
-                EditableProperties ep = project.getUpdateHelper().getProperties (RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-                String propValue = ep.getProperty("dist.jar");  //NOI18N
-                if (oldDistJar != null && oldDistJar.equals (propValue)) {
-                    ep.put ("dist.jar","${dist.dir}/"+PropertyUtils.getUsablePropertyName(newName)+".jar"); //NOI18N
-                    project.getUpdateHelper().putProperties (RakeProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-                }
-            }
-        });
-    }
 }
