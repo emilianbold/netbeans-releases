@@ -233,7 +233,8 @@ public final class FiltersDescriptor {
             } else if (name.equals(SUSPEND_SORT)) {
                 isSelected = preferences.getBoolean(DebuggingTreeModel.SORT_SUSPEND, false);
             } else if (name.equals(NATURAL_SORT)) {
-                isSelected = !preferences.getBoolean(DebuggingTreeModel.SORT_ALPHABET, true); // [TODO]
+                isSelected = !preferences.getBoolean(DebuggingTreeModel.SORT_ALPHABET, true) &&
+                        !preferences.getBoolean(DebuggingTreeModel.SORT_SUSPEND, false); // [TODO]
             } else {
                 isSelected = false; // [TODO]
             }
