@@ -786,7 +786,7 @@ HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDO
         || (text.charAt(1)=='?' && short_tags_allowed)) {
         yybegin(ST_IN_SCRIPTING);
         //return T_OPEN_TAG_WITH_ECHO;
-        return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
+        //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
     } else {
         return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
     }
