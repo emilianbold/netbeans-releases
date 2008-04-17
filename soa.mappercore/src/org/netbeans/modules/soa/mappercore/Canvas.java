@@ -323,7 +323,18 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         Rectangle viewRect = scrollPane.getViewport().getViewRect();
         return graphX - getGraphViewPositionX() + viewRect.x + viewRect.width;
     }
-
+    
+    public int toGraphY(int canvasY) {
+        MapperNode node = getNodeAt(canvasY);
+                
+        int graphY = node.getY();
+        while (node.getParent() != null) {
+            node = node.getParent();
+            graphY = graphY + node.getY();
+        }
+        return graphY;
+    }
+    
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
