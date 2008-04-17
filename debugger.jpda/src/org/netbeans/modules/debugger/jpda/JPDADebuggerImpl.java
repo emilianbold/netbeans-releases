@@ -545,8 +545,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setCurrentThread (JPDAThread thread) {
-        Object oldT = currentThread;
-        currentThread = (JPDAThreadImpl) thread;
+        Object oldT;
+        synchronized (LOCK) {
+            oldT = currentThread;
+            currentThread = (JPDAThreadImpl) thread;
+        }
         if (thread != oldT)
             firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
         updateCurrentCallStackFrame (thread);
@@ -558,8 +561,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *         attached other PropertyChangeEvents as a propagation ID.
      */
     private PropertyChangeEvent setCurrentThreadNoFire(JPDAThread thread) {
-        Object oldT = currentThread;
-        currentThread = (JPDAThreadImpl) thread;
+        Object oldT;
+        synchronized (LOCK) {
+            oldT = currentThread;
+            currentThread = (JPDAThreadImpl) thread;
+        }
         PropertyChangeEvent evt = null;
         if (thread != oldT)
             evt = new PropertyChangeEvent(this, PROP_CURRENT_THREAD, oldT, currentThread);
@@ -996,6 +1002,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK) {
             // this method can be called in stopped state to switch 
             // the current thread only
+            JPDAThread c = getCurrentThread();
+            if (c != null && c.isSuspended()) {
+                // We already have a suspended current thread, do not switch in that case.
+                return ;
+            }
             JPDAThread t = getThread (thread);
             checkJSR45Languages (t);
             evt = setCurrentThreadNoFire(t);
