@@ -56,9 +56,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -106,6 +104,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -262,6 +261,13 @@ public class PHPCodeCompletion implements Completable {
         request.info = info;
         request.prefix = prefix;
         request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        
+        try {
+            request.currentlyEditedFileURL = result.getFile().getFileObject().getURL().toString();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         
         switch(context){
             case EXPRESSION:
@@ -1071,7 +1077,7 @@ public class PHPCodeCompletion implements Completable {
             // true for elements defined in the currently file
             if (getElement() instanceof IndexedElement) {
                 IndexedElement indexedElement = (IndexedElement) getElement();
-                return request.result.getFile().getFile().equals(indexedElement.getFile().getFile());
+                return indexedElement.getFilenameUrl().equals(request.currentlyEditedFileURL);
             }
 
             return false;
@@ -1120,6 +1126,7 @@ public class PHPCodeCompletion implements Completable {
         private PHPParseResult result;
         private CompilationInfo info;
         private String prefix;
+        private String currentlyEditedFileURL;
         PHPIndex index;
     }
 }
