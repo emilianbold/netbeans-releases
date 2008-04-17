@@ -74,7 +74,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -209,6 +208,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private boolean recompileFilesWithErrorsToBeScheduled;
     private final Map<URL, Collection<File>> url2CompileWithDeps = new HashMap<URL, Collection<File>>();
     private final Map<URL, Reference<Task>> url2CompileWithDepsTask = new HashMap<URL, Reference<Task>>();
+    private final Set<URL> rootsWithVirtualSource = new HashSet<URL>();
     private boolean compileWithDepsToBeScheduled;
     private int compileScheduled;
     
@@ -2048,6 +2048,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, fo);
                     toCompile.add(Pair.<JavaFileObject,File>of(fo,null));
                 }
+                rootsWithVirtualSource.add(root);
             }
             if (!toCompile.isEmpty()) {
                 if (handle != null) {
@@ -2527,9 +2528,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         gatherResourceForParseFilesFromRoot(files, rootFile, cacheRoot, resources);
                         
                         final Map<URI, List<String>> misplacedSource2FQNs = new HashMap<URI, List<String>>();
-                        final FileList list = new FileList(rootFile);   //Todo: performance
+                        List<? extends File> virtualFiles;
+                        if (rootsWithVirtualSource.contains(root)) {
+                            final FileList list = new FileList(rootFile);
+                            virtualFiles = list.getVirtualJavaFiles();
+                        }
+                        else {
+                            virtualFiles = Collections.<File>emptyList();
+                        }
                         parseFiles(root, cacheRoot, false,
-                                files, list.getVirtualJavaFiles(),
+                                files, virtualFiles,
                                 true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs);
 
                         if (!misplacedSource2FQNs.isEmpty()) {
@@ -2542,7 +2550,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             gatherResourceForParseFilesFromRoot(files, rootFile, cacheRoot, resources);
                             
                             parseFiles(root, cacheRoot, false,
-                                    files, list.getVirtualJavaFiles(),
+                                    files, virtualFiles,
                                     true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs);
                         }
                         
