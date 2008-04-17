@@ -58,7 +58,14 @@
                             <li>Additional Stylesheet</li>
                         </ul>
                         
-                        <h2>Getting Started</h2>
+                        <h2>Before the start</h2>
+                        <ul>
+                            <li>If you want to try the sample out, follow <a href="#getting_started">Getting Started</a> guidelines.</li>
+                            <li>In case of you want to try debugging features of the NetBeans IDE, 
+                            follow the <a href="#debugging">Debugging</a> guidelines.</li>
+                        </ul>
+                        
+                        <h2 id="getting_started">Getting Started</h2>
                         <ol>
                             <li>
                                 Firstly, we have to create the database and populate it with data:
@@ -84,6 +91,19 @@
                             </li>
                             <li>Click View Itinerary link in the right pane. You should see some records shown from the database.</li>
                             <li>Play futher with the sample:)</li>
+                        </ol>
+                        
+                        <h2 id="debugging">Debugging</h2>
+                        <ol>
+                            There steps should enable you the debugging option at the sample project, <b>if you already have PHP debugger
+                            installed and configured</b>.<br>
+                            For demonstrating the PHP debugger in NetBeans we have to put the sample project to the PHP documents directory (htdocs):
+                            <li>Create new <code>Air Alliance Sample Appliaction</code> with following settings:</li>
+                            <li>Set the Project Folder to your PHP documents (htdocs) directory, for example: 
+                            <code>...\Apache2.2\htdocs\AirAlliance\</code></li>
+                            <li>In project properies (Right-click the project node and select <code>Properties</code>.) set the <code>Project URL</code>
+                            to be appropriate with previous setting, for example: <code>http://localhost/AirAlliance/web/</code></li>
+                            <li>To debug, right-click the project node and select <code>Debug Project</code>.</li>
                         </ol>
                         
                         <h2>Project folder's structure</h2>
