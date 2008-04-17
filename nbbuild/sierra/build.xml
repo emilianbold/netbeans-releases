@@ -181,6 +181,7 @@
             <buildpath location="${home}/print"/>
             <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
             <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
+            <buildpath location="${home}/xml.validation"/> <!-- todo r -->
         </subant>
     </target>
 
@@ -217,6 +218,7 @@
     <target name="clean-soa"><antcall target="do-soa"><param name="action" value="clean"/></antcall></target>
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
+            <buildpath location="${home}/soa.validation/build.xml"/>
             <buildpath location="${home}/soa.core/build.xml"/>
             <buildpath location="${home}/soa.ui/build.xml"/>
             <buildpath location="${home}/soa.mappercore/build.xml"/>
