@@ -85,6 +85,8 @@ public class MySQLPanel extends DestinationPanel {
                 DEFAULT_REPEAT_PASSWORD_LABEL_TEXT);
         setProperty(ANONYMOUS_ACCOUNT_TEXT_PROPERTY,
                 DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT);
+        setProperty(ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY,
+                DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT_DISABLED);
         setProperty(NETWORK_TEXT_PROPERTY,
                 DEFAULT_NETWORK_LABEL_TEXT);
         setProperty(PORT_TEXT_PROPERTY,
@@ -224,7 +226,7 @@ public class MySQLPanel extends DestinationPanel {
             repeatPasswordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
 
             anonymousCheckBox.setText(
-                    panel.getProperty(ANONYMOUS_ACCOUNT_TEXT_PROPERTY));
+                    panel.getProperty(ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY));
 
             anonymousCheckBox.setSelected(false);
             if (Boolean.parseBoolean(
@@ -417,7 +419,11 @@ public class MySQLPanel extends DestinationPanel {
                     for (JComponent c : securityComponents) {
                         c.setEnabled(securitySettingsCheckbox.isSelected());
                     }
-
+                    anonymousCheckBox.setText(
+                            panel.getProperty(
+                            securitySettingsCheckbox.isSelected() ? 
+                                ANONYMOUS_ACCOUNT_TEXT_PROPERTY :
+                                    ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY));
                     panel.getWizard().setProperty(MODIFY_SECURITY_PROPERTY,
                             StringUtils.EMPTY_STRING + securitySettingsCheckbox.isSelected());
                     updateErrorMessage();
@@ -601,6 +607,8 @@ public class MySQLPanel extends DestinationPanel {
 
     public static final String ANONYMOUS_ACCOUNT_TEXT_PROPERTY =
             "anonymous.account.text";
+    public static final String ANONYMOUS_ACCOUNT_DISABLED_TEXT_PROPERTY =
+            "anonymous.account.disabled.text";
     public static final String NETWORK_TEXT_PROPERTY =
             "network.text";
     public static final String PORT_TEXT_PROPERTY =
@@ -628,6 +636,9 @@ public class MySQLPanel extends DestinationPanel {
     public static final String DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT =
             ResourceUtils.getString(MySQLPanel.class,
             "MSP.anonymous.account.label.text"); // NOI18N
+    public static final String DEFAULT_ANONYMOUS_ACCOUNT_LABEL_TEXT_DISABLED =
+            ResourceUtils.getString(MySQLPanel.class,
+            "MSP.anonymous.account.label.text.disabled"); // NOI18N
 
     public static final String DEFAULT_NETWORK_LABEL_TEXT =
             ResourceUtils.getString(MySQLPanel.class,
