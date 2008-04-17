@@ -42,7 +42,8 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.bpel.core.multiview.BPELSourceMultiViewElementDesc;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.LineUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
@@ -171,8 +172,8 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
       return true;
     }
 
-    private BPELValidationController getValidationController() {
-      return (BPELValidationController) getEnv().getBpelDataObject().getLookup().lookup(BPELValidationController.class);
+    private Controller getValidationController() {
+      return (Controller) getEnv().getBpelDataObject().getLookup().lookup(Controller.class);
     }
 
     @Override
@@ -443,11 +444,11 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 else if (mvp.preferredID().equals(
                         BPELSourceMultiViewElementDesc.PREFERED_ID))
                 {
-//                    Line line = SoaUtil.getLine(resultItem);
-//
-//                    if (line != null) {
-//                      line.show(Line.SHOW_GOTO);
-//                    }
+                    Line line = LineUtil.getLine(resultItem);
+
+                    if (line != null) {
+                      line.show(Line.SHOW_GOTO);
+                    }
                 }
             }
         });

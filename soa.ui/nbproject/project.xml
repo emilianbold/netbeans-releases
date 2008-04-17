@@ -169,7 +169,6 @@
                 <package>org.netbeans.modules.soa.ui.nodes</package>
                 <package>org.netbeans.modules.soa.ui.tnv.api</package>
                 <package>org.netbeans.modules.soa.ui.tnv.scrollpane</package>
-                <package>org.netbeans.modules.soa.ui.util</package>
             </friend-packages>
         </data>
     </configuration>

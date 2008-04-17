@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -88,7 +88,7 @@ import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
-import static org.netbeans.modules.soa.core.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -371,13 +371,11 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String i18n(String key) {
-    return org.netbeans.modules.soa.core.util.UI.i18n(
-      DocumentationGenerator.class, key);
+    return org.netbeans.modules.soa.ui.UI.i18n(DocumentationGenerator.class, key);
   }
 
   private String i18n(String key, String param) {
-    return org.netbeans.modules.soa.core.util.UI.i18n(
-      DocumentationGenerator.class, key, param);
+    return org.netbeans.modules.soa.ui.UI.i18n(DocumentationGenerator.class, key, param);
   }
 
   private JComponent myCanvas;

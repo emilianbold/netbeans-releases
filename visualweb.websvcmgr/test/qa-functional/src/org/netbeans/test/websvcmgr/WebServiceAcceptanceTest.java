@@ -82,6 +82,8 @@ public class WebServiceAcceptanceTest extends RaveTestCase {
     private static String deletePopup = "Delete";
     private static String reformatPopup = "Format";
     private static String addToPagePopup = "Add to Page";
+    private static String menuCopy = "Edit|Copy";
+    private static String menuPaste = "Edit|Paste";
     private static String testMethod = "Test Method";
     private static String dlgQuestion = "Question";
     private static String dlgTestMethod = "Test Web Service Method";
@@ -171,7 +173,7 @@ public class WebServiceAcceptanceTest extends RaveTestCase {
         jto1.changeCellObject(0, 2, properties.get(wsMethodParameter).toString());
         TestUtils.wait(1000);
         new JButtonOperator(jdo, btnSubmit).push();
-        TestUtils.wait(5000);
+        TestUtils.wait(10000);
         JTableOperator jto2 = new JTableOperator(jdo, 1);
         if (jto2.getValueAt(0, 1).toString().indexOf(properties.get(wsResponse).toString()) == -1) {
             fail("There is no needed string in response!");
@@ -241,7 +243,13 @@ public class WebServiceAcceptanceTest extends RaveTestCase {
         server = ServerNavigatorOperator.showNavigatorOperator();
         TestUtils.wait(4000);
         sntree = server.getTree();
-        server.pushPopup(wsPath + properties.get(wsName).toString(), addToPagePopup);
+        server.selectPath(wsPath + properties.get(wsName).toString());
+        Util.getMainMenu().pushMenu(menuCopy);
+        WebPageFolder wpf = prj.getRoot().getWebPageRootFolder();
+        WebPage wp = wpf.getWebPage("Page1");
+        wp.open();
+        TestUtils.wait(1000);
+        Util.getMainMenu().pushMenu(menuPaste);
         TestUtils.wait(30000);
     }
 

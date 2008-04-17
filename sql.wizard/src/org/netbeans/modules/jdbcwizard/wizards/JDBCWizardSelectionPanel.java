@@ -201,7 +201,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.jLabel1.setText(NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_DS"));
 
         this.availableTablesLabel.setText(NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_AVLB_TAB"));
-
+        this.availableTablesLabel.setDisplayedMnemonic(NbBundle.getMessage(this.getClass(), "LBL_AVLB_TAB").charAt(0));
         this.selectedTablesLabel.setText(NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_SEL_TAB"));
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

@@ -36,13 +36,13 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
@@ -188,8 +188,8 @@ public class BPELSourceMultiViewElement extends CloneableEditor
 //      getValidationController().triggerValidation();
     }
     
-    private BPELValidationController getValidationController() {
-      return (BPELValidationController) getDataObject().getLookup().lookup(BPELValidationController.class);
+    private Controller getValidationController() {
+      return (Controller) getDataObject().getLookup().lookup(Controller.class);
     }
     
     public void componentClosed() {

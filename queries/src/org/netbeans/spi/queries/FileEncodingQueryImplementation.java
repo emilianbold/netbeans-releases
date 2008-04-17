@@ -77,7 +77,8 @@ import org.openide.filesystems.FileObject;
 public abstract class FileEncodingQueryImplementation {
     
     /**
-     * Returns encoding of a given file.
+     * Returns encoding of a given file or folder. For folders the default encoding for the whole subtree
+     * shall be returned (if known).
      * @param file to find an encoding for
      * @return encoding which should be used for given file
      * or null when nothing is known about the file encoding.
