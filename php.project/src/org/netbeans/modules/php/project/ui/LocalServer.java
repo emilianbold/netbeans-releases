@@ -267,9 +267,13 @@ public class LocalServer implements Comparable<LocalServer> {
             setName("ComboBox.listRenderer"); // NOI18N
             setText(((LocalServer) value).getSrcRoot());
 
-            // never selected
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
             return this;
         }
     }
