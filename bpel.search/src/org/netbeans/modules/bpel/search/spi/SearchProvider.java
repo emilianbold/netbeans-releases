@@ -38,54 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.api;
+package org.netbeans.modules.bpel.search.spi;
 
-import org.netbeans.modules.xml.xam.Component;
-import static org.netbeans.modules.soa.ui.UI.*;
+import org.openide.nodes.Node;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.bpel.search.api.SearchTarget;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.05.29
+ * @version 2008.04.16
  */
-public interface SearchTarget {
+public interface SearchProvider {
 
   /**
-   * Returns the class of target.
-   * @return the class of target
+   * Returns model by given node.
+   * @param node is given node
+   * @return model by given node
    */
-  Class<? extends Component> getClazz();
+  Model getModel(Node node);
 
-
-  // -------------------------------------------
-  public class Adapter implements SearchTarget {
-
-    public Adapter(Class bundle, Class<? extends Component> clazz) {
-      myClazz = clazz;
-      myBundle = bundle;
-    }
-
-    public Class<? extends Component> getClazz() {
-      return myClazz;
-    }
-
-    @Override
-    public String toString()
-    {
-      return i18n(myBundle, name());
-    }
-
-    private String name() {
-      String name = myClazz.getName();
-
-      int k = name.lastIndexOf("."); // NOI18N
-
-      if (k == -1) {
-        return name;
-      }
-      return name.substring(k + 1);
-    }
-
-    private Class myBundle;
-    private Class<? extends Component> myClazz;
-  }
+  /**
+   * Returns targets.
+   * @return targets
+   */
+  SearchTarget [] getTargets();
 }
