@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,6 +55,7 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -87,7 +88,7 @@ public class RakeSupport {
     };
     
     private boolean test;
-    private Project project;
+    private final Project project;
 
     public RakeSupport(Project project) {
         this.project = project;
@@ -203,6 +204,7 @@ public class RakeSupport {
         String charsetName = null;
         String classPath = null;
         String extraArgs = null;
+        String jrubyProps = null;
         
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -210,6 +212,7 @@ public class RakeSupport {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
                 classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
                 extraArgs = evaluator.getProperty(SharedRubyProjectProperties.RAKE_ARGS);
+                jrubyProps = evaluator.getProperty(RubyProjectProperties.JRUBY_PROPS);
             }
         }
         
@@ -222,15 +225,16 @@ public class RakeSupport {
             }
         }
 
-        if (additionalArgs.size() > 0) {
-            desc = new ExecutionDescriptor(platform, displayName, pwd, rake).additionalArgs(additionalArgs.toArray(
-                        new String[additionalArgs.size()])); // NOI18N
+        if (!additionalArgs.isEmpty()) {
+            desc = new ExecutionDescriptor(platform, displayName, pwd, rake).additionalArgs(
+                    additionalArgs.toArray(new String[additionalArgs.size()]));
         } else {
             desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
         }
-
+        
         desc.allowInput();
         desc.classPath(classPath); // Applies only to JRuby
+        desc.jrubyProperties(jrubyProps);
         desc.fileLocator(fileLocator);
         desc.addStandardRecognizers();
 
@@ -248,8 +252,9 @@ public class RakeSupport {
     }
 
     private class RakeErrorRecognizer extends OutputRecognizer implements Runnable {
-        private ExecutionDescriptor desc;
-        private String charsetName;
+        
+        private final ExecutionDescriptor desc;
+        private final String charsetName;
 
         RakeErrorRecognizer(ExecutionDescriptor desc, String charsetName) {
             this.desc = desc;
