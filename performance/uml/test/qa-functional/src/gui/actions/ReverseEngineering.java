@@ -120,8 +120,7 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
     @Override
     public void close() {
         ProjectSupport.closeProject("jEdit-Model_" + suffix);
-        System.gc();
-        new EventTool().waitNoEvent(3000);
+        runGC(1);
 
     }
 
