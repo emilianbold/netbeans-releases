@@ -623,7 +623,7 @@ public final class AddToRepositoryAction extends AbstractAction implements Chang
     public void outputText(String line) { /* boring */ }
     public void errorText(String line)  { /* boring */ }
     public void commandFinished() {               
-        org.netbeans.modules.clearcase.util.Utils.afterCommandRefresh(files2, false);        
+        org.netbeans.modules.clearcase.util.ClearcaseUtils.afterCommandRefresh(files2, false);        
     }    
     
 }

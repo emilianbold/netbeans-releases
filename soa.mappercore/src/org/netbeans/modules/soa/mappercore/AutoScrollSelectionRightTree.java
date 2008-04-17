@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionEvent;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionListener;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
@@ -25,7 +26,7 @@ public class AutoScrollSelectionRightTree implements MapperSelectionListener {
 
     public void mapperSelectionChanged(MapperSelectionEvent event) {
         TreePath treePath = rightTree.getSelectionModel().getSelectedPath();
-        if (treePath == currentPath) { return; }
+        if (Utils.equal(treePath, currentPath)) { return; }
         
         currentPath = treePath;
         if (treePath == null) { return; }

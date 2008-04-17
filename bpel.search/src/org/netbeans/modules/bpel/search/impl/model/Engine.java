@@ -50,7 +50,7 @@ import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
-import static org.netbeans.modules.soa.core.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

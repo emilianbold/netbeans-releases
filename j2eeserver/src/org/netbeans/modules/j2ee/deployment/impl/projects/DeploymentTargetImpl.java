@@ -143,33 +143,21 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
         return child;
     }
-    
+
     private TargetModule getTargetModule() {
         TargetModule[] mods = getTargetModules();
-        if (mods == null || mods.length == 0)
+        if (mods == null || mods.length == 0) {
             return null;
-        
-        if (mods[0].delegate() != null)
-            return mods[0];
-        
-        // determine target server instance
-        ServerString defaultTarget = ServerRegistry.getInstance().getDefaultInstance();
-        TargetModule execMod = null;
-        if ( defaultTarget != null ) {
-            for (int i=0; i<mods.length; i++) {
-                if (mods[i].getInstanceUrl().equals(defaultTarget.getUrl()) &&
-                    mods[i].getTargetName().equals(defaultTarget.getTargets(true)[0])) {
-                    execMod = mods[i];
-                    break;
-                }
-            }
         }
 
-        if (execMod == null) execMod = mods[0];
-        execMod.initDelegate((ModuleType)getModule().getModuleType());
-        return execMod;
+        if (mods[0].delegate() != null) {
+            return mods[0];
+        }
+
+        mods[0].initDelegate((ModuleType) getModule().getModuleType());
+        return mods[0];
     }
-    
+
     /**
      * Find the web URL for the given client module.
      * If null is passed, or when plugin failed to resolve the child module url,

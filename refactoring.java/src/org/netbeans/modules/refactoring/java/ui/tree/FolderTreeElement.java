@@ -46,13 +46,12 @@ import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,7 +88,7 @@ public class FolderTreeElement implements TreeElement {
     }
 
     public Icon getIcon() {
-        return UiUtils.getElementIcon(ElementKind.PACKAGE, null);
+        return ElementIcons.getElementIcon(ElementKind.PACKAGE, null);
     }
 
     public String getText(boolean isLogical) {
@@ -99,8 +98,8 @@ public class FolderTreeElement implements TreeElement {
         } else {
             if (getJavaSourceGroup(fo)!=null) {
                 String name = cp.getResourceName(fo).replace('/','.');
-                if ("".equals(name))
-                    return NbBundle.getMessage(UiUtils.class, "LBL_DefaultPackage_PDU");
+                if ("".equals(name)) // NOI18N
+                    return NbBundle.getMessage(FolderTreeElement.class, "LBL_DefaultPackage_PDU");
                 return name;
             } else {
                 return fo.getPath();
