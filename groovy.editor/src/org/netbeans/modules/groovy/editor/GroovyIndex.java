@@ -45,7 +45,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
+import org.netbeans.modules.groovy.editor.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -74,6 +78,228 @@ public final class GroovyIndex {
         this.index = index;
     }
     
+    /**
+     * Return the full set of classes that match the given name.
+     *
+     * @param name The name of the class - possibly a fqn like File::Stat, or just a class
+     *   name like Stat, or just a prefix like St.
+     * @param kind Whether we want the exact name, or whether we're searching by a prefix.
+     * @param includeAll If true, return multiple IndexedClasses for the same logical
+     *   class, one for each declaration point.
+     */
+    public Set<IndexedClass> getClasses(String name, final NameKind kind, boolean includeAll,
+        boolean skipClasses, boolean skipModules, Set<Index.SearchScope> scope,
+        Set<String> uniqueClasses) {
+        String classFqn = null;
+
+        if (name != null) {
+            if (name.endsWith(".")) {
+                // User has typed something like "Test." and wants completion on
+                // for something like Test.Unit
+                classFqn = name.substring(0, name.length() - 1);
+                name = "";
+            }
+        }
+
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+
+        //        if (!isValid()) {
+        //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
+        //            return;
+        //        }
+        String field;
+
+        switch (kind) {
+        case EXACT_NAME:
+        case PREFIX:
+        case CAMEL_CASE:
+        case REGEXP:
+            field = GroovyIndexer.FIELD_CLASS_NAME;
+
+            break;
+
+        case CASE_INSENSITIVE_PREFIX:
+        case CASE_INSENSITIVE_REGEXP:
+            field = GroovyIndexer.FIELD_CASE_INSENSITIVE_CLASS_NAME;
+
+            break;
+
+        default:
+            throw new UnsupportedOperationException(kind.toString());
+        }
+
+        search(field, name, kind, result, scope, null);
+
+        // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
+        if (includeAll) {
+            uniqueClasses = null;
+        } else if (uniqueClasses == null) {
+            uniqueClasses = new HashSet<String>();
+        }
+
+        final Set<IndexedClass> classes = new HashSet<IndexedClass>();
+
+        for (SearchResult map : result) {
+            String clz = map.getValue(GroovyIndexer.FIELD_CLASS_NAME);
+
+            if (clz == null) {
+                // It's probably a module
+                // XXX I need to handle this... for now punt
+                continue;
+            }
+
+            // Lucene returns some inexact matches, TODO investigate why this is necessary
+            if ((kind == NameKind.PREFIX) && !clz.startsWith(name)) {
+                continue;
+            } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !clz.regionMatches(true, 0, name, 0, name.length())) {
+                continue;
+            }
+
+            if (classFqn != null) {
+                if (kind == NameKind.CASE_INSENSITIVE_PREFIX ||
+                        kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+                    if (!classFqn.equalsIgnoreCase(map.getValue(GroovyIndexer.FIELD_IN))) {
+                        continue;
+                    }
+                } else if (kind == NameKind.CAMEL_CASE) {
+                    String in = map.getValue(GroovyIndexer.FIELD_IN);
+                    if (in != null) {
+                        // Superslow, make faster 
+                        StringBuilder sb = new StringBuilder();
+//                        String prefix = null;
+                        int lastIndex = 0;
+                        int idx;
+                        do {
+
+                            int nextUpper = -1;
+                            for( int i = lastIndex+1; i < classFqn.length(); i++ ) {
+                                if ( Character.isUpperCase(classFqn.charAt(i)) ) {
+                                    nextUpper = i;
+                                    break;
+                                }
+                            }
+                            idx = nextUpper;
+                            String token = classFqn.substring(lastIndex, idx == -1 ? classFqn.length(): idx);
+//                            if ( lastIndex == 0 ) {
+//                                prefix = token;
+//                            }
+                            sb.append(token); 
+                            // TODO - add in Ruby chars here?
+                            sb.append( idx != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                            lastIndex = idx;
+                        }
+                        while(idx != -1);
+
+                        final Pattern pattern = Pattern.compile(sb.toString());
+                        if (!pattern.matcher(in).matches()) {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                } else {
+                    if (!classFqn.equals(map.getValue(GroovyIndexer.FIELD_IN))) {
+                        continue;
+                    }
+                }
+            }
+
+            String attrs = map.getValue(GroovyIndexer.FIELD_CLASS_ATTRS);
+            boolean isClass = true;
+            if (attrs != null) {
+                int flags = IndexedElement.stringToFlag(attrs, 0);
+                isClass = (flags & IndexedClass.MODULE) == 0;
+                
+            }
+
+            if (skipClasses && isClass) {
+                continue;
+            }
+
+            if (skipModules && !isClass) {
+                continue;
+            }
+
+            String fqn = map.getValue(GroovyIndexer.FIELD_FQN_NAME);
+
+            // Only return a single instance for this signature
+            if (!includeAll) {
+                if (uniqueClasses.contains(fqn)) { // use a map to point right to the class
+                                                   // Prefer the instance that provides documentation
+
+                    boolean replaced = false;
+
+                    int flags = 0;
+                    if (attrs != null) {
+                        flags = IndexedElement.stringToFlag(attrs, 0);
+                    }
+
+                    boolean isDocumented = (flags & IndexedElement.DOCUMENTED) != 0;
+
+                    if (isDocumented) {
+                        // Check the actual size of the documentation, and prefer the largest
+                        // method
+                        int length = 0;
+                        int documentedAt = attrs.indexOf(';');
+
+                        if (documentedAt != -1) {
+                            int end = attrs.indexOf(';', documentedAt+1);
+                            if (end == -1) {
+                                end = attrs.length();
+                            }                        
+                            length = Integer.parseInt(attrs.substring(documentedAt + 1, end));
+                        }
+
+                        // This instance is documented. Replace the other instance...
+                        for (IndexedClass c : classes) {
+                            if (c.getSignature().equals(fqn) &&
+                                    (length > c.getDocumentationLength())) {
+                                classes.remove(c);
+                                replaced = true;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!replaced) {
+                        continue;
+                    }
+                } else {
+                    uniqueClasses.add(fqn);
+                }
+            }
+
+            classes.add(createClass(fqn, clz, map));
+        }
+
+        return classes;
+    }
+    
+    private IndexedClass createClass(String fqn, String clz, SearchResult map) {
+        String require = map.getValue(GroovyIndexer.FIELD_REQUIRE);
+
+        // TODO - how do I determine -which- file to associate with the file?
+        // Perhaps the one that defines initialize() ?
+        String fileUrl = map.getPersistentUrl();
+
+        if (clz == null) {
+            clz = map.getValue(GroovyIndexer.FIELD_CLASS_NAME);
+        }
+
+        String attrs = map.getValue(GroovyIndexer.FIELD_CLASS_ATTRS);
+        
+        int flags = 0;
+        if (attrs != null) {
+            flags = IndexedElement.stringToFlag(attrs, 0);
+        }
+
+        IndexedClass c =
+            IndexedClass.create(this, clz, fqn, fileUrl, require, attrs, flags);
+
+        return c;
+    }
+
     public static FileObject getFileObject(String url) {
         try {
             if (url.startsWith(CLUSTER_URL)) {

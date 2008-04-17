@@ -63,6 +63,7 @@ public abstract class AstElement extends GroovyElement {
     protected String name;
     protected Set<Modifier> modifiers;
     private String in;
+    protected String signature;
     
     public AstElement(ASTNode node) {
         this.node = node;
@@ -82,6 +83,21 @@ public abstract class AstElement extends GroovyElement {
         }
 
         children.add(child);
+    }
+
+    public String getSignature() {
+        if (signature == null) {
+            StringBuilder sb = new StringBuilder();
+            String clz = getIn();
+            if (clz != null && clz.length() > 0) {
+                sb.append(clz);
+                sb.append("."); // NOI18N
+            }
+            sb.append(getName());
+            signature = sb.toString();
+        }
+
+        return signature;
     }
 
     public abstract String getName();

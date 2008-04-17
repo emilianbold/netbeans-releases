@@ -48,6 +48,7 @@ import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.groovy.editor.elements.AstClassElement;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.netbeans.modules.gsf.api.IndexDocument;
@@ -68,7 +69,13 @@ import org.openide.util.Exceptions;
  */
 public class GroovyIndexer implements Indexer {
 
-    static final String FIELD_CLASS = "class"; //NOI18N
+    static final String FIELD_FQN_NAME = "fqn"; //NOI18N
+    static final String FIELD_IN = "in"; //NOI18N
+    static final String FIELD_CLASS_NAME = "class"; //NOI18N
+    static final String FIELD_CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
+    static final String FIELD_REQUIRE = "require"; //NOI18N
+    /** Attributes: hh;nnnn where hh is a hex representing flags in IndexedClass, and nnnn is the documentation length */
+    static final String FIELD_CLASS_ATTRS = "attrs"; //NOI18N
 
     private static FileObject preindexedDb;
 
@@ -108,7 +115,7 @@ public class GroovyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.1";
+        return "0.3";
     }
 
     public String getIndexerName() {
@@ -192,19 +199,20 @@ public class GroovyIndexer implements Indexer {
             for (AstElement child : children) {
                 switch (child.getKind()) {
                     case CLASS:
-                        indexClass(child, document);
+                        indexClass((AstClassElement) child, document);
                         break;
                 }
             }
 
         }
 
-        private void indexClass(AstElement element, IndexDocument document) {
+        private void indexClass(AstClassElement element, IndexDocument document) {
             final String name = element.getName();
-            document.addPair(FIELD_CLASS, name, true);
+            document.addPair(FIELD_FQN_NAME, element.getFqn(), true);
+            document.addPair(FIELD_CLASS_NAME, name, true);
+            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
         }
 
     }
-    
     
 }

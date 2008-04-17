@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -68,13 +69,19 @@ import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.groovy.editor.elements.AstElement;
+import org.netbeans.modules.groovy.editor.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultParseListener;
 
 /**
  *
@@ -427,6 +434,87 @@ public class AstUtilities {
         return path.root();
     }
 
+    public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
+        ParserFile file = o.getFile();
+
+        if (file == null) {
+            return null;
+        }
+
+        List<ParserFile> files = Collections.singletonList(file);
+        SourceFileReader reader =
+            new SourceFileReader() {
+                public CharSequence read(ParserFile file)
+                    throws IOException {
+                    Document doc = o.getDocument();
+
+                    if (doc == null) {
+                        return "";
+                    }
+
+                    try {
+                        return doc.getText(0, doc.getLength());
+                    } catch (BadLocationException ble) {
+                        IOException ioe = new IOException();
+                        ioe.initCause(ble);
+                        throw ioe;
+                    }
+                }
+
+                public int getCaretOffset(ParserFile fileObject) {
+                    return -1;
+                }
+            };
+
+        DefaultParseListener listener = new DefaultParseListener();
+
+        // TODO - embedding model?
+TranslatedSource translatedSource = null; // TODO - determine this here?                
+        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+        new GroovyParser().parseFiles(job);
+
+        ParserResult result = listener.getParserResult();
+
+        if (result == null) {
+            return null;
+        }
+
+        ASTNode root = AstUtilities.getRoot(result);
+
+        if (root == null) {
+            return null;
+        } else if (foreignRootRet != null) {
+            foreignRootRet[0] = root;
+        }
+
+        String signature = o.getSignature();
+
+        if (signature == null) {
+            return null;
+        }
+//        Node node = AstUtilities.findBySignature(root, signature);
+        GroovyParserResult rpr = (GroovyParserResult)result;
+        boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
+        if (lookForFunction) {
+            for (AstElement element : rpr.getStructure().getElements()) {
+//                if (element instanceof FunctionAstElement) {
+//                    FunctionAstElement func = (FunctionAstElement) element;
+//                    if (signature.equals(func.getSignature())) {
+//                        return func.getNode();
+//                    }
+//                }
+            }
+        }
+
+        for (AstElement element : rpr.getStructure().getElements()) {
+            if (signature.equals(element.getSignature())) {
+                return element.getNode();
+            }
+        }
+        
+        return null;
+    }
+    
     public static final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
         private final SourceUnit sourceUnit;
