@@ -389,7 +389,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Complex Type",
           "Use Existing Definition", 
           "Referenced Schemas|import|Complex Types|CarType",
-          "newComplexType"
+          COMPLEX_NAMES[ 0 ]
         );
 
       endTest( );
@@ -399,7 +399,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      ExploreComplexInternal(
+          COMPLEX_NAMES[ 0 ],
+          "CarType"
+        );
 
       endTest( );
     }
@@ -431,7 +434,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Element",
           "Use Existing Type",
           "Referenced Schemas|import|Complex Types|AddressType",
-          "newElement"
+          ELEMENT_NAMES[ 0 ]
         );
 
       endTest( );
@@ -441,7 +444,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      ExploreComplexInternal(
+          ELEMENT_NAMES[ 0 ],
+          "AddressType"
+        );
 
       endTest( );
     }

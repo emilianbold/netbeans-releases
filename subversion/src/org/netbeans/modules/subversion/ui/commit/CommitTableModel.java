@@ -184,19 +184,8 @@ public class CommitTableModel extends AbstractTableModel {
                 String relativePath = nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
             } else {
-                Set<SVNUrl> url = getRepositoryRoots();                
-                try {            
-                    for (Iterator<SVNUrl> it = url.iterator(); it.hasNext();) {
-                        SVNUrl nextUrl = it.next();
-                        shortPath = SvnUtils.getRelativePath(nextUrl, nodes[rowIndex].getFile());
-                    }                
-                    if (shortPath == null) {
-
-                            SVNUrl newUrl = SvnUtils.getRepositoryRootUrl(nodes[rowIndex].getFile());
-                            shortPath = SvnUtils.getRelativePath(newUrl, nodes[rowIndex].getFile());                    
-                            url.add(newUrl);
-
-                    }
+                try {                     
+                    shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());                    
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
                 }                    

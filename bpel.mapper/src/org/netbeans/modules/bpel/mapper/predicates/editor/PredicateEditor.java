@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
 import java.awt.Dialog;
@@ -43,7 +42,7 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
@@ -101,7 +100,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                 }
             }
         });
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
 
     @Override
@@ -130,7 +129,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
         DefaultDialogDescriptor descriptor = 
                 new DefaultDialogDescriptor(editor, editor.getDlgTitle());
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
-        SoaUiUtil.setInitialFocusComponentFor(editor);
+        SoaUtil.setInitialFocusComponentFor(editor);
         dialog.setVisible(true);
 
         return descriptor.isOkHasPressed();

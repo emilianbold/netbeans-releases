@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.nodes.actions;
 
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;

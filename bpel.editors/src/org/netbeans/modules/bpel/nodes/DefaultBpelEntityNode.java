@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.nodes;
 
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.xml.xam.Named;
@@ -75,7 +75,7 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
             name = EditorUtil.getCorrectedHtmlRenderedString(name);
             
             if (name != null) {
-                String tagName = org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getTagName(ref);
+                String tagName = org.netbeans.modules.bpel.editors.api.EditorUtil.getTagName(ref);
                 assert tagName != null;
                 name = tagName+" ( "  // NOI18N
                         +(name.length() > MAX_CONTENT_NAME_LENGTH 
@@ -84,7 +84,7 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
             }
         }
         if (name == null) {
-            name = org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getTagName(ref);
+            name = org.netbeans.modules.bpel.editors.api.EditorUtil.getTagName(ref);
         }
         return (name != null) ? name : "";
     }

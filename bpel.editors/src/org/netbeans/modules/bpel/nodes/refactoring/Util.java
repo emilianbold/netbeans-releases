@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.nodes.refactoring;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 /**
  *
  * @author Vitaly Bychkov

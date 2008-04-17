@@ -45,7 +45,7 @@ import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.EventObject;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;

@@ -75,7 +75,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  *
@@ -315,7 +315,7 @@ public class Util {
             initialiseNamespace(tMapFo, projectNamespace);
             
             if (tMapFo != null) {
-                SoaUiUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
+                SoaUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
             }
             
         } catch (IOException ex) {
