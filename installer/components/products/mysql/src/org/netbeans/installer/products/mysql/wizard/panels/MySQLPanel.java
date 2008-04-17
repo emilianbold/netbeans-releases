@@ -444,7 +444,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(0, 11, 4, 0), // padding
+                    new Insets(4, 11, 4, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(passwordLabel, new GridBagConstraints(
@@ -507,7 +507,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(4, securityPadding + 8, 20, 0), // padding
+                    new Insets(4, securityPadding + 8, 11, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(networkCheckBox, new GridBagConstraints(
