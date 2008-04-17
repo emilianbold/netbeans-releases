@@ -61,29 +61,27 @@
                         <h2>Getting Started</h2>
                         <ol>
                             <li>
-                                Firstly, we have to create a new MySQL database and populate it with data:
+                                Firstly, we have to create the database and populate it with data:
                                 <ol type="a">
-                                    <li>Select <code>Window</code> &gt; <code>Services</code> from the main menu.</li>
-                                    <li>Expand the <code>Databases</code> node, right-click on <code>MySQL Server</code>
-                                    and select <code>Create Database</code>.</li>
-                                    <li>Name the database <code>AirAlliance</code> and confirm the window.</li>
-                                    <li>In <code>New Database Connection</code> window specify the <code>User Name</code> and 
-                                        <code>Password</code> to MySQL Database Server and confirm. Default database login 
-                                    username is <code>root</code> and without password.</li>
-                                    <li>Open <code>sql/aadb_dump.sql</code> in the <code>AirAlliance</code> project, select the 
-                                    connection to AirAlliance database and run the script. It should execute SQL script successfully.</li>
+                                    <li>Create new MySQL database named <code>AirAlliance</code> in phpMyAdmin.</li>
+                                    <li>Run <code>sql/aadb_dump.sql</code> script stored in Air Alliance Project directory.
+                                    The script creates tables and fills them with sample data.</li>
                                 </ol>
                             </li>
-                            <li>You can either (both options strongly varies with your PHP runtime configuration):
-                                <ul>
-                                    <li>Right-click on the <code>AirAlliance</code> project node and select <code>Upload Files</code>
-                                        and then select from the same context menu <code>Run Project</code>. Project must have pre-configured
-                                    upload path to PHP documents directory.</li>
-                                    <li>Manually copy the <code>web</code> directory to your PHP documents directory and run your web browser
-                                    with specified path of your PHP documents URL.</li>
-                                </ul>
+                            <li>Secondly, we have to set project preperties to deploy project sucessfully to PHP document directory:
+                                <ol type="a">
+                                    <li>Right-click on the <code>AirAlliance</code> project node and select <code>Properties</code>.</li>
+                                    <li>Check the option <code>Copy files from Sources Folder to another location</code>.</li>
+                                    <li>In <code>Copy to Folder</code> field specify the path of your PHP documents directory (htdocs).</li>
+                                    <li>Specify the <code>Project URL</code> to be appropriate with your settings from previous field and 
+                                    also with PHP Server setup.</li>
+                                    <li>Confirm the settings.</li>
+                                </ol>
                             </li>
-                            
+                            <li>
+                                Finally, we can run the project. Right-click the project node again and select <code>Run Project</code>.
+                                The sample PHP application should open in the Web brower.
+                            </li>
                             <li>Click View Itinerary link in the right pane. You should see some records shown from the database.</li>
                             <li>Play futher with the sample:)</li>
                         </ol>
