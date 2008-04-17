@@ -2259,8 +2259,8 @@ public class PHP5ColoringLexer  {
           { return PHPTokenId.PHP_EMPTY;
           }
         case 252: break;
-        default: 
-            if(zzInput == YYEOF) {
+        default:  
+          if(zzInput == YYEOF) {
                 if(input.readLength() > 0) {
                     // backup eof
                     input.backup(1);
