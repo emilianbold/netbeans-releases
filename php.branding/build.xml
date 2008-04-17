@@ -222,7 +222,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
     <locjar warnMissingDir="true"
       basedir="welcome/src"
-      jarfile="${cluster}/modules/org-netbeans-welcome.jar">
+      jarfile="${cluster}/modules/org-netbeans-modules-welcome.jar">
       <branding name="php"/>
     </locjar>
 
