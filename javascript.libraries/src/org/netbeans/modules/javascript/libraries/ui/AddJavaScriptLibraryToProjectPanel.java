@@ -37,7 +37,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -71,16 +70,14 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
 
         // Get a list of JavaScript library objects to display
         LibraryManager manager = LibraryManager.getDefault();
-        List<Library> themeLibraries = new ArrayList<Library>();
+        List<Library> javascriptLibraries = new ArrayList<Library>();
         for (Library lib : manager.getLibraries()) {
             if (lib.getType().equals("javascript")) {
-                themeLibraries.add(lib);
+                javascriptLibraries.add(lib);
             }
         }
         //jList1.setCellRenderer(new MyCellRenderer());
-        jList1.setListData(themeLibraries.toArray(new Library[]{}));
-
-        locationText.setText(WEB_PROJECT_DEFAULT_RELATIVE_PATH);
+        jList1.setListData(javascriptLibraries.toArray(new Library[]{}));
 
         // Get a list of open projects
         if (OpenProjects.getDefault() != null) {
@@ -103,27 +100,16 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
                 projectComboBox.setModel(new DefaultComboBoxModel(projs));
             // projectComboBox.setRenderer(new MyCellRenderer());
 
-            /* Set the default location
-            Project currentProj = ((ProjectObject) projectComboBox.getSelectedItem()).getProject();
-            Project p = currentProj.getLookup().lookup(Project.class);
-            if (p != null) {
-            System.out.println("TEST:" + p.getClass().getName());
-            } */
+            // Set the default location
+            setDestinationLocation();
 
-            // if (currentProj.getLookup().lookup(Project.class).getClass().getName() != null);
-            /* if (((currentProj.getLookup().lookup(Project.class)).getClass().getName()) != null) {
-            
-            } /* else if (project.getLookup().lookup(RubyProject.class) != null) {
-            
-            } else if (project.getLookup().lookup(PhpProject.class) != null) {
-            
             } else {
-            System.out.println("JavaScripts cannot be added to the current open projects");
-            } */
+                // Tell user to open project first.
+                okButton.setEnabled(false);
+                String[] stringArray = new String[1];
+                stringArray[0] = new String(NbBundle.getMessage(AddJavaScriptLibraryToProjectPanel.class, "NoProjectOpenTxt"));
+                projectComboBox.setModel(new DefaultComboBoxModel(stringArray));
             }
-
-        } else {
-            // Tell user to open project first.
         }
     }
 
@@ -168,14 +154,38 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
         dialog.show();
     }
 
+    // Set the destination location
+    private void setDestinationLocation() {
+        Project currentProj = ((ProjectObject) projectComboBox.getSelectedItem()).getProject();
+
+        if (currentProj.toString().startsWith(PHP_PROJECT)) {
+            locationText.setText(WEB_PROJECT_DEFAULT_RELATIVE_PATH);
+        }
+
+        Project p = currentProj.getLookup().lookup(Project.class);
+        if (p != null) {
+            if (p.getClass().getName().equals(WEB_PROJECT)) {
+                // Set the default relative path for the corresponding project
+
+                locationText.setText(WEB_PROJECT_DEFAULT_RELATIVE_PATH);
+            } else if (p.getClass().getName().equals(RUBY_PROJECT)) {
+                locationText.setText(RUBY_PROJECT_DEFAULT_RELATIVE_PATH);
+
+            } else {
+                locationText.setText(OTHER_PROJECT_DEFAULT_RELATIVE_PATH);
+            }
+
+        }
+    }
+
     // Validate the project relative location before extracting the library
     private boolean validateProjectFolder(Project project, Library library, String relativePath) throws IOException {
         FileObject fo = project.getProjectDirectory().getFileObject(relativePath);
         // File jsDir = new File(FileUtil.toFile(project.getProjectDirectory()), relativePath);
 
-        if (fo != null && fo.getChildren().length > 0 && overrideCheckBox.isSelected() == false) {
+        if (fo != null && fo.getChildren().length > 0 && overwriteCheckBox.isSelected() == false) {
 
-            overrideCheckBox.setText("override? Directory already exists and not empty.");
+            overwriteCheckBox.setText("override? Directory already exists and not empty.");
             return false;
         }
         return true;
@@ -191,7 +201,7 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
             // Check if the folder already exists before creating
             FileObject jsFolder = FileUtil.createFolder(jsDir);
             // Now do the actual extract
-            System.out.println("Now do the actual extract");
+            // System.out.println("Now do the actual extract");
             for (URL url : library.getContent("scriptpath")) {
                 url = FileUtil.getArchiveFile(url);
                 FileObject fo = URLMapper.findFileObject(url);
@@ -286,14 +296,11 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
         Object[] selValues = jList1.getSelectedValues();
         Project project = ((ProjectObject) projectComboBox.getSelectedItem()).getProject();
         for (Object lib : selValues) {
-            System.out.println(((Library) lib).getDisplayName());
             if (locationText.getText() != null && project != null && lib != null && validateProjectFolder(project, (Library) lib, locationText.getText())) {
                 extractLibrary(project, (Library) lib, locationText.getText());
-                System.out.println("In okButtonActionPerformed() inside if (){}");
             // dialog.dispose();
             }
         }
-        System.out.println("In the same method but out of the if()");
     }
 
     /** This method is called from within the constructor to
@@ -312,7 +319,7 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
         projectComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         locationText = new javax.swing.JTextField();
-        overrideCheckBox = new javax.swing.JCheckBox();
+        overwriteCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -344,25 +351,25 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(AddJavaScriptLibraryToProjectPanel.class, "TestDialog_Location_LBL")); // NOI18N
 
-        overrideCheckBox.setText(org.openide.util.NbBundle.getMessage(AddJavaScriptLibraryToProjectPanel.class, "AddJavaScriptLibraryToProjectPanel.overrideCheckBox.text")); // NOI18N
+        overwriteCheckBox.setText(org.openide.util.NbBundle.getMessage(AddJavaScriptLibraryToProjectPanel.class, "AddJavaScriptLibraryToProjectPanel.overwriteCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1Layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(locationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
-                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(locationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1Layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(projectComboBox, 0, 338, Short.MAX_VALUE))
-                    .add(overrideCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
+                        .add(projectComboBox, 0, 180, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, overwriteCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -373,14 +380,14 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
                     .add(projectComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1))
                 .add(15, 15, 15)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
                 .add(7, 7, 7)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(locationText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(19, 19, 19)
-                .add(overrideCheckBox)
-                .addContainerGap())
+                .add(overwriteCheckBox)
+                .add(17, 17, 17))
         );
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
@@ -390,26 +397,7 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
         // TODO add your handling code here;
 
         // Find out what type of project is first
-        Project currentProj = ((ProjectObject) projectComboBox.getSelectedItem()).getProject();
-
-        if (currentProj.toString().startsWith(PHP_PROJECT)) {
-            locationText.setText(WEB_PROJECT_DEFAULT_RELATIVE_PATH);
-        }
-
-        Project p = currentProj.getLookup().lookup(Project.class);
-        if (p != null) {
-            if (p.getClass().getName().equals(WEB_PROJECT)) {
-                // Set the default relative path for the corresponding project
-
-                locationText.setText(WEB_PROJECT_DEFAULT_RELATIVE_PATH);
-            } else if (p.getClass().getName().equals(RUBY_PROJECT)) {
-                locationText.setText(RUBY_PROJECT_DEFAULT_RELATIVE_PATH);
-
-            } else {
-                locationText.setText(OTHER_PROJECT_DEFAULT_RELATIVE_PATH);
-            }
-
-        }
+        setDestinationLocation();
 
     }//GEN-LAST:event_projectComboBoxItemStateChanged
 
@@ -446,7 +434,7 @@ private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField locationText;
-    private javax.swing.JCheckBox overrideCheckBox;
+    private javax.swing.JCheckBox overwriteCheckBox;
     private javax.swing.JComboBox projectComboBox;
     // End of variables declaration//GEN-END:variables
 }
