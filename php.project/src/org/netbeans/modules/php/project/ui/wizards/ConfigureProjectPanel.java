@@ -45,8 +45,8 @@ import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.text.MessageFormat;
+import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -78,13 +78,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
+    static final String ROOTS = "roots"; // NOI18N
 
+    private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
     private LocationPanelVisual locationPanelVisual;
     private OptionsPanelVisual optionsPanelVisual;
     private WizardDescriptor descriptor;
-    private final String[] steps;
+    private String defaultUrl = ""; // NOI18N
 
     static {
         String msg = NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_UseProjectFolder",
@@ -125,7 +127,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (wwwFolder != null) {
             locationPanelVisual.selectSourcesLocation(wwwFolder);
         }
-        locationPanelVisual.setUrl(getUrl());
+        adjustUrl();
 
         // options
         Boolean createIndex = isCreateIndex();
@@ -260,32 +262,63 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private MutableComboBoxModel getOSDependentLocalServers() {
         MutableComboBoxModel model = new LocalServer.ComboBoxModel(DEFAULT_LOCAL_SERVER);
 
-        List<Root> roots = DocumentRoots.getRoots(getWebFolderName());
+        String projectName = getWebFolderName();
+        List<Root> roots = DocumentRoots.getRoots(null);
+        descriptor.putProperty(ROOTS, roots);
         for (Root root : roots) {
-            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             model.addElement(ls);
             if (root.isPreferred()) {
                 model.setSelectedItem(ls);
-                setDefaultUrl(root.getUrl());
             }
         }
         return model;
     }
 
-    private String getUrl() {
-        String url = (String) descriptor.getProperty(URL);
-        if (url == null) {
-            url = getDefaultUrl();
+    private String getDefaultUrl(String projectName) {
+        return "http://localhost/" + projectName + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
+    }
+
+    private void adjustUrl() {
+        String currentUrl = locationPanelVisual.getUrl();
+        if (!defaultUrl.equals(currentUrl)) {
+            return;
         }
-        return url;
-    }
-
-    private String getDefaultUrl() {
-        return "http://localhost/" + getProjectName() + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
-    }
-
-    private void setDefaultUrl(String url) {
-        descriptor.putProperty(URL, url);
+        LocalServer sources = locationPanelVisual.getSourcesLocation();
+        String url = null;
+        if (isProjectFolder(sources)) {
+            // project/web => check project name and url
+            // XXX copy-to-folder should be added
+            String correctUrl = getDefaultUrl(getWebFolderName());
+            if (!defaultUrl.equals(correctUrl)) {
+                url = correctUrl;
+            }
+        } else {
+            // /var/www or similar => check source folder name and url
+            String srcRoot = sources.getSrcRoot();
+            @SuppressWarnings("unchecked")
+            List<Root> roots = (List<Root>) descriptor.getProperty(ROOTS);
+            for (Root root : roots) {
+                String docRoot = root.getDocumentRoot() + File.separator;
+                if (srcRoot.startsWith(docRoot)) {
+                    String urlSuffix = srcRoot.replaceFirst(Pattern.quote(docRoot), ""); // NOI18N
+                    // handle situations like: /var/www/xxx///// or c:\\apache\htdocs\aaa\bbb
+                    url = root.getUrl() + urlSuffix.replaceAll(Pattern.quote(File.separator) + "+", "/"); // NOI18N
+                    if (!url.endsWith("/")) { // NOI18N
+                        url += "/"; // NOI18N
+                    }
+                    break;
+                }
+            }
+            if (url == null) {
+                // not found => get the name of the sources
+                url = "http://localhost/" + new File(sources.getSrcRoot()).getName() + "/"; // NOI18N
+            }
+        }
+        if (url != null && !defaultUrl.equals(url)) {
+            defaultUrl = url;
+            locationPanelVisual.setUrl(url);
+        }
     }
 
     private Boolean isCreateIndex() {
@@ -422,6 +455,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public void stateChanged(ChangeEvent e) {
+        adjustUrl();
         fireChangeEvent();
     }
 }
