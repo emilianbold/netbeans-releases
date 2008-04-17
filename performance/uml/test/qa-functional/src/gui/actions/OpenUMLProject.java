@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
 import gui.UMLUtilities;
@@ -54,17 +52,16 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
-
 /**
  * Test Open UML Project
  *
  * @author  rashid@netbeans.org
  */
 public class OpenUMLProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String projectName = "jEdit-Model-open";
     private JButtonOperator openButton;
-    
+
     /**
      * Creates a new instance of OpenUMLProject
      * @param testName the name of the test
@@ -72,9 +69,9 @@ public class OpenUMLProject extends org.netbeans.performance.test.utilities.Perf
     public OpenUMLProject(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
+
     /**
      * Creates a new instance of OpenUMLProject
      * @param testName the name of the test
@@ -83,34 +80,40 @@ public class OpenUMLProject extends org.netbeans.performance.test.utilities.Perf
     public OpenUMLProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
     }
-    
-    public void prepare(){
-        new ActionNoBlock("File|Open Project...",null).perform(); //NOI18N
+
+    public void prepare() {
+        new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
+
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
-        JTextComponentOperator path = new JTextComponentOperator(opd,1);
-        openButton = new JButtonOperator(opd,"Open Project"); //NOI18N
-        String paths= (System.getProperty("xtest.tmpdir") + java.io.File.separator + projectName );
+
+        JTextComponentOperator path = new JTextComponentOperator(opd, 1);
+        openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
+
+        String paths = (System.getProperty("xtest.tmpdir") + java.io.File.separator + projectName);
         path.setText(paths);
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         openButton.pushNoBlock();
         UMLUtilities.waitScanFinished();
         UMLUtilities.waitForPendingBackgroundTasks();
         return null;
     }
-    
-    public void close(){
+
+    @Override
+    public void close() {
         ProjectSupport.closeProject(projectName);
         new EventTool().waitNoEvent(2000);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+
     }
-    
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new OpenUMLProject("measureTime"));
     }

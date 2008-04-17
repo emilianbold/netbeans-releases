@@ -88,8 +88,6 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String URL_ATTR = InstanceProperties.URL_ATTR;
     public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
     public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
-    public static final String FILE_DEFAULT_INSTANCE = "DefaultInstance.settings"; //NOI18N
-    public static final String J2EE_DEFAULT_SERVER = "j2ee.defaultServer"; //NOI18N
     public static final String TARGETNAME_ATTR = "targetName"; //NOI18N
     public static final String SERVER_NAME = "serverName"; //NOI18N
     private static ServerRegistry instance = null;
@@ -112,9 +110,6 @@ public final class ServerRegistry implements java.io.Serializable {
     private transient Collection pluginListeners = new HashSet();
     private transient Collection instanceListeners = new ArrayList();
     private transient InstanceListener[] instanceListenersArray;
-
-    // This is the serializable portion of ServerRegistry
-    private ServerString defaultInstance;
 
     private ServerRegistry() {
         super();
@@ -301,12 +296,6 @@ public final class ServerRegistry implements java.io.Serializable {
         if (url == null)
             return;
 
-        // Make sure defaultInstance cache is reset
-        ServerString def = getDefaultInstance();
-        if (def != null && url.equals(def.getUrl())) {
-            defaultInstance = null;
-        }
-
         ServerInstance instance = null;
         synchronized (this) {
             instance = (ServerInstance) instancesMap().remove(url);
@@ -315,9 +304,6 @@ public final class ServerRegistry implements java.io.Serializable {
             fireInstanceListeners(url, false);
             removeInstanceFromFile(url);
         }
-        ServerString newinst = getDefaultInstance(false);
-        fireDefaultInstance(def != null ? def.getUrl() : null,
-                newinst != null ? newinst.getUrl() : null);
     }
 
     public synchronized ServerInstance[] getServerInstances() {
@@ -553,148 +539,6 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    private void fireDefaultInstance(String oldInstance, String newInstance) {
-        InstanceListener[] instListeners = getInstanceListeners();
-        for(int i = 0; i < instListeners.length; i++) {
-            instListeners[i].changeDefaultInstance(oldInstance, newInstance);
-        }
-    }
-
-    public void setDefaultInstance(ServerString instance) {
-        if (instance != null && instance.equals(defaultInstance)) {
-            return;
-        }
-
-        if (instance == null) {
-            removeDefaultInstanceFile();
-            ServerString oldValue = defaultInstance;
-            defaultInstance = null;
-            fireDefaultInstance(oldValue != null ? oldValue.getUrl() : null, null);
-        } else {
-            if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
-                ServerString oldValue = defaultInstance;
-                defaultInstance = instance;
-                fireDefaultInstance(oldValue != null ? oldValue.getUrl() : null,
-                        instance.getUrl());
-            }
-        }
-    }
-
-    static private void removeDefaultInstanceFile() {
-        FileLock lock = null;
-        Writer writer = null;
-        try {
-            String pathName = DIR_INSTALLED_SERVERS + "/" + FILE_DEFAULT_INSTANCE; // NOI18N
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(pathName);
-            if (fo != null)
-                fo.delete();
-        } catch(Exception ioe) {
-            Logger.getLogger("global").log(Level.WARNING, null, ioe);
-        }
-    }
-
-    private ServerString getInstallerDefaultPlugin() {
-        File propFile = InstalledFileLocator.getDefault ().locate ("config/install.properties", null, false); // NOI18N
-        Properties installProp = readProperties(propFile); //NOI18N
-
-        String j2eeDefaultServerFileName = installProp.getProperty(J2EE_DEFAULT_SERVER);
-        if (j2eeDefaultServerFileName == null)
-            return null;
-
-        File serverFile = InstalledFileLocator.getDefault ().locate (j2eeDefaultServerFileName, null, false);
-        Properties defaultServerProp = readProperties(serverFile);
-        String serverName = defaultServerProp.getProperty(SERVER_NAME);
-        String url = defaultServerProp.getProperty(URL_ATTR);
-        String user = defaultServerProp.getProperty(USERNAME_ATTR);
-        String password = defaultServerProp.getProperty(PASSWORD_ATTR);
-        String targetName = defaultServerProp.getProperty(TARGETNAME_ATTR);
-
-        Map<String, String> defaults = new HashMap<String, String>();
-        for (Enumeration e = defaultServerProp.propertyNames(); e.hasMoreElements(); ) {
-            String name = (String) e.nextElement();
-            String value = defaultServerProp.getProperty(name);
-            if (value != null) {
-                defaults.put(name, value);
-            }
-        }
-
-        try {
-            if (url != null) {
-                InstanceProperties instProp = InstanceProperties.getInstanceProperties(url);
-                if (instProp == null) {
-                    instProp = InstanceProperties.createInstanceProperties(url,
-                            user, password, null, defaults);
-                }
-                //instProp.setProperties(defaultServerProp);
-
-                ServerInstance inst = getServerInstance(url);
-                if (inst != null)
-                    return new ServerString(inst, targetName);
-
-            } else if (serverName != null) {
-                Server server = getServer(serverName);
-                if (server != null) {
-                    ServerInstance[] instances = server.getInstances();
-                    if (instances.length > 1)
-                        return new ServerString(instances[0]);
-                }
-            }
-        } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
-        return null;
-    }
-
-    static private Properties readProperties(File propFile) {
-        Properties prop = new Properties();
-        InputStream is = null;
-        try {
-            if (propFile != null && propFile.exists()) {
-                is = new FileInputStream(propFile);
-                prop.load(is);
-            }
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, ioe.toString());
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.FINE, null, ex);
-            }
-        }
-        return prop;
-    }
-
-    public ServerString getDefaultInstance() {
-        return getDefaultInstance(true);
-    }
-
-    public ServerString getDefaultInstance(boolean readFromFile) {
-        if (defaultInstance != null)
-            return defaultInstance;
-
-        if (readFromFile) {
-            defaultInstance = ServerStringConverter.readServerInstance(DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE);
-
-            if (defaultInstance == null) {
-                defaultInstance = getInstallerDefaultPlugin();
-            }
-
-        }
-
-        if (defaultInstance == null) {
-            ServerInstance[] instances = getServerInstances();
-            if (instances != null && instances.length > 0) {
-                defaultInstance = new ServerString(instances[0]);
-            }
-        }
-
-        setDefaultInstance(defaultInstance);
-        return defaultInstance;
-    }
-
     public interface PluginListener extends EventListener {
 
         public void serverAdded(Server name);
@@ -731,16 +575,6 @@ public final class ServerRegistry implements java.io.Serializable {
 	initConfigNamesByType();
 	Set configNames = (Set) configNamesByType.get(type);
 	return (configNames != null && configNames.contains(name));
-    }
-
-    public ServerInstance getInstanceOrDefault(String uri) {
-        ServerInstance instance = getServerInstance(uri);
-        if (instance == null) {
-            instance = getDefaultInstance().getServerInstance();
-        }
-        if (instance != null)
-            return instance;
-        throw new RuntimeException(NbBundle.getMessage(ServerRegistry.class, "MSG_NoServerInstances", uri));
     }
 
     /** Return profiler if any is registered in the IDE, null otherwise. */

@@ -231,7 +231,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         try {
             boolean bValid = true;
             File tempFile =  new File(fileName);
-            String tempFileName =0+fileName;
+            String tempFileName ="00"+fileName;
             File actualTempFile = File.createTempFile(tempFileName, null);
 
             if (!FileUtil.normalizeFile(tempFile).equals(tempFile.getCanonicalFile())) {

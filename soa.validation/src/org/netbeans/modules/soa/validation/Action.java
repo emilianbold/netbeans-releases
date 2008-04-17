@@ -38,16 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.core.validation;
+package org.netbeans.modules.soa.validation;
 
-import java.util.List;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.04.14
+ * @version 2008.04.15
  */
-public interface Listener {
+public final class Action extends ValidateAction {
 
-  void validationUpdated(List<ResultItem> result);
+  public Action(Controller controller) {
+    super(null);
+    myController = controller;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
+  }
+
+  private Controller myController;
 }

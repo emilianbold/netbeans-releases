@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.core.validation;
+package org.netbeans.modules.soa.validation;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;

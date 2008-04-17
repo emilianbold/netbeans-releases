@@ -12,9 +12,9 @@
   http://www.netbeans.org/cddl-gplv2.html
   or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
   specific language governing permissions and limitations under the
-  License.  When distributing the software, include this License Header
+  License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
   particular file as subject to the "Classpath" exception as provided
   by Sun in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
@@ -25,7 +25,7 @@
   Contributor(s):
 
   The Original Software is NetBeans. The Initial Developer of the Original
-  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
   Microsystems, Inc. All Rights Reserved.
 
   If you wish your version of this file to be governed by only the CDDL
@@ -39,14 +39,12 @@
   Version 2 license, then the option applies only if the new code is
   made subject to such option by the copyright holder.
 -->
-<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<project name="validation" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-<type
-    name="bpel-validation-annotation"
-    description_key="LBL_bpel_validation_annotation"
-    localizing_bundle="org.netbeans.modules.bpel.core.resources.Bundle"
-    glyph="nbresloc:/org/netbeans/modules/bpel/design/decoration/resources/error.png"
-    waveunderline="#FF00FF"
-    type="linepart"
-    visible="true"
-/>
+    <target name="check">
+        <ant dir="../../_code" inheritAll="true">
+            <property name="check.dir" value="${basedir}"/>
+        </ant>
+    </target>
+</project>

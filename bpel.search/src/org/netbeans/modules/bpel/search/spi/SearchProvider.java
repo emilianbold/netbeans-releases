@@ -38,26 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.core.validation;
+package org.netbeans.modules.bpel.search.spi;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.xml.validation.ValidateAction;
+import org.openide.nodes.Node;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.bpel.search.api.SearchTarget;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.04.15
+ * @version 2008.04.16
  */
-public final class Action extends ValidateAction {
+public interface SearchProvider {
 
-  public Action(Controller controller) {
-    super(null);
-    myController = controller;
-  }
+  /**
+   * Returns model by given node.
+   * @param node is given node
+   * @return model by given node
+   */
+  Model getModel(Node node);
 
-  @Override
-  public void actionPerformed(ActionEvent event) {
-    myController.startValidation();
-  }
-
-  private Controller myController;
+  /**
+   * Returns targets.
+   * @return targets
+   */
+  SearchTarget [] getTargets();
 }

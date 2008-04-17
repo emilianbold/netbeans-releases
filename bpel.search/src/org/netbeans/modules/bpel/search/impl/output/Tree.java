@@ -79,7 +79,7 @@ import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 
 import org.netbeans.modules.bpel.search.impl.ui.Export;
-import static org.netbeans.modules.soa.core.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

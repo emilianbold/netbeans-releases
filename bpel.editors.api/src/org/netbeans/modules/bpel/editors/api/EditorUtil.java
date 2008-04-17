@@ -231,7 +231,6 @@ public class EditorUtil {
     }
     
     public static Icon getIcon(Component component) {
-        // vlv
         Node node = getNode(component);
 
         if (node  != null) {
