@@ -2,10 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.php.samples;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -19,7 +20,6 @@ import org.openide.filesystems.FileUtil;
 public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
-
     private PHPSamplesWizardPanel panel;
 
     public PHPSamplesPanelVisual(PHPSamplesWizardPanel panel) {
@@ -211,7 +211,37 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
         if (projectName == null) {
             projectName = "sample";
         }
-        this.projectNameTextField.setText(projectName);
+        String newProjectName = projectName;
+        File testFile = new File(projectLocation, projectName);
+
+        if (testFile.exists()) {     //if default project directory exists, increment number after projectName
+            
+            File[] files = projectLocation.listFiles();
+            HashSet<String> filesSet = new HashSet<String>();
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                String fileName = file.getName();
+                if (fileName.indexOf(projectName) == 0 && file.isDirectory()) {     //similar name as a project name
+
+                    filesSet.add(fileName);
+                }
+            }
+
+            boolean dontHaveName = true;
+            int i = 2;
+            
+            do{
+                newProjectName = projectName + i;
+                if(!filesSet.contains(newProjectName)){
+                    dontHaveName = false;
+                }else{
+                    i++;
+                }
+            }while(dontHaveName);
+            
+            filesSet.clear();
+        }
+        this.projectNameTextField.setText(newProjectName);
         this.projectNameTextField.selectAll();
     }
 
