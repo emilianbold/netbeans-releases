@@ -965,6 +965,32 @@ public class PHPCodeCompletion implements Completable {
         public String getInsertPrefix() {
             return getName();
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            template.append(getName());
+            template.append("("); //NOI18N
+            
+            List<String> params = getInsertParams();
+            
+            for (int i = 0; i < params.size(); i++) {
+                String param = params.get(i);
+                template.append("${php-cc-"); //NOI18N
+                template.append(Integer.toString(i));
+                template.append(" default=\""); // NOI18N
+                template.append(param);
+                template.append("\"}"); //NOI18N
+                
+                if (i < params.size() - 1){
+                    template.append(", "); //NOI18N
+                }
+            }
+            
+            template.append(')');
+            
+            return template.toString();
+        }
         
         @Override public String getLhsHtml() {
             ElementKind kind = getKind();
