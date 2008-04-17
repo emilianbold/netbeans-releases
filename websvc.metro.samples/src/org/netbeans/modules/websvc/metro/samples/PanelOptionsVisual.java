@@ -119,7 +119,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        return serverInstanceComboBox.;
+        return serverInstanceComboBox.getItemCount() > 0;
     }
 
     void store(WizardDescriptor d) {
