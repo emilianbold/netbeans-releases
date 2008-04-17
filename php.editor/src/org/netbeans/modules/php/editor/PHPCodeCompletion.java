@@ -1077,7 +1077,8 @@ public class PHPCodeCompletion implements Completable {
             // true for elements defined in the currently file
             if (getElement() instanceof IndexedElement) {
                 IndexedElement indexedElement = (IndexedElement) getElement();
-                return indexedElement.getFilenameUrl().equals(request.currentlyEditedFileURL);
+                String url = indexedElement.getFilenameUrl();
+                return url != null && url.equals(request.currentlyEditedFileURL);
             }
 
             return false;
