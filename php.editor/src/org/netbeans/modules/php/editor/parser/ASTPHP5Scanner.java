@@ -1964,7 +1964,7 @@ public class ASTPHP5Scanner implements Scanner {
         || (text.charAt(1)=='?' && short_tags_allowed)) {
         yybegin(ST_IN_SCRIPTING);
         //return T_OPEN_TAG_WITH_ECHO;
-        return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
+        //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
     } else {
         return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
     }
@@ -2231,7 +2231,7 @@ public class ASTPHP5Scanner implements Scanner {
           { if (short_tags_allowed || yylength()>2) { /* yyleng>2 means it's not <? but <script> */
         yybegin(ST_IN_SCRIPTING);
         //return T_OPEN_TAG;
-        //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
+        return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
     } else {
         return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
     }
