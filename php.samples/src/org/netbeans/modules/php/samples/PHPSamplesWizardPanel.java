@@ -7,6 +7,7 @@ package org.netbeans.modules.php.samples;
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -30,6 +31,7 @@ public class PHPSamplesWizardPanel implements WizardDescriptor.Panel,
         if (component == null) {
             component = new PHPSamplesPanelVisual(this);
             component.setName(NbBundle.getMessage(PHPSamplesWizardPanel.class, "LBL_CreateProjectStep"));
+            component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PHPSamplesWizardPanel.class, "LBL_TXT_NewPHPSample"));
         }
         return component;
     }
@@ -71,11 +73,19 @@ public class PHPSamplesWizardPanel implements WizardDescriptor.Panel,
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
+        
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's
+        // title  this name is used in NewProjectWizard to modify the title
+        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
+        }
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isFinishPanel() {
