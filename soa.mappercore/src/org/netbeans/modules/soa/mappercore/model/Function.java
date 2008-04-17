@@ -32,6 +32,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.graphics.RRectangle;
+import org.netbeans.modules.soa.mappercore.graphics.Triangle;
 import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 
 /**
@@ -157,6 +158,10 @@ public class Function extends Vertex {
             g2.setPaint(MapperStyle.VERTEX_BORDER_COLOR);
             g2.draw(rrect);
         }
+        
+        g2.fill(new Triangle(width - step, height, 
+        width, height - step, width, height));
+        
         g2.setStroke(oldStroke);
         g2.translate(-tx, -ty);
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
@@ -176,7 +181,7 @@ public class Function extends Vertex {
         if (resultText != null) {
             JLabel label = rendererContext.getTextRenderer();
             
-            int labelWidth = width - 5;
+            int labelWidth = width - 5 - step;
             
             if (labelWidth > 0) {
                 int labelHeight = 2 * step - 1;

@@ -330,10 +330,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getModuleFolder () {
         return getDocumentBase ();
     }
-
-    public boolean useDefaultServer () {
-        return false;
-    }
     
     public String getServerID () {
         String inst = getServerInstanceID ();

@@ -421,7 +421,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
           "Add Element",
           "Use Existing Type",
           "Referenced Schemas|import|Complex Types|AddressType",
-          "newElement"
+          ELEMENT_NAMES[ 0 ]
         );
 
       endTest( );

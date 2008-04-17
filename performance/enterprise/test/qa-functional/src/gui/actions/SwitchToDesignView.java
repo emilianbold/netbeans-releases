@@ -46,6 +46,7 @@ import gui.EPUtilities;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
@@ -73,6 +74,8 @@ public class SwitchToDesignView  extends org.netbeans.performance.test.utilities
     
     protected void initialize() {
         log(":: initialize");
+        System.gc();
+        new EventTool().waitNoEvent(5000);
         Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);

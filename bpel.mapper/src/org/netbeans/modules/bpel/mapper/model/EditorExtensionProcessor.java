@@ -198,5 +198,11 @@ public class EditorExtensionProcessor {
         public List<Cast> getToCasts() {
             return mToCasts;
         }
+        
+        @Override
+        public String toString() {
+            return "From: " + mFromCasts + " To: " + mToCasts;
+        }
+        
     }
 }

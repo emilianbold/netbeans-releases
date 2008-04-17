@@ -399,58 +399,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      // Select in schema
-      // Select newAttribute
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      JListOperator opList = opMultiView.getColumnListOperator( 1 );
-      opList.selectItem( COMPLEX_NAMES[ 0 ] );
-
-      // Go to : schema -> definition
-      // Check definition view
-      // Check definition selection
-      // Close definition
-      CheckSchemaViewDefinition( opList, COMPLEX_NAMES[ 0 ], "CarType" );
-
-      // Go to : Schema -> Design
-      GotoSchemaDesign( opList, COMPLEX_NAMES[ 0 ] );
-
-      // Check selected element
-
-      // Go to : Design -> Source
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
-
-      // Check selected code line
-
-      // Go to : source -> definition
-      // Check definition view
-      // Check definition selection
-      // Close definition
-      /*
-      CheckSourceViewDefinition(
-          "<xs:complexType name=\"" + COMPLEX_NAMES[ 0 ] + "\">"
-        );
-      */
-
-      // Go to : Source -> Schema
-      // Check selected element
-      //GotoSourceSchema( COMPLEX_NAMES[ 0 ] );
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
-
-      // Go to : Schema -> Source
-      // Check selected element
-      GotoSchemaSource(
-          opList,
+      ExploreComplexInternal(
           COMPLEX_NAMES[ 0 ],
-          "<xs:complexType name=\"" + COMPLEX_NAMES[ 0 ] + "\">"
+          "CarType"
         );
-
-      // Go to : Source -> Design
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
-
-      // Check selected element
-
-      // Go to : Design -> Schema
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
 
       endTest( );
     }
@@ -482,7 +434,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Element",
           "Use Existing Type",
           "Referenced Schemas|import|Complex Types|AddressType",
-          "newElement"
+          ELEMENT_NAMES[ 0 ]
         );
 
       endTest( );
@@ -492,45 +444,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      // Select in schema
-
-      // Go to : schema -> definition
-
-      // Check definition view
-
-      // Check definition selection
-
-      // Close definition
-
-      // Go to : schema -> Design
-
-      // Check selected element
-
-      // Go to : Design -> Source
-
-      // Check selected code line
-
-      // Go to : source -> definition
-
-      // Check definition view
-
-      // Check definition selection
-
-      // Close definition
-
-      // Go to : Source -> Schema
-
-      // Check selected element
-
-      // Go to : Schema -> Source
-
-      // Check selected element
-
-      // Go to : Source -> Design
-
-      // Check selected element
-
-      // Go to : Design -> Schema
+      ExploreComplexInternal(
+          ELEMENT_NAMES[ 0 ],
+          "AddressType"
+        );
 
       endTest( );
     }

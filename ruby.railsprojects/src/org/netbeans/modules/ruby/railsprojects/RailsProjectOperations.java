@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,14 +49,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -65,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 public class RailsProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
-    private RailsProject project;
+    private final RailsProject project;
     
     public RailsProjectOperations(RailsProject project) {
         this.project = project;
@@ -106,19 +101,6 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     
     public void notifyDeleting() throws IOException {
         project.notifyDeleting();
-//        RailsActionProvider ap = project.getLookup().lookup(RailsActionProvider.class);
-//        
-//        assert ap != null;
-//        
-        // TODO: Clean
-//        Properties p = new Properties();
-//        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
-//        FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//        
-//        assert targetNames != null;
-//        assert targetNames.length > 0;
-//        
-//        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
     }
     
     public void notifyDeleted() throws IOException {
@@ -126,7 +108,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     }
     
     public void notifyCopying() {
-        //nothing.
+        // nothing needed in the meantime
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -135,9 +117,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
             return ;
         }
         
-        fixDistJarProperty (nueName);
         project.getReferenceHelper().fixReferences(originalPath);
-        
         project.setName(nueName);
     }
     
@@ -155,37 +135,8 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
             return ;
         }                
         
-        fixDistJarProperty (nueName);
         project.setName(nueName);        
         project.getReferenceHelper().fixReferences(originalPath);
     }
     
-    private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo))
-            return false;
-        
-        while (fo != null) {
-            if (fo.equals(folder))
-                return true;
-            
-            fo = fo.getParentFile();
-        }
-        
-        return false;
-    }
-    
-    private void fixDistJarProperty (final String newName) {
-        ProjectManager.mutex().writeAccess(new Runnable () {
-            public void run () {
-                ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
-                String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
-                EditableProperties ep = project.getUpdateHelper().getProperties (RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-                String propValue = ep.getProperty("dist.jar");  //NOI18N
-                if (oldDistJar != null && oldDistJar.equals (propValue)) {
-                    ep.put ("dist.jar","${dist.dir}/"+PropertyUtils.getUsablePropertyName(newName)+".jar"); //NOI18N
-                    project.getUpdateHelper().putProperties (RakeProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-                }
-            }
-        });
-    }
 }

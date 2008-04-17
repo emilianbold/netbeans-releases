@@ -322,7 +322,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 callNode.getType() == org.mozilla.javascript.Token.NEW)) {
             // It's a call, so prefer method/constructor elements
             String fqn = JsTypeAnalyzer.getCallFqn(info, callNode, true);
-            if (fqn.length() > 0 && fqn.indexOf('.') != -1) {
+            if (fqn != null && fqn.length() > 0 && fqn.indexOf('.') != -1) {
                 while ((fqn != null) && (fqn.length() > 0)) {
                     for (IndexedElement method : elements) {
                         if (fqn.equals(method.getIn()+"."+method.getName())) { // NOI18N
