@@ -123,11 +123,10 @@ public class MemoryFileManager implements JavaFileManager {
             if (namePair != null) {
                 final List<Integer> pkglst = this.packages.get(namePair[0]);
                 if (pkglst != null) {
-                    final String relativeName = namePair[1] + kind.extension;
                     for (Integer id : pkglst) {
                         final FileObjects.InferableJavaFileObject jfo = this.content.get (id);
                         assert jfo != null;
-                        if (relativeName.equals(jfo.inferBinaryName())) {
+                        if (className.equals(jfo.inferBinaryName())) {
                             return jfo;
                         }
                     }
