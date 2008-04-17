@@ -51,6 +51,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.Index;
@@ -58,10 +59,6 @@ import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -296,7 +293,51 @@ public class PHPIndex {
         
         return constants;
     }
+    
+    public Collection<String>getDirectIncludes(String fileURL){
+        ArrayList includes = new ArrayList();
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        search("filename", fileURL, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
+        
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_INCLUDE);
 
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+                    
+                    for (String incl : signature.split(";")){
+                        includes.add(incl);
+                    }
+                }
+            }
+        }
+        
+        return includes;
+    }
+    
+    public Collection<String>getAllIncludes(String fileURL){
+        return getAllIncludes(fileURL, (Collection<String>)Collections.EMPTY_LIST);
+    }
+
+    private Collection<String>getAllIncludes(String fileURL, Collection<String> alreadyProcessed){
+        Collection<String> includes = new TreeSet<String>();
+        includes.add(fileURL);
+        includes.addAll(alreadyProcessed);
+        Collection<String> directIncludes = getDirectIncludes(fileURL);
+        
+        for (String directInclude : directIncludes){
+            if (!includes.contains(directInclude)){
+                includes.addAll(getAllIncludes(directInclude, includes));
+            }
+        }
+        
+        return includes;
+    }
+    
     /** 
      * Decide whether the given url is included from the current compilation
      * context.
@@ -338,34 +379,12 @@ public class PHPIndex {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<String> includes = new ArrayList<String>();
+        Collection<String> includeList = getAllIncludes(url);
         
-        for (Statement statement : result.getProgram().getStatements()) {
-            if (statement instanceof ExpressionStatement) {
-                ExpressionStatement expressionStatement = (ExpressionStatement) statement;
-                if (expressionStatement.getExpression() instanceof Include){
-                    Include include = (Include)expressionStatement.getExpression();
-                    if (include.getExpression() instanceof Scalar){
-                        Scalar scalar = (Scalar)include.getExpression();
-                        includes.add(scalar.getStringValue());
-                    }
-                }
-            }
-        }
-        
-        for (String includeInQuotes : includes){
-            // start of provisional code
-            //TODO: a more sophisticated check here,
-            String incl = dequote(includeInQuotes);
-            assert processedFileURL.startsWith("file:");
-            String processedFileAbsPath = processedFileURL.substring("file:".length());
-            String includeURL = resolveRelativeURL(processedFileAbsPath, incl);
-            
-            if (url.equals("file:" + includeURL)){
+        for (String includeURL : includeList){
+            if (url.equals("file:" + includeURL)){ //NOI18N
                 return true;
             }
-            
-            // end of provisional code
         }
 
         return false;
