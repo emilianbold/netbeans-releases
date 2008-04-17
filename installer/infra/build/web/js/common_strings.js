@@ -62,7 +62,7 @@ BUNDLE_SHORT_NAMES[2] = "Java&nbsp;SE";
 BUNDLE_SHORT_NAMES[3] = "Ruby";
 BUNDLE_SHORT_NAMES[4] = "C/C++";
 //BUNDLE_SHORT_NAMES[5] = "PHP";
-BUNDLE_SHORT_NAMES[6] = "";
+BUNDLE_SHORT_NAMES[5] = "";
 
 BUNDLE_LONG_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
 BUNDLE_LONG_NAMES[1] = "Mobility";
