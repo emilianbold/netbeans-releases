@@ -81,10 +81,10 @@ public class CompilerSetManager {
     public static final int SUN_COMPILER_SET = 0;
     public static final int GNU_COMPILER_SET = 1;
     
-    public static final String Sun12 = "Sun12"; // NOI18N
-    public static final String Sun11 = "Sun11"; // NOI18N
-    public static final String Sun10 = "Sun10"; // NOI18N
-    public static final String Sun = "Sun"; // NOI18N
+    public static final String Sun12 = "SunStudio_12"; // NOI18N
+    public static final String Sun11 = "SunStudio_11"; // NOI18N
+    public static final String Sun10 = "SunStudio_10"; // NOI18N
+    public static final String Sun = "SunStudio"; // NOI18N
     public static final String GNU = "GNU"; // NOI18N
     
     private static CompilerFilenameFilter gcc_filter;

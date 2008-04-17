@@ -64,7 +64,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 
 /**
  * @author Vladimir Yaroslavskiy

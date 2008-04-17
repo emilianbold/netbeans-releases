@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -65,7 +65,7 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -78,10 +78,6 @@ public final class Palette {
     myIsCollapsed = true;
   }
 
-//  public JPanel getPanel() {
-//    return getPanel(true);
-//  }
-  
   public JPanel getPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
@@ -92,24 +88,6 @@ public final class Palette {
     c.fill = GridBagConstraints.BOTH;
     panel.add(createMenuBar(), c);
 
-//    if (hasLeftButton) {
-//      // vlv: print
-//      JButton button = createPrintPreviewButton();
-//
-//      if (button != null) {
-//        c.weightx = 0.0;
-//        c.anchor = GridBagConstraints.EAST;
-//        c.fill = GridBagConstraints.NONE;
-//        c.insets = new Insets(0, 0, 0, TINY_INSET);
-//        panel.add(button, c);
-//      }
-//      // vlv: expand / collapse
-//      c.weightx = 0.0;
-//      c.anchor = GridBagConstraints.EAST;
-//      c.fill = GridBagConstraints.NONE;
-//      c.insets = new Insets(0, 0, 0, 0);
-//      panel.add(createCollapseExpandAllButton(), c);
-//    }
     panel.setBorder(new Border());
     panel.setOpaque(true);
     panel.addMouseMotionListener(new MouseMotionAdapter() {});

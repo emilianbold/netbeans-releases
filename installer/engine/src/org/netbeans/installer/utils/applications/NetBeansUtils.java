@@ -54,6 +54,8 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel.BundleType;
 
 /**
  *
@@ -107,7 +109,7 @@ public class NetBeansUtils {
         
         File productid = new File(nbCluster, PRODUCT_ID);
         
-        return FileUtils.writeFile(productid, NB_IDE_ID);
+        return FileUtils.writeFile(productid, getNetBeansId());
     }
     
     public static FilesList addPackId(File nbLocation, String packId) throws IOException {
@@ -117,7 +119,7 @@ public class NetBeansUtils {
         
         final String id;
         if (!productid.exists()) {
-            id = NB_IDE_ID;
+            id = getNetBeansId();
         } else {
             id = FileUtils.readFile(productid).trim();
         }
@@ -154,7 +156,7 @@ public class NetBeansUtils {
         
         String id;
         if (!productid.exists()) {
-            id = NB_IDE_ID;
+            id = getNetBeansId();
         } else {
             id = FileUtils.readFile(productid).trim();
         }
@@ -607,7 +609,11 @@ public class NetBeansUtils {
             }
         }
     }
-    
+    private static String getNetBeansId() {
+        return BundleType.getType(
+                System.getProperty(NbWelcomePanel.WELCOME_PAGE_TYPE_PROPERTY)).
+                getNetBeansBundleId();
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private NetBeansUtils() {

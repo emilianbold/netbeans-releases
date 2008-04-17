@@ -359,8 +359,18 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.erlang.editing</friend>
+                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.erlang.platform</friend>
+                <friend>org.netbeans.modules.fortress.editing</friend>
+                <friend>org.netbeans.modules.fortress.project</friend>
+                <friend>org.netbeans.modules.fortress.platform</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
+                <friend>org.netbeans.modules.scala.debugger.projects</friend>
+                <friend>org.netbeans.modules.scala.editing</friend>
+                <friend>org.netbeans.modules.scala.project</friend>
+                <friend>org.netbeans.modules.scala.platform</friend>
                 <!-- These two modules are friends for Auto Update purposes - such that
                      they can get gsf installed through a dependency on it since gsf api
                      doesn't depend on gsf -->

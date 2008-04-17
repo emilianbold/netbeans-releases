@@ -99,6 +99,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -240,7 +241,16 @@ public class JSFClientGenerator {
         //automatically add JSF framework if it is not added
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         if (!fp.isInWebModule(wm)) {
-            WebModuleExtender wme = fp.createWebModuleExtender(wm, ExtenderController.create());
+            ExtenderController ec = ExtenderController.create();
+            String j2eeLevel = wm.getJ2eePlatformVersion();
+            ec.getProperties().setProperty("j2eeLevel", j2eeLevel);
+            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            if (moduleProvider != null) {
+                String serverInstanceID = moduleProvider.getServerInstanceID();
+                ec.getProperties().setProperty("serverInstanceID", serverInstanceID);
+            }
+            WebModuleExtender wme = fp.createWebModuleExtender(wm, ec);
+            wme.update();
             wme.extend(wm);
         }
         
@@ -737,9 +747,33 @@ public class JSFClientGenerator {
                     + managedBeanName +"\");\n";
         }
         if (embeddable[0]) {
-            getAsObjectBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
+            getAsObjectBody.append(idPropertyType[0] + " id = getId(string);\n");
+            getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
+        } else {
+            getAsObjectBody.append(createIdFieldDeclaration(idPropertyType[0], "string") + "\n"
+                    + controllerVariable
+                    + "\n return controller.find" + simpleEntityName + "(id);");
+        }
+        
+        final MethodModel getAsObject = MethodModel.create(
+                "getAsObject",
+                "java.lang.Object",
+                getAsObjectBody.toString(),
+                Arrays.asList(
+                    MethodModel.Variable.create("javax.faces.context.FacesContext", "facesContext"),
+                    MethodModel.Variable.create("javax.faces.component.UIComponent", "component"),
+                    MethodModel.Variable.create("java.lang.String", "string")
+                ),
+                Collections.<String>emptyList(),
+                Collections.singleton(Modifier.PUBLIC)
+                );
+        
+        StringBuffer getIdBody = null;
+        if (embeddable[0]) {
+            getIdBody = new StringBuffer();
+            getIdBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
             int params = paramSetters.size();
-            getAsObjectBody.append("String params[] = new String[" + params + "];\n" +
+            getIdBody.append("String params[] = new String[" + params + "];\n" +
                     "int p = 0;\n" +
                     "int grabStart = 0;\n" +
                     "String delim = \"#\";\n" +
@@ -767,29 +801,23 @@ public class JSFClientGenerator {
             for (int i = 0; i < paramSetters.size(); i++) {
                 MethodModel setter = paramSetters.get(i);
                 String type = setter.getParameters().get(0).getType();
-                getAsObjectBody.append("id." + setter.getName() + "(" 
+                getIdBody.append("id." + setter.getName() + "(" 
                         + createIdFieldInitialization(type, "params[" + i + "]") + ");\n");
             }
-
-            getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
-        } else {
-            getAsObjectBody.append(createIdFieldDeclaration(idPropertyType[0], "string") + "\n"
-                    + controllerVariable
-                    + "\n return controller.find" + simpleEntityName + "(id);");
+            
+            getIdBody.append("return id;\n");
         }
         
-        final MethodModel getAsObject = MethodModel.create(
-                "getAsObject",
-                "java.lang.Object",
-                getAsObjectBody.toString(),
+        final MethodModel getId = embeddable[0] ? MethodModel.create(
+                "getId",
+                idPropertyType[0],
+                getIdBody.toString(),
                 Arrays.asList(
-                    MethodModel.Variable.create("javax.faces.context.FacesContext", "facesContext"),
-                    MethodModel.Variable.create("javax.faces.component.UIComponent", "component"),
                     MethodModel.Variable.create("java.lang.String", "string")
                 ),
                 Collections.<String>emptyList(),
-                Collections.singleton(Modifier.PUBLIC)
-                );
+                Collections.<Modifier>emptySet()    //no modifiers 
+                ) : null;
 
         String entityReferenceName = entityClass;
         StringBuffer getAsStringBody = new StringBuffer();
@@ -868,8 +896,12 @@ public class JSFClientGenerator {
                 ClassTree classTree = workingCopy.getTrees().getTree(converterTypeElement);
                 ClassTree modifiedClassTree = generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
                 MethodTree getAsObjectTree = MethodModelSupport.createMethodTree(workingCopy, getAsObject);
+                MethodTree getIdTree = embeddable[0] ? MethodModelSupport.createMethodTree(workingCopy, getId) : null;
                 MethodTree getAsStringTree = MethodModelSupport.createMethodTree(workingCopy, getAsString);
                 modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsObjectTree);
+                if (embeddable[0]) {
+                    modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getIdTree);
+                }
                 modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsStringTree);
                 if (embeddable[0]) {
                     String[] importFqs = {"java.util.regex.Pattern",
@@ -1008,12 +1040,12 @@ public class JSFClientGenerator {
                     allRelMethods.addAll(toManyRelMethods);
                     
                     String[] importFqs = {"javax.persistence.Query",
+                                "javax.persistence.EntityNotFoundException",
                                 "javax.faces.application.FacesMessage",
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
                                 "javax.faces.FacesException",
-                                "java.util.HashMap",
-                                "javax.faces.validator.ValidatorException"
+                                "java.util.HashMap"
                     };
                     CompilationUnitTree modifiedImportCut = null;
                     for (String importFq : importFqs) {
@@ -1100,7 +1132,9 @@ public class JSFClientGenerator {
                                                             "if (" + scalarRelFieldName + " != null) {\n"));
                                                             //if 1:1, be sure to orphan the related entity's current related entity
                             if (otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "." + relrelGetterName + "();\n");
+                                if (multiplicity != JsfForm.REL_TO_ONE || columnNullable) { //no need to declare relrelInstanceName if we have already examined it in the 1:1 orphan check
+                                    updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "." + relrelGetterName + "();\n");
+                                }
                                 if (multiplicity == JsfForm.REL_TO_ONE) {
                                     if (columnNullable) {
                                         updateRelatedInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
@@ -1444,22 +1478,39 @@ public class JSFClientGenerator {
                     if (illegalOrphansInDestroy.length() > 0) {
                         illegalOrphansInDestroy.insert(0, "boolean illegalOrphans = false;\n");
                         illegalOrphansInDestroy.append("if (illegalOrphans) {\n" +
+                                ROLLBACK + "\n" +
                                 "return null;\n" +
                                 "}\n");
                     }
                     
-                    bodyText = fieldName + " = " + getFromReqParamMethod + "();\n" +
-                            "if (" + fieldName + " == null) {\n" +
-                            "String current" + simpleEntityName + "String = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
-                            "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
-                            relatedControllerOutcomeSwath + 
-                            "return listSetup();\n" +
-                            "}\n";           
-                    String refOrMergeStringInDestroy = getRefOrMergeString(idGetterElement, fieldName);
-                    bodyText += illegalOrphansInDestroy.toString() + 
-                        "EntityManager em = getEntityManager();\n" + 
+                    String refOrMergeStringInDestroy = "em.merge(" + fieldName + ");\n";
+                    if (idGetterElement != null) {
+                        refOrMergeStringInDestroy = "em.getReference(" + simpleEntityName + ".class, ";
+                        if (embeddable[0]) {
+                            refOrMergeStringInDestroy += "new " + simpleConverterName + "().getId(idAsString));\n";
+                        }
+                        else {
+                            refOrMergeStringInDestroy += "id);\n";
+                        }
+                    }
+                    bodyText = "EntityManager em = getEntityManager();\n" + 
                         "try {\n " + BEGIN + "\n" + 
-                        fieldName + " = " + refOrMergeStringInDestroy + updateRelatedInDestroy.toString() + 
+                        "String idAsString = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
+                        "try {\n " + 
+                        (embeddable[0] ? "" : createIdFieldDeclaration(idPropertyType[0], "idAsString") + "\n") + 
+                        fieldName + " = " + refOrMergeStringInDestroy + 
+                        fieldName + "." + idGetterName[0] + "();\n" +
+                        "} catch (EntityNotFoundException enfe) {\n" +
+                        "addErrorMessage(\"The " + fieldName + " with id \" + idAsString + \" no longer exists.\");\n" +
+                        "String notFoundOutcome = relatedControllerOutcome();\n" +
+                        "if (notFoundOutcome == null) {\n" +
+                        "notFoundOutcome = listSetup();\n" +
+                        "}\n" +
+                        ROLLBACK + "\n" +
+                        "return notFoundOutcome;\n" +
+                        "}\n" + 
+                        illegalOrphansInDestroy.toString() +
+                        updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
                         "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 

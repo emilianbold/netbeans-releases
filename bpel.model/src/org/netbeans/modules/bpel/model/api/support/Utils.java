@@ -139,6 +139,7 @@ import org.netbeans.modules.xml.xam.spi.Validator;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 public final class Utils {
 
@@ -677,23 +678,8 @@ public final class Utils {
         }
     }
 
-    public static FileObject getFileObjectByModel(Model model) {
-        if (model != null){
-
-            ModelSource src = model.getModelSource();
-            if (src != null){
-
-                Lookup lookup = src.getLookup();
-                if (lookup != null){
-                    return lookup.lookup(FileObject.class);
-                }
-            }
-        }
-        return null;
-    }
-
     public static Project safeGetProject(BpelModel bpelModel) {
-        FileObject fo = getFileObjectByModel(bpelModel);
+        FileObject fo = SoaUtil.getFileObjectByModel(bpelModel);
         if (fo != null && fo.isValid()) {
             return FileOwnerQuery.getOwner(fo);
         } else {
@@ -713,7 +699,6 @@ public final class Utils {
         //
         return sModel;
     }
-    
     
     private static ActivityBuilder getActivityBuilder( String tagName ){
         return ActivityCreatorHolder.ACTIVITY_BUILDERS.get( tagName );

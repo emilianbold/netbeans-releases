@@ -31,7 +31,7 @@ import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;

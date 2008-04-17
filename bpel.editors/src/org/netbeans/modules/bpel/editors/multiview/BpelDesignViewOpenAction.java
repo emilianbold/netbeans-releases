@@ -18,7 +18,7 @@ package org.netbeans.modules.bpel.editors.multiview;
 
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.openide.cookies.OpenCookie;

@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor;
 import javax.swing.JPanel;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 
@@ -86,7 +86,7 @@ public class SimpleCustomEditor<T> extends AbstractCustomNodeEditor<T> {
             accessibleContext = mainPanel.getAccessibleContext();
         }
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     public JPanel getMainPanel() {

@@ -244,27 +244,33 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     /**
      * Get those loggers interested in a given event.
      */
-    private synchronized Collection<AntLogger> getInterestedLoggersByEvent(AntEvent e) {
-        initInterestedLoggers();
-        // Start with the smallest one and go down.
-        interestedLoggersByVariousCriteria[0] = getInterestedLoggersByScript(e.getScriptLocation());
-        interestedLoggersByVariousCriteria[1] = getInterestedLoggersByTarget(e.getTargetName());
-        interestedLoggersByVariousCriteria[2] = getInterestedLoggersByTask(e.getTaskName());
-        interestedLoggersByVariousCriteria[3] = getInterestedLoggersByLevel(e.getLogLevel());
-        Arrays.sort(interestedLoggersByVariousCriteria, INTERESTED_LOGGERS_SORTER);
-        if (LOGGABLE) {
-            ERR.log(EM_LEVEL, "getInterestedLoggersByVariousCriteria: event=" + e + " loggers=" + Arrays.asList(interestedLoggersByVariousCriteria));
+    private Collection<AntLogger> getInterestedLoggersByEvent(AntEvent e) {
+        File scriptLocation = e.getScriptLocation();
+        String targetName = e.getTargetName();
+        String taskName = e.getTaskName();
+        int logLevel = e.getLogLevel();
+        synchronized (this) { // #132945: <parallel> can deadlock if you block on event info here
+            initInterestedLoggers();
+            // Start with the smallest one and go down.
+            interestedLoggersByVariousCriteria[0] = getInterestedLoggersByScript(scriptLocation);
+            interestedLoggersByVariousCriteria[1] = getInterestedLoggersByTarget(targetName);
+            interestedLoggersByVariousCriteria[2] = getInterestedLoggersByTask(taskName);
+            interestedLoggersByVariousCriteria[3] = getInterestedLoggersByLevel(logLevel);
+            Arrays.sort(interestedLoggersByVariousCriteria, INTERESTED_LOGGERS_SORTER);
+            if (LOGGABLE) {
+                ERR.log(EM_LEVEL, "getInterestedLoggersByVariousCriteria: event=" + e + " loggers=" + Arrays.asList(interestedLoggersByVariousCriteria));
+            }
+            // XXX could probably be even a bit more efficient by iterating on the fly...
+            // and by skipping the sorting which is probably overkill for a small number of a loggers (or hardcode the sort)
+            List<AntLogger> loggers = new LinkedList<AntLogger>(interestedLoggersByVariousCriteria[0]);
+            for (int i = 1; i < 4; i++) {
+                loggers.retainAll(interestedLoggersByVariousCriteria[i]);
+            }
+            if (LOGGABLE) {
+                ERR.log(EM_LEVEL, "getInterestedLoggersByEvent: event=" + e + " loggers=" + loggers);
+            }
+            return loggers;
         }
-        // XXX could probably be even a bit more efficient by iterating on the fly...
-        // and by skipping the sorting which is probably overkill for a small number of a loggers (or hardcode the sort)
-        List<AntLogger> loggers = new LinkedList<AntLogger>(interestedLoggersByVariousCriteria[0]);
-        for (int i = 1; i < 4; i++) {
-            loggers.retainAll(interestedLoggersByVariousCriteria[i]);
-        }
-        if (LOGGABLE) {
-            ERR.log(EM_LEVEL, "getInterestedLoggersByEvent: event=" + e + " loggers=" + loggers);
-        }
-        return loggers;
     }
     
     private synchronized Collection<AntLogger> getInterestedLoggersByScript(File script) {

@@ -61,13 +61,12 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
 import org.netbeans.modules.bpel.search.impl.output.View;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -86,14 +85,29 @@ public final class SearchAction extends IconAction {
       icon(View.class, icon)
     );
     setEnabled(false);
+    myProviders = getInstances(SearchProvider.class);
   }
 
   public void actionPerformed(ActionEvent event) {
     Node node = getLastNode();
-    Model model = getModel(node);
 
-    SearchTarget [] targets = getTargets(model);
+    SearchTarget [] targets = null;
+    Model model = null;
 
+    for (SearchProvider provider : myProviders) {
+      model = provider.getModel(node);
+
+      if (model != null) {
+        targets = provider.getTargets();
+      }
+    }
+
+    
+    
+    if (targets == null) {
+      model = getModel_(node);
+      targets = getTargets(model);
+    }
     if (targets == null) {
       return;
     }
@@ -174,9 +188,6 @@ public final class SearchAction extends IconAction {
   }
   
   private SearchTarget [] getTargets(Model model) {
-    if (model instanceof BpelModel) {
-      return Target.BPEL;
-    }
     if (model instanceof WSDLModel) {
       return Target.WSDL;
     }
@@ -186,7 +197,7 @@ public final class SearchAction extends IconAction {
     return null;
   }
 
-  private Model getModel(Node node) {
+  private Model getModel_(Node node) {
 //out();
 //out("get model");
 //out("node: " + node);
@@ -195,12 +206,6 @@ public final class SearchAction extends IconAction {
 
     if (data == null) {
       return null;
-    }
-    Model model = EditorUtil.getBpelModel(data);
-//out("model: " + model);
-
-    if (model != null) {
-      return model;
     }
     ModelCookie cookie = data.getCookie(ModelCookie.class);
 
@@ -222,5 +227,7 @@ public final class SearchAction extends IconAction {
   }
 
   private Search mySearch;
+  private List<SearchProvider> myProviders;
+
   public static final Action DEFAULT = new SearchAction();
 }
