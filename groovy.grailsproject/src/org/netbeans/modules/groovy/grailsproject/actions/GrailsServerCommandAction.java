@@ -73,8 +73,12 @@ public class GrailsServerCommandAction extends AbstractAction implements Present
         FileObject prjDir = project.getProjectDirectory();
         assert prjDir != null;
         
-        FileObject scriptsDir =prjDir.getFileObject("scripts");
-        assert scriptsDir != null; 
+        // we have to be a little bit more forgiving,
+        // if there is no scripts subdir. See # 133036
+        FileObject scriptsDir = prjDir.getFileObject("scripts");
+        
+        if (scriptsDir == null)
+            return cmdlist;
         
         for (Enumeration e = scriptsDir.getChildren(false); e.hasMoreElements();) {
                     FileObject fo = (FileObject) e.nextElement();
