@@ -219,7 +219,6 @@
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/soa.validation/build.xml"/>
-            <buildpath location="${home}/soa.core/build.xml"/>
             <buildpath location="${home}/soa.ui/build.xml"/>
             <buildpath location="${home}/soa.mappercore/build.xml"/>
             <buildpath location="${home}/soa.mapper/build.xml"/>
