@@ -84,6 +84,7 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
                 }
             }
         }
+        ch = reorder(ch);
         int l = ch.length;
         from = Math.min(l, from);
         to = Math.min(l, to);
@@ -101,6 +102,10 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
     
     protected boolean cacheChildrenOf(Object node) {
         return true;
+    }
+    
+    protected Object[] reorder(Object[] nodes) {
+        return nodes;
     }
     
     protected final void recomputeChildren() throws UnknownTypeException {

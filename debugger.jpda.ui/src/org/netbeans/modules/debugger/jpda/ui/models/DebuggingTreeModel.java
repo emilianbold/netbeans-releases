@@ -46,7 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -54,6 +56,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -68,6 +73,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -77,13 +83,29 @@ import org.openide.util.WeakListeners;
  */
 public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
+    private static final String SORT_ALPHABET = "sort.alphabet";
+    private static final String SORT_SUSPEND = "sort.suspend";
+    private static final String SHOW_SYSTEM_THREADS = "show.systemThreads";
+    
+    private static final Set<String> SYSTEM_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
+                                                           "Reference Handler",
+                                                           "Signal Dispatcher",
+                                                           "Finalizer",
+                                                           "Java2D Disposer",
+                                                           //"DestroyJavaVM",
+                                                           "TimerQueue"}));
+    
     private JPDADebugger debugger;
     private Listener            listener;
+    private PreferenceChangeListener prefListener;
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
+    private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        prefListener = new DebuggingPreferenceChangeListener();
+        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
 
     @Override
@@ -104,6 +126,54 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             return new Object[0];
         }
         throw new UnknownTypeException(parent.toString());
+    }
+    
+    protected Object[] reorder(Object[] nodes) {
+        boolean showSystemThreads = preferences.getBoolean(SHOW_SYSTEM_THREADS, false);
+        if (!showSystemThreads) {
+            nodes = filterSystemThreads(nodes);
+        }
+        boolean alphabet = preferences.getBoolean(SORT_ALPHABET, true);
+        if (!alphabet) {
+            boolean suspend = preferences.getBoolean(SORT_SUSPEND, false);
+            if (suspend) {
+                Object[] newNodes = new Object[nodes.length];
+                System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
+                nodes = newNodes;
+                Arrays.sort(nodes, new ThreadSuspendComparator());
+            }
+        } else {
+            Object[] newNodes = new Object[nodes.length];
+            System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
+            nodes = newNodes;
+            Arrays.sort(nodes, new ThreadAlphabetComparator());
+        }
+        return nodes;
+    }
+    
+    private Object[] filterSystemThreads(Object[] nodes) {
+        List list = null;
+        for (Object node : nodes) {
+            if (node instanceof JPDAThread && isSystem((JPDAThread) node)) {
+                if (list == null) {
+                    list = new ArrayList(Arrays.asList(nodes));
+                }
+                list.remove(node);
+            }
+        }
+        return (list != null) ? list.toArray() : nodes;
+    }
+    
+    private boolean isSystem(JPDAThread t) {
+        if (SYSTEM_THREAD_NAMES.contains(t.getName())) {
+            JPDAThreadGroup g = t.getParentThreadGroup();
+            return (g != null && "system".equals(g.getName()));
+        }
+        if ("DestroyJavaVM".equals(t.getName())) {
+            JPDAThreadGroup g = t.getParentThreadGroup();
+            return (g != null && "main".equals(g.getName()));
+        }
+        return false;
     }
 
     @Override
@@ -449,6 +519,45 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public boolean initiallyVisible () {
             return true;
         }
+    }
+    
+    private static final class ThreadAlphabetComparator implements Comparator {
+
+        public int compare(Object o1, Object o2) {
+            if (!(o1 instanceof JPDAThread) && !(o2 instanceof JPDAThread)) {
+                return 0;
+            }
+            String n1 = ((JPDAThread) o1).getName();
+            String n2 = ((JPDAThread) o2).getName();
+            return java.text.Collator.getInstance().compare(n1, n2);
+        }
+        
+    }
+
+    private static final class ThreadSuspendComparator implements Comparator {
+
+        public int compare(Object o1, Object o2) {
+            if (!(o1 instanceof JPDAThread) && !(o2 instanceof JPDAThread)) {
+                return 0;
+            }
+            boolean s1 = ((JPDAThread) o1).isSuspended();
+            boolean s2 = ((JPDAThread) o2).isSuspended();
+            if (s1 && !s2) return +1;
+            if (!s1 && s2) return -1;
+            return 0;
+        }
+        
+    }
+    
+    private final class DebuggingPreferenceChangeListener implements PreferenceChangeListener {
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt.getKey();
+            if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key)) {
+                fireThreadStateChanged(ROOT);
+            }
+        }
+        
     }
 
 }
