@@ -259,8 +259,8 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             }
         }
         return true;
-    }
-
+            }
+       
     public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
         return true;
     }

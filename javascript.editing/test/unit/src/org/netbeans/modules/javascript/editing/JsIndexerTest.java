@@ -56,11 +56,6 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     @Override
-    protected void setUp() throws Exception {
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
-    }
-
-    @Override
     public Indexer getIndexer() {
         return new JsIndexer();
     }
@@ -153,7 +148,14 @@ public class JsIndexerTest extends JsTestBase {
         checkIsIndexable("testfiles/indexable/lib.js", true);
     }
     
+    public void testIsIndexableEverythingSdoc1() throws Exception {
+        checkIsIndexable("testfiles/indexable/sdoconly/everything.sdoc", true);
+    }
 
+    public void testIsIndexableEverythingSdoc2() throws Exception {
+        checkIsIndexable("testfiles/indexable/sdoconly/foo.js", false);
+    }
+    
     // Not yet hooked up
     //public void testIsIndexable9() throws Exception {
     //    checkIsIndexable("testfiles/indexable/view.erb", true);

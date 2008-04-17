@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.Listener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationListener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
 import org.netbeans.modules.bpel.core.annotations.DiagramAnnotation;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
@@ -41,14 +42,14 @@ import org.openide.util.Lookup;
  * @author Vitaly Bychkov
  * @version 1.1
  */
-public class ValidationProxyListener implements BPELValidationListener, AnnotationListener {
+public class ValidationProxyListener implements Listener, AnnotationListener {
     private Map<Component, Validator.ResultType> cachedResultMap = new HashMap<Component, Validator.ResultType>();
     private ChangeValidationSupport myValidationSupport;
     private Lookup myLookup;
-    private BPELValidationController myValidationController;
+    private Controller myValidationController;
     private AnnotationManagerCookie cookie;
     
-    private ValidationProxyListener(Lookup lookup, BPELValidationController validationController) {
+    private ValidationProxyListener(Lookup lookup, Controller validationController) {
         assert lookup != null && validationController != null;
         myLookup = lookup;
         myValidationController = validationController;
@@ -62,7 +63,7 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         if (lookup == null) {
             return null;
         }
-        BPELValidationController validationController = (BPELValidationController) lookup.lookup(BPELValidationController.class);
+        Controller validationController = (Controller) lookup.lookup(Controller.class);
 
         if (validationController == null) {
             return null;
@@ -184,12 +185,12 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         return null;
     }
     
-    private void attachValidationController(BPELValidationListener listener) {
-        myValidationController.addValidationListener(listener);
+    private void attachValidationController(Listener listener) {
+        myValidationController.addListener(listener);
     }
     
-    private void detachValidationController(BPELValidationListener listener) {
-        myValidationController.removeValidationListener(listener);
+    private void detachValidationController(Listener listener) {
+        myValidationController.removeListener(listener);
     }
     
     /**

@@ -63,7 +63,7 @@ import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.LazyTypeCompletionItem;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -80,7 +80,7 @@ public class JavaClassCompletor extends Completor {
         try {
             final String typedChars = context.getTypedPrefix();
 
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
+            JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
             if (js == null) {
                 return Collections.emptyList();
             }

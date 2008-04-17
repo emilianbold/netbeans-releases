@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.logging.multiview;
 
 import java.awt.EventQueue;
@@ -25,7 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.EventObject;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;

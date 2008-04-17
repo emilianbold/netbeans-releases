@@ -41,17 +41,4 @@ public class Util {
         
         return model;
     }
-
-    public static FileObject getFileObjectByModel(Model model){
-        if (model != null){
-            ModelSource src = model.getModelSource();
-            if (src != null){
-                Lookup lookup = src.getLookup();
-                if (lookup != null){
-                    return lookup.lookup(FileObject.class);
-                }
-            }
-        }
-        return null;
-    }
 }

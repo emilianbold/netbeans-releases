@@ -64,7 +64,7 @@ import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.soa.ui.form.Reusable;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.editors.nodes.factory.PropertyAliasTypeChooserNodeFactory;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -453,7 +453,7 @@ public class PropAliasTypeChooserPanel
     }
     
     public Component getTreeComponent() {
-        JTree tree = SoaUiUtil.lookForChildByClass(treeView, JTree.class);
+        JTree tree = SoaUtil.lookForChildByClass(treeView, JTree.class);
         return tree;
     }
     

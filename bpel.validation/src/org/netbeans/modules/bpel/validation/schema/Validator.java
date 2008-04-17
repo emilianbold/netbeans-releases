@@ -59,8 +59,12 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.XsdBasedValidator;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.05
+ */
 public final class Validator extends XsdBasedValidator {
 
   @Override

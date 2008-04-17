@@ -178,7 +178,6 @@
                 <package>org.netbeans.modules.bpel.editors.api.nodes.actions</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes.images</package>
                 <package>org.netbeans.modules.bpel.editors.api.ui.valid</package>
-                <package>org.netbeans.modules.bpel.editors.api.utils</package>
             </friend-packages>
         </data>
     </configuration>

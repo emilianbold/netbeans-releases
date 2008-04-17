@@ -75,7 +75,7 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
             typeChooser.init(StereotypeFilter.ALL, myEditor.getLookup());
             //
             Variable var = myEditor.getEditedObject();
-            Reference typeRef = org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getVariableType(var);
+            Reference typeRef = org.netbeans.modules.bpel.editors.api.EditorUtil.getVariableType(var);
             //
             if (typeRef == null) {
                 typeChooser.setSelectedValue(null);

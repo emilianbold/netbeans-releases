@@ -75,8 +75,9 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
-import org.netbeans.modules.soa.ui.util.Duration;
-import org.netbeans.modules.soa.ui.util.DurationUtil;
+import org.netbeans.modules.soa.validation.Duration;
+import org.netbeans.modules.soa.validation.DurationUtil;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

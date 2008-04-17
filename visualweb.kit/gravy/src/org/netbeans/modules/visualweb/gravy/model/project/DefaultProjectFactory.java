@@ -77,11 +77,11 @@ public class DefaultProjectFactory extends ProjectFactory {
                                                   Bundle.getStringTrimmed(bundle, "ProjectCategory"));
     
     private final static String blueprintsStructure = Bundle.getStringTrimmed(
-                                                      Bundle.getStringTrimmed(bundle, "ProjectWizardBundle"),
+                                                      Bundle.getStringTrimmed(bundle, "J2EEProjectsBundle"),
                                                       Bundle.getStringTrimmed(bundle, "JavaBluePrints"));
     
     private final static String jakartaStructure = Bundle.getStringTrimmed(
-                                                      Bundle.getStringTrimmed(bundle, "ProjectWizardBundle"),
+                                                      Bundle.getStringTrimmed(bundle, "J2EEProjectsBundle"),
                                                       Bundle.getStringTrimmed(bundle, "Jakarta"));
     
     /**

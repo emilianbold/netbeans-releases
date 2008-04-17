@@ -59,8 +59,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
-
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

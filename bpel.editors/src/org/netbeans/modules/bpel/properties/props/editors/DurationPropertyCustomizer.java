@@ -31,21 +31,21 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.soa.validation.Duration;
+import org.netbeans.modules.soa.validation.DurationUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
-import org.netbeans.modules.bpel.properties.Constants;
-import org.netbeans.modules.bpel.properties.PropertyType;
-import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.soa.ui.form.RangeDoubleDocument;
 import org.netbeans.modules.soa.ui.form.RangeIntegerDocument;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
-import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
+import org.netbeans.modules.bpel.properties.Constants;
+import org.netbeans.modules.bpel.properties.PropertyType;
+import org.netbeans.modules.bpel.properties.editors.FormBundle;
+import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.soa.ui.util.Duration;
-import org.netbeans.modules.soa.ui.util.DurationUtil;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
@@ -129,7 +129,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         HelpCtx.setHelpIDString(this, this.getClass().getName());
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     @Override
@@ -167,7 +167,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         }
         if (newHelpCtxID != null && newHelpCtxID.length() != 0) {
             HelpCtx.setHelpIDString(this, newHelpCtxID); // NOI18N
-            SoaUiUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
+            SoaUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
         }
     }
     

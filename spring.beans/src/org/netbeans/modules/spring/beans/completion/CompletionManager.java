@@ -64,9 +64,10 @@ import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyFinder;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -243,7 +244,7 @@ public final class CompletionManager {
         String tagName = context.getTag().getNodeName();
         if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
             try {
-                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
+                final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
                 if (js == null) {
                     return;
                 }
@@ -259,7 +260,7 @@ public final class CompletionManager {
                         if (className == null) {
                             return;
                         }
-                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
                         if (te == null) {
                             return;
                         }

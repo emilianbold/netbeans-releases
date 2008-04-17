@@ -179,10 +179,10 @@ public interface TooltipManager {
         } else {
             stringFrom = stringFrom == null 
                     ? BpelNode.EMPTY_STRING 
-                    : org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getCorrectedHtmlRenderedString(stringFrom);
+                    : org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(stringFrom);
             stringTo = stringTo == null 
                     ? BpelNode.EMPTY_STRING 
-                    : org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getCorrectedHtmlRenderedString(stringTo);
+                    : org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(stringTo);
         }
         
         
