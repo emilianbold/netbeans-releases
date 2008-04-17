@@ -127,7 +127,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (wwwFolder != null) {
             locationPanelVisual.selectSourcesLocation(wwwFolder);
         }
-        adjustUrl();
+        String url = getUrl();
+        if (url != null) {
+            locationPanelVisual.setUrl(url);
+        } else {
+            adjustUrl();
+        }
 
         // options
         Boolean createIndex = isCreateIndex();
@@ -249,6 +254,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     private LocalServer getLocalServer() {
         return (LocalServer) descriptor.getProperty(WWW_FOLDER);
+    }
+
+    private String getUrl() {
+        return (String) descriptor.getProperty(URL);
     }
 
     private MutableComboBoxModel getLocalServers() {
