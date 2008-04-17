@@ -83,7 +83,11 @@ public class InfoPanel extends javax.swing.JPanel {
         
         deadlocksPanel.setVisible(false);
         arrowButton = createArrowButton();
-        hitsPanel.add(arrowButton);
+        hitsInnerPanel.add(arrowButton);
+    }
+
+    void refreshBreakpointHits(int hitsCount) {
+        hitsLabel.setText("New Breakpoint Hits (" + hitsCount + ")"); // [TODO]
     }
 
     private JButton createArrowButton() {
@@ -106,7 +110,7 @@ public class InfoPanel extends javax.swing.JPanel {
     }
     
     private void initFilterPanel (JPanel filterPanel) {
-        filterPanel.setBorder(new EmptyBorder(1, 2, 3, 5));
+        filterPanel.setBorder(new EmptyBorder(1, 2, 1, 5));
         FiltersDescriptor filtersDesc = FiltersDescriptor.createDebuggingViewFilters();
         // configure toolbar
         JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
@@ -142,7 +146,7 @@ public class InfoPanel extends javax.swing.JPanel {
         Icon icon = filtersDesc.getSelectedIcon(index);
         // ensure small size, just for the icon
         JToggleButton toggleButton = new JToggleButton(icon, isSelected);
-        Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+        Dimension size = new Dimension(icon.getIconWidth(), icon.getIconHeight());
         toggleButton.setPreferredSize(size);
         toggleButton.setMargin(new Insets(2,3,2,3));
         toggleButton.setToolTipText(filtersDesc.getTooltip(index));
@@ -160,6 +164,7 @@ public class InfoPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         hitsPanel = new javax.swing.JPanel();
+        hitsInnerPanel = new javax.swing.JPanel();
         infoIcon = new javax.swing.JLabel();
         hitsLabel = new javax.swing.JLabel();
         deadlocksPanel = new javax.swing.JPanel();
@@ -171,13 +176,18 @@ public class InfoPanel extends javax.swing.JPanel {
 
         hitsPanel.setBackground(hitsPanelColor);
         hitsPanel.setPreferredSize(new java.awt.Dimension(0, 40));
+        hitsPanel.setLayout(new java.awt.BorderLayout());
+
+        hitsInnerPanel.setOpaque(false);
 
         infoIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
         infoIcon.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon.text")); // NOI18N
-        hitsPanel.add(infoIcon);
+        hitsInnerPanel.add(infoIcon);
 
         hitsLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsLabel.text")); // NOI18N
-        hitsPanel.add(hitsLabel);
+        hitsInnerPanel.add(hitsLabel);
+
+        hitsPanel.add(hitsInnerPanel, java.awt.BorderLayout.CENTER);
 
         add(hitsPanel, java.awt.BorderLayout.NORTH);
 
@@ -192,7 +202,7 @@ public class InfoPanel extends javax.swing.JPanel {
 
         filterPanel.setPreferredSize(new java.awt.Dimension(0, 40));
         filterPanel.setLayout(new java.awt.BorderLayout());
-        filterPanel.add(jSeparator2, java.awt.BorderLayout.PAGE_START);
+        filterPanel.add(jSeparator2, java.awt.BorderLayout.NORTH);
 
         add(filterPanel, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
@@ -201,6 +211,7 @@ public class InfoPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel deadlocksPanel;
     private javax.swing.JPanel filterPanel;
+    private javax.swing.JPanel hitsInnerPanel;
     private javax.swing.JLabel hitsLabel;
     private javax.swing.JPanel hitsPanel;
     private javax.swing.JLabel infoIcon;
