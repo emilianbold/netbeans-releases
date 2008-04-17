@@ -108,12 +108,13 @@ public class JBProperties {
     }
 
     public boolean supportsJavaEE5ejb3() {
-        return new File(getServerDir(), "deploy/ejb3.deployer").exists() || // JBoss 4 // NOI18N
-               new File(getServerDir(), "deployers/ejb3.deployer").exists(); // JBoss 5 // NOI18N
+        return new File(getServerDir(), "deploy/ejb3.deployer").exists() // JBoss 4 // NOI18N
+                || new File(getServerDir(), "deployers/ejb3.deployer").exists(); // JBoss 5 // NOI18N
     }
 
     public boolean supportsJavaEE5web() {
-        return new File(getServerDir(), "deployers/jbossweb.deployer").exists(); // JBoss 5 // NOI18N
+        return new File(getServerDir(), "deploy/jboss-web.deployer").exists() // JBoss 4.2 // NOI18N
+                || new File(getServerDir(), "deployers/jbossweb.deployer").exists(); // JBoss 5 // NOI18N
     }
 
     public File getServerDir() {
