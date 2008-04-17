@@ -280,6 +280,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 text.append(StringUtils.LF);
                                 text.append("    " + nbLocation);
                                 text.append(StringUtils.LF);
+                                text.append(StringUtils.LF);
                             }
                             break;
                         }
@@ -299,6 +300,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 product.getDisplayName()));
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
+                        text.append(StringUtils.LF);
                         text.append(StringUtils.LF);
                     }
                 } catch (InitializationException e) {
@@ -321,12 +323,14 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         panel.getProperty(GF_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnGf)));
                 text.append(StringUtils.LF);
+                text.append(StringUtils.LF);
             }
             if (dependentOnAs.size() > 0) {
                 text.append(StringUtils.LF);
                 text.append(StringUtils.format(
                         panel.getProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnAs)));
+                text.append(StringUtils.LF);
                 text.append(StringUtils.LF);
             }
             locationsPane.setText(text);
