@@ -143,7 +143,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.soa.core</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.validation</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
