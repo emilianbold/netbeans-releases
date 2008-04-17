@@ -114,6 +114,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 }
             }
         }
+        try {
+            ClassLoader cl = getClass().getClassLoader();
+            FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_LICENSE),
+                    ResourceUtils.getResource(LEGAL_RESOURCE_PREFIX + NBGFMYSQL_LICENSE,
+                    cl));
+            FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_THIRDPARTY_README),
+                    ResourceUtils.getResource(LEGAL_RESOURCE_PREFIX + NBGFMYSQL_THIRDPARTY_README,
+                    cl));
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.legal.creation"), // NOI18N
+                    e);
+        }
+
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -834,4 +848,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     final public static String FLUSH_PRIVILEGES_QUERY =
             "FLUSH PRIVILEGES;";
     final public static String MYSQL_EXE = SystemUtils.isWindows() ? "bin/mysql.exe" : "bin/mysql";
+
+    public static final String LEGAL_RESOURCE_PREFIX =
+            "org/netbeans/installer/products/mysql/";
+    public static final String NBGFMYSQL_LICENSE =
+            "NB_GF_MySQL.txt";//NOI18N
+    public static final String NBGFMYSQL_THIRDPARTY_README =
+            "NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt";
 }
