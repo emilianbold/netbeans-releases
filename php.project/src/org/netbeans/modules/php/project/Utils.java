@@ -76,8 +76,8 @@ public final class Utils {
         PropertyEvaluator evaluator = project.getEvaluator();
         String url = evaluator.getProperty(PhpProjectProperties.URL);
         String domain = null;
-        String baseDir = null;
-        String port = null;
+        String baseDir = null;      
+        String port = null;        
         if (url != null) {
             try {
                 URL u = new URL(url);
@@ -89,11 +89,12 @@ public final class Utils {
                 Exceptions.printStackTrace(mex);
             }
         }
-        String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);
-        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot) : null;
+        String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);        
+        String indexFile = evaluator.getProperty(PhpProjectProperties.INDEX_FILE);
+        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot, indexFile) : null;
     }
-
-
+    
+    
     public static Host findHostById(String hostId) {
         return ServersUtils.findHostById(hostId);
     }
