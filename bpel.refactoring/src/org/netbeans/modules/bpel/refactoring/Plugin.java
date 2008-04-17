@@ -74,7 +74,7 @@ import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
-import static org.netbeans.modules.soa.core.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -38,71 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.core.validation;
+package org.netbeans.modules.soa.validation;
 
-import static org.netbeans.modules.soa.core.util.UI.*;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.11.27
+ * @version 2008.04.15
  */
-public class Duration {
-  public Duration(
-    boolean hasMinus,
-    int years,
-    int months,
-    int days,
-    int hours,
-    int minutes,
-    double seconds
-  ) {
-    myHasMinus = hasMinus;
-    myYears = years;
-    myMonths = months;
-    myDays = days;
-    myHours = hours;
-    myMinutes = minutes;
-    mySeconds = seconds;
-  }
+public final class Action extends ValidateAction {
 
-  public boolean hasMinus() {
-    return myHasMinus;
-  }
-
-  public int getYears() {
-    return myYears;
-  }
-
-  public int getMonths() {
-    return myMonths;
-  }
-
-  public int getDays() {
-    return myDays;
-  }
-
-  public int getHours() {
-    return myHours;
-  }
-
-  public int getMinutes() {
-    return myMinutes;
-  }
-
-  public double getSeconds() {
-    return mySeconds;
+  public Action(Controller controller) {
+    super(null);
+    myController = controller;
   }
 
   @Override
-  public String toString() {
-    return myYears + " " + myMonths + " " + myDays + " " + myHours + " " + myMinutes + " " + mySeconds; // NOI18N
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
   }
 
-  private boolean myHasMinus;
-  private int myYears;
-  private int myMonths;
-  private int myDays;
-  private int myHours;
-  private int myMinutes;
-  private double mySeconds;
+  private Controller myController;
 }

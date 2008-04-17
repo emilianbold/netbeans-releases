@@ -39,12 +39,14 @@
   Version 2 license, then the option applies only if the new code is
   made subject to such option by the copyright holder.
 -->
-<project name="core" default="netbeans" basedir=".">
-    <import file="../nbbuild/templates/projectized.xml"/>
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 
-    <target name="check">
-        <ant dir="../../_code" inheritAll="true">
-            <property name="check.dir" value="${basedir}"/>
-        </ant>
-    </target>
-</project>
+<type
+    name="validation-annotation"
+    description_key="LBL_Validation_Annotation"
+    localizing_bundle="org.netbeans.modules.soa.validation.resources.Bundle"
+    glyph="nbresloc:/org/netbeans/modules/soa/validation/resources/error.png"
+    waveunderline="#FF00FF"
+    type="linepart"
+    visible="true"
+/>

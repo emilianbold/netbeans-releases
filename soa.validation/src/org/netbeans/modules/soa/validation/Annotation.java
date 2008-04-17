@@ -38,16 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.core.validation;
+package org.netbeans.modules.soa.validation;
 
-import java.util.List;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import org.openide.text.Annotatable;
+import org.openide.text.Line;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.04.14
+ * @version 2008.02.01
  */
-public interface Listener {
+final class Annotation extends org.openide.text.Annotation implements PropertyChangeListener {
+    
+  public Annotation(Annotatable annotatable, String message) {
+    myMessage = message;
 
-  void validationUpdated(List<ResultItem> result);
+    if (annotatable != null) {
+      attach(annotatable);
+      annotatable.addPropertyChangeListener(this);
+    }
+  }
+
+  public String getAnnotationType() {
+    return "validation-annotation"; // NOI18N
+  }
+  
+  public String getShortDescription() {
+    return myMessage;
+  }
+  
+  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
+    if (Annotatable.PROP_ANNOTATION_COUNT.equals(propertyChangeEvent.getPropertyName())) {
+      return;
+    }
+    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
+
+    if (annotatable != null) {
+      annotatable.removePropertyChangeListener(this);
+      detach();
+    }
+  }
+
+  private String myMessage;
 }
