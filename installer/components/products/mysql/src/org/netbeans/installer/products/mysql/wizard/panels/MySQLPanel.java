@@ -516,7 +516,7 @@ public class MySQLPanel extends DestinationPanel {
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(10, 11, 0, 0), // padding
+                    new Insets(4, 11, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
 
             containerPanel.add(portLabel, new GridBagConstraints(
