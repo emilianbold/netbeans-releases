@@ -94,6 +94,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -478,6 +479,12 @@ public class PHPCodeCompletion implements Completable {
                 
                 getLocalVariables_MergeResults(localVars,
                             getLocalVariables(Collections.singleton((Statement)functionDeclaration.getBody()), namePrefix, position, localFileURL));
+                
+            } if (statement instanceof MethodDeclaration) {
+                MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
+                
+                getLocalVariables_MergeResults(localVars,
+                    getLocalVariables(Collections.singleton((Statement)methodDeclaration.getFunction()), namePrefix, position, localFileURL));
                 
             } else if (statement instanceof ClassDeclaration) {
                 ClassDeclaration classDeclaration = (ClassDeclaration) statement;
