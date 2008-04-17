@@ -116,6 +116,7 @@ import org.openide.util.NbBundle;
  *  @todo Display more information in parameter tooltips, such as type hints (perhaps do smart
  *    filtering Java-style?), and explanations for each parameter
  *  @todo Need preindexing support for unit tests - and separate files
+ * @todo Insert semicolon too when you insert methods, in custom templates (unless you're in a call), a var block, etc.
  * 
  * @author Tor Norbye
  */
@@ -2440,10 +2441,17 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(true);
             }
-            boolean strike = indexedElement != null && indexedElement.isDeprecated();
+            
+            boolean strike = false;
+            if (indexedElement != null) {
+                if (indexedElement.isDeprecated() || !SupportedBrowsers.getInstance().isSupported(indexedElement.getCompatibility())) {
+                    strike = true;
+                }
+            }
             if (strike) {
                 formatter.deprecated(true);
             }
+            
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
