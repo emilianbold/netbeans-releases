@@ -946,15 +946,11 @@ public class JDBCWizardTablePanel extends JPanel {
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
         column.setPreferredWidth(80);
-        column.setMaxWidth(120);
         
         final TableColumn columnAdv = this.metaDataTable.getColumnModel().getColumn(2);
         columnAdv.setResizable(true);
-        columnAdv.setMinWidth(60);
         columnAdv.setPreferredWidth(80);
-        columnAdv.setMaxWidth(100);
     }
 
     /**
@@ -975,9 +971,7 @@ public class JDBCWizardTablePanel extends JPanel {
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
         column.setPreferredWidth(40);
-        column.setMaxWidth(80);
         this.tableScroll = new JScrollPane(this.metaDataTable);
         final javax.swing.border.Border inside = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(3, 3, 3,
                 3), BorderFactory.createLineBorder(Color.GRAY));
