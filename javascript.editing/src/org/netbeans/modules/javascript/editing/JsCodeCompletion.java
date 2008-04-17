@@ -1823,6 +1823,18 @@ public class JsCodeCompletion implements Completable {
                     if (element.getKind() == ElementKind.METHOD || element.getKind() == ElementKind.CONSTRUCTOR) {
                         continue;
                     }
+                    
+                    // Skip constants
+                    String name = element.getName();
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        continue;
+                    }
+                    
+                    // Skip private fields
+                    // (Not sure about this)
+                    if (element.isPrivate()) {
+                        continue;
+                    }
 
                     JsCompletionItem item;
                     if (element instanceof IndexedFunction) {
