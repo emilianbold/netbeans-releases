@@ -258,7 +258,7 @@ public class PHPIndex {
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_FIELD, name, kind);
         
         for (String signature : signaturesMap.keySet()) {
-            String propName = extractStringValueFromIndexSignature(signature, 0);
+            String propName = "$" + extractStringValueFromIndexSignature(signature, 0); //NOI18N
             int offset = extractIntValueFromIndexSignature(signature, 1);
             int modifiers = extractIntValueFromIndexSignature(signature, 2);
 
