@@ -295,6 +295,10 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/configcalls.js", "somefunction({}, {f^:1}, {});", false);
     }
     
+    public void testDeprecatedProperties() throws Exception {
+        checkCompletion("testfiles/completion/lib/domproperties.js", ".s^", true);
+    }
+
     // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
 
 // The call tests don't work yet because I don't have a preindexed database for jsstubs
