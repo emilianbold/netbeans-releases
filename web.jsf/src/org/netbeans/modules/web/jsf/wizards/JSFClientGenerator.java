@@ -99,6 +99,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -240,7 +241,16 @@ public class JSFClientGenerator {
         //automatically add JSF framework if it is not added
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         if (!fp.isInWebModule(wm)) {
-            WebModuleExtender wme = fp.createWebModuleExtender(wm, ExtenderController.create());
+            ExtenderController ec = ExtenderController.create();
+            String j2eeLevel = wm.getJ2eePlatformVersion();
+            ec.getProperties().setProperty("j2eeLevel", j2eeLevel);
+            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            if (moduleProvider != null) {
+                String serverInstanceID = moduleProvider.getServerInstanceID();
+                ec.getProperties().setProperty("serverInstanceID", serverInstanceID);
+            }
+            WebModuleExtender wme = fp.createWebModuleExtender(wm, ec);
+            wme.update();
             wme.extend(wm);
         }
         

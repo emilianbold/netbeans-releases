@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.soa.core.validation.Controller;
-import org.netbeans.modules.soa.core.validation.Listener;
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.Listener;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;

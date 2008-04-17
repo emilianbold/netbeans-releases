@@ -153,7 +153,7 @@ public class UninstallAction extends WizardAction {
                 ErrorManager.notify(ErrorLevel.ERROR, e);
             }
         }
-        LogManager.logIndent("... finished products uninstallation");
+        LogManager.logUnindent("... finished products uninstallation");
     }
     
     @Override

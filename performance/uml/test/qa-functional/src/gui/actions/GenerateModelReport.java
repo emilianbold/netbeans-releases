@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
 import java.io.File;
@@ -53,7 +51,6 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 
-
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
@@ -61,35 +58,30 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class GenerateModelReport extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-       
-   
+
     /** Creates a new instance of GenerateModelReport */
     public GenerateModelReport(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 300000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    public GenerateModelReport(String testName, String  performanceDataName) {
+
+    public GenerateModelReport(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 300000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
-        
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
-
     }
 
     public ComponentOperator open() {
@@ -97,29 +89,24 @@ public class GenerateModelReport extends org.netbeans.performance.test.utilities
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.performPopupAction("Generate Model Report");
         OutputOperator oot = new OutputOperator();
-        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
         OutputTabOperator asot = oot.getOutputTab("UML Report Log");
-        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
         asot.waitText("Report Successful");
-      
- 
-      return null;
+        return null;
     }
-    
+
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
     }
-   
 
-    public void close(){
+    public void close() {
         log("::close");
-      new CloseAllDocumentsAction().performAPI();
- 
-    } 
+        new CloseAllDocumentsAction().performAPI();
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new GenerateModelReport("measureTime"));
-    }      
-
-
+    }
 }

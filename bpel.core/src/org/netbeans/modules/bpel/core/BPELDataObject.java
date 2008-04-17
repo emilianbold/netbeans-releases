@@ -30,10 +30,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
 
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.soa.core.validation.Controller;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
