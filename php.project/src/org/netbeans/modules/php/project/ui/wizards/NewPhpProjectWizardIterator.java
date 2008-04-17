@@ -96,6 +96,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
+        wizard.putProperty(ConfigureProjectPanel.ROOTS, null);
         wizard.putProperty(ConfigureServerPanel.COPY_FILES, null);
         wizard.putProperty(ConfigureServerPanel.COPY_TARGET, null);
         wizard.putProperty(ConfigureServerPanel.COPY_TARGETS, null);
