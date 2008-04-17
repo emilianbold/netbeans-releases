@@ -562,7 +562,7 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 		var ok = this._loadPath(relpath, modArg);
 
 		if((!ok)&amp;&amp;(!omitModuleCheck)){
-			throw new <Error>Error(<String>"Could not load '"</String> + moduleName + <String>"'; last tried '"</String> + relpath + <String>"'"</String>)</Error>;
+			throw <Error>new Error(<String>"Could not load '"</String> + moduleName + <String>"'; last tried '"</String> + relpath + <String>"'"</String>)</Error>;
 		}
 
 		// check that the symbol was defined
@@ -571,7 +571,7 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 			// pass in false so we can give better error
 			module = this._loadedModules[moduleName];
 			if(!module){
-				throw new <Error>Error(<String>"symbol '"</String> + moduleName + <String>"' is not defined after loading '"</String> + relpath + <String>"'"</String>)</Error>; 
+				throw <Error>new Error(<String>"symbol '"</String> + moduleName + <String>"' is not defined after loading '"</String> + relpath + <String>"'"</String>)</Error>; 
 			}
 		}
 
@@ -741,8 +741,8 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 	}</Function>;
 
 
-	var <RegExp>ore = new <RegExp>RegExp(<String>"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$"</String>)</RegExp></RegExp>;
-	var <RegExp>ire = new <RegExp>RegExp(<String>"^((([^:]+:)?([^@]+))@)?([^:]*)(:([0-9]+))?$"</String>)</RegExp></RegExp>;
+	var <RegExp>ore = <RegExp>new RegExp(<String>"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$"</String>)</RegExp></RegExp>;
+	var <RegExp>ire = <RegExp>new RegExp(<String>"^((([^:]+:)?([^@]+))@)?([^:]*)(:([0-9]+))?$"</String>)</RegExp></RegExp>;
 
 	dojo.<String>_Url</String> = <Function>function(/*dojo._Url||String...*/){
 		// summary: 
@@ -767,8 +767,8 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 			// Safari doesn't support this.constructor so we have to be explicit
 			// FIXME: Tracked (and fixed) in Webkit bug 3537.
 			//		http://bugs.webkit.org/show_bug.cgi?id=3537
-			var <d._Url>relobj = new <d._Url><d._Url>d._Url</d._Url>(_a[<Number>i</Number>]+<String>""</String>)</d._Url></d._Url>;
-			var <d._Url>uriobj = new <d._Url><d._Url>d._Url</d._Url>(uri+<String>""</String>)</d._Url></d._Url>;
+			var <d._Url>relobj = <d._Url>new <d._Url>d._Url</d._Url>(_a[<Number>i</Number>]+<String>""</String>)</d._Url></d._Url>;
+			var <d._Url>uriobj = <d._Url>new <d._Url>d._Url</d._Url>(uri+<String>""</String>)</d._Url></d._Url>;
 
 			if(
 				(<Boolean><d._Url.path><d._Url>relobj</d._Url>.path</d._Url.path>==<String>""</String>)</Boolean>	&amp;&amp;
@@ -878,7 +878,7 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 			loc = <d.baseUrl>d.baseUrl</d.baseUrl> + loc;
 		}
 
-		return new <d._Url><d._Url>d._Url</d._Url>(loc, url)</d._Url>; // String
+		return <d._Url>new <d._Url>d._Url</d._Url>(loc, url)</d._Url>; // String
 	}</Function>
 }</Function>)();
 
@@ -969,13 +969,13 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 			var http = null;
 			var last_e = null;
 			if(!<dojo.isIE>dojo.isIE</dojo.isIE> || !<djConfig.ieForceActiveXXhr>djConfig.ieForceActiveXXhr</djConfig.ieForceActiveXXhr>){
-				try{ <XMLHttpRequest>http</XMLHttpRequest> = new <XMLHttpRequest>XMLHttpRequest()</XMLHttpRequest>; }catch(e){}
+				try{ <XMLHttpRequest>http</XMLHttpRequest> = <XMLHttpRequest>new XMLHttpRequest()</XMLHttpRequest>; }catch(e){}
 			}
 			if(!<XMLHttpRequest>http</XMLHttpRequest>){
 				for(var <Number>i=<Number>0</Number></Number>; <Boolean><Number>i</Number>&lt;<Number>3</Number></Boolean>; ++<Number>i</Number>){
 					var progid = dojo.<dojo._XMLHTTP_PROGIDS>_XMLHTTP_PROGIDS</dojo._XMLHTTP_PROGIDS>[<Number>i</Number>];
 					try{
-						<ActiveXObject>http</ActiveXObject> = new <ActiveXObject>ActiveXObject(progid)</ActiveXObject>;
+						<ActiveXObject>http</ActiveXObject> = <ActiveXObject>new ActiveXObject(progid)</ActiveXObject>;
 					}catch(e){
 						last_e = e;
 					}
@@ -988,7 +988,7 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 			}
 
 			if(!<ActiveXObject>http</ActiveXObject>){
-				throw new <Error>Error(<String>"XMLHTTP not available: "</String>+last_e)</Error>;
+				throw <Error>new Error(<String>"XMLHTTP not available: "</String>+last_e)</Error>;
 			}
 
 			return <ActiveXObject>http</ActiveXObject>; // XMLHTTPRequest instance
@@ -1031,7 +1031,7 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 			var http = this._xhrObj();
 
 			if(!hasBase &amp;&amp; <dojo._Url>dojo._Url</dojo._Url>){
-				uri = (new <dojo._Url.toString><dojo._Url><dojo._Url>dojo._Url</dojo._Url>(owloc, uri)</dojo._Url>).<dojo._Url.toString>toString</dojo._Url.toString>()</dojo._Url.toString>;
+				uri = (<dojo._Url.toString><dojo._Url>new <dojo._Url>dojo._Url</dojo._Url>(owloc, uri)</dojo._Url>).<dojo._Url.toString>toString</dojo._Url.toString>()</dojo._Url.toString>;
 			}
 			/*
 			console.debug("_getText:", uri);
@@ -1357,7 +1357,7 @@ dojo.<String>delegate</String> = dojo.<String>_delegate</String> = <Function>fun
 	// boodman/crockford delegation
 	<Function>function TMP(){}</Function>;
 	TMP.<String>prototype</String> = obj;
-	var <TMP>tmp = new <TMP>TMP()</TMP></TMP>;
+	var <TMP>tmp = <TMP>new TMP()</TMP></TMP>;
 	if(props){
 		<dojo.mixin>dojo.<dojo.mixin>mixin</dojo.mixin>(<TMP>tmp</TMP>, props)</dojo.mixin>;
 	}
@@ -1411,7 +1411,7 @@ dojo.<String>clone</String> = <Function>function(/*anything*/ o){
 		if(<o.nodeType>o.nodeType</o.nodeType> &amp;&amp; <o.cloneNode>o.cloneNode</o.cloneNode>){ // isNode
 			return <o.cloneNode>o.<o.cloneNode>cloneNode</o.cloneNode>(<Boolean>true</Boolean>)</o.cloneNode>; // Node
 		}else{
-			var <o.constructor>r = new <o.constructor><o.constructor>o.constructor</o.constructor>()</o.constructor></o.constructor>; // specific to dojo.declare()'d classes!
+			var <o.constructor>r = <o.constructor>new <o.constructor>o.constructor</o.constructor>()</o.constructor></o.constructor>; // specific to dojo.declare()'d classes!
 			for(var <Number>i</Number> in o){
 				if(!(i in <o.constructor>r</o.constructor>) || <Boolean><o.constructor>r</o.constructor>[i] != o[i]</Boolean>){
 					<o.constructor>r</o.constructor>[i] = <dojo.clone>dojo.<dojo.clone>clone</dojo.clone>(o[i])</dojo.clone>;
@@ -2182,7 +2182,7 @@ dojo.<String>Deferred</String> = <Function>function(/*Function?*/ canceller){
 			if(<Boolean>this.fired == -<Number>1</Number></Boolean>){
 				if(!(err instanceof Error)){
 					var res = err;
-					<Error>err</Error> = new <Error>Error(<String>"Deferred Cancelled"</String>)</Error>;
+					<Error>err</Error> = <Error>new Error(<String>"Deferred Cancelled"</String>)</Error>;
 					<Error>err</Error>.<String>dojoType</String> = <String>"cancel"</String>;
 					<Error>err</Error>.<String>cancelResult</String> = res;
 				}
@@ -2207,7 +2207,7 @@ dojo.<String>Deferred</String> = <Function>function(/*Function?*/ canceller){
 	_check: <Function>function(){
 		if(<Boolean>this.fired != -<Number>1</Number></Boolean>){
 			if(!this.silentlyCancelled){
-				throw new <Error>Error(<String>"already called!"</String>)</Error>;
+				throw <Error>new Error(<String>"already called!"</String>)</Error>;
 			}
 			this.<String>silentlyCancelled</String> = <Boolean>false</Boolean>;
 			return;
@@ -2230,7 +2230,7 @@ dojo.<String>Deferred</String> = <Function>function(/*Function?*/ canceller){
 		//		Begin the callback sequence with an error result.
 		this._check();
 		if(!(res instanceof Error)){
-			<Error>res</Error> = new <Error>Error(<Error>res</Error>)</Error>;
+			<Error>res</Error> = <Error>new Error(<Error>res</Error>)</Error>;
 		}
 		this._resback(<Error>res</Error>);
 	}</Function>,
@@ -2486,7 +2486,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.arr
 			(<Array><dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(arr)</dojo.isString> ? <arr.split>arr.<arr.split>split</arr.split>(<String>""</String>)</arr.split> : arr), 
 			(obj||<dojo.global>dojo.global</dojo.global>),
 			// FIXME: cache the anonymous functions we create here?
-			(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(cb)</dojo.isString> ? (new <Function>Function(<String>"item"</String>, <String>"index"</String>, <String>"array"</String>, cb))</Function> : cb)
+			(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(cb)</dojo.isString> ? (<Function>new Function(<String>"item"</String>, <String>"index"</String>, <String>"array"</String>, cb))</Function> : cb)
 		]</Array>;
 	}</Function></Function>
 
@@ -2743,7 +2743,7 @@ dojo.<String>blendColors</String> = <Function>function(
 	// summary: 
 	//		blend colors end and start with weight from 0 to 1, 0.5 being a 50/50 blend,
 	//		can reuse a previously allocated dojo.Color object for the result
-	var d = dojo, t = obj || new <dojo.Color><dojo.Color>dojo.Color</dojo.Color>()</dojo.Color>;
+	var d = dojo, t = obj || <dojo.Color>new <dojo.Color>dojo.Color</dojo.Color>()</dojo.Color>;
 	<d.forEach>d.<d.forEach>forEach</d.forEach>([<Array><String>"r"</String>, <String>"g"</String>, <String>"b"</String>, <String>"a"</String>]</Array>, <Function>function(x){
 		t[x] = start[x] + (end[x] - start[x]) * weight;
 		if(<Boolean>x != <String>"a"</String></Boolean>){ t[x] = <Math.round>Math.<Math.round>round</Math.round>(t[x])</Math.round>; }
@@ -2760,7 +2760,7 @@ dojo.<String>colorFromRgb</String> = <Function>function(/*String*/ color, /*dojo
 dojo.<String>colorFromHex</String> = <Function>function(/*String*/ color, /*dojo.Color?*/ obj){
 	// summary: converts a hex string with a '#' prefix to a color object.
 	//	Supports 12-bit #rgb shorthand.
-	var d = dojo, t = obj || new <d.Color><d.Color>d.Color</d.Color>()</d.Color>,
+	var d = dojo, t = obj || <d.Color>new <d.Color>d.Color</d.Color>()</d.Color>,
 		bits = (<Boolean><color.length>color.length</color.length> == <Number>4</Number>)</Boolean> ? <Number>4</Number> : <Number>8</Number>,
 		mask = (<Number>1</Number> &lt;&lt; bits) - <Number>1</Number>;
 	color = <Number>Number(<String>"0x"</String> + <color.substr>color.<color.substr>substr</color.substr>(<Number>1</Number>)</color.substr>)</Number>;
@@ -2778,7 +2778,7 @@ dojo.<String>colorFromHex</String> = <Function>function(/*String*/ color, /*dojo
 
 dojo.<String>colorFromArray</String> = <Function>function(/*Array*/ a, /*dojo.Color?*/ obj){
 	// summary: builds a color from 1, 2, 3, or 4 element array
-	var t = obj || new <dojo.Color><dojo.Color>dojo.Color</dojo.Color>()</dojo.Color>;
+	var t = obj || <dojo.Color>new <dojo.Color>dojo.Color</dojo.Color>()</dojo.Color>;
 	<t._set>t.<t._set>_set</t._set>(<Number>Number(a[<Number>0</Number>])</Number>, <Number>Number(a[<Number>1</Number>])</Number>, <Number>Number(a[<Number>2</Number>])</Number>, <Number>Number(a[<Number>3</Number>])</Number>)</t._set>;
 	if(<isNaN>isNaN(<t.a>t.a</t.a>)</isNaN>){ t.<String>a</String> = <Number>1</Number>; }
 	return <t.sanitize>t.<t.sanitize>sanitize</t.sanitize>()</t.sanitize>;	// dojo.Color
@@ -2843,12 +2843,12 @@ dojo.<String>_gearsObject</String> = <Function>function(){
 	if(gearsObj){ return gearsObj; } // already defined elsewhere
 	
 	if(<Boolean>typeof GearsFactory != <String>"undefined"</String></Boolean>){ // Firefox
-		<GearsFactory>factory</GearsFactory> = new <GearsFactory>GearsFactory()</GearsFactory>;
+		<GearsFactory>factory</GearsFactory> = <GearsFactory>new GearsFactory()</GearsFactory>;
 	}else{
 		if(<dojo.isIE>dojo.isIE</dojo.isIE>){
 			// IE
 			try{
-				<ActiveXObject>factory</ActiveXObject> = new <ActiveXObject>ActiveXObject(<String>"Gears.Factory"</String>)</ActiveXObject>;
+				<ActiveXObject>factory</ActiveXObject> = <ActiveXObject>new ActiveXObject(<String>"Gears.Factory"</String>)</ActiveXObject>;
 			}catch(e){
 				// ok to squelch; there's no gears factory.  move on.
 			}
@@ -5688,7 +5688,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 				cname = <cname.substr>cname.<cname.substr>substr</cname.substr>(<Number>0</Number>, <cname.length>cname.length</cname.length>-<Number>1</Number>)</cname.substr>;
 			}
 			// I dislike the regex thing, even if memozied in a cache, but it's VERY short
-			var <RegExp>re = new <RegExp>RegExp(<String>"(?:^|\\s)"</String> + cname + (<Boolean>isWildcard</Boolean> ? <String>".*"</String> : <String>""</String>) + <String>"(?:\\s|$)"</String>)</RegExp></RegExp>;
+			var <RegExp>re = <RegExp>new RegExp(<String>"(?:^|\\s)"</String> + cname + (<Boolean>isWildcard</Boolean> ? <String>".*"</String> : <String>""</String>) + <String>"(?:\\s|$)"</String>)</RegExp></RegExp>;
 			ff = <agree>agree(ff, <Function>function(elem){
 				return <re.test>re.<re.test>test</re.test>(<elem.className>elem.className</elem.className>)</re.test>;
 			}</Function>)</agree>;
@@ -5914,7 +5914,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 	var <Number>_zipIdx = <Number>0</Number></Number>;
 	var <Function>_zip = <Function>function(arr){
 		if(arr &amp;&amp; <arr.nozip>arr.nozip</arr.nozip>){ return <d.NodeList._wrap>d.<d.NodeList>NodeList</d.NodeList>.<d.NodeList._wrap>_wrap</d.NodeList._wrap>(arr)</d.NodeList._wrap>; }
-		var <d.NodeList>ret = new <d.NodeList><d.NodeList>d.NodeList</d.NodeList>()</d.NodeList></d.NodeList>;
+		var <d.NodeList>ret = <d.NodeList>new <d.NodeList>d.NodeList</d.NodeList>()</d.NodeList></d.NodeList>;
 		if(!arr){ return <d.NodeList>ret</d.NodeList>; }
 		if(arr[<Number>0</Number>]){
 			<d.NodeList.push><d.NodeList>ret</d.NodeList>.<d.NodeList.push>push</d.NodeList.push>(arr[<Number>0</Number>])</d.NodeList.push>;
@@ -6014,7 +6014,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 			return query;
 		}
 		if(!<d.isString>d.<d.isString>isString</d.isString>(query)</d.isString>){
-			return new <d.NodeList><d.NodeList>d.NodeList</d.NodeList>(query)</d.NodeList>; // dojo.NodeList
+			return <d.NodeList>new <d.NodeList>d.NodeList</d.NodeList>(query)</d.NodeList>; // dojo.NodeList
 		}
 		if(<d.isString>d.<d.isString>isString</d.isString>(root)</d.isString>){
 			root = <d.byId>d.<d.byId>byId</d.byId>(root)</d.byId>;
@@ -6032,7 +6032,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 
 	// one-off function for filtering a NodeList based on a simple selector
 	d.<String>_filterQueryResult</String> = <Function>function(nodeList, simpleFilter){
-		var <d.NodeList>tnl = new <d.NodeList><d.NodeList>d.NodeList</d.NodeList>()</d.NodeList></d.NodeList>;
+		var <d.NodeList>tnl = <d.NodeList>new <d.NodeList>d.NodeList</d.NodeList>()</d.NodeList></d.NodeList>;
 		var ff = (simpleFilter) ? <getFilterFunc>getFilterFunc(<getQueryParts>getQueryParts(simpleFilter</getQueryParts>)[<Number>0</Number>])</getFilterFunc> : <Function>function(){ return <Boolean>true</Boolean>; }</Function>;
 		for(var <Number>x=<Number>0</Number></Number>, te; te = nodeList[<Number>x</Number>]; <Number>x</Number>++){
 			if(<ff>ff(te)</ff>){ <d.NodeList.push><d.NodeList>tnl</d.NodeList>.<d.NodeList.push>push</d.NodeList.push>(te)</d.NodeList.push>; }
@@ -6269,7 +6269,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 			var cStartIdx = <xhr.responseText.indexOf><xhr.responseText>value</xhr.responseText>.<xhr.responseText.indexOf>indexOf</xhr.responseText.indexOf>(<String>"\/*"</String>)</xhr.responseText.indexOf>;
 			var cEndIdx = <xhr.responseText.lastIndexOf><xhr.responseText>value</xhr.responseText>.<xhr.responseText.lastIndexOf>lastIndexOf</xhr.responseText.lastIndexOf>(<String>"*\/"</String>)</xhr.responseText.lastIndexOf>;
 			if(<Boolean>cStartIdx == -<Number>1</Number></Boolean> || <Boolean>cEndIdx == -<Number>1</Number></Boolean>){
-				throw new <Error>Error(<String>"JSON was not comment filtered"</String>)</Error>;
+				throw <Error>new Error(<String>"JSON was not comment filtered"</String>)</Error>;
 			}
 			return <_d.fromJson>_d.<_d.fromJson>fromJson</_d.fromJson>(<xhr.responseText.substring><xhr.responseText>value</xhr.responseText>.<xhr.responseText.substring>substring</xhr.responseText.substring>(cStartIdx+<Number>2</Number>, cEndIdx)</xhr.responseText.substring>)</_d.fromJson>;
 		}</Function>,
@@ -6281,7 +6281,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 			if(<_d.isIE>_d.isIE</_d.isIE> &amp;&amp; !<xhr.responseXML>xhr.responseXML</xhr.responseXML>){
 				<_d.forEach>_d.<_d.forEach>forEach</_d.forEach>([<Array><String>"MSXML2"</String>, <String>"Microsoft"</String>, <String>"MSXML"</String>, <String>"MSXML3"</String>]</Array>, <Function>function(i){
 					try{
-						var <ActiveXObject>doc = new <ActiveXObject>ActiveXObject(prefixes[i]+<String>".XMLDOM"</String>)</ActiveXObject></ActiveXObject>;
+						var <ActiveXObject>doc = <ActiveXObject>new ActiveXObject(prefixes[i]+<String>".XMLDOM"</String>)</ActiveXObject></ActiveXObject>;
 						<ActiveXObject>doc</ActiveXObject>.<String>async</String> = <Boolean>false</Boolean>;
 						<ActiveXObject.loadXML><ActiveXObject>doc</ActiveXObject>.<ActiveXObject.loadXML>loadXML</ActiveXObject.loadXML>(<xhr.responseText>xhr.responseText</xhr.responseText>)</ActiveXObject.loadXML>;
 						return <ActiveXObject>doc</ActiveXObject>;	//	DOMDocument
@@ -6429,13 +6429,13 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 			<Array.push><Array>miArgs</Array>.<Array.push>push</Array.push>(<args.content>args.content</args.content>)</Array.push>;
 		}
 		if(<args.preventCache>args.preventCache</args.preventCache>){
-			<Array.push><Array>miArgs</Array>.<Array.push>push</Array.push>({"dojo.preventCache": new <Date.valueOf><Date>Date</Date>().<Date.valueOf>valueOf</Date.valueOf>()</Date.valueOf>})</Array.push>;
+			<Array.push><Array>miArgs</Array>.<Array.push>push</Array.push>({"dojo.preventCache": <Date.valueOf><Date>new Date</Date>().<Date.valueOf>valueOf</Date.valueOf>()</Date.valueOf>})</Array.push>;
 		}
 		ioArgs.<String>query</String> = <_d.objectToQuery>_d.<_d.objectToQuery>objectToQuery</_d.objectToQuery>(<_d.mixin.apply>_d.<_d.mixin>mixin</_d.mixin>.<_d.mixin.apply>apply</_d.mixin.apply>(null, <Array>miArgs</Array>)</_d.mixin.apply>)</_d.objectToQuery>;
 	
 		// .. and the real work of getting the deferred in order, etc.
 		ioArgs.<String>handleAs</String> = <args.handleAs>args.handleAs</args.handleAs> || <String>"text"</String>;
-		var <_d.Deferred>d = new <_d.Deferred><_d.Deferred>_d.Deferred</_d.Deferred>(canceller)</_d.Deferred></_d.Deferred>;
+		var <_d.Deferred>d = <_d.Deferred>new <_d.Deferred>_d.Deferred</_d.Deferred>(canceller)</_d.Deferred></_d.Deferred>;
 		<_d.Deferred.addCallbacks><_d.Deferred>d</_d.Deferred>.<_d.Deferred.addCallbacks>addCallbacks</_d.Deferred.addCallbacks>(okHandler, <Function>function(error){
 			return <errHandler>errHandler(error, d)</errHandler>;
 		}</Function>)</_d.Deferred.addCallbacks>;
@@ -6479,14 +6479,14 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		if((<Boolean>_at == <String>"function"</String>)</Boolean>||(<Boolean>_at == <String>"unknown"</String>)</Boolean>){
 			<dfd.ioArgs.xhr.abort><dfd.ioArgs.xhr>xhr</dfd.ioArgs.xhr>.<dfd.ioArgs.xhr.abort>abort</dfd.ioArgs.xhr.abort>()</dfd.ioArgs.xhr.abort>;
 		}
-		var <Error>err = new <Error>Error(<String>"xhr cancelled"</String>)</Error></Error>;
+		var <Error>err = <Error>new Error(<String>"xhr cancelled"</String>)</Error></Error>;
 		<Error>err</Error>.<String>dojoType</String> = <String>"cancel"</String>;
 		return <Error>err</Error>;
 	}</Function></Function>
 	var <Function>_deferredOk = <Function>function(/*Deferred*/dfd){
 		//summary: okHandler function for dojo._ioSetArgs call.
 
-		return <xhr>_d.<_d._contentHandlers>_contentHandlers</_d._contentHandlers>[<dfd.ioArgs.handleAs>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.handleAs</dfd.ioArgs.handleAs>](<dfd.ioArgs.xhr>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.xhr</dfd.ioArgs.xhr>)</xhr>;
+		return <dfd.ioArgs.xhr>_d.<_d._contentHandlers>_contentHandlers</_d._contentHandlers>[<dfd.ioArgs.handleAs>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.handleAs</dfd.ioArgs.handleAs>](<dfd.ioArgs.xhr>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.xhr</dfd.ioArgs.xhr>)</dfd.ioArgs.xhr>;
 	}</Function></Function>
 	var <Function>_deferError = <Function>function(/*Error*/error, /*Deferred*/dfd){
 		//summary: errHandler function for dojo._ioSetArgs call.
@@ -6513,7 +6513,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		//		internal method that checks each inflight XMLHttpRequest to see
 		//		if it has completed or if the timeout situation applies.
 		
-		var now = (new <Date.getTime><Date>Date()</Date>).<Date.getTime>getTime</Date.getTime>()</Date.getTime>;
+		var now = (<Date.getTime><Date>new Date()</Date>).<Date.getTime>getTime</Date.getTime>()</Date.getTime>;
 		// make sure sync calls stay thread safe, if this callback is called
 		// during a sync call and this results in another sync call before the
 		// first sync call ends the browser hangs
@@ -6532,7 +6532,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 						//did we timeout?
 						if(<Boolean><tif.dfd.startTime><tif.dfd>dfd</tif.dfd>.startTime</tif.dfd.startTime> + (<tif.dfd.ioArgs.args.timeout><tif.dfd>dfd</tif.dfd>.<tif.dfd.ioArgs>ioArgs</tif.dfd.ioArgs>.<tif.dfd.ioArgs.args>args</tif.dfd.ioArgs.args>.timeout</tif.dfd.ioArgs.args.timeout>||<Number>0</Number>) &lt; now</Boolean>){
 							<_inFlight.splice>_inFlight.<_inFlight.splice>splice</_inFlight.splice>(<Number>i</Number>--, <Number>1</Number>)</_inFlight.splice>;
-							var <Error>err = new <Error>Error(<String>"timeout exceeded"</String>)</Error></Error>;
+							var <Error>err = <Error>new Error(<String>"timeout exceeded"</String>)</Error></Error>;
 							<Error>err</Error>.<String>dojoType</String> = <String>"timeout"</String>;
 							<tif.dfd.errback><tif.dfd>dfd</tif.dfd>.<tif.dfd.errback>errback</tif.dfd.errback>(<Error>err</Error>)</tif.dfd.errback>;
 							//Cancel the request so the io module can do appropriate cleanup.
@@ -6542,7 +6542,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 				}catch(e){
 					// FIXME: make sure we errback!
 					<console.debug>console.<console.debug>debug</console.debug>(e)</console.debug>;
-					<tif.dfd.errback><tif.dfd>dfd</tif.dfd>.<tif.dfd.errback>errback</tif.dfd.errback>(new <Error>Error(<String>"_watchInFlightError!"</String>)</Error>)</tif.dfd.errback>;
+					<tif.dfd.errback><tif.dfd>dfd</tif.dfd>.<tif.dfd.errback>errback</tif.dfd.errback>(<Error>new Error(<String>"_watchInFlightError!"</String>)</Error>)</tif.dfd.errback>;
 				}
 			}
 		}
@@ -6588,7 +6588,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		//		Function used to process response. Gets the dfd
 		//		object as its only argument.
 		if(<dfd.ioArgs.args.timeout>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.<dfd.ioArgs.args>args</dfd.ioArgs.args>.timeout</dfd.ioArgs.args.timeout>){
-			dfd.<String>startTime</String> = (new <Date.getTime><Date>Date()</Date>).<Date.getTime>getTime</Date.getTime>()</Date.getTime>;
+			dfd.<String>startTime</String> = (<Date.getTime><Date>new Date()</Date>).<Date.getTime>getTime</Date.getTime>()</Date.getTime>;
 		}
 		<_inFlight.push>_inFlight.<_inFlight.push>push</_inFlight.push>({dfd: dfd, validCheck: validCheck, ioCheck: ioCheck, resHandle: resHandle})</_inFlight.push>;
 		if(!_inFlightIntvl){
@@ -6609,7 +6609,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		if(<_d._isDocumentOk>_d.<_d._isDocumentOk>_isDocumentOk</_d._isDocumentOk>(<dfd.ioArgs.xhr>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.xhr</dfd.ioArgs.xhr>)</_d._isDocumentOk>){
 			<dfd.callback>dfd.<dfd.callback>callback</dfd.callback>(dfd)</dfd.callback>;
 		}else{
-			<dfd.errback>dfd.<dfd.errback>errback</dfd.errback>(new <Error>Error(<String>"bad http response code:"</String> + <dfd.ioArgs.xhr.status>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.<dfd.ioArgs.xhr>xhr</dfd.ioArgs.xhr>.status</dfd.ioArgs.xhr.status>)</Error>)</dfd.errback>;
+			<dfd.errback>dfd.<dfd.errback>errback</dfd.errback>(<Error>new Error(<String>"bad http response code:"</String> + <dfd.ioArgs.xhr.status>dfd.<dfd.ioArgs>ioArgs</dfd.ioArgs>.<dfd.ioArgs.xhr>xhr</dfd.ioArgs.xhr>.status</dfd.ioArgs.xhr.status>)</Error>)</dfd.errback>;
 		}
 	}</Function></Function>
 
@@ -6780,7 +6780,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 		if(<dojo.isArray>dojo.<dojo.isArray>isArray</dojo.isArray>(this.curve)</dojo.isArray>){
 			/* curve: Array
 				pId: a */
-			this.<String>curve</String> = new <dojo._Line><dojo._Line>dojo._Line</dojo._Line>(this.curve[<Number>0</Number>], this.curve[<Number>1</Number>])</dojo._Line>;
+			this.<String>curve</String> = <dojo._Line>new <dojo._Line>dojo._Line</dojo._Line>(this.curve[<Number>0</Number>], this.curve[<Number>1</Number>])</dojo._Line>;
 		}
 	}</Function>,
 	
@@ -6893,7 +6893,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 
 	_play: <Function>function(gotoStart){
 		var _t = this;
-		_t.<String>_startTime</String> = new <Date.valueOf><Date>Date</Date>().<Date.valueOf>valueOf</Date.valueOf>()</Date.valueOf>;
+		_t.<String>_startTime</String> = <Date.valueOf><Date>new Date</Date>().<Date.valueOf>valueOf</Date.valueOf>()</Date.valueOf>;
 		if(<_t._paused>_t._paused</_t._paused>){
 			_t.<String>_startTime</String> -= <_t.duration>_t.duration</_t.duration> * <_t._percent>_t._percent</_t._percent>;
 		}
@@ -6964,7 +6964,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 	_cycle: <Function>function(){
 		var _t = this;
 		if(<_t._active>_t._active</_t._active>){
-			var curr = new <Date.valueOf><Date>Date</Date>().<Date.valueOf>valueOf</Date.valueOf>()</Date.valueOf>;
+			var curr = <Date.valueOf><Date>new Date</Date>().<Date.valueOf>valueOf</Date.valueOf>()</Date.valueOf>;
 			var step = (curr - <_t._startTime>_t._startTime</_t._startTime>) / (<_t._endTime>_t._endTime</_t._endTime> - <_t._startTime>_t._startTime</_t._startTime>);
 
 			if(<Boolean>step &gt;= <Number>1</Number></Boolean>){
@@ -7103,7 +7103,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 			var prop = properties[p];
 			if(<prop.start>prop.start</prop.start> instanceof <d.Color>d.Color</d.Color>){
 				// create a reusable temp color object to keep intermediate results
-				prop.<String>tempColor</String> = new <d.Color><d.Color>d.Color</d.Color>()</d.Color>;
+				prop.<String>tempColor</String> = <d.Color>new <d.Color>d.Color</d.Color>()</d.Color>;
 			}
 		}
 		this.<String>getValue</String> = <Function>function(r){
@@ -7147,7 +7147,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 		args.<String>node</String> = <d.byId>d.<d.byId>byId</d.byId>(<args.node>args.node</args.node>)</d.byId>;
 		if(!<args.easing>args.easing</args.easing>){ args.<String>easing</String> = <d._defaultEasing>d._defaultEasing</d._defaultEasing>; }
 
-		var <d._Animation>anim = new <d._Animation><d._Animation>d._Animation</d._Animation>(args)</d._Animation></d._Animation>;
+		var <d._Animation>anim = <d._Animation>new <d._Animation>d._Animation</d._Animation>(args)</d._Animation></d._Animation>;
 		<d.connect>d.<d.connect>connect</d.connect>(<d._Animation>anim</d._Animation>, <String>"beforeBegin"</String>, <d._Animation>anim</d._Animation>, <Function>function(){
 			var pm = {};
 			for(var p in this.properties){
@@ -7179,15 +7179,15 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 
 				if(<Boolean>isColor</Boolean>){
 					// console.debug("it's a color!");
-					prop.<String>start</String> = new <d.Color><d.Color>d.Color</d.Color>(<prop.start>prop.start</prop.start>)</d.Color>;
-					prop.<String>end</String> = new <d.Color><d.Color>d.Color</d.Color>(<prop.end>prop.end</prop.end>)</d.Color>;
+					prop.<String>start</String> = <d.Color>new <d.Color>d.Color</d.Color>(<prop.start>prop.start</prop.start>)</d.Color>;
+					prop.<String>end</String> = <d.Color>new <d.Color>d.Color</d.Color>(<prop.end>prop.end</prop.end>)</d.Color>;
 				}else{
 					prop.<String>start</String> = (<Boolean>p == <String>"opacity"</String>)</Boolean> ? <Number>Number(<prop.start>prop.start</prop.start>)</Number> : <parseFloat>parseFloat(<prop.start>prop.start</prop.start>)</parseFloat>;
 				}
 				// console.debug("start:", prop.start);
 				// console.debug("end:", prop.end);
 			}
-			this.<String>curve</String> = new <PropLine>PropLine(pm)</PropLine>;
+			this.<String>curve</String> = <PropLine>new PropLine(pm)</PropLine>;
 		}</Function>)</d.connect>;
 		<d.connect>d.<d.connect>connect</d.connect>(<d._Animation>anim</d._Animation>, <String>"onAnimate"</String>, <d._Animation>anim</d._Animation>, <Function>function(propValues){
 			// try{

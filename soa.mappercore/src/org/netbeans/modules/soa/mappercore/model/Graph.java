@@ -45,12 +45,14 @@ public class Graph implements TargetPin {
 
     private List<Link> ingoingLinks = null;
     private boolean hasOutgoingLinks = false;
+    private Link outgoingLink = null;
     
     private Set<Link> connectedIngoingLinks = null;
     private Set<Link> connectedOutgoingLinks = null;
     
     private boolean validLinks = false;
     private boolean validBounds = false;
+    private boolean validOutgoingLinks = false;
     
     private Rectangle bounds = null;
     
@@ -192,10 +194,18 @@ public class Graph implements TargetPin {
     
     
     public boolean hasOutgoingLinks() {
-        validateLinks();
+        validateOutgoingLinks();
         return hasOutgoingLinks;
     }
     
+    public List<Link> getOutgoingLinks() {
+        return null;
+    }
+    
+    public Link getOutgoingLink() {
+        validateOutgoingLinks();
+        return outgoingLink;
+    }
     
     public boolean hasConnectedOutgoingLinks() {
         validateLinks();
@@ -574,6 +584,23 @@ public class Graph implements TargetPin {
         return (maxVertex != null) ? maxVertex : currentVertex;
     }
     
+    private void validateOutgoingLinks() {
+        if (validOutgoingLinks) {return; }
+        
+        for (int i = getLinkCount() - 1; i >= 0; i--) {
+            Link link = getLink(i);
+            if (link.getTarget() == this) {
+                outgoingLink = link;
+                validOutgoingLinks = true;
+                hasOutgoingLinks = true;
+                return;
+            }
+        }
+        
+        hasOutgoingLinks = false;
+        validOutgoingLinks = true;
+        outgoingLink = null;
+    }
     
     private void validateLinks() {
         if (validLinks) return;
@@ -627,6 +654,10 @@ public class Graph implements TargetPin {
                 : connectedOutgoingLinks;
         
         this.validLinks = true;
+        validOutgoingLinks = true;
+        if (!outgoingLinks.isEmpty()) {
+            outgoingLink = outgoingLinks.iterator().next();
+        }
     }
     
     
@@ -636,7 +667,9 @@ public class Graph implements TargetPin {
             ingoingLinks = null;
             connectedIngoingLinks = null;
             connectedOutgoingLinks = null;
+            outgoingLink = null;
             validLinks = false;
+            validOutgoingLinks = false;
             fireGraphLinksChanges();
         }
     }

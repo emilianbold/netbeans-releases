@@ -41,7 +41,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -106,7 +106,7 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
             String projectNamespace = "http://enterprise.netbeans.org/transformmap/"+ProjectUtils.getInformation(p).getName(); // NOI18N
             Util.initialiseNamespace(tMapFo, projectNamespace);
             
-            SoaUiUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
+            SoaUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
         }
     }
     

@@ -347,7 +347,7 @@ public class CopyNode extends BpelNode<Copy> {
             stringFrom = stringFrom == null ? "" : stringFrom;
             stringTo = stringTo == null ? "" : stringTo;
         }
-        return org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getCorrectedHtmlRenderedString(
+        return org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(
                     NbBundle.getMessage(CopyNode.class,"LBL_Copy",stringTo,stringFrom)); // NOI18N
     }
     

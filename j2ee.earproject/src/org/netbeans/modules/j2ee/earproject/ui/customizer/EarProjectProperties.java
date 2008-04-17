@@ -66,8 +66,6 @@ import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -97,6 +95,7 @@ import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackIm
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun.ApplicationUrisComboBoxModel;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -766,6 +765,7 @@ public final class EarProjectProperties {
                     List<ClassPathSupport.Item> oldContent = project.getClassPathSupport().itemsList(
                             ep.get( JAR_CONTENT_ADDITIONAL ), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                     List<ClassPathSupport.Item> l = new ArrayList(oldContent);
+                    List<String> referencesToBeDestroyed = new ArrayList<String>();
                     for (int i = 0; i < moduleProjects.length; i++) {
                         AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType(
                                 moduleProjects[i],
@@ -776,7 +776,12 @@ public final class EarProjectProperties {
                             if (add) {
                                 l.add(item);
                             } else {
-                                l.remove(item);
+                                assert l.indexOf(item) != -1 : "cannot find item for: " + item; // NOI18N
+                                ClassPathSupport.Item existingItem = l.get(l.indexOf(item));
+                                l.remove(existingItem);
+                                if (isLastReference(CommonProjectUtils.getAntPropertyName(existingItem.getReference()), ep, JAR_CONTENT_ADDITIONAL)) {
+                                    referencesToBeDestroyed.add(existingItem.getReference());
+                                }
                             }
                         }
                     }
@@ -784,16 +789,38 @@ public final class EarProjectProperties {
                     ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     ep.setProperty(JAR_CONTENT_ADDITIONAL, newValue);
                     updateContentDependency(project, oldContent, l, ep);
-                    // ptu properties here so that updateClientModule can read them from project:
+                    // put properties here so that updateClientModule can read them from project:
                     project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     updateClientModule(project, ep);
                     project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    for (String ref : referencesToBeDestroyed) {
+                        project.getReferenceHelper().destroyReference(ref);
+                    }
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
                 }
             }
         });
+    }
+
+    /**
+     * Check whether given property is referenced by other properties.
+     * 
+     * @param property property which presence it going to be tested
+     * @param props properties
+     * @param ignoreProperty a property to ignore
+     */
+    private static boolean isLastReference(String property, EditableProperties props, String ignoreProperty) {
+        for (Map.Entry<String,String> entry : props.entrySet()) {
+            if (ignoreProperty.equals(entry.getKey())) {
+                continue;
+            }
+            if (entry.getValue().contains(property)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void updateClientModule(EarProject project, EditableProperties ep) {

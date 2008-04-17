@@ -309,6 +309,14 @@ public class JsUtils {
                 (c == '!') || (c == '?') || (c == '=');
     }
 
+    /** The following keywords apply inside a call expression */
+    public static final String[] CALL_KEYWORDS =
+            new String[] {
+        "true", // NOI18N
+        "false", // NOI18N
+        "null" // NOI18N
+    };
+    
     // Section 7.5.2 in ECMAScript Language Specification, ECMA-262
     public static final String[] JAVASCRIPT_KEYWORDS =
             new String[]{

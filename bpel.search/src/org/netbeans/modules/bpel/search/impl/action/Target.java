@@ -42,7 +42,7 @@ package org.netbeans.modules.bpel.search.impl.action;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -50,73 +50,6 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 final class Target implements SearchTarget {
 
-  static final SearchTarget [] BPEL = new SearchTarget [] {
-    new Target(org.netbeans.modules.bpel.model.api.BpelEntity.class),
-    new Target(org.netbeans.modules.bpel.model.api.Assign.class),
-    new Target(org.netbeans.modules.bpel.model.api.Branches.class),
-    new Target(org.netbeans.modules.bpel.model.api.Catch.class),
-    new Target(org.netbeans.modules.bpel.model.api.CatchAll.class),
-    new Target(org.netbeans.modules.bpel.model.api.Compensate.class),
-    new Target(org.netbeans.modules.bpel.model.api.CompensationHandler.class),
-    new Target(org.netbeans.modules.bpel.model.api.Condition.class),
-    new Target(org.netbeans.modules.bpel.model.api.Copy.class),
-    new Target(org.netbeans.modules.bpel.model.api.Correlation.class),
-    new Target(org.netbeans.modules.bpel.model.api.CorrelationContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.CorrelationSet.class),
-    new Target(org.netbeans.modules.bpel.model.api.CorrelationSetContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.DeadlineExpression.class),
-    new Target(org.netbeans.modules.bpel.model.api.Documentation.class),
-    new Target(org.netbeans.modules.bpel.model.api.DurationExpression.class),
-    new Target(org.netbeans.modules.bpel.model.api.Else.class),
-    new Target(org.netbeans.modules.bpel.model.api.ElseIf.class),
-    new Target(org.netbeans.modules.bpel.model.api.Empty.class),
-    new Target(org.netbeans.modules.bpel.model.api.EventHandlers.class),
-    new Target(org.netbeans.modules.bpel.model.api.Exit.class),
-    new Target(org.netbeans.modules.bpel.model.api.FaultHandlers.class),
-    new Target(org.netbeans.modules.bpel.model.api.Flow.class),
-    new Target(org.netbeans.modules.bpel.model.api.For.class),
-    new Target(org.netbeans.modules.bpel.model.api.ForEach.class),
-    new Target(org.netbeans.modules.bpel.model.api.From.class),
-    new Target(org.netbeans.modules.bpel.model.api.FromPart.class),
-    new Target(org.netbeans.modules.bpel.model.api.If.class),
-    new Target(org.netbeans.modules.bpel.model.api.Import.class),
-    new Target(org.netbeans.modules.bpel.model.api.Invoke.class),
-    new Target(org.netbeans.modules.bpel.model.api.Link.class),
-    new Target(org.netbeans.modules.bpel.model.api.LinkContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.Literal.class),
-    new Target(org.netbeans.modules.bpel.model.api.MessageExchange.class),
-    new Target(org.netbeans.modules.bpel.model.api.MessageExchangeContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.OnAlarmEvent.class),
-    new Target(org.netbeans.modules.bpel.model.api.OnAlarmPick.class),
-    new Target(org.netbeans.modules.bpel.model.api.OnEvent.class),
-    new Target(org.netbeans.modules.bpel.model.api.OnMessage.class),
-    new Target(org.netbeans.modules.bpel.model.api.PartnerLink.class),
-    new Target(org.netbeans.modules.bpel.model.api.PartnerLinkContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.PatternedCorrelation.class),
-    new Target(org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.Pick.class),
-    new Target(org.netbeans.modules.bpel.model.api.Process.class),
-    new Target(org.netbeans.modules.bpel.model.api.Receive.class),
-    new Target(org.netbeans.modules.bpel.model.api.RepeatUntil.class),
-    new Target(org.netbeans.modules.bpel.model.api.Reply.class),
-    new Target(org.netbeans.modules.bpel.model.api.ReThrow.class),
-    new Target(org.netbeans.modules.bpel.model.api.Scope.class),
-    new Target(org.netbeans.modules.bpel.model.api.Sequence.class),
-    new Target(org.netbeans.modules.bpel.model.api.Source.class),
-    new Target(org.netbeans.modules.bpel.model.api.Target.class),
-    new Target(org.netbeans.modules.bpel.model.api.TerminationHandler.class),
-    new Target(org.netbeans.modules.bpel.model.api.Throw.class),
-    new Target(org.netbeans.modules.bpel.model.api.TimeEvent.class),
-    new Target(org.netbeans.modules.bpel.model.api.To.class),
-    new Target(org.netbeans.modules.bpel.model.api.ToPart.class),
-    new Target(org.netbeans.modules.bpel.model.api.Validate.class),
-    new Target(org.netbeans.modules.bpel.model.api.Variable.class),
-    new Target(org.netbeans.modules.bpel.model.api.VariableContainer.class),
-    new Target(org.netbeans.modules.bpel.model.api.VariableDeclaration.class),
-    new Target(org.netbeans.modules.bpel.model.api.Wait.class),
-    new Target(org.netbeans.modules.bpel.model.api.While.class),
-  };
-  
   static final SearchTarget [] WSDL = new SearchTarget [] {
     new Target(org.netbeans.modules.xml.wsdl.model.WSDLComponent.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Binding.class),

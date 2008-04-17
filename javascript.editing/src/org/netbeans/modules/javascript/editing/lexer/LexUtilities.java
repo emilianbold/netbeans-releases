@@ -112,6 +112,10 @@ public class LexUtilities {
             }
             
             return doc;
+        } catch (ClassCastException ex) {
+            // TESTS! If data object for GSF isn't found it will be a FilterDocument
+            // rather than a BaseDocument
+            return NbUtilities.getBaseDocument(info.getFileObject(), true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;

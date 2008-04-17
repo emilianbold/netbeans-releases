@@ -753,6 +753,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @param measuredValues array of measured values
      */
     public void compare(long[] measuredValues){
+        boolean firstTimeUsageFail = false;
         int numberOfFails = 0;
         final int NUMBER_OF_FAILS_THRESHOLD = 1;
         String measuredValuesString = "";
@@ -767,15 +768,16 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             } else if(i==1 && measuredValues.length > 1 && measuredValues[i] > 2*expectedTime) {
                 // fail if it's first usage and it isn't the last one and it's over 2-times expected time
                 numberOfFails++;
+                firstTimeUsageFail = true;
             }
         }
 
-        if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD) {
+        if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
             captureScreen = false;
             fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
                     + " ] > expectedTime[" + expectedTime 
                     + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
-        }
+        } 
     }
 
     /**
@@ -847,6 +849,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             
             try {                
                 for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+                    if (tuple == null) {
+                        // TODO: Investigate how can this happen?
+                        continue;
+                    }
                     int code = tuple.getCode();
 
                     // start 
@@ -863,7 +869,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         start = tuple;
 
                     //end 
-                    } else if (code == MY_END_EVENT) {
+                    } else if (code == MY_END_EVENT || (MY_END_EVENT == ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE
+                            && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_BEFORE))
+                            || (MY_END_EVENT == ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE
+                            && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_AFTER))) {
                         end = tuple;
                     } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE && 
                             ( code == ActionTracker.TRACK_PAINT

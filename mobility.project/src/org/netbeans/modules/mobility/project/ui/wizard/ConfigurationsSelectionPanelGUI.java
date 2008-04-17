@@ -241,8 +241,8 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         gridBagConstraints.weighty = 1.0;
         add(templatesPanel, gridBagConstraints);
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "ACSN_jPanel")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "ACSD_jPanel")); // NOI18N
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "ACSN_CfgSelectionPanel_Selection")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "ACSD_CfgSelectionPanel_Selection")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
