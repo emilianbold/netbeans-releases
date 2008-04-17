@@ -379,7 +379,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         }
         child = child.getNext();
         
-        if (child != null && astOffset < child.getSourceStart()) {
+        if (child == null || astOffset < child.getSourceStart()) {
             return -1;
         }
 

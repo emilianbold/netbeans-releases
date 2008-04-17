@@ -1814,6 +1814,7 @@ public class JsCodeCompletion implements Completable {
                 NameKind kind = request.kind;
                 JsParseResult result = request.result;
                 Set<IndexedElement> matches = request.index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+                boolean found = false;
 
                 for (IndexedElement element : matches) {
                     if (element.isNoDoc()) {
@@ -1842,8 +1843,12 @@ public class JsCodeCompletion implements Completable {
                     } else {
                         item = new PlainItem(request, element);
                     }
+                    found = true;
                     proposals.add(item);
-
+                }
+                
+                if (found) {
+                    return true;
                 }
             }
         }
