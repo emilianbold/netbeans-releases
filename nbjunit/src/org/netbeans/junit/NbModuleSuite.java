@@ -88,33 +88,50 @@ public class NbModuleSuite {
     private NbModuleSuite() {}
     
     
-    static final class Configuration {
+    /** Settings object that allows one to configure execution of
+     * whole {@link NbModuleSuite}.
+     * 
+     * @since 1.48
+     * 
+     */
+    public static final class Configuration extends Object {
         final Class<?> clazz;
         final String clusterRegExp;
         final String moduleRegExp;
         final ClassLoader parentClassLoader;
+        final LinkedHashSet<String> tests;
 
-        private Configuration(Class<?> clazz, String clusterRegExp, String moduleRegExp, ClassLoader parent) {
+        private Configuration(Class<?> clazz, String clusterRegExp, String moduleRegExp, ClassLoader parent, LinkedHashSet<String> tests) {
             this.clazz = clazz;
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
             this.parentClassLoader = parent;
+            this.tests = tests;
         }
 
-        public static Configuration create(Class<? extends Test> clazz) {
-            return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent());
+        static Configuration create(Class<? extends Test> clazz) {
+            return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null);
         }
         
         public Configuration clusters(String regExp) {
-            return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader);
+            return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader, tests);
         }
 
         public Configuration enableModules(String regExp) {
-            return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader);
+            return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests);
         }
 
         public Configuration classLoader(ClassLoader parent) {
-            return new Configuration(clazz, clusterRegExp, moduleRegExp, parent);
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests);
+        }
+
+        public Configuration addTest(String name) {
+            LinkedHashSet<String> tmp = new LinkedHashSet<String>();
+            if (tests != null) {
+                tmp.addAll(tests);
+            }
+            tmp.add(name);
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tmp);
         }
     }
 
@@ -141,8 +158,33 @@ public class NbModuleSuite {
     public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp) {
         return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp));
     }
-
-    static Test create(Configuration config) {
+    
+    /** Creates default configuration wrapping a class that can be executed
+     * with the {@link NbModuleSuite} support.
+     * 
+     * @param clazz the class to test, the actual instances will be created
+     *   for the class of the same name, but loaded by different classloader
+     * @return config object prefilled with default values; the defaults may
+     *   be altered with its addition instance methods
+     * @since 1.48
+     */
+    public static Configuration createConfiguration(Class<? extends Test> clazz) {
+        return Configuration.create(clazz);
+    }
+    
+    
+    /** Factory method to create wrapper test that knows how to setup proper
+     * NetBeans Runtime Container environment. This method allows better
+     * customization and control over the executed set of tests.
+     * Wraps the provided class into a test that set ups properly the
+     * testing environment, read more in {@link Configuration}.
+     * 
+     * 
+     * @param config the configuration for the test
+     * @return runtime container ready test
+     * @since 1.48
+     */
+    public static Test create(Configuration config) {
         return new S(config);
     }
 
@@ -228,10 +270,16 @@ public class NbModuleSuite {
             try {
                 testLoader.loadClass("junit.framework.Test");
                 testLoader.loadClass("org.netbeans.junit.NbTestSuite");
-                //testLoader.loadClass("org.netbeans.jellytools.JellyTestCase");
                 Class<? extends TestCase> sndClazz = 
                     testLoader.loadClass(config.clazz.getName()).asSubclass(TestCase.class);
-                new NbTestSuite(sndClazz).run(result);
+                NbTestSuite toRun;
+                if (config.tests == null) {
+                    toRun = new NbTestSuite(sndClazz);
+                } else {
+                    toRun = new NbTestSuite();
+                    toRun.addTests(sndClazz, config.tests.toArray(new String[0]));
+                }
+                toRun.run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
             } catch (NoClassDefFoundError ex) {

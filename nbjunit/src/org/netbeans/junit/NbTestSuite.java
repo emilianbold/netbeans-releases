@@ -41,6 +41,7 @@
 
 package org.netbeans.junit;
 
+import java.lang.reflect.Constructor;
 import java.util.*;
 import junit.framework.TestSuite;
 import junit.framework.Test;
@@ -75,6 +76,14 @@ public class NbTestSuite extends TestSuite implements NbTest {
      */
     public NbTestSuite(String name) {
         super(name);
+    }
+    
+    void addTests(Class<? extends TestCase> clazz, String... names) throws Exception {
+        Constructor cnt = clazz.getConstructor(String.class);
+        for (String n : names) {
+            Test t = (Test)cnt.newInstance(n);
+            addTest(t);
+        }
     }
     
     

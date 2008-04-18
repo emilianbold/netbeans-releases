@@ -93,7 +93,30 @@ public class NbModuleSuiteTest extends TestCase {
         Test instance = NbModuleSuite.create(Ins.class, null, null);
         junit.textui.TestRunner.run(instance);
         
-        assertEquals("OK", System.getProperty("ins.one"));
+        assertProperty("ins.one", "OK");
+    }
+
+    public void testOneCanEnumerateMethodsFromTheSuite() {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+
+        
+        
+        
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(Ins.class).addTest("testOne").addTest("testThree")
+        );
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "OK");
+        assertProperty("ins.two", "No");
+        assertProperty("ins.three", "OK");
+    }
+    
+    private static void assertProperty(String name, String value) {
+        String v = System.getProperty(name);
+        assertEquals("Property " + name, value, v);
     }
 
     public void testAccessExtraDefinedAutoload() {
@@ -239,6 +262,14 @@ public class NbModuleSuiteTest extends TestCase {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        
+        public void testSecond() {
+            System.setProperty("ins.two", "OK");
+        }
+
+        public void testThree() {
+            System.setProperty("ins.three", "OK");
         }
 
         public void visitClass(Class cls) {
