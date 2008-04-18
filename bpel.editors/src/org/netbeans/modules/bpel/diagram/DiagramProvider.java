@@ -48,9 +48,9 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
-import org.netbeans.modules.bpel.search.api.SearchElement;
-import org.netbeans.modules.bpel.search.api.SearchTarget;
-import org.netbeans.modules.bpel.search.spi.SearchProvider;
+import org.netbeans.modules.xml.search.api.SearchElement;
+import org.netbeans.modules.xml.search.api.SearchTarget;
+import org.netbeans.modules.xml.search.spi.SearchProvider;
 
 /**
  * @author Vladimir Yaroslavskiy
