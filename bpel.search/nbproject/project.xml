@@ -178,7 +178,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.soa.validation</code-name-base>
+                    <code-name-base>org.netbeans.modules.xml.search</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

@@ -54,7 +54,7 @@ import org.netbeans.modules.bpel.search.spi.SearchProvider;
 import org.netbeans.modules.bpel.search.impl.action.SearchAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -139,6 +139,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.bpel.refactoring</friend>
+                <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.bpel.validation</friend>
+                <friend>org.netbeans.modules.soa.validation</friend>
+                <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.search.api</package>
                 <package>org.netbeans.modules.xml.search.spi</package>
                 <package>org.netbeans.modules.xml.ui</package>

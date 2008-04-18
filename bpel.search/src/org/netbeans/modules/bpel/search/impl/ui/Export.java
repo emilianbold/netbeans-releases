@@ -65,7 +65,7 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
