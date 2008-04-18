@@ -391,17 +391,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public void fileRenamed(FileRenameEvent fe) {
         final FileObject fo = fe.getFile();
         try {
-            if ((isJava (fo) || fo.isFolder()) && VisibilityQuery.getDefault().isVisible(fo)) {
+            boolean vs = false;
+            if ((isJava (fo) || fo.isFolder() || (vs=VirtualSourceProviderQuery.hasVirtualSource(fo))) && VisibilityQuery.getDefault().isVisible(fo)) {
                 final URL root = getOwningSourceRoot(fo);
                 if (root != null) {                    
                     final File parentFile = FileUtil.toFile(fo.getParent());
                     if (parentFile != null) {                        
                         final String originalExt = fe.getExt();
-                        if (isJava (originalExt)) {
+                        boolean origVs = false;
+                        if (isJava (originalExt) || (origVs = VirtualSourceProviderQuery.hasVirtualSource(originalExt))) {
                             String originalName = fe.getName();
                             originalName = originalName+'.'+originalExt;  //NOI18N
                             final URL original = new File (parentFile,originalName).toURI().toURL();
-                            submit(Work.delete(original,root,fo.isFolder(),false));
+                            submit(Work.delete(original,root,fo.isFolder(),origVs));
                             if (TasklistSettings.isTasklistEnabled()) {
                                 Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, original, FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
                                 if (TasklistSettings.isBadgesEnabled()) {
@@ -413,7 +415,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                             }
                         }
-                        final Work work = Work.compile (fo,root,false);
+                        final Work work = Work.compile (fo,root,vs);
                         RepositoryUpdater.WORKER.post(new Runnable () {
                             public void run () {
                                 submit(work);
@@ -475,7 +477,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     LOGGER.fine("Java file deleted: " + FileUtil.getFileDisplayName(fo));
                 }
                 final URL root = getOwningSourceRoot (fo);
-                if (root != null && (!vs||rootsWithVirtualSource.contains(root))) {
+                if (root != null) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Owner: " + root);
                     }
@@ -545,7 +547,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public void fileChanged(FileEvent fe) {
         final FileObject fo = fe.getFile();
         try {
-            if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+            if ((isJava(fo) || VirtualSourceProviderQuery.hasVirtualSource(fo)) && VisibilityQuery.getDefault().isVisible(fo)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("Java file changed: " + FileUtil.getFileDisplayName(fo));
                 }
@@ -2194,8 +2196,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (uqImpl != null) {
                 try {
                     uqImpl.setDirty(null);
-                    final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false, virtual);
+                    final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);                    
                     final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
@@ -2236,69 +2237,91 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     else {
                         classNamesToDelete.add(Pair.<String,String>of (FileObjects.convertFolder2Package(offset, '/'),null));  //NOI18N
                     }
+                    final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false, virtual);   //Todo: shouldn't use rather root for virtual files, does virtual source provide ClassPath?
                     ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
-                    if (entry == null || entry.includes(fo)) {
-                        String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
+                    if (entry == null || entry.includes(fo)) {                        
                         final CompilerListener listener = new CompilerListener ();
                         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
-                        JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
-                        JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
-                        }
-                        jt.setTaskListener(listener);
-                        Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
-                        Iterable<? extends TypeElement> classes = jt.enter();
-                        if (toRebuild != null) {
-                            Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
-                            toRebuild.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
-                        }
-                        jt.analyze ();
-                        dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
-                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
-                                TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
-                        boolean[] main = new boolean[1];
-                        sa.analyse(trees, jt, fm, active, added, main);
-                        
-                        ExecutableFilesIndex.DEFAULT.setMainClass(root, fo.getURL(), main[0]);
-
-                        for (Pair<String,String> s : classNamesToDelete) {
-                            sa.delete(s);
-                        }
-
-                        List<Diagnostic> diag = new ArrayList<Diagnostic>();
-                        URI u = active.toUri();
-                        for (Diagnostic d : listener.errors) {
-                            if (active == d.getSource()) {
-                                diag.add(d);
+                        final String sourceLevel = SourceLevelQuery.getSourceLevel(fo); //Todo: shouldn't use rather root for virtual files, does virtual source provide source level?
+                        JavaFileObject active = null;
+                        if (virtual) {
+                            final Iterable<FileObjects.InferableJavaFileObject> jfos = VirtualSourceProviderQuery.translate(Collections.singleton(fileFile), rootFile);
+                            boolean one2oneGuard = false;
+                            for (FileObjects.InferableJavaFileObject jfo : jfos) {
+                                assert !one2oneGuard : "Virtual source " + fileFile.getAbsolutePath() +" provided more java files!";    //NOI18N
+                                ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, jfo);
+                                active = jfo;
+                                one2oneGuard = true;
                             }
+                            assert active != null : "Virtual source " + fileFile.getAbsolutePath() +" provided no java files!";    //NOI18N
                         }
-                        for (Diagnostic d : listener.warnings) {
-                            if (active == d.getSource()) {
-                                diag.add(d);
+                        else {
+                            active = FileObjects.nbFileObject(fo, rootFo, filter, false);
+                        }
+                        if (active != null) {   //Prevent NPE when VirtualSourceProvider behaves wrongly
+                            JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
                             }
-                        }
-                        if (TasklistSettings.isTasklistEnabled()) {
-                            Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
+                            jt.setTaskListener(listener);
+                            Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
+                            Iterable<? extends TypeElement> classes = jt.enter();
+                            if (toRebuild != null) {
+                                Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
+                                toRebuild.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
+                            }
+                            jt.analyze ();
+                            dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
+                                    com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                                    TransTypes.instance(jt.getContext()),
+                                    com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
+                            boolean[] main = new boolean[1];
+                            sa.analyse(trees, jt, fm, active, added, main);
 
-                            if (TasklistSettings.isBadgesEnabled()) {
-                                //XXX: maybe move to the common path (to be used also in the else branch:
-                                ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+                            ExecutableFilesIndex.DEFAULT.setMainClass(root, fo.getURL(), main[0]);
 
-                                if (an != null) {
-                                    an.updateInError(toRefresh);
+                            for (Pair<String,String> s : classNamesToDelete) {
+                                sa.delete(s);
+                            }
+
+                            List<Diagnostic> diag = new ArrayList<Diagnostic>();
+                            URI u = active.toUri();
+                            for (Diagnostic d : listener.errors) {
+                                if (active == d.getSource()) {
+                                    diag.add(d);
                                 }
                             }
+                            for (Diagnostic d : listener.warnings) {
+                                if (active == d.getSource()) {
+                                    diag.add(d);
+                                }
+                            }
+                            if (!virtual && TasklistSettings.isTasklistEnabled()) { //Don't report errors in virtual files
+                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
 
-                            JavaTaskProvider.refresh(fo);
+                                if (TasklistSettings.isBadgesEnabled()) {
+                                    //XXX: maybe move to the common path (to be used also in the else branch:
+                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                                    if (an != null) {
+                                        an.updateInError(toRefresh);
+                                    }
+                                }
+
+                                JavaTaskProvider.refresh(fo);
+                            }
+                            //                        if (!listener.errors.isEmpty()) {
+                            Log.instance(jt.getContext()).nerrors = 0;
+                            //                            listener.cleanDiagnostics();
+                            //                        }
+
+                            listener.cleanDiagnostics();
+                        } else {
+                            //Todo: clean up this repeated code
+                            for (Pair<String,String> s : classNamesToDelete) {
+                                sa.delete(s);
+                            }
                         }
-                        //                        if (!listener.errors.isEmpty()) {
-                        Log.instance(jt.getContext()).nerrors = 0;
-                        //                            listener.cleanDiagnostics();
-                        //                        }
-
-                        listener.cleanDiagnostics();
                     } else {
                         for (Pair<String,String> s : classNamesToDelete) {
                             sa.delete(s);

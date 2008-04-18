@@ -83,6 +83,11 @@ public final class VirtualSourceProviderQuery {
         return getExt2ProvMap().keySet().contains(ext);
     }
     
+    public static boolean hasVirtualSource (final String extension) {
+        Parameters.notNull("extension", extension);
+        return getExt2ProvMap().keySet().contains(extension);
+    }
+    
     public static Iterable<FileObjects.InferableJavaFileObject> translate (final Iterable<? extends File> files, final File root) {
         Parameters.notNull("files", files);     //NOI18N
         Parameters.notNull("root", root);       //NOI18N
