@@ -174,9 +174,9 @@ public class OpenSolaris extends KnownProject {
             createImpl(r, n, name, display, folders);
         }
         // and super projects
-        createImpl(srcRoot+"cmd/", nb_root+"/commands", "commands", "os.commands", folders); // NOI18N
-        createImpl(srcRoot+"lib/", nb_root+"/libraries", "libraries", "os.libraries", folders); // NOI18N
-        createImpl(srcRoot, nb_root+"/sources", "sources", "os.sources", folders); // NOI18N
+        createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", folders); // NOI18N
+        createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", folders); // NOI18N
+        createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", folders); // NOI18N
         return true;
     }
 

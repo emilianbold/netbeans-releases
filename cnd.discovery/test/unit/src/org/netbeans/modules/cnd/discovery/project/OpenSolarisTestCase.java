@@ -45,10 +45,10 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Alexander Simon
  */
-public class OpenSolarisTest extends NbTestCase {
+public class OpenSolarisTestCase extends NbTestCase {
 
     /** Creates a new instance of BaseTestCase */
-    public OpenSolarisTest() {
+    public OpenSolarisTestCase() {
         super("OpenSolarisTest");
     }
 
