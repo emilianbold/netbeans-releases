@@ -327,6 +327,18 @@ public class LogReader {
         } else {
             file = workingDir+"/"+what;  //NOI18N
         }
+        List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
+        for(String s : userIncludes){
+            userIncludesCached.add(PathCache.getString(s));
+        }
+        Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
+        for(Map.Entry<String,String> e : userMacros.entrySet()){
+            if (e.getValue() == null) {
+                userMacrosCached.put(PathCache.getString(e.getKey()), null);
+            } else {
+                userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
+            }
+        }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
             if (TRACE)  {
@@ -360,18 +372,6 @@ public class LogReader {
             return false;
         } else if (TRACE) {
             if (TRACE) System.err.println("**** Gotcha: " + file);
-        }
-        List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
-        for(String s : userIncludes){
-            userIncludesCached.add(PathCache.getString(s));
-        }
-        Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
-        for(Map.Entry<String,String> e : userMacros.entrySet()){
-            if (e.getValue() == null) {
-                userMacrosCached.put(PathCache.getString(e.getKey()), null);
-            } else {
-                userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
-            }
         }
         result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
         return true;
