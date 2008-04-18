@@ -100,7 +100,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>0.72.1</specification-version>
+                        <implementation-version>2</implementation-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
