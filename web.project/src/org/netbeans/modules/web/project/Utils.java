@@ -44,8 +44,12 @@ package org.netbeans.modules.web.project;
 import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 import java.util.Vector;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 import org.openide.filesystems.FileUtil;
@@ -56,8 +60,11 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.openide.util.Parameters;
 
 public class Utils {
+
+    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.web.project"); // NOI18N
 
     // COPIED FROM TOMCAT
     private static final String JAVA_KEYWORDS[] = {
@@ -333,5 +340,25 @@ public class Utils {
             }
         }
         return classpath.toString();
+    }
+
+    /**
+     * Logs the UI gesture.
+     *
+     * @param bundle resource bundle to use for message
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUI(ResourceBundle bundle,String message, Object[] params) {
+        Parameters.notNull("message", message);
+        Parameters.notNull("bundle", bundle);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(UI_LOGGER.getName());
+        logRecord.setResourceBundle(bundle);
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        UI_LOGGER.log(logRecord);
     }
 }

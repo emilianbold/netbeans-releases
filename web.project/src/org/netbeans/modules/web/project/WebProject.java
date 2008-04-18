@@ -840,7 +840,7 @@ public final class WebProject implements Project, AntProjectListener {
                         }
                     }
                     // UI Logging
-                    WebProjectUtil.logUI(NbBundle.getBundle(WebProject.class),"UI_WEB_PROJECT_OPENED", // NOI18N
+                    Utils.logUI(NbBundle.getBundle(WebProject.class), "UI_WEB_PROJECT_OPENED", // NOI18N
                             new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
                 }
                 

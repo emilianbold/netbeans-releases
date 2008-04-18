@@ -44,15 +44,11 @@ package org.netbeans.modules.web.project;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the web project module.
@@ -61,9 +57,7 @@ import org.openide.util.Parameters;
  * @author Andrei Badea
  */
 public final class WebProjectUtil {
-    
-    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.web.project"); // NOI18N
-    
+
     private WebProjectUtil() {
         super();
     }
@@ -102,26 +96,6 @@ public final class WebProjectUtil {
             };
         }
         return filter;
-    }
-
-    /**
-     * Logs the UI gesture.
-     *
-     * @param bundle resource bundle to use for message
-     * @param message message key
-     * @param params message parameters, may be <code>null</code>
-     */
-    public static void logUI(ResourceBundle bundle,String message, Object[] params) {
-        Parameters.notNull("message", message);
-        Parameters.notNull("bundle", bundle);
-
-        LogRecord logRecord = new LogRecord(Level.INFO, message);
-        logRecord.setLoggerName(UI_LOGGER.getName());
-        logRecord.setResourceBundle(bundle);
-        if (params != null) {
-            logRecord.setParameters(params);
-        }
-        UI_LOGGER.log(logRecord);
     }
 
 }

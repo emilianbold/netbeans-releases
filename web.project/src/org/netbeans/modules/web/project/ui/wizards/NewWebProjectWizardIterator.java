@@ -77,7 +77,7 @@ import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.web.project.WebProjectUtil;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
@@ -203,8 +203,8 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             }
         }
         
-        WebProjectUtil.logUI( // NOI18N
-        NbBundle.getBundle(NewWebProjectWizardIterator.class),"UI_WEB_PROJECT_CREATE", parameters);
+        Utils.logUI(NbBundle.getBundle(NewWebProjectWizardIterator.class),
+                "UI_WEB_PROJECT_CREATE", parameters); // NOI18N
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main

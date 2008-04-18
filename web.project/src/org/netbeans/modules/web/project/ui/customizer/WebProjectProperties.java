@@ -418,7 +418,7 @@ public class WebProjectProperties {
                         
                         // ui logging of the added frameworks
                         if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
-                            WebProjectUtil.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
+                            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
                                     addedFrameworkNames.toArray());
                         }
                     }
@@ -882,7 +882,7 @@ public class WebProjectProperties {
         }
         // ui log for the server change
         if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
-            WebProjectUtil.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_SERVER_CHANGED", // NOI18N
+            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class), "UI_WEB_PROJECT_SERVER_CHANGED", // NOI18N
                     new Object[] { Deployment.getDefault().getServerID(oldServInstID),
                         oldServInstID,
                         Deployment.getDefault().getServerID(newServInstID),
