@@ -115,7 +115,7 @@ public class GroovyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.3";
+        return "0.4";
     }
 
     public String getIndexerName() {
@@ -191,21 +191,24 @@ public class GroovyIndexer implements Indexer {
                 return;
             }
             
-            IndexDocument document = factory.createDocument(40); // TODO - measure!
-            documents.add(document);
-            
 //            System.out.println("### children: " + children);
             
             for (AstElement child : children) {
                 switch (child.getKind()) {
                     case CLASS:
-                        indexClass((AstClassElement) child, document);
+                        analyzeClass((AstClassElement) child);
                         break;
                 }
             }
 
         }
 
+        private void analyzeClass(AstClassElement element) {
+            IndexDocument document = factory.createDocument(40); // TODO - measure!
+            documents.add(document);
+            indexClass(element, document);
+        }
+        
         private void indexClass(AstClassElement element, IndexDocument document) {
             final String name = element.getName();
             document.addPair(FIELD_FQN_NAME, element.getFqn(), true);
