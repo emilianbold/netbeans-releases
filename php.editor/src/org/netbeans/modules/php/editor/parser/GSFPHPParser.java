@@ -64,6 +64,7 @@ public class GSFPHPParser implements Parser {
         
         for (ParserFile file : request.files) {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
+            request.listener.started(beginEvent);
             ParserResult result = null;
             try {
                 CharSequence buffer = reader.read(file);
@@ -91,6 +92,9 @@ public class GSFPHPParser implements Parser {
                         LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
                     }
                     result = new PHPParseResult(this, file, program);
+                }
+                else {
+                    result = new PHPParseResult(this, file, null);
                 }
                 
             } catch (Exception exception) {

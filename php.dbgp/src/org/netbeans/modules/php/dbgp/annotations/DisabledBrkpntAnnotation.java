@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
+import org.netbeans.api.debugger.Breakpoint;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
@@ -48,7 +49,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class DisabledBrkpntAnnotation extends DebuggerAnnotation {
+public class DisabledBrkpntAnnotation extends BrkpntAnnotation {
 
     public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE 
                                     = "DisabledBreakpoint";         // NOI18N
@@ -56,8 +57,8 @@ public class DisabledBrkpntAnnotation extends DebuggerAnnotation {
     private static final String DISABLED_BREAKPOINT                
                                     = "ANTN_DISABLED_BREAKPOINT";   // NOI18N
 
-    public DisabledBrkpntAnnotation( Annotatable annotatable ) {
-        super(annotatable);
+    public DisabledBrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
+        super(annotatable, breakpoint);
     }
 
     /* (non-Javadoc)
