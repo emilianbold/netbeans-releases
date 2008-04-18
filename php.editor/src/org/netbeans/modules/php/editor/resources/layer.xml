@@ -169,7 +169,9 @@
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
-                <file name="org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.instance"/>
+                <file name="org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="1200"/>
+                </file>
             </folder>
         </folder>
     </folder>
