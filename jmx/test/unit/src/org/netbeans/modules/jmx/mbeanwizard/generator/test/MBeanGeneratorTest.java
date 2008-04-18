@@ -40,7 +40,6 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard.generator.test;
-import java.io.BufferedReader;
 import junit.framework.*;
 import org.openide.loaders.TemplateWizard;
 import org.netbeans.junit.*;
@@ -48,13 +47,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Iterator;
-import java.util.Set;
 
-import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.MBeanDO;
 //import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGenInfo;
 import org.netbeans.modules.jmx.mbeanwizard.generator.Translator;

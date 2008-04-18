@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Collections;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  *

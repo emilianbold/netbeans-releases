@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package gui.actions;
 
 import gui.MPUtilities;
@@ -54,45 +53,46 @@ import org.netbeans.performance.test.guitracker.ActionTracker;
  * @author mkhramov@netbeans.org
  */
 public class MIDletViewsSwitch extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     public String fromView;
     public String toView;
-    
     private String targetProject;
     private String midletName;
     private Node openNode;
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    
     private MIDletEditorOperator targetMIDletEditor;
     private static ActionTracker tr;
-    
+
     public MIDletViewsSwitch(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE = 10000;
         WAIT_AFTER_CLOSE = 5000;
     }
+
     public MIDletViewsSwitch(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE = 10000;
-        WAIT_AFTER_CLOSE = 5000;        
+        WAIT_AFTER_CLOSE = 5000;
     }
+
+    @Override
     public void initialize() {
         log(":: initialize");
         tr = ActionTracker.getInstance();
         targetProject = "MobileApplicationVisualMIDlet";
-        midletName = "VisualMIDletMIDP20.java"; 
-        
-        String documentPath = MPUtilities.SOURCE_PACKAGES+"|"+"allComponents"+"|"+midletName;
+        midletName = "VisualMIDletMIDP20.java";
+
+        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
         openNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject), documentPath);
-        
+
         if (this.openNode == null) {
             throw new Error("Cannot find expected node ");
         }
-        openNode.select(); 
-        
-        JPopupMenuOperator popup =  this.openNode.callPopup();
+        openNode.select();
+
+        JPopupMenuOperator popup = this.openNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for node ");
         }
@@ -102,14 +102,15 @@ public class MIDletViewsSwitch extends org.netbeans.performance.test.utilities.P
             popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             throw new Error("Cannot push menu item ");
-        } 
+        }
         targetMIDletEditor = MIDletEditorOperator.findMIDletEditorOperator(midletName);
     }
+
     public void prepare() {
         log(":: prepare");
         tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:PREPARE");
         targetMIDletEditor.switchToViewByName(fromView);
-        
+
     }
 
     public ComponentOperator open() {
@@ -118,40 +119,45 @@ public class MIDletViewsSwitch extends org.netbeans.performance.test.utilities.P
         targetMIDletEditor.switchToViewByName(toView);
         return null;
     }
+
+    @Override
     public void close() {
         log(":: close");
         tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "TEST:CLOSE");
     }
+
+    @Override
     public void shutdown() {
         log(":: shutdown");
         targetMIDletEditor.closeDiscard();
     }
+
     public void testFlowToDesignSwitch() {
         fromView = "Flow";
         toView = "Screen";
         setJavaEditorCaretFilteringOn();
         doMeasurement();
     }
-    
+
     public void testDesignToFlowSwitch() {
         fromView = "Screen";
-        toView = "Flow";        
+        toView = "Flow";
         setJavaEditorCaretFilteringOn();
-        doMeasurement();        
+        doMeasurement();
     }
-    
+
     public void testFlowToSourceSwitch() {
         fromView = "Flow";
-        toView = "Source";        
+        toView = "Source";
         setJavaEditorCaretFilteringOn();
-        doMeasurement();        
+        doMeasurement();
     }
-    
+
     public void testSourceToFlowSwitch() {
         fromView = "Source";
-        toView = "Flow";        
+        toView = "Flow";
         setJavaEditorCaretFilteringOn();
-        doMeasurement();        
-        
+        doMeasurement();
+
     }
 }

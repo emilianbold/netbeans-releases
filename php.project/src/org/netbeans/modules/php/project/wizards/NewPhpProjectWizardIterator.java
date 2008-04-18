@@ -420,7 +420,7 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
         //    sourcePath = NbBundle.getBundle(NewPhpProjectWizardIterator.class)
         //            .getString(DEFAULT_SOURCE_ROOT_DIR);
         }
-        properties.setProperty(PhpProjectProperties.SRC, sourcePath);
+        properties.setProperty(PhpProjectProperties.SRC_DIR, sourcePath);
         
     }
 
@@ -460,7 +460,7 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
                 Host host = ((HostHolder) obj).getHost();
                 WebServerProvider provider = host.getProvider();
                 String provider_id = provider.getClass().getCanonicalName();
-                properties.setProperty(PhpProjectProperties.PROVIDER_ID, provider_id);
+                //properties.setProperty(PhpProjectProperties.PROVIDER_ID, provider_id);
                 properties.setProperty(WebServerProvider.HOST_ID, host.getId());
             }
             // add CMD support to all projects

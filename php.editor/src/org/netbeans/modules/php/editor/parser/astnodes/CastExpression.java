@@ -66,7 +66,7 @@ public class CastExpression extends Expression {
         }
         this.expression = expr;
         this.castingType = castType;
-        expr.setParent(this);
+//        expr.setParent(this);
     }
 
     

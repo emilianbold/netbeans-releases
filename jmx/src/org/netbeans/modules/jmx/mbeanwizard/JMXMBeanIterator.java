@@ -60,10 +60,10 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.FinishableDelegatedWizardPanel;
-import org.netbeans.modules.jmx.WizardPanelWithoutReadSettings;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
+import org.netbeans.modules.jmx.common.FinishableDelegatedWizardPanel;
+import org.netbeans.modules.jmx.common.WizardPanelWithoutReadSettings;
 import org.netbeans.modules.jmx.mbeanwizard.generator.GeneratorControler;
 
 /**

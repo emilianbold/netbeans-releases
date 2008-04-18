@@ -125,6 +125,7 @@
               <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-bpel-validation.jar"/>
               <pathelement location="${{netbeans.home}}/../soa2/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
               <pathelement location="${{netbeans.home}}/../xml2/modules/ext/jxpath/jxpath1.1.jar"/>
+              <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-search.jar"/>
               <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-xpath.jar"/>
               <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
               <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
