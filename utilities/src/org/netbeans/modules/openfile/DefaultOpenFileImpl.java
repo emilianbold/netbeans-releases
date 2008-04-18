@@ -391,7 +391,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         assert EventQueue.isDispatchThread();
         
         if ((cookieClass == EditorCookie.Observable.class)
-                || (cookieClass == EditorCookie.Observable.class)) {
+                || (cookieClass == EditorCookie.class)) {
             return openEditor((EditorCookie) cookie, line);
         } else if (cookieClass == OpenCookie.class) {
             ((OpenCookie) cookie).open();
