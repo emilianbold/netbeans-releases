@@ -194,7 +194,6 @@
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <package>org.netbeans.modules.bpel.editors.api</package>
-                <package>org.netbeans.modules.bpel.editors.api.diagram</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes.actions</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes.images</package>

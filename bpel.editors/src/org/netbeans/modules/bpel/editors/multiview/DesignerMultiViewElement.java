@@ -60,7 +60,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
-import org.netbeans.modules.bpel.diagram.DiagramImpl;
+import org.netbeans.modules.bpel.search.Diagram;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
@@ -456,7 +456,7 @@ public class DesignerMultiViewElement extends TopComponent
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        myFind = SearchManager.getDefault().createFind(new DiagramImpl(getDesignView()), getDesignView());
+        myFind = SearchManager.getDefault().createFind(new Diagram(getDesignView()), getDesignView());
 
         if (myFind != null) {
           myFind.setVisible(false);

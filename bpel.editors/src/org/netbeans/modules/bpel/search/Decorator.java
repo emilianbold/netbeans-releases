@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.diagram;
+package org.netbeans.modules.bpel.search;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -35,16 +35,15 @@ import org.netbeans.modules.bpel.design.decoration.GlowDescriptor;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.06
  */
-public final class DiagramDecorator extends DecorationProvider
-  implements DecorationProviderFactory {
+public final class Decorator extends DecorationProvider implements DecorationProviderFactory {
 
-  public DiagramDecorator() {}
+  public Decorator() {}
 
   public DecorationProvider createInstance(DesignView view) {
-    return new DiagramDecorator(view);
+    return new Decorator(view);
   }
 
-  private DiagramDecorator(DesignView view) {
+  private Decorator(DesignView view) {
     super(view);
     myHighlightedEntities = new ArrayList<BpelEntity>();
   }
@@ -107,12 +106,12 @@ public final class DiagramDecorator extends DecorationProvider
     fireDecorationChanged();
   }
 
-  static DiagramDecorator getDecorator(DesignView view) {
+  static Decorator getDecorator(DesignView view) {
     List<DecorationProvider> providers = view.getDecorationManager().getProviders();
 
     for (DecorationProvider provider : providers) {
-      if (provider instanceof DiagramDecorator) {
-        return (DiagramDecorator) provider;
+      if (provider instanceof Decorator) {
+        return (Decorator) provider;
       }
     }
     return null;
@@ -121,8 +120,6 @@ public final class DiagramDecorator extends DecorationProvider
   private boolean myIsClearHighlighting;
   private BpelEntity mySelectedEntity;
   private List<BpelEntity> myHighlightedEntities;
-  private static final Decoration GREEN_DECORATION =
-    new Decoration(new GlowDescriptor(new Color(56, 216, 120), 20));
-  private static final Decoration YELLOW_DECORATION =
-    new Decoration(new GlowDescriptor(new Color(255, 255, 0), 20));
+  private static final Decoration GREEN_DECORATION = new Decoration(new GlowDescriptor(new Color(56, 216, 120), 20));
+  private static final Decoration YELLOW_DECORATION = new Decoration(new GlowDescriptor(new Color(255, 255, 0), 20));
 }

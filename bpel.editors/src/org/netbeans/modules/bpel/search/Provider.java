@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.diagram;
+package org.netbeans.modules.bpel.search;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -56,9 +56,9 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
  * @author Vladimir Yaroslavskiy
  * @version 2008.04.16
  */
-public class DiagramProvider extends SearchProvider.Adapter {
+public class Provider extends SearchProvider.Adapter {
 
-  public DiagramProvider() {
+  public Provider() {
     super(null);
   }
 
@@ -117,7 +117,7 @@ public class DiagramProvider extends SearchProvider.Adapter {
   }
 
   private static SearchTarget createTarget(Class<? extends Object> clazz) {
-    return new SearchTarget.Adapter(DiagramProvider.class, clazz);
+    return new SearchTarget.Adapter(Provider.class, clazz);
   }
 
   private static final SearchTarget [] TARGETS = new SearchTarget [] {
