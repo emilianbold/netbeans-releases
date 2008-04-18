@@ -199,6 +199,11 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     public int compareTo(HudsonJob o) {
         return getDisplayName().compareTo(o.getDisplayName());
     }
+
+    @Override
+    public String toString() {
+        return getUrl().toString();
+    }
     
     private class HudsonJobProperty extends PropertySupport<String> {
         
