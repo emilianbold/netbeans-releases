@@ -128,6 +128,7 @@ public class CreateMobilityProject extends org.netbeans.performance.test.utiliti
     @Override
     public void close() {
         ProjectSupport.closeProject(project_name);
+        new EventTool().waitNoEvent(2000);
     }
 
     public static void main(java.lang.String[] args) {
