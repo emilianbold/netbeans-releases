@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.util.Iterator;
 import junit.framework.TestCase;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 
 /**
  *
@@ -54,7 +55,7 @@ public class DwarfSourceTest extends TestCase {
     public void testScanCommandLine() {
         String line = "/set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.";
         String expResult = "Macros:\nHELLO=75\nPaths:\ndist";
-        String result = processLine(DwarfSource.scanCommandLine(line).iterator());
+        String result = processLine(DiscoveryUtils.scanCommandLine(line).iterator());
         if (!expResult.equals(result)) {
             assertFalse("Parsing line:"+line+"\nExpected:\n"+expResult+"\nFound:\n"+result, true);
         }
@@ -72,7 +73,7 @@ public class DwarfSourceTest extends TestCase {
                 "-c -o debug64/cpupm.o ../../i86pc/os/cpupm.c";
         String expResult = "Macros:\n_ASM_INLINES\nDIS_MEM\n_KERNEL\n_SYSCALL32\n_SYSCALL32_IMPL\n_ELF64\n"+
                            "Paths:\n../../i86pc\n/export/opensolaris/testws77/usr/src/common\n../../intel\n../../common";
-        String result = processLine(DwarfSource.scanCommandLine(line).iterator());
+        String result = processLine(DiscoveryUtils.scanCommandLine(line).iterator());
         if (!expResult.equals(result)) {
             assertFalse("Parsing line:"+line+"\nExpected:\n"+expResult+"\nFound:\n"+result, true);
         }
@@ -108,7 +109,7 @@ public class DwarfSourceTest extends TestCase {
                 "SHOPT_VSH\n_BLD_shell\n_PACKAGE_ast\nERROR_CONTEXT_T=Error_context_t\n"+
                 "USAGE_LICENSE=\"[-author?David Korn <dgk@research.att.com>]\" \"[-copyright?Copyright (c) 1982-2007 AT&T Knowledge Ventures]\" \"[-license?http://www.opensource.org/licenses/cpl1.0.txt]\" \"[--catalog?libshell]\"\n"+
                 "Paths:\n/export/opensolaris/testws77/proto/root_i386/usr/include/ast";
-        String result = processLine(DwarfSource.scanCommandLine(line).iterator());
+        String result = processLine(DiscoveryUtils.scanCommandLine(line).iterator());
         if (!expResult.equals(result)) {
             assertFalse("Parsing line:"+line+"\nExpected:\n"+expResult+"\nFound:\n"+result, true);
         }

@@ -39,79 +39,51 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modeldiscovery.provider;
+package org.netbeans.modules.cnd.discovery.api;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.cnd.discovery.api.FolderProperties;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
-import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
- *
+ * Default implementation of FolderProperties.
+ * Enough in most cases.
+ * 
  * @author Alexander Simon
  */
-public class ModelProject implements ProjectProperties {
-    private static boolean gatherFolders = true;
-    
+public final class FolderImpl implements FolderProperties {
+    private String path;
     private ItemProperties.LanguageKind language;
     private Set<String> userIncludes = new LinkedHashSet<String>();
     private Set<String> systemIncludes = new LinkedHashSet<String>();
-    private Map<String,String> userMacros = new HashMap<String,String>();
-    private Map<String,FolderProperties> folders = new HashMap<String,FolderProperties>();
+    private Map<String, String> userMacros = new HashMap<String,String>();
+    private List<SourceFileProperties> files = new ArrayList<SourceFileProperties>();
     
-    public ModelProject(ItemProperties.LanguageKind language) {
-        this.language = language;
+    public FolderImpl(String path, SourceFileProperties source) {
+        this.path = path;
+        this.language = source.getLanguageKind();
+        update(source);
     }
-    
+
     void update(SourceFileProperties source){
+        files.add(source);
         userIncludes.addAll(source.getUserInludePaths());
-        for (String path : source.getUserInludePaths()) {
-            userIncludes.add(ModelSource.convertRelativePathToAbsolute(source,path));
+        for (String currentPath : source.getUserInludePaths()) {
+            userIncludes.add(DiscoveryUtils.convertRelativePathToAbsolute(source,currentPath));
         }
+        systemIncludes.addAll(source.getSystemInludePaths());
         userMacros.putAll(source.getUserMacros());
-        if (gatherFolders) {
-            updateFolder(source);
-        }
     }
     
-    private void updateFolder(SourceFileProperties source){
-        File file = new File(source.getItemPath());
-        String path = FileUtil.normalizeFile(file.getParentFile()).getAbsolutePath();
-        // folders should use unix style
-        if (Utilities.isWindows()) {
-            path = path.replace('\\', '/');
-        }
-        FolderProperties folder = folders.get(path);
-        if (folder == null) {
-            folders.put(path,new ModelFolder(path,source));
-        } else {
-            ((ModelFolder)folder).update(source);
-        }
+    public String getItemPath() {
+        return path;
     }
     
-    public List<FolderProperties> getConfiguredFolders(){
-        return new ArrayList<FolderProperties>(folders.values());
-    }
-    
-    public String getMakePath() {
-        return null;
-    }
-    
-    public String getBinaryPath() {
-        return null;
-    }
-    
-    public ProjectProperties.BinaryKind getBinaryKind() {
-        return null;
+    public List<SourceFileProperties> getFiles() {
+        return files;
     }
     
     public List<String> getUserInludePaths() {
@@ -133,5 +105,5 @@ public class ModelProject implements ProjectProperties {
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
+    
 }
-
