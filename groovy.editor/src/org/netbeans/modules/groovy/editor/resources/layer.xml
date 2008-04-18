@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    
+    <folder name="org-netbeans-modules-groovy-editor-hints">
+        <folder name="rules">
+            <folder name="selection">
+                <file name="org-netbeans-modules-groovy-editor-hints-CommentOutRule.instance"/>
+            </folder>    
+            <!-- folder name="errors">
+                <file name="org-netbeans-modules-ruby-hints-InsertParens.instance"/>
+                <file name="org-netbeans-modules-ruby-hints-CommonSyntaxErrors.instance"/>
+            </folder -->    
+            <!-- folder name="hints">
+                <folder name="general">
+                   <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-BlockVarReuse.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-Deprecations.instance"/>
+                </folder>    
+                
+                <folder name="ruby19">
+                    <attr name="position" intvalue="285"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-HashListConvert.instance"/>
+                </folder>    
+
+                <folder name="rails">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-RailsDeprecations.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-RailsViews.instance"/>
+                </folder>    
+            </folder -->    
+        </folder>
+    </folder>
+    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="GroovyMimeResolver.xml" url="GroovyMimeResolver.xml">
@@ -104,6 +138,11 @@
                 <file name="indexer.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyIndexer"/>
+                </file>
+                
+                <file name="hints.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider"/>
                 </file>
                 
             </folder>

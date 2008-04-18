@@ -80,13 +80,15 @@ import org.openide.util.NbPreferences;
  * Manages rules read from the system filesystem.
  *
  * (Copied from java/hints)
+ * (Copied from ruby.hints)
  * 
  * @author Petr Hrebejk
+ * @author Tor Norbye
  */
 public class RulesManager {
 
     // The logger
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.ruby.hints"); // NOI18N
+    public static final Logger LOG = Logger.getLogger(RulesManager.class.getName()); // NOI18N
 
     // Extensions of files
     private static final String INSTANCE_EXT = ".instance";
@@ -94,7 +96,7 @@ public class RulesManager {
     // Non GUI attribute for NON GUI rules
     private static final String NON_GUI = "nonGUI"; // NOI18N
     
-    private static final String RULES_FOLDER = "org-netbeans-modules-ruby-hints/rules/";  // NOI18N
+    private static final String RULES_FOLDER = "org-netbeans-modules-groovy-editor-hints/rules/";  // NOI18N
     private static final String ERRORS = "errors"; // NOI18N
     private static final String HINTS = "hints"; // NOI18N
     private static final String SUGGESTIONS = "suggestions"; // NOI18N
