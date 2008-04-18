@@ -317,7 +317,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                                       / OPEN_EDITOR_WAIT_PERIOD_MS;
             for (int i = 0; i < numberOfTries; i++) {
                 try {
-                    Thread.currentThread().sleep(OPEN_EDITOR_WAIT_PERIOD_MS);
+                    Thread.sleep(OPEN_EDITOR_WAIT_PERIOD_MS);
                 } catch (InterruptedException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,
                                                      ex);
