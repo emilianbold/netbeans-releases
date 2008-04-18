@@ -92,7 +92,7 @@ public class DiscoveryProjectGenerator {
         }
     }
     
-    public Set makeProject(){
+    public void process(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
         level = wizard.getLevel();
@@ -103,6 +103,11 @@ public class DiscoveryProjectGenerator {
         }
         // add other files
         addAdditional(sourceRoot, baseFolder, used);
+        projectBridge.save();
+    }
+    
+    public Set makeProject(){
+        process();
         return projectBridge.getResult();
     }
     
@@ -382,9 +387,9 @@ public class DiscoveryProjectGenerator {
     
     private boolean isDifferentCompilePath(String name, String path){
         if (Utilities.isWindows()) {
-            name = name.replace('\\', '/');
+            name = name.replace('\\', '/'); // NOI18N
         }
-        int i = name.lastIndexOf('/');
+        int i = name.lastIndexOf('/'); // NOI18N
         if (i > 0) {
             name = name.substring(0,i);
             if (!name.equals(path)) {
@@ -417,7 +422,7 @@ public class DiscoveryProjectGenerator {
                         }
                         content.add(pair.fileConfiguration);
                     } else {
-                        if (DEBUG) System.err.println("Cannot find pair by path "+pair.fileConfiguration.getFilePath());
+                        if (DEBUG) System.err.println("Cannot find pair by path "+pair.fileConfiguration.getFilePath()); // NOI18N
                     }
                 }
             }
@@ -492,12 +497,12 @@ public class DiscoveryProjectGenerator {
                     item = projectBridge.createItem(file);
                     added.addItem(item);
                 } else {
-                    if (DEBUG) System.err.println("Orphan pair found by path "+file);
+                    if (DEBUG) System.err.println("Orphan pair found by path "+file); // NOI18N
                 }
                 pair.item = item;
                 setupFile(pair.fileConfiguration, pair.item, isCPP);
             } else {
-                if (DEBUG) System.err.println("Cannot find pair by path "+file);
+                if (DEBUG) System.err.println("Cannot find pair by path "+file); // NOI18N
             }
         }
     }
@@ -520,9 +525,9 @@ public class DiscoveryProjectGenerator {
                 } else {
                     String prefferedFolder = pair.fileConfiguration.getFilePath();
                     if (Utilities.isWindows()) {
-                        prefferedFolder = prefferedFolder.replace('\\', '/');
+                        prefferedFolder = prefferedFolder.replace('\\', '/'); // NOI18N
                     }
-                    int i = prefferedFolder.lastIndexOf('/');
+                    int i = prefferedFolder.lastIndexOf('/'); // NOI18N
                     if (i >= 0){
                         prefferedFolder = prefferedFolder.substring(0,i);
                         folder = preffered.get(prefferedFolder);

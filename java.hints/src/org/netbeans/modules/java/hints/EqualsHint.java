@@ -51,10 +51,14 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -117,9 +121,40 @@ public class EqualsHint extends AbstractHint {
             return null;
         }
         
+        TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object"); //NOI18N
+        
+        if (jlObject == null) {
+            return null;
+        }
+        
+        ExecutableElement equals = null;
+        
+        for (ExecutableElement m : ElementFilter.methodsIn(jlObject.getEnclosedElements())) {
+            if (m.getSimpleName().contentEquals("equals") && m.getParameters().size() == 1 && m.getParameters().get(0).asType().getKind() == TypeKind.DECLARED) { //NOI18N
+                equals = m;
+                break;
+            }
+        }
+        
+        if (equals == null) {
+            return null;
+        }
+        
+        Element msEl = info.getTrees().getElement(treePath);
+        
+        if (msEl == null || msEl.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+        
+        //the called method needs to override Object.equals:
+        
+        if (!equals.equals(msEl) && !info.getElements().overrides((ExecutableElement) msEl, equals, (TypeElement) msEl.getEnclosingElement())) {
+            return null;
+        }
+        
         List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
         TypeMirror invokedOn = info.getTrees().getTypeMirror(new TreePath(new TreePath(treePath, mit.getMethodSelect()), ((MemberSelectTree) mit.getMethodSelect()).getExpression()));
-        
+                
         if (getArrayEquals().isEnabled()) {
 
             if (invokedOn != null && invokedOn.getKind() == TypeKind.ARRAY) {

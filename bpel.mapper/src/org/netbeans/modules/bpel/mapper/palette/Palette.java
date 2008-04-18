@@ -65,7 +65,7 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

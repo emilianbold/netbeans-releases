@@ -61,7 +61,7 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
 import org.netbeans.modules.bpel.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.validation.core.Util;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

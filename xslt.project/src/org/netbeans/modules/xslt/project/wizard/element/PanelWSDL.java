@@ -49,7 +49,7 @@ import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

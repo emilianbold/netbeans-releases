@@ -125,17 +125,22 @@
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.search</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
-                <friend>org.netbeans.modules.bpel.refactoring</friend>
-                <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
-                <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.soa.validation</package>
-                <package>org.netbeans.modules.soa.ui</package>
             </friend-packages>
         </data>
     </configuration>

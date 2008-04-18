@@ -44,7 +44,7 @@ package org.netbeans.modules.jmx.mbeanwizard.listener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JTextField;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 
 
 /**

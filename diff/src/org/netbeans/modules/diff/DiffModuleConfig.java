@@ -64,7 +64,9 @@ public class DiffModuleConfig {
                                                                                              
     public static final String PREF_EXTERNAL_DIFF_COMMAND = "externalDiffCommand"; // NOI18N
 
-    private static final String PREF_IGNORE_WHITESPACE = "ignoreWhitespace"; // NOI18N
+    private static final String PREF_IGNORE_LEADINGTRAILING_WHITESPACE = "ignoreWhitespace"; // NOI18N
+    private static final String PREF_IGNORE_INNER_WHITESPACE = "ignoreInnerWhitespace"; // NOI18N
+    private static final String PREF_IGNORE_CASE = "ignoreCase"; // NOI18N
     private static final String PREF_USE_INTERNAL_DIFF = "useInternalDiff"; // NOI18N
     private static final String PREF_ADDED_COLOR = "addedColor"; // NOI18N
     private static final String PREF_CHANGED_COLOR = "changedColor"; // NOI18N
@@ -119,7 +121,7 @@ public class DiffModuleConfig {
     public DiffProvider getDefaultDiffProvider() {
         DiffProvider provider = Lookup.getDefault().lookup(DiffProvider.class);
         if (provider instanceof BuiltInDiffProvider) {
-            ((BuiltInDiffProvider) provider).setTrimLines(isIgnoreWhitespace());
+            ((BuiltInDiffProvider) provider).setOptions(getOptions());
         } else if (provider instanceof CmdlineDiffProvider) {
             ((CmdlineDiffProvider) provider).setDiffCommand(getDiffCommand());
         }
@@ -130,11 +132,21 @@ public class DiffModuleConfig {
         return getPreferences().get(PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}");
     }
 
-    public void setIgnoreWhitespace(boolean ignoreWhitespace) {
-        getPreferences().putBoolean(PREF_IGNORE_WHITESPACE, ignoreWhitespace);
-        getBuiltinProvider().setTrimLines(ignoreWhitespace);
+    public void setOptions(BuiltInDiffProvider.Options options) {
+        getPreferences().putBoolean(PREF_IGNORE_LEADINGTRAILING_WHITESPACE, options.ignoreLeadingAndtrailingWhitespace);
+        getPreferences().putBoolean(PREF_IGNORE_INNER_WHITESPACE, options.ignoreInnerWhitespace);
+        getPreferences().putBoolean(PREF_IGNORE_CASE, options.ignoreCase);
+        getBuiltinProvider().setOptions(options);
     }
 
+    public BuiltInDiffProvider.Options getOptions() {
+        BuiltInDiffProvider.Options options = new BuiltInDiffProvider.Options();
+        options.ignoreLeadingAndtrailingWhitespace = getPreferences().getBoolean(PREF_IGNORE_LEADINGTRAILING_WHITESPACE, true);
+        options.ignoreInnerWhitespace = getPreferences().getBoolean(PREF_IGNORE_INNER_WHITESPACE, false);
+        options.ignoreCase = getPreferences().getBoolean(PREF_IGNORE_CASE, false);
+        return options;
+    }
+        
     private BuiltInDiffProvider getBuiltinProvider() {
         Collection<? extends DiffProvider> diffs = Lookup.getDefault().lookupAll(DiffProvider.class);
         for (DiffProvider diff : diffs) {
@@ -143,10 +155,6 @@ public class DiffModuleConfig {
             }
         }
         throw new IllegalStateException("No builtin diff provider");
-    }
-    
-    public boolean isIgnoreWhitespace() {
-        return getPreferences().getBoolean(PREF_IGNORE_WHITESPACE, true);
     }
     
     public void setUseInteralDiff(boolean useInternal) {
