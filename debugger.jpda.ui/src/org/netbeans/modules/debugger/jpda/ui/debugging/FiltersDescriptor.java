@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingMonitorModel;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -235,6 +236,8 @@ public final class FiltersDescriptor {
             } else if (name.equals(NATURAL_SORT)) {
                 isSelected = !preferences.getBoolean(DebuggingTreeModel.SORT_ALPHABET, true) &&
                         !preferences.getBoolean(DebuggingTreeModel.SORT_SUSPEND, false); // [TODO]
+            } else if (name.equals(SHOW_MONITORS)) {
+                isSelected = preferences.getBoolean(DebuggingMonitorModel.SHOW_MONITORS, false);
             } else {
                 isSelected = false; // [TODO]
             }
@@ -249,6 +252,8 @@ public final class FiltersDescriptor {
                 keyName = DebuggingTreeModel.SORT_ALPHABET;
             } else if (name.equals(SUSPEND_SORT)) {
                 keyName = DebuggingTreeModel.SORT_SUSPEND;
+            } else if (name.equals(SHOW_MONITORS)) {
+                keyName = DebuggingMonitorModel.SHOW_MONITORS;
             }
             if (keyName != null) {
                 preferences.putBoolean(keyName, isSelected);
