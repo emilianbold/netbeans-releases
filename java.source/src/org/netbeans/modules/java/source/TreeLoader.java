@@ -52,11 +52,15 @@ import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.model.LazyTreeLoader;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import java.io.File;
 import java.io.IOException;
@@ -200,7 +204,27 @@ public class TreeLoader extends LazyTreeLoader {
             public void visitVarDef(JCVariableDecl tree) {
                 super.visitVarDef(tree);
                 tree.init = null;
-            }                            
+            }
+            @Override
+            public void visitClassDef(JCClassDecl tree) {
+                scan(tree.mods);
+                scan(tree.typarams);
+                scan(tree.extending);
+                scan(tree.implementing);
+                if (tree.defs != null) {
+                    List<JCTree> prev = null;
+                    for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
+                        scan(l.head);
+                        if (l.head.getTag() == JCTree.BLOCK && ((JCBlock)l.head).isStatic()) {
+                            if (prev != null)
+                                prev.tail = l.tail;
+                            else
+                                tree.defs = l.tail;
+                        }
+                        prev = l;
+                    }
+                }
+            }
         }.scan(env.toplevel);
         JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         try {
