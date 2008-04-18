@@ -489,20 +489,6 @@ public class EditorUtil {
         return basicNode;
     }
 
-    // vlv
-    public static Component getRoot(Model model) {
-      if (model instanceof BpelModel) {
-        return ((BpelModel) model).getProcess();
-      }
-      if (model instanceof SchemaModel) {
-        return ((SchemaModel) model).getSchema();
-      }
-      if (model instanceof WSDLModel) {
-        return ((WSDLModel) model).getDefinitions();
-      }
-      return null;
-    }
-
     /**
      * This method don't aware about bpelModel lock
      * @param component Component
