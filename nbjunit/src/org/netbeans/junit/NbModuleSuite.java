@@ -474,7 +474,14 @@ public class NbModuleSuite {
                     {
                         Matcher matcherEager = AUTO.matcher(xml);
                         if (matcherEager.find()) {
-                            String out = xml.replaceAll("eager", "xxx").replace("autoload", "eager").replace("xxx", "autoload");
+                            int begin = xml.indexOf("<param name=\"autoload");
+                            int end = xml.indexOf("<param name=\"jar");
+                            String middle = 
+                                "<param name=\"autoload\">false</param>\n" +
+                                "    <param name=\"eager\">false</param>\n" +
+                                "    <param name=\"enabled\">true</param>\n" +
+                                "    ";
+                            String out = xml.substring(0, begin) + middle + xml.substring(end);
                             try {
                                 writeModule(new File(config, m.getName()), out);
                             } catch (IllegalStateException ex) {
