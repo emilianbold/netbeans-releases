@@ -40,13 +40,10 @@
  */
 
 package org.netbeans.modules.jmx.actions.dialog;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jmx.FireEvent;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.TextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.table.AttributeTable;
 
