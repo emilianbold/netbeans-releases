@@ -350,7 +350,7 @@ public final class SelectConfigurationPanel extends JPanel {
         }
     }
     
-    private static void consolidateModel(ProjectConfiguration project, String level){
+    public static void consolidateModel(ProjectConfiguration project, String level){
         if (ConsolidationStrategyPanel.PROJECT_LEVEL.equals(level)){
             ConfigurationFactory.consolidateProject((ProjectConfigurationImpl)project);
         } else if (ConsolidationStrategyPanel.FOLDER_LEVEL.equals(level)){

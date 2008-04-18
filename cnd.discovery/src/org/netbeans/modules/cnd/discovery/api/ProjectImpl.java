@@ -39,52 +39,116 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
+package org.netbeans.modules.cnd.discovery.api;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.cnd.discovery.api.FolderProperties;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
- *
+ * Default implementation of ProjectProperties.
+ * Enough in most cases.
+ * 
  * @author Alexander Simon
  */
-public class DwarfFolder implements FolderProperties {
-    private String path;
+public final class ProjectImpl implements ProjectProperties {
+    private static boolean gatherFolders = true;
+    
     private ItemProperties.LanguageKind language;
     private Set<String> userIncludes = new LinkedHashSet<String>();
     private Set<String> systemIncludes = new LinkedHashSet<String>();
-    private Map<String, String> userMacros = new HashMap<String,String>();
-    private List<SourceFileProperties> files = new ArrayList<SourceFileProperties>();
+    private Map<String,String> userMacros = new HashMap<String,String>();
+    private Map<String,FolderProperties> folders = new HashMap<String,FolderProperties>();
     
-    public DwarfFolder(String path, SourceFileProperties source) {
-        this.path = path;
-        this.language = source.getLanguageKind();
-        update(source);
+    /** Creates a new instance of DwarfProject */
+    public ProjectImpl(ItemProperties.LanguageKind language) {
+        this.language = language;
+    }
+    
+    /**
+     * Adds source file in the project
+     * @param sources source file
+     */
+    public void update(SourceFileProperties source){
+        userIncludes.addAll(source.getUserInludePaths());
+        for (String path : source.getUserInludePaths()) {
+            userIncludes.add(DiscoveryUtils.convertRelativePathToAbsolute(source,path));
+        }
+        userMacros.putAll(source.getUserMacros());
+        if (gatherFolders) {
+            updateFolder(source);
+        }
     }
 
-    void update(SourceFileProperties source){
-        files.add(source);
-        userIncludes.addAll(source.getUserInludePaths());
-        for (String currentPath : source.getUserInludePaths()) {
-            userIncludes.add(DwarfSource.convertRelativePathToAbsolute(source,currentPath));
+    /**
+     * Helper method that divides list of source properties by language.
+     * @param sources list of source files
+     * @return list of language projects
+     */
+    public static List<ProjectProperties> divideByLanguage(List<SourceFileProperties> sources) {
+        ProjectImpl cProp = null;
+        ProjectImpl cppProp = null;
+        for (SourceFileProperties source : sources) {
+            ItemProperties.LanguageKind lang = source.getLanguageKind();
+            ProjectImpl current = null;
+            if (lang == ItemProperties.LanguageKind.C) {
+                if (cProp == null) {
+                    cProp = new ProjectImpl(lang);
+                }
+                current = cProp;
+            } else {
+                if (cppProp == null) {
+                    cppProp = new ProjectImpl(lang);
+                }
+                current = cppProp;
+            }
+            current.update(source);
         }
-        systemIncludes.addAll(source.getSystemInludePaths());
-        userMacros.putAll(source.getUserMacros());
+        List<ProjectProperties> languages = new ArrayList<ProjectProperties>();
+        if (cProp != null) {
+            languages.add(cProp);
+        }
+        if (cppProp != null) {
+            languages.add(cppProp);
+        }
+        return languages;
+    }
+   
+    private void updateFolder(SourceFileProperties source){
+        File file = new File(source.getItemPath());
+        String path = FileUtil.normalizeFile(file.getParentFile()).getAbsolutePath();
+        // folders should use unix style
+        if (Utilities.isWindows()) {
+            path = path.replace('\\', '/');
+        }
+        FolderProperties folder = folders.get(path);
+        if (folder == null) {
+            folders.put(path,new FolderImpl(path,source));
+        } else {
+            ((FolderImpl)folder).update(source);
+        }
     }
     
-    public String getItemPath() {
-        return path;
+    public List<FolderProperties> getConfiguredFolders(){
+        return new ArrayList<FolderProperties>(folders.values());
     }
     
-    public List<SourceFileProperties> getFiles() {
-        return files;
+    public String getMakePath() {
+        return null;
+    }
+    
+    public String getBinaryPath() {
+        return null;
+    }
+    
+    public ProjectProperties.BinaryKind getBinaryKind() {
+        return null;
     }
     
     public List<String> getUserInludePaths() {
@@ -106,5 +170,4 @@ public class DwarfFolder implements FolderProperties {
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
-    
 }

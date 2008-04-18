@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
+package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @author Alexander Simon
  */
-public class LogReader {
+public class SolarisLogReader {
     private static boolean TRACE = false;
     
     private String workingDir;
@@ -69,7 +69,7 @@ public class LogReader {
     private final String fileName;
     private List<SourceFileProperties> result;
     
-    public LogReader(String fileName, String root){
+    public SolarisLogReader(String fileName, String root){
         this.root = root;
         this.fileName = fileName;
        
@@ -376,7 +376,7 @@ public class LogReader {
         result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
         return true;
     }
-
+    
     private static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;
@@ -456,8 +456,8 @@ public class LogReader {
         }
         String objFileName = args[0];
         String root = args[1];
-        LogReader.TRACE = true;
-        LogReader clrf = new LogReader(objFileName, root);
+        SolarisLogReader.TRACE = true;
+        SolarisLogReader clrf = new SolarisLogReader(objFileName, root);
         List<SourceFileProperties> list = clrf.getResults();
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {

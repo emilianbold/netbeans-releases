@@ -39,72 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modeldiscovery.provider;
+package org.netbeans.modules.cnd.discovery.project;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.cnd.discovery.api.FolderProperties;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ModelFolder implements FolderProperties {
-    private String path;
-    private ItemProperties.LanguageKind language;
-    private Set<String> userIncludes = new LinkedHashSet<String>();
-    private Set<String> systemIncludes = new LinkedHashSet<String>();
-    private Map<String, String> userMacros = new HashMap<String,String>();
-    private List<SourceFileProperties> files = new ArrayList<SourceFileProperties>();
-    
-    public ModelFolder(String path, SourceFileProperties source) {
-        this.path = path;
-        this.language = source.getLanguageKind();
-        update(source);
-    }
+public class PathCache {
+    private static final APTStringManager instance = 
+            APTStringManager.instance("STAND_ALONE_PATH_CACHE",APTStringManager.CacheKind.Single); // NOI18N
 
-    void update(SourceFileProperties source){
-        files.add(source);
-        userIncludes.addAll(source.getUserInludePaths());
-        for (String aPath : source.getUserInludePaths()) {
-            userIncludes.add(ModelSource.convertRelativePathToAbsolute(source,aPath));
+    private PathCache() {
+    }
+    
+    public static String getString(String text) {
+        if (text == null){
+            return text;
         }
-        systemIncludes.addAll(source.getSystemInludePaths());
-        userMacros.putAll(source.getUserMacros());
+        return instance.getString(text).toString();
     }
     
-    public String getItemPath() {
-        return path;
-    }
-    
-    public List<SourceFileProperties> getFiles() {
-        return files;
-    }
-    
-    public List<String> getUserInludePaths() {
-        return new ArrayList<String>(userIncludes);
-    }
-    
-    public List<String> getSystemInludePaths() {
-        return new ArrayList<String>(systemIncludes);
-    }
-    
-    public Map<String, String> getUserMacros() {
-        return userMacros;
-    }
-    
-    public Map<String, String> getSystemMacros() {
-        return null;
-    }
-    
-    public ItemProperties.LanguageKind getLanguageKind() {
-        return language;
-    }
-    
+    public static void dispose() {
+        instance.dispose();
+    }    
 }
