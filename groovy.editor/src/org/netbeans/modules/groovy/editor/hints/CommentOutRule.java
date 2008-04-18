@@ -27,59 +27,115 @@
  */
 package org.netbeans.modules.groovy.editor.hints;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.groovy.editor.NodeType;
-import org.netbeans.modules.groovy.editor.hints.spi.AstRule;
 import org.netbeans.modules.groovy.editor.hints.spi.Description;
 import org.netbeans.modules.groovy.editor.hints.spi.HintSeverity;
 import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
+import org.netbeans.modules.groovy.editor.hints.spi.SelectionRule;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.hints.spi.Fix;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.openide.util.Exceptions;
 
-
-public class CommentOutRule implements AstRule {
-    public CommentOutRule() {
-    }
-
-    public Set<NodeType> getKinds() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+public class CommentOutRule implements SelectionRule {
+    
+    public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
+    
+    String desc = "Comment out selected text";
 
     public void run(RuleContext context, List<Description> result) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+        CompilationInfo info = context.compilationInfo;
+        int start = context.selectionStart;
+        int end = context.selectionEnd;
+        
+        assert start < end;
+        
+        BaseDocument doc;
+        try {
+            doc = (BaseDocument) info.getDocument();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        
+        if (end > doc.getLength()) {
+            return;
+        }
 
-    public String getId() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean getDefaultEnabled() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public JComponent getCustomizer(Preferences node) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (end-start > 1000) {
+            // Avoid doing tons of work when the user does a Ctrl-A to select all in a really
+            // large buffer.
+            return;
+        }
+        
+        ASTNode root = AstUtilities.getRoot(info);
+        
+        if (root == null) {
+            return;
+        }
+        
+        // this is just a dummy fix to see the lightbulb ...
+        Fix fix = new SimpleFix(desc);
+        OffsetRange range = new OffsetRange(start, end);
+        
+        List<Fix> fixList = new ArrayList<Fix>(1);
+        fixList.add(fix);
+        Description desc = new Description(this, fix.getDescription(), info.getFileObject(), range,
+                fixList, 292);
+        result.add(desc);
+        
+        return;
     }
 
     public boolean appliesTo(CompilationInfo compilationInfo) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return desc;
     }
 
     public boolean showInTasklist() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
     public HintSeverity getDefaultSeverity() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return HintSeverity.CURRENT_LINE_WARNING;
     }
+    
+    private class SimpleFix implements Fix {
+        
+        String desc;
+
+        public SimpleFix(String desc) {
+            this.desc = desc;
+        }
+
+        public String getDescription() {
+            return desc;
+        }
+
+        public void implement() throws Exception {
+            return;
+        }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+        
+    }
+    
+    
+
 }
