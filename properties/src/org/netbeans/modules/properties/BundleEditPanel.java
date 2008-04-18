@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -157,9 +157,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent evt) {
+                final boolean correctCellSelection = !selectionUpdateDisabled;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        updateSelection();
+                        updateSelection(correctCellSelection);
                     }
                 });
             }
@@ -195,11 +196,19 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
     }
     
-    private void updateSelection() {
+    /**
+     * Checks the currently selected column. If no row is selected
+     * and cell selection changes are permitted, it attempts to select
+     * the row corresponding to the last selected bundle key.
+     * 
+     * @param  correctCellSelection  whether change of cell selection
+     *                               in the table is permitted
+     */
+    private void updateSelection(final boolean correctCellSelection) {
         int row = table.getSelectedRow();
         int column = table.getSelectedColumn();
         
-        if (row == -1) {
+        if ((row == -1) && correctCellSelection) {
             final Element.ItemElem ex = lastSelectedBundleKey;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -506,6 +515,16 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
     }//GEN-LAST:event_removeButtonActionPerformed
     
+    /**
+     * when this flag is set to {@code true}, method {@link #updateSelection}
+     * does not actually change cell selection in the table.
+     * <p>
+     * This flag was added as a prevention from symptoms of bug #122347
+     * ("value of new property is taken from the currently selected entry").
+     * </p>
+     */
+    private boolean selectionUpdateDisabled = false;
+
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         stopEditing();
         
@@ -538,6 +557,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     boolean keyAdded = false;
                     
                     try {
+                        selectionUpdateDisabled = true;
+
                         // Starts "atomic" acion for special undo redo manager of open support.
                         obj.getOpenSupport().atomicUndoRedoFlag = new Object();
                         
@@ -563,6 +584,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     } finally {
                         // Finishes "atomic" undo redo action for special undo redo manager of open support.
                         obj.getOpenSupport().atomicUndoRedoFlag = null;
+
+                        selectionUpdateDisabled = false;
                     }
                     
                     if(keyAdded) {
@@ -582,20 +605,26 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                                     
                                     SwingUtilities.invokeLater(new Runnable() {
                                         public void run() {
-                                            // Autoscroll to cell if possible and necessary.
-                                            if(table.getAutoscrolls()) {
-                                                Rectangle cellRect = table.getCellRect(row, column, false);
-                                                if (cellRect != null) {
-                                                    table.scrollRectToVisible(cellRect);
+                                            try {
+                                                selectionUpdateDisabled = true;
+
+                                                // Autoscroll to cell if possible and necessary.
+                                                if(table.getAutoscrolls()) {
+                                                    Rectangle cellRect = table.getCellRect(row, column, false);
+                                                    if (cellRect != null) {
+                                                        table.scrollRectToVisible(cellRect);
+                                                    }
                                                 }
+                                                
+                                                // Update selection & edit.
+                                                table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
+                                                table.getSelectionModel().setSelectionInterval(row, row);
+                                                
+                                                table.requestFocusInWindow();
+                                                table.editCellAt(row, column);
+                                            } finally {
+                                                selectionUpdateDisabled = false;
                                             }
-                                            
-                                            // Update selection & edit.
-                                            table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
-                                            table.getSelectionModel().setSelectionInterval(row, row);
-                                            
-                                            table.requestFocusInWindow();
-                                            table.editCellAt(row, column);
                                         }
                                     });
                                 }

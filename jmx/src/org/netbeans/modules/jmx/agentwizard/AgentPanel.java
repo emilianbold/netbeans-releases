@@ -52,10 +52,10 @@ import org.openide.awt.Mnemonics;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
 
-import org.netbeans.modules.jmx.runtime.J2SEProjectType;
+import org.netbeans.modules.jmx.common.runtime.J2SEProjectType;
 /**
  *
  * Class handling the graphical part of the standard Agent wizard panel

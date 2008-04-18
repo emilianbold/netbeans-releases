@@ -48,7 +48,6 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -153,8 +152,6 @@ import org.openide.util.RequestProcessor;
 public final class WebProject implements Project, AntProjectListener {
     
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
-    
-    private static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
@@ -843,13 +840,8 @@ public final class WebProject implements Project, AntProjectListener {
                         }
                     }
                     // UI Logging
-                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_OPENED");  //NOI18N
-                    logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-                    logRecord.setResourceBundle(NbBundle.getBundle(WebProject.class));
-                    logRecord.setParameters(new Object[] {
-                        (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
-                        servInstID});
-                    Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+                    Utils.logUI(NbBundle.getBundle(WebProject.class), "UI_WEB_PROJECT_OPENED", // NOI18N
+                            new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
                 }
                 
             } catch (IOException e) {

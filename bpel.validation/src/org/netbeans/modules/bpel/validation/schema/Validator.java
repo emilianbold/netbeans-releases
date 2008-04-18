@@ -59,7 +59,7 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.XsdBasedValidator;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

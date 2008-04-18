@@ -786,7 +786,7 @@ HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDO
         || (text.charAt(1)=='?' && short_tags_allowed)) {
         yybegin(ST_IN_SCRIPTING);
         //return T_OPEN_TAG_WITH_ECHO;
-        return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
+        //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
     } else {
         return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
     }
@@ -930,17 +930,21 @@ yybegin(ST_DOCBLOCK);
      yybegin(ST_IN_SCRIPTING);
 }
 
-<ST_DOCBLOCK>([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
-    int len = yylength();
-        if (len > 1 && (yycharat(len-1) == '*')) {
-            yypushback(1); // go back to mark end of comment in the next token
-        }
+<ST_DOCBLOCK>~"*/" {
+        int len = yylength();
+        yypushback(2); // go back to mark end of comment in the next token
         comment = yytext();
-    } 
+} 
 
-
-//<ST_DOCBLOCK>{ANY_CHAR} {
-//}
+<ST_DOCBLOCK> <<EOF>> {
+              if (yytext().length() > 0) {
+                yypushback(1);  // backup eof
+                comment = yytext();
+              }
+              else {
+                  return null;
+              }
+}
 
 <ST_IN_SCRIPTING>"/**/" {
 	handleCommentStart();

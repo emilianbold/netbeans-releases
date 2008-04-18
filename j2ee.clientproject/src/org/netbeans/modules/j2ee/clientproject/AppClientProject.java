@@ -150,8 +150,6 @@ import org.w3c.dom.Text;
  */
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final String UI_LOGGER_NAME = "org.netbeans.ui.appclient.project"; //NOI18N
-    
     private static final Icon CAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif")); // NOI18N
     
     private final AuxiliaryConfiguration aux;
@@ -712,13 +710,14 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                String serverType = null;
                 if (platform != null) {
                     // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
                     AppClientProjectProperties.setServerInstance(AppClientProject.this, AppClientProject.this.helper, servInstID);
                 } else {
                     // if there is some server instance of the type which was used
                     // previously do not ask and use it
-                    String serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
+                    serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
                         String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                         if (servInstIDs.length > 0) {
@@ -729,15 +728,10 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     if (platform == null) {
                         BrokenServerSupport.showAlert();
                     }
-                    // UI Logging
-                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_APP_CLIENT_PROJECT_OPENED");  //NOI18N
-                    logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-                    logRecord.setResourceBundle(NbBundle.getBundle(AppClientProject.class));
-                    logRecord.setParameters(new Object[] {
-                        (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
-                        servInstID});
-                    Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
                 }
+                // UI Logging
+                Utils.logUI(NbBundle.getBundle(AppClientProject.class), "UI_APP_CLIENT_PROJECT_OPENED", // NOI18N
+                        new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});                
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
