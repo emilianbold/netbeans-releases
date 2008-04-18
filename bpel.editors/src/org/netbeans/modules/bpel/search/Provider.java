@@ -63,22 +63,26 @@ public class Provider extends SearchProvider.Adapter {
   }
 
   @Override
-  public boolean isApplicable(Object object) {
+  public boolean isApplicable(Object object)
+  {
     return getProcess(object) != null;
   }
 
   @Override
-  public Object getRoot() {
+  public Object getRoot()
+  {
     return myProcess;
   }
 
   @Override
-  public SearchTarget [] getTargets() {
+  public SearchTarget [] getTargets()
+  {
     return TARGETS;
   }
 
   @Override
-  protected final Object getFather(Object object) {
+  protected final Object getFather(Object object)
+  {
     if (object instanceof Component) {
       return ((Component) object).getParent();
     }
@@ -86,7 +90,8 @@ public class Provider extends SearchProvider.Adapter {
   }
 
   @Override
-  protected final SearchElement createElement(Object object, SearchElement parent) {
+  protected final SearchElement createElement(Object object, SearchElement parent)
+  {
     if ( !(object instanceof Component)) {
       return null;
     }
@@ -187,8 +192,8 @@ public class Provider extends SearchProvider.Adapter {
     createTarget(org.netbeans.modules.bpel.model.api.While.class),
   };
 
-  // ---------------------------------------------------------
-  private static class Element extends SearchElement.Adapter {
+  // ---------------------------------------------------------------
+  private static final class Element extends SearchElement.Adapter {
     private Element(Component component, SearchElement parent) {
       super(
         EditorUtil.getName(component),
@@ -200,12 +205,14 @@ public class Provider extends SearchProvider.Adapter {
     }
 
     @Override
-    public void gotoSource() {
+    public void gotoSource()
+    {
       EditorUtil.goToSource(myComponent);
     }
 
     @Override
-    public void gotoVisual() {
+    public void gotoVisual()
+    {
       EditorUtil.goToDesign(myComponent);
     }
 
