@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
@@ -49,6 +50,12 @@ import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
  * @see DocumentRoots
  */
 final class DocumentRootsWindows {
+
+    private static final FilenameFilter XAMPP_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().startsWith("xampp"); // NOI18N
+        }
+    };
 
     private DocumentRootsWindows() {
     }
@@ -61,6 +68,7 @@ final class DocumentRootsWindows {
         if (fsRoots == null) {
             return roots;
         }
+        File htDocs = null;
         for (File root : fsRoots) {
             if (isFloppy(root)) {
                 continue;
@@ -69,14 +77,23 @@ final class DocumentRootsWindows {
             if (!programFiles.isDirectory()) {
                 continue;
             }
-            File htDocs = DocumentRoots.findHtDocsDirectory(programFiles, DocumentRoots.APACHE_FILENAME_FILTER);
+            // standard apache installation
+            htDocs = DocumentRoots.findHtDocsDirectory(programFiles, DocumentRoots.APACHE_FILENAME_FILTER);
             if (htDocs != null) {
-                String documentRoot = DocumentRoots.getFolderName(htDocs, projectName);
-                String url = DocumentRoots.getDefaultUrl(projectName);
-                roots.add(new Root(documentRoot, url, htDocs.canWrite()));
                 // one htdocs is enough
                 break;
             }
+            // xampp
+            htDocs = DocumentRoots.findHtDocsDirectory(programFiles, XAMPP_FILENAME_FILTER);
+            if (htDocs != null) {
+                // one htdocs is enough
+                break;
+            }
+        }
+        if (htDocs != null) {
+            String documentRoot = DocumentRoots.getFolderName(htDocs, projectName);
+            String url = DocumentRoots.getDefaultUrl(projectName);
+            roots.add(new Root(documentRoot, url, htDocs.canWrite()));
         }
         return roots;
     }

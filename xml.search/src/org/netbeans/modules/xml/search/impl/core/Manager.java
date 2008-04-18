@@ -47,7 +47,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 
