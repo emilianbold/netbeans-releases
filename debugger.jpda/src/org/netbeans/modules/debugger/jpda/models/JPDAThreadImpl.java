@@ -387,13 +387,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     ((CallStackFrameImpl) frames[i]).setCurrentOperation(currentOperation);
                 }
             }
-            if (to - from > 1) {
+            /*if (to - from > 1) {
                 synchronized (cachedFramesLock) {
                     cachedFrames = frames;
                     cachedFramesFrom = from;
                     cachedFramesTo = to;
                 }
-            }
+            }*/
             return frames;
         } catch (IncompatibleThreadStateException ex) {
             AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
