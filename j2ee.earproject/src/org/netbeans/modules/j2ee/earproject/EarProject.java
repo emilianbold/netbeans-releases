@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.earproject.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -126,8 +127,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
     public static final String ARTIFACT_TYPE_EAR = "ear";
-    
-    private static final String UI_LOGGER_NAME = "org.netbeans.ui.ear.project"; //NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -474,13 +473,14 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                     getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).
                     getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+            String serverType = null;
             if (platform != null) {
                 // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
                 EarProjectProperties.setServerInstance(EarProject.this, EarProject.this.updateHelper, servInstID);
             } else {
                 // if there is some server instance of the type which was used
                 // previously do not ask and use it
-                String serverType = EarProject.this.getUpdateHelper().
+                serverType = EarProject.this.getUpdateHelper().
                         getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(EarProjectProperties.J2EE_SERVER_TYPE);
                 if (serverType != null) {
@@ -494,13 +494,10 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                     BrokenServerSupport.showAlert();
                 }
             }
-            
+
             // UI Logging
-            LogRecord logRecord = new LogRecord(Level.INFO, "UI_EAR_PROJECT_OPENED");  //NOI18N
-            logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(EarProject.class));
-            logRecord.setParameters(new Object[] { pwm.getServerID(), pwm.getServerInstanceID()});
-            Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+            EarProjectUtil.logUI(NbBundle.getBundle(EarProject.class), "UI_EAR_PROJECT_OPENED", // NOI18N
+                    new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
         }
         
         private void updateProject() {

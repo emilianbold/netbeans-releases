@@ -530,6 +530,10 @@ public final class EarProjectGenerator {
     }
     
     private AntProjectHelper setupProject() throws IOException {
+
+        EarProjectUtil.logUI(NbBundle.getBundle(EarProjectGenerator.class), "UI_EAR_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+
         AntProjectHelper h = ProjectGenerator.createProject(prjDirFO, EarProjectType.TYPE, librariesDefinition);
         EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);
         Element data = h.getPrimaryConfigurationData(true);

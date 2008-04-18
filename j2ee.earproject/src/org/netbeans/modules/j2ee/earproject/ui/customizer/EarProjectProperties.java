@@ -232,9 +232,6 @@ public final class EarProjectProperties {
     Document VM_OPTIONS_MODEL;
     Document APPLICATION_CLIENT_MODEL;
     
-    static final String UI_LOGGER_NAME = "org.netbeans.ui.ear.project"; //NOI18N
-    static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
-    
     // Private fields ----------------------------------------------------------
     
     private StoreGroup privateGroup; 
@@ -421,16 +418,12 @@ public final class EarProjectProperties {
         
         // ui log for the server change
         if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
-            LogRecord logRecord = new LogRecord(Level.INFO, "UI_EAR_PROJECT_SERVER_CHANGED");  //NOI18N
-            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(EarProjectProperties.class));
-            logRecord.setParameters(new Object[] { 
-                Deployment.getDefault().getServerID(oldServInstID),
-                oldServInstID,
-                Deployment.getDefault().getServerID(newServInstID),
-                newServInstID });
-                
-            UI_LOGGER.log(logRecord);
+            EarProjectUtil.logUI(NbBundle.getBundle(EarProjectProperties.class), "UI_EAR_PROJECT_SERVER_CHANGED", // NOI18N
+                    new Object[] { 
+                        Deployment.getDefault().getServerID(oldServInstID),
+                        oldServInstID,
+                        Deployment.getDefault().getServerID(newServInstID),
+                        newServInstID });
         }
     }
     
