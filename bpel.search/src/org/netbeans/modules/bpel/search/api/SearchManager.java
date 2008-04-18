@@ -44,29 +44,27 @@ import java.awt.Component;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.openide.util.Lookup;
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.14
  */
-public abstract class SearchManager
-  extends org.netbeans.modules.xml.xam.ui.search.SearchManager
-{
-  /**
-   * Returns search for given source and parent.
-   * @param source where search will be perfromed
-   * @param targets is the list of target
-   * @return search
-   */
-  public abstract Component createSearch(Object source, SearchTarget [] targets);
+public abstract class SearchManager {
 
   /**
-   * Returns find for given source and parent.
-   * @param source where find will be perfromed
+   * Shows search for given provider.
+   * @param provider is given provider
+   */
+  public abstract void showSearch(SearchProvider provider);
+
+  /**
+   * Returns find for given root and parent.
+   * @param root where find will be perfromed
    * @param parent is component where ui will be placed
    * @return find
    */
-  public abstract Component createFind(Object source, JComponent parent);
+  public abstract Component createFind(Object root, JComponent parent);
 
   /**
    * Returns Search action.

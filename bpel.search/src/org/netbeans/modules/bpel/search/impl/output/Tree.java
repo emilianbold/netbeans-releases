@@ -50,7 +50,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -122,7 +122,7 @@ final class Tree extends JTree {
 //out("skip leaf: " + child);
         continue;
       }
-      if (getUserObject(child).equals(next)) {
+      if (getUserObject(child) == next) {
         // go to the next level
 //out("next level");
         addElement(child, element, parents);
@@ -480,7 +480,7 @@ final class Tree extends JTree {
   }
 
   private void export(DefaultMutableTreeNode node) {
-    List<List<String>> items = new ArrayList<List<String>>();
+    List<List<String>> items = new LinkedList<List<String>>();
     export(node, items);
     items.add(null);
 
@@ -493,7 +493,7 @@ final class Tree extends JTree {
 
   private void export(DefaultMutableTreeNode node, List<List<String>> items) {
     if (node.isLeaf()) {
-      List<String> item = new ArrayList<String>();
+      List<String> item = new LinkedList<String>();
       item.add(getDescription(node));
       item.add(node.toString());
       items.add(item);
@@ -661,7 +661,7 @@ final class Tree extends JTree {
   }
 
   private Iterator<SearchElement> getParents(SearchElement element) {
-    List<SearchElement> elements = new ArrayList<SearchElement>();
+    List<SearchElement> elements = new LinkedList<SearchElement>();
     SearchElement parent = element.getParent();
 
     while (parent != null) {

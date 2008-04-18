@@ -45,7 +45,6 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 
@@ -85,139 +84,21 @@ public final class SearchAction extends IconAction {
       icon(View.class, icon)
     );
     setEnabled(false);
-    myProviders = getInstances(SearchProvider.class);
   }
 
   public void actionPerformed(ActionEvent event) {
-    Node node = getLastNode();
-
-    SearchTarget [] targets = null;
-    Model model = null;
-
-    for (SearchProvider provider : myProviders) {
-      model = provider.getModel(node);
-
-      if (model != null) {
-        targets = provider.getTargets();
-      }
-    }
-
-    
-    
-    if (targets == null) {
-      model = getModel_(node);
-      targets = getTargets(model);
-    }
-    if (targets == null) {
-      return;
-    }
-    ShowCookie cookie = getShowCookie(node);
-    Object view = getView();
-//out();
-//out("ShowCookie: " + cookie);
-//out("SchemaTreeView: " + view);
-    List<Object> list = new ArrayList<Object>();
-
-    list.add(model);
-    list.add(cookie);
-    list.add(view);
-
-    SearchManager.getDefault().createSearch(list, targets);
+    SearchManager.getDefault().showSearch(getProvider(getLastNode()));
   }
 
-  private ShowCookie getShowCookie(Node node) {
-    DataObject data = getDataObject(node);
+  private SearchProvider getProvider(Node node) {
+    List<SearchProvider> providers = getInstances(SearchProvider.class);
 
-    if (data == null) {
-      return null;
-    }
-    return data.getCookie(ShowCookie.class);
-  }
-
-  private Object getView() {
-    Container container = getActivateTopComponent();
-    Object view = getTreeView(container, "  "); // NOI18N
-
-    if (view != null) {
-      return view;
-    }
-    return getColumnView(container, "  "); // NOI18N
-  }
-
-  private SchemaTreeView getTreeView(Container container, String indent) {
-//out(indent + container.getClass().getName());
-    if (container instanceof SchemaTreeView) {
-      return (SchemaTreeView) container;
-    }
-    Component[] components = container.getComponents();
-    SchemaTreeView view;
-
-    for (Component component : components) {
-      if (component instanceof Container) {
-        view = getTreeView((Container) component, "    " + indent); // NOI18N
-
-        if (view != null) {
-          return view;
-        }
+    for (SearchProvider provider : providers) {
+      if (provider.isApplicable(node)) {
+        return provider;
       }
     }
     return null;
-  }
-
-  private SchemaColumnsView getColumnView(
-    Container container,
-    String indent)
-  {
-//out(indent + container.getClass().getName());
-    if (container instanceof SchemaColumnsView) {
-      return (SchemaColumnsView) container;
-    }
-    Component[] components = container.getComponents();
-    SchemaColumnsView view;
-
-    for (Component component : components) {
-      if (component instanceof Container) {
-        view = getColumnView((Container) component, "    " + indent); // NOI18N
-
-        if (view != null) {
-          return view;
-        }
-      }
-    }
-    return null;
-  }
-  
-  private SearchTarget [] getTargets(Model model) {
-    if (model instanceof WSDLModel) {
-      return Target.WSDL;
-    }
-    if (model instanceof SchemaModel) {
-      return Target.SCHEMA;
-    }
-    return null;
-  }
-
-  private Model getModel_(Node node) {
-//out();
-//out("get model");
-//out("node: " + node);
-    DataObject data = getDataObject(node);
-//out("data: " + data);
-
-    if (data == null) {
-      return null;
-    }
-    ModelCookie cookie = data.getCookie(ModelCookie.class);
-
-    if (cookie == null) {
-      return null;
-    }
-    try {
-      return cookie.getModel();
-    } 
-    catch (IOException e) {
-      return null;
-    }
   }
 
   @Override
@@ -225,9 +106,6 @@ public final class SearchAction extends IconAction {
   {
     return true;
   }
-
-  private Search mySearch;
-  private List<SearchProvider> myProviders;
 
   public static final Action DEFAULT = new SearchAction();
 }

@@ -41,7 +41,7 @@
 package org.netbeans.modules.bpel.search.impl.core;
 
 import java.awt.Component;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
 
 import org.netbeans.modules.bpel.search.impl.action.SearchAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
@@ -66,33 +67,36 @@ public final class Manager extends SearchManager {
     mySearch = new Search();
   }
 
-  public Component createSearch(Object source, SearchTarget [] targets) {
-    List<SearchEngine> engines = getEngines(source);
+  public void showSearch(SearchProvider provider) {
+    if (provider == null) {
+      return;
+    }
+    List<SearchEngine> engines = getEngines(provider.getRoot());
     
     if (engines.isEmpty()) {
-      return null;
+      return;
     }
-    return mySearch.getUIComponent(engines, source, targets);
+    mySearch.show(engines.get(0), provider);
   }
 
-  public Component createFind(Object source, JComponent parent) {
-    List<SearchEngine> engines = getEngines(source);
+  public Component createFind(Object root, JComponent parent) {
+    List<SearchEngine> engines = getEngines(root);
     
     if (engines.isEmpty()) {
       return null;
     }
-    return new Find(engines, source, parent);
+    return new Find(engines, root, parent);
   }
 
   public Action getSearchAction() {
     return SearchAction.DEFAULT;
   }
 
-  private List<SearchEngine> getEngines(Object source) {
-    List<SearchEngine> engines = new ArrayList<SearchEngine>();
+  private List<SearchEngine> getEngines(Object root) {
+    List<SearchEngine> engines = new LinkedList<SearchEngine>();
 
     for (SearchEngine engine : myEngines) {
-      if (engine.accepts(source)) {
+      if (engine.isApplicable(root)) {
         engines.add(engine);
       }
     }

@@ -258,7 +258,7 @@ public class Export extends Dialog {
   }
 
   @Override
-  protected DialogDescriptor createDescriptor()
+  protected final DialogDescriptor createDescriptor()
   {
     myDescriptor = new DialogDescriptor(
       createPanel(),
@@ -278,7 +278,7 @@ public class Export extends Dialog {
   }
 
   @Override
-  protected void opened()
+  protected final void opened()
   {
     myFileName.requestFocus();
   }

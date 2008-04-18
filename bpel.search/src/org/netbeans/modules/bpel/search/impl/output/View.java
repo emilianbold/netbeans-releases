@@ -145,7 +145,7 @@ public final class View extends TopComponent implements SearchListener {
   }
 
   @Override
-  protected void componentClosed()
+  protected final void componentClosed()
   {
     super.componentClosed();
 
@@ -157,7 +157,7 @@ public final class View extends TopComponent implements SearchListener {
   }
 
   @Override
-  protected String preferredID()
+  protected final String preferredID()
   {
     return NAME;
   }

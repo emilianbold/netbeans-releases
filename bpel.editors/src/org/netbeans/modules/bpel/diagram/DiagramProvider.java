@@ -44,9 +44,11 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model;
 
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchProvider;
 
@@ -54,28 +56,67 @@ import org.netbeans.modules.bpel.search.spi.SearchProvider;
  * @author Vladimir Yaroslavskiy
  * @version 2008.04.16
  */
-public class DiagramProvider implements SearchProvider {
+public class DiagramProvider extends SearchProvider.Adapter {
 
-  public Model getModel(Node node) {
-//out();
-//out("node: " + node);
-    if (node == null) {
+  public DiagramProvider() {
+    super(null);
+  }
+
+  @Override
+  public boolean isApplicable(Object object) {
+    return getProcess(object) != null;
+  }
+
+  @Override
+  public Object getRoot() {
+    return myProcess;
+  }
+
+  @Override
+  public SearchTarget [] getTargets() {
+    return TARGETS;
+  }
+
+  @Override
+  protected final Object getFather(Object object) {
+    if (object instanceof Component) {
+      return ((Component) object).getParent();
+    }
+    return null;
+  }
+
+  @Override
+  protected final SearchElement createElement(Object object, SearchElement parent) {
+    if ( !(object instanceof Component)) {
       return null;
     }
-    DataObject data = (DataObject) node.getLookup().lookup(DataObject.class);
+    return new Element((Component) object, parent);
+  }
+
+  private Process getProcess(Object object) {
+    myProcess = null;
+//out();
+//out("node: " + object);
+    if ( !(object instanceof Node)) {
+      return null;
+    }
+    DataObject data = (DataObject) ((Node) object).getLookup().lookup(DataObject.class);
 //out("data: " + data);
 
     if (data == null) {
       return null;
     }
-    return EditorUtil.getBpelModel(data);
+    BpelModel model = EditorUtil.getBpelModel(data);
+
+    if (model == null) {
+      return null;
+    }
+    myProcess = model.getProcess();
+
+    return myProcess;
   }
 
-  public SearchTarget [] getTargets() {
-    return TARGETS;
-  }
-
-  private static SearchTarget createTarget(Class<? extends Component> clazz) {
+  private static SearchTarget createTarget(Class<? extends Object> clazz) {
     return new SearchTarget.Adapter(DiagramProvider.class, clazz);
   }
 
@@ -145,4 +186,31 @@ public class DiagramProvider implements SearchProvider {
     createTarget(org.netbeans.modules.bpel.model.api.Wait.class),
     createTarget(org.netbeans.modules.bpel.model.api.While.class),
   };
+
+  // ---------------------------------------------------------
+  private static class Element extends SearchElement.Adapter {
+    private Element(Component component, SearchElement parent) {
+      super(
+        EditorUtil.getName(component),
+        EditorUtil.getToolTip(component),
+        EditorUtil.getIcon(component),
+        parent
+      );
+      myComponent = component;
+    }
+
+    @Override
+    public void gotoSource() {
+      EditorUtil.goToSource(myComponent);
+    }
+
+    @Override
+    public void gotoVisual() {
+      EditorUtil.goToDesign(myComponent);
+    }
+
+    private Component myComponent;
+  }
+
+  private Process myProcess;
 }

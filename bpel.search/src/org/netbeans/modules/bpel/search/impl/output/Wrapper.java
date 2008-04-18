@@ -45,7 +45,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -137,7 +137,7 @@ final class Wrapper extends JPanel {
   }
 
   private List<TreePath> doSearch(String prefix) {
-    List<TreePath> results = new ArrayList<TreePath>();
+    List<TreePath> results = new LinkedList<TreePath>();
     int [] rows = myTree.getSelectionRows();
     int size = myTree.getRowCount();
     int startIndex;
@@ -171,7 +171,7 @@ final class Wrapper extends JPanel {
     implements DocumentListener, FocusListener
   {
     public MultiListener() {
-      myResults = new ArrayList<TreePath>();
+      myResults = new LinkedList<TreePath>();
     }
 
     public void changedUpdate(DocumentEvent e) {

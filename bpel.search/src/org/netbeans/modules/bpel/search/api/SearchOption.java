@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.bpel.search.api;
 
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
+
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.25
@@ -53,10 +55,10 @@ public interface SearchOption {
   String getText();
 
   /**
-   * Returns source where search will be performed.
-   * @return source where search will be performed
+   * Returns provider.
+   * @return provider
    */
-  Object getSource();
+  SearchProvider getProvider();
 
   /**
    * Returns target to be found.
@@ -87,14 +89,14 @@ public interface SearchOption {
 
     public Adapter(
       String text,
-      Object source,
+      SearchProvider provider,
       SearchTarget target,
       SearchMatch match,
       boolean caseSensitive,
       boolean useSelection)
     {
       myText = text;
-      mySource = source;
+      myProvider = provider;
       myTarget = target;
       mySearchMatch = match;
       myCaseSensitive = caseSensitive;
@@ -105,8 +107,8 @@ public interface SearchOption {
       return myText;
     }
 
-    public Object getSource() {
-      return mySource;
+    public SearchProvider getProvider() {
+      return myProvider;
     }
 
     public SearchTarget getTarget() {
@@ -126,8 +128,8 @@ public interface SearchOption {
     }
 
     private String myText;
-    private Object mySource;
     private SearchTarget myTarget;
+    private SearchProvider myProvider;
     private SearchMatch mySearchMatch;
     private boolean myCaseSensitive;
     private boolean myUseSelection;

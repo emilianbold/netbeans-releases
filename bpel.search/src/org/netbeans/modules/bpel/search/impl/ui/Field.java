@@ -45,7 +45,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JComboBox;
@@ -61,7 +61,7 @@ import static org.netbeans.modules.soa.ui.UI.*;
 final class Field {
 
   Field(String items) {
-    myItems = new ArrayList<String>();
+    myItems = new LinkedList<String>();
     createUIComponent();
     setItems(items);
   }

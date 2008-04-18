@@ -59,8 +59,9 @@ import static org.netbeans.modules.soa.ui.UI.*;
  */
 public final class Construct extends Engine {
 
+  @Override
   public void search(SearchOption option) throws SearchException {
-    Diagram diagram = (Diagram) option.getSource();
+    Diagram diagram = (Diagram) option.getProvider().getRoot();
     diagram.clearHighlighting();
 //out();
     fireSearchStarted(option);
@@ -108,10 +109,12 @@ public final class Construct extends Engine {
     return accepts(((DocumentComponent) component).getPeer().getTagName());
   }
 
+  @Override
   public String getDisplayName() {
     return i18n(Engine.class, "LBL_Construct_Display_Name"); // NOI18N
   }
 
+  @Override
   public String getShortDescription() {
     return i18n(Engine.class, "LBL_Construct_Short_Description"); // NOI18N
   }

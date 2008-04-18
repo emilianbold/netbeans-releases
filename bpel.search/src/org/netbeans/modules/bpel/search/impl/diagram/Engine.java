@@ -56,7 +56,7 @@ import static org.netbeans.modules.soa.ui.UI.*;
 public class Engine extends SearchEngine.Adapter {
 
   public void search(SearchOption option) throws SearchException {
-    Diagram diagram = (Diagram) option.getSource();
+    Diagram diagram = (Diagram) option.getProvider().getRoot();
     diagram.clearHighlighting();
 //out();
     fireSearchStarted(option);
@@ -78,8 +78,8 @@ public class Engine extends SearchEngine.Adapter {
     }
   }
 
-  public boolean accepts(Object source) {
-    return source instanceof Diagram;
+  public boolean isApplicable(Object root) {
+    return root instanceof Diagram;
   }
 
   public String getDisplayName() {

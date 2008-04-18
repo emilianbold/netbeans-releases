@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.bpel.search.spi;
 
-import org.openide.nodes.Node;
-import org.netbeans.modules.xml.xam.Model;
+import java.util.Map;
+import java.util.WeakHashMap;
+
+import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 
 /**
@@ -51,15 +53,78 @@ import org.netbeans.modules.bpel.search.api.SearchTarget;
 public interface SearchProvider {
 
   /**
-   * Returns model by given node.
-   * @param node is given node
-   * @return model by given node
+   * Returns true if provider can search in given object.
+   * @param object is given object
+   * @return true if provider can search in given object
    */
-  Model getModel(Node node);
+  boolean isApplicable(Object object);
+
+  /**
+   * Returns root.
+   * @return root
+   */
+  Object getRoot();
 
   /**
    * Returns targets.
    * @return targets
    */
   SearchTarget [] getTargets();
+
+  /**
+   * Returns element by given object.
+   * @param object is given object
+   * @return element by given object
+   */
+  SearchElement getElement(Object object);
+
+  // ---------------------------------------------
+  public class Adapter implements SearchProvider {
+
+    public Adapter(Object root) {
+      myRoot = root;
+      myElements = new WeakHashMap<Object,SearchElement>();
+    }
+
+    public boolean isApplicable(Object object) {
+      return false;
+    }
+
+    public Object getRoot() {
+      return myRoot;
+    }
+
+    public SearchTarget [] getTargets() {
+      return null;
+    }
+
+    public SearchElement getElement(Object object) {
+      SearchElement element = myElements.get(object);
+
+      if (element != null) {
+        return element;
+      }
+      Object father = getFather(object);
+      SearchElement parent = null;
+
+      if (father != null) {
+        parent = getElement(father);
+      }
+      element = createElement(object, parent);
+      myElements.put(object, element);
+
+      return element;
+    }
+
+    protected SearchElement createElement(Object object, SearchElement parent) {
+      return null;
+    }
+
+    protected Object getFather(Object object) {
+      return null;
+    }
+
+    private Object myRoot;
+    private Map<Object,SearchElement> myElements;
+  }
 }

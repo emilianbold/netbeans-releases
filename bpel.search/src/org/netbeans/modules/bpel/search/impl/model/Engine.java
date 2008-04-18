@@ -44,12 +44,12 @@ import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.bpel.editors.api.EditorUtil;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
 import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
@@ -59,17 +59,18 @@ import static org.netbeans.modules.soa.ui.UI.*;
 public final class Engine extends SearchEngine.Adapter {
 
   public void search(SearchOption option) throws SearchException {
-    myClazz = null;
-    myOption = option;
-    myList = (List) option.getSource();
+    myProvider = option.getProvider();
     SearchTarget target = option.getTarget();
 
-    if (target != null) {
+    if (target == null) {
+      myClazz = null;
+    }
+    else {
       myClazz = target.getClazz();
     }
 //out();
     fireSearchStarted(option);
-    search(EditorUtil.getRoot((Model) myList.get(0)), ""); // NOI18N
+    search(myProvider.getRoot(), ""); // NOI18N
     fireSearchFinished(option);
   }
 
@@ -90,7 +91,7 @@ public final class Engine extends SearchEngine.Adapter {
 //out(indent + " see: " + component);
     if (checkClazz(component) && checkName(component)) {
 //out(indent + "      add.");
-      fireSearchFound(new Element(component, myList.get(1), myList.get(2)));
+      fireSearchFound(myProvider.getElement(component));
     }
   }
 
@@ -110,8 +111,8 @@ public final class Engine extends SearchEngine.Adapter {
     return accepts(name);
   }
 
-  public boolean accepts(Object source) {
-    return source instanceof List;
+  public boolean isApplicable(Object root) {
+    return root instanceof Component;
   }
 
   public String getDisplayName() {
@@ -122,7 +123,6 @@ public final class Engine extends SearchEngine.Adapter {
     return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
   }
 
-  private List myList;
-  private SearchOption myOption;
-  private Class<? extends Component> myClazz;
+  private SearchProvider myProvider;
+  private Class<? extends Object> myClazz;
 }

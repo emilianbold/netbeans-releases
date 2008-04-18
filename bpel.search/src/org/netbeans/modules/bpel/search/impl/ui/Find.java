@@ -43,7 +43,7 @@ package org.netbeans.modules.bpel.search.impl.ui;
 import java.awt.Event;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -54,7 +54,6 @@ import javax.swing.KeyStroke;
 
 import org.openide.actions.FindAction;
 import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
-import org.netbeans.modules.xml.xam.ui.search.SearchProvider;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 
 import org.netbeans.modules.bpel.search.api.SearchElement;
@@ -64,6 +63,7 @@ import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
 import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
@@ -72,13 +72,14 @@ import static org.netbeans.modules.soa.ui.UI.*;
  */
 public final class Find extends SearchControlPanel {
 
-  public Find(List<SearchEngine> engines, Object source, JComponent parent) {
+  public Find(List<SearchEngine> engines, Object root, JComponent parent) {
     super();
     bindAction(parent);
-    myProviders = new ArrayList<Provider>();
+    myProviders = new LinkedList<Provider>();
+    SearchProvider provider = new SearchProvider.Adapter(root);
 
     for (SearchEngine engine : engines) {
-      myProviders.add(new Provider(engine, source));
+      myProviders.add(new Provider(engine, provider));
     }
     setProviders(myProviders);
   }
@@ -97,7 +98,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  protected void hideResults()
+  protected final void hideResults()
   {
 //out("Hide selection");
     if (myElements == null) {
@@ -110,7 +111,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  protected void showSearchResult(Object object)
+  protected final void showSearchResult(Object object)
   {
 //out("show result");
     if ( !(object instanceof SearchElement)) {
@@ -138,12 +139,13 @@ public final class Find extends SearchControlPanel {
   }
 
   // ---------------------------------------------------------------------
-  private final class Provider implements SearchProvider, SearchListener {
-    
-    private Provider(SearchEngine engine, Object source) {
+  private final class Provider implements
+    org.netbeans.modules.xml.xam.ui.search.SearchProvider, SearchListener
+  {
+    private Provider(SearchEngine engine, SearchProvider provider) {
       mySearchEngine = engine;
       mySearchEngine.addSearchListener(this);
-      mySource = source;
+      myProvider = provider;
     }
 
     void release() {
@@ -170,7 +172,7 @@ public final class Find extends SearchControlPanel {
 
       SearchOption option = new SearchOption.Adapter(
         text,
-        mySource,
+        myProvider,
         null, // target
         match,
         false, // case sensitive
@@ -204,7 +206,7 @@ public final class Find extends SearchControlPanel {
     }
 
     public void searchStarted(SearchEvent event) {
-      myElements = new ArrayList<Object>();
+      myElements = new LinkedList<Object>();
     }
 
     public void searchFound(SearchEvent event) {
@@ -213,7 +215,7 @@ public final class Find extends SearchControlPanel {
 
     public void searchFinished(SearchEvent event) {}
 
-    private Object mySource;
+    private SearchProvider myProvider;
     private SearchEngine mySearchEngine;
   }
 

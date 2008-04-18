@@ -60,6 +60,7 @@ import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.spi.SearchProvider;
 import org.netbeans.modules.bpel.search.impl.output.View;
 import static org.netbeans.modules.soa.ui.UI.*;
 
@@ -69,14 +70,13 @@ import static org.netbeans.modules.soa.ui.UI.*;
  */
 public final class Search extends Dialog {
 
-  public Component getUIComponent(
-    List<SearchEngine> engines,
-    Object source,
-    SearchTarget [] targets)
-  {
-    mySource = source;
-    myTargets = targets;
-    mySearchEngine = engines.get(0);
+  public void show(SearchEngine engine, SearchProvider provider) {
+    if (engine == null) {
+      return;
+    }
+    myTargets = provider.getTargets();
+    myProvider = provider;
+    mySearchEngine = engine;
 
     mySearchEngine.removeSearchListeners();
     mySearchEngine.addSearchListener(new View());
@@ -84,14 +84,11 @@ public final class Search extends Dialog {
 
     show();
 
-    Component dialog = getUIComponent();
-    a11y(dialog, i18n("ACS_Advanced_Search")); // NOI18N
-
-    return dialog;
+    a11y(getUIComponent(), i18n("ACS_Advanced_Search")); // NOI18N
   }
 
   @Override
-  protected void updated()
+  protected final void updated()
   {
 //out("UPDATED");
     setItems(myTarget, myTargets);
@@ -230,7 +227,7 @@ public final class Search extends Dialog {
     );
     SearchOption option = new SearchOption.Adapter(
       myName.getText().trim(),
-      mySource,
+      myProvider,
       (SearchTarget) myTarget.getSelectedItem(),
       getMatch(),
       myMatchCase.isSelected(),
@@ -252,11 +249,12 @@ public final class Search extends Dialog {
   private void close() {
     myName.save();
     mySearchEngine = null;
-    mySource = null;
+    myProvider = null;
+    myTargets = null;
   }
 
   @Override
-  protected DialogDescriptor createDescriptor()
+  protected final DialogDescriptor createDescriptor()
   {
     Object [] buttons = getButtons();
     myDescriptor = new DialogDescriptor(
@@ -292,12 +290,12 @@ public final class Search extends Dialog {
   }
 
   private Field myName;
-  private Object mySource;
   private JButton mySearchButton;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
   private MyComboBox myTarget;
+  private SearchProvider myProvider;
   private SearchTarget [] myTargets;
   private SearchEngine mySearchEngine;
   private DialogDescriptor myDescriptor;

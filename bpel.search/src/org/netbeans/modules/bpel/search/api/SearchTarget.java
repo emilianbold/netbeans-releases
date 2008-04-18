@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.search.api;
 
-import org.netbeans.modules.xml.xam.Component;
 import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
@@ -53,18 +52,18 @@ public interface SearchTarget {
    * Returns the class of target.
    * @return the class of target
    */
-  Class<? extends Component> getClazz();
+  Class<? extends Object> getClazz();
 
 
   // -------------------------------------------
   public class Adapter implements SearchTarget {
 
-    public Adapter(Class bundle, Class<? extends Component> clazz) {
+    public Adapter(Class bundle, Class<? extends Object> clazz) {
       myClazz = clazz;
       myBundle = bundle;
     }
 
-    public Class<? extends Component> getClazz() {
+    public Class<? extends Object> getClazz() {
       return myClazz;
     }
 
@@ -86,6 +85,6 @@ public interface SearchTarget {
     }
 
     private Class myBundle;
-    private Class<? extends Component> myClazz;
+    private Class<? extends Object> myClazz;
   }
 }

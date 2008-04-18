@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.bpel.search.spi;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
@@ -64,11 +64,11 @@ public interface SearchEngine {
   void search(SearchOption option) throws SearchException;
   
   /**
-   * Returns true if search can be performed in source.
-   * @param source where search will be perfromed
-   * @return true if search can be performed in source
+   * Returns true if search is applicable for root.
+   * @param root where search will be perfromed
+   * @return true if search is applicable for root
    */
-  boolean accepts(Object source);
+  boolean isApplicable(Object root);
 
   /**
    * Addes search listener.
@@ -109,10 +109,10 @@ public interface SearchEngine {
     }
 
     public synchronized void removeSearchListeners() {
-      mySearchListeners = new ArrayList<SearchListener>();
+      mySearchListeners = new LinkedList<SearchListener>();
     }
 
-    protected synchronized void fireSearchStarted(SearchOption option)
+    protected final synchronized void fireSearchStarted(SearchOption option)
       throws SearchException
     {
       try {
@@ -128,7 +128,7 @@ public interface SearchEngine {
       }
     }
 
-    protected synchronized void fireSearchFound(SearchElement element) {
+    protected final synchronized void fireSearchFound(SearchElement element) {
       SearchEvent event = new SearchEvent.Adapter(null, element);
 
       for (SearchListener listener : mySearchListeners) {
@@ -136,7 +136,7 @@ public interface SearchEngine {
       }
     }
 
-    protected synchronized void fireSearchFinished(SearchOption option) {
+    protected final synchronized void fireSearchFinished(SearchOption option) {
       SearchEvent event = new SearchEvent.Adapter(option, null);
 
       for (SearchListener listener : mySearchListeners) {
@@ -144,7 +144,7 @@ public interface SearchEngine {
       }
     }
 
-    protected boolean accepts(String text) {
+    protected final boolean accepts(String text) {
       return mySearchPattern.accepts(text);
     }
 
