@@ -20,8 +20,10 @@
 package org.netbeans.modules.hudson.ui.notification;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,7 +66,7 @@ public class HudsonNotificationController implements ChangeListener {
     }
     
     public synchronized Collection<HudsonJob> getFailedJobs() {
-        return jobs.values();
+        return new ArrayList<HudsonJob>(jobs.values());
     }
     
     public synchronized void notify(HudsonJob job) {
@@ -85,16 +87,18 @@ public class HudsonNotificationController implements ChangeListener {
     }
     
     public synchronized void stateChanged(ChangeEvent e) {
-        for (HudsonJob job : getFailedJobs()) {
-            HudsonInstance instance = job.getLookup().lookup(HudsonInstance.class);
+        Iterator<HudsonJob> jobsIt = jobs.values().iterator();
+        while (jobsIt.hasNext()) {
+            HudsonJob job = jobsIt.next();
+            HudsonInstance hudsonInstance = job.getLookup().lookup(HudsonInstance.class);
             
-            if (null == instance)
+            if (null == hudsonInstance)
                 continue;
             
             boolean exists = false;
             boolean passed = false;
             
-            for (HudsonJob j : instance.getJobs()) {
+            for (HudsonJob j : hudsonInstance.getJobs()) {
                 if (j.getUrl().equals(job.getUrl())) {
                     exists = true;
                     
@@ -105,8 +109,9 @@ public class HudsonNotificationController implements ChangeListener {
                 }
             }
             
-            if (!exists || passed)
-                this.jobs.remove(job.getUrl());
+            if (!exists || passed) {
+                jobsIt.remove();
+            }
         }
     }
 }
