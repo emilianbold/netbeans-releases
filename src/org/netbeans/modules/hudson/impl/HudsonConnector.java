@@ -21,15 +21,11 @@ package org.netbeans.modules.hudson.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,11 +47,9 @@ import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.Result;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
-import org.netbeans.modules.hudson.util.Utilities;
-import org.netbeans.modules.hudson.util.Utilities;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
@@ -339,7 +333,16 @@ public class HudsonConnector implements HudsonXmlApiConstants,
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
                         job.putProperty(HUDSON_JOB_URL, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
-                        job.putProperty(HUDSON_JOB_COLOR, Color.valueOf(o.getFirstChild().getTextContent()));
+                        String color = o.getFirstChild().getTextContent().trim();
+                        try {
+                            job.putProperty(HUDSON_JOB_COLOR, Color.valueOf(color));
+                        } catch (IllegalArgumentException x) {
+                            Exceptions.attachMessage(x,
+                                    "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
+                                    color + "' among " + Arrays.toString(Color.values()));
+                            Exceptions.printStackTrace(x);
+                            job.putProperty(HUDSON_JOB_COLOR, Color.red_anime);
+                        }
                     }
                 }
             }
