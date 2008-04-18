@@ -100,7 +100,7 @@ public class AstUtilitiesTest extends JsTestBase {
             addAllNodes(root, allNodes);
             List<Node> callNodes = new ArrayList<Node>();
             
-            AstUtilities.addNodesByType(root, new int[] { Token.CALL }, callNodes);
+            AstUtilities.addNodesByType(root, new int[] { Token.CALL, Token.NEW }, callNodes);
             for (Node callNode : callNodes) {
                 String s = AstUtilities.getCallName(callNode, true);
                 String t = AstUtilities.getCallName(callNode, false);

@@ -25,7 +25,6 @@ import javax.xml.transform.sax.*;
 import org.netbeans.api.xml.cookies.*;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

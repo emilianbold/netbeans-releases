@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 
@@ -55,11 +56,10 @@ public class CustomizerPhpIncludePath extends JPanel {
 
         this.category = category;
 
-        includePathList.setModel(uiProps.INCLUDE_PATH_MODEL);
-        includePathList.setCellRenderer(uiProps.INCLUDE_PATH_LIST_RENDERER);
-        ClassPathUiSupport.EditMediator.register(uiProps.getProject(),
+        includePathList.setModel(uiProps.getIncludePathListModel());
+        includePathList.setCellRenderer(uiProps.getIncludePathListRenderer());
+        IncludePathUiSupport.EditMediator.register(uiProps.getProject(),
                                                includePathList,
-                                               uiProps.INCLUDE_PATH_MODEL,
                                                addFolderButton.getModel(),
                                                removeButton.getModel(),
                                                moveUpButton.getModel(),
@@ -103,14 +103,13 @@ public class CustomizerPhpIncludePath extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                        .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(moveDownButton)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(addFolderButton)
-                                .add(removeButton)
-                                .add(moveUpButton))))
+                            .add(moveUpButton)
+                            .add(removeButton)
+                            .add(addFolderButton)))
                     .add(includePathLabel))
                 .addContainerGap())
         );
@@ -122,16 +121,16 @@ public class CustomizerPhpIncludePath extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(includePathLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(addFolderButton)
-                        .add(18, 18, 18)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
-                        .add(18, 18, 18)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(moveUpButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(moveDownButton))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
+                    .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

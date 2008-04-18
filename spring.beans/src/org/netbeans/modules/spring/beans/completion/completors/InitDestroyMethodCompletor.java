@@ -41,8 +41,8 @@ package org.netbeans.modules.spring.beans.completion.completors;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 import org.w3c.dom.Node;
 
 /**

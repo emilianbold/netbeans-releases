@@ -631,6 +631,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        }
                                                    }
                                                });
+            if (RP.isRequestProcessorThread()) {
+                prepareTask.waitFinished();
+            }
 	    failed = false;
         } catch (RuntimeException ex) {
             prepareDocumentRuntimeException = ex;

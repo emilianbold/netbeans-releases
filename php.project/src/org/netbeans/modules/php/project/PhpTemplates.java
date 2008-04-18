@@ -64,6 +64,7 @@ final class PhpTemplates implements RecommendedTemplates,
          * http://php.netbeans.org/issues/show_bug.cgi?id=122121
          */
         "Templates/Scripting/EmptyPHP.php", // NOI18N
+        "Templates/Scripting/EmptyPHPWebPage.php", // NOI18N        
         "Templates/Other/html.html", // NOI18N
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N

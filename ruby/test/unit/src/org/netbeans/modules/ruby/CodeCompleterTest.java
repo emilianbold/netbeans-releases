@@ -44,14 +44,8 @@ package org.netbeans.modules.ruby;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.Completable.QueryType;
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.Completable;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -70,44 +64,6 @@ public class CodeCompleterTest extends RubyTestBase {
     
     public void checkCompletion(String file, String caretLine) throws Exception {
         checkCompletion(file, caretLine, false);
-    }
-    
-    @Override
-    public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
-        System.setProperty("netbeans.user", getWorkDirPath());
-        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
-        assertNotNull(jrubyHome);
-        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
-        RubyIndexer.setPreindexedDb(preindexed);
-        initializeRegistry();
-        // Force classpath initialization
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        platform.getGemManager().getNonGemLoadPath();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-
-        RubyIndex.setClusterUrl("file:/bogus"); // No translation
-        
-        super.checkCompletion(file, caretLine, includeModifiers);
-    }
-    
-    @Override
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
-        System.setProperty("netbeans.user", getWorkDirPath());
-        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
-        assertNotNull(jrubyHome);
-        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
-        RubyIndexer.setPreindexedDb(preindexed);
-        initializeRegistry();
-        // Force classpath initialization
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        platform.getGemManager().getNonGemLoadPath();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-
-        RubyIndex.setClusterUrl("file:/bogus"); // No translation
-        
-        super.checkComputeMethodCall(file, caretLine, fqn, param, expectSuccess);
     }
 
     public void testPrefix1() throws Exception {
@@ -206,19 +162,17 @@ public class CodeCompleterTest extends RubyTestBase {
     }
 
     // This test is unstable for some reason
-    //public void testCompletion1() throws Exception {
-    //    checkCompletion("testfiles/completion/lib/test1.rb", "f.e^");
-    //}
-    // ditto
-    //public void testCompletion2() throws Exception {
-    //    // This test doesn't pass yet because we need to index the -current- file
-    //    // before resuming
-    //    checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@^myfield} and #@another.");
-    //}
-    // 
-    //public void testCompletion3() throws Exception {
-    //    checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@myfield} and #@a^nother.");
-    //}
+//    public void testCompletion1() throws Exception {
+//        checkCompletion("testfiles/completion/lib/test1.rb", "f.e^");
+//    }
+
+    public void testCompletion2() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@^myfield} and #@another.");
+    }
+     
+    public void testCompletion3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@myfield} and #@a^nother.");
+    }
     
     public void testCompletion4() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "Hell^o World");

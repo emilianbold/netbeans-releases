@@ -652,7 +652,7 @@ jarsigner.storepass=${jarsigner.storepass}
 			<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
 
 		        <include name="**/sjsas*"/>
-		        <exclude name="**/sjsas*${sjsas.milestone.number}*"/>
+		        <exclude name="**/sjsas*9.1_02.${sjsas.milestone.number}.*"/>
 
 			<include name="**/nb-portalpack*"/>
 			<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>

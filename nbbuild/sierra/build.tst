@@ -64,6 +64,12 @@
         <!-- samples -->
         <subant target="default" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
+            <buildpath location="${samples}/AsynchronousSample/AsynchronousSample/build.xml"/>
+            <buildpath location="${samples}/AsynchronousSample/AsynchronousSampleApplication/build.xml"/>
+            <buildpath location="${samples}/SynchronousSample/SynchronousSample/build.xml"/>
+            <buildpath location="${samples}/SynchronousSample/SynchronousSampleApplication/build.xml"/>
+            <buildpath location="${samples}/TravelReservationService/TravelReservationService/build.xml"/>
+            <buildpath location="${samples}/TravelReservationService/TravelReservationServiceApplication/build.xml"/>
             <buildpath location="${samples}/BluePrint1/BluePrint1/build.xml"/>
             <buildpath location="${samples}/BluePrint1/BluePrint1Application/build.xml"/>
             <buildpath location="${samples}/BluePrint2/BluePrint2/build.xml"/>
@@ -74,12 +80,6 @@
             <buildpath location="${samples}/BluePrint4/BluePrint4Application/build.xml"/>
             <buildpath location="${samples}/BluePrint5/BluePrint5/build.xml"/>
             <buildpath location="${samples}/BluePrint5/BluePrint5Application/build.xml"/>
-            <buildpath location="${samples}/AsynchronousSample/AsynchronousSample/build.xml"/>
-            <buildpath location="${samples}/AsynchronousSample/AsynchronousSampleApplication/build.xml"/>
-            <buildpath location="${samples}/SynchronousSample/SynchronousSample/build.xml"/>
-            <buildpath location="${samples}/SynchronousSample/SynchronousSampleApplication/build.xml"/>
-            <buildpath location="${samples}/TravelReservationService/TravelReservationService/build.xml"/>
-            <buildpath location="${samples}/TravelReservationService/TravelReservationServiceApplication/build.xml"/>
         </subant>
     </target>
 
@@ -212,6 +212,9 @@
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/PLTLocalNamespace"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPDuplicateImpl"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
+
+        <!-- PfizerEAP -->
+        <antcall target="do-test-jbi"><param name="dir" value="PfizerEAP/prjPfizerSupplyChainEAP_BPEL_JMS_2"/></antcall>
 
         <!-- pick -->
         <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>

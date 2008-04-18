@@ -52,13 +52,13 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String[] args;
     private List<String> parameters;
     
-    IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+    public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
         super(name, in, index, fileUrl, attributes, flags, kind);
     }
     
     @Override
     public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
+        return getSignature() + ":" + getFilenameUrl();
     }
 
     @Override
@@ -122,5 +122,24 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     public boolean isDeprecated() {
         return false;
+    }
+
+    @Override
+    public int getOffset() {
+        int argIndex = getAttributeSection(OFFSET_INDEX);
+        int endIndex = attributes.indexOf(';', argIndex);
+        
+        if (endIndex > argIndex){
+            String offsetStr = attributes.substring(argIndex, endIndex);
+            return Integer.parseInt(offsetStr);
+        }
+        
+        return super.getOffset();
+    }
+
+    @Override
+    public String getDisplayName() {
+        String modifierStr = getModifiersString();
+        return modifierStr.length() == 0 ? getSignature() : (getModifiersString() + " " + getSignature());
     }
 }

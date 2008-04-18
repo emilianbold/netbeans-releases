@@ -77,12 +77,12 @@ import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.soa.validation.Action;
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.bpel.core.util.BPELValidationAction;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDeleteAction;
@@ -155,7 +155,7 @@ import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
-import org.netbeans.modules.bpel.search.api.SearchManager;
+import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.bpel.documentation.DocumentationGenerator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -254,8 +254,8 @@ public class DesignerMultiViewElement extends TopComponent
 //      getValidationController().triggerValidation();
     }
     
-    private BPELValidationController getValidationController() {
-        return (BPELValidationController) getDataObject().getLookup().lookup(BPELValidationController.class);
+    private Controller getValidationController() {
+        return (Controller) getDataObject().getLookup().lookup(Controller.class);
     }
 
     public void componentClosed() {
@@ -343,15 +343,12 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManager.getDefault();
+            toolbar.addSeparator();
+//todo a            toolbar.add(SearchManager.getDefault().getSearchAction());
 
-            if (manager != null) {
-              toolbar.addSeparator();
-              toolbar.add(manager.getSearchAction());
-            }
             // vlv: valdiation
             toolbar.addSeparator();
-            toolbar.add(new BPELValidationAction(getValidationController()));
+            toolbar.add(new Action(getValidationController()));
             
             // ksorokin: breakpoints
             toolbar.addSeparator();
@@ -462,9 +459,10 @@ public class DesignerMultiViewElement extends TopComponent
         SearchManager manager = SearchManager.getDefault();
         
         if (manager != null) {
-          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
-          myFind.setVisible(false);
-          add(myFind, BorderLayout.SOUTH);
+// todo a
+//          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
+//          myFind.setVisible(false);
+//          add(myFind, BorderLayout.SOUTH);
         }
         initActiveNodeContext();
         setVisible(true);

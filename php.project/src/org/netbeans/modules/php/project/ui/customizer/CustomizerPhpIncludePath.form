@@ -18,15 +18,13 @@
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="includePathScrollPane" pref="271" max="32767" attributes="0"/>
+                      <Component id="includePathScrollPane" pref="331" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="moveDownButton" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                              <Component id="addFolderButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                              <Component id="removeButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                              <Component id="moveUpButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="moveUpButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="removeButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="addFolderButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="includePathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -39,20 +37,20 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="includePathLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="addFolderButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="moveUpButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="moveDownButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="includePathScrollPane" alignment="0" pref="208" max="32767" attributes="0"/>
+                  <Component id="includePathScrollPane" pref="151" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

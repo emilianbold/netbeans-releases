@@ -52,13 +52,16 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
@@ -68,13 +71,16 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -116,7 +122,7 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
     private static final int MOD_PRIVATE_INDEX = 3;
 
     private static final Class[] columnTypes = new Class[] {
-        MemberInfo.class, java.lang.Boolean.class, java.lang.String.class, java.lang.Boolean.class, java.lang.String.class
+        MemberInfo.class, java.lang.Boolean.class, AccessorInfo.class, java.lang.Boolean.class, AccessorInfo.class
     };
     
     /** 
@@ -138,6 +144,9 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
         jTableFields.setDefaultRenderer(MemberInfo.class, new UIUtilities.JavaElementTableCellRenderer());
+        jTableFields.setDefaultRenderer(AccessorInfo.class, new AccessorInfoRenderer());
+        JavaSource js = JavaSource.forFileObject(selectedObjects.getFileObject());
+        jTableFields.setDefaultEditor(AccessorInfo.class, new AccessorInfoTableEditor(js));
         // set background color of the scroll pane to be the same as the background
         // of the table
         jScrollField.setBackground(jTableFields.getBackground());
@@ -189,9 +198,9 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
             model.addRow(new Object[] { 
                 MemberInfo.create(fieldTPath, javac),
                 createGetter ? Boolean.TRUE : Boolean.FALSE,                        
-                createGetter ? getset[0]:null,
+                AccessorInfo.createGetter(javac, field, getset[0]),
                 createSetter ? Boolean.TRUE : Boolean.FALSE,                        
-                createSetter ? getset[1]:null
+                AccessorInfo.createSetter(javac, field, getset[1]),
             });
         }
         
@@ -206,25 +215,31 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         jTableFields.invalidate();
         jTableFields.repaint();
         model.addTableModelListener(new TableModelListener() {
+            boolean isUpdating = false;
             public void tableChanged(TableModelEvent e) {
+                if (isUpdating) {
+                    return;
+                }
                 int col = e.getColumn();
                 int row = e.getFirstRow();
                 if (col == 1 || col==3 ) {
                     Boolean value = (Boolean) model.getValueAt(row, col);
                     if (value.booleanValue()) {
-                        if (col==1) {
-                            model.setValueAt(methodNames[row][0], row, col+1);
-                        } else {
-                            model.setValueAt(methodNames[row][1], row, col+1);
+                        AccessorInfo ai = (AccessorInfo) model.getValueAt(row, col + 1);
+                        if (ai != null) {
+                            ai.reset();
                         }
-                    } else {
-                        if (!(model.getValueAt(row, col+1)==null))
-                            model.setValueAt(null, row, col+1);
                     }
+                    model.fireTableCellUpdated(row, col + 1);
                 } else {
-                    String value = (String) model.getValueAt(row, col);
-                    if (value == null | "".equals(value)) {
-                        model.setValueAt(Boolean.FALSE, row, col-1);
+                    AccessorInfo value = (AccessorInfo) model.getValueAt(row, col);
+                    if (value == null || value.name == null || value.name.length() == 0) {
+                        try {
+                            isUpdating = true;
+                            model.setValueAt(Boolean.FALSE, row, col-1);
+                        } finally {
+                            isUpdating = false;
+                        }
                     }
                 }
                 parent.stateChanged(null);
@@ -428,8 +443,8 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
             List row = (List) rowIt.next();
             if (row.get(1) == Boolean.TRUE || row.get(3) == Boolean.TRUE) {
-                String getterName = (String) row.get(2);
-                String setterName = (String) row.get(4);
+                String getterName = ((AccessorInfo) row.get(2)).name;
+                String setterName = ((AccessorInfo) row.get(4)).name;
                 MemberInfo mi = (MemberInfo) row.get(0);
                 result.add(new EncapsulateFieldInfo(
                         (TreePathHandle) mi.getElementHandle(),
@@ -450,7 +465,7 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         FIELD_ACCESS_INDEX = jComboField.getSelectedIndex();
         Modifier mod = getModifier(FIELD_ACCESS_INDEX);
         if (mod == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         } else {
             return Collections.singleton(mod);
         }
@@ -460,7 +475,7 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         METHOD_ACCESS_INDEX = jComboAccess.getSelectedIndex();
         Modifier mod = getModifier(METHOD_ACCESS_INDEX); 
         if (mod == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         } else {
             return Collections.singleton(mod);
         }
@@ -528,6 +543,136 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
                 return true;
             return ((Boolean) getValueAt(row, column-1)).booleanValue();
         }
+    }
+    
+    private static final class AccessorInfo {
+        String defaultName;
+        MemberInfo<ElementHandle<ExecutableElement>> defaultAccessor;
+        String name;
+        String accessorToolTip;
+        String defaultAccessorToolTip;
+        MemberInfo<ElementHandle<ExecutableElement>> accessor;
+        private ElementHandle<VariableElement> fieldHandle;
+        private boolean isGetter;
+
+        public static AccessorInfo createGetter(CompilationInfo javac, VariableElement field, String proposedName) {
+            ExecutableElement getter = EncapsulateFieldRefactoringPlugin.findMethod(javac, (TypeElement) field.getEnclosingElement(), proposedName, Collections.<VariableElement>emptyList(), true);
+            return create(javac, field, getter, proposedName, true);
+        }
+        
+        public static AccessorInfo createSetter(CompilationInfo javac, VariableElement field, String proposedName) {
+            ExecutableElement setter = EncapsulateFieldRefactoringPlugin.findMethod(javac, (TypeElement) field.getEnclosingElement(), proposedName, Collections.singletonList(field), true);
+            return create(javac, field, setter, proposedName, false);
+        }
+        
+        private static AccessorInfo create(CompilationInfo javac, VariableElement field, ExecutableElement method, String proposedName, boolean isGetter) {
+            AccessorInfo ai = new AccessorInfo();
+            ai.name = ai.defaultName = proposedName;
+            ai.accessor = ai.defaultAccessor = method != null ? MemberInfo.create(method, javac) : null;
+            ai.accessorToolTip = ai.defaultAccessorToolTip = method != null
+                    ? NbBundle.getMessage(
+                            EncapsulateFieldPanel.class,
+                            "MSG_EncapsulateFieldDeclared",
+                            ElementHeaders.getHeader(method.getEnclosingElement(), javac, ElementHeaders.NAME))
+                    : null;
+            ai.isGetter = isGetter;
+            ai.fieldHandle = ElementHandle.create(field);
+            return ai;
+        }
+        
+        public void reset() {
+            name = defaultName;
+            accessor = defaultAccessor;
+            accessorToolTip = defaultAccessorToolTip;
+        }
+        
+        public void setName(CompilationInfo javac, String s) {
+            name = s;
+            VariableElement field = fieldHandle.resolve(javac);
+            ExecutableElement method = null;
+            method = isGetter
+                    ? EncapsulateFieldRefactoringPlugin.findMethod(javac, (TypeElement) field.getEnclosingElement(), s, Collections.<VariableElement>emptyList(), true)
+                    : EncapsulateFieldRefactoringPlugin.findMethod(javac, (TypeElement) field.getEnclosingElement(), s, Collections.singletonList(field), true);
+            accessor = method != null ? MemberInfo.create(method, javac) : null;
+            accessorToolTip = method != null
+                    ? NbBundle.getMessage(
+                            EncapsulateFieldPanel.class,
+                            "MSG_EncapsulateFieldDeclared",
+                            ElementHeaders.getHeader(method.getEnclosingElement(), javac, ElementHeaders.NAME))
+                    : null;
+        }
+    }
+    
+    private static final class AccessorInfoRenderer extends UIUtilities.JavaElementTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            AccessorInfo ai = (AccessorInfo) value;
+            Object newValue = ai == null || !table.isCellEditable(row, column)
+                    ? null
+                    : ai.accessor == null ? ai.name : ai.accessor;
+            
+            setToolTipText(ai != null && table.isCellEditable(row, column) ? ai.accessorToolTip : null);
+            return super.getTableCellRendererComponent(table, newValue, isSelected, hasFocus, row, column);
+        }
+        
+    }
+    
+    private static final class AccessorInfoTableEditor extends DefaultCellEditor implements Task<CompilationController> {
+
+        private AccessorInfo ai;
+        private JavaSource js;
+        
+        public AccessorInfoTableEditor(JavaSource js) {
+            super(new JTextField());
+            this.js = js;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            ai = (AccessorInfo) value;
+            if (ai == null) {
+                throw new IllegalStateException();
+            }
+            String cellEditorValue = ai == null ? null: ai.name;
+            return super.getTableCellEditorComponent(table, cellEditorValue, isSelected, row, column);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            String cellEditorValue = (String) super.getCellEditorValue();
+            Object retVal;
+            if (cellEditorValue == null || cellEditorValue.length() == 0) {
+                if (ai != null || (ai.name != null && ai.name.length() > 0)) {
+                    ai.name = null;
+                    ai.accessor = null;
+                }
+                retVal = ai;
+            } else {
+                if (!cellEditorValue.equals(ai.name)) {
+                    computeNewValue();
+                }
+                retVal = ai;
+            }
+            return retVal;
+        }
+        
+        private void computeNewValue() {
+            try {
+                js.runUserActionTask(this, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public void run(CompilationController javac) throws Exception {
+            AccessorInfo desc = ai;
+            if (desc == null) {
+                return;
+            }
+            desc.setName(javac, ((String) super.getCellEditorValue()).trim());
+        }
+        
     }
     // end INNER CLASSES
 }

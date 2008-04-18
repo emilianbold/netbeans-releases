@@ -88,15 +88,7 @@ public interface ConnectionConstraint {
             }
         }
         
-        Boolean result = true;
-        SourcePin oldSource = null;
-        TargetPin oldTarget = null;
-         if (oldLink != null) {
-            oldSource = oldLink.getSource();
-            oldTarget = oldLink.getTarget();
-            oldLink.setSource(null);
-            oldLink.setTarget(null);
-        }
+        boolean result = true;
        
         if (target instanceof Graph) {
             if (!rModel.isConnectable(treePath)) {
@@ -105,9 +97,17 @@ public interface ConnectionConstraint {
             //
             if (((Graph) target).hasOutgoingLinks()) {
                 // The target tree node already has a connected link
-                result = false;
+                result =((Graph) target).getOutgoingLink() == oldLink ;
             }
        
+        }
+        SourcePin oldSource = null;
+        TargetPin oldTarget = null;
+         if (oldLink != null) {
+            oldSource = oldLink.getSource();
+            oldTarget = oldLink.getTarget();
+            oldLink.setSource(null);
+            oldLink.setTarget(null);
         }
         //
         if (source instanceof TreeSourcePin) {

@@ -43,6 +43,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -90,6 +91,7 @@ public class UninstallAction extends WizardAction {
     }
     
     public void execute() {
+        LogManager.logIndent("Start products uninstallation");
         final Registry registry = Registry.getInstance();
         final List<Product> products = registry.getProductsToUninstall();
         final int percentageChunk = Progress.COMPLETE / products.size();
@@ -151,6 +153,7 @@ public class UninstallAction extends WizardAction {
                 ErrorManager.notify(ErrorLevel.ERROR, e);
             }
         }
+        LogManager.logUnindent("... finished products uninstallation");
     }
     
     @Override
