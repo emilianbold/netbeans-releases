@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.openfile;
 
 import java.awt.Container;
@@ -418,11 +419,11 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      *          <code>false</code> otherwise
      */
     private final boolean openDataObjectByCookie(DataObject dataObject,
-                                       int line) {
+                                                 int line) {
         
         Class<? extends Node.Cookie> cookieClass;        
         Node.Cookie cookie;
-        if( (    cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
+        if (    (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
              || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
              || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
             return openByCookie(cookie, cookieClass, line);
@@ -469,8 +470,9 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         Class<? extends Node.Cookie> cookieClass;        
         Node.Cookie cookie;
         
-        if ( (line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
-             || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null)) ){
+        if ((line != -1)
+            && (   ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null)
+                || ((cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null) )) {
             boolean ret = openByCookie(cookie,cookieClass, line);      
             return ret;
         } 
@@ -478,7 +480,9 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         /* try to open the object using the default action */
         final Node dataNode = dataObject.getNodeDelegate();        
         final Action action = dataNode.getPreferredAction();
-        if (action != null && !(action instanceof FileSystemAction) && !(action instanceof ToolsAction)) {            
+        if ((action != null)
+                && !(action instanceof FileSystemAction)
+                && !(action instanceof ToolsAction)) {            
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
@@ -488,7 +492,10 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         }             
         
         /* Try to grab an editor/open/edit/view cookie and open the object: */
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DefaultOpenFileImpl.class, "MSG_opening", fileName));
+        StatusDisplayer.getDefault().setStatusText(
+                NbBundle.getMessage(DefaultOpenFileImpl.class,
+                                    "MSG_opening",                      //NOI18N
+                                    fileName));
         boolean success = openDataObjectByCookie(dataObject, line);
         if (success) {
             return true;
