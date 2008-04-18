@@ -61,6 +61,7 @@ public class JsCommentFormatter {
     private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
     private static final String CODE_TAG = "@code"; //NOI18N
     private static final String EXAMPLE_TAG = "@example"; //NOI18N
+    private static final String DESCRIPTION_TAG = "@description"; //NOI18N
     
     private final TokenSequence<? extends JsCommentTokenId> ts;
     private final StringBuilder summary;
@@ -290,6 +291,9 @@ public class JsCommentFormatter {
                 }
             }
             params.add(s);
+        } else if (tag.startsWith(DESCRIPTION_TAG)) {
+            String desc = tag.substring(DESCRIPTION_TAG.length()).trim();
+            summary.insert(0, desc);
         } else if (tag.startsWith(RETURN_TAG)) {
             returnTag = tag.substring(RETURN_TAG.length()).trim();
         } else if (tag.startsWith(TYPE_TAG)) {
@@ -311,7 +315,9 @@ public class JsCommentFormatter {
         } else { // NOI18N
             // Store up the rest of the stuff so we don't miss unexpected tags,
             // like @private, @config, etc.
-            if (!tag.startsWith("@id ") && !tag.startsWith("@name ")) { // NOI18N
+            if (!tag.startsWith("@id ") && !tag.startsWith("@name ") && // NOI18N
+                    !tag.startsWith("@attribute") && // NOI18N
+                    !tag.startsWith("@method") && !tag.startsWith("@property")) { // NOI18N
                 rest.append(tag);
                 rest.append("<br>"); // NOI18N
             }

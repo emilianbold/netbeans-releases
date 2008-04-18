@@ -54,17 +54,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedPanel.Scope;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -81,6 +77,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.project.Project;
 
 
@@ -278,7 +275,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private String getHeader(ExecutableElement call, CompilationInfo info) {
-        String result = UiUtils.getHeader(call,info,UiUtils.PrintPart.NAME + UiUtils.PrintPart.PARAMETERS);
+        String result = ElementHeaders.getHeader(call, info, ElementHeaders.NAME + ElementHeaders.PARAMETERS);
         if (result.length() > MAX_NAME) {
             result = result.substring(0,MAX_NAME-1) + "..."; // NOI18N
         }

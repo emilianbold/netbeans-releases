@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -145,8 +146,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
         if (functions != null && functions.size() > 0) {
             IndexedElement candidate =
-                findBestElementMatch(info, /*name,*/ functions/*, (BaseDocument)info.getDocument(),
-                    astOffset, lexOffset, path, closest, index*/);
+                findBestElementMatch(info, /*name,*/ functions,/* (BaseDocument)info.getDocument(),
+                    astOffset, lexOffset, path,*/ call, index);
             if (candidate instanceof IndexedFunction) {
                 return (IndexedFunction)candidate;
             }
@@ -293,7 +294,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         Set<IndexedElement> elements = index.getAllNames(url,
                 NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
-        IndexedElement function = findBestElementMatch(info, elements);
+        IndexedElement function = findBestElementMatch(info, elements, null, null);
         if (function != null) {
             return new DeclarationLocation(function.getFileObject(), 0, function);
         } else {
@@ -301,8 +302,54 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
     }
 
-    private IndexedElement findBestElementMatch(CompilationInfo info, /*String name,*/ Set<IndexedElement> elements/*,
-        BaseDocument doc, int astOffset, int lexOffset, AstPath path/ Node call, JsIndex index*/) {
+    private IndexedElement findBestElementMatch(CompilationInfo info, /*String name,*/ Set<IndexedElement> elements,/*
+        BaseDocument doc, int astOffset, int lexOffset, AstPath path*/ Node callNode, JsIndex index) {
+        Set<IndexedElement> candidates = new HashSet<IndexedElement>();
+        
+        // Prefer methods that match the given FQN. In other words, if I have say
+        // both widgetBase.setProps and bubble.setProps where bubble extends widgetBase,
+        // the inherited search will return both, but I want to prefer the derived one.
+        
+        // First prefer methods that have documentation
+        
+        
+        
+        // 1. First see if the reference is fully qualified. If so the job should
+        //   be easier: prune the result set down
+        // If I have the fqn, I can also call RubyIndex.getRDocLocation to pick the
+        // best candidate
+        if (callNode != null && (callNode.getType() == org.mozilla.javascript.Token.CALL ||
+                callNode.getType() == org.mozilla.javascript.Token.NEW)) {
+            // It's a call, so prefer method/constructor elements
+            String fqn = JsTypeAnalyzer.getCallFqn(info, callNode, true);
+            if (fqn != null && fqn.length() > 0 && fqn.indexOf('.') != -1) {
+                while ((fqn != null) && (fqn.length() > 0)) {
+                    for (IndexedElement method : elements) {
+                        if (fqn.equals(method.getIn()+"."+method.getName())) { // NOI18N
+                            candidates.add(method);
+                        }
+                    }
+
+                    // Check inherited methods; for example, if we've determined
+                    // that you're looking for Integer::foo, I should happily match
+                    // Numeric::foo.
+                    if (index != null && candidates.size() < elements.size()) {
+                        // Repeat looking in the superclass
+                        fqn = index.getExtends(fqn, JsIndex.ALL_SCOPE);
+                    } else {
+                        fqn = null;
+                    }
+                }
+            }
+        }
+
+        if (candidates.size() == 1) {
+            return candidates.iterator().next();
+        } else if (!candidates.isEmpty()) {
+            elements = candidates;
+        }
+
+        
         // For now no good heuristics to pick a method.
         // Possible things to consider:
         // -- scope - whether the method is local
@@ -326,8 +373,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
             /*AstPath path,*/ Node closest, JsIndex index, int astOffset, int lexOffset) {
 //        try {
             IndexedElement candidate =
-                findBestElementMatch(info, /*name,*/ elements/*, (BaseDocument)info.getDocument(),
-                    astOffset, lexOffset, path, closest, index*/);
+                findBestElementMatch(info, /*name,*/ elements,/* (BaseDocument)info.getDocument(),
+                    astOffset, lexOffset, path,*/ closest, index);
 
             if (candidate != null) {
                 boolean invalid = false;
@@ -562,6 +609,4 @@ boolean documented = false;
             return cmp;
         }
     }
-    
-
 }

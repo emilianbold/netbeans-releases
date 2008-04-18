@@ -30,6 +30,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.graphics.RRectangle;
+import org.netbeans.modules.soa.mappercore.graphics.Triangle;
 import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 
 /**
@@ -122,6 +123,9 @@ public class Constant extends Vertex {
             g2.draw(rrect);
         }
         
+        g2.fill(new Triangle(width - step, height, 
+                width, height - step, width, height));
+        
         g2.translate(-tx, -ty);
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
                 RenderingHints.VALUE_STROKE_NORMALIZE);
@@ -149,5 +153,10 @@ public class Constant extends Vertex {
         
         setHeight(Math.max(y, 2));
         super.layout();        
+    }
+
+    @Override
+    public int getMaximumWidth() {
+        return 30;
     }
 }

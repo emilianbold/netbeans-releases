@@ -172,6 +172,18 @@ public class JsBracketCompleterTest extends JsTestBase {
         insertChar("x = \"\\^\"", '"', "x = \"\\\"^\"");
     }
 
+    public void testInsertBrace1() throws Exception {
+        insertBreak("foobar({^});", "foobar({\n    ^\n});");
+    }
+
+    public void testInsertBrace2() throws Exception {
+        insertBreak("foobar([^]);", "foobar([\n    ^\n]);");
+    }
+
+    public void testInsertBrace3() throws Exception {
+        insertBreak("x = {^}", "x = {\n    ^\n}");
+    }
+    
     public void testInsertEnd1() throws Exception {
         insertBreak("x^", "x\n^");
     }
@@ -685,13 +697,13 @@ public class JsBracketCompleterTest extends JsTestBase {
         // Weird AST offset error - doesn't include the correct endpoint, just
         // end of last statement in the method
         //String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n}%>%";
-        String next = "function foo() %<%{\nif (true) {\n  fo^o\n}%>%\n}";
+        String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
     
     public void testLogicalRange3d() throws Exception {
-        String code = "function foo() %<%{\nif (true) {\n  fo^o\n}%>%\n}";
+        String code = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
         // Weird AST offset error - doesn't include the correct endpoint, just
         // end of last statement in the method
         String next = "%<%function foo() {\nif (true) {\n  fo^o\n}\n}%>%";

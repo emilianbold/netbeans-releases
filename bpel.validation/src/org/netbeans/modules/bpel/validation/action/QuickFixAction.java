@@ -56,13 +56,12 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
 import org.netbeans.modules.bpel.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.validation.core.Util;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.soa.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -117,16 +116,18 @@ public final class QuickFixAction extends IconAction {
     if (node == null) {
       return quickFixes;
     }
-//out("MODE: " + node);
-    if (myValidationController == null) {
-      BPELDataEditorSupport support = (BPELDataEditorSupport) node.getLookup().lookup(DataEditorSupport.class);
-      myValidationController = support.getValidationController();
+//out();
+//out("NODE: " + node);
+
+    if (myController == null) {
+      myController = node.getLookup().lookup(Controller.class);
+//out("CONTROLLER: " + myController);
     }
-    if (myValidationController == null) {
+    if (myController == null) {
 //out("CONTROLLER is NULL");
       return quickFixes;
     }
-    List<ResultItem> result = myValidationController.getValidationResult();
+    List<ResultItem> result = myController.getResult();
 
     for (ResultItem item : result) {
       if ( !(item instanceof QuickFixable)) {
@@ -141,5 +142,5 @@ public final class QuickFixAction extends IconAction {
     return quickFixes;
   }
 
-  private BPELValidationController myValidationController;
+  private Controller myController;
 }

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
@@ -72,6 +73,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public final class AstUtilities {
+
     private AstUtilities() {
         // This is a utility class
     }
@@ -110,6 +112,27 @@ public final class AstUtilities {
         return lexicalRange;
     }
 
+    /** SLOW - used from tests only right now */
+    public static boolean isGlobalVar(CompilationInfo info, Node node) {
+        if (!isNameNode(node)) {
+            return false;
+        }
+        String name = node.getString();
+        JsParseResult rpr = AstUtilities.getParseResult(info);
+        if (rpr == null) {
+            return false;
+        }
+        VariableVisitor v = rpr.getVariableVisitor();
+        Map<String,List<Node>> localVars = v.getLocalVars(node);
+
+        List<Node> nodes = localVars.get(name);
+        if (nodes == null) {
+            return true;
+        } else {
+            return nodes.contains(node);
+        }
+    }
+    
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
@@ -355,6 +378,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return 0;
         }
         child = child.getNext();
+        
+        if (child == null || astOffset < child.getSourceStart()) {
+            return -1;
+        }
 
         int index = 0;
         while (child != null) {

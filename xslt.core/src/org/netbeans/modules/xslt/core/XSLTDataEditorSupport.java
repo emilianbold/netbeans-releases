@@ -73,7 +73,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
-import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vitaly Bychkov

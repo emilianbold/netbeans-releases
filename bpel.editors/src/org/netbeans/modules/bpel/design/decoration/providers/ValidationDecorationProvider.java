@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.Listener;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
@@ -46,7 +46,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 /**
  * @author aa160298
  */
-public class ValidationDecorationProvider extends DecorationProvider implements BPELValidationListener {
+public class ValidationDecorationProvider extends DecorationProvider implements Listener {
     
     private Object list_key = new Object();
     private Object decoration_key = new Object();
@@ -55,18 +55,18 @@ public class ValidationDecorationProvider extends DecorationProvider implements 
     
     public ValidationDecorationProvider(DesignView designView) {
         super(designView);
-        final BPELValidationController vc = getDesignView().getValidationController();
-        vc.addValidationListener(this);
+        final Controller controller = getDesignView().getValidationController();
+        controller.addListener(this);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                vc.triggerValidation();
+                controller.triggerValidation();
             }
         });
     }
     
     public void release(){
-        getDesignView().getValidationController().removeValidationListener(this);
+        getDesignView().getValidationController().removeListener(this);
         list_key = null;
         decoration_key = null;
     }

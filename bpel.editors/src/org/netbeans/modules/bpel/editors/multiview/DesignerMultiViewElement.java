@@ -77,11 +77,12 @@ import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.soa.validation.Action;
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDeleteAction;
@@ -145,7 +146,6 @@ import org.netbeans.modules.bpel.model.api.events.ChangeEventListenerAdapter;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.palette.SoaPaletteFactory;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
-import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -254,8 +254,8 @@ public class DesignerMultiViewElement extends TopComponent
 //      getValidationController().triggerValidation();
     }
     
-    private BPELValidationController getValidationController() {
-        return (BPELValidationController) getDataObject().getLookup().lookup(BPELValidationController.class);
+    private Controller getValidationController() {
+        return (Controller) getDataObject().getLookup().lookup(Controller.class);
     }
 
     public void componentClosed() {
@@ -351,7 +351,7 @@ public class DesignerMultiViewElement extends TopComponent
             }
             // vlv: valdiation
             toolbar.addSeparator();
-            toolbar.add(new BPELValidateAction(myDesignView.getBPELModel()));
+            toolbar.add(new Action(getValidationController()));
             
             // ksorokin: breakpoints
             toolbar.addSeparator();
@@ -745,39 +745,7 @@ new ProxyLookup(new Lookup[] {
         return getDataObject().getEditorSupport().getBpelModel();
     }
     
-    /*
-        1) Get a element from bpel.api package
-        2) If it does not implement BpelEntity ignore.
-        3) Check if there is matching NodeType.   [Otherwise the bubbling up will eventually lead to a BpelEntity]
-        4) If yes then make an entry into the map.
-     
-        No entry in map as no matching NodeType:
-        [Activity, ActivityHolder, AssignChild, BaseCorrelation, BaseFaultHandlers,
-         BaseScope, BooleanExpr, BpelContainer, Branches,
-         CompensateScope, CompensationHandlerHolder, CompletionCondition, CompositeActivity,
-         Condition, ConditionHolder, CorrelationsHolder, DeadlineExpression, Documentation,
-         DurationExpression, Expression, ExtendableActivity, ExtensibleAssign, ExtensibleElements,
-         Extension, ExtensionActivity, ExtensionContainer, ExtensionEntity, FinalCounterValue,
-         For, From, FromPartContainer, Link*, LinkContainer,  Literal, MessageExchangeContainer,
-         NamedElement, OnAlarmEvent, OnAlarmPick, OnMessage, OnMessageCommon, PartnerLinkContainer,
-         PatternedCorrelationContainer, RepeatEvery, ReThrow, ServiceRef, Source,
-         SourceContainer, StartCounterValue, Target, TargetContainer, TimeEvent, TimeEventHolder,
-         To, Validate, VariableDeclaration,
-     
-     
-     
-        These have an entry in the map:
-        [Assign, Catch, CatchAll, Compensate, CompensatableActivityHolder, CompensationHandler, Copy,
-         Correlation, CorrelationContainer,
-         CorrelationSet, CorrelationSet, Else, ElseIf, Empty, EventHandlers, Exit, FaultHandlers, Flow,
-         ForEach, FromPart, If, Import, Invoke, MessageExchange, OnEvent, PartnerLink, PatternedCorrelation,
-         Pick, Process,
-         Receive, RepeatUntil, Reply, Scope, Sequence, TerminationHandler, Throw, ToPart, Variable,
-         VariableContainer, VariableDeclarationScope, Wait, While]
-     
-     */
-    protected static Map<Class<? extends BpelEntity>, NodeType> 
-        BPELENTITY_NODETYPE_MAP;
+    protected static Map<Class<? extends BpelEntity>, NodeType> BPELENTITY_NODETYPE_MAP;
     static {
         BPELENTITY_NODETYPE_MAP = new HashMap<Class<? extends BpelEntity>,NodeType>();
         BPELENTITY_NODETYPE_MAP.put(Assign.class, NodeType.ASSIGN);
@@ -844,19 +812,6 @@ new ProxyLookup(new Lookup[] {
 
     }
 
-    // ------------------------------------------------------
-    private class BPELValidateAction extends ValidateAction {
-        
-        public BPELValidateAction(BpelModel model) {
-            super(model);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent event) {
-            getValidationController().startValidation();
-        }
-    }
-    
     private static final String ACTIVATED_NODES = "activatedNodes";
     private transient MultiViewElementCallback myMultiViewObserver;
     private transient DesignView myDesignView;
@@ -865,7 +820,6 @@ new ProxyLookup(new Lookup[] {
     private BPELDataObject myDataObject;
     private transient JComponent myToolBarPanel;
     private static Boolean groupVisible = null;
-
     private PropertyChangeListener myActiveNodeChangeListener;
     private ExplorerManager myExplorerManager;
     private ActivatedNodesMediator myNodesMediator;

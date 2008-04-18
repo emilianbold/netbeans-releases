@@ -50,7 +50,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
@@ -292,23 +291,6 @@ public abstract class InstanceProperties {
     }
 
     /**
-     * Return default instance properties or <code>null</code> if no default
-     * instance configured.
-     * <p>
-     * This method is deprecated, so don't expect it will return any useful default
-     * instance properties. Method will be removed in near future.
-     *
-     * @return default instance properties
-     * @deprecated this API is broken by design - the client should choose the
-     *             instance by usage {@link Deployment#getServerInstanceIDs} and selection
-     *             of appropriate server instance. Method will be removed in
-     *             near future. See issue 83934.
-     */
-    public static InstanceProperties getDefaultInstance() {
-        return null;
-    }
-
-    /**
      * Set instance properties.
      * @param props properties to set for this server instance.
      * @exception IllegalStateException when instance already removed or not created yet
@@ -339,26 +321,9 @@ public abstract class InstanceProperties {
     public abstract java.util.Enumeration propertyNames() throws IllegalStateException;
     
     /**
-     * Is the target server the default J2EE server for deployment?
-     * @return true if the target server or admin server is the default.
-     */
-    public abstract boolean isDefaultInstance();
-    
-    /**
      * Return DeploymentManager associated with this instance.
      */
     public abstract DeploymentManager getDeploymentManager();
-    
-    /**
-     * Return default Target object for the target server from this instance, if any.
-     */
-    public abstract Target getDefaultTarget();
-    
-    /**
-     * Set the target server the default server.
-     * @param targetName name of the target server; null if admin server is also single target.
-     */
-    public abstract void setAsDefaultServer(String targetName);
     
     /**
      * Ask the server instance to reset cached deployment manager, J2EE

@@ -112,9 +112,13 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
+        String serverID = (String) wiz.getProperty(WizardProperties.SERVER);
                         
         Collection<FileObject> prjLocs = null;
-        prjLocs = WebSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        prjLocs = WebSampleProjectGenerator.createProjectFromTemplate(
+                templateWizard.getTemplate().getPrimaryFile(), 
+                projectLocation, 
+                name, serverID);
         
         Set hset = new HashSet();
         for (FileObject prj : prjLocs) {

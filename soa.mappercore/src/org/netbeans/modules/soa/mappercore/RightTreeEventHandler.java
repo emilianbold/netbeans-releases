@@ -130,7 +130,6 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     public void mouseDragged(MouseEvent e) {
         if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
             
-            LeftTree leftTree = getLeftTree();
             LinkTool linkTool = getMapper().getLinkTool();
             Transferable transferable = null;
             Link link = null;
@@ -145,7 +144,9 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
                     transferable = linkTool.activateOutgoing(source, 
                             link, initialPath);
                 }
-                if (link.getSource() instanceof Vertex) {
+                if (link.getSource() instanceof Vertex  && 
+                        getMapper().getNode(initialPath, true).isGraphExpanded()) 
+                {
                     Vertex vertex = (Vertex) link.getSource();
                     transferable = linkTool.activateOutgoing(initialPath, vertex);
                 }

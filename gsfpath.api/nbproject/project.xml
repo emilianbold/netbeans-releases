@@ -142,16 +142,24 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.gsf</friend>
+                <friend>org.netbeans.modules.erlang.editing</friend>
+                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.erlang.platform</friend>
+                <friend>org.netbeans.modules.fortress.editing</friend>
+                <friend>org.netbeans.modules.fortress.project</friend>
+                <friend>org.netbeans.modules.fortress.platform</friend>
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
-                <friend> org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
-                <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.scala.debugger.projects</friend>
+                <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
-                <friend>org.netbeans.modules.erlang.platform</friend>
-                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.scala.platform</friend>
+                <friend>org.netbeans.modules.scala.stdplatform</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.gsf.tools</friend>
                 <package>org.netbeans.modules.gsfpath.api.classpath</package>
                 <package>org.netbeans.modules.gsfpath.api.platform</package>
