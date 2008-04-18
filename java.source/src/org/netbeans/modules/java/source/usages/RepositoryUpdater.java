@@ -275,8 +275,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        if (   GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())
-            && (   evt.getSource() == this.cpImpl
+        if (GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())
+            && (evt.getSource() == this.cpImpl
                 || /*XXX: jlahoda: should not be necessary, IMO*/evt.getSource() == this.cp)) {
             ClassPath changedCp = (ClassPath) evt.getNewValue();
             assert changedCp != null;
@@ -284,7 +284,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 LOGGER.log(Level.FINER, "changedCp={0}", changedCp.toString());
             for (ClassPath.Entry e : changedCp.entries()) {
                 URL root = e.getURL();
-                scheduleCompilation(root,root, true);
+                scheduleCompilation(root,root, true, false);
             }
             
             return ;
@@ -401,7 +401,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             String originalName = fe.getName();
                             originalName = originalName+'.'+originalExt;  //NOI18N
                             final URL original = new File (parentFile,originalName).toURI().toURL();
-                            submit(Work.delete(original,root,fo.isFolder()));
+                            submit(Work.delete(original,root,fo.isFolder(),false));
                             if (TasklistSettings.isTasklistEnabled()) {
                                 Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, original, FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
                                 if (TasklistSettings.isBadgesEnabled()) {
@@ -413,7 +413,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                             }
                         }
-                        final Work work = Work.compile (fo,root);
+                        final Work work = Work.compile (fo,root,false);
                         RepositoryUpdater.WORKER.post(new Runnable () {
                             public void run () {
                                 submit(work);
@@ -458,7 +458,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("Folder created: "+FileUtil.getFileDisplayName(fo)+" Owner: " + root);
                 }
-                scheduleCompilation(fo,root);
+                scheduleCompilation(fo.getURL(),root,true,false);
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -469,17 +469,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();        
         final boolean isFolder = fo.isFolder();
         try {
-            if ((isJava(fo) || isFolder) && VisibilityQuery.getDefault().isVisible(fo)) {
+            boolean vs = false;
+            if ((isJava(fo) || isFolder || (vs=VirtualSourceProviderQuery.hasVirtualSource(fo))) && VisibilityQuery.getDefault().isVisible(fo)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("Java file deleted: " + FileUtil.getFileDisplayName(fo));
                 }
                 final URL root = getOwningSourceRoot (fo);
-                if (root != null) {
+                if (root != null && (!vs||rootsWithVirtualSource.contains(root))) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Owner: " + root);
                     }
                     markRootTasklistDirty(root);
-                    submit(Work.delete(fo,root,isFolder));
+                    submit(Work.delete(fo,root,isFolder,vs));
                     if (TasklistSettings.isTasklistEnabled()) {
                         Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, fo.getURL(), FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
                         if (TasklistSettings.isBadgesEnabled()) {
@@ -506,7 +507,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public void fileDataCreated(FileEvent fe) {
         final FileObject fo = fe.getFile();        
         try {
-            if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+            if ((isJava(fo) || VirtualSourceProviderQuery.hasVirtualSource(fo)) && VisibilityQuery.getDefault().isVisible(fo)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("Java file created: " + FileUtil.getFileDisplayName(fo));
                 }
@@ -575,16 +576,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         URL rootURL = root.getURL();
         if (!cpImpl.isLibrary(root)) {
             assert "file".equals(foURL.getProtocol()) && "file".equals(rootURL.getProtocol());
-            scheduleCompilation (foURL,rootURL,fo.isFolder());
-        }        
+            scheduleCompilation (foURL,rootURL,fo.isFolder(),!isJava(fo));
+        }
     }      
     
-    private final void scheduleCompilation (final FileObject fo, final URL root) throws IOException {
-        scheduleCompilation (fo.getURL(),root,fo.isFolder());
-    }
     
-    private final void scheduleCompilation (final URL file, final URL root, boolean isFolder) {
-        submit(Work.compile (file,root, isFolder));
+    private final void scheduleCompilation (final URL file, final URL root, boolean isFolder, boolean virtual) {
+        submit(Work.compile (file,root, isFolder,virtual));
     }
     
     /**
@@ -1068,38 +1066,31 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return new Work (WorkType.COMPILE_BATCH, null);
         }
         
-        public static Work compile (final FileObject file, final URL root) throws FileStateInvalidException {
-            return compile (file.getURL(), root, file.isFolder());
+        public static Work compile (final FileObject file, final URL root, boolean virtual) throws FileStateInvalidException {
+            return compile (file.getURL(), root, file.isFolder(), virtual);
         }
         
-        public static Work compile (final FileObject file, final URL root, WorkType type) throws FileStateInvalidException {
-            return compile (file.getURL(), root, file.isFolder(), type);
-        }
         
-        public static Work compile (final URL file, final URL root, boolean isFolder) {
+        public static Work compile (final URL file, final URL root, boolean isFolder, boolean virtual) {
             assert file != null && root != null;
-            return new SingleRootWork (WorkType.COMPILE, file, root, isFolder, null,false);
+            return new SingleRootWork (WorkType.COMPILE, file, root, isFolder, virtual, null,false);
         }
         
-        public static Work compile (final URL file, final URL root, boolean isFolder, WorkType type) {
-            assert file != null && root != null;
-            return new SingleRootWork (type, file, root, isFolder, null,false);
-        }
         
-        public static Work compile (final FileObject file, final URL root, CountDownLatch[] latch, boolean isInitialCompilation) throws FileStateInvalidException {
+        private static Work compile (final FileObject file, final URL root, CountDownLatch[] latch, boolean isInitialCompilation) throws FileStateInvalidException {
             assert file != null && root != null;
             assert latch != null && latch.length == 1 && latch[0] == null;
             latch[0] = new CountDownLatch (1);
-            return new SingleRootWork (WorkType.COMPILE, file.getURL(), root, file.isFolder(),latch[0], isInitialCompilation);
+            return new SingleRootWork (WorkType.COMPILE, file.getURL(), root, file.isFolder(), false, latch[0], isInitialCompilation);
         }
         
-        public static Work delete (final FileObject file, final URL root, final boolean isFolder) throws FileStateInvalidException {
-            return delete (file.getURL(), root,file.isFolder());
+        public static Work delete (final FileObject file, final URL root, final boolean isFolder, final boolean isVirtual) throws FileStateInvalidException {
+            return delete (file.getURL(), root,file.isFolder(), isVirtual);
         }
         
-        public static Work delete (final URL file, final URL root, final boolean isFolder) {
+        public static Work delete (final URL file, final URL root, final boolean isFolder, final boolean isVirtual) {
             assert file != null && root != null;
-            return new SingleRootWork (WorkType.DELETE, file, root, isFolder,null,false);
+            return new SingleRootWork (WorkType.DELETE, file, root, isFolder,isVirtual,null,false);
         }
         
         public static Work binary (final FileObject file, final URL root) throws FileStateInvalidException {
@@ -1108,7 +1099,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public static Work binary (final URL file, final URL root, boolean isFolder) {
             assert file != null && root != null;
-            return new SingleRootWork (WorkType.UPDATE_BINARY, file, root, isFolder, null,false);
+            return new SingleRootWork (WorkType.UPDATE_BINARY, file, root, isFolder, false, null,false);
         }
         
         public static Work filterChange (final List<URL> roots, boolean forceClean) {
@@ -1139,14 +1130,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final URL file;
         private final URL root;
         private final boolean isFolder;
+        private final boolean isVirtual;
         private final boolean isInitialCompilation;
         
                 
-        public SingleRootWork (WorkType type, URL file, URL root, boolean isFolder, CountDownLatch latch, boolean isInitialCompilation) {
+        public SingleRootWork (WorkType type, URL file, URL root,
+                boolean isFolder, boolean isVirtual,
+                CountDownLatch latch, boolean isInitialCompilation) {
             super (type, latch);           
             this.file = file;            
             this.root = root;
             this.isFolder = isFolder;
+            this.isVirtual = isVirtual;
             this.isInitialCompilation = isInitialCompilation;
         }
         
@@ -1160,6 +1155,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public boolean isFolder () {            
             return this.isFolder;            
+        }
+        
+        public boolean isVirtual () {
+            return this.isVirtual;
         }
         
         public boolean isInitialCompilation () {
@@ -1471,7 +1470,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                 }
                                 else {
-                                    updateFile (file, root, null);
+                                    updateFile (file, root, sw.isVirtual(), null);
                                 }
                             } catch (Abort abort) {
                                 //Ignore abort
@@ -1483,7 +1482,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             final SingleRootWork sw = (SingleRootWork) work;
                             final URL file = sw.getFile();
                             final URL root = sw.getRoot ();
-                            final List<File> toRebuild = delete (file, root, sw.isFolder());
+                            final List<File> toRebuild = delete (file, root, sw.isFolder(), sw.isVirtual());
                             if (toRebuild != null)
                                 assureRecompiled(root, toRebuild);
                             break;
@@ -1973,7 +1972,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
             final List<File> virtualFilesToCompile = new LinkedList<File>();
+            boolean hasVirtualChildren = false;
             for (File child : virtualChildren) {
+                hasVirtualChildren = true;
                 if (!child.canRead()) {
                     //the file is not readable, ignore it:
                     continue;
@@ -2026,6 +2027,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }
                 }
             }
+            if (hasVirtualChildren) {
+                rootsWithVirtualSource.add(root);
+            }
             for (List<File> files : resources.values()) {
                 for (File toDelete : files) {
                     if (!rs.contains(toDelete)) {
@@ -2047,8 +2051,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 for (FileObjects.InferableJavaFileObject fo : fos) {
                     ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, fo);
                     toCompile.add(Pair.<JavaFileObject,File>of(fo,null));
-                }
-                rootsWithVirtualSource.add(root);
+                }                
             }
             if (!toCompile.isEmpty()) {
                 if (handle != null) {
@@ -2179,7 +2182,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private void updateFile (final URL file, final URL root, Collection<File> toRebuild) throws IOException {
+        private void updateFile (final URL file, final URL root, final boolean virtual, Collection<File> toRebuild) throws IOException {
             final FileObject fo = URLMapper.findFileObject(file);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (fo == null || rootFo == null) {
@@ -2192,7 +2195,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 try {
                     uqImpl.setDirty(null);
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false, false);
+                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false, virtual);
                     final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
@@ -2211,7 +2214,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         String rsFileBinaryName = null;
                         for (File toDelete : files) {
                             toDelete.delete();
-                            if (toDelete.getName().endsWith(FileObjects.SIG)) {
+                            final String ext = FileObjects.getExtension(toDelete.getName());
+                            if (FileObjects.SIG.equals(ext)) {
                                 String className = FileObjects.getBinaryName (toDelete,classCache);
                                 if (sourceName != null && !rsFileBinaryName.equals(className)) {
                                     classNamesToDelete.add(Pair.<String,String>of(className,sourceName));
@@ -2221,11 +2225,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }                                
                                 removed.add (ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                             }
-                            else if (toDelete.getName().endsWith(FileObjects.RS)) {
+                            else if (FileObjects.RS.equals(ext)) {
                                 //The RS files comes as first in toDelete
                                 sourceName = relativePath;
                                 rsFileBinaryName = FileObjects.getBinaryName (toDelete,classCache);
                             }
+                            //Nothing to do for RX files
                         }
                     }
                     else {
@@ -2323,7 +2328,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private List<File> delete (final URL file, final URL root, final boolean folder) throws IOException {
+        private List<File> delete (final URL file, final URL root, final boolean folder, final boolean virtual) throws IOException {
             List<File> toReparse = null;
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
             final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
@@ -2332,7 +2337,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final String offset = FileObjects.getRelativePath (rootFile,fileFile);
             assert offset != null && offset.length() > 0 : String.format("File %s not under root %s ", fileFile.getAbsolutePath(), rootFile.getAbsolutePath());  // NOI18N                        
             final File classCache = Index.getClassFolder (rootFile);
-            final File[] affectedFiles = getAffectedCacheFiles(offset, classCache, folder);            
+            final File[] affectedFiles = getAffectedCacheFiles(offset, classCache, folder, virtual);            
             if (affectedFiles != null && affectedFiles.length > 0) {
                 Set<ElementHandle<TypeElement>> removed = new HashSet<ElementHandle<TypeElement>>();
                 final ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
@@ -2366,28 +2371,41 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 if (f.isDirectory()) {
                     getFiles (f.listFiles(),classCache, names, removed);
                 }
-                else if (f.getName().endsWith(FileObjects.RS)) {
-                    List<File> rsFiles = new LinkedList<File>();
-                    readRSFile(f, classCache, rsFiles);
-                    final String relativePath = FileObjects.getRelativePath (classCache,f);
-                    final String rsFileBinaryName = FileObjects.getBinaryName(f, classCache);
-                    final String sourceName = relativePath.substring(0, relativePath.length() - FileObjects.RS.length()) + FileObjects.JAVA;
-                    for (File rsf : rsFiles) {
-                        String className = FileObjects.getBinaryName (rsf,classCache);
-                        if (!rsFileBinaryName.equals(className)) {
-                            names.add(Pair.<String,String>of (className,sourceName));
-                        }
-                        else {
-                            names.add(Pair.<String,String>of (className,null));
-                        }
-                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                        rsf.delete();
-                    }
-                }
                 else {
-                    String className = FileObjects.getBinaryName (f,classCache);                                                                        
-                    names.add(Pair.<String,String>of (className,null));
-                    removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                    final String ext = FileObjects.getExtension(f.getName());
+                    if (FileObjects.RS.equals(ext)) {
+                        final List<File> rsFiles = new LinkedList<File>();
+                        readRSFile(f, classCache, rsFiles);
+                        final String relativePath = FileObjects.getRelativePath (classCache,f);
+                        final String rsFileBinaryName = FileObjects.getBinaryName(f, classCache);
+                        final String sourceName = relativePath.substring(0, relativePath.length() - FileObjects.RS.length()) + FileObjects.JAVA;
+                        for (File rsf : rsFiles) {
+                            String className = FileObjects.getBinaryName (rsf,classCache);
+                            if (!rsFileBinaryName.equals(className)) {
+                                names.add(Pair.<String,String>of (className,sourceName));
+                            }
+                            else {
+                                names.add(Pair.<String,String>of (className,null));
+                            }
+                            removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            rsf.delete();
+                        }
+                    }
+                    else if (FileObjects.RX.equals(ext)) {
+                        final List<File> rxFiles = new LinkedList<File>();
+                        readRSFile(f, classCache, rxFiles);
+                        for (File rsf : rxFiles) {
+                            String className = FileObjects.getBinaryName (rsf,classCache);                            
+                            names.add(Pair.<String,String>of (className,null));                            
+                            removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            rsf.delete();
+                        }
+                    }
+                    else {
+                        String className = FileObjects.getBinaryName (f,classCache);                                                                        
+                        names.add(Pair.<String,String>of (className,null));
+                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                    }
                 }
                 f.delete();                    
             }
@@ -2457,10 +2475,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             toCompile.put(root, storedFiles);
             
             if (storedFiles.size() == 1) {
-                URL currentFile = storedFiles.iterator().next().toURI().toURL();
+                final File file = storedFiles.iterator().next();
+                URL currentFile = file.toURI().toURL();
                 List<File> toRebuild = depsToRecompile != null ? new LinkedList<File>() : null;
                 
-                updateFile(currentFile, root, toRebuild);
+                updateFile(currentFile, root, !isJava(FileObjects.getExtension(file.getName())), toRebuild); 
                 
                 if (depsToRecompile != null) {
                     depsToRecompile.put(root, toRebuild);
@@ -3260,7 +3279,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (classCache != null) {
                 String offset = FileUtil.getRelativePath(root, file);
                 if (offset != null) {
-                    res = getAffectedCacheFiles(offset.replace('/', File.separatorChar), classCache, false);    //NOI18N
+                    res = getAffectedCacheFiles(offset.replace('/', File.separatorChar), classCache, false, false);    //NOI18N
                 }
             }
         } catch (IOException e) {
@@ -3289,7 +3308,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         return af;
     }
     
-    private static File[] getAffectedCacheFiles (final String offset, final File classCache, final boolean folder) {        
+    private static File[] getAffectedCacheFiles (final String offset, final File classCache,
+            final boolean folder, final boolean virtual) {        
         File[] affectedFiles = null;
         if (folder) {
             final File container = new File (classCache, offset);
@@ -3299,18 +3319,29 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             int slashIndex = offset.lastIndexOf (File.separatorChar);
             int dotIndex = offset.lastIndexOf('.');     //NOI18N
             final File container = slashIndex == -1 ? classCache : new File (classCache,offset.substring(0,slashIndex));
-            final String name = offset.substring(slashIndex+1, dotIndex);
-            final String[] patterns = new String[] {
-              name + '.',
-              name + '$'
-            };
+            String[] patterns;
+            if (virtual) {
+                patterns = new String[] {
+                    offset.substring(slashIndex+1) + '.' + FileObjects.RX       //NOI18N
+                };
+            }
+            else {
+                final String name = offset.substring(slashIndex+1, dotIndex);
+                patterns = new String[] {
+                    name + '.',     //NOI18N
+                    name + '$'      //NOI18N
+                };
+            }
             final File[] content  = container.listFiles();
             if (content != null) {
                 final List<File> result = new ArrayList<File>(content.length);
                 for (File f : content) {
                     final String fname = f.getName();
-                    if (fname.startsWith(patterns[0]) || fname.startsWith(patterns[1])) {
-                        result.add(f);
+                    for (int i=0; i< patterns.length; i++) {
+                        if (fname.startsWith(patterns[i])) {
+                            result.add(f);
+                            break;
+                        }
                     }
                 }
                 affectedFiles = result.toArray(new File[result.size()]);
@@ -3369,7 +3400,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             files.add(f);
         }
-                }
+    }
     private static void getAllClassFilesImpl (final File folder, final File root, final int oi, final Map<String,List<File>> result, final boolean recursive) {
         final File[] content = folder.listFiles();
         if (content == null) {
