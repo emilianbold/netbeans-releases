@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
   <Row>
     <Toolbar name="File" />
     <Toolbar name="Edit" />
-    <Toolbar name="Memory" visible="false" />
+    <Toolbar name="Memory"/>
   </Row>
   <Row>
     <Toolbar name="WorkspaceSwitcher" visible="true" />
