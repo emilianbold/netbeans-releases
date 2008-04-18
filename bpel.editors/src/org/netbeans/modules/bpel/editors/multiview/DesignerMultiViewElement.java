@@ -155,7 +155,7 @@ import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
-import org.netbeans.modules.bpel.search.api.SearchManager;
+import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.bpel.documentation.DocumentationGenerator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -343,12 +343,9 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManager.getDefault();
+            toolbar.addSeparator();
+//todo a            toolbar.add(SearchManager.getDefault().getSearchAction());
 
-            if (manager != null) {
-              toolbar.addSeparator();
-              toolbar.add(manager.getSearchAction());
-            }
             // vlv: valdiation
             toolbar.addSeparator();
             toolbar.add(new Action(getValidationController()));
@@ -462,9 +459,10 @@ public class DesignerMultiViewElement extends TopComponent
         SearchManager manager = SearchManager.getDefault();
         
         if (manager != null) {
-          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
-          myFind.setVisible(false);
-          add(myFind, BorderLayout.SOUTH);
+// todo a
+//          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
+//          myFind.setVisible(false);
+//          add(myFind, BorderLayout.SOUTH);
         }
         initActiveNodeContext();
         setVisible(true);

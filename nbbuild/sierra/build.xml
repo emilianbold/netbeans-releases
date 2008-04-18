@@ -242,7 +242,6 @@
             <buildpath location="${home}/bpel.debugger/build.xml"/>
             <buildpath location="${home}/bpel.debugger.ui/build.xml"/>
             <buildpath location="${home}/bpel.mapper/build.xml"/>
-            <buildpath location="${home}/bpel.search/build.xml"/>
             <buildpath location="${home}/bpel.editors/build.xml"/>
             <buildpath location="${home}/bpel.refactoring/build.xml"/>
             <buildpath location="${home}/bpel.samples/build.xml"/>
