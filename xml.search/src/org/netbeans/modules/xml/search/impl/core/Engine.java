@@ -42,7 +42,6 @@ package org.netbeans.modules.xml.search.impl.core;
 
 import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
 
 import org.netbeans.modules.xml.search.api.SearchException;

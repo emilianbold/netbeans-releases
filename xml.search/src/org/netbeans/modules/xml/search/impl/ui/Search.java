@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.xml.search.impl.ui;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -88,7 +86,7 @@ public final class Search extends Dialog {
   }
 
   @Override
-  protected final void updated()
+  protected void updated()
   {
 //out("UPDATED");
     setItems(myTarget, myTargets);
@@ -254,7 +252,7 @@ public final class Search extends Dialog {
   }
 
   @Override
-  protected final DialogDescriptor createDescriptor()
+  protected DialogDescriptor createDescriptor()
   {
     Object [] buttons = getButtons();
     myDescriptor = new DialogDescriptor(
