@@ -43,6 +43,7 @@ package org.netbeans.modules.web.project;
 
 import java.awt.*;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -59,7 +60,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 public class Utils {
 
     // COPIED FROM TOMCAT
-    private static final String javaKeywords[] = {
+    private static final String JAVA_KEYWORDS[] = {
         "abstract", "assert", "boolean", "break", "byte", "case",
         "catch", "char", "class", "const", "continue",
         "default", "do", "double", "else", "enum", "extends",
@@ -311,21 +312,7 @@ public class Utils {
      * Test whether the argument is a Java keyword
      */
     private static boolean isJavaKeyword(String key) {
-        int i = 0;
-        int j = javaKeywords.length;
-        while (i < j) {
-            int k = (i+j)/2;
-            int result = javaKeywords[k].compareTo(key);
-            if (result == 0) {
-                return true;
-            }
-            if (result < 0) {
-                i = k+1;
-            } else {
-                j = k;
-            }
-        }
-        return false;
+        return Arrays.binarySearch(JAVA_KEYWORDS, key) >= 0;
     }
 
     public static Color getErrorColor() {
