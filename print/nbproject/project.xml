@@ -120,7 +120,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors</friend>
-                <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.xml.search</friend>
