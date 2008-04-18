@@ -457,11 +457,9 @@ public class DesignerMultiViewElement extends TopComponent
 
         // vlv: find
         myFind = SearchManager.getDefault().createFind(new Diagram(getDesignView()), getDesignView());
+        myFind.setVisible(false);
+        add(myFind, BorderLayout.SOUTH);
 
-        if (myFind != null) {
-          myFind.setVisible(false);
-          add(myFind, BorderLayout.SOUTH);
-        }
         initActiveNodeContext();
         setVisible(true);
         
