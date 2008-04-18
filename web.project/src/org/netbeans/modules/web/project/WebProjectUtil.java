@@ -52,6 +52,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the web project module.
@@ -106,15 +107,20 @@ public final class WebProjectUtil {
     /**
      * Logs the UI gesture.
      *
-     * @param message message key
-     * @param params message parameters
      * @param bundle resource bundle to use for message
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
      */
-    public static void logUI(String message, Object[] params, ResourceBundle bundle) {
+    public static void logUI(ResourceBundle bundle,String message, Object[] params) {
+        Parameters.notNull("message", message);
+        Parameters.notNull("bundle", bundle);
+
         LogRecord logRecord = new LogRecord(Level.INFO, message);
         logRecord.setLoggerName(UI_LOGGER.getName());
         logRecord.setResourceBundle(bundle);
-        logRecord.setParameters(params);
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
         UI_LOGGER.log(logRecord);
     }
 

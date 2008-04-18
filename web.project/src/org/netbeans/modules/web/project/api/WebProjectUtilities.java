@@ -661,9 +661,8 @@ public class WebProjectUtilities {
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
             String serverInstanceID, String j2eeLevel, String librariesDefinition, String serverLibraryName) throws IOException {
 
-        WebProjectUtil.logUI("UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
-                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)},
-                NbBundle.getBundle(WebProjectUtilities.class));
+        WebProjectUtil.logUI(NbBundle.getBundle(WebProjectUtilities.class),"UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
 
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, WebProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
