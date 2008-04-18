@@ -344,7 +344,7 @@ public class DesignerMultiViewElement extends TopComponent
 
             // vlv: search
             toolbar.addSeparator();
-//            toolbar.add(SearchManager.getDefault().getSearchAction());
+//todo a            toolbar.add(SearchManager.getDefault().getSearchAction());
 
             // vlv: valdiation
             toolbar.addSeparator();
@@ -459,9 +459,10 @@ public class DesignerMultiViewElement extends TopComponent
         SearchManager manager = SearchManager.getDefault();
         
         if (manager != null) {
-          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
-          myFind.setVisible(false);
-          add(myFind, BorderLayout.SOUTH);
+// todo a
+//          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
+//          myFind.setVisible(false);
+//          add(myFind, BorderLayout.SOUTH);
         }
         initActiveNodeContext();
         setVisible(true);
