@@ -16,30 +16,29 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.diagram;
+package org.netbeans.modules.bpel.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
 
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.DiagramModel;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
-
-import org.netbeans.modules.bpel.editors.api.diagram.Diagram;
-import org.netbeans.modules.bpel.editors.api.diagram.DiagramElement;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.01.11
  */
-public final class DiagramImpl implements Diagram {
+public final class Diagram {
 
-  public DiagramImpl(DesignView view) {
+  public Diagram(DesignView view) {
     myView = view;
   }
 
@@ -47,16 +46,16 @@ public final class DiagramImpl implements Diagram {
     return myView;
   }
 
-  public List<DiagramElement> getElements(boolean inSelectionOnly) {
+  public List<Element> getElements(boolean inSelectionOnly) {
     DiagramModel model = myView.getModel();
-    List<DiagramElement> elements = new ArrayList<DiagramElement>();
+    List<Element> elements = new ArrayList<Element>();
 
     travel(getRoot(model, inSelectionOnly), elements, ""); // NOI18N
 
     return elements;
   }
 
-  private void travel(Pattern pattern, List<DiagramElement> elements, String indent) {
+  private void travel(Pattern pattern, List<Element> elements, String indent) {
     if (pattern == null) {
       return;
     }
@@ -73,16 +72,16 @@ public final class DiagramImpl implements Diagram {
     }
   }
 
-  private void travel(Collection<VisualElement> visual, List<DiagramElement> elements, String indent) {
+  private void travel(Collection<VisualElement> visual, List<Element> elements, String indent) {
     for (VisualElement element : visual) {
       travel(element, elements, indent);
     }
   }
 
-  private void travel(VisualElement element, List<DiagramElement> elements, String indent) {
+  private void travel(VisualElement element, List<Element> elements, String indent) {
     if (element != null) {
 //out(indent + " see: " + element);
-      elements.add(new DiagramElementImpl(element));
+      elements.add(new Element(element));
     }
   }
 
@@ -94,7 +93,55 @@ public final class DiagramImpl implements Diagram {
   }
 
   public void clearHighlighting() {
-    DiagramDecorator.getDecorator(myView).clearHighlighting();
+    Decorator.getDecorator(myView).clearHighlighting();
+  }
+
+  // --------------------------
+  public static class Element {
+
+    Element(VisualElement element) {
+      myElement = element;
+    }
+
+    public String getName() {
+      return myElement.getText();
+    }
+
+    public void gotoSource() {
+      EditorUtil.goToSource(getComponent());
+    }
+
+    public void gotoDesign() {
+      Pattern pattern = myElement.getPattern();
+      DesignView view = pattern.getModel().getView();
+
+      // select
+      view.getSelectionModel().setSelectedPattern(pattern);
+
+      // glow
+      getDecorator().select(getComponent());
+
+      // scroll
+      // myElement.scrollTo();
+    }
+
+    public void highlight() {
+      getDecorator().doHighlight(getComponent(), true);
+    }
+
+    public void unhighlight() {
+      getDecorator().doHighlight(getComponent(), false);
+    }
+
+    private Decorator getDecorator() {
+      return Decorator.getDecorator(myElement.getPattern().getModel().getView());
+    }
+
+    public Component getComponent() {
+      return myElement.getPattern().getOMReference();
+    }
+
+    private VisualElement myElement;
   }
 
   private DesignView myView;

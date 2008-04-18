@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.diagram;
+package org.netbeans.modules.bpel.search;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -56,29 +56,33 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
  * @author Vladimir Yaroslavskiy
  * @version 2008.04.16
  */
-public class DiagramProvider extends SearchProvider.Adapter {
+public class Provider extends SearchProvider.Adapter {
 
-  public DiagramProvider() {
+  public Provider() {
     super(null);
   }
 
   @Override
-  public boolean isApplicable(Object object) {
+  public boolean isApplicable(Object object)
+  {
     return getProcess(object) != null;
   }
 
   @Override
-  public Object getRoot() {
+  public Object getRoot()
+  {
     return myProcess;
   }
 
   @Override
-  public SearchTarget [] getTargets() {
+  public SearchTarget [] getTargets()
+  {
     return TARGETS;
   }
 
   @Override
-  protected final Object getFather(Object object) {
+  protected final Object getFather(Object object)
+  {
     if (object instanceof Component) {
       return ((Component) object).getParent();
     }
@@ -86,7 +90,8 @@ public class DiagramProvider extends SearchProvider.Adapter {
   }
 
   @Override
-  protected final SearchElement createElement(Object object, SearchElement parent) {
+  protected final SearchElement createElement(Object object, SearchElement parent)
+  {
     if ( !(object instanceof Component)) {
       return null;
     }
@@ -117,7 +122,7 @@ public class DiagramProvider extends SearchProvider.Adapter {
   }
 
   private static SearchTarget createTarget(Class<? extends Object> clazz) {
-    return new SearchTarget.Adapter(DiagramProvider.class, clazz);
+    return new SearchTarget.Adapter(Provider.class, clazz);
   }
 
   private static final SearchTarget [] TARGETS = new SearchTarget [] {
@@ -187,8 +192,8 @@ public class DiagramProvider extends SearchProvider.Adapter {
     createTarget(org.netbeans.modules.bpel.model.api.While.class),
   };
 
-  // ---------------------------------------------------------
-  private static class Element extends SearchElement.Adapter {
+  // ---------------------------------------------------------------
+  private static final class Element extends SearchElement.Adapter {
     private Element(Component component, SearchElement parent) {
       super(
         EditorUtil.getName(component),
@@ -200,12 +205,14 @@ public class DiagramProvider extends SearchProvider.Adapter {
     }
 
     @Override
-    public void gotoSource() {
+    public void gotoSource()
+    {
       EditorUtil.goToSource(myComponent);
     }
 
     @Override
-    public void gotoVisual() {
+    public void gotoVisual()
+    {
       EditorUtil.goToDesign(myComponent);
     }
 

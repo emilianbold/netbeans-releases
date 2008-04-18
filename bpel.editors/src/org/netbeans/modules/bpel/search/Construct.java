@@ -38,90 +38,85 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.search.impl.core;
+package org.netbeans.modules.bpel.search;
 
 import java.util.List;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
-import org.netbeans.modules.xml.search.api.SearchTarget;
-import org.netbeans.modules.xml.search.spi.SearchEngine;
-import org.netbeans.modules.xml.search.spi.SearchProvider;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.11.13
+ * @version 2006.12.05
  */
-public final class Engine extends SearchEngine.Adapter {
+public final class Construct extends Engine {
 
-  public void search(SearchOption option) throws SearchException {
-    myProvider = option.getProvider();
-    SearchTarget target = option.getTarget();
-
-    if (target == null) {
-      myClazz = null;
-    }
-    else {
-      myClazz = target.getClazz();
-    }
+  @Override
+  public void search(SearchOption option) throws SearchException
+  {
+    Diagram diagram = (Diagram) option.getProvider().getRoot();
+    diagram.clearHighlighting();
 //out();
     fireSearchStarted(option);
-    search(myProvider.getRoot(), ""); // NOI18N
+    search(diagram, option.useSelection());
     fireSearchFinished(option);
   }
-
-  private void search(Object object, String indent) {
-    if ( !(object instanceof Component)) {
-      return;
-    }
-    Component component = (Component) object;
-    process(component, indent);
-    List children = component.getChildren();
   
-    for (Object child : children) {
-      search(child, indent + "    "); // NOI18N
-    }
-  }
+  private void search(Diagram diagram, boolean useSelection) {
+    List<Diagram.Element> elements = diagram.getElements(useSelection);
 
-  private void process(Component component, String indent) {
-//out(indent + " see: " + component);
-    if (checkClazz(component) && checkName(component)) {
+    for (Diagram.Element element : elements) {
+      Component component = element.getComponent();
+
+      if (acceptsAttribute(component) || acceptsComponent(component)) {
 //out(indent + "      add.");
-      fireSearchFound(myProvider.getElement(component));
+        fireSearchFound(new Element(element));
+      }
     }
   }
-
-  private boolean checkClazz(Object object) {
-    if (myClazz == null) {
-      return true;
+  
+  private boolean acceptsAttribute(Component component) {
+    if ( !(component instanceof DocumentComponent)) {
+      return false;
     }
-    return myClazz.isAssignableFrom(object.getClass());
-  }
+    NamedNodeMap attributes = ((DocumentComponent) component).
+      getPeer().getAttributes();
 
-  private boolean checkName(Component component) {
-    String name = ""; // NOI18N
-
-    if (component instanceof Named) {
-      name = ((Named) component).getName();
+    for (int i=0; i < attributes.getLength(); i++) {
+      Node attribute = attributes.item(i);
+     
+      if (accepts(attribute.getNodeName())) {
+        return true;
+      }
+      if (accepts(attribute.getNodeValue())) {
+        return true;
+      }
     }
-    return accepts(name);
+    return false;
   }
 
-  public boolean isApplicable(Object root) {
-    return root instanceof Component;
+  private boolean acceptsComponent(Component component) {
+    if ( !(component instanceof DocumentComponent)) {
+      return false;
+    }
+    return accepts(((DocumentComponent) component).getPeer().getTagName());
   }
 
-  public String getDisplayName() {
-    return i18n(Engine.class, "LBL_Engine_Display_Name"); // NOI18N
+  @Override
+  public String getDisplayName()
+  {
+    return i18n(Engine.class, "LBL_Construct_Display_Name"); // NOI18N
   }
 
-  public String getShortDescription() {
-    return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
+  @Override
+  public String getShortDescription()
+  {
+    return i18n(Engine.class, "LBL_Construct_Short_Description"); // NOI18N
   }
-
-  private SearchProvider myProvider;
-  private Class<? extends Object> myClazz;
 }

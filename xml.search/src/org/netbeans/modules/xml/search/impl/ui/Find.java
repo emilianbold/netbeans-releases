@@ -98,7 +98,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  protected final void hideResults()
+  protected void hideResults()
   {
 //out("Hide selection");
     if (myElements == null) {
@@ -111,7 +111,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  protected final void showSearchResult(Object object)
+  protected void showSearchResult(Object object)
   {
 //out("show result");
     if ( !(object instanceof SearchElement)) {

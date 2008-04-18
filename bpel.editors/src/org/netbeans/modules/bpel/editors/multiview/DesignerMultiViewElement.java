@@ -60,7 +60,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
-import org.netbeans.modules.bpel.diagram.DiagramImpl;
+import org.netbeans.modules.bpel.search.Diagram;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
@@ -344,7 +344,7 @@ public class DesignerMultiViewElement extends TopComponent
 
             // vlv: search
             toolbar.addSeparator();
-//todo a            toolbar.add(SearchManager.getDefault().getSearchAction());
+            toolbar.add(SearchManager.getDefault().getSearchAction());
 
             // vlv: valdiation
             toolbar.addSeparator();
@@ -456,21 +456,15 @@ public class DesignerMultiViewElement extends TopComponent
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        SearchManager manager = SearchManager.getDefault();
-        
-        if (manager != null) {
-// todo a
-//          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
-//          myFind.setVisible(false);
-//          add(myFind, BorderLayout.SOUTH);
-        }
+        myFind = SearchManager.getDefault().createFind(new Diagram(getDesignView()), getDesignView());
+        myFind.setVisible(false);
+        add(myFind, BorderLayout.SOUTH);
+
         initActiveNodeContext();
         setVisible(true);
         
-        getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
-        getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
     }
 
     private Component myFind;
@@ -661,30 +655,6 @@ new ProxyLookup(new Lookup[] {
         }
         removeAll();
     }
-    
-//    private void initializeLookup() {
-//        associateLookup(createAssociateLookup());
-//        initActiveNodeChangeListener();
-////        addPropertyChangeListener( new PropertyChangeListener() {        
-////                /**
-////                 * TODO: may not be needed at some point when parenting
-////                 * MultiViewTopComponent delegates properly to its peer's
-////                 * activatedNodes. see
-////                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
-////                 * TopComponent.setActivatedNodes is final
-////                 */
-////                public void propertyChange(PropertyChangeEvent event) {
-////                    // no constant in TopComponent...lame
-////                    if(event.getPropertyName().equals("activatedNodes")) {
-////                        // if(DEBUG)
-////                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
-////                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
-////                    }
-////                };
-////         });
-////        
-////        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
-//    }
     
     private Lookup createAssociateLookup() {
         

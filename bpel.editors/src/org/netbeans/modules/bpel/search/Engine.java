@@ -38,80 +38,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.search.impl.core;
+package org.netbeans.modules.bpel.search;
 
 import java.util.List;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
-
+import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
-import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
-import org.netbeans.modules.xml.search.spi.SearchProvider;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.13
  */
-public final class Engine extends SearchEngine.Adapter {
+public class Engine extends SearchEngine.Adapter {
 
   public void search(SearchOption option) throws SearchException {
-    myProvider = option.getProvider();
-    SearchTarget target = option.getTarget();
-
-    if (target == null) {
-      myClazz = null;
-    }
-    else {
-      myClazz = target.getClazz();
-    }
+    Diagram diagram = (Diagram) option.getProvider().getRoot();
+    diagram.clearHighlighting();
 //out();
     fireSearchStarted(option);
-    search(myProvider.getRoot(), ""); // NOI18N
+    search(diagram, option.useSelection());
     fireSearchFinished(option);
   }
 
-  private void search(Object object, String indent) {
-    if ( !(object instanceof Component)) {
-      return;
-    }
-    Component component = (Component) object;
-    process(component, indent);
-    List children = component.getChildren();
-  
-    for (Object child : children) {
-      search(child, indent + "    "); // NOI18N
-    }
-  }
+  private void search(Diagram diagram, boolean useSelection) {
+    List<Diagram.Element> elements = diagram.getElements(useSelection);
 
-  private void process(Component component, String indent) {
-//out(indent + " see: " + component);
-    if (checkClazz(component) && checkName(component)) {
+    for (Diagram.Element element : elements) {
+      String text = element.getName();
+//out(indent + " see: " + text);
+
+      if (accepts(text)) {
 //out(indent + "      add.");
-      fireSearchFound(myProvider.getElement(component));
+        fireSearchFound(new Element(element));
+      }
     }
-  }
-
-  private boolean checkClazz(Object object) {
-    if (myClazz == null) {
-      return true;
-    }
-    return myClazz.isAssignableFrom(object.getClass());
-  }
-
-  private boolean checkName(Component component) {
-    String name = ""; // NOI18N
-
-    if (component instanceof Named) {
-      name = ((Named) component).getName();
-    }
-    return accepts(name);
   }
 
   public boolean isApplicable(Object root) {
-    return root instanceof Component;
+    return root instanceof Diagram;
   }
 
   public String getDisplayName() {
@@ -122,6 +88,39 @@ public final class Engine extends SearchEngine.Adapter {
     return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
   }
 
-  private SearchProvider myProvider;
-  private Class<? extends Object> myClazz;
+  // -----------------------------------------------------------
+  protected static class Element extends SearchElement.Adapter {
+
+    Element(Diagram.Element element) {
+      super(element.getName(), element.getName(), null, null);
+      myElement = element;
+      highlight();
+    }
+
+    @Override
+    public void gotoSource()
+    {
+      myElement.gotoSource();
+    }
+
+    @Override
+    public void gotoVisual()
+    {
+      myElement.gotoDesign();
+    }
+
+    @Override
+    public void highlight()
+    {
+      myElement.highlight();
+    }
+
+    @Override
+    public void unhighlight()
+    {
+      myElement.unhighlight();
+    }
+
+    private Diagram.Element myElement;
+  }
 }
