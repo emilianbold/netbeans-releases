@@ -96,7 +96,8 @@ public final class LoginScreenCD extends ComponentDescriptor {
     
     public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Username"); //NOI18N 
     public static final String PASSWORD_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Password"); //NOI18N  
-    
+    public static final String LOGIN_BUTTON_TEXT = NbBundle.getMessage(LoginScreenCD.class, "LBL_LoginScreen_LoginButtonScreen"); //NOI18N  
+
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -150,7 +151,8 @@ public final class LoginScreenCD extends ComponentDescriptor {
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_ForegroundColor"), // NOI18N
                         new PropertyEditorColorChooser(true), PROP_FRG_COLOR)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText"), // NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText_LABEL")), PROP_LOGIN_BUTTON_TEXT); //NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class, 
+                            "LBL_LoginScreen_LoginButtonText_LABEL")), PROP_LOGIN_BUTTON_TEXT); //NOI18N
     }
     
     private Presenter createSetterPresenter () {
