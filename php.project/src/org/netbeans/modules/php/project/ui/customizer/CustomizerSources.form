@@ -17,34 +17,30 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="sourceFolderLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="urlLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="encodingLabel" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="urlTextField" alignment="0" pref="261" max="32767" attributes="0"/>
-                          <Component id="encodingComboBox" alignment="0" pref="261" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="localServerComboBox" pref="166" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="localServerButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                      <Component id="copyFilesPanel" pref="349" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="projectFolderLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="projectFolderTextField" pref="261" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="projectFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="sourceFolderLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="encodingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="encodingComboBox" alignment="0" pref="261" max="32767" attributes="0"/>
+                  <Component id="indexFileTextField" alignment="0" pref="261" max="32767" attributes="0"/>
+                  <Component id="urlTextField" alignment="0" pref="261" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="localServerComboBox" pref="166" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="localServerButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="projectFolderTextField" alignment="0" pref="261" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+              <Component id="copyFilesPanel" pref="349" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -61,19 +57,24 @@
                   <Component id="localServerButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="localServerComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="copyFilesPanel" min="-2" pref="61" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="urlTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="encodingComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="encodingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="24" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="encodingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="encodingComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -151,6 +152,18 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_Browse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="indexFileLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="indexFileTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_IndexFile" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="indexFileTextField">
     </Component>
   </SubComponents>
 </Form>

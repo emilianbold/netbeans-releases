@@ -42,19 +42,24 @@
 package org.netbeans.modules.diff;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.File;
+import java.util.*;
+import java.awt.event.ActionEvent;
 import javax.swing.*;
 
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.project.Project;
@@ -62,6 +67,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.diff.builtin.DefaultDiff;
 import org.netbeans.modules.diff.builtin.SingleDiffPanel;
+import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 
@@ -78,6 +84,33 @@ public class DiffAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    private class DiffActionImpl extends AbstractAction {
+        
+        private final Node [] nodes;
+
+        private DiffActionImpl(Lookup context) {
+            Collection<? extends Node> nodez = context.lookup(new Lookup.Template<Node>(Node.class)).allInstances();
+            nodes = nodez.toArray(new Node[nodez.size()]);
+            if (nodes.length == 1) {
+                putValue(Action.NAME, NbBundle.getMessage(DiffAction.class, "CTL_DiffToActionName"));
+            } else {
+                putValue(Action.NAME, getName());                
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            performAction(nodes);
+        }
+
+        public boolean isEnabled() {
+            return DiffAction.this.enable(nodes);
+        }
+    }
+    
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new DiffActionImpl(actionContext);
+    }
+
     public String getName() {
         return NbBundle.getMessage(DiffAction.class, "CTL_DiffActionName");
     }
@@ -110,6 +143,14 @@ public class DiffAction extends NodeAction {
                     return d != null;
                 }
             }
+        } else if (nodes.length == 1) {
+            FileObject fo1 = getFileFromNode(nodes[0]);
+            if (fo1 != null) {
+                if (fo1.isData()) {
+                    Diff d = Diff.getDefault();
+                    return d != null;
+                }
+            }
         }
         return false;
     }
@@ -120,7 +161,7 @@ public class DiffAction extends NodeAction {
      * @return true not to run in AWT thread!
      */
     protected boolean asynchronous() {
-        return true;
+        return false;
     }
     
     public void performAction(Node[] nodes) {
@@ -131,19 +172,44 @@ public class DiffAction extends NodeAction {
                 fos.add(fo);
             }
         }
-        if (fos.size() < 2) return ;
+        if (fos.size() < 1) return ;
         final FileObject fo1 = fos.get(0);
-        final FileObject fo2 = fos.get(1);
-        performAction(fo1, fo2);
+        final FileObject fo2;
+        if (fos.size() > 1) {
+            fo2 = fos.get(1);
+        } else {
+            fo2 = promptForFileobject(fo1);
+            if (fo2 == null) return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                performAction(fo1, fo2, null);
+            }
+        });
+    }
+
+    private FileObject promptForFileobject(FileObject peer) {
+        String path = DiffModuleConfig.getDefault().getPreferences().get("diffToLatestFolder", peer.getParent().getPath());
+        File latestPath = FileUtil.normalizeFile(new File(path));
+        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(DiffAction.class, "ACSD_BrowseDiffToFile"), latestPath); // NOI18N
+        fileChooser.setDialogTitle(NbBundle.getMessage(DiffAction.class, "DiffTo_BrowseFile_Title", peer.getName())); // NOI18N
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        EditorBufferSelectorPanel editorSelector = new EditorBufferSelectorPanel(fileChooser, peer);
+        fileChooser.setAccessory(editorSelector);
+
+        int result = fileChooser.showDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(DiffAction.class, "DiffTo_BrowseFile_OK")); // NOI18N
+        if (result != JFileChooser.APPROVE_OPTION) return null;
+
+        File f = fileChooser.getSelectedFile();
+        if (f != null) {
+            File file = f.getAbsoluteFile();
+            DiffModuleConfig.getDefault().getPreferences().put("diffToLatestFolder", file.getParent());
+            return FileUtil.toFileObject(f);
+        }
+        return null;
     }
     
-    /**
-     * Shows the diff between two FileObject objects.
-     * This is expected not to be called in AWT thread.
-     */
-    public static void performAction(final FileObject fo1, final FileObject fo2) {
-        performAction(fo1, fo2, null);
-    }
     /**
      * Shows the diff between two FileObject objects.
      * This is expected not to be called in AWT thread.

@@ -51,7 +51,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.php.project.customizer.PhpCustomizerProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
@@ -83,7 +82,12 @@ import org.w3c.dom.Text;
  *
  */
 public class PhpProject implements Project, AntProjectListener {
-    
+
+    public static final String UI_LOGGER_NAME = "org.netbeans.ui.php.project"; //NOI18N
+
+    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation()
+            + ResourceMarker.PROJECT_ICON));
+
     PhpProject( AntProjectHelper helper ) {
         myHelper = helper;
         AuxiliaryConfiguration configuration = 
@@ -147,7 +151,7 @@ public class PhpProject implements Project, AntProjectListener {
                     public String run() {
                         Element data = getHelper().getPrimaryConfigurationData(true);
                         NodeList nl = data.getElementsByTagNameNS(
-                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectProperties.NAME);
+                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectSharedConstants.PHP_PROJECT_NAME);
                         if (nl.getLength() == 1) {
                             nl = nl.item(0).getChildNodes();
                             if (nl.getLength() == 1
@@ -170,7 +174,7 @@ public class PhpProject implements Project, AntProjectListener {
             public Object run() {
                 Element data = getHelper().getPrimaryConfigurationData(true);
                 NodeList nl = data.getElementsByTagNameNS(
-                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectProperties.NAME ); 
+                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectSharedConstants.PHP_PROJECT_NAME); 
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -182,12 +186,11 @@ public class PhpProject implements Project, AntProjectListener {
                 else {
                     nameEl = data.getOwnerDocument().createElementNS(
                             PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                            PhpProjectProperties.NAME ); 
+                            PhpProjectSharedConstants.PHP_PROJECT_NAME); 
                     data.insertBefore(nameEl, /* OK if null */data
                             .getChildNodes().item(0));
                 }
-                nameEl
-                        .appendChild(data.getOwnerDocument().createTextNode(
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(
                                 name));
                 getHelper().putPrimaryConfigurationData(data, true);
                 return null;
@@ -206,11 +209,15 @@ public class PhpProject implements Project, AntProjectListener {
         return myEvaluator;
     }
 
-    private void initLookup( AuxiliaryConfiguration configuration ) {
+    CopySupport getCopySupport() {
+        return getLookup().lookup(CopySupport.class);
+    }
 
+    private void initLookup( AuxiliaryConfiguration configuration ) {        
         SubprojectProvider provider = getRefHelper().createSubprojectProvider();
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
         myLookup = Lookups.fixed(new Object[] {
+		CopySupport.getInstance(),
                 new Info(),
                 configuration,
                 new PhpXmlSavedHook(),
@@ -222,7 +229,7 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpLogicalViewProvider( this , provider ),
                 new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery( getEvaluator(), 
-                    new String[] { PhpProjectProperties.SRC_DIR } , new String[] {} ),
+                    new String[] { "${" + PhpProjectProperties.SRC_DIR + "}" } , new String[] {} ), // NOI18N
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
@@ -250,14 +257,14 @@ public class PhpProject implements Project, AntProjectListener {
          * @see org.netbeans.api.project.ProjectInformation#getDisplayName()
          */
         public String getDisplayName() {
-            return PropertyUtils.getUsablePropertyName(getName());
+            return PhpProject.this.getName();
         }
 
         /* (non-Javadoc)
          * @see org.netbeans.api.project.ProjectInformation#getIcon()
          */
         public Icon getIcon() {
-            return PhpProjectProperties.PROJECT_ICON;
+            return PROJECT_ICON;
         }
 
         /* (non-Javadoc)
@@ -309,15 +316,22 @@ public class PhpProject implements Project, AntProjectListener {
         }
     }
     
-    private final class PhpOpenedHook extends ProjectOpenedHook {
-        
+    private final class PhpOpenedHook extends ProjectOpenedHook {	
         protected void projectOpened() {
             ClassPathProviderImpl cpProvider = myLookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+	    final CopySupport copySupport = getCopySupport();
+	    if (copySupport != null) {
+		copySupport.projectOpened(PhpProject.this);
+	    }
         }
         
         protected void projectClosed() {
+	    final CopySupport copySupport = getCopySupport();
+	    if (copySupport != null) {
+		copySupport.projectClosed(PhpProject.this);
+	    }	    
             try {
                 ProjectManager.getDefault().saveProject( PhpProject.this);
             } catch (IOException e) {

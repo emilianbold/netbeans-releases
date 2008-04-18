@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -59,15 +60,31 @@ public class LocalServerController {
 
     private final JComboBox localServerComboBox;
     private final JButton localServerBrowseButton;
-    private final WebFolderNameProvider webFolderNameProvider;
+    private final WebFolderNameProvider webFolderNameProvider; // can be null
     private final String browseDialogTitle;
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private /*final*/ MutableComboBoxModel localServerComboBoxModel;
     private final LocalServer.ComboBoxEditor localServerComboBoxEditor;
 
-    public LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
+    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
             WebFolderNameProvider webFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
+        return new LocalServerController(localServerComboBox, localServerBrowseButton, webFolderNameProvider,
+                browseDialogTitle, defaultLocalServers);
+    }
+
+    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
+            String browseDialogTitle, LocalServer... defaultLocalServers) {
+        return new LocalServerController(localServerComboBox, localServerBrowseButton, null, browseDialogTitle,
+                defaultLocalServers);
+    }
+
+    private LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
+            WebFolderNameProvider webFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
+        assert localServerComboBox != null;
+        assert localServerBrowseButton != null;
+        assert browseDialogTitle != null;
         assert localServerComboBox.isEditable() : "localServerComboBox has to be editable";
+        assert localServerComboBox.getEditor().getEditorComponent() instanceof JTextField;
 
         this.localServerComboBox = localServerComboBox;
         this.localServerBrowseButton = localServerBrowseButton;
@@ -75,7 +92,8 @@ public class LocalServerController {
         this.webFolderNameProvider = webFolderNameProvider;
         this.browseDialogTitle = browseDialogTitle;
         localServerComboBoxModel = new LocalServer.ComboBoxModel(defaultLocalServers);
-        localServerComboBoxEditor = new LocalServer.ComboBoxEditor();
+        JTextField editor = (JTextField) localServerComboBox.getEditor().getEditorComponent();
+        localServerComboBoxEditor = new LocalServer.ComboBoxEditor(editor);
 
         localServerComboBox.setModel(localServerComboBoxModel);
         localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
@@ -92,8 +110,12 @@ public class LocalServerController {
         });
         localServerBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                String newSubfolderName = null;
+                if (webFolderNameProvider != null) {
+                    newSubfolderName = webFolderNameProvider.getWebFolderName();
+                }
                 Utils.browseLocalServerAction(localServerBrowseButton.getParent(), localServerComboBox,
-                        localServerComboBoxModel, webFolderNameProvider.getWebFolderName(), browseDialogTitle);
+                        localServerComboBoxModel, newSubfolderName, browseDialogTitle);
             }
         });
     }
@@ -128,7 +150,7 @@ public class LocalServerController {
     }
 
     // to enable/disable components
-    public void setState(boolean enabled) {
+    public void setEnabled(boolean enabled) {
         localServerComboBox.setEnabled(enabled);
         localServerBrowseButton.setEnabled(enabled);
     }
@@ -137,10 +159,13 @@ public class LocalServerController {
      * Validate given local server instance, its source root.
      * @param localServer local server to validate.
      * @param type the type for error messages.
+     * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
+     * @param allowInRoot  <code>true</code> if the folder can exist and can be a root directory "/" (on *NIX only).
      * @return error message or <code>null</null> if source root is ok.
      * @see Utils#validateProjectDirectory(java.lang.String, java.lang.String, boolean)
      */
-    public static String validateLocalServer(final LocalServer localServer, String type, boolean allowNonEmpty) {
+    public static String validateLocalServer(final LocalServer localServer, String type, boolean allowNonEmpty,
+            boolean allowInRoot) {
         if (!localServer.isEditable()) {
             return null;
         }
@@ -148,10 +173,10 @@ public class LocalServerController {
         String sourcesLocation = localServer.getSrcRoot();
         File sources = FileUtil.normalizeFile(new File(sourcesLocation));
         if (sourcesLocation.trim().length() == 0
-                || !Utils.isValidFileName(sources.getName())) {
+                || !Utils.isValidFileName(sources)) {
             err = NbBundle.getMessage(LocalServerController.class, "MSG_Illegal" + type + "Name");
         } else {
-            err = Utils.validateProjectDirectory(sourcesLocation, type, allowNonEmpty);
+            err = Utils.validateProjectDirectory(sourcesLocation, type, allowNonEmpty, allowInRoot);
         }
         return err;
     }

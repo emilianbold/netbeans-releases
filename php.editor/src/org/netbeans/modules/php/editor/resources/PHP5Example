@@ -1,10 +1,11 @@
 <?php
     $name = "Petr";
     echo <<<HEREDOC
-        Dobry den $name!
-    HEREDOC
+Hello $name!
 
-    class Bob {
+HEREDOC;
+
+    class Test {
         const TEST = 1;
 
         // beginning of docblock area
@@ -16,19 +17,19 @@
         var $publicvar = 'Lookee me!';
 
         /**
-        * xyz - do something
-        * @param string $src path to dir or textfile (local or remote)
-        * @return string Error when 
-        */
-        function xyz( $src) {
-            $a = 1 + b;
-            switch ($a) {
-                case 1;echo 1;break;
-                // TODO: something    
-                default; echo "default";
+         * readFile - do something
+         * @param string $src Path to dir or textfile (local or remote)
+         * @return string The content of the file or NULL
+         */
+        public static function readFile($src) {
+            if (!isset($src)) {
+                return NULL;
+            } else {
+                // TODO: read the $src file
+                return "Not yet implemented";
             }
         }
     }
     
-    echo Test::xyz();
+    echo "File: " . Test::readFile("/tmp/greetings.txt");
 ?>

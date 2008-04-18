@@ -521,9 +521,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             Class<? extends SystemAction> c = Class.forName("org.openide.actions.FileSystemAction", true, l).asSubclass(SystemAction.class); // NOI18N
             SystemAction ra = SystemAction.findObject(c, true);
 
-            Action[] a2 = new Action[a.length + 1];
+            Class<? extends SystemAction> c2 = Class.forName("org.netbeans.modules.diff.DiffAction", true, l).asSubclass(SystemAction.class); // NOI18N
+            SystemAction ra2 = SystemAction.findObject(c2, true);           
+            
+            Action[] a2 = new Action[a.length + 2];
             System.arraycopy(a, 0, a2, 0, a.length);
             a2[a.length] = ra;
+            a2[a.length + 1] = ra2;
+
             return a2;
         } catch (Exception ex) {
             // ok, we no action like this I guess

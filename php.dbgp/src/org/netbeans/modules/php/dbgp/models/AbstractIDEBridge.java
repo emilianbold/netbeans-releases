@@ -156,7 +156,7 @@ public abstract class AbstractIDEBridge {
             }
             DebugSession current = 
                 StartActionProviderImpl.getInstance().getCurrentSession(id);
-            if ( !current.equals( getDebugSession() ) ){
+            if ( current != null && !current.equals( getDebugSession() ) ){
                 return;
             }
         }

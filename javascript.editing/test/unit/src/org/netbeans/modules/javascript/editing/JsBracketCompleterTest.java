@@ -172,6 +172,18 @@ public class JsBracketCompleterTest extends JsTestBase {
         insertChar("x = \"\\^\"", '"', "x = \"\\\"^\"");
     }
 
+    public void testInsertBrace1() throws Exception {
+        insertBreak("foobar({^});", "foobar({\n    ^\n});");
+    }
+
+    public void testInsertBrace2() throws Exception {
+        insertBreak("foobar([^]);", "foobar([\n    ^\n]);");
+    }
+
+    public void testInsertBrace3() throws Exception {
+        insertBreak("x = {^}", "x = {\n    ^\n}");
+    }
+    
     public void testInsertEnd1() throws Exception {
         insertBreak("x^", "x\n^");
     }
