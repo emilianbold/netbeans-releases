@@ -41,6 +41,13 @@
 
 package org.netbeans.modules.web.project.api;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -66,7 +73,6 @@ import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
@@ -654,6 +660,11 @@ public class WebProjectUtilities {
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
             String serverInstanceID, String j2eeLevel, String librariesDefinition, String serverLibraryName) throws IOException {
+
+        WebProjectUtil.logUI("UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)},
+                NbBundle.getBundle(WebProjectUtilities.class));
+
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, WebProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
