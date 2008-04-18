@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.openide.util.RequestProcessor;
 
 public final class ThreadsListener implements PropertyChangeListener {
 
@@ -123,18 +124,26 @@ public final class ThreadsListener implements PropertyChangeListener {
                 removeBreakpointHit(debugger.getCurrentThread());
             }
         } else if (source instanceof JPDAThread) {
-            JPDAThread thread = (JPDAThread)source;
+            final JPDAThread thread = (JPDAThread)source;
             if (JPDAThread.PROP_SUSPENDED.equals(propName)) {
                 
                 // System.out.println("THREAD: " + thread.getName() + ", curr: " + isCurrent(thread) + ", brk: " + isAtBreakpoint(thread));
                 
-                if (!isCurrent(thread)) {
-                    if (isAtBreakpoint(thread)) {
-                        addBreakpointHit(thread);
-                    } else {
-                        removeBreakpointHit(thread);
+                RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                    public void run() {
+                        if (!isCurrent(thread)) {
+                            if (isAtBreakpoint(thread)) {
+                                addBreakpointHit(thread);
+                            } else {
+                                removeBreakpointHit(thread);
+                            }
+                        } else {
+                            removeBreakpointHit(thread); // [TODO]
+                        }
                     }
-                }
+                });
+                task.schedule(100);
+                
             } // if
         }
     }
@@ -153,17 +162,23 @@ public final class ThreadsListener implements PropertyChangeListener {
     
     private void addBreakpointHit(JPDAThread thread) {
         if (thread != null && !stoppedThreadsSet.contains(thread)) {
+            
+            // System.out.println("Hit added: " + thread.getName());
+            
             stoppedThreadsSet.add(thread);
             stoppedThreads.addFirst(thread);
-            debuggingView.refreshBreakpointHits();
+            debuggingView.getInfoPanel().addBreakpointHit(thread, stoppedThreadsSet.size());
         }
     }
     
     private void removeBreakpointHit(JPDAThread thread) {
         if (thread != null && stoppedThreadsSet.contains(thread)) {
+            
+            // System.out.println("Hit removed: " + thread.getName());
+            
             stoppedThreadsSet.remove(thread);
             stoppedThreads.remove(thread);
-            debuggingView.refreshBreakpointHits();
+            debuggingView.getInfoPanel().removeBreakpointHit(thread, stoppedThreadsSet.size());
         }
     }
     
@@ -171,7 +186,9 @@ public final class ThreadsListener implements PropertyChangeListener {
         threads.clear();
         stoppedThreadsSet.clear();
         stoppedThreads.clear();
-        debuggingView.refreshBreakpointHits();
+        debuggingView.getInfoPanel().clearBreakpointHits();
     }
     
+    // **************************************************************************
+        
 }

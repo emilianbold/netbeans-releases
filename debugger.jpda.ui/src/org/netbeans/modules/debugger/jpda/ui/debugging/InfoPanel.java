@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -53,7 +56,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.Utilities;
 
@@ -63,48 +68,168 @@ import org.openide.util.Utilities;
  */
 public class InfoPanel extends javax.swing.JPanel {
 
-    private static int UNIT_HEIGHT = 40;
+    private static final int PANEL_HEIGHT = 40;
+    
     private Color hitsPanelColor;
+    private Color filterPanelColor;
+    private int tapPanelMinimumHeight;
+    private TapPanel tapPanel;
     
     private JButton arrowButton;
+    private JPopupMenu arrowMenu;
+    private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
     
     /** Creates new form InfoPanel */
     public InfoPanel(TapPanel tapPanel) {
-        hitsPanelColor = tapPanel.getBackground();
+        this.tapPanel = tapPanel;
+        filterPanelColor = tapPanel.getBackground(); // [TODO]
+        hitsPanelColor = DebuggingView.hitsPanelColor; // [TODO]
+        tapPanelMinimumHeight = tapPanel.getMinimumHeight(); // 8 pixels [TODO]
         
         initComponents();
         
-        hitsPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT - tapPanel.getMinimumHeight()));
-        deadlocksPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
-        filterPanel.setPreferredSize(new Dimension(0, UNIT_HEIGHT));
+        filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
         
         initFilterPanel(filterPanel);
         
-        deadlocksPanel.setVisible(false);
+//        deadlocksPanel.setVisible(false);
+//        deadlocksSeparator.setVisible(false);
+        
         arrowButton = createArrowButton();
         hitsInnerPanel.add(arrowButton);
+        
+        hideHitsPanel();
+        hideDeadlocksPanel();
     }
 
-    void refreshBreakpointHits(int hitsCount) {
-        hitsLabel.setText("New Breakpoint Hits (" + hitsCount + ")"); // [TODO]
-    }
-
-    private JButton createArrowButton() {
-        JPopupMenu menu = new JPopupMenu();
-        JButton button = DropDownButtonFactory.createDropDownButton(
-            new ImageIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png")), menu);
-        // JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) getValue(NAME)));//"<html><b>"+Actions.cutAmpersand((String) getValue(NAME))+"</b></html>") {
-        JMenuItem item = new JMenuItem("menu item");
-        // item.setEnabled(delegate.isEnabled());
-        menu.add(item);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // [TODO]
+    void clearBreakpointHits() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                arrowMenu.removeAll();
+                threadToMenuItem.clear();
+                hideHitsPanel();
             }
         });
+    }
+
+    void removeBreakpointHit(final JPDAThread thread, final int newHitsCount) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JMenuItem item = threadToMenuItem.remove(thread);
+                if (item == null) {
+                    return;
+                }
+                arrowMenu.remove(item);
+                hitsLabel.setText("New Breakpoint Hits (" + newHitsCount + ")"); // [TODO]
+                if (newHitsCount == 0) {
+                    hideHitsPanel();
+                }
+            }
+        });
+    }
+    
+    void addBreakpointHit(final JPDAThread thread, final int newHitsCount) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (threadToMenuItem.get(thread) != null) {
+                    return;
+                }
+                JMenuItem item = new JMenuItem(thread.getName());
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        thread.makeCurrent();
+                    }
+                });
+                threadToMenuItem.put(thread, item);
+                arrowMenu.add(item);
+                hitsLabel.setText("New Breakpoint Hits (" + newHitsCount + ")"); // [TODO]
+                if (newHitsCount == 1) {
+                    showHitsPanel();
+                }
+            }
+        });
+    }
+    
+    // **************************************************************************
+    
+    private void hideHitsPanel() {
+        if (!hitsPanel.isVisible()) {
+            return;
+        }
+        hitsPanel.setVisible(false);
+        hitsSeparator.setVisible(false);
+        if (!deadlocksPanel.isVisible()) {
+            filterTopSpacePanel.setVisible(false);
+            filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
+            tapPanel.setBackground(filterPanelColor);
+        }
+    }
+    
+    private void showHitsPanel() {
+        if (hitsPanel.isVisible()) {
+            return;
+        }
+        if (!deadlocksPanel.isVisible()) {
+            hitsTopSpacePanel.setVisible(false);
+            hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
+            filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
+        } else {
+            hitsTopSpacePanel.setVisible(true);
+            hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
+        }
+        hitsPanel.setVisible(true);
+        hitsSeparator.setVisible(true);
+        filterTopSpacePanel.setVisible(true);
+        tapPanel.setBackground(hitsPanelColor);
+    }
+    
+    private void hideDeadlocksPanel() {
+        if (!deadlocksPanel.isVisible()) {
+            return;
+        }
+        deadlocksPanel.setVisible(false);
+        deadlocksSeparator.setVisible(false);
+        if (hitsPanel.isVisible()) {
+            hitsTopSpacePanel.setVisible(false);
+            hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
+        } else {
+            filterTopSpacePanel.setVisible(false);
+            tapPanel.setBackground(filterPanelColor);
+            filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
+        }
+    }
+    
+    private void showDeadlocksPanel() {
+        if (deadlocksPanel.isVisible()) {
+            return;
+        }
+        hitsTopSpacePanel.setVisible(true);
+        filterTopSpacePanel.setVisible(true);
+        deadlocksPanel.setVisible(true);
+        deadlocksSeparator.setVisible(true);
+        tapPanel.setBackground(hitsPanelColor);
+        filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
+        hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
+    }
+    
+    private JButton createArrowButton() {
+        arrowMenu = new JPopupMenu();
+        JButton button = DropDownButtonFactory.createDropDownButton(
+            new ImageIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png")), arrowMenu);
         button.setPreferredSize(new Dimension(48, button.getPreferredSize().height)); // [TODO]
         button.setFocusable(false);
-        // Actions.connect(button, this);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (arrowMenu.getComponentCount() > 0) {
+                    Object item = arrowMenu.getComponent(0);
+                    for (Map.Entry<JPDAThread, JMenuItem> entry : threadToMenuItem.entrySet()) {
+                        if (entry.getValue() == item) {
+                            entry.getKey().makeCurrent();
+                        } // if
+                    } // for
+                } // if
+            } // actionPerformed
+        });
         return button;
     }
     
@@ -141,7 +266,7 @@ public class InfoPanel extends javax.swing.JPanel {
                 toolbar.addSeparator(space);
             }
         }
-        filterPanel.add(toolbar);
+        filterPanel.add(toolbar, BorderLayout.CENTER);
     }
 
     private JToggleButton createToggle (FiltersDescriptor filtersDesc, int index) {
@@ -167,22 +292,72 @@ public class InfoPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        deadlocksPanel = new javax.swing.JPanel();
+        deadlocksBottomSpacePanel = new javax.swing.JPanel();
+        deadlocksInnerPanel = new javax.swing.JPanel();
+        infoIcon1 = new javax.swing.JLabel();
+        deadlocksLabel = new javax.swing.JLabel();
+        deadlocksSeparator = new javax.swing.JPanel();
         hitsPanel = new javax.swing.JPanel();
+        hitsTopSpacePanel = new javax.swing.JPanel();
+        hitsBottomSpacePanel = new javax.swing.JPanel();
         hitsInnerPanel = new javax.swing.JPanel();
         infoIcon = new javax.swing.JLabel();
         hitsLabel = new javax.swing.JLabel();
-        deadlocksPanel = new javax.swing.JPanel();
-        jSeparator1 = new javax.swing.JSeparator();
+        hitsEmptyLabel = new javax.swing.JLabel();
+        hitsSeparator = new javax.swing.JPanel();
         filterPanel = new javax.swing.JPanel();
-        jSeparator2 = new javax.swing.JSeparator();
+        filterTopSpacePanel = new javax.swing.JPanel();
+        filterBottomSpacePanel = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
+
+        deadlocksPanel.setBackground(hitsPanelColor);
+        deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 0));
+        deadlocksPanel.setLayout(new java.awt.BorderLayout());
+
+        deadlocksBottomSpacePanel.setBackground(java.awt.Color.green);
+        deadlocksBottomSpacePanel.setOpaque(false);
+        deadlocksBottomSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
+        deadlocksPanel.add(deadlocksBottomSpacePanel, java.awt.BorderLayout.SOUTH);
+
+        deadlocksInnerPanel.setOpaque(false);
+        deadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
+        deadlocksInnerPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 8, 0));
+
+        infoIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        infoIcon1.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon1.text")); // NOI18N
+        deadlocksInnerPanel.add(infoIcon1);
+
+        deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.deadlocksLabel.text")); // NOI18N
+        deadlocksInnerPanel.add(deadlocksLabel);
+
+        deadlocksPanel.add(deadlocksInnerPanel, java.awt.BorderLayout.CENTER);
+
+        add(deadlocksPanel);
+
+        deadlocksSeparator.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
+        deadlocksSeparator.setMaximumSize(new java.awt.Dimension(32767, 1));
+        deadlocksSeparator.setMinimumSize(new java.awt.Dimension(10, 1));
+        deadlocksSeparator.setPreferredSize(new java.awt.Dimension(0, 1));
+        add(deadlocksSeparator);
 
         hitsPanel.setBackground(hitsPanelColor);
-        hitsPanel.setPreferredSize(new java.awt.Dimension(0, 40));
+        hitsPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         hitsPanel.setLayout(new java.awt.BorderLayout());
 
+        hitsTopSpacePanel.setBackground(java.awt.Color.cyan);
+        hitsTopSpacePanel.setOpaque(false);
+        hitsTopSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
+        hitsPanel.add(hitsTopSpacePanel, java.awt.BorderLayout.NORTH);
+
+        hitsBottomSpacePanel.setBackground(java.awt.Color.green);
+        hitsBottomSpacePanel.setOpaque(false);
+        hitsBottomSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
+        hitsPanel.add(hitsBottomSpacePanel, java.awt.BorderLayout.SOUTH);
+
         hitsInnerPanel.setOpaque(false);
+        hitsInnerPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 8, 0));
 
         infoIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
         infoIcon.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon.text")); // NOI18N
@@ -191,36 +366,54 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsLabel.text")); // NOI18N
         hitsInnerPanel.add(hitsLabel);
 
+        hitsEmptyLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsEmptyLabel.text")); // NOI18N
+        hitsInnerPanel.add(hitsEmptyLabel);
+
         hitsPanel.add(hitsInnerPanel, java.awt.BorderLayout.CENTER);
 
-        add(hitsPanel, java.awt.BorderLayout.NORTH);
+        add(hitsPanel);
 
-        deadlocksPanel.setBackground(hitsPanelColor);
-        deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 40));
-        deadlocksPanel.setLayout(new java.awt.BorderLayout());
+        hitsSeparator.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
+        hitsSeparator.setMaximumSize(new java.awt.Dimension(32767, 1));
+        hitsSeparator.setMinimumSize(new java.awt.Dimension(10, 1));
+        hitsSeparator.setPreferredSize(new java.awt.Dimension(0, 1));
+        add(hitsSeparator);
 
-        jSeparator1.setBackground(hitsPanelColor);
-        deadlocksPanel.add(jSeparator1, java.awt.BorderLayout.PAGE_START);
-
-        add(deadlocksPanel, java.awt.BorderLayout.CENTER);
-
-        filterPanel.setPreferredSize(new java.awt.Dimension(0, 40));
+        filterPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         filterPanel.setLayout(new java.awt.BorderLayout());
-        filterPanel.add(jSeparator2, java.awt.BorderLayout.NORTH);
 
-        add(filterPanel, java.awt.BorderLayout.PAGE_END);
+        filterTopSpacePanel.setBackground(java.awt.Color.cyan);
+        filterTopSpacePanel.setOpaque(false);
+        filterTopSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
+        filterPanel.add(filterTopSpacePanel, java.awt.BorderLayout.NORTH);
+
+        filterBottomSpacePanel.setBackground(java.awt.Color.green);
+        filterBottomSpacePanel.setOpaque(false);
+        filterBottomSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
+        filterPanel.add(filterBottomSpacePanel, java.awt.BorderLayout.SOUTH);
+
+        add(filterPanel);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel deadlocksBottomSpacePanel;
+    private javax.swing.JPanel deadlocksInnerPanel;
+    private javax.swing.JLabel deadlocksLabel;
     private javax.swing.JPanel deadlocksPanel;
+    private javax.swing.JPanel deadlocksSeparator;
+    private javax.swing.JPanel filterBottomSpacePanel;
     private javax.swing.JPanel filterPanel;
+    private javax.swing.JPanel filterTopSpacePanel;
+    private javax.swing.JPanel hitsBottomSpacePanel;
+    private javax.swing.JLabel hitsEmptyLabel;
     private javax.swing.JPanel hitsInnerPanel;
     private javax.swing.JLabel hitsLabel;
     private javax.swing.JPanel hitsPanel;
+    private javax.swing.JPanel hitsSeparator;
+    private javax.swing.JPanel hitsTopSpacePanel;
     private javax.swing.JLabel infoIcon;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JLabel infoIcon1;
     // End of variables declaration//GEN-END:variables
 
 }

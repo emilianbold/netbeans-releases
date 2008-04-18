@@ -59,7 +59,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private static final int ICON_WIDTH = 16;
     private static final int BAR_WIDTH = 8;
     
-    transient Color hitsPanelColor = new Color(255, 255, 153); // [TODO]
+    static final Color hitsPanelColor = new Color(255, 255, 153); // [TODO]
     private transient Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
@@ -90,10 +90,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
      */
     private static Reference<DebuggingView> instance = null;
     
-    
     /** Creates new form DebuggingView */
     public DebuggingView() {
-        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
+        setIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
         
@@ -120,7 +119,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treePanel.add(treeView, BorderLayout.CENTER);
         
         tapPanel = new TapPanel();
-        tapPanel.setBackground(hitsPanelColor);
         tapPanel.setOrientation(TapPanel.DOWN);
         // tapPanel.setExpanded(false);
         // tooltip
@@ -128,7 +126,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         String keyText = Utilities.keyToString(toggleKey);
         tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
-        mainPanel.add(tapPanel, BorderLayout.SOUTH);
+        add(tapPanel, BorderLayout.SOUTH);
         
         infoPanel = new InfoPanel(tapPanel);
         tapPanel.add(infoPanel);
@@ -373,6 +371,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // **************************************************************************
     // **************************************************************************
     
+    InfoPanel getInfoPanel() {
+        return infoPanel;
+    }
+    
     void refreshView() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -432,14 +434,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
                         comboItemText : "Java Project"); // NOI18N [TODO]
                 }
-            }
-        });
-    }
-    
-    void refreshBreakpointHits() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                infoPanel.refreshBreakpointHits(threadsListener.getHitsCount());
             }
         });
     }
