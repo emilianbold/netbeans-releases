@@ -229,6 +229,7 @@ public class NbModuleSuite {
             System.setProperty("java.util.logging.config", "-");
             System.setProperty("netbeans.logger.console", "true");
             System.setProperty("netbeans.home", platform.getPath());
+            System.setProperty("netbeans.full.hack", "true");
 
             File ud = new File(new File(Manager.getWorkDirPath()), "userdir");
             ud.mkdirs();

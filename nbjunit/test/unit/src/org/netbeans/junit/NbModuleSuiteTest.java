@@ -87,6 +87,7 @@ public class NbModuleSuiteTest extends TestCase {
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
+        assertProperty("netbeans.full.hack", "true");
     }
 
     public void testAccessToInsane() {
@@ -246,6 +247,10 @@ public class NbModuleSuiteTest extends TestCase {
 
         public void testOne() {
             System.setProperty("t.one", "OK");
+        }
+
+        public void testFullhack() {
+            System.setProperty("t.hack", System.getProperty("netbeans.full.hack"));
         }
     }
 
