@@ -40,6 +40,7 @@ import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor {
     private static final Logger mLog = Logger.getLogger(ExternalTablePollingStreamCustomEditor.class.getName());
@@ -183,7 +184,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             
             JButton selectIEPProcessButton = new JButton("...");
             //selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
-            selectIEPProcessButton.setAction(new DatabaseTableSelectionWizardAction());
+            selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
             gbc.gridx = 5;
             gbc.gridy = 0;
             gbc.gridwidth = GridBagConstraints.REMAINDER;

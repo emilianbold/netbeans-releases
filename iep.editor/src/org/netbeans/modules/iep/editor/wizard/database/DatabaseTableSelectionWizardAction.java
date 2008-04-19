@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 // An example action demonstrating how the wizard could be called from within
@@ -71,7 +72,7 @@ public final class DatabaseTableSelectionWizardAction extends CallableSystemActi
     }
 
     public String getName() {
-        return "Start Sample Wizard";
+        return NbBundle.getMessage(DatabaseTableSelectionWizardAction.class, "DatabaseTableSelectionWizardAction_SelectTable");
     }
 
     @Override
