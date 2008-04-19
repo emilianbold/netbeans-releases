@@ -40,6 +40,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
@@ -132,5 +133,10 @@ public class IndexedPackage extends IndexedElement {
     @Override
     public boolean isDocOnly() {
         return false;
+    }
+    
+    @Override
+    public EnumSet<BrowserVersion> getCompatibility() {
+        return BrowserVersion.ALL;
     }
 }

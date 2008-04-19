@@ -65,7 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  */
 public class SessionId {    
-    private static final String PREFIX      = "netbeans-dbg-";         // NOI18N    
+    private static final String PREFIX      = "netbeans-xdebug";         // NOI18N    
     private static final String SLASH       = "/";                     // NOI18N    
     private static final String BACK_SLASH  = "\\";                    // NOI18N           
         
@@ -74,7 +74,7 @@ public class SessionId {
     
     
     public SessionId( FileObject fileObject ) {
-        myId = PREFIX + mySessionsCount;
+        myId = PREFIX;//+ mySessionsCount;
         mySessionsCount++;
         myFileObject = fileObject;
         myDebugFile = fileObject;
@@ -237,11 +237,20 @@ public class SessionId {
             }
             localFolder = getSessionFileObject().getParent();
         }
-        setupBases( localFolder , remoteFolderName );
+        setupBases( localFolder , remoteFolderName, fileName );
     }
 
-    private void setupBases( FileObject localFolder, String remoteFolder)
+    private void setupBases( FileObject localFolder, String remoteFolder, String fileName)
     {
+        if (localFolder.equals(getProject().getProjectDirectory())) {
+            //TODO: review this code  -just hot fix - for debugging project (debug not debug.single)
+            setRemoteBase(  remoteFolder );
+            myLocalBase = getSourceRoot();
+            if (myDebugFile == null) { 
+                myDebugFile = getSourceRoot().getFileObject( fileName );
+            }
+            return;
+        }
         if ( localFolder.equals( getSourceRoot() ) ) {
             setRemoteBase(  remoteFolder );
             myLocalBase = localFolder;
@@ -256,7 +265,7 @@ public class SessionId {
         assert indx+1 < remoteFolder.length();
         String folderName = remoteFolder.substring( indx +1 );
         String localName = localFolder.getNameExt();
-        setupBases( localFolder.getParent() , remoteFolder.substring( 0, indx));
+        setupBases( localFolder.getParent() , remoteFolder.substring( 0, indx), fileName);
     }
     
     private void setRemoteBase( String base ) {

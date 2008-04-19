@@ -61,109 +61,102 @@
     </xs:complexType>
     <xs:complexType name="tRssChannel">
         <xs:sequence>
-            <xs:choice maxOccurs="unbounded">
-                <xs:element name="title" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>The name of the channel. It's how people refer to your service. If you have an HTML website that contains the same information as your RSS file, the title of your channel should be the same as the title of your website.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="link" type="xs:anyURI">
-                    <xs:annotation>
-                        <xs:documentation>The URL to the HTML website corresponding to the channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="description" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Phrase or sentence describing the channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="language" type="xs:language" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>The language the channel is written in. This allows aggregators to group all Italian language sites, for example, on a single page. A list of allowable values for this element, as provided by Netscape, is here. You may also use values defined by the W3C.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="copyright" type="xs:string" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Copyright notice for content in the channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="managingEditor" type="tEmailAddress" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Email address for person responsible for editorial content.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="webMaster" type="tEmailAddress" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Email address for person responsible for technical issues relating to channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="pubDate" type="tRfc822FormatDate" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>The publication date for the content in the channel. All date-times in RSS conform to the Date and Time Specification of RFC 822, with the exception that the year may be expressed with two characters or four characters (four preferred).</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="lastBuildDate" type="tRfc822FormatDate" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>The last time the content of the channel changed.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="category" type="tCategory" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Specify one or more categories that the channel belongs to.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="generator" type="xs:string" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>A string indicating the program used to generate the channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="docs" type="xs:anyURI" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>A URL that points to the documentation for the format used in the RSS file. It's probably a pointer to this page. It's for people who might stumble across an RSS file on a Web server 25 years from now and wonder what it is.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="cloud" type="tCloud" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Allows processes to register with a cloud to be notified of updates to the channel, implementing a lightweight publish-subscribe protocol for RSS feeds.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="ttl" type="xs:nonNegativeInteger" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>ttl stands for time to live. It's a number of minutes that indicates how long a channel can be cached before refreshing from the source.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="image" type="tImage" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Specifies a GIF, JPEG or PNG image that can be displayed with the channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="textInput" type="tTextInput" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>Specifies a text input box that can be displayed with the channel.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="skipHours" type="tSkipHoursList" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>A hint for aggregators telling them which hours they can skip.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="skipDays" type="tSkipDaysList" minOccurs="0">
-                    <xs:annotation>
-                        <xs:documentation>A hint for aggregators telling them which days they can skip.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded">
-                    <xs:annotation>
-                        <xs:documentation>Extensibility element.</xs:documentation>
-                    </xs:annotation>
-                </xs:any>
-            </xs:choice>
-            <xs:element name="item" type="tRssItem" maxOccurs="unbounded"/>
+            <xs:element name="title" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>The name of the channel. It's how people refer to your service. If you have an HTML website that contains the same information as your RSS file, the title of your channel should be the same as the title of your website.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="link" type="xs:anyURI">
+                <xs:annotation>
+                    <xs:documentation>The URL to the HTML website corresponding to the channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="description" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Phrase or sentence describing the channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="language" type="xs:language" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The language the channel is written in. This allows aggregators to group all Italian language sites, for example, on a single page. A list of allowable values for this element, as provided by Netscape, is here. You may also use values defined by the W3C.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="copyright" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Copyright notice for content in the channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="managingEditor" type="tEmailAddress" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Email address for person responsible for editorial content.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="webMaster" type="tEmailAddress" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Email address for person responsible for technical issues relating to channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="pubDate" type="tRfc822FormatDate" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The publication date for the content in the channel. All date-times in RSS conform to the Date and Time Specification of RFC 822, with the exception that the year may be expressed with two characters or four characters (four preferred).</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="lastBuildDate" type="tRfc822FormatDate" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>The last time the content of the channel changed.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="category" type="tCategory" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Specify one or more categories that the channel belongs to.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="generator" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>A string indicating the program used to generate the channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="docs" type="xs:anyURI" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>A URL that points to the documentation for the format used in the RSS file. It's probably a pointer to this page. It's for people who might stumble across an RSS file on a Web server 25 years from now and wonder what it is.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cloud" type="tCloud" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Allows processes to register with a cloud to be notified of updates to the channel, implementing a lightweight publish-subscribe protocol for RSS feeds.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ttl" type="xs:nonNegativeInteger" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>ttl stands for time to live. It's a number of minutes that indicates how long a channel can be cached before refreshing from the source.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="image" type="tImage" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Specifies a GIF, JPEG or PNG image that can be displayed with the channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="textInput" type="tTextInput" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Specifies a text input box that can be displayed with the channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="skipHours" type="tSkipHoursList" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>A hint for aggregators telling them which hours they can skip.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="skipDays" type="tSkipDaysList" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>A hint for aggregators telling them which days they can skip.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>Extensibility element.</xs:documentation>
                 </xs:annotation>
             </xs:any>
+            <xs:element name="item" type="tRssItem" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:anyAttribute namespace="##any"/>
     </xs:complexType>

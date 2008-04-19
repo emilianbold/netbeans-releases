@@ -72,7 +72,7 @@ import org.openide.util.Lookup;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
-import org.netbeans.modules.soa.core.validation.Controller;
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.components.GlassPane;

@@ -56,12 +56,12 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
-import org.netbeans.modules.soa.core.validation.Controller;
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
 import org.netbeans.modules.bpel.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.validation.core.Util;
-import static org.netbeans.modules.soa.core.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

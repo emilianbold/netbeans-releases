@@ -573,6 +573,8 @@ public class JsTypeAnalyzer {
             
             // Look in the index to see if this is a known type
             if (type == null && index != null) {
+                // If the variable is local I shouldn't attempt to do this!!
+                // Stash the result in the node itself
                 type = FunctionCache.INSTANCE.getType(symbol, index);
 //                // TODO - only do this if the symbol is a global variable (and on the index side,
 //                // limit FQN matches to globals)

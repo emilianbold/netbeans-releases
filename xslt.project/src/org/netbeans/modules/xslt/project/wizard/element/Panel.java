@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -76,7 +76,7 @@ import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xslt.project.XsltproConstants;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
-import static org.netbeans.modules.soa.core.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -178,15 +178,15 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   }
   
   protected final String i18n(String key) {
-    return org.netbeans.modules.soa.core.util.UI.i18n(Panel.class, key);
+    return org.netbeans.modules.xml.ui.UI.i18n(Panel.class, key);
   }
 
   protected final String i18n(String key, String param) {
-    return org.netbeans.modules.soa.core.util.UI.i18n(Panel.class, key, param);
+    return org.netbeans.modules.xml.ui.UI.i18n(Panel.class, key, param);
   }
 
   protected final String i18n(String key, String param1, String param2) {
-    return org.netbeans.modules.soa.core.util.UI.i18n(
+    return org.netbeans.modules.xml.ui.UI.i18n(
       Panel.class, key, param1, param2);
   }
 
@@ -417,32 +417,20 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
 
   protected static final String EMPTY = ""; // NOI18N
 
-  protected static final String NAME_TYPE =
-    org.netbeans.modules.soa.core.util.UI.i18n(Panel.class,
-    "LBL_Service_Type"); // NOI18N
-
-  protected static final String NAME_WSDL =
-    org.netbeans.modules.soa.core.util.UI.i18n(Panel.class,
-    "LBL_WSDL_File"); // NOI18N
-
-  protected static final String NAME_XSLT =
-    org.netbeans.modules.soa.core.util.UI.i18n(Panel.class,
-    "LBL_XSLT_Configuration"); // NOI18N
+  protected static final String NAME_TYPE = org.netbeans.modules.xml.ui.UI.i18n(Panel.class, "LBL_Service_Type"); // NOI18N
+  protected static final String NAME_WSDL = org.netbeans.modules.xml.ui.UI.i18n(Panel.class, "LBL_WSDL_File"); // NOI18N
+  protected static final String NAME_XSLT = org.netbeans.modules.xml.ui.UI.i18n(Panel.class, "LBL_XSLT_Configuration"); // NOI18N
 
   public static final String INPUT_FILE = "input.file"; // NOI18N
   public static final String INPUT_OPERATION = "input.operation"; // NOI18N
-  public static final String INPUT_PORT_TYPE =
-    "input.porttype"; // NOI18N
+  public static final String INPUT_PORT_TYPE = "input.porttype"; // NOI18N
 
   public static final String OUTPUT_FILE = "output.file"; // NOI18N
   public static final String OUTPUT_OPERATION = "output.operation"; // NOI18N
-  public static final String OUTPUT_PORT_TYPE =
-    "output.porttype"; // NOI18N
+  public static final String OUTPUT_PORT_TYPE = "output.porttype"; // NOI18N
 
   public static final String CHOICE = "choice"; // NOI18N
   public static final String CHOICE_REQUEST_REPLY = "choice.request.reply"; // NOI18N
-  public static final String CHOICE_FILTER_ONE_WAY =
-    "choice.filter.one.way"; // NOI18N
-  public static final String CHOICE_FILTER_REQUEST_REPLY =
-    "choice.filter.request.reply"; // NOI18N
+  public static final String CHOICE_FILTER_ONE_WAY = "choice.filter.one.way"; // NOI18N
+  public static final String CHOICE_FILTER_REQUEST_REPLY = "choice.filter.request.reply"; // NOI18N
 }

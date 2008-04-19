@@ -22,11 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.Listener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationListener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
 import org.netbeans.modules.bpel.core.annotations.DiagramAnnotation;
-import org.netbeans.modules.soa.core.validation.Controller;
-import org.netbeans.modules.soa.core.validation.Listener;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
