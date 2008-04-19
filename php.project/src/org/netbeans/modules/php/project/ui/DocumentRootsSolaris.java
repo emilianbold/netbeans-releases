@@ -67,7 +67,7 @@ final class DocumentRootsSolaris {
         }
         for (String apache : apaches) {
             File htDocs = DocumentRoots.findHtDocsDirectory(new File(varDir, apache), null);
-            if (htDocs.isDirectory()) {
+            if (htDocs != null) {
                 String documentRoot = DocumentRoots.getFolderName(htDocs, projectName);
                 String url = DocumentRoots.getDefaultUrl(projectName);
                 roots.add(new Root(documentRoot, url, htDocs.canWrite()));
