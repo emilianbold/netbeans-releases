@@ -711,7 +711,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
 
             if (startIdx <= endIdx) {
                 marks.remove(startIdx, endIdx - startIdx + 1);
-                lastAddIndex--; // Increase the index after addition
+                lastAddIndex--; // Decrease the index after removal
             }
         }
     }
