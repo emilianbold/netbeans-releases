@@ -47,21 +47,23 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.project.options.CommandLinePreferences;
-import org.netbeans.modules.php.project.options.ProjectActionsPreferences;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
-
+import org.openide.cookies.EditorCookie;
 /**
  *
  * @author avk
@@ -163,6 +165,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
                         if (outFile != null) {
                             openInOutput(outFile);
                             openFileInBrowser(outFile);
+                            openFileInEditor(outFile);
                         }
                     }
                 }
@@ -188,6 +191,25 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
 
     protected void setOutputTabTitle(String title){
         myOutputTabTitle = title;
+    }
+
+    protected boolean openFileInEditor(File file) {
+        if (!isOpenInEditor()){
+            return true;
+        }
+        if (isCancelled){
+            return false;
+        }
+        try {
+            FileObject fo = FileUtil.toFileObject(file);
+            DataObject dobj = DataObject.find(fo);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            ec.open();
+            return true;
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+        return false;
     }
     
     protected boolean openFileInBrowser(File file) {
@@ -337,7 +359,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
         }
 
         if (success && !isCancelled){
-            return tmpFile;
+            return FileUtil.normalizeFile(tmpFile);
         } else {
             return null;
         }
@@ -361,7 +383,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
             }
         });
         if (path == null) {
-            path = CommandLinePreferences.getInstance().getPhpInterpreter();
+            path = PhpOptions.getInstance().getPhpInterpreter();
         }
         if (path != null){
             path = path.trim();
@@ -430,13 +452,15 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
     }
 
     private boolean isPrintToOutput(){
-        return ProjectActionsPreferences.getInstance()
-                .getCommandLineRunPrintToOutput();
+        return PhpOptions.getInstance().isOpenResultInOutputWindow();
+    }
+
+    private boolean isOpenInEditor(){
+        return PhpOptions.getInstance().isOpenResultInEditor();
     }
     
     private boolean isOpenInBrowser(){
-        return ProjectActionsPreferences.getInstance()
-                .getCommandLineRunOpenInBrowser();
+        return PhpOptions.getInstance().isOpenResultInBrowser();
     }
     
     private File getTmpFile(String script) throws IOException {

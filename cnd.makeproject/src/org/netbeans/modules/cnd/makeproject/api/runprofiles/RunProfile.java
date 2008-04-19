@@ -155,7 +155,13 @@ public class RunProfile implements ConfigurationAuxObject {
         if (file != null && file.exists()) {
             return file.getAbsolutePath();
         } else {
-            throw new IllegalStateException(getString("Err_MissingDorunScript")); // NOI18N
+            IllegalStateException e = new IllegalStateException(getString("Err_MissingDorunScript")); // NOI18N
+            if (true) {
+                throw e;
+            } else {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
     

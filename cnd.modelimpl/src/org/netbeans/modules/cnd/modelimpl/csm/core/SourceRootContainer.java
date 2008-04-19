@@ -61,7 +61,25 @@ public class SourceRootContainer {
     }
     
     public boolean isMySource(String includePath){
-        return projectRoots.containsKey(includePath);
+        if (projectRoots.containsKey(includePath)){
+            return true;
+        }
+        while (true){
+            int i = includePath.lastIndexOf('\\');
+            if (i <= 0) {
+                i = includePath.lastIndexOf('/');
+            }
+            if (i <= 0) {
+                return false;
+            }
+            includePath = includePath.substring(0,i);
+            Integer val = projectRoots.get(includePath);
+            if (val != null) {
+                if (val > Integer.MAX_VALUE/4) {
+                    return true;
+                }
+            }
+        }
     }
     
     public void fixFolder(String path){

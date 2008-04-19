@@ -421,6 +421,10 @@ public class EjbJarProjectGenerator {
     private static AntProjectHelper setupProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, File configFiles, File libraries, String resources,
             String j2eeLevel, String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
+
+        Utils.logUI(NbBundle.getBundle(EjbJarProjectGenerator.class), "UI_EJB_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, EjbJarProjectType.TYPE, librariesDefinition);
         final EjbJarProject prj = (EjbJarProject) ProjectManager.getDefault().findProject(h.getProjectDirectory());
         final ReferenceHelper referenceHelper = prj.getReferenceHelper();

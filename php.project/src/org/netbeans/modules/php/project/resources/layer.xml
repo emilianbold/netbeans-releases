@@ -58,68 +58,40 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPhpProject.html"/>
                 </file>
-
             </folder>
         </folder>
-        <!--folder name="Scripting">
+        <folder name="Scripting">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
             <attr name="position" intvalue="20"/>
 
-            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHP.php">
+            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHPFileDescription.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="100"/>
             </file>
-        </folder-->
+            <file name="EmptyPHPWebPage.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/EmptyPHPWebPageDescription.html"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="200"/>
+            </file>                        
+        </folder>
 
     </folder>
 
-    <!--folder name="OptionsDialog">
+    <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="ActionsPanel.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ActionsOptionsContainerPanel"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpAdvancedOption"/>
             </file>
         </folder>
     </folder>
-    <folder name="org.netbeans.modules.php">
-        <folder name="ActionsOptions">
-            <file name="CommandLine.instance">
-                <attr name="position" intvalue="200"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.CommandLineOption"/>
-            </file>
-            <file name="ProjectActionsOptions.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ProjectActionsOptions"/>
-            </file>
-        </folder>
-    </folder-->
 
-<!-- separate php category was moved into misclleaneous as one php panel
-    <folder name="OptionsDialog">
-        <file name="PhpOptions.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.PhpOptionsCategory"/>
-            <attr name="position" intvalue="310"/>
-        </file>
-    </folder>
-    <folder name="org.netbeans.modules.php">
-        <folder name="options">
-            <file name="CommandLine.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.CommandLineOption"/>
-            </file>
-            <file name="ActionsPanel.instance">
-                <attr name="position" intvalue="160"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ActionsOptionsContainerPanel"/>
-            </file>
-        </folder>
-        <folder name="ActionsOptions">
-            <file name="ProjectActionsOptions.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ProjectActionsOptions"/>
-            </file>
-        </folder>
-    </folder>
--->
     <folder name="Projects">
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
@@ -131,10 +103,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpIncludePath"/>
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="CommandLine.instance">
+                <!--file name="CommandLine.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createCommandLine"/>
                     <attr name="position" intvalue="300"/>
-                </file>
+                </file-->
             </folder>
         </folder>
     </folder>

@@ -37,10 +37,7 @@ import org.openide.util.NbBundle;
  * @author avk
  */
 public class RunSingleCommand extends RunCommand{
-
     private static final String LBL_RUN_SINGLE             = "LBL_RunSingleFile";     // NOI18N
-
-    //private static final String RUN_SINGLE                 = ActionProvider.COMMAND_RUN_SINGLE;                // NOI18N
     
     public RunSingleCommand( Project project , WebServerProvider provider) 
     {
@@ -49,7 +46,7 @@ public class RunSingleCommand extends RunCommand{
 
     @Override
     public String getId() {
-        return RUN;
+        return ActionProvider.COMMAND_RUN_SINGLE;
     }
 
     

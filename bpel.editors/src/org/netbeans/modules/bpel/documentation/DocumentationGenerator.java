@@ -88,7 +88,7 @@ import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -371,11 +371,11 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String i18n(String key) {
-    return org.netbeans.modules.soa.ui.UI.i18n(DocumentationGenerator.class, key);
+    return org.netbeans.modules.xml.ui.UI.i18n(DocumentationGenerator.class, key);
   }
 
   private String i18n(String key, String param) {
-    return org.netbeans.modules.soa.ui.UI.i18n(DocumentationGenerator.class, key, param);
+    return org.netbeans.modules.xml.ui.UI.i18n(DocumentationGenerator.class, key, param);
   }
 
   private JComponent myCanvas;

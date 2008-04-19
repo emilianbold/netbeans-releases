@@ -255,8 +255,11 @@ public class ProjectBridge {
         return folder;
     }
     
-    public Set getResult(){
+    public void save(){
         makeConfigurationDescriptor.save();
+    }
+    
+    public Set getResult(){
         if (SwingUtilities.isEventDispatchThread()) {
             makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         } else {

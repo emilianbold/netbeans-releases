@@ -168,13 +168,14 @@ public class LocalServer implements Comparable<LocalServer> {
     public static class ComboBoxEditor implements javax.swing.ComboBoxEditor, UIResource, DocumentListener {
 
         private static final long serialVersionUID = -4527321803090719483L;
-        private final JTextField component = new JTextField();
+        private final JTextField component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        private LocalServer activeItem;
+        private LocalServer activeItem = null;
 
-        public ComboBoxEditor() {
+        public ComboBoxEditor(JTextField editor) {
             super();
-            component.setOpaque(true);
+
+            component = editor;
             component.getDocument().addDocumentListener(this);
         }
 
@@ -237,6 +238,10 @@ public class LocalServer implements Comparable<LocalServer> {
         }
 
         private void processUpdate() {
+            if (activeItem == null) {
+                // no items set yet
+                return;
+            }
             boolean enabled = false;
             if (activeItem.isEditable()) {
                 enabled = true;
@@ -262,9 +267,13 @@ public class LocalServer implements Comparable<LocalServer> {
             setName("ComboBox.listRenderer"); // NOI18N
             setText(((LocalServer) value).getSrcRoot());
 
-            // never selected
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
             return this;
         }
     }

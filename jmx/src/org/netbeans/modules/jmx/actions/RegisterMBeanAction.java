@@ -59,6 +59,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.text.IndentEngine;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 
 /**
  * Action used to add MBean registration code to an existing JMX Agent.

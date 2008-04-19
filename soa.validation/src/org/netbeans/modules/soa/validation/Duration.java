@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.soa.validation;
 
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

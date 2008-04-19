@@ -84,10 +84,10 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.category.Category;
 import org.netbeans.modules.xml.xam.ui.category.CategoryPane;
 import org.netbeans.modules.xml.xam.ui.category.DefaultCategoryPane;
-import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
+import org.netbeans.modules.xml.search.api.SearchManager;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.explorer.ExplorerManager;
@@ -493,12 +493,9 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                     categoryPane.populateToolbar(toolbar);
                 }
                 // vlv: search
-                SearchManager sm = SearchManager.getDefault();
+                toolbar.addSeparator();
+                toolbar.add(SearchManager.getDefault().getSearchAction());
 
-                if (sm != null) {
-                  toolbar.addSeparator();
-                  toolbar.add(sm.getSearchAction());
-                }
                 toolbar.addSeparator();
                 validateAction = new ValidateAction(model);
                 JButton validateButton = toolbar.add(validateAction);

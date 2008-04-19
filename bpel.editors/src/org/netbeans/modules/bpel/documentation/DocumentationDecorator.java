@@ -52,7 +52,7 @@ import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.Descriptor;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
