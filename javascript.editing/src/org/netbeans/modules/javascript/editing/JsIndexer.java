@@ -167,12 +167,18 @@ public class JsIndexer implements Indexer {
             
             // Avoid double-indexing files that have multiple versions - e.g. foo.js and foo-min.js
             // or foo.uncompressed
+            FileObject fo = file.getFileObject();
+            if (fo == null) {
+                return true;
+            }
             if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) { // NOI18N
                 // See if we have a corresponding "un-min'ed" version in the same directory;
                 // if so, skip it
                 // Subtrack out the -min part
                 name = name.substring(0, name.length()-7); // NOI18N
-                if (file.getFileObject().getParent().getFileObject(name, "js") != null) { // NOI18N
+                if (fo.getParent().getFileObject(name, "js") != null) { // NOI18N
+                    // The file has been deleted
+                    // I still need to return yes here such that the file is deleted from the index.
                     return false;
                 }
             } else {
@@ -184,12 +190,6 @@ public class JsIndexer implements Indexer {
                 // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
                 // too, not just the same directory since there's a good likelihood (with the library manager) you
                 // have these in different dirs.
-                FileObject fo = file.getFileObject();
-                if (fo == null) {
-                    // The file has been deleted
-                    // I still need to return yes here such that the file is deleted from the index.
-                    return true;
-                }
                 FileObject parent = fo.getParent();
                 if (parent == null) {
                     // Unlikely but let's play it safe
