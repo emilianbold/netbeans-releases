@@ -366,7 +366,7 @@ private void agreeCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 
 private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readlicenseButtonActionPerformed
         try{
-            URLDisplayer.getDefault().showURL(new URL("https://glassfish.dev.java.net/public/CDDLv1.0.html"));//NOI18N
+            URLDisplayer.getDefault().showURL(new URL("https://glassfish.dev.java.net/public/CDDL+GPL.html"));//NOI18N
         } catch (Exception eee){
             return;//nothing much to do
             
