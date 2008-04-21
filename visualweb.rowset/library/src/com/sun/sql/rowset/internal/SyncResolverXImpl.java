@@ -355,7 +355,7 @@ public class SyncResolverXImpl extends CachedRowSetXImpl implements SyncResolver
         
         for(int i =1;i<=iColCount;i++) {
             rsmdRow.setColumnType(i,rsmdWrite.getColumnType(i));
-            rsmdRow.setColumnName(i,rsmdWrite.getColumnName(i));
+            rsmdRow.setColumnName(i,rsmdWrite.getColumnLabel(i));
             rsmdRow.setNullable(i,ResultSetMetaData.columnNullableUnknown);
             
             try {
