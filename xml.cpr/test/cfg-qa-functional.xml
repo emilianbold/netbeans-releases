@@ -60,6 +60,7 @@ made subject to such option by the copyright holder.
         </patternset>
       </testset>
     </testbag>
+    -->
 
     <testbag testattribs="stable,commit,sql" executor="ide" name="Acceptance SQL">
       <testset dir="qa-functional/src">
@@ -69,6 +70,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
+    <!--
     <testbag testattribs="stable,commit,web" executor="ide" name="Acceptance Web">
       <testset dir="qa-functional/src">
         <patternset>
@@ -76,6 +78,7 @@ made subject to such option by the copyright holder.
         </patternset>
       </testset>
     </testbag>
+    -->
 
     <testbag testattribs="stable,commit,ejb" executor="ide" name="Acceptance Ejb">
       <testset dir="qa-functional/src">
@@ -85,6 +88,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
+    <!--
     <testbag testattribs="stable,commit,xslt" executor="ide" name="Acceptance Xslt">
       <testset dir="qa-functional/src">
         <patternset>

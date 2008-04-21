@@ -82,7 +82,6 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
     }
 
     public boolean showDialog() {
-
         dialogOK = false;
 
         String displayName = "";
@@ -129,7 +128,6 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
     }
 
     private void evaluateInput() {
-
         int beanIndex = beanNameCb.getSelectedIndex();
         getProperty.setBeanIndex(beanIndex);
         if (beanIndex == -1) {
