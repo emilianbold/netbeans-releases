@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <target name="init">
         <property name="nbroot" location=".."/>
         <property name="validroot" location="${nbroot}"/>
-        <ant dir="${nbroot}/ant/project/eg" antfile="create-sample.xml" target="validate-compile"/>
+        <ant dir="${nbroot}/project.ant/eg" antfile="create-sample.xml" target="validate-compile"/>
     </target>
     <target name="find-xmls" depends="init">
         <pathconvert property="xmls" pathsep=",">
@@ -55,7 +55,6 @@ made subject to such option by the copyright holder.
                     <exclude name="**/test/results/"/>
                     <exclude name="**/test/work/"/>
                     <exclude name="xtest/instance/results/"/>
-                    <exclude name="libs/www/template/"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -64,14 +63,14 @@ made subject to such option by the copyright holder.
         <pathconvert property="schemas" pathsep=",">
             <path>
                 <fileset dir="${nbroot}">
-                    <include name="ant/project/src/**/*.xsd"/>
-                    <include name="ant/freeform/src/**/*.xsd"/>
-                    <include name="apisupport/project/src/**/*.xsd"/>
-                    <include name="java/j2seproject/src/**/*.xsd"/>
-                    <include name="j2ee/earproject/src/**/*.xsd"/>
-                    <include name="j2ee/ejbjarproject/src/**/*.xsd"/>
-                    <include name="projects/*/src/**/*.xsd"/>
-                    <include name="web/project/src/**/*.xsd"/>
+                    <include name="project.ant/src/**/*.xsd"/>
+                    <include name="ant.freeform/src/**/*.xsd"/>
+                    <include name="apisupport.project/src/**/*.xsd"/>
+                    <include name="java.j2seproject/src/**/*.xsd"/>
+                    <include name="j2ee.earproject/src/**/*.xsd"/>
+                    <include name="j2ee.ejbjarproject/src/**/*.xsd"/>
+                    <include name="projectapi/*/src/**/*.xsd"/>
+                    <include name="web.project/src/**/*.xsd"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -79,8 +78,8 @@ made subject to such option by the copyright holder.
     <target name="validate" depends="init,find-xmls,find-schemas" description="Ensure that all project.xml files are valid acc. to schema.">
         <java classname="ValidateAllBySchema" failonerror="true" fork="true">
             <classpath>
-                <pathelement location="${nbroot}/ant/project/eg"/>
-                <fileset dir="${nbroot}/libs/xerces/external">
+                <pathelement location="${nbroot}/project.ant/eg"/>
+                <fileset dir="${nbroot}/libs.xerces/external">
                     <include name="xerces*.jar"/>
                 </fileset>
             </classpath>
