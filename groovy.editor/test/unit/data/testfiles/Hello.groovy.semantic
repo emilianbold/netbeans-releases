@@ -3,6 +3,9 @@ package foo;
 class |>CLASS:Hello1<| {
 
     int |>FIELD:field1<| = 1;
+    public |>FIELD:publicField<| = 1
+    protected |>FIELD:protectedField<| = 2
+    private |>FIELD:privateField<| = 3
     def |>FIELD:name<| = 'World'
 
     |>CONSTRUCTOR:Hello1<|(int inputval) {

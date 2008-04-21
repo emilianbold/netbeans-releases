@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -516,6 +517,26 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return null;
     }
     
+    public static String getDefSignature(MethodNode node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.getName());
+
+        Parameter[] parameters = node.getParameters();
+        if (parameters.length > 0) {
+            sb.append('(');
+            Iterator<Parameter> it = Arrays.asList(parameters).iterator();
+            sb.append(it.next().getName());
+
+            while (it.hasNext()) {
+                sb.append(',');
+                sb.append(it.next().getName());
+            }
+            sb.append(')');
+        }
+
+        return sb.toString();
+    }
+
     public static final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
         private final SourceUnit sourceUnit;

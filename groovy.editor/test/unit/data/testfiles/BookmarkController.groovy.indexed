@@ -23,5 +23,8 @@ Indexed:
   field : update
   field : updateNotes
   fqn : BookmarkController
+  method : addTags(b);02
+  method : getSuggestions(url,bookmark);02
+  method : printParams(params,unusedParam);02
 
 Not Indexed:

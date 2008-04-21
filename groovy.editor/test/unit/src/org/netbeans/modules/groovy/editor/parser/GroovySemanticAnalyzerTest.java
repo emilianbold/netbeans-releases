@@ -41,14 +41,9 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 
 /**
@@ -80,35 +75,6 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
 //        // we are only interested in a single logger, so we set its level in setUp(),
 //        // as returning Level.FINEST here would log from all loggers
 //    }
-
-    private String annotate(Document doc, Map<OffsetRange, ColoringAttributes> highlights) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        String text = doc.getText(0, doc.getLength());
-        Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
-        Map<Integer, OffsetRange> ends = new HashMap<Integer, OffsetRange>(100);
-        for (OffsetRange range : highlights.keySet()) {
-            starts.put(range.getStart(), range);
-            ends.put(range.getEnd(), range);
-        }
-
-        for (int i = 0; i < text.length(); i++) {
-            if (starts.containsKey(i)) {
-                sb.append("|>");
-                OffsetRange range = starts.get(i);
-                ColoringAttributes ca = highlights.get(range);
-                if (ca != null) {
-                    sb.append(ca.name());
-                    sb.append(':');
-                }
-            }
-            if (ends.containsKey(i)) {
-                sb.append("<|");
-            }
-            sb.append(text.charAt(i));
-        }
-
-        return sb.toString();
-    }
 
     public void testAnalysis() throws Exception {
         checkSemantic("testfiles/Hello.groovy");

@@ -45,10 +45,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.groovy.editor.elements.AstClassElement;
@@ -95,7 +95,7 @@ public class GroovyIndexer implements Indexer {
     public boolean isIndexable(ParserFile file) {
         String extension = file.getExtension();
 
-        if (extension.equals("groovy")) {
+        if (extension.equals("groovy")) { // NOI18N
             return true;
         }
         return false;
@@ -128,11 +128,11 @@ public class GroovyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.5";
+        return "0.6"; // NOI18N
     }
 
     public String getIndexerName() {
-        return "groovy";
+        return "groovy"; // NOI18N
     }
 
     public FileObject getPreindexedDb() {
@@ -224,6 +224,9 @@ public class GroovyIndexer implements Indexer {
             indexClass(element, document);
             for (AstElement child : element.getChildren()) {
                 switch (child.getKind()) {
+                    case METHOD:
+                        indexMethod(child, document);
+                        break;
                     case FIELD:
                         indexField(child, document);
                         break;
@@ -240,7 +243,7 @@ public class GroovyIndexer implements Indexer {
 
         private void indexField(AstElement child, IndexDocument document) {
             String signature = child.getName();
-            int flags = getModifiersFlag(child.getModifiers());
+            int flags = getFieldModifiersFlag(child.getModifiers());
 
             if (flags != 0) {
                 StringBuilder sb = new StringBuilder(signature);
@@ -254,12 +257,43 @@ public class GroovyIndexer implements Indexer {
             document.addPair(FIELD_NAME, signature, true);
         }
 
+        private void indexMethod(AstElement child, IndexDocument document) {
+            MethodNode childNode = (MethodNode)child.getNode();
+            String signature = AstUtilities.getDefSignature(childNode);
+            Set<Modifier> modifiers = child.getModifiers();
+            
+            int flags = getMethodModifiersFlag(modifiers);
+
+            if (flags != 0) {
+                StringBuilder sb = new StringBuilder(signature);
+                sb.append(';');
+                sb.append(IndexedElement.flagToFirstChar(flags));
+                sb.append(IndexedElement.flagToSecondChar(flags));
+                signature = sb.toString();
+            }
+            
+            document.addPair(METHOD_NAME, signature, true);
+        }
+
     }
-    
-    private static int getModifiersFlag(Set<Modifier> modifiers) {
+
+    // note that default field modifier is private
+    private static int getFieldModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? Opcodes.ACC_STATIC : 0;
         if (modifiers.contains(Modifier.PUBLIC)) {
             flags |= Opcodes.ACC_PUBLIC;
+        } else if (modifiers.contains(Modifier.PROTECTED)) {
+            flags |= Opcodes.ACC_PROTECTED;
+        }
+        
+        return flags;
+    }
+
+    // note that default method (and class) modifier is public
+    private static int getMethodModifiersFlag(Set<Modifier> modifiers) {
+        int flags = modifiers.contains(Modifier.STATIC) ? Opcodes.ACC_STATIC : 0;
+        if (modifiers.contains(Modifier.PRIVATE)) {
+            flags |= Opcodes.ACC_PRIVATE;
         } else if (modifiers.contains(Modifier.PROTECTED)) {
             flags |= Opcodes.ACC_PROTECTED;
         }

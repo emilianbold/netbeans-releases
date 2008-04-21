@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.editor.elements;
 import groovyjarjarasm.asm.Opcodes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -123,9 +124,11 @@ public abstract class AstElement extends GroovyElement {
             int flags = -1;
             if (node instanceof FieldNode) {
                 flags = ((FieldNode) node).getModifiers();
+            } else if (node instanceof MethodNode) {
+                flags = ((MethodNode) node).getModifiers();
             }
             if (flags != -1) {
-                Set<Modifier> result = new HashSet<Modifier>();
+                Set<Modifier> result = EnumSet.noneOf(Modifier.class);
                 if ((flags & Opcodes.ACC_PUBLIC) != 0) {
                     result.add(Modifier.PUBLIC);
                 }
@@ -140,7 +143,7 @@ public abstract class AstElement extends GroovyElement {
                 }
                 modifiers = result;
             } else {
-                modifiers = Collections.emptySet();
+                modifiers = Collections.<Modifier>emptySet();
             }
         }
 

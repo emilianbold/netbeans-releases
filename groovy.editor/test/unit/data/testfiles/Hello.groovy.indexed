@@ -25,6 +25,8 @@ Indexed:
   field : protectedField;04
   field : publicField;01
   fqn : foo.Hello1
+  method : dynamicmethod
+  method : main(args);08
 
 Not Indexed:
 

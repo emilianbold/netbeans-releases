@@ -87,19 +87,6 @@ public class AstMethodElement extends AstElement implements MethodElement {
         this.modifiers = modifiers;
     }
 
-    @Override
-    public Set<Modifier> getModifiers() {
-        if (modifiers == null) {
-            if (node instanceof MethodNode) {
-                modifiers = EnumSet.of(Modifier.STATIC, access);
-            } else {
-                modifiers = EnumSet.of(access);
-            }
-        }
-
-        return modifiers;
-    }
-
     public void setAccess(Modifier access) {
         this.access = access;
         if (modifiers != null && modifiers.contains(Modifier.STATIC)) {
