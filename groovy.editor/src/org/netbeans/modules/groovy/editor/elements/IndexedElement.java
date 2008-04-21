@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.groovy.editor.elements;
 
+import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -58,18 +59,6 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class IndexedElement extends GroovyElement {
-    /** This method is documented */
-    public static final int DOCUMENTED = 1 << 0;
-    /** This method is protected */
-    public static final int PROTECTED = 1 << 1;
-    /** This method is private */
-    public static final int PRIVATE = 1 << 2;
-    /** This method is top level (implicit member of Object) */
-    public static final int TOPLEVEL = 1 << 3;
-    /** This element is "static" (e.g. it's a classvar for fields, class method for methods etc) */
-    public static final int STATIC = 1 << 4;
-    /** This element is deliberately not documented (rdoc :nodoc:) */
-    public static final int NODOC = 1 << 5;
     
     protected String fileUrl;
     protected final String clz;
@@ -165,15 +154,15 @@ public abstract class IndexedElement extends GroovyElement {
 
     public final Set<Modifier> getModifiers() {
         if (modifiers == null) {
-            Modifier access = Modifier.PUBLIC;
-            if (isPrivate()) {
-                access = Modifier.PRIVATE;
+            Modifier access = Modifier.PRIVATE;
+            if (isPublic()) {
+                access = Modifier.PUBLIC;
             } else if (isProtected()) {
                 access = Modifier.PROTECTED;
             }
             boolean isStatic = isStatic();
             
-            if (access != Modifier.PUBLIC) {
+            if (access != Modifier.PRIVATE) {
                 if (isStatic) {
                     modifiers = EnumSet.of(access, Modifier.STATIC);
                 } else {
@@ -188,11 +177,6 @@ public abstract class IndexedElement extends GroovyElement {
         return modifiers;
     }
 
-    /** Return the length of the documentation for this class, in characters */
-    public int getDocumentationLength() {
-        return isDocumented() ? 1 : 0;
-    }
-    
     /** Return a string (suitable for persistence) encoding the given flags */
     public static char flagToFirstChar(int flags) {
         char first = (char)(flags >>= 4);
@@ -240,54 +224,32 @@ public abstract class IndexedElement extends GroovyElement {
         return (high << 4) + low;
     }
     
-    public boolean isDocumented() {
-        return (flags & DOCUMENTED) != 0;
-    }
-    
     public boolean isPublic() {
-        return (flags & PRIVATE & PROTECTED) == 0;
+        return (flags & Opcodes.ACC_PUBLIC) != 0;
     }
 
     public boolean isPrivate() {
-// XXX hmmm        not symmetric, see what the old semantics was for why I needed both?
-        return ((flags & PRIVATE) != 0) || ((flags & PROTECTED) != 0);
+        return (flags & Opcodes.ACC_PUBLIC & Opcodes.ACC_PROTECTED) == 0;
     }
     
     public boolean isProtected() {
-        return (flags & PROTECTED) != 0;
+        return (flags & Opcodes.ACC_PROTECTED) != 0;
     }
     
-    public boolean isTopLevel() {
-        return (flags & TOPLEVEL) != 0;
-    }
-
     public boolean isStatic() {
-        return (flags & STATIC) != 0;
-    }
-    
-    public boolean isNoDoc() {
-        return (flags & NODOC) != 0;
+        return (flags & Opcodes.ACC_STATIC) != 0;
     }
     
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
-        if ((flags & DOCUMENTED) != 0) {
-            sb.append("|DOCUMENTED");
+        if ((flags & Opcodes.ACC_PUBLIC) != 0) {
+            sb.append("|PUBLIC");
         }
-        if ((flags & PRIVATE) != 0) {
-            sb.append("|PRIVATE");
-        }
-        if ((flags & PROTECTED) != 0) {
+        if ((flags & Opcodes.ACC_PROTECTED) != 0) {
             sb.append("|PROTECTED");
         }
-        if ((flags & TOPLEVEL) != 0) {
-            sb.append("|TOPLEVEL");
-        }
-        if ((flags & STATIC) != 0) {
+        if ((flags & Opcodes.ACC_STATIC) != 0) {
             sb.append("|STATIC");
-        }
-        if ((flags & NODOC) != 0) {
-            sb.append("|NODOC");
         }
         
         return sb.toString();

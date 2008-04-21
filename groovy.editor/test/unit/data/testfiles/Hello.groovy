@@ -3,6 +3,9 @@ package foo;
 class Hello1 {
 
     int field1 = 1;
+    public publicField = 1
+    protected protectedField = 2
+    private privateField = 3
     def name = 'World'
 
     Hello1(int inputval) {

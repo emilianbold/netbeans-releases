@@ -18,6 +18,12 @@ Document 2
 Indexed:
   class : Hello1
   class-ig : hello1
+  field : field1
+  field : greeting
+  field : name
+  field : privateField
+  field : protectedField;04
+  field : publicField;01
   fqn : foo.Hello1
 
 Not Indexed:

@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.groovy.editor.elements;
 
+import groovyjarjarasm.asm.Opcodes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -116,7 +119,32 @@ public abstract class AstElement extends GroovyElement {
     }
 
     public Set<Modifier> getModifiers() {
-        return Collections.<Modifier>emptySet();
+        if (modifiers == null) {
+            int flags = -1;
+            if (node instanceof FieldNode) {
+                flags = ((FieldNode) node).getModifiers();
+            }
+            if (flags != -1) {
+                Set<Modifier> result = new HashSet<Modifier>();
+                if ((flags & Opcodes.ACC_PUBLIC) != 0) {
+                    result.add(Modifier.PUBLIC);
+                }
+                if ((flags & Opcodes.ACC_PROTECTED) != 0) {
+                    result.add(Modifier.PROTECTED);
+                }
+                if ((flags & Opcodes.ACC_PRIVATE) != 0) {
+                    result.add(Modifier.PRIVATE);
+                }
+                if ((flags & Opcodes.ACC_STATIC) != 0) {
+                    result.add(Modifier.STATIC);
+                }
+                modifiers = result;
+            } else {
+                modifiers = Collections.emptySet();
+            }
+        }
+
+        return modifiers;
     }
 
     public void setIn(String in) {

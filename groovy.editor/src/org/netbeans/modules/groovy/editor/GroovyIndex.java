@@ -224,48 +224,7 @@ public final class GroovyIndex {
 
             // Only return a single instance for this signature
             if (!includeAll) {
-                if (uniqueClasses.contains(fqn)) { // use a map to point right to the class
-                                                   // Prefer the instance that provides documentation
-
-                    boolean replaced = false;
-
-                    int flags = 0;
-                    if (attrs != null) {
-                        flags = IndexedElement.stringToFlag(attrs, 0);
-                    }
-
-                    boolean isDocumented = (flags & IndexedElement.DOCUMENTED) != 0;
-
-                    if (isDocumented) {
-                        // Check the actual size of the documentation, and prefer the largest
-                        // method
-                        int length = 0;
-                        int documentedAt = attrs.indexOf(';');
-
-                        if (documentedAt != -1) {
-                            int end = attrs.indexOf(';', documentedAt+1);
-                            if (end == -1) {
-                                end = attrs.length();
-                            }                        
-                            length = Integer.parseInt(attrs.substring(documentedAt + 1, end));
-                        }
-
-                        // This instance is documented. Replace the other instance...
-                        for (IndexedClass c : classes) {
-                            if (c.getSignature().equals(fqn) &&
-                                    (length > c.getDocumentationLength())) {
-                                classes.remove(c);
-                                replaced = true;
-
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!replaced) {
-                        continue;
-                    }
-                } else {
+                if (!uniqueClasses.contains(fqn)) { // use a map to point right to the class
                     uniqueClasses.add(fqn);
                 }
             }

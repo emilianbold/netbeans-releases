@@ -9,6 +9,19 @@ Document 1
 Indexed:
   class : BookmarkController
   class-ig : bookmarkcontroller
+  field : create
+  field : delete
+  field : deliciousService
+  field : edit
+  field : list
+  field : params
+  field : preview
+  field : save
+  field : scaffold
+  field : search
+  field : suggestTag
+  field : update
+  field : updateNotes
   fqn : BookmarkController
 
 Not Indexed:

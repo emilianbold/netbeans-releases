@@ -1,12 +1,8 @@
 package org.netbeans.modules.groovy.editor.elements;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
 
 public class AstFieldElement extends AstElement {
     public AstFieldElement(ASTNode node) {
@@ -26,19 +22,6 @@ public class AstFieldElement extends AstElement {
         }
 
         return name;
-    }
-
-    public Set<Modifier> getModifiers() {
-        if (modifiers == null) {
-            // TODO - find access level!
-            if (node instanceof FieldNode) {
-                modifiers = EnumSet.of(Modifier.STATIC);
-            } else {
-                modifiers = Collections.emptySet();
-            }
-        }
-
-        return modifiers;
     }
 
     @Override

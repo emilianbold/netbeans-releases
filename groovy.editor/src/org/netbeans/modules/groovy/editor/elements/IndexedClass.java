@@ -114,32 +114,6 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return super.hashCode();
     }
     
-    /** Return the length of the documentation for this class, in characters */
-    @Override
-    public int getDocumentationLength() {
-        if (docLength == -1) {
-            if (attributes != null) {
-                int docIndex = attributes.indexOf(';');
-
-                if (docIndex != -1) {
-                    int end = attributes.indexOf(';', docIndex+1);
-                    if (end == -1) {
-                        end = attributes.length();
-                    }                        
-                    docLength = Integer.parseInt(attributes.substring(docIndex + 1, end));
-                    return docLength;
-                } else {
-                    // Unknown length - just use 1 to indicate positive document length
-                    docLength = 1;
-                }
-            }
-            
-            docLength = super.getDocumentationLength();
-        }
-
-        return docLength;
-    }
-    
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
         sb.append(IndexedElement.decodeFlags(flags));
