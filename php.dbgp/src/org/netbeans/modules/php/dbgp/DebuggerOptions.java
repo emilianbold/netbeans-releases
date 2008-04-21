@@ -48,13 +48,25 @@ import org.openide.util.NbPreferences;
 public final class DebuggerOptions  {
     private static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
     private static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
-    
+    private static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N    
     public static int getPort() {
         return getPreferences().getInt(PHP_DEBUGGER_PORT, 9000);     
     } 
     
+    public static boolean isDebugForFirstPageOnly() {
+        return false;
+    }
+
+    public static boolean isDebugForAllPages() {
+        return !isDebugForFirstPageOnly();
+    }
+    
     public static boolean isDebuggerStoppedAtTheFirstLine() {
         return getPreferences().getBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, false);
+    }
+    
+    public static String getPhpInterpreter() {
+        return getPreferences().get(PHP_INTERPRETER, null);
     }
     
     private static Preferences getPreferences() {
