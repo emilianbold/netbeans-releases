@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,40 +37,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.usages;
+package gui;
 
-import java.io.File;
-import java.util.Set;
+
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
 
 /**
- * This class provides a SPI used by {@link RepositoryUpdater} to generate java proxies
- * for languages which form a single compilation unit with java files, for example groovy.
- * @author Tomas Zezula
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ *
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
  */
-public interface VirtualSourceProvider {
-    
-    public interface Result {
-        public void add (File source, String packageName, String relativeName, CharSequence content);
+public class EPMeasureGC  {
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new WatchProjects("testInitGCProjects"));
+        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
+        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
+        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
+        suite.addTest(new WatchProjects("testGCProjects"));
+        return suite;
     }
     
-    /**
-     * Returns a set of extensions supported by this {@link VirtualSourceProvider}
-     * @return a set of supported extensions
-     */
-    public Set<String> getSupportedExtensions ();
-
-    /**
-     * Return a list of tuples {fully qualified name, file content} as a result of
-     * transformation of given files.
-     * @param files to be transformed
-     * @param sourceRoot containing the sources
-     * @param  result of transformation
-     */
-    public void translate (Iterable<File> files, File sourceRoot, Result result);
 }
