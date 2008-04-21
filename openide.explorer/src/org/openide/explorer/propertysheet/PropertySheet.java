@@ -240,7 +240,7 @@ public class PropertySheet extends JPanel {
 
     // delayed setting nodes (partly impl issue 27781)
     //package private for unit testing
-    transient Node[] helperNodes;
+    transient WeakReference<Node[]> helperNodes;
     private transient RequestProcessor.Task scheduleTask;
     private transient RequestProcessor.Task initTask;
     SheetPCListener pclistener = new SheetPCListener();
@@ -314,9 +314,6 @@ public class PropertySheet extends JPanel {
         table.getReusablePropertyEnv().setBeans(null);
         table.getReusablePropertyEnv().setNode(null);
         table.getReusablePropertyModel().setProperty(null);
-        
-        //don't hold anything when not in component hierarchy
-        helperNodes = null;
     }
 
     /** Prepare the initial state of the property sheet */
@@ -547,7 +544,7 @@ public class PropertySheet extends JPanel {
         }
 
         RequestProcessor.Task task = getScheduleTask();
-        helperNodes = nodes;
+        helperNodes = new WeakReference<Node[]>( nodes );
 
         //Clear any saved node if setNodes is called while we're offscreen
         storedNode = null;
@@ -585,16 +582,16 @@ public class PropertySheet extends JPanel {
                                 new Runnable() {
                                     public void run() {
                                         final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
-
+                                        Node[] nodesToSet = (null == helperNodes ? null : helperNodes.get());
                                         if (loggable) {
                                             PropUtils.log(
                                                 PropertySheet.class,
                                                 "Delayed " + "updater setting nodes to " + //NOI18N
-                                                    (null == helperNodes ? "null" : Arrays.asList(helperNodes)) //NOI18N
+                                                    (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
                                             );
                                         }
 
-                                        doSetNodes(helperNodes);
+                                        doSetNodes(nodesToSet);
                                     }
                                 }
                             );
