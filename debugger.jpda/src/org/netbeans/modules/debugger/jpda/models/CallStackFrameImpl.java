@@ -579,11 +579,30 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     public boolean equals (Object o) {
+        if (!(o instanceof CallStackFrameImpl)) {
+            return false;
+        }
+        CallStackFrameImpl frame = (CallStackFrameImpl) o;
+        boolean valid;
+        synchronized (this) {
+            valid = this.valid;
+        }
+        if (valid) {
+            synchronized (frame) {
+                valid = frame.valid;
+            }
+        }
+        if (!valid) {
+            //System.err.println(" FRAMES INVALID (#"+hashCode()+", #"+o.hashCode()+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+super.equals(o));//(sf == ((CallStackFrameImpl) o).sf));
+            return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
+        }
         try {
-            return  (o instanceof CallStackFrameImpl) &&
-                    (sf.equals (((CallStackFrameImpl) o).sf));
+            //System.err.println(" FRAMES (#"+hashCode()+":"+getLineNumber(null)+", #"+o.hashCode()+":"+frame.getLineNumber(null)+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+
+            //        ((sf.equals (frame.sf) && getFrameDepth() == frame.getFrameDepth()) ? "T" : "F"));
+            return  sf.equals (frame.sf) && getFrameDepth() == frame.getFrameDepth();
         } catch (InvalidStackFrameException isfex) {
-            return sf == ((CallStackFrameImpl) o).sf;
+            //System.err.println(" FRAMES Invalid (#"+hashCode()+", #"+o.hashCode()+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+super.equals(o));//(sf == ((CallStackFrameImpl) o).sf));
+            return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
         }
     }
     
@@ -592,11 +611,13 @@ public class CallStackFrameImpl implements CallStackFrame {
     public synchronized int hashCode () {
         if (hashCode == null) {
             try {
-                hashCode = new Integer(sf.hashCode());
+                hashCode = new Integer(sf.hashCode() << 4 + getFrameDepth());// + getLineNumber(null));
             } catch (InvalidStackFrameException isfex) {
                 valid = false;
                 hashCode = new Integer(super.hashCode());
             }
+            
+            //System.err.println("CREATED  HASH CODE: "+hashCode+"   line = "+getLineNumber(null)+", valid = "+valid);
         }
         return hashCode.intValue();
     }
