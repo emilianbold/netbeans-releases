@@ -41,6 +41,9 @@
 package org.netbeans.modules.php.dbgp.packets;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
+import org.netbeans.modules.php.dbgp.DebuggerOptions;
+import org.netbeans.modules.php.dbgp.SessionProgress;
+import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.w3c.dom.Node;
 
 
@@ -88,6 +91,14 @@ public class StatusResponse extends DbgpResponse {
             StopCommand stopCommand = new StopCommand( session.getTransactionId() );
             session.sendCommandLater(stopCommand);
             session.stop();
+            if (DebuggerOptions.isDebugForFirstPageOnly()) {
+                SessionProgress sp = SessionProgress.forSessionId(session.getSessionId()); 
+                if (sp != null) {
+                    sp.cancel();
+                }
+            } else {
+                StartActionProviderImpl.getInstance().start(session.getSessionId());
+            }
         }
     }
 

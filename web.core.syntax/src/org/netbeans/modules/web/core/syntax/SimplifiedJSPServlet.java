@@ -95,7 +95,8 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  */
 public class SimplifiedJSPServlet {
 
-    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n"; //NOI18N
+    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n" + //NOI18N
+            "\tprivate static final long serialVersionUID = 1L;\n"; //NOI18N
     private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(\n"
             + "\t\tHttpServletRequest request,\n" 
             + "\t\tHttpServletResponse response,\n" 
