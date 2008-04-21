@@ -6,6 +6,8 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.awt.BorderLayout;
+import java.sql.Connection;
+import java.util.List;
 import javax.swing.JPanel;
 
 public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
@@ -27,6 +29,14 @@ public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
         this.setLayout(new BorderLayout());
         mDBTableSelectionPanel = new DatabaseTableSelectionPanel();
         this.add(mDBTableSelectionPanel, BorderLayout.CENTER);
+    }
+    
+    public List<TableInfo> getSelectedTables() {
+        return mDBTableSelectionPanel.getSelectedTables();
+    }
+    
+    public Connection getSelectedConnection() {
+    	return mDBTableSelectionPanel.getSelectedConnection();
     }
     
     /** This method is called from within the constructor to

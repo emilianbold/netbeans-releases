@@ -274,7 +274,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                         NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
                 String name = null; // unused!
-                return getMethodDeclaration(info, name, elements, node, index, astOffset, lexOffset);
+                return getMethodDeclaration(info, name, elements, node, index/*, astOffset, lexOffset*/);
             }
         } finally {
             doc.readUnlock();
@@ -348,7 +348,20 @@ public class JsDeclarationFinder implements DeclarationFinder {
         } else if (!candidates.isEmpty()) {
             elements = candidates;
         }
-
+        
+        // (2) Prefer matches in the same file as the reference
+        candidates = new HashSet<IndexedElement>();
+        FileObject fo = info.getFileObject();
+        for (IndexedElement element : elements) {
+            if (fo == element.getFileObject()) {
+                candidates.add(element);
+            }
+        }
+        if (candidates.size() == 1) {
+            return candidates.iterator().next();
+        } else if (!candidates.isEmpty()) {
+            elements = candidates;
+        }
         
         // For now no good heuristics to pick a method.
         // Possible things to consider:
@@ -370,7 +383,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     }
 
     private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedElement> elements, 
-            /*AstPath path,*/ Node closest, JsIndex index, int astOffset, int lexOffset) {
+            /*AstPath path,*/ Node closest, JsIndex index/*, int astOffset, int lexOffset*/) {
 //        try {
             IndexedElement candidate =
                 findBestElementMatch(info, /*name,*/ elements,/* (BaseDocument)info.getDocument(),
@@ -383,8 +396,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
                         candidate.getFilenameUrl().indexOf("sdocs.zip") == -1) {
                     invalid = true;
                 }
-                IndexedElement com = candidate;
-                Node node = AstUtilities.getForeignNode(com, null);
+                IndexedElement com = candidate; // TODO - let's not do foreign node computation here!! Not needed yet!
+                CompilationInfo[] infoRet = new CompilationInfo[1];
+                Node node = AstUtilities.getForeignNode(com, infoRet);
                 DeclarationLocation loc;
                 if (node == null) {
                     int offset = 0; // unknown - use top of the file
@@ -392,8 +406,10 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     loc = new DeclarationLocation(candidate.getFileObject(),
                         offset, com);
                 } else {
+                    int astOffset = node.getSourceStart();
+                    int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
                     loc = new DeclarationLocation(com.getFile().getFileObject(),
-                       node.getSourceStart(), com);
+                       lexOffset, com);
                 }
                 if (invalid) {
                     if (candidate.isDocOnly()) {
@@ -443,10 +459,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
             if (cachedDisplayItem == null) {
                 formatter.reset();
 
-//                boolean nodoc = element.isNoDoc();
-//                boolean documented = element.isDocumented();
-boolean nodoc = false;
-boolean documented = false;
+                boolean nodoc = element.isNoDoc();
+                boolean documented = element.isDocumented();
                 if (isPreferred) {
                     formatter.emphasis(true);
                 } else if (nodoc) {
@@ -493,18 +507,18 @@ boolean documented = false;
                 if (url == null) {
                     // Deleted file?
                     // Just leave out the file name
-                } else if (url.indexOf("Jsstubs") != -1) {
-                    filename = NbBundle.getMessage(DeclarationFinder.class, "JsLib");
+                } else if (url.indexOf("jsstubs") != -1) {
+                    filename = NbBundle.getMessage(JsDeclarationFinder.class, "JsLib");
                     
-                    if (url.indexOf("/stub_") == -1) {
-                        // Not a stub file, such as ftools.rb
-                        // TODO - don't hardcode for version 0.2
-                        String stub = "Jsstubs/1.8.6-p110/";
-                        int stubStart = url.indexOf(stub);
-                        if (stubStart != -1) {
-                            filename = filename+": " + url.substring(stubStart);
-                        }
-                    }
+//                    if (url.indexOf("/stub_") == -1) {
+//                        // Not a stub file, such as ftools.rb
+//                        // TODO - don't hardcode for version 0.2
+//                        String stub = "jsstubs/1.8.6-p110/";
+//                        int stubStart = url.indexOf(stub);
+//                        if (stubStart != -1) {
+//                            filename = filename+": " + url.substring(stubStart);
+//                        }
+//                    }
                 } else {
                     FileObject fo = element.getFileObject();
                     if (fo != null) {
@@ -556,14 +570,44 @@ boolean documented = false;
         }
 
         public DeclarationLocation getLocation() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            CompilationInfo[] infoRet = new CompilationInfo[1];
+            Node node = AstUtilities.getForeignNode(element, infoRet);
+            
+            DeclarationLocation loc = DeclarationLocation.NONE;
             if (node == null) {
-                return DeclarationLocation.NONE;
+                if (element instanceof IndexedElement) {
+                    FileObject fo = element.getFileObject();
+                    if (fo != null) {
+                        int astOffset = ((IndexedElement)element).getNodeOffset();
+                        int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
+                        if (lexOffset == -1) {
+                            lexOffset = 0;
+                        }
+                        loc = new DeclarationLocation(element.getFileObject(), lexOffset, element);
+                    }
+                }
+            } else {
+                int astOffset = node.getSourceStart();
+                int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
+                if (lexOffset == -1) {
+                    lexOffset = 0;
+                }
+                loc = new DeclarationLocation(element.getFileObject(),
+                    lexOffset, element);
             }
-            int offset = node.getSourceStart();
-            DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
-                offset, element);
 
+            if (loc != null) {
+                if (element.getFilenameUrl() != null && element.getFilenameUrl().indexOf("jsstubs") != -1 &&
+                        // If it's in my sdocs.zip, I've gotta try to find the corresponding element
+                        element.getFilenameUrl().indexOf("sdocs.zip") == -1) {
+                    if (element.isDocOnly()) {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "NoSourceDocOnly", element.getName()));
+                    } else {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", element.getName()));
+                    }
+                }
+            }
+            
             return loc;
         }
 

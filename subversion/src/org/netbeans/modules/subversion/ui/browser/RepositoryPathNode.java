@@ -545,7 +545,7 @@ public class RepositoryPathNode extends AbstractNode {
             return date;
         }               
         String getLastChangedAuthor() {
-            return author;
+            return author != null ? author : "";
         }                       
     }        
 

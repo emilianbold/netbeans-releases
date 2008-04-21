@@ -1532,7 +1532,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
      * The level is zero in simple cases; incremented when one MFS asks
      * another to store a VoidValue.
      */
-    private static final class VoidValue implements Externalizable {
+    static final class VoidValue implements Externalizable {
         // Externalizable:
         private static final long serialVersionUID = -2743645909916238684L;
         int level;

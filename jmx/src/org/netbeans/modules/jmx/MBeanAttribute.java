@@ -45,11 +45,9 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.ArrayType;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  * class representing a MBean Attribute.

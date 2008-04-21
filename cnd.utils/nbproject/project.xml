@@ -7,11 +7,12 @@
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
-                <friend>org.netbeans.modules.cnd.model.services</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
+                <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
+                <friend>org.netbeans.modules.cnd.model.services</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <package>org.netbeans.modules.cnd.utils.cache</package>

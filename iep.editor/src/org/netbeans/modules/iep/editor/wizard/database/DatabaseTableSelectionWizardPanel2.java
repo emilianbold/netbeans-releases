@@ -5,7 +5,12 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.awt.Component;
+import java.sql.Connection;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -15,7 +20,7 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private DatabaseTableSelectionVisualPanel2 component;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -79,9 +84,41 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
+        WizardDescriptor wiz = (WizardDescriptor) settings;
+        
+        Connection connection = (Connection) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_DB_CONNECTION);
+        List<TableInfo> selectedTables = (List<TableInfo>) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
+        if(connection != null && selectedTables != null) {
+        	//now load table columns, primarykey, foreign keys.
+        	try {
+        	Iterator<TableInfo> it = selectedTables.iterator();
+        	while(it.hasNext()) {
+        		TableInfo table = it.next();
+        		table.cleanUp();
+        		DatabaseMetaDataHelper.populateTableColumns(table, connection);
+        		DatabaseMetaDataHelper.populatePrimaryKeys(table, connection);
+        		DatabaseMetaDataHelper.populateForeignKeys(table, connection);
+        	}
+        	
+        	component.setSelectedTables(selectedTables);
+        	String joinCondition = DatabaseMetaDataHelper.findJoinCondition(selectedTables);
+        	if(joinCondition != null && !joinCondition.equals("")) {
+        		component.setJoinCondition(joinCondition);
+        	}
+        	
+        	} catch(Exception ex) {
+        		ErrorManager.getDefault().notify(ex);
+        	}
+        }
+        
+        
     }
 
     public void storeSettings(Object settings) {
+    	WizardDescriptor wiz = (WizardDescriptor) settings;
+    	List<ColumnInfo> selectedColumns = component.getSelectedColumns();
+    	
+    	wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS, selectedColumns);
     }
 }
 

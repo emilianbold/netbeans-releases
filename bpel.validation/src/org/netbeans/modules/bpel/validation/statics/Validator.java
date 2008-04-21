@@ -160,7 +160,7 @@ import org.netbeans.modules.bpel.model.api.ToPart;
 import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.PortTypeReference;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

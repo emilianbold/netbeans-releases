@@ -414,7 +414,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     public static final class HighlightFactoryImpl implements HighlightsLayerFactory {
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[] {
-                HighlightsLayer.create(HyperlinkOperation.class.getName(), ZOrder.CARET_RACK, true, getBag(context.getDocument()))
+                HighlightsLayer.create(HyperlinkOperation.class.getName(), ZOrder.SHOW_OFF_RACK.forPosition(450), true, getBag(context.getDocument()))
             };
         }
     }

@@ -46,7 +46,7 @@ public abstract class ASTNode {
 
     final private int startOffset;
     final private int endOffset;
-    private ASTNode parent = null;
+    //private ASTNode parent = null;
     
     public ASTNode(int start, int end) {
         this.startOffset = start;
@@ -61,13 +61,13 @@ public abstract class ASTNode {
         return endOffset;
     }
 
-    protected void setParent(ASTNode node) {
+    /*protected void setParent(ASTNode node) {
         parent = node;
     }
     
     public ASTNode getParent() {
         return parent;
-    }
+    }*/
     
     public abstract void accept(Visitor visitor);
 }

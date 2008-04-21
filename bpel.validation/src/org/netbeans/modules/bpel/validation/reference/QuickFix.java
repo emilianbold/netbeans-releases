@@ -55,7 +55,7 @@ import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.validation.core.QuickFix.Adapter;
 import org.netbeans.modules.bpel.validation.core.Util;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

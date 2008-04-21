@@ -70,7 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.openide.util.Utilities;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
