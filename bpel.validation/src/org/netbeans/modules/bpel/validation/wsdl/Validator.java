@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -42,6 +42,7 @@ package org.netbeans.modules.bpel.validation.wsdl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.xml.xam.Component;
@@ -53,7 +54,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
+import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
@@ -69,7 +70,9 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class Validator extends WsdlValidator {
 
   public WSDLVisitor getVisitor() {
-    return new ChildVisitor() {
+//out();
+//out("GET VISITOR");
+    return new DefaultVisitor() {
       // # 120419
       @Override
       public void visit(Definitions definitions) {
@@ -87,6 +90,18 @@ public final class Validator extends WsdlValidator {
               addError("FIX_Identical_Property_Aliases", aliases.get(j)); // NOI18N
             }
           }
+        }
+        // # 125954
+        visitChildren(definitions);
+      }
+
+      private void visitChildren(Definitions definitions) {
+        Collection<ExtensibilityElement> collection = definitions.getChildren(ExtensibilityElement.class);
+//out("collection: " + elements);
+        Iterator<ExtensibilityElement> iterator = collection.iterator();
+
+        while (iterator.hasNext()) {
+          visitExtensibility(iterator.next());
         }
       }
 
@@ -150,9 +165,8 @@ public final class Validator extends WsdlValidator {
         }
       }
 
-      @Override
-      public void visit(ExtensibilityElement element) {
-//out("WSDL VISIT: " + element);
+      private void visitExtensibility(ExtensibilityElement element) {
+//out("EXT VISIT: " + element);
         if ( !(element instanceof PropertyAlias)) {
           return;
         }
@@ -166,9 +180,10 @@ public final class Validator extends WsdlValidator {
 //out("1");
           return;
         }
-        DocumentComponent query = getQuery(alias);
+        // # 125954
+        DocumentComponent wrongQuery = getWrongQuery(alias);
 
-        if (query != null) {
+        if (wrongQuery != null) {
 //out("2");
           addError("FIX_QUERY_PREFIX", alias); // NOI18N
           return;
@@ -290,7 +305,7 @@ public final class Validator extends WsdlValidator {
     return null;
   }
 
-  private DocumentComponent getQuery(PropertyAlias alias) {
+  private DocumentComponent getWrongQuery(PropertyAlias alias) {
     List<WSDLComponent> children = alias.getChildren();
 
     for (WSDLComponent child : children) {
