@@ -52,6 +52,7 @@ import org.openide.util.Utilities;
  */
 public final class DocumentRoots {
 
+    static final String HTDOCS = "htdocs"; //NOI18N
     static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
         public boolean accept(File dir, String name) {
             return name.toLowerCase().startsWith("apache"); // NOI18N
@@ -163,7 +164,7 @@ public final class DocumentRoots {
         }
         for (String subDirName : subDirNames) {
             File subDir = new File(startDir, subDirName);
-            File htDocs = new File(subDir, "htdocs"); // NOI18N
+            File htDocs = new File(subDir, HTDOCS);
             if (htDocs.isDirectory()) {
                 return htDocs;
             }
