@@ -41,7 +41,11 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -64,10 +68,10 @@ import org.openide.awt.HtmlBrowser.URLDisplayer;
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel implements Retriever.Updater {
     
+    
+    //backup copy, the real value is from the web...see below getDownloadLocation()
     private static final String V3_DOWNLOAD_URL = 
-            "http://java.net/download/javaee5/v3/releases/preview/glassfish-snapshot-v3-preview1.zip";
-//    private static final String JRUBY_DOWNLOAD_URL = 
-//            "http://dist.codehaus.org/jruby/jruby-bin-1.0.0RC3.zip";
+            "http://java.net/download/javaee5/v3/releases/preview/glassfish-snapshot-v3-preview-20_04_2008.zip";
     
     private final Set <ChangeListener> listeners = new HashSet<ChangeListener>();
     private Retriever retriever;
@@ -77,6 +81,31 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         initComponents();
         initUserComponents();
     }
+    private  String getDownloadLocation() {
+        InputStream is = null;
+        DataInputStream dis;
+        String s =V3_DOWNLOAD_URL;//default value
+
+        try {
+            is = new URL("https://glassfishplugins.dev.java.net/glassfishv3ziplocation.txt").openStream();
+            dis = new DataInputStream(new BufferedInputStream(is));
+            while ((s = dis.readLine()) != null) {
+                return s;//firs line is the one we want
+            }
+        } catch (Exception w) {
+           // w.printStackTrace();
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ioe) {
+                //what else to do
+            }
+
+        }
+        return s;
+    }    
     
     private void initUserComponents() {
         readlicenseButton.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
@@ -376,7 +405,7 @@ private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if(retriever == null) {
             retriever = new Retriever(new File(hk2HomeTextField.getText()), 
-                    V3_DOWNLOAD_URL, this);
+                    getDownloadLocation(), this);
             new Thread(retriever).start();
             updateCancelState(true);
         } else {
