@@ -64,7 +64,8 @@ import org.openide.util.NbBundle;
  */
 public class Retriever implements Runnable {
 
-    public static final int LOCATION_DOWNLOAD_TIMEOUT = 10000;
+    public static final int LOCATION_DOWNLOAD_TIMEOUT = 3000;
+    public static final int LOCATION_TRIES = 3;
     public static final int ZIP_DOWNLOAD_TIMEOUT = 30000;
     
     public static final int STATUS_START = 0;
@@ -176,7 +177,7 @@ public class Retriever implements Runnable {
             setDownloadState(STATUS_CONNECTING);
             targetUrl = new URL(getDownloadLocation());
 
-            Logger.getLogger("glassfish").finer("Downloading V3 from " + targetUrl);
+            Logger.getLogger("glassfish").fine("Downloading V3 from " + targetUrl);
             connection = targetUrl.openConnection();
             connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
             in = connection.getInputStream();
@@ -220,24 +221,27 @@ public class Retriever implements Runnable {
         String result = defaultTargetUrl;
 
         if(locationUrl != null && locationUrl.length() > 0) {
-            try {
-                URL url = new URL(locationUrl);
-                Logger.getLogger("glassfish").finer("Attempting to get V3 download URL suffix from " + url);
-                conn = url.openConnection();
-                conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
-                is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
-                while((result = is.readLine()) != null) {
-                    return targetUrlPrefix + result; // First line is the one we want.
-                }
-            } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-            } finally {
+            int tries = 0;
+            while(tries++ < LOCATION_TRIES) {
                 try {
-                    if(is != null) {
-                        is.close();
+                    URL url = new URL(locationUrl);
+                    Logger.getLogger("glassfish").fine("Attempt " + tries + " to get V3 download URL suffix from " + url);
+                    conn = url.openConnection();
+                    conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
+                    is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
+                    while((result = is.readLine()) != null) {
+                        return targetUrlPrefix + result; // First line is the one we want.
                     }
-                } catch (IOException ex) {
+                } catch(Exception ex) {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                } finally {
+                    try {
+                        if(is != null) {
+                            is.close();
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    }
                 }
             }
         }
