@@ -204,6 +204,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
  
     private static final String COMET_LIB = "Comet-GlassFish-V3"; // NOI18N
     private static final String COMET_JAR_LIB_PREFIX = "grizzly-module"; // NOI18N
+    private static final String GRIZZLY_OPTIONAL_JAR_LIB_PREFIX = "grizzly-optional"; // NOI18N
     
     public boolean ensureCometSupport(String installRoot) {
         LibraryManager lmgr = LibraryManager.getDefault();
@@ -234,11 +235,15 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src,  -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                File f = ServerUtilities.getJarName(installRoot, COMET_JAR_LIB_PREFIX);
-                if ((f!=null)&&(f.exists())){
+                File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_LIB_PREFIX);
+                if ((f != null) && (f.exists())) {
                     libraryList.add(f.toURI().toURL());
-                }  
-
+                } else {
+                    f = ServerUtilities.getJarName(installRoot, COMET_JAR_LIB_PREFIX);
+                    if ((f != null) && (f.exists())) {
+                        libraryList.add(f.toURI().toURL());
+                    }
+                }
 
 //                File j2eeDoc = InstalledFileLocator.getDefault().locate(
 //                        "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
