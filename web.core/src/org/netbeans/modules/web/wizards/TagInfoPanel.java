@@ -48,12 +48,10 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
-
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -126,10 +124,9 @@ public class TagInfoPanel implements WizardDescriptor.Panel {
         // and uncomment the complicated stuff below.
     }
  
-    //public final void addChangeListener(ChangeListener l) {}
-    //public final void removeChangeListener(ChangeListener l) {}
-
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
+    // FIXME: use org.openide.util.ChangeSupport for ChangeListeners
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    
     public final void addChangeListener (ChangeListener l) {
         synchronized (listeners) {
             listeners.add (l);
@@ -141,13 +138,13 @@ public class TagInfoPanel implements WizardDescriptor.Panel {
         }
     }
     protected final void fireChangeEvent () {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
+            it = new HashSet<ChangeListener>(listeners).iterator ();
         }
         ChangeEvent ev = new ChangeEvent (this);
         while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
+            it.next().stateChanged(ev);
         }
     }
     

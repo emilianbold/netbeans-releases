@@ -41,81 +41,20 @@
 
 package  org.netbeans.modules.web.taglib;
 
-import org.openide.loaders.*;
+import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
 /** TLD Node
  * @author  mk115033
  */
-
-// FIXME: this class may be simplified, most of the stuff is not used!
 public class TLDNode extends DataNode {
 
-    // FIXME: no usage
-    public static final int TLD_NODE        = 0;
-    public static final int TAG_NODE        = 2;
-    public static final int ATTRIBUTES_NODE = 3;
-    public static final int ATTRIBUTE_NODE  = 4;
-    public static final int TEI_NODE        = 5;
-    public static final int VARIABLE_NODE   = 6;
-
-    ///
-    ///   ICON specifications for the various node types.
-    ///
-    // FIXME: icon constants should be private
-    public static final String ICON_BASE_DEFAULT = 
-        "org/netbeans/modules/web/taglib/default";  // NOI18N
+    private static final String ICON_BASE_TLD = 
+        "org/netbeans/modules/web/taglib/resources/tags.gif";        //NOI18N
     
-    public static final String ICON_BASE_TLD = 
-        "org/netbeans/modules/web/taglib/resources/tags";        //NOI18N
-    public static final String ICON_BASE_TAG = 
-        "org/netbeans/modules/web/taglib/resources/tag";         //NOI18N
-    // FIXME: no such resource
-    public static final String ICON_BASE_ATTRIBUTES = 
-        "org/netbeans/modules/web/taglib/resources/attributes";  //NOI18N
-    // FIXME: no such resource
-    public static final String ICON_BASE_ATTRIBUTE = 
-        "org/netbeans/modules/web/taglib/resources/attribute";   //NOI18N
-    // FIXME: no such resource
-    public static final String ICON_BASE_TEI = 
-        "org/netbeans/modules/web/taglib/resources/variables";   //NOI18N
-    // FIXME: no such resource
-    public static final String ICON_BASE_VARIABLES = 
-        "org/netbeans/modules/web/taglib/resources/variables";   //NOI18N
-    // FIXME: no such resource
-    public static final String ICON_BASE_VARIABLE = 
-        "org/netbeans/modules/web/taglib/resources/variable";    //NOI18N
-    
-    private static final String DEFAULT_ICON_EXTENSION = ".gif";  //NOI18N
-
     public TLDNode (final TLDDataObject dataObject) {
 	super(dataObject,Children.LEAF);
-        setIconBaseWithExtension(ICON_BASE_TLD + DEFAULT_ICON_EXTENSION);
-    }
-    
-    // FIXME: no usage
-    protected String getIconBase() {
-	return getIconBase(TLD_NODE);
-    }
-
-    // FIXME: no usage (if getIconBase() deleted)
-    public static String getIconBase(int type) {
-	switch (type) {
-	case TLD_NODE:
-	    return ICON_BASE_TLD;
-	case TAG_NODE:
-	    return ICON_BASE_TAG;
-	case ATTRIBUTES_NODE:
-	    return ICON_BASE_ATTRIBUTES;
-	case ATTRIBUTE_NODE:
-	    return ICON_BASE_ATTRIBUTE;
-	case TEI_NODE:
-	    return ICON_BASE_TEI;
-	case VARIABLE_NODE:
-	    return ICON_BASE_VARIABLE;
-	    
-	}    
-	return ICON_BASE_DEFAULT;
+        setIconBaseWithExtension(ICON_BASE_TLD);
     }
 
     // test to see if we can use DeleteAction
