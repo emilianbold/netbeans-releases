@@ -76,10 +76,10 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/EmptyPHPWebPageDescription.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPWebPageDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="200"/>
-            </file>                        
+            </file>
         </folder>
 
     </folder>
