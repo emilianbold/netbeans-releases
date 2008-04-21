@@ -431,7 +431,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private class CurrentThreadListener implements PropertyChangeListener {
         
         private Reference<JPDAThread> lastCurrentThreadRef = new WeakReference<JPDAThread>(null);
-        private Reference<CallStackFrame> lastCurrentFrameRef = new WeakReference<CallStackFrame>(null);
+        //private Reference<CallStackFrame> lastCurrentFrameRef = new WeakReference<CallStackFrame>(null);
+        private CallStackFrame lastCurrentFrame = null;
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (JPDADebugger.PROP_CURRENT_THREAD.equals(evt.getPropertyName())) {
@@ -452,8 +453,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
                 CallStackFrame lastcurrentFrame;
                 synchronized (this) {
-                    lastcurrentFrame = lastCurrentFrameRef.get();
-                    lastCurrentFrameRef = new WeakReference(currentFrame);
+                    lastcurrentFrame = lastCurrentFrame;//Ref.get();
+                    //lastCurrentFrameRef = new WeakReference(currentFrame);
+                    lastCurrentFrame = currentFrame;
                 }
                 if (lastcurrentFrame != null) {
                     fireNodeChanged(lastcurrentFrame);
