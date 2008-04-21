@@ -232,11 +232,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         
     // Implementation of WebServiceClientSupportImpl
     public void addServiceClient(final String serviceName, final String packageName, final String sourceUrl, final FileObject configFile, final ClientStubDescriptor stubDescriptor, final String[] wscompileFeatures) {
-        // !PW FIXME I have two concerns with this implementation:
-        // 1. Since it modifies project.xml, I suspect it should be acquiring
-        //    ProjectManager.mutex() for write access.
-        // 2. It seems like it ought to be implemented via the AuxiliaryConfiguration
-        //    interface.
+        // It seems like it ought to be implemented via the AuxiliaryConfiguration interface.
         boolean needToSave = ProjectManager.mutex().writeAccess(new Action<Boolean>() {
             public Boolean run() {
                 boolean needsSave = false;
@@ -493,78 +489,83 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         return globalPropertiesChanged || projectPropertiesChanged;
     }
     
-    public void removeServiceClient(String serviceName) {
+    public void removeServiceClient(final String serviceName) {
         // 2. Remove service from project.xml
         //    Side effect: Regenerate build-impl.xsl
         //    Optional - if last service, remove properties we generated.
-        boolean needsSave = false;
-        boolean needsSave1 = false;
-        
-        /** Remove properties from project.properties
-         */
-        String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
-        String packageProperty = "wscompile.client." + serviceName + ".package"; // NOI18N
-        String proxyProperty = "wscompile.client." + serviceName + ".proxy"; //NOI18N
-        
-        EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties ep1 =  helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        
-        if(ep.getProperty(featureProperty) != null) {
-            ep.remove(featureProperty);
-            needsSave = true;
-        }
-        
-        if(ep.getProperty(packageProperty) != null) {
-            ep.remove(packageProperty);
-            needsSave = true;
-        }
-        
-        if(ep1.getProperty(proxyProperty) != null) {
-            ep1.remove(proxyProperty);
-            needsSave1 = true;
-        }
-        
-        if(needsSave) {
-            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        }
-        
-        if(needsSave1) {
-            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
-        }
-        
-        /** Locate root of web service client node structure in project,xml
-         */
-        Element data = helper.getPrimaryConfigurationData(true);
-        NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);
-        Element clientElements = null;
-        
-        /* If there is a root, get all the names of the child services and search
-         * for the one we want to remove.
-         */
-        if(nodes.getLength() >= 1) {
-            clientElements = (Element) nodes.item(0);
-            NodeList clientNameList = clientElements.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENT_NAME);
-            for(int i = 0; i < clientNameList.getLength(); i++ ) {
-                Element clientNameElement = (Element) clientNameList.item(i);
-                NodeList nl = clientNameElement.getChildNodes();
-                if(nl.getLength() == 1) {
-                    org.w3c.dom.Node n = nl.item(0);
-                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-                        if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
-                            // Found it!  Now remove it.
-                            org.w3c.dom.Node serviceNode = clientNameElement.getParentNode();
-                            clientElements.removeChild(serviceNode);
-                            helper.putPrimaryConfigurationData(data, true);
-                            needsSave = true;
+        boolean needToSave = ProjectManager.mutex().writeAccess(new Action<Boolean>() {
+            public Boolean run() {
+                boolean needsSave = false;
+                boolean needsSave1 = false;
+
+                /** Remove properties from project.properties
+                 */
+                String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
+                String packageProperty = "wscompile.client." + serviceName + ".package"; // NOI18N
+                String proxyProperty = "wscompile.client." + serviceName + ".proxy"; //NOI18N
+
+                EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                EditableProperties ep1 =  helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+
+                if(ep.getProperty(featureProperty) != null) {
+                    ep.remove(featureProperty);
+                    needsSave = true;
+                }
+
+                if(ep.getProperty(packageProperty) != null) {
+                    ep.remove(packageProperty);
+                    needsSave = true;
+                }
+
+                if(ep1.getProperty(proxyProperty) != null) {
+                    ep1.remove(proxyProperty);
+                    needsSave1 = true;
+                }
+
+                if(needsSave) {
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                }
+
+                if(needsSave1) {
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
+                }
+
+                /** Locate root of web service client node structure in project,xml
+                 */
+                Element data = helper.getPrimaryConfigurationData(true);
+                NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);
+                Element clientElements = null;
+
+                /* If there is a root, get all the names of the child services and search
+                 * for the one we want to remove.
+                 */
+                if(nodes.getLength() >= 1) {
+                    clientElements = (Element) nodes.item(0);
+                    NodeList clientNameList = clientElements.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENT_NAME);
+                    for(int i = 0; i < clientNameList.getLength(); i++ ) {
+                        Element clientNameElement = (Element) clientNameList.item(i);
+                        NodeList nl = clientNameElement.getChildNodes();
+                        if(nl.getLength() == 1) {
+                            org.w3c.dom.Node n = nl.item(0);
+                            if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                                if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
+                                    // Found it!  Now remove it.
+                                    org.w3c.dom.Node serviceNode = clientNameElement.getParentNode();
+                                    clientElements.removeChild(serviceNode);
+                                    helper.putPrimaryConfigurationData(data, true);
+                                    needsSave = true;
+                                }
+                            }
                         }
                     }
                 }
+                return needsSave || needsSave1;
             }
-        }
+        });
         
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
-        if(needsSave || needsSave1) {
+        if(needToSave) {
             try {
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
