@@ -62,6 +62,9 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
+import org.axiondb.AxionException;
+import org.axiondb.Database;
+import org.axiondb.engine.Databases;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.openide.util.Exceptions;
@@ -431,5 +434,12 @@ public class DBExplorerUtil {
             connName = dbName.trim() + "@" + host + " [DERBY]";
         }
         return connName;
+    }
+    public static Database getAxionDBFromURL(String url) throws AxionException {
+        int initialDBIndex = url.indexOf("axiondb") + 8;
+        int endDBIndex = url.indexOf(":", initialDBIndex);
+        String dbName = url.substring(initialDBIndex, endDBIndex);
+        String dbLoc = url.substring(endDBIndex + 1);
+        return (Databases.getOrCreateDatabase(dbName, new File(dbLoc)));
     }
 }

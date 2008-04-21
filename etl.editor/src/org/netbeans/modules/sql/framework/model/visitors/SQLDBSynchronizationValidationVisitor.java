@@ -227,12 +227,22 @@ public class SQLDBSynchronizationValidationVisitor {
 
             //Check for update and delete
             for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
-                checkForUpdates((SQLDBColumn) itr.next(), newColumns, collabTable);
+                SQLDBColumn oldCol = (SQLDBColumn) itr.next();
+                int sqlTypeCode = oldCol.getJdbcType();
+                if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && meta.getDBType().equals(DBMetaDataFactory.AXION)) {
+                    continue;
+                }
+                checkForUpdates(oldCol, newColumns, collabTable);
             }
 
             // check for new columns
             for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
-                checkForNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable);
+                SQLDBColumn newCol = (SQLDBColumn) itr.next();
+                int sqlTypeCode = newCol.getJdbcType();
+                if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && meta.getDBType().equals(DBMetaDataFactory.AXION)) {
+                    continue;
+                }
+                checkForNewColumns(newCol, collabColumns, collabTable);
             }
 
         // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX

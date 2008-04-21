@@ -227,7 +227,12 @@ public class SQLDBSynchronizationVisitor {
                 List newColumns = newTable.getColumnList();
 
                 for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
-                    mergeUpdates((SQLDBColumn) itr.next(), newColumns, collabTable, tableModel);
+                    SQLDBColumn oldCol = (SQLDBColumn) itr.next();
+                    int sqlTypeCode = oldCol.getJdbcType();
+                    if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && connDef.getDBType().equals(DBMetaDataFactory.AXION)) {
+                        continue;
+                    }
+                    mergeUpdates(oldCol, newColumns, collabTable, tableModel);
                 }
                 for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
                     mergeNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable, tableModel);
