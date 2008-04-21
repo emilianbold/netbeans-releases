@@ -78,7 +78,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
-        File jar = ServerUtilities.getJarName(glassfishHome, "glassfish-10.0");
+        File jar = ServerUtilities.getJarName(glassfishHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
 
 
         if (jar==null) {
