@@ -38,10 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
-
 
 import java.io.File;
 
@@ -64,70 +61,65 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class CreateEmptyDiagram extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
-   private String testProjectName ="jEdit-Model";
-   private NbDialogOperator create_diag ;
-   private int index;
 
-   /** Creates a new instance of CreateEmptyDiagram */
+    private String testProjectName = "jEdit-Model";
+    private NbDialogOperator create_diag;
 
+    /** Creates a new instance of CreateEmptyDiagram */
     public CreateEmptyDiagram(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 5000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    public CreateEmptyDiagram(String testName, String  performanceDataName) {
+
+    public CreateEmptyDiagram(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 5000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
-                
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node doc = new Node(pNode,"Diagrams");
+        Node doc = new Node(pNode, "Diagrams");
         doc.select();
- 
-        doc.performPopupAction("New|Diagram..."); 
+
+        doc.performPopupAction("New|Diagram...");
         create_diag = new NbDialogOperator("Create New Diagram");
         new EventTool().waitNoEvent(2000);
-	JListOperator diag_type = new JListOperator(create_diag,1);
+        JListOperator diag_type = new JListOperator(create_diag, 1);
 
         diag_type.selectItem("Class Diagram");
     }
 
     public ComponentOperator open() {
-         log("::open");
-         
-        JButtonOperator finishButton = new JButtonOperator(create_diag,"Finish");
+        log("::open");
+
+        JButtonOperator finishButton = new JButtonOperator(create_diag, "Finish");
         finishButton.push();
-        
+
         return null;
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
-//        new EventTool().waitNoEvent(2000);
     }
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-       new CloseAllDocumentsAction().performAPI();
- 
-    } 
-    
+        new CloseAllDocumentsAction().performAPI();
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateEmptyDiagram("measureTime"));
-    }  
-    
+    }
 }

@@ -374,7 +374,6 @@ public class SvnConfigFiles {
                 String key = it.next();
                 String value = groups.get(key);
                 if(value != null) {     
-                    // XXX the same pattern everywhere when calling match()
                     value = value.trim();                    
                     if(value != null && match(value, host)) {
                         return svnServers.get(key);

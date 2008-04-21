@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -47,11 +47,17 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Event;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Stack;
 
 import javax.swing.Action;
@@ -81,7 +87,9 @@ import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.ExClipboard;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -430,10 +438,51 @@ public final class UI {
     return p;
   }
 
+
+  public static String removeHtml(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = replace(value, "<b>", "'"); // NOI18N
+    value = replace(value, "</b>", "'"); // NOI18N
+    value = replace(value, "&nbsp;", " "); // NOI18N
+    
+    return value;
+  }
+
+  public static String getHtml(String value) {
+    return "<html>" + value + "</html>"; // NOI18N
+  }
+
+  
+  public static <T> List<T> getInstances(Class<T> clazz) {
+    Collection<? extends T> collection = Lookup.getDefault().lookupAll(clazz);
+    List<T> list = new ArrayList<T>();
+
+    for (Object object : collection) {
+      list.add(clazz.cast(object));
+    }
+    return list;
+  }
+
+  public static void copyToClipboard(String value) {
+    getClipboard().setContents(new StringSelection(value), null);
+  }
+  
+  private static Clipboard getClipboard() {
+    Clipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
+
+    if (clipboard == null) {
+      clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    }
+    return clipboard;
+  }
+  
   public static void startTimeln() {
     tim();
     startTime();
   }
+
   public static void startTime() {
     ourTimes.push(System.currentTimeMillis());
   }

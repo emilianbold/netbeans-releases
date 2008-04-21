@@ -61,9 +61,9 @@ class FileMapStorage implements Storage {
      * needed. */
     private static final int BASE_BUFFER_SIZE = 8196;
     /**
-     * max possible range to map.. 20 MB
+     * max possible range to map.. 1 MB
      */
-    private static final long MAX_MAP_RANGE = 1024 * 1024 * 20;
+    private static final long MAX_MAP_RANGE = 1024 * 1024;
     /**
      * The byte getWriteBuffer that write operations write into.  Actual buffers are
      * provided for writing by calling master.slice(); this getWriteBuffer simply

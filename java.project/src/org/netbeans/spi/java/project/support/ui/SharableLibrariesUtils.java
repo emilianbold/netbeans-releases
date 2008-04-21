@@ -321,6 +321,10 @@ public final class SharableLibrariesUtils {
                 FileUtil.refreshFor(directory);
             }
             FileObject dir = FileUtil.toFileObject(directory);
+            if (!absFile.exists()) {
+                //#131535 is a broken reference probably, ignore.
+                return;
+            }
             updateReference(absFile, reference, true, dir);
             //now process source reference
             String source = reference.replace("${file.reference", "${source.reference"); //NOI18N

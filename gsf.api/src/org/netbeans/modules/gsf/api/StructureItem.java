@@ -44,24 +44,26 @@ package org.netbeans.modules.gsf.api;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  *
  * @author Tor Norbye
  */
 public interface StructureItem {
-    String getName();
-    String getSortText();
-    String getHtml();
-    ElementHandle getElementHandle();
-    ElementKind getKind();
-    Set<Modifier> getModifiers();
+    @NonNull String getName();
+    @NonNull String getSortText();
+    @NonNull String getHtml();
+    @NonNull ElementHandle getElementHandle();
+    @NonNull ElementKind getKind();
+    @NonNull Set<Modifier> getModifiers();
     boolean isLeaf();
-    List<? extends StructureItem> getNestedItems(); 
+    @NonNull List<? extends StructureItem> getNestedItems(); 
     long getPosition();
     long getEndPosition();
     /** Icon to use instead of the default implied by the ElementKind */
-    ImageIcon getCustomIcon();
+    @CheckForNull ImageIcon getCustomIcon();
     
     @Override
     public abstract boolean equals(Object o);

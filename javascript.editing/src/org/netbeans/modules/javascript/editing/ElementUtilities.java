@@ -52,6 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -61,7 +62,10 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
-public class ElementUtilities {
+public final class ElementUtilities {
+    private ElementUtilities() {
+        // Utility class, not instantiatable
+    }
 
     public static Element getElement(CompilationInfo info, ElementHandle handle) {
         Element element = null;
@@ -92,7 +96,7 @@ public class ElementUtilities {
      *   better be an IndexedElement.
      */
     public static List<String> getComments(CompilationInfo info, Element element) {
-        assert info != null || element instanceof IndexedFunction;
+        assert info != null || element instanceof IndexedElement;
         
         if (element == null) {
             return null;
@@ -107,7 +111,9 @@ public class ElementUtilities {
             }
         }
         
-        Node node = getNode(info, element);
+        CompilationInfo[] infoRet = new CompilationInfo[1];
+        Node node = getNode(info, element, infoRet);
+        info = infoRet[0];
         if (node == null) {
             return null;
         }
@@ -176,10 +182,12 @@ public class ElementUtilities {
             
                 if (indexedElement != null) {
                     String url = indexedElement.getFilenameUrl();
-                    if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
-                        sb.append(" (Core JavaScript)");
-                    } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
-                        sb.append(" (DOM)");
+                    if (url != null) {
+                        if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
+                            sb.append(" (Core JavaScript)");
+                        } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
+                            sb.append(" (DOM)");
+                        }
                     }
                 }
 
@@ -293,7 +301,11 @@ public class ElementUtilities {
             }
             sb.append("</ul>\n"); // NOI18N
             //sb.append("Click <a href=\"netbeans:choosebrowsers\">here</a> to choose targeted browsers.\n");
-            sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
+            if (org.openide.util.Utilities.isMac()) {
+                sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBrOsx"));
+            } else {
+                sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
+            }
             sb.append("\n"); // NOI18N
             sb.append("</p>"); // NOI18N
         }
@@ -301,7 +313,8 @@ public class ElementUtilities {
         return sb.toString();
     }
 
-    private static Node getNode(CompilationInfo info, Element element) {
+    private static Node getNode(CompilationInfo info, Element element, @NonNull CompilationInfo[] infoRet) {
+        infoRet[0] = info;
         Node node = null;
 
         if (element instanceof AstElement) {
@@ -319,7 +332,7 @@ public class ElementUtilities {
                 indexedElement = match;
             }
 
-            node = AstUtilities.getForeignNode(indexedElement, null);
+            node = AstUtilities.getForeignNode(indexedElement, infoRet);
         } else {
             assert false : element;
         }

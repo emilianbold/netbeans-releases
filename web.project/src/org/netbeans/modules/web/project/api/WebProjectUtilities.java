@@ -41,6 +41,13 @@
 
 package org.netbeans.modules.web.project.api;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -66,7 +73,6 @@ import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
@@ -76,8 +82,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 
@@ -551,7 +555,7 @@ public class WebProjectUtilities {
                         libs.add(URLMapper.findURL(FileUtil.getArchiveRoot(children[i]), URLMapper.EXTERNAL));
                     }
                 }
-                ProjectClassPathModifier.addRoots(libs.toArray(new URL[libs.size()]), p.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
+                p.getClassPathModifier().addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
                 //do we really need to add the listener? commenting it out
                 //libFolder.addFileChangeListener(p);
             }
@@ -656,6 +660,10 @@ public class WebProjectUtilities {
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
             String serverInstanceID, String j2eeLevel, String librariesDefinition, String serverLibraryName) throws IOException {
+
+        Utils.logUI(NbBundle.getBundle(WebProjectUtilities.class), "UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, WebProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -858,16 +866,20 @@ public class WebProjectUtilities {
     private static String readResource(InputStream is) throws IOException {
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
-        String lineSep = System.getProperty("line.separator");//NOI18N
+        String lineSep = System.getProperty("line.separator"); // NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        String line = br.readLine();
-        while (line != null) {
-            sb.append(line);
-            sb.append(lineSep);
-            line = br.readLine();
+        try {
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                sb.append(lineSep);
+                line = br.readLine();
+            }
+        } finally {
+            br.close();
         }
-        br.close();
+
         return sb.toString();
     }
-    
+
 }

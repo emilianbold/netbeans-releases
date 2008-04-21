@@ -106,10 +106,13 @@ public class WidgetHelper {
         
         ObjectScene scene = (ObjectScene) scn;
         if (obj instanceof WSDLComponent) {
-            List<Widget> widgets = new ArrayList<Widget>(scene.findWidgets(obj));
-            for (Widget w : widgets) {
-                if (w instanceof AbstractWidget) {
-                    removeWidgetFromScene(scene, (AbstractWidget) w);
+            List<Widget> widgets = scene.findWidgets(obj);
+            if (widgets != null) {
+                widgets = new ArrayList<Widget>(widgets);
+                for (Widget w : widgets) {
+                    if (w instanceof AbstractWidget) {
+                        removeWidgetFromScene(scene, (AbstractWidget) w);
+                    }
                 }
             }
         }

@@ -206,7 +206,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
         }
         
         if (exceptionDuringMeasurement != null)
-            throw new Error("Exception rises during measurement.", exceptionDuringMeasurement);
+            throw new Error("Exception rises during measurement:" + exceptionDuringMeasurement, exceptionDuringMeasurement);
     }
     
     

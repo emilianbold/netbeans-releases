@@ -82,9 +82,9 @@ public class WadlSaasMethodTest extends NbTestCase {
         SetupUtil.commonSetUp(super.getWorkDir());
         
         SaasServicesModel instance = SaasServicesModel.getInstance();
-        SaasGroup group = instance.getRootGroup().getChildGroup("YouTube");
+        SaasGroup group = instance.getRootGroup().getChildGroup("Zillow");
         WadlSaas saas = (WadlSaas) group.getServices().get(0);
-        assertEquals("Video Service", saas.getDisplayName());
+        assertEquals("Real Estate Service", saas.getDisplayName());
         /* These wadl methods are no longer filter.
         WadlSaasMethod m = (WadlSaasMethod) saas.getMethods().get(2);
         assertEquals("ListPopular", m.getName());

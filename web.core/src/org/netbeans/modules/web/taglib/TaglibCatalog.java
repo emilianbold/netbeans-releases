@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.web.taglib;
 
-import org.netbeans.modules.xml.catalog.spi.*;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogListener;
+import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 

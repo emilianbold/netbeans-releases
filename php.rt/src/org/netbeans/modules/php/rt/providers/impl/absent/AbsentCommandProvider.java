@@ -58,7 +58,7 @@ public class AbsentCommandProvider extends AbstractCommandProvider{
         myProvider = provider;
     }
 
-    public Command[] getCommands(Project project) {
+    public Command[] getEnabledCommands(Project project) {
         if (isInvokedForProject() || isInvokedForSrcRoot()){
             return getProjectCommands(project);
         } else {

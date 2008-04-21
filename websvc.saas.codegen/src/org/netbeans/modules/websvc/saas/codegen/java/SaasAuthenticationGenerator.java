@@ -278,33 +278,35 @@ public class SaasAuthenticationGenerator {
         }
 
         //Also copy profile.properties
-        String profileName = getBean().getAuthenticatorClassName().toLowerCase();
-        DataObject prof = null;
-        String authProfile = getBean().getAuthenticationProfile();
-        if (authProfile != null && !authProfile.trim().equals("")) {
-            try {
-                prof = Util.createDataObjectFromTemplate(authProfile,
-                        targetFolder, profileName);
-            } catch (Exception ex) {
-                throw new IOException("Profile file specified in " +
-                        "saas-services/service-metadata/authentication/@profile, " +
-                        "not found: " + authProfile);// NOI18n
-            }
-        } else {
-            try {
-                prof = Util.createDataObjectFromTemplate(AbstractGenerator.SAAS_SERVICES + "/" +
-                        getBean().getGroupName() + "/" + getBean().getDisplayName() + "/profile.properties", targetFolder, profileName);// NOI18n
-            } catch (Exception ex1) {
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.PLAIN) {
+            String profileName = getBean().getAuthenticatorClassName().toLowerCase();
+            DataObject prof = null;
+            String authProfile = getBean().getAuthenticationProfile();
+            if (authProfile != null && !authProfile.trim().equals("")) {
+                try {
+                    prof = Util.createDataObjectFromTemplate(authProfile,
+                            targetFolder, profileName);
+                } catch (Exception ex) {
+                    throw new IOException("Profile file specified in " +
+                            "saas-services/service-metadata/authentication/@profile, " +
+                            "not found: " + authProfile);// NOI18n
+                }
+            } else {
                 try {
                     prof = Util.createDataObjectFromTemplate(AbstractGenerator.SAAS_SERVICES + "/" +
-                            getBean().getGroupName() + "/profile.properties",
-                            targetFolder, profileName);// NOI18n
-                } catch (Exception ex2) {
+                            getBean().getGroupName() + "/" + getBean().getDisplayName() + "/profile.properties", targetFolder, profileName);// NOI18n
+                } catch (Exception ex1) {
                     try {
-                        prof = Util.createDataObjectFromTemplate(AbstractGenerator.TEMPLATES_SAAS +
-                                getBean().getAuthenticationType().value() +
-                                ".properties", targetFolder, profileName);// NOI18n
-                    } catch (Exception ex3) {//ignore
+                        prof = Util.createDataObjectFromTemplate(AbstractGenerator.SAAS_SERVICES + "/" +
+                                getBean().getGroupName() + "/profile.properties",
+                                targetFolder, profileName);// NOI18n
+                    } catch (Exception ex2) {
+                        try {
+                            prof = Util.createDataObjectFromTemplate(AbstractGenerator.TEMPLATES_SAAS +
+                                    getBean().getAuthenticationType().value() +
+                                    ".properties", targetFolder, profileName);// NOI18n
+                        } catch (Exception ex3) {//ignore
+                        }
                     }
                 }
             }

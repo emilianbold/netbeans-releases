@@ -180,12 +180,40 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
     private static final class MimetypeRootNode implements StructureItem {
 
+        //hack - see the getSortText() comment
+        private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+        private static final String CSS_SORT_TEXT = "2";//NOI18N
+        private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+        private static final String JAVASCRIPT_SORT_TEXT = "1";//NOI18N
+        private static final String HTML_MIMETYPE = "text/html";//NOI18N
+        private static final String HTML_SORT_TEXT = "3";//NOI18N
+        private static final String OTHER_SORT_TEXT = "4";//NOI18N
+        
         private Language language;
         private List<? extends StructureItem> items;
+        long from, to;
         
         private MimetypeRootNode(Language lang, List<? extends StructureItem> items) {
             this.language = lang;
             this.items = items;
+            this.from = items.size() > 0 ? items.get(0).getPosition() : 0;
+            this.to = items.size() > 0 ? items.get(items.size() - 1).getEndPosition() : 0;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof MimetypeRootNode)) {
+                return false;
+            }
+            MimetypeRootNode compared = (MimetypeRootNode)o;
+            return language.equals(compared.language);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.language != null ? this.language.hashCode() : 0);
+            return hash;
         }
         
         public String getName() {
@@ -193,7 +221,20 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         public String getSortText() {
-            return getName();
+            //hack -> I need to ensure that the navigator selects the top most
+            //node when user moves caret in the source.
+            //Since the navigator tree is a generic graph if there are more
+            //embedded languages we need to use some tricks...
+            if(language.getMimeType().equals(CSS_MIMETYPE)) {
+                return CSS_SORT_TEXT;
+            } else if(language.getMimeType().equals(JAVASCRIPT_MIMETYPE)) {
+                return JAVASCRIPT_SORT_TEXT;
+            } else if (language.getMimeType().equals(HTML_MIMETYPE)) {
+                return HTML_SORT_TEXT;
+            } else {
+                return OTHER_SORT_TEXT + getName();
+            }
+            
         }
 
         public String getHtml() {
@@ -221,11 +262,11 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         public long getPosition() {
-            return 0;
+            return from;
         }
 
         public long getEndPosition() {
-            return 0;
+            return to;
         }
 
         public ImageIcon getCustomIcon() {

@@ -81,6 +81,9 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.api.project.ProjectInformation;
 import javax.swing.ListModel;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+import java.awt.Rectangle;
+import javax.swing.text.BadLocationException;
 
 /**
  *
@@ -94,16 +97,45 @@ public class AcceptanceTestCaseBPEL2XSLT extends AcceptanceTestCaseXMLCPR {
         "AddProjectReference",
         "DeleteProjectReference",
         "AddSampleSchema",
-        "ImportReferencedSchema",
 
+        "ImportReferencedSchema",
+        "ImportReferencedSchema2",
+        "DeleteReferencedSchema",
+        "FindUsages", // TODO : How to find find usages output?
+        "ValidateAndBuild",
+        "AddAttribute",
+        "ExploreAttribute",
+        "ManipulateAttribute",
+        "AddComplex",
+        "ExploreComplex",
+        "DeleteComplex",
+        "UndoRedoComplex",
+        "AddElement",
+        "ExploreElement",
+        "DeleteElement",
+        "UndoRedoElement",
+        "AddSimple",
+        "ExploreSimple",
+        "DeleteSimple",
+        "UndoRedoSimple",
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "ValidateAndBuild",
+
+        // Move, fix
+
+        "ValidateAndBuild",
+        "BuildCompositeApplication",
+        //"DeployCompositeApplication", // This will failed, followed skipped
+        //"CreateNewTest",
+        //"RunNewTest",
     };
 
     static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
     static final String SAMPLE_PROJECT_NAME = "BluePrint 1";
     static final String SAMPLE_NAME = "SampleApplication2Xslt";
+    static final String COMPOSITE_APPLICATION_NAME = SAMPLE_NAME + "Application";
 
     static final String MODULE_NAME = "NotifyManager";
 
@@ -179,28 +211,314 @@ public class AcceptanceTestCaseBPEL2XSLT extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
+    private CImportClickData[] acliImport =
+    {
+      new CImportClickData( true, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: ", null ),
+      new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
+      new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
+      new CImportClickData( true, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
+      new CImportClickData( true, 6, 0, 2, 12, "Unknown import table state after third click, number of rows: ", null ),
+      new CImportClickData( false, 3, 1, 1, 12, "Unknown to click on checkbox. #", null ),
+      new CImportClickData( true, 9, 1, 1, 12, "Unknown to click on checkbox. #", null )
+    };
+
+    private CImportClickData[] acliCheck =
+    {
+      new CImportClickData( true, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: ", null ),
+      new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
+      new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
+      new CImportClickData( true, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
+      new CImportClickData( true, 6, 0, 2, 12, "Unknown import table state after third click, number of rows: ", null ),
+      new CImportClickData( true, 3, 1, 1, 12, "Unknown to click on checkbox. #", "Selected document is already referenced." ),
+      new CImportClickData( true, 4, 1, 1, 12, "Unknown to click on checkbox. #", "Document cannot reference itself." ),
+      new CImportClickData( true, 9, 1, 1, 12, "Unknown to click on checkbox. #", "Selected document is already referenced." )
+    };
+
     public void ImportReferencedSchema( )
     {
       startTest( );
 
-      ProjectsTabOperator pto = new ProjectsTabOperator( );
-
-      ProjectRootNode prn = pto.getProjectRootNode(
-          SAMPLE_NAME + "|Process Files|purchaseOrder.xsd"
-        );
-      prn.select( );
-
-      JTreeOperator tree = pto.tree( );
-      tree.clickOnPath(
-          tree.findPath( SAMPLE_NAME + "|Process Files|purchaseOrder.xsd" ),
-          2
+      ImportReferencedSchemaInternal(
+          SAMPLE_NAME,
+          MODULE_NAME,
+          false,
+          acliImport
         );
 
-      // Check was it opened or no
-      if( null == new EditorOperator( "purchaseOrder.xsd" ) )
+      endTest( );
+    }
+
+    public void ImportReferencedSchema2( )
+    {
+      startTest( );
+
+      ImportReferencedSchema2Internal( acliCheck );
+      
+      endTest( );
+    }
+
+    public void DeleteReferencedSchema( )
+    {
+      startTest( );
+
+      DeleteReferencedSchemaInternal( MODULE_NAME );
+
+      ImportReferencedSchemaInternal(
+          SAMPLE_NAME,
+          MODULE_NAME,
+          true,
+          acliImport
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages( )
+    {
+      startTest( );
+
+      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+
+      endTest( );
+    }
+
+    public void ValidateAndBuild( )
+    {
+      startTest( );
+      
+      ValidateAndBuildInternal( SAMPLE_NAME );
+
+      endTest( );
+    }
+
+    private boolean HasChild( JTreeOperator tree, TreePath path, String child )
+    {
+      int iCnt = tree.getChildCount( path );
+      for( int i = 0; i < iCnt; i++ )
       {
-        fail( "purchaseOrder.xsd was not opened after double click." );
+        TreePath subpath = tree.getChildPath( path, i );
+        Object o = subpath.getLastPathComponent( );
+        if( o.toString( ).startsWith( child ) )
+          return true;
       }
+      return false;
+    }
+
+    private TreePath GetSubPath( JTreeOperator tree, TreePath path, String name )
+    {
+      String[] asPaths = name.split( "\\|" );
+      for( String chunk : asPaths )
+      {
+        int iCnt = tree.getChildCount( path );
+        for( int i = 0; i < iCnt; i++ )
+        {
+          System.out.println( "*** Checking chunk " + chunk );
+          TreePath subpath = tree.getChildPath( path, i );
+          Object o = subpath.getLastPathComponent( );
+          if( o.toString( ).startsWith( chunk ) )
+          {
+            System.out.println( "*** Chunk found" );
+            path = subpath;
+
+            tree.selectPath( path );
+            tree.clickOnPath( path );
+
+            break;
+          }
+        }
+      }
+      return path;
+    }
+
+    private TreePath FindMultiwayPath(
+        JTreeOperator tree,
+        String schema,
+        String name
+      )
+    {
+      // First level is always Referenced schemas
+      TreePath path = tree.findPath( "Referenced Schemas" );
+      System.out.println( "*** Referenced Schemas found" );
+      // Then find path with required subpath (tricky but...)
+      int iChild = tree.getChildCount( path );
+      TreePath subpath = null;
+      for( int i = 0; i < iChild; i++ )
+      {
+        subpath = tree.getChildPath( path, i );
+        if( HasChild( tree, subpath, schema ) )
+        {
+          System.out.println( "*** Correct import found" );
+          return GetSubPath( tree, subpath, name );
+        }
+      }
+      return null;
+    }
+
+    public void AddAttribute( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          ATTRIBUTES_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreAttribute( )
+    {
+      startTest( );
+
+      ExploreSimpleInternal(
+          ATTRIBUTES_NAMES[ 0 ],
+          "StateType",
+          "attribute",
+          "ns2:"
+        );
+
+      endTest( );
+    }
+
+    public void ManipulateAttribute( )
+    {
+      startTest( );
+
+      ManipulateAttributeInternal( SAMPLE_NAME );
+
+      endTest( );
+    }
+
+    public void AddComplex( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Complex Types",
+          "Add Complex Type",
+          "Use Existing Definition", 
+          "Referenced Schemas|import|Complex Types|CarType",
+          COMPLEX_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddElement( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Elements",
+          "Add Element",
+          "Use Existing Type",
+          "Referenced Schemas|import|Complex Types|AddressType",
+          ELEMENT_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddSimple( )
+    {
+      startTest( );
+
+      AddItInternal(
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          SIMPLE_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreSimple( )
+    {
+      startTest( );
+
+      ExploreSimpleInternal(
+          SIMPLE_NAMES[ 0 ],
+          "LoanType",
+          "simpleType",
+          null
+        );
+
+      endTest( );
+    }
+
+    public void DeleteSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoSimple( )
+    {
+      startTest( );
+
+
 
       endTest( );
     }
@@ -232,13 +550,40 @@ public class AcceptanceTestCaseBPEL2XSLT extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void tearDown() {
-        new SaveAllAction().performAPI();
+    public void BuildCompositeApplication( )
+    {
+      startTest( );
+      
+      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+
+      endTest( );
     }
 
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
+    public void DeployCompositeApplication( )
+    {
+      startTest( );
+
+      DeployCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      
+      endTest( );
+    }
+
+    public void CreateNewTest( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void RunNewTest( )
+    {
+      startTest( );
+
+
+
+      endTest( );
     }
 
 }

@@ -101,18 +101,4 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNull(oldName + " is found, while it should be absent", findDeclaration(oldName, project));
     }
 
-    private CsmDeclaration findDeclaration(String name, CsmProject project) {
-        for( CsmDeclaration decl : project.getGlobalNamespace().getDeclarations() ) {
-            if( name.equals(decl.getName().toString())) {
-                return decl;
-            }
-        }
-        return null;
-    }
-    
-    private void writeFile(File file, String text) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileOutputStream(file));
-        writer.append(text);
-        writer.close();
-    }
 }

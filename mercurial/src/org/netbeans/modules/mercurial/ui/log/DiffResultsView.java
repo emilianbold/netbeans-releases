@@ -84,6 +84,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private List<RepositoryRevision> results;
     private static final RequestProcessor rp = new RequestProcessor("MercurialDiff", 1, true);  // NOI18N
 
+    private static String HgNoRev = "-1"; // NOI18N
+    
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
         this.results = results;
@@ -203,7 +205,16 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
-            currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
+            char action = header.getChangedPath().getAction();
+            if(action == HgLogMessage.HgModStatus){
+                currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
+            }else if(action == HgLogMessage.HgAddStatus){
+                currentTask = new ShowDiffTask(header, HgNoRev, revision2, showLastDifference);
+            }else if(action == HgLogMessage.HgDelStatus){
+                currentTask = new ShowDiffTask(header, revision1, HgNoRev, showLastDifference);
+            }else if(action == HgLogMessage.HgCopyStatus){
+                currentTask = new ShowDiffTask(header, HgNoRev, revision2, showLastDifference);
+            }
             currentShowDiffTask = rp.create(currentTask);
             currentShowDiffTask.schedule(0);
         }

@@ -625,8 +625,9 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         private void findLocal(JsElementCtx searchCtx, JsElementCtx fileCtx, Node node, String name) {
             switch (node.getType()) {
             case org.mozilla.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.javascript.Token.CALL) {
-                    // Skip - call name is already handled as part of parent
+                if (node.getParentNode().getType() == org.mozilla.javascript.Token.CALL &&
+                        node.getParentNode().getFirstChild() == node) {
+                    // Ignore calls
                     break;
                 }
                 // Fallthrough

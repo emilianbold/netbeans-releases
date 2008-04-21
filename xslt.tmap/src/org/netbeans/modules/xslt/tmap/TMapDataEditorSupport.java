@@ -33,7 +33,6 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ui.ValidationAnnotation;
 import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -80,12 +79,10 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         setMIMEType(TMapDataLoader.MIME_TYPE);
     }
 
-    // vlv
     public UndoRedo.Manager getUndoRedoManager() {
       return getUndoManager();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void saveDocument() throws IOException {
         super.saveDocument();
@@ -257,11 +254,6 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         return associatedTCs;
     }
 
-    public boolean validateXML(CookieObserver observer) {
-        // TODO a
-        return true;
-    }
-    
     @Override
     protected CloneableEditorSupport.Pane createPane() {
         TopComponent multiview = TMapMultiViewSupport
@@ -300,9 +292,6 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
 
         // all editors are closed so we don't need to keep this task.
         prepareTask = null;
-
-//        getValidationController().detach();
-    
     }
     
     /*
@@ -422,19 +411,6 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
                     updateTitles();
                 }
             });
-//        }
-
-        // TODO a
-//        /*
-//         *  I put this code here because it is called each time when
-//         *  editor is opened. This can happened omn first open,
-//         *  on reopen, on deserialization.
-//         *  CTOR of BPELDataEditorSupport is called only once due lifecycle 
-//         *  data object, so it cannot be used on attach after reopening.
-//         *  Method "open" doesn't called after deser-ion.
-//         *  But this method is called always on editor opening. 
-//         */ 
-//        getValidationController().attach();
     }
     
    @Override
@@ -705,7 +681,4 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
 
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask;
-
-    private ValidationAnnotation myAnnotation = new ValidationAnnotation();
-
 }

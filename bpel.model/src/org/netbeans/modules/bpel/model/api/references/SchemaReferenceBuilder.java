@@ -19,8 +19,10 @@
 package org.netbeans.modules.bpel.model.api.references;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 
+import java.util.Set;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
@@ -37,6 +39,7 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.bpel.model.impl.references.AbstractNamedComponentReference;
 import org.netbeans.modules.bpel.model.impl.references.BpelAttributesType;
 import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceImpl;
+import org.netbeans.modules.bpel.model.xam.spi.NotImportedModelRetriever;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.openide.util.Lookup;
@@ -48,9 +51,13 @@ import org.openide.util.Lookup.Result;
 public final class SchemaReferenceBuilder {
 
     private SchemaReferenceBuilder() {
-        Result result = Lookup.getDefault().lookup(
+        Result<ExternalModelRetriever> result = Lookup.getDefault().lookup(
                 new Lookup.Template(ExternalModelRetriever.class));
-        myRetrievers = result.allInstances();
+        mModelRetrievers = result.allInstances();
+        
+        result = Lookup.getDefault().lookup(
+                new Lookup.Template(NotImportedModelRetriever.class));
+        mNotImportedModelsRetrievers = result.allInstances();
         
         myCollection = new LinkedList<SchemaReferenceFactory>();
         myCollection.add( new SchemaElementFactory() );
@@ -63,9 +70,9 @@ public final class SchemaReferenceBuilder {
     
     public <T extends ReferenceableSchemaComponent> SchemaReference<T> 
             build( Class<T> clazz ,AbstractDocumentComponent entity , 
-                    Attribute attr )
+            Attribute attr )
     {
-        SchemaReference<T>  ref = build( clazz , entity , 
+        SchemaReference<T>  ref = build( clazz, entity, 
                 entity.getAttribute( attr ) );
         if ( ref instanceof MappedReference ){
             ((MappedReference)ref).setAttribute( attr );
@@ -89,7 +96,7 @@ public final class SchemaReferenceBuilder {
     }
     
     public <T extends ReferenceableSchemaComponent> SchemaReference<T> build( 
-            T target , Class<T> clazz , AbstractDocumentComponent entity  )
+            T target , Class<T> clazz , AbstractDocumentComponent entity )
     {
         for (SchemaReferenceFactory resolver : myCollection) {
             if ( resolver.isApplicable( clazz )){
@@ -138,8 +145,10 @@ public final class SchemaReferenceBuilder {
             collection.add( SchemaModelFactory.getDefault().
                     getPrimitiveTypesModel() );
         }
+        
+        boolean lookNotImportedModels = entity instanceof OutOfImportReference;
         Collection<SchemaModel> moreModels = getSchemaModels( 
-                ((BpelEntity)entity).getBpelModel() , nsUri );
+                ((BpelEntity)entity).getBpelModel() , nsUri, lookNotImportedModels);
         if ( collection == null ) {
             collection = moreModels;
         }
@@ -150,36 +159,49 @@ public final class SchemaReferenceBuilder {
     }
     
     public static Collection<SchemaModel> getSchemaModels( BpelModel model , 
-            String namespace )
+            String namespace, boolean lookNotImportedModels )
     {
-        return getInstance().getModels(model, namespace);
+        return getInstance().getModels(model, namespace, lookNotImportedModels);
     }
 
-    private Collection<SchemaModel> getModels( BpelModel model, String namespace )
+    private Collection<SchemaModel> getModels( BpelModel model, String namespace, 
+            boolean lookNotImportedModels )
     {
         Collection<SchemaModel> ret = new LinkedList<SchemaModel>();
-        if ( myRetrievers.size() == 1) {
-            return ((ExternalModelRetriever)myRetrievers.iterator().next()).
+        if ( !lookNotImportedModels && mModelRetrievers.size() == 1) {
+            return (mModelRetrievers.iterator().next()).
                 getSchemaModels(model, namespace);
         }
-        for ( Object obj : myRetrievers ) {
-            ExternalModelRetriever retriever = (ExternalModelRetriever)obj;
+        for ( ExternalModelRetriever retriever : mModelRetrievers ) {
             Collection<SchemaModel> collection = 
                 retriever.getSchemaModels(model, namespace);
             ret.addAll( collection );
+        }
+        if (lookNotImportedModels) {
+            Set<SchemaModel> importedModelsSet = new HashSet<SchemaModel>(ret);
+            for ( ExternalModelRetriever retriever : mNotImportedModelsRetrievers ) {
+                Collection<SchemaModel> notImportedModels = 
+                    retriever.getSchemaModels(model, namespace);
+                for (SchemaModel notImported : notImportedModels) {
+                    if (!importedModelsSet.contains(notImported)) {
+                        ret.add( notImported );
+                    }
+                }
+            }
         }
         return ret;
     }
     
     public interface SchemaResolver {
         <T extends ReferenceableSchemaComponent> T resolve(
-                AbstractNamedComponentReference<T> reference );
+                AbstractNamedComponentReference<T> reference);
     }
 
     private static final SchemaReferenceBuilder INSTANCE = 
         new SchemaReferenceBuilder();
     
-    private static Collection myRetrievers;
+    private static Collection<? extends ExternalModelRetriever> mModelRetrievers;
+    private static Collection<? extends ExternalModelRetriever> mNotImportedModelsRetrievers;
     
     private Collection<SchemaReferenceFactory> myCollection;
 }
@@ -269,9 +291,9 @@ class SchemaElementFactory extends AbstractSchemaReferenceFactory {
         }
         return null;
     }
-    
-}
 
+    }
+    
 class SchemaTypeFactory extends AbstractSchemaReferenceFactory {
 
     /* (non-Javadoc)

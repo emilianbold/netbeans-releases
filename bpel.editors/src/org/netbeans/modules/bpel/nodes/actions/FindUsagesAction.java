@@ -42,7 +42,7 @@ public class FindUsagesAction extends CookieAction {
     }
 
     public boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1 && nodes[0] instanceof BpelNode;
+        return nodes != null && getReferenceable(nodes) != null; 
     }
 
     protected Referenceable getReferenceable(Node[] nodes) {
@@ -75,6 +75,9 @@ public class FindUsagesAction extends CookieAction {
     }
         
     public void performAction(Node[] nodes) {
+        if (!enable(nodes)) {
+            return;
+        }
        assert nodes.length==1:
             "Length of nodes array should be 1";
         Referenceable ref = getReferenceable(nodes);

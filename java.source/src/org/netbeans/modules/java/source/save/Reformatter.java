@@ -106,7 +106,7 @@ public class Reformatter implements ReformatTask {
             JavacTaskImpl javacTask = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
-            CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(text, "")).iterator().next(); //NOI18N
+            CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
             SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
             TokenSequence<JavaTokenId> tokens = TokenHierarchy.create(text, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
             for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style)) {
@@ -1212,11 +1212,11 @@ public class Reformatter implements ReformatTask {
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                    accept(IDENTIFIER);
+                    accept(IDENTIFIER, THIS, SUPER);
                     if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent && (wrapDepth == 0 || c <= rightMargin)) {
                         rollback(index, c, d);
                         newline();
-                        accept(IDENTIFIER);
+                        accept(IDENTIFIER, THIS, SUPER);
                     }
                 }
             } else {
@@ -2473,7 +2473,7 @@ public class Reformatter implements ReformatTask {
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx == 0 && count < 0) {
+                            if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = count == ANY_COUNT ? 1 : 0;
                             }
                             String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
@@ -2543,7 +2543,7 @@ public class Reformatter implements ReformatTask {
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx == 0 && count < 0) {
+                            if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = count == ANY_COUNT ? 1 : 0;
                             }
                             String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();

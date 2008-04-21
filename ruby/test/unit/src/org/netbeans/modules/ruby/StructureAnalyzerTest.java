@@ -47,12 +47,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
-import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 
@@ -65,148 +63,9 @@ public class StructureAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
-    private void annotate(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure) {
-        for (StructureItem element : structure) {
-            for (int i = 0; i < indent; i++) {
-                sb.append("  ");
-            }
-            sb.append(element.getName());
-            sb.append(":");
-            sb.append(element.getKind());
-            sb.append(":");
-            sb.append(element.getModifiers());
-            sb.append(":");
-            sb.append(element.getHtml());
-            sb.append(":");
-            sb.append("\n");
-            List<? extends StructureItem> children = element.getNestedItems();
-            if (children != null && !children.isEmpty()) {
-                List<? extends StructureItem> c = new ArrayList<StructureItem>(children);
-                // Sort children to make tests more stable
-                Collections.sort(c, new Comparator<StructureItem>() {
-                    public int compare(StructureItem s1, StructureItem s2) {
-                        return s1.getName().compareTo(s2.getName());
-                    }
-                    
-                });
-                
-                annotate(indent+1, sb, document, c);
-            }
-        }
-    }
-
-    private String annotate(Document document, List<? extends StructureItem> structure) {
-        StringBuilder sb = new StringBuilder();
-        annotate(0, sb, document, structure);
-        
-        return sb.toString();
-    }
-    
-    
-    private void checkStructure(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        StructureAnalyzer analyzer = new StructureAnalyzer();
-        HtmlFormatter formatter = new HtmlFormatter() {
-            private StringBuilder sb = new StringBuilder();
-            
-            @Override
-            public void reset() {
-                sb.setLength(0);
-            }
-
-            @Override
-            public void appendHtml(String html) {
-                sb.append(html);
-            }
-
-            @Override
-            public void appendText(String text, int fromInclusive, int toExclusive) {
-                sb.append("ESCAPED{");
-                sb.append(text, fromInclusive, toExclusive);
-                sb.append("}");
-            }
-            
-            @Override
-            public void name(ElementKind kind, boolean start) {
-                if (start) {
-                    sb.append(kind);
-                }
-            }
-
-            @Override
-            public void active(boolean start) {
-                if (start) {
-                    sb.append("ACTIVE{");
-                } else {
-                    sb.append("}");
-                }
-            }
-            
-            @Override
-            public void parameters(boolean start) {
-                if (start) {
-                    sb.append("PARAMETERS{");
-                } else {
-                    sb.append("}");
-                }
-            }
-
-            @Override
-            public void type(boolean start) {
-                if (start) {
-                    sb.append("TYPE{");
-                } else {
-                    sb.append("}");
-                }
-            }
-
-            @Override
-            public void deprecated(boolean start) {
-                if (start) {
-                    sb.append("DEPRECATED{");
-                } else {
-                    sb.append("}");
-                }
-            }
-
-            @Override
-            public String getText() {
-                return sb.toString();
-            }
-
-            @Override
-            public void emphasis(boolean start) {
-            }
-        };
-        List<? extends StructureItem> structure = analyzer.scan(info, formatter);
-        
-        String annotatedSource = annotate(info.getDocument(), structure);
-
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".structure");
-    }
-    
-    public void testAnalysis() throws Exception {
-        checkStructure("testfiles/postgresql_adapter.rb");
-    }
-
-    public void testAnalysis2() throws Exception {
-        checkStructure("testfiles/ape.rb");
-    }
-
-    public void testAnalysis3() throws Exception {
-        checkStructure("testfiles/date.rb");
-    }
-
-    public void testAnalysis4() throws Exception {
-        checkStructure("testfiles/resolv.rb");
-    }
-
-    public void testUnused() throws Exception {
-        checkStructure("testfiles/unused.rb");
-    }
-
-    public void testProtectionLevels() throws Exception {
-        checkStructure("testfiles/protection_levels.rb");
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new StructureAnalyzer();
     }
     
     private void checkAttributes(String relFilePath) throws Exception {
@@ -246,84 +105,35 @@ public class StructureAnalyzerTest extends RubyTestBase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".attributes");
     }
 
+    public void testAnalysis() throws Exception {
+        checkStructure("testfiles/postgresql_adapter.rb");
+    }
+
+    public void testAnalysis2() throws Exception {
+        checkStructure("testfiles/ape.rb");
+    }
+
+    public void testAnalysis3() throws Exception {
+        checkStructure("testfiles/date.rb");
+    }
+
+    public void testAnalysis4() throws Exception {
+        checkStructure("testfiles/resolv.rb");
+    }
+
+    public void testUnused() throws Exception {
+        checkStructure("testfiles/unused.rb");
+    }
+
+    public void testProtectionLevels() throws Exception {
+        checkStructure("testfiles/protection_levels.rb");
+    }
+    
     public void testAttributes1() throws Exception {
         checkAttributes("testfiles/resolv.rb");
     }
     
     
-    private void checkFolds(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        StructureAnalyzer analyzer = new StructureAnalyzer();
-        Map<String,List<OffsetRange>> foldsMap = analyzer.folds(info);
-        
-        // Write folding structure
-        String source = info.getText();
-        List<Integer> begins = new ArrayList<Integer>();
-        List<Integer> ends = new ArrayList<Integer>();
-        
-        begins.add(0);
-        
-        for (int i = 0; i < source.length(); i++) {
-            char c = source.charAt(i);
-            if (c == '\n') {
-                ends.add(i);
-                if (i < source.length()) {
-                    begins.add(i+1);
-                }
-            }
-        }
-        
-        ends.add(source.length());
-
-        assertEquals(begins.size(), ends.size());
-        List<Character> margin = new ArrayList<Character>(begins.size());
-        for (int i = 0; i < begins.size(); i++) {
-            margin.add(' ');
-        }
-
-        List<String> typeList = new ArrayList<String>(foldsMap.keySet());
-        Collections.sort(typeList);
-        for (String type : typeList) {
-            List<OffsetRange> ranges = foldsMap.get(type);
-            for (OffsetRange range : ranges) {
-                int beginIndex = Collections.binarySearch(begins, range.getStart());
-                if (beginIndex < 0) {
-                    beginIndex = -(beginIndex+2);
-                }
-                int endIndex = Collections.binarySearch(ends, range.getEnd());
-                if (endIndex < 0) {
-                    endIndex = -(endIndex+2);
-                }
-                for (int i = beginIndex; i <= endIndex; i++) {
-                    char c = margin.get(i);
-                    if (i == beginIndex) {
-                        c = '+';
-                    } else if (c != '+') {
-                        if (i == endIndex) {
-                            c = '-';
-                        } else {
-                            c = '|';
-                        }
-                    }
-                    margin.set(i, c);
-                }
-            }
-        }
-        
-        StringBuilder sb = new StringBuilder(3000);
-        for (int i = 0; i < begins.size(); i++) {
-            sb.append(margin.get(i));
-            sb.append(' ');
-            for (int j = begins.get(i), max = ends.get(i); j < max; j++) {
-                sb.append(source.charAt(j));
-            }
-            sb.append('\n');
-        }
-        String annotatedSource = sb.toString();
-        
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".folds");
-    }
-
     public void testFolds1() throws Exception {
         checkFolds("testfiles/resolv.rb");
     }

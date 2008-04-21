@@ -259,7 +259,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     Subversion.getInstance().versionedFilesChanged();
                     SvnUtils.refreshParents(importDirectory);
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-                    forceStatusRefresh(importDirectory);  // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
+                    Subversion.getInstance().getStatusCache().refreshRecursively(importDirectory);
                     if(isCanceled()) {                        
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
@@ -303,18 +303,5 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         }
     };
 
-    private static void forceStatusRefresh(File file) {
-        Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        if(!file.isFile()) {
-            File[] files = file.listFiles();
-            if(files == null) {
-                return;
-            }
-            for (int i = 0; i < files.length; i++) {
-                forceStatusRefresh(files[i]);
-            }
-        }                
-    }
-    
 }
 

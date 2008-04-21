@@ -42,7 +42,10 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxTree;
@@ -58,11 +61,15 @@ import org.netbeans.modules.editor.html.HTMLKit;
  */
 public class HtmlParserResult extends ParserResult {
 
+    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
+    
     private static final String ID_ATTR_NAME = "id"; //NOI18N
     
     private List<SyntaxElement> elements;
     
     private AstNode parseTreeRoot = null;
+    
+    private DTD dtd = null;
     
     HtmlParserResult(Parser parser, ParserFile parserFile, List<SyntaxElement> elements) {
         super(parser, parserFile, HTMLKit.HTML_MIME_TYPE);
@@ -85,6 +92,31 @@ public class HtmlParserResult extends ParserResult {
     /** @return a list of SyntaxElement-s representing parse elements of the html source. */
     public List<SyntaxElement> elementsList() {
         return this.elements;
+    }
+    
+    /** @return an instance of DTD bound to the html document. */
+    public synchronized DTD dtd() {
+        if (dtd == null) {
+            final DTD[] dtds = new DTD[]{org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null)};
+            //find document type declaration
+            AstNodeUtils.visitChildren(root(), new AstNodeVisitor() {
+
+                public void visit(AstNode node) {
+                    if (node.type() == AstNode.NodeType.DECLARATION) {
+                        SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
+                        String publicID = declaration.getPublicIdentifier();
+                        if (publicID != null) {
+                            DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
+                            if (dtd != null) {
+                                dtds[0] = dtd;
+                            }
+                        }
+                    }
+                }
+            });
+            dtd = dtds[0];
+        }
+        return dtd;
     }
     
     /** @return a set of html document element's ids. */

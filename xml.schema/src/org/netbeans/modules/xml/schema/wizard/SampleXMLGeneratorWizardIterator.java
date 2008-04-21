@@ -17,7 +17,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -26,9 +25,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.wizard.AbstractPanel;
@@ -36,12 +32,9 @@ import org.netbeans.modules.xml.wizard.DocumentModel;
 import org.netbeans.modules.xml.wizard.Util;
 import org.netbeans.modules.xml.wizard.XMLContentPanel;
 import org.netbeans.modules.xml.wizard.XMLGeneratorVisitor;
-import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -51,10 +44,8 @@ import org.openide.util.NbBundle;
 public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     private int index;
-    private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private Project srcProject;
-    private DataFolder df;
     private FileObject schemaFileObject;
     private DocumentModel model;
     private XMLContentPanel xmlPanel;
@@ -70,8 +61,12 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         initialize(wizardDescriptor);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle(NbBundle.getMessage(SampleXMLGeneratorWizardIterator.class,"TITLE_XML_WIZARD"));
+        wizardDescriptor.setTitle(NbBundle.getMessage(SampleXMLGeneratorWizardIterator.class,"TITLE_XML_WIZARD"));        
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(SampleXMLGeneratorWizardIterator.class,"TITLE_XML_WIZARD"));
+        dialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(SampleXMLGeneratorWizardIterator.class,"TITLE_XML_WIZARD"));
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
@@ -241,7 +236,6 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
 
     public void initialize(WizardDescriptor wiz) {
         index=0;
-        wizard = wiz;
         URL targetFolderURL = null;
         try {
             FileObject folder = schemaFileObject.getParent();
@@ -274,15 +268,15 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
 
     public void uninitialize(WizardDescriptor wizard) {
         panels = null;
-        wizard=null;
     }
 
     public WizardDescriptor.Panel current() {
-        return getPanels()[index];
+        return panels[index];
     }
 
     public String name() {
-        return index + 1 + ". from " + getPanels().length;
+        return NbBundle.getMessage(SchemaWizardIterator.class, "TITLE_x_of_y",
+            Integer.valueOf(index + 1), Integer.valueOf(panels.length));
     }
 
     public boolean hasNext() {

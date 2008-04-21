@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
@@ -144,7 +145,14 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 if (m.isSystem()) {
                     addSysReference(apttoken, m);
                 } else {
-                    addReference(apttoken, macroRefMap.get(apttoken.getText()));
+                    MacroInfo mi = macroRefMap.get(apttoken.getText());
+                    if (mi != null) {
+                        addReference(apttoken, mi);
+                    } else {
+                        // this is user-defined macro (iz132150)
+                        // XXX: update to API call then iz132308 will be fixed
+                        addSysReference(apttoken, m);
+                    }
                 }
             }
 //            else if (apttoken.getType() == CPPTokenTypes.ID_DEFINED) {
@@ -237,7 +245,11 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     if (ref == null) {
                         // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
                         // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
-                        ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), false);
+                        if (target instanceof Unresolved.UnresolvedFile) {
+                            ref = MacroImpl.createSystemMacro(macroName, "", target);
+                        } else {
+                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), false);
+                        }
                     }
                 }
             }

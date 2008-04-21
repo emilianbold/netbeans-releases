@@ -42,12 +42,15 @@
 package gui.actions;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.CleanProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 
 
 /**
@@ -57,6 +60,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class BuildComplexProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     private String project_name = "TravelReservationServiceApplication";
+    private Node projectNode;
     
     /**
      * Creates a new instance of Build Complex Project
@@ -65,7 +69,8 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     public BuildComplexProject(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=10000;
+        WAIT_AFTER_OPEN = 10000;
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
     }
     
     /**
@@ -76,7 +81,18 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     public BuildComplexProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=10000;
+        WAIT_AFTER_OPEN = 10000;
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        if (projectNode != null) {
+            new CleanProjectAction().performPopup(projectNode);
+            MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
+        }
+        projectNode = null;
     }
     
     public void prepare(){
@@ -84,10 +100,12 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     }
     
     public ComponentOperator open(){
-        Node projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+        projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         new BuildProjectAction().performPopup(projectNode);
-        
+        Timeouts temp = JemmyProperties.getProperties().getTimeouts().cloneThis();
+        JemmyProperties.getProperties().getTimeouts().setTimeout("Waiter.WaitingTime", expectedTime * 5);
         MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
+        JemmyProperties.setCurrentTimeouts(temp);
         return null;
     }
     

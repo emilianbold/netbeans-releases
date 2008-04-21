@@ -62,7 +62,7 @@ public final class ContextualPatch {
     private final Pattern unifiedRangePattern = Pattern.compile("@@ -(\\d+)(,\\d+)? \\+(\\d+)(,\\d+)? @@(\\s.*)?");
     private final Pattern baseRangePattern = Pattern.compile("\\*\\*\\* (\\d+)(,\\d+)? \\*\\*\\*\\*");
     private final Pattern modifiedRangePattern = Pattern.compile("--- (\\d+)(,\\d+)? ----");
-    private final Pattern normalChangeRangePattern = Pattern.compile("(\\d+),(\\d+)c(\\d+),(\\d+)");
+    private final Pattern normalChangeRangePattern = Pattern.compile("(\\d+)(,(\\d+))?c(\\d+)(,(\\d+))?");
     private final Pattern normalAddRangePattern = Pattern.compile("(\\d+)a(\\d+),(\\d+)");
     private final Pattern normalDeleteRangePattern = Pattern.compile("(\\d+),(\\d+)d(\\d+)");
     private final Pattern binaryHeaderPattern = Pattern.compile("MIME: (.*?); encoding: (.*?); length: (-?\\d+?)"); 
@@ -426,9 +426,17 @@ public final class ContextualPatch {
             hunk.modifiedCount = 0;
         } else {
             hunk.baseStart = Integer.parseInt(m.group(1));
-            hunk.baseCount = Integer.parseInt(m.group(2)) - hunk.baseStart + 1;
-            hunk.modifiedStart = Integer.parseInt(m.group(3));
-            hunk.modifiedCount = Integer.parseInt(m.group(4)) - hunk.modifiedStart + 1;
+            if (m.group(3) != null) {
+                hunk.baseCount = Integer.parseInt(m.group(3)) - hunk.baseStart + 1;
+            } else {
+                hunk.baseCount = 1;
+            }
+            hunk.modifiedStart = Integer.parseInt(m.group(4));
+            if (m.group(6) != null) {
+                hunk.modifiedCount = Integer.parseInt(m.group(6)) - hunk.modifiedStart + 1;
+            } else {
+                hunk.modifiedCount = 1;
+            }
         }
     }
 
@@ -594,6 +602,7 @@ public final class ContextualPatch {
             base = base.substring(2);
         }
         int pathEndIdx = base.indexOf('\t');
+        if (pathEndIdx == -1) pathEndIdx = base.length();
         patch.targetPath = base.substring(0, pathEndIdx).trim();
     }
 

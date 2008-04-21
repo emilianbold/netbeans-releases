@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.ruby.rubyproject.ui.wizards.NewRubyProjectWizardIterator.Type;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -52,29 +53,32 @@ import org.openide.util.NbBundle;
  */
 public final class PanelConfigureProjectVisual extends JPanel {
 
-    private PanelConfigureProject panel;
-    private SettingsPanel projectLocationPanel;
-    private PanelOptionsVisual optionsPanel;
-    private int type;
+    private final SettingsPanel projectLocationPanel;
+    private final PanelOptionsVisual optionsPanel;
+    private final Type type;
     
-    /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual( PanelConfigureProject panel, int type ) {
-        this.panel = panel;
+    PanelConfigureProjectVisual(PanelConfigureProject panel, Type type) {
         initComponents();                
         this.type = type;
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
-        if (type == NewRubyProjectWizardIterator.TYPE_APP) {
-            projectLocationPanel = new PanelProjectLocationVisual( panel, type );
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
-            jSeparator1.setVisible(true);
-            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
-            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaApp")); // NOI18N
-        } else {
-            projectLocationPanel = new PanelProjectLocationExtSrc ( panel );
-            jSeparator1.setVisible(true);
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
-            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
-            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_JavaExtSourcesProjectLocation")); // NOI18N
+        
+        switch (type) {
+            case APPLICATION:
+                projectLocationPanel = new PanelProjectLocationVisual(panel, type);
+                putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaApp")); // NOI18N
+                jSeparator1.setVisible(true);
+                getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaApp")); // NOI18N
+                getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaApp")); // NOI18N
+                break;
+            case EXISTING:
+                projectLocationPanel = new PanelProjectLocationExtSrc(panel);
+                jSeparator1.setVisible(true);
+                putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_JavaExtSourcesProjectLocation")); // NOI18N
+                getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_JavaExtSourcesProjectLocation")); // NOI18N
+                getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_JavaExtSourcesProjectLocation")); // NOI18N
+                break;
+            default:
+                throw new IllegalStateException("unknown type: " + type);
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         optionsPanel = new PanelOptionsVisual( panel, type );
@@ -87,9 +91,9 @@ public final class PanelConfigureProjectVisual extends JPanel {
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
     
-    void read (WizardDescriptor d) {
-        Integer lastType = (Integer) d.getProperty("ruby-wizard-type");  //NOI18N        
-        if (lastType == null || lastType.intValue() != this.type) {
+    void read(WizardDescriptor d) {
+        Type lastType = (Type) d.getProperty("ruby-wizard-type");  //NOI18N        
+        if (lastType == null || lastType != this.type) {
             //bugfix #46387 The type of project changed, reset values to defaults
             d.putProperty("name", null); // NOI18N
             d.putProperty("projdir", null); // NOI18N
@@ -100,7 +104,7 @@ public final class PanelConfigureProjectVisual extends JPanel {
     }
     
     void store( WizardDescriptor d ) {
-        d.putProperty("ruby-wizard-type", new Integer(this.type));   //NOI18N
+        d.putProperty("ruby-wizard-type", this.type);   //NOI18N
         projectLocationPanel.store( d );
         optionsPanel.store( d );        
     }

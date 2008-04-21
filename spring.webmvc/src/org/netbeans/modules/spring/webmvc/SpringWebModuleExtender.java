@@ -68,7 +68,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -287,10 +286,8 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
             FileObject jsp = FileUtil.createFolder(webInf, "jsp");
-
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
-            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
             configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
@@ -299,6 +296,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
+            FileObject viewFile;
+            viewFile = createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index"); // NOI18N
+            addFileToOpen(viewFile);
+            newFiles.add(FileUtil.toFile(viewFile));
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
@@ -345,7 +346,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName).getPrimaryFile();
-        }
+        }                
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
             InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName); // NOI18N
@@ -361,10 +362,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                     if (resourceName.equals("redirect.jsp")) { // NOI18N
                         line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
-                    }
-                    if (resourceName.equals("index.jsp")) { // NOI18N
-                        line = SpringWebFrameworkUtils.getWelcomePageText();
-                    }
+                    }                 
                     buffer.append(line);
                     buffer.append(lineSeparator);
                     line = reader.readLine();

@@ -187,6 +187,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -419,6 +420,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(final File file, String revision) {
         final File root = Mercurial.getInstance().getTopmostManagedParent(file);
+        if(root == null) return;
+        
         File[] files = new File [1];
         files[0] = file; 
         final RevertModifications revertModifications = new RevertModifications(root, files, revision);

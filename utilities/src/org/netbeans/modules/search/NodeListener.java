@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -440,8 +440,7 @@ final class NodeListener implements MouseListener, KeyListener,
         }
 
         /* Update selection of the root node: */
-        resultTreeModel.setSelected(willBeSelected);
-        resultTreeModel.fireRootNodeChanged();
+        resultTreeModel.setRootNodeSelected(willBeSelected);
 
         /* Update selection of file nodes: */
         if (toggledCount != 0) {
@@ -467,18 +466,9 @@ final class NodeListener implements MouseListener, KeyListener,
                                      boolean selected) {
         assert treePath.getPathCount() == 2;
         
-        boolean collapsed = autocollapseFileNodeIfNeeded(tree,
-                                                         treePath,
-                                                         matchingObj,
-                                                         selected);
-        boolean deferChildrenSelection = collapsed;
+        autocollapseFileNodeIfNeeded(tree, treePath, matchingObj, selected);
         matchingObj.setSelected(selected);
-        getResultTreeModel(treePath).fireFileNodeSelectionChanged(
-                                                matchingObj,
-                                                !deferChildrenSelection);
-        if (deferChildrenSelection) {
-            matchingObj.markChildrenSelectionDirty();
-        }
+        getResultTreeModel(treePath).fileNodeSelectionChanged(matchingObj, true);
     }
     
     /**
@@ -487,9 +477,13 @@ final class NodeListener implements MouseListener, KeyListener,
                                            ResultModel resultModel, 
                                            MatchingObject matchingObj,
                                            int index) {
-        matchingObj.toggleSubnodeSelection(resultModel, index);
-        getResultTreeModel(tree).fireDetailNodeSelectionChanged(matchingObj,
-                                                                index);
+        boolean propagateUp = matchingObj.toggleSubnodeSelection(resultModel, index);
+
+        ResultTreeModel resultTreeModel = getResultTreeModel(tree);
+        resultTreeModel.fireDetailNodeSelectionChanged(matchingObj, index);
+        if (propagateUp) {
+            resultTreeModel.fileNodeSelectionChanged(matchingObj, false);
+        }
     }
     
     /**

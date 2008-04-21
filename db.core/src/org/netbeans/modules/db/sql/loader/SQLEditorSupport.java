@@ -111,9 +111,6 @@ public class SQLEditorSupport extends DataEditorSupport
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLExecution", 1, true); // NOI18N
     
-    // the encoding of the current document
-    private String encoding;
-    
     // the database connection to execute against
     private DatabaseConnection dbconn;
     

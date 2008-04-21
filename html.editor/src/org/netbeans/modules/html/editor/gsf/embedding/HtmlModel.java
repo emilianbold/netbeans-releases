@@ -287,21 +287,52 @@ public class HtmlModel {
     }
 
     private CodeBlockData getCodeBlockAtSourceOffset(int offset) {
-        for (CodeBlockData codeBlock : codeBlocks) {
+            for(int i = 0; i < codeBlocks.size(); i++) {
+            CodeBlockData codeBlock = codeBlocks.get(i);
             if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd > offset) {
                 return codeBlock;
+            } else if(codeBlock.sourceEnd == offset) {
+                //test if there the following code blocks starts with the same offset
+                if(i < codeBlocks.size() - 1) {
+                    CodeBlockData next = codeBlocks.get(i+1);
+                    if(next.sourceStart == offset) {
+                        return next;
+                    } else {
+                        return codeBlock;
+                    }
+                } else {
+                    //the code block is last element, return it
+                    return codeBlock;
+                }
             }
         }
+
+        
         return null;
     }
 
     private CodeBlockData getCodeBlockAtGeneratedOffset(int offset) {
-        // TODO - binary search!! they are ordered!
-        for (CodeBlockData codeBlock : codeBlocks) {
+        for(int i = 0; i < codeBlocks.size(); i++) {
+            CodeBlockData codeBlock = codeBlocks.get(i);
             if (codeBlock.generatedStart <= offset && codeBlock.generatedEnd > offset) {
                 return codeBlock;
+            } else if(codeBlock.generatedEnd == offset) {
+                //test if there the following code blocks starts with the same offset
+                if(i < codeBlocks.size() - 1) {
+                    CodeBlockData next = codeBlocks.get(i+1);
+                    if(next.generatedStart == offset) {
+                        return next;
+                    } else {
+                        return codeBlock;
+                    }
+                } else {
+                    //the code block is last element, return it
+                    return codeBlock;
+                }
             }
         }
+        
+        
         return null;
     }
     private class CodeBlockData {

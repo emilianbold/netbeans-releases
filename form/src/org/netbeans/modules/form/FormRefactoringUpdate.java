@@ -195,6 +195,13 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             saveFormForUndo();
             transactionDone = true;
             break;
+        case PACKAGE_RENAME: // renaming package of a component used in the form,
+                             // but not the package of the form itself
+            if (!changingFile.getParent().equals(refInfo.getPrimaryFile())) {
+                packageRename();
+                transactionDone = true;
+            }
+            break;
         }
             
     }
@@ -253,7 +260,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 formMove();
             }
             break;
-        case PACKAGE_RENAME:
+        case PACKAGE_RENAME: // renaming package of the form
         case FOLDER_RENAME:
             packageRename();
             break;

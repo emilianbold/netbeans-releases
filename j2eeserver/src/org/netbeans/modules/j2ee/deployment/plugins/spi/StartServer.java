@@ -150,7 +150,7 @@ public abstract class StartServer {
         //do nothing
     }
     
-    /** See {@link stopDeploymentManagerSilently}
+    /** See {@link #stopDeploymentManagerSilently}
      * @return override and return true if stopDeploymentManagerSilently is implemented
      */
     public boolean canStopDeploymentManagerSilently () {

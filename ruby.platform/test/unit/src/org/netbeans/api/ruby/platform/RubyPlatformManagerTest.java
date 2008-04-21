@@ -46,6 +46,11 @@ import org.openide.filesystems.FileUtil;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
+    /** "Bridge" to package private {@link RubyPlatformManager#resetPlatforms}. */
+    public static void resetPlatforms() {
+        RubyPlatformManager.resetPlatforms();
+    }
+
     public RubyPlatformManagerTest(final String testName) {
         super(testName);
     }
@@ -53,7 +58,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RubyPlatformManager.resetPlatforms();
+        resetPlatforms();
     }
 
     public void testAddPlatform() throws Exception {

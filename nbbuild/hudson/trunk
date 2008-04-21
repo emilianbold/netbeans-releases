@@ -101,7 +101,7 @@ echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
 if [ -f $sigtest_jar ]; then
-    ant -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log
+    ant -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log 2>&1
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         (
@@ -157,8 +157,7 @@ ant commit-validation
 # Init application server for tests
 sh -x `dirname $0`/initAppserver.sh
 # visualweb UI validation tests
-# Disabled because permanent failures
-#sh -x `dirname $0`/run-vw-sanity.sh
+sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
 # CND UI validation tests

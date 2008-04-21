@@ -500,6 +500,10 @@ made subject to such option by the copyright holder.
                     <option-name>datadirect_sybase</option-name>
                     <conditional-value>jdbc:datadirect:sybase://#HOST$:#PORT$[;databaseName=#DB$]</conditional-value>
                 </option-value-pair>
+                <option-value-pair>
+                    <option-name>as400</option-name>
+                    <conditional-value>jdbc:as400://systemName/defaultSchema;listOfProperties</conditional-value>
+                </option-value-pair>
             </field-value>
         </field>                
         <field field-type="string">
@@ -809,6 +813,10 @@ made subject to such option by the copyright holder.
                 <option-value-pair>
                     <option-name>datadirect_sybase</option-name>
                     <conditional-value>jdbc:datadirect:sybase:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>as400</option-name>
+                    <conditional-value>jdbc:as400:</conditional-value>
                 </option-value-pair>
             </field-value>
         </field>

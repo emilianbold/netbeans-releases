@@ -75,7 +75,8 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
     
     public String getShortDescription() {
         if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString("TOOLTIP_BREAKPOINT"); // NOI18N
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString
+                    ("TOOLTIP_BREAKPOINT"); // NOI18N
         } else if (EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
                     ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
@@ -85,6 +86,30 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
         } else if (EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
                     ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.FUNCTION_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_FUNCTION_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_FUNCTION_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_CONDITIONAL_FUNCTION_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.ADDRESS_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_ADDRESS_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_ADDRESS_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_CONDITIONAL_ADDRESS_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT"); // NOI18N
         }
         return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
     }

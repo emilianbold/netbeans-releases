@@ -198,8 +198,8 @@ public class HgModuleConfig {
      * or /etc/mercurial/hgrc 
      * or a default username if none is found.
      */
-    public String getUserName() {
-        userName = HgConfigFiles.getInstance().getUserName();
+    public String getSysUserName() {
+        userName = HgConfigFiles.getSysInstance().getSysUserName();
         if (userName.length() == 0) {
             String userId = System.getProperty("user.name"); // NOI18N
             String hostName;
@@ -208,21 +208,29 @@ public class HgModuleConfig {
             } catch (Exception ex) {
                 hostName = "localhost"; //NOI18N
             }
-            userName = userId + "@" + hostName + ".zzz"; // NOI18N
+            userName = userId + "@" + hostName; // NOI18N
         }
         return userName;
     }
 
+    public String getSysPushPath() {
+        return HgConfigFiles.getSysInstance().getSysPushPath();
+    }
+    
+    public String getSysPullPath() {
+        return HgConfigFiles.getSysInstance().getSysPullPath();
+    }
+
     public void addHgkExtension() {
-        HgConfigFiles.getInstance().setProperty("hgext.hgk", "");
+        HgConfigFiles.getSysInstance().setProperty("hgext.hgk", "");
     }
     
     public void setUserName(String name) {
-        HgConfigFiles.getInstance().setUserName(name);
+        HgConfigFiles.getSysInstance().setUserName(name);
     }
 
     public Boolean isUserNameValid(String name) {
-        if (userName == null) getUserName();
+        if (userName == null) getSysUserName();
         if (name.equals(userName)) return true;
         if (name.length() == 0) return true;
         return HgMail.isUserNameValid(name);
@@ -242,21 +250,28 @@ public class HgModuleConfig {
         HgConfigFiles hgconfig = new HgConfigFiles(file); 
         String name = hgconfig.getUserName(false);
         if (name.length() == 0) 
-            name = getUserName();
+            name = getSysUserName();
         if (name.length() > 0) 
             props.setProperty("username", name); // NOI18N
         else
             props.setProperty("username", ""); // NOI18N
+        
         name = hgconfig.getDefaultPull(false);
+        if (name.length() == 0) 
+            name = getSysPullPath();
         if (name.length() > 0) 
             props.setProperty("default-pull", name); // NOI18N
         else
             props.setProperty("default-pull", ""); // NOI18N
+        
         name = hgconfig.getDefaultPush(false);
+        if (name.length() == 0) 
+            name = getSysPushPath();
         if (name.length() > 0) 
             props.setProperty("default-push", name); // NOI18N
         else
             props.setProperty("default-push", ""); // NOI18N
+        
         return props;
     }
 
@@ -289,7 +304,7 @@ public class HgModuleConfig {
 
     private HgConfigFiles getHgConfigFiles(File file) {
         if (file == null) {
-            return HgConfigFiles.getInstance();
+            return HgConfigFiles.getSysInstance();
         } else {
             return new HgConfigFiles(file); 
         }

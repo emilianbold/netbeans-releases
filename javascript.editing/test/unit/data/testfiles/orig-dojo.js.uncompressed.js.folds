@@ -2164,140 +2164,140 @@
   		return function(){ return n++; };
   	})(),
   
-  	cancel: function(){
-  		// summary:	
-  		//		Cancels a Deferred that has not yet received a value, or is
-  		//		waiting on another Deferred as its value.
-  		// description:
-  		//		If a canceller is defined, the canceller is called. If the
-  		//		canceller did not return an error, or there was no canceller,
-  		//		then the errback chain is started.
-  		var err;
-  		if(this.fired == -1){
-  			if(this.canceller){
-  				err = this.canceller(this);
-  			}else{
-  				this.silentlyCancelled = true;
-  			}
-  			if(this.fired == -1){
-  				if(!(err instanceof Error)){
-  					var res = err;
-  					err = new Error("Deferred Cancelled");
-  					err.dojoType = "cancel";
-  					err.cancelResult = res;
-  				}
-  				this.errback(err);
-  			}
-  		}else if(	(this.fired == 0) &&
-  					(this.results[0] instanceof dojo.Deferred)
-  		){
-  			this.results[0].cancel();
-  		}
++ 	cancel: function(){
+| 		// summary:	
+| 		//		Cancels a Deferred that has not yet received a value, or is
+| 		//		waiting on another Deferred as its value.
+| 		// description:
+| 		//		If a canceller is defined, the canceller is called. If the
+| 		//		canceller did not return an error, or there was no canceller,
+| 		//		then the errback chain is started.
+| 		var err;
+| 		if(this.fired == -1){
+| 			if(this.canceller){
+| 				err = this.canceller(this);
+| 			}else{
+| 				this.silentlyCancelled = true;
+| 			}
+| 			if(this.fired == -1){
+| 				if(!(err instanceof Error)){
+| 					var res = err;
+| 					err = new Error("Deferred Cancelled");
+| 					err.dojoType = "cancel";
+| 					err.cancelResult = res;
+| 				}
+| 				this.errback(err);
+| 			}
+| 		}else if(	(this.fired == 0) &&
+| 					(this.results[0] instanceof dojo.Deferred)
+| 		){
+| 			this.results[0].cancel();
+- 		}
   	},
   			
   
-  	_resback: function(res){
-  		// summary:
-  		//		The private primitive that means either callback or errback
-  		this.fired = ((res instanceof Error) ? 1 : 0);
-  		this.results[this.fired] = res;
-  		this._fire();
++ 	_resback: function(res){
+| 		// summary:
+| 		//		The private primitive that means either callback or errback
+| 		this.fired = ((res instanceof Error) ? 1 : 0);
+| 		this.results[this.fired] = res;
+- 		this._fire();
   	},
   
-  	_check: function(){
-  		if(this.fired != -1){
-  			if(!this.silentlyCancelled){
-  				throw new Error("already called!");
-  			}
-  			this.silentlyCancelled = false;
-  			return;
-  		}
++ 	_check: function(){
+| 		if(this.fired != -1){
+| 			if(!this.silentlyCancelled){
+| 				throw new Error("already called!");
+| 			}
+| 			this.silentlyCancelled = false;
+| 			return;
+- 		}
   	},
   
-  	callback: function(res){
-  		// summary:	Begin the callback sequence with a non-error value.
-  		
-  		/*
-  		callback or errback should only be called once on a given
-  		Deferred.
-  		*/
-  		this._check();
-  		this._resback(res);
++ 	callback: function(res){
+| 		// summary:	Begin the callback sequence with a non-error value.
+| 		
+| 		/*
+| 		callback or errback should only be called once on a given
+| 		Deferred.
+| 		*/
+| 		this._check();
+- 		this._resback(res);
   	},
   
-  	errback: function(/*Error*/res){
-  		// summary: 
-  		//		Begin the callback sequence with an error result.
-  		this._check();
-  		if(!(res instanceof Error)){
-  			res = new Error(res);
-  		}
-  		this._resback(res);
++ 	errback: function(/*Error*/res){
+| 		// summary: 
+| 		//		Begin the callback sequence with an error result.
+| 		this._check();
+| 		if(!(res instanceof Error)){
+| 			res = new Error(res);
+| 		}
+- 		this._resback(res);
   	},
   
-  	addBoth: function(/*Function||Object*/cb, /*Optional, String*/cbfn){
-  		// summary:
-  		//		Add the same function as both a callback and an errback as the
-  		//		next element on the callback sequence.	This is useful for code
-  		//		that you want to guarantee to run, e.g. a finalizer.
-  		var enclosed = dojo.hitch(cb, cbfn);
-  		if(arguments.length > 2){
-  			enclosed = dojo.partial(enclosed, arguments, 2);
-  		}
-  		return this.addCallbacks(enclosed, enclosed);
++ 	addBoth: function(/*Function||Object*/cb, /*Optional, String*/cbfn){
+| 		// summary:
+| 		//		Add the same function as both a callback and an errback as the
+| 		//		next element on the callback sequence.	This is useful for code
+| 		//		that you want to guarantee to run, e.g. a finalizer.
+| 		var enclosed = dojo.hitch(cb, cbfn);
+| 		if(arguments.length > 2){
+| 			enclosed = dojo.partial(enclosed, arguments, 2);
+| 		}
+- 		return this.addCallbacks(enclosed, enclosed);
   	},
   
-  	addCallback: function(cb, cbfn){
-  		// summary: 
-  		//		Add a single callback to the end of the callback sequence.
-  		var enclosed = dojo.hitch(cb, cbfn);
-  		if(arguments.length > 2){
-  			enclosed = dojo.partial(enclosed, arguments, 2);
-  		}
-  		return this.addCallbacks(enclosed, null);
++ 	addCallback: function(cb, cbfn){
+| 		// summary: 
+| 		//		Add a single callback to the end of the callback sequence.
+| 		var enclosed = dojo.hitch(cb, cbfn);
+| 		if(arguments.length > 2){
+| 			enclosed = dojo.partial(enclosed, arguments, 2);
+| 		}
+- 		return this.addCallbacks(enclosed, null);
   	},
   
-  	addErrback: function(cb, cbfn){
-  		// summary: 
-  		//		Add a single callback to the end of the callback sequence.
-  		var enclosed = dojo.hitch(cb, cbfn);
-  		if(arguments.length > 2){
-  			enclosed = dojo.partial(enclosed, arguments, 2);
-  		}
-  		return this.addCallbacks(null, enclosed);
++ 	addErrback: function(cb, cbfn){
+| 		// summary: 
+| 		//		Add a single callback to the end of the callback sequence.
+| 		var enclosed = dojo.hitch(cb, cbfn);
+| 		if(arguments.length > 2){
+| 			enclosed = dojo.partial(enclosed, arguments, 2);
+| 		}
+- 		return this.addCallbacks(null, enclosed);
   	},
   
-  	addCallbacks: function(cb, eb){
-  		// summary: 
-  		//		Add separate callback and errback to the end of the callback
-  		//		sequence.
-  		this.chain.push([cb, eb])
-  		if(this.fired >= 0){
-  			this._fire();
-  		}
-  		return this;
++ 	addCallbacks: function(cb, eb){
+| 		// summary: 
+| 		//		Add separate callback and errback to the end of the callback
+| 		//		sequence.
+| 		this.chain.push([cb, eb])
+| 		if(this.fired >= 0){
+| 			this._fire();
+| 		}
+- 		return this;
   	},
   
-  	_fire: function(){
-  		// summary: 
-  		//		Used internally to exhaust the callback sequence when a result
-  		//		is available.
-  		var chain = this.chain;
-  		var fired = this.fired;
-  		var res = this.results[fired];
-  		var self = this;
-  		var cb = null;
-  		while(
-  			(chain.length > 0) &&
-  			(this.paused == 0)
-  		){
-  			// Array
-  			var f = chain.shift()[fired];
-  			if(!f){ continue; }
-  			try{
-  				res = f(res);
-  				fired = ((res instanceof Error) ? 1 : 0);
-  				if(res instanceof dojo.Deferred){
++ 	_fire: function(){
+| 		// summary: 
+| 		//		Used internally to exhaust the callback sequence when a result
+| 		//		is available.
+| 		var chain = this.chain;
+| 		var fired = this.fired;
+| 		var res = this.results[fired];
+| 		var self = this;
+| 		var cb = null;
+| 		while(
+| 			(chain.length > 0) &&
+| 			(this.paused == 0)
+| 		){
+| 			// Array
+| 			var f = chain.shift()[fired];
+| 			if(!f){ continue; }
+| 			try{
+| 				res = f(res);
+| 				fired = ((res instanceof Error) ? 1 : 0);
+| 				if(res instanceof dojo.Deferred){
 + 					cb = function(res){
 | 						self._resback(res);
 | 						// inlined from _pause()
@@ -2309,23 +2309,23 @@
 | 							self._fire();
 | 						}
 - 					}
-  					// inlined from _unpause
-  					this.paused++;
-  				}
-  			}catch(err){
-  				console.debug(err);
-  				fired = 1;
-  				res = err;
-  			}
-  		}
-  		this.fired = fired;
-  		this.results[fired] = res;
-  		if((cb)&&(this.paused)){
-  			// this is for "tail recursion" in case the dependent
-  			// deferred is already fired
-  			res.addBoth(cb);
-  		}
-  	}
+| 					// inlined from _unpause
+| 					this.paused++;
+| 				}
+| 			}catch(err){
+| 				console.debug(err);
+| 				fired = 1;
+| 				res = err;
+| 			}
+| 		}
+| 		this.fired = fired;
+| 		this.results[fired] = res;
+| 		if((cb)&&(this.paused)){
+| 			// this is for "tail recursion" in case the dependent
+| 			// deferred is already fired
+| 			res.addBoth(cb);
+| 		}
+- 	}
   });
   
   }
@@ -2679,59 +2679,59 @@
   
   dojo.extend(dojo.Color, {
   	r: 255, g: 255, b: 255, a: 1,
-  	_set: function(r, g, b, a){
-  		var t = this; t.r = r; t.g = g; t.b = b; t.a = a;
++ 	_set: function(r, g, b, a){
+- 		var t = this; t.r = r; t.g = g; t.b = b; t.a = a;
   	},
-  	setColor: function(/*Array|String|Object*/ color){
-  		// summary:
-  		//		takes a named string, hex string, array of rgb or rgba values,
-  		//		an object with r, g, b, and a properties, or another dojo.Color object
-  		var d = dojo;
-  		if(d.isString(color)){
-  			d.colorFromString(color, this);
-  		}else if(d.isArray(color)){
-  			d.colorFromArray(color, this);
-  		}else{
-  			this._set(color.r, color.g, color.b, color.a);
-  			if(!(color instanceof d.Color)){ this.sanitize(); }
-  		}
-  		return this;	// dojo.Color
++ 	setColor: function(/*Array|String|Object*/ color){
+| 		// summary:
+| 		//		takes a named string, hex string, array of rgb or rgba values,
+| 		//		an object with r, g, b, and a properties, or another dojo.Color object
+| 		var d = dojo;
+| 		if(d.isString(color)){
+| 			d.colorFromString(color, this);
+| 		}else if(d.isArray(color)){
+| 			d.colorFromArray(color, this);
+| 		}else{
+| 			this._set(color.r, color.g, color.b, color.a);
+| 			if(!(color instanceof d.Color)){ this.sanitize(); }
+| 		}
+- 		return this;	// dojo.Color
   	},
-  	sanitize: function(){
-  		// summary:
-  		//		makes sure that the object has correct attributes
-  		// description: 
-  		//		the default implementation does nothing, include dojo.colors to
-  		//		augment it to real checks
-  		return this;	// dojo.Color
++ 	sanitize: function(){
+| 		// summary:
+| 		//		makes sure that the object has correct attributes
+| 		// description: 
+| 		//		the default implementation does nothing, include dojo.colors to
+| 		//		augment it to real checks
+- 		return this;	// dojo.Color
   	},
-  	toRgb: function(){
-  		// summary: returns 3 component array of rgb values
-  		var t = this;
-  		return [t.r, t.g, t.b];	// Array
++ 	toRgb: function(){
+| 		// summary: returns 3 component array of rgb values
+| 		var t = this;
+- 		return [t.r, t.g, t.b];	// Array
   	},
-  	toRgba: function(){
-  		// summary: returns a 4 component array of rgba values
-  		var t = this;
-  		return [t.r, t.g, t.b, t.a];	// Array
++ 	toRgba: function(){
+| 		// summary: returns a 4 component array of rgba values
+| 		var t = this;
+- 		return [t.r, t.g, t.b, t.a];	// Array
   	},
-  	toHex: function(){
-  		// summary: returns a css color string in hexadecimal representation
-  		var arr = dojo.map(["r", "g", "b"], function(x){
-  			var s = this[x].toString(16);
-  			return s.length < 2 ? "0" + s : s;
-  		}, this);
-  		return "#" + arr.join("");	// String
++ 	toHex: function(){
+| 		// summary: returns a css color string in hexadecimal representation
+| 		var arr = dojo.map(["r", "g", "b"], function(x){
+| 			var s = this[x].toString(16);
+| 			return s.length < 2 ? "0" + s : s;
+| 		}, this);
+- 		return "#" + arr.join("");	// String
   	},
-  	toCss: function(/*Boolean?*/ includeAlpha){
-  		// summary: returns a css color string in rgb(a) representation
-  		var t = this, rgb = t.r + ", " + t.g + ", " + t.b;
-  		return (includeAlpha ? "rgba(" + rgb + ", " + t.a : "rgb(" + rgb) + ")";	// String
++ 	toCss: function(/*Boolean?*/ includeAlpha){
+| 		// summary: returns a css color string in rgb(a) representation
+| 		var t = this, rgb = t.r + ", " + t.g + ", " + t.b;
+- 		return (includeAlpha ? "rgba(" + rgb + ", " + t.a : "rgb(" + rgb) + ")";	// String
   	},
-  	toString: function(){
-  		// summary: returns a visual representation of the color
-  		return this.toCss(true); // String
-  	}
++ 	toString: function(){
+| 		// summary: returns a visual representation of the color
+| 		return this.toCss(true); // String
+- 	}
   });
   
 + dojo.blendColors = function(
@@ -4532,352 +4532,352 @@
   		//			reduce
   		//			reduceRight
   
-  		slice: function(/*===== begin, end =====*/){
-  			// summary:
-  			//		Returns a new NodeList, maintaining this one in place
-  			// description:
-  			//		This method behaves exactly like the Array.slice method
-  			//		with the caveat that it returns a dojo.NodeList and not a
-  			//		raw Array. For more details, see:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:slice
-  			// begin: Integer
-  			//		Can be a positive or negative integer, with positive
-  			//		integers noting the offset to begin at, and negative
-  			//		integers denoting an offset from the end (i.e., to the left
-  			//		of the end)
-  			// end: Integer?
-  			//		Optional parameter to describe what position relative to
-  			//		the NodeList's zero index to end the slice at. Like begin,
-  			//		can be positive or negative.
-  			var a = dojo._toArray(arguments);
-  			return tnl(a.slice.apply(this, a));
++ 		slice: function(/*===== begin, end =====*/){
+| 			// summary:
+| 			//		Returns a new NodeList, maintaining this one in place
+| 			// description:
+| 			//		This method behaves exactly like the Array.slice method
+| 			//		with the caveat that it returns a dojo.NodeList and not a
+| 			//		raw Array. For more details, see:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:slice
+| 			// begin: Integer
+| 			//		Can be a positive or negative integer, with positive
+| 			//		integers noting the offset to begin at, and negative
+| 			//		integers denoting an offset from the end (i.e., to the left
+| 			//		of the end)
+| 			// end: Integer?
+| 			//		Optional parameter to describe what position relative to
+| 			//		the NodeList's zero index to end the slice at. Like begin,
+| 			//		can be positive or negative.
+| 			var a = dojo._toArray(arguments);
+- 			return tnl(a.slice.apply(this, a));
   		},
   
-  		splice: function(/*===== index, howmany, item =====*/){
-  			// summary:
-  			//		Returns a new NodeList, manipulating this NodeList based on
-  			//		the arguments passed, potentially splicing in new elements
-  			//		at an offset, optionally deleting elements
-  			// description:
-  			//		This method behaves exactly like the Array.splice method
-  			//		with the caveat that it returns a dojo.NodeList and not a
-  			//		raw Array. For more details, see:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:splice
-  			// index: Integer
-  			//		begin can be a positive or negative integer, with positive
-  			//		integers noting the offset to begin at, and negative
-  			//		integers denoting an offset from the end (i.e., to the left
-  			//		of the end)
-  			// howmany: Integer?
-  			//		Optional parameter to describe what position relative to
-  			//		the NodeList's zero index to end the slice at. Like begin,
-  			//		can be positive or negative.
-  			// item: Object...?
-  			//		Any number of optional parameters may be passed in to be
-  			//		spliced into the NodeList
-  			// returns:
-  			//		dojo.NodeList
-  			var a = dojo._toArray(arguments);
-  			return tnl(a.splice.apply(this, a));
++ 		splice: function(/*===== index, howmany, item =====*/){
+| 			// summary:
+| 			//		Returns a new NodeList, manipulating this NodeList based on
+| 			//		the arguments passed, potentially splicing in new elements
+| 			//		at an offset, optionally deleting elements
+| 			// description:
+| 			//		This method behaves exactly like the Array.splice method
+| 			//		with the caveat that it returns a dojo.NodeList and not a
+| 			//		raw Array. For more details, see:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:splice
+| 			// index: Integer
+| 			//		begin can be a positive or negative integer, with positive
+| 			//		integers noting the offset to begin at, and negative
+| 			//		integers denoting an offset from the end (i.e., to the left
+| 			//		of the end)
+| 			// howmany: Integer?
+| 			//		Optional parameter to describe what position relative to
+| 			//		the NodeList's zero index to end the slice at. Like begin,
+| 			//		can be positive or negative.
+| 			// item: Object...?
+| 			//		Any number of optional parameters may be passed in to be
+| 			//		spliced into the NodeList
+| 			// returns:
+| 			//		dojo.NodeList
+| 			var a = dojo._toArray(arguments);
+- 			return tnl(a.splice.apply(this, a));
   		},
   
-  		concat: function(/*===== item =====*/){
-  			// summary:
-  			//		Returns a new NodeList comprised of items in this NodeList
-  			//		as well as items passed in as parameters
-  			// description:
-  			//		This method behaves exactly like the Array.concat method
-  			//		with the caveat that it returns a dojo.NodeList and not a
-  			//		raw Array. For more details, see:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:concat
-  			// item: Object...?
-  			//		Any number of optional parameters may be passed in to be
-  			//		spliced into the NodeList
-  			// returns:
-  			//		dojo.NodeList
-  			var a = dojo._toArray(arguments, 0, [this]);
-  			return tnl(a.concat.apply([], a));
++ 		concat: function(/*===== item =====*/){
+| 			// summary:
+| 			//		Returns a new NodeList comprised of items in this NodeList
+| 			//		as well as items passed in as parameters
+| 			// description:
+| 			//		This method behaves exactly like the Array.concat method
+| 			//		with the caveat that it returns a dojo.NodeList and not a
+| 			//		raw Array. For more details, see:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:concat
+| 			// item: Object...?
+| 			//		Any number of optional parameters may be passed in to be
+| 			//		spliced into the NodeList
+| 			// returns:
+| 			//		dojo.NodeList
+| 			var a = dojo._toArray(arguments, 0, [this]);
+- 			return tnl(a.concat.apply([], a));
   		},
   		
-  		indexOf: function(/*Object*/ value, /*Integer?*/ fromIndex){
-  			//	summary:
-  			//		see dojo.indexOf(). The primary difference is that the acted-on 
-  			//		array is implicitly this NodeList
-  			// value:
-  			//		The value to search for.
-  			// fromIndex:
-  			//		The loction to start searching from. Optional. Defaults to 0.
-  			//	description:
-  			//		For more details on the behavior of indexOf, see:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:indexOf
-  			//	returns:
-  			//		Positive Integer or 0 for a match, -1 of not found.
-  			return d.indexOf(this, value, fromIndex); // Integer
++ 		indexOf: function(/*Object*/ value, /*Integer?*/ fromIndex){
+| 			//	summary:
+| 			//		see dojo.indexOf(). The primary difference is that the acted-on 
+| 			//		array is implicitly this NodeList
+| 			// value:
+| 			//		The value to search for.
+| 			// fromIndex:
+| 			//		The loction to start searching from. Optional. Defaults to 0.
+| 			//	description:
+| 			//		For more details on the behavior of indexOf, see:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:indexOf
+| 			//	returns:
+| 			//		Positive Integer or 0 for a match, -1 of not found.
+- 			return d.indexOf(this, value, fromIndex); // Integer
   		},
   
-  		lastIndexOf: function(/*===== value, fromIndex =====*/){
-  			// summary:
-  			//		see dojo.lastIndexOf(). The primary difference is that the
-  			//		acted-on array is implicitly this NodeList
-  			//	description:
-  			//		For more details on the behavior of lastIndexOf, see:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:lastIndexOf
-  			// value: Object
-  			//		The value to search for.
-  			// fromIndex: Integer?
-  			//		The loction to start searching from. Optional. Defaults to 0.
-  			// returns:
-  			//		Positive Integer or 0 for a match, -1 of not found.
-  			return d.lastIndexOf.apply(d, d._toArray(arguments, 0, [this])); // Integer
++ 		lastIndexOf: function(/*===== value, fromIndex =====*/){
+| 			// summary:
+| 			//		see dojo.lastIndexOf(). The primary difference is that the
+| 			//		acted-on array is implicitly this NodeList
+| 			//	description:
+| 			//		For more details on the behavior of lastIndexOf, see:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:lastIndexOf
+| 			// value: Object
+| 			//		The value to search for.
+| 			// fromIndex: Integer?
+| 			//		The loction to start searching from. Optional. Defaults to 0.
+| 			// returns:
+| 			//		Positive Integer or 0 for a match, -1 of not found.
+- 			return d.lastIndexOf.apply(d, d._toArray(arguments, 0, [this])); // Integer
   		},
   
-  		every: function(/*Function*/callback, /*Object?*/thisObject){
-  			//	summary:
-  			//		see dojo.every() and:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:every
-  			//		Takes the same structure of arguments and returns as
-  			//		dojo.every() with the caveat that the passed array is
-  			//		implicitly this NodeList
-  			return d.every(this, callback, thisObject); // Boolean
++ 		every: function(/*Function*/callback, /*Object?*/thisObject){
+| 			//	summary:
+| 			//		see dojo.every() and:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:every
+| 			//		Takes the same structure of arguments and returns as
+| 			//		dojo.every() with the caveat that the passed array is
+| 			//		implicitly this NodeList
+- 			return d.every(this, callback, thisObject); // Boolean
   		},
   
-  		some: function(/*Function*/callback, /*Object?*/thisObject){
-  			//	summary:
-  			//		see dojo.some() and:
-  			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:some
-  			//		Takes the same structure of arguments and returns as
-  			//		dojo.some() with the caveat that the passed array is
-  			//		implicitly this NodeList
-  			return d.some(this, callback, thisObject); // Boolean
++ 		some: function(/*Function*/callback, /*Object?*/thisObject){
+| 			//	summary:
+| 			//		see dojo.some() and:
+| 			//			http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Global_Objects:Array:some
+| 			//		Takes the same structure of arguments and returns as
+| 			//		dojo.some() with the caveat that the passed array is
+| 			//		implicitly this NodeList
+- 			return d.some(this, callback, thisObject); // Boolean
   		},
   
-  		map: function(/*Function*/ func, /*Function?*/ obj){
-  			//	summary:
-  			//		see dojo.map(). The primary difference is that the acted-on
-  			//		array is implicitly this NodeList and the return is a
-  			//		dojo.NodeList (a subclass of Array)
-  
-  			return d.map(this, func, obj, d.NodeList); // dojo.NodeList
++ 		map: function(/*Function*/ func, /*Function?*/ obj){
+| 			//	summary:
+| 			//		see dojo.map(). The primary difference is that the acted-on
+| 			//		array is implicitly this NodeList and the return is a
+| 			//		dojo.NodeList (a subclass of Array)
+| 
+- 			return d.map(this, func, obj, d.NodeList); // dojo.NodeList
   		},
   
-  		forEach: function(callback, thisObj){
-  			//	summary:
-  			//		see dojo.forEach(). The primary difference is that the acted-on 
-  			//		array is implicitly this NodeList
-  
-  			d.forEach(this, callback, thisObj);
-  			return this; // dojo.NodeList non-standard return to allow easier chaining
++ 		forEach: function(callback, thisObj){
+| 			//	summary:
+| 			//		see dojo.forEach(). The primary difference is that the acted-on 
+| 			//		array is implicitly this NodeList
+| 
+| 			d.forEach(this, callback, thisObj);
+- 			return this; // dojo.NodeList non-standard return to allow easier chaining
   		},
   
   		// custom methods
   		
-  		coords: function(){
-  			//	summary:
-  			// 		Returns the box objects all elements in a node list as
-  			// 		an Array (*not* a NodeList)
-  			
-  			return d.map(this, d.coords);
++ 		coords: function(){
+| 			//	summary:
+| 			// 		Returns the box objects all elements in a node list as
+| 			// 		an Array (*not* a NodeList)
+| 			
+- 			return d.map(this, d.coords);
   		},
   
-  		style: function(/*===== property, value =====*/){
-  			//	summary:
-  			//		gets or sets the CSS property for every element in the NodeList
-  			//	property: String
-  			//		the CSS property to get/set, in JavaScript notation
-  			//		("lineHieght" instead of "line-height") 
-  			//	value: String?
-  			//		optional. The value to set the property to
-  			//	return:
-  			//		if no value is passed, the result is an array of strings.
-  			//		If a value is passed, the return is this NodeList
-  			var aa = d._toArray(arguments, 0, [null]);
-  			var s = this.map(function(i){
-  				aa[0] = i;
-  				return d.style.apply(d, aa);
-  			});
-  			return (arguments.length > 1) ? this : s; // String||dojo.NodeList
++ 		style: function(/*===== property, value =====*/){
+| 			//	summary:
+| 			//		gets or sets the CSS property for every element in the NodeList
+| 			//	property: String
+| 			//		the CSS property to get/set, in JavaScript notation
+| 			//		("lineHieght" instead of "line-height") 
+| 			//	value: String?
+| 			//		optional. The value to set the property to
+| 			//	return:
+| 			//		if no value is passed, the result is an array of strings.
+| 			//		If a value is passed, the return is this NodeList
+| 			var aa = d._toArray(arguments, 0, [null]);
+| 			var s = this.map(function(i){
+| 				aa[0] = i;
+| 				return d.style.apply(d, aa);
+| 			});
+- 			return (arguments.length > 1) ? this : s; // String||dojo.NodeList
   		},
   
-  		styles: function(/*===== property, value =====*/){
-  			//	summary:
-  			//		Deprecated. Use NodeList.style instead. Will be removed in
-  			//		Dojo 1.1. Gets or sets the CSS property for every element
-  			//		in the NodeList
-  			//	property: String
-  			//		the CSS property to get/set, in JavaScript notation
-  			//		("lineHieght" instead of "line-height") 
-  			//	value: String?
-  			//		optional. The value to set the property to
-  			//	return:
-  			//		if no value is passed, the result is an array of strings.
-  			//		If a value is passed, the return is this NodeList
-  			d.deprecated("NodeList.styles", "use NodeList.style instead", "1.1");
-  			return this.style.apply(this, arguments);
++ 		styles: function(/*===== property, value =====*/){
+| 			//	summary:
+| 			//		Deprecated. Use NodeList.style instead. Will be removed in
+| 			//		Dojo 1.1. Gets or sets the CSS property for every element
+| 			//		in the NodeList
+| 			//	property: String
+| 			//		the CSS property to get/set, in JavaScript notation
+| 			//		("lineHieght" instead of "line-height") 
+| 			//	value: String?
+| 			//		optional. The value to set the property to
+| 			//	return:
+| 			//		if no value is passed, the result is an array of strings.
+| 			//		If a value is passed, the return is this NodeList
+| 			d.deprecated("NodeList.styles", "use NodeList.style instead", "1.1");
+- 			return this.style.apply(this, arguments);
   		},
   
-  		addClass: function(/*String*/ className){
-  			// summary:
-  			//		adds the specified class to every node in the list
-  			//
-  			this.forEach(function(i){ d.addClass(i, className); });
-  			return this;
++ 		addClass: function(/*String*/ className){
+| 			// summary:
+| 			//		adds the specified class to every node in the list
+| 			//
+| 			this.forEach(function(i){ d.addClass(i, className); });
+- 			return this;
   		},
   
-  		removeClass: function(/*String*/ className){
-  			this.forEach(function(i){ d.removeClass(i, className); });
-  			return this;
++ 		removeClass: function(/*String*/ className){
+| 			this.forEach(function(i){ d.removeClass(i, className); });
+- 			return this;
   		},
   
   		// FIXME: toggleClass()? connectPublisher()? connectRunOnce()?
   
-  		place: function(/*String||Node*/ queryOrNode, /*String*/ position){
-  			//	summary:
-  			//		places elements of this node list relative to the first element matched
-  			//		by queryOrNode. Returns the original NodeList.
-  			//	queryOrNode:
-  			//		may be a string representing any valid CSS3 selector or a DOM node.
-  			//		In the selector case, only the first matching element will be used 
-  			//		for relative positioning.
-  			//	position:
-  			//		can be one of:
-  			//			"last"||"end" (default)
-  			//			"first||"start"
-  			//			"before"
-  			//			"after"
-  			// 		or an offset in the childNodes property
-  			var item = d.query(queryOrNode)[0];
-  			position = position||"last";
-  
-  			for(var x=0; x<this.length; x++){
-  				d.place(this[x], item, position);
-  			}
-  			return this; // dojo.NodeList
++ 		place: function(/*String||Node*/ queryOrNode, /*String*/ position){
+| 			//	summary:
+| 			//		places elements of this node list relative to the first element matched
+| 			//		by queryOrNode. Returns the original NodeList.
+| 			//	queryOrNode:
+| 			//		may be a string representing any valid CSS3 selector or a DOM node.
+| 			//		In the selector case, only the first matching element will be used 
+| 			//		for relative positioning.
+| 			//	position:
+| 			//		can be one of:
+| 			//			"last"||"end" (default)
+| 			//			"first||"start"
+| 			//			"before"
+| 			//			"after"
+| 			// 		or an offset in the childNodes property
+| 			var item = d.query(queryOrNode)[0];
+| 			position = position||"last";
+| 
+| 			for(var x=0; x<this.length; x++){
+| 				d.place(this[x], item, position);
+| 			}
+- 			return this; // dojo.NodeList
   		},
   
-  		connect: function(/*String*/ methodName, /*Object||Function||String*/ objOrFunc, /*String?*/ funcName){
-  			//	summary:
-  			//		attach event handlers to every item of the NodeList. Uses dojo.connect()
-  			//		so event properties are normalized
-  			//	methodName:
-  			//		the name of the method to attach to. For DOM events, this should be
-  			//		the lower-case name of the event
-  			//	objOrFunc:
-  			//		if 2 arguments are passed (methodName, objOrFunc), objOrFunc should
-  			//		reference a function or be the name of the function in the global
-  			//		namespace to attach. If 3 arguments are provided
-  			//		(methodName, objOrFunc, funcName), objOrFunc must be the scope to 
-  			//		locate the bound function in
-  			//	funcName:
-  			//		optional. A string naming the function in objOrFunc to bind to the
-  			//		event. May also be a function reference.
-  			//	example:
-  			//		add an onclick handler to every button on the page
-  			//		|	dojo.query("onclick", function(e){
-  			//		|		console.debug("clicked!");
-  			//		|	});
-  			// example:
-  			//		attach foo.bar() to every odd div's onmouseover
-  			//		|	dojo.query("div:nth-child(odd)").onclick("onmouseover", foo, "bar");
-  			this.forEach(function(item){
-  				d.connect(item, methodName, objOrFunc, funcName);
-  			});
-  			return this; // dojo.NodeList
++ 		connect: function(/*String*/ methodName, /*Object||Function||String*/ objOrFunc, /*String?*/ funcName){
+| 			//	summary:
+| 			//		attach event handlers to every item of the NodeList. Uses dojo.connect()
+| 			//		so event properties are normalized
+| 			//	methodName:
+| 			//		the name of the method to attach to. For DOM events, this should be
+| 			//		the lower-case name of the event
+| 			//	objOrFunc:
+| 			//		if 2 arguments are passed (methodName, objOrFunc), objOrFunc should
+| 			//		reference a function or be the name of the function in the global
+| 			//		namespace to attach. If 3 arguments are provided
+| 			//		(methodName, objOrFunc, funcName), objOrFunc must be the scope to 
+| 			//		locate the bound function in
+| 			//	funcName:
+| 			//		optional. A string naming the function in objOrFunc to bind to the
+| 			//		event. May also be a function reference.
+| 			//	example:
+| 			//		add an onclick handler to every button on the page
+| 			//		|	dojo.query("onclick", function(e){
+| 			//		|		console.debug("clicked!");
+| 			//		|	});
+| 			// example:
+| 			//		attach foo.bar() to every odd div's onmouseover
+| 			//		|	dojo.query("div:nth-child(odd)").onclick("onmouseover", foo, "bar");
+| 			this.forEach(function(item){
+| 				d.connect(item, methodName, objOrFunc, funcName);
+| 			});
+- 			return this; // dojo.NodeList
   		},
   
-  		orphan: function(/*String?*/ simpleFilter){
-  			//	summary:
-  			//		removes elements in this list that match the simple
-  			//		filter from their parents and returns them as a new
-  			//		NodeList.
-  			//	simpleFilter: single-expression CSS filter
-  			//	return: a dojo.NodeList of all of the elements orpahned
-  			var orphans = (simpleFilter) ? d._filterQueryResult(this, simpleFilter) : this;
-  			orphans.forEach(function(item){
-  				if(item["parentNode"]){
-  					item.parentNode.removeChild(item);
-  				}
-  			});
-  			return orphans; // dojo.NodeList
++ 		orphan: function(/*String?*/ simpleFilter){
+| 			//	summary:
+| 			//		removes elements in this list that match the simple
+| 			//		filter from their parents and returns them as a new
+| 			//		NodeList.
+| 			//	simpleFilter: single-expression CSS filter
+| 			//	return: a dojo.NodeList of all of the elements orpahned
+| 			var orphans = (simpleFilter) ? d._filterQueryResult(this, simpleFilter) : this;
+| 			orphans.forEach(function(item){
+| 				if(item["parentNode"]){
+| 					item.parentNode.removeChild(item);
+| 				}
+| 			});
+- 			return orphans; // dojo.NodeList
   		},
   
-  		adopt: function(/*String||Array||DomNode*/ queryOrListOrNode, /*String?*/ position){
-  			//	summary:
-  			//		places any/all elements in queryOrListOrNode at a
-  			//		position relative to the first element in this list.
-  			//		Returns a dojo.NodeList of the adopted elements.
-  			//	queryOrListOrNode:
-  			//		a DOM node or a query string or a query result.
-  			//		Represents the nodes to be adopted relative to the
-  			//		first element of this NodeList.
-  			//	position:
-  			//		optional. One of:
-  			//			"last"||"end" (default)
-  			//			"first||"start"
-  			//			"before"
-  			//			"after"
-  			// 		or an offset in the childNodes property
-  			var item = this[0];
-  			return d.query(queryOrListOrNode).forEach(function(ai){ d.place(ai, item, (position||"last")); }); // dojo.NodeList
++ 		adopt: function(/*String||Array||DomNode*/ queryOrListOrNode, /*String?*/ position){
+| 			//	summary:
+| 			//		places any/all elements in queryOrListOrNode at a
+| 			//		position relative to the first element in this list.
+| 			//		Returns a dojo.NodeList of the adopted elements.
+| 			//	queryOrListOrNode:
+| 			//		a DOM node or a query string or a query result.
+| 			//		Represents the nodes to be adopted relative to the
+| 			//		first element of this NodeList.
+| 			//	position:
+| 			//		optional. One of:
+| 			//			"last"||"end" (default)
+| 			//			"first||"start"
+| 			//			"before"
+| 			//			"after"
+| 			// 		or an offset in the childNodes property
+| 			var item = this[0];
+- 			return d.query(queryOrListOrNode).forEach(function(ai){ d.place(ai, item, (position||"last")); }); // dojo.NodeList
   		},
   
   		// FIXME: do we need this?
-  		query: function(/*String*/ queryStr){
-  			//	summary:
-  			//		Returns a new, flattened NodeList. Elements of the new list
-  			//		satisfy the passed query but use elements of the
-  			//		current NodeList as query roots.
-  
-  			queryStr = queryStr||"";
-  
-  			// FIXME: probably slow
-  			var ret = d.NodeList();
-  			this.forEach(function(item){
-  				d.query(queryStr, item).forEach(function(subItem){
-  					if(typeof subItem != "undefined"){
-  						ret.push(subItem);
-  					}
-  				});
-  			});
-  			return ret; // dojo.NodeList
++ 		query: function(/*String*/ queryStr){
+| 			//	summary:
+| 			//		Returns a new, flattened NodeList. Elements of the new list
+| 			//		satisfy the passed query but use elements of the
+| 			//		current NodeList as query roots.
+| 
+| 			queryStr = queryStr||"";
+| 
+| 			// FIXME: probably slow
+| 			var ret = d.NodeList();
+| 			this.forEach(function(item){
+| 				d.query(queryStr, item).forEach(function(subItem){
+| 					if(typeof subItem != "undefined"){
+| 						ret.push(subItem);
+| 					}
+| 				});
+| 			});
+- 			return ret; // dojo.NodeList
   		},
   
-  		filter: function(/*String*/ simpleQuery){
-  			//	summary:
-  			// 		"masks" the built-in javascript filter() method to support
-  			//		passing a simple string filter in addition to supporting
-  			//		filtering function objects.
-  			//	example:
-  			//		"regular" JS filter syntax as exposed in dojo.filter:
-  			//		|	dojo.query("*").filter(function(item){
-  			//		|		// highlight every paragraph
-  			//		|		return (item.nodeName == "p");
-  			//		|	}).styles("backgroundColor", "yellow");
-  			// example:
-  			//		the same filtering using a CSS selector
-  			//		|	dojo.query("*").filter("p").styles("backgroundColor", "yellow");
-  
-  			var items = this;
-  			var _a = arguments;
-  			var r = d.NodeList();
-  			var rp = function(t){ 
-  				if(typeof t != "undefined"){
-  					r.push(t); 
-  				}
-  			}
-  			if(d.isString(simpleQuery)){
-  				items = d._filterQueryResult(this, _a[0]);
-  				if(_a.length == 1){
-  					// if we only got a string query, pass back the filtered results
-  					return items; // dojo.NodeList
-  				}
-  				// if we got a callback, run it over the filtered items
-  				d.forEach(d.filter(items, _a[1], _a[2]), rp);
-  				return r; // dojo.NodeList
-  			}
-  			// handle the (callback, [thisObject]) case
-  			d.forEach(d.filter(items, _a[0], _a[1]), rp);
-  			return r; // dojo.NodeList
-  
++ 		filter: function(/*String*/ simpleQuery){
+| 			//	summary:
+| 			// 		"masks" the built-in javascript filter() method to support
+| 			//		passing a simple string filter in addition to supporting
+| 			//		filtering function objects.
+| 			//	example:
+| 			//		"regular" JS filter syntax as exposed in dojo.filter:
+| 			//		|	dojo.query("*").filter(function(item){
+| 			//		|		// highlight every paragraph
+| 			//		|		return (item.nodeName == "p");
+| 			//		|	}).styles("backgroundColor", "yellow");
+| 			// example:
+| 			//		the same filtering using a CSS selector
+| 			//		|	dojo.query("*").filter("p").styles("backgroundColor", "yellow");
+| 
+| 			var items = this;
+| 			var _a = arguments;
+| 			var r = d.NodeList();
+| 			var rp = function(t){ 
+| 				if(typeof t != "undefined"){
+| 					r.push(t); 
+| 				}
+| 			}
+| 			if(d.isString(simpleQuery)){
+| 				items = d._filterQueryResult(this, _a[0]);
+| 				if(_a.length == 1){
+| 					// if we only got a string query, pass back the filtered results
+| 					return items; // dojo.NodeList
+| 				}
+| 				// if we got a callback, run it over the filtered items
+| 				d.forEach(d.filter(items, _a[1], _a[2]), rp);
+| 				return r; // dojo.NodeList
+| 			}
+| 			// handle the (callback, [thisObject]) case
+| 			d.forEach(d.filter(items, _a[0], _a[1]), rp);
+| 			return r; // dojo.NodeList
+- 
   		},
   		
   		/*
@@ -4889,34 +4889,34 @@
   		},
   		*/
   
-  		addContent: function(/*String*/ content, /*String||Integer?*/ position){
-  			//	summary:
-  			//		add a node or some HTML as a string to every item in the list. 
-  			//		Returns the original list.
-  			//	content:
-  			//		the HTML in string format to add at position to every item
-  			//	position:
-  			//		One of:
-  			//			"last"||"end" (default)
-  			//			"first||"start"
-  			//			"before"
-  			//			"after"
-  			//		or an integer offset in the childNodes property
-  			var ta = d.doc.createElement("span");
-  			if(d.isString(content)){
-  				ta.innerHTML = content;
-  			}else{
-  				ta.appendChild(content);
-  			}
-  			var ct = ((position == "first")||(position == "after")) ? "lastChild" : "firstChild";
-  			this.forEach(function(item){
-  				var tn = ta.cloneNode(true);
-  				while(tn[ct]){
-  					d.place(tn[ct], item, position);
-  				}
-  			});
-  			return this; // dojo.NodeList
-  		}
++ 		addContent: function(/*String*/ content, /*String||Integer?*/ position){
+| 			//	summary:
+| 			//		add a node or some HTML as a string to every item in the list. 
+| 			//		Returns the original list.
+| 			//	content:
+| 			//		the HTML in string format to add at position to every item
+| 			//	position:
+| 			//		One of:
+| 			//			"last"||"end" (default)
+| 			//			"first||"start"
+| 			//			"before"
+| 			//			"after"
+| 			//		or an integer offset in the childNodes property
+| 			var ta = d.doc.createElement("span");
+| 			if(d.isString(content)){
+| 				ta.innerHTML = content;
+| 			}else{
+| 				ta.appendChild(content);
+| 			}
+| 			var ct = ((position == "first")||(position == "after")) ? "lastChild" : "firstChild";
+| 			this.forEach(function(item){
+| 				var tn = ta.cloneNode(true);
+| 				while(tn[ct]){
+| 					d.place(tn[ct], item, position);
+| 				}
+| 			});
+| 			return this; // dojo.NodeList
+- 		}
   	});
   
   	// syntactic sugar for DOM events
@@ -6775,13 +6775,13 @@
   	//		A generic animation object that fires callbacks into it's handlers
   	//		object at various states
   	//
-  	constructor: function(/*Object*/ args){
-  		dojo.mixin(this, args);
-  		if(dojo.isArray(this.curve)){
-  			/* curve: Array
-  				pId: a */
-  			this.curve = new dojo._Line(this.curve[0], this.curve[1]);
-  		}
++ 	constructor: function(/*Object*/ args){
+| 		dojo.mixin(this, args);
+| 		if(dojo.isArray(this.curve)){
+| 			/* curve: Array
+| 				pId: a */
+| 			this.curve = new dojo._Line(this.curve[0], this.curve[1]);
+- 		}
   	},
   	
   	// duration: Integer
@@ -6848,159 +6848,159 @@
   	_percent: 0,
   	_startRepeatCount: 0,
   
-  	fire: function(/*Event*/ evt, /*Array?*/ args){
-  		//	summary:
-  		//		Convenience function.  Fire event "evt" and pass it the
-  		//		arguments specified in "args".
-  		//	evt:
-  		//		The event to fire.
-  		//	args:
-  		//		The arguments to pass to the event.
-  		if(this[evt]){
-  			this[evt].apply(this, args||[]);
-  		}
-  		return this; // dojo._Animation
++ 	fire: function(/*Event*/ evt, /*Array?*/ args){
+| 		//	summary:
+| 		//		Convenience function.  Fire event "evt" and pass it the
+| 		//		arguments specified in "args".
+| 		//	evt:
+| 		//		The event to fire.
+| 		//	args:
+| 		//		The arguments to pass to the event.
+| 		if(this[evt]){
+| 			this[evt].apply(this, args||[]);
+| 		}
+- 		return this; // dojo._Animation
   	},
   
-  	play: function(/*int?*/ delay, /*Boolean?*/ gotoStart){
-  		// summary:
-  		//		Start the animation.
-  		// delay:
-  		//		How many milliseconds to delay before starting.
-  		// gotoStart:
-  		//		If true, starts the animation from the beginning; otherwise,
-  		//		starts it from its current position.
-  		var _t = this;
-  		if(gotoStart){
-  			_t._stopTimer();
-  			_t._active = _t._paused = false;
-  			_t._percent = 0;
-  		}else if(_t._active && !_t._paused){
-  			return _t; // dojo._Animation
-  		}
-  
-  		_t.fire("beforeBegin");
-  
-  		var d = delay||_t.delay;
-  		var _p = dojo.hitch(_t, "_play", gotoStart);
-  		if(d > 0){
-  			setTimeout(_p, d);
-  			return _t; // dojo._Animation
-  		}
-  		_p();
-  		return _t;
++ 	play: function(/*int?*/ delay, /*Boolean?*/ gotoStart){
+| 		// summary:
+| 		//		Start the animation.
+| 		// delay:
+| 		//		How many milliseconds to delay before starting.
+| 		// gotoStart:
+| 		//		If true, starts the animation from the beginning; otherwise,
+| 		//		starts it from its current position.
+| 		var _t = this;
+| 		if(gotoStart){
+| 			_t._stopTimer();
+| 			_t._active = _t._paused = false;
+| 			_t._percent = 0;
+| 		}else if(_t._active && !_t._paused){
+| 			return _t; // dojo._Animation
+| 		}
+| 
+| 		_t.fire("beforeBegin");
+| 
+| 		var d = delay||_t.delay;
+| 		var _p = dojo.hitch(_t, "_play", gotoStart);
+| 		if(d > 0){
+| 			setTimeout(_p, d);
+| 			return _t; // dojo._Animation
+| 		}
+| 		_p();
+- 		return _t;
   	},
   
-  	_play: function(gotoStart){
-  		var _t = this;
-  		_t._startTime = new Date().valueOf();
-  		if(_t._paused){
-  			_t._startTime -= _t.duration * _t._percent;
-  		}
-  		_t._endTime = _t._startTime + _t.duration;
-  
-  		_t._active = true;
-  		_t._paused = false;
-  
-  		var value = _t.curve.getValue(_t._percent);
-  		if(!_t._percent){
-  			if(!_t._startRepeatCount){
-  				_t._startRepeatCount = _t.repeat;
-  			}
-  			_t.fire("onBegin", [value]);
-  		}
-  
-  		_t.fire("onPlay", [value]);
-  
-  		_t._cycle();
-  		return _t; // dojo._Animation
++ 	_play: function(gotoStart){
+| 		var _t = this;
+| 		_t._startTime = new Date().valueOf();
+| 		if(_t._paused){
+| 			_t._startTime -= _t.duration * _t._percent;
+| 		}
+| 		_t._endTime = _t._startTime + _t.duration;
+| 
+| 		_t._active = true;
+| 		_t._paused = false;
+| 
+| 		var value = _t.curve.getValue(_t._percent);
+| 		if(!_t._percent){
+| 			if(!_t._startRepeatCount){
+| 				_t._startRepeatCount = _t.repeat;
+| 			}
+| 			_t.fire("onBegin", [value]);
+| 		}
+| 
+| 		_t.fire("onPlay", [value]);
+| 
+| 		_t._cycle();
+- 		return _t; // dojo._Animation
   	},
   
-  	pause: function(){
-  		// summary: Pauses a running animation.
-  		this._stopTimer();
-  		if(!this._active){ return this; /*dojo._Animation*/}
-  		this._paused = true;
-  		this.fire("onPause", [this.curve.getValue(this._percent)]);
-  		return this; // dojo._Animation
++ 	pause: function(){
+| 		// summary: Pauses a running animation.
+| 		this._stopTimer();
+| 		if(!this._active){ return this; /*dojo._Animation*/}
+| 		this._paused = true;
+| 		this.fire("onPause", [this.curve.getValue(this._percent)]);
+- 		return this; // dojo._Animation
   	},
   
-  	gotoPercent: function(/*Decimal*/ percent, /*Boolean?*/ andPlay){
-  		//	summary:
-  		//		Sets the progress of the animation.
-  		//	percent:
-  		//		A percentage in decimal notation (between and including 0.0 and 1.0).
-  		//	andPlay:
-  		//		If true, play the animation after setting the progress.
-  		this._stopTimer();
-  		this._active = this._paused = true;
-  		this._percent = percent;
-  		if(andPlay){ this.play(); }
-  		return this; // dojo._Animation
++ 	gotoPercent: function(/*Decimal*/ percent, /*Boolean?*/ andPlay){
+| 		//	summary:
+| 		//		Sets the progress of the animation.
+| 		//	percent:
+| 		//		A percentage in decimal notation (between and including 0.0 and 1.0).
+| 		//	andPlay:
+| 		//		If true, play the animation after setting the progress.
+| 		this._stopTimer();
+| 		this._active = this._paused = true;
+| 		this._percent = percent;
+| 		if(andPlay){ this.play(); }
+- 		return this; // dojo._Animation
   	},
   
-  	stop: function(/*boolean?*/ gotoEnd){
-  		// summary: Stops a running animation.
-  		// gotoEnd: If true, the animation will end.
-  		if(!this._timer){ return; }
-  		this._stopTimer();
-  		if(gotoEnd){
-  			this._percent = 1;
-  		}
-  		this.fire("onStop", [this.curve.getValue(this._percent)]);
-  		this._active = this._paused = false;
-  		return this; // dojo._Animation
++ 	stop: function(/*boolean?*/ gotoEnd){
+| 		// summary: Stops a running animation.
+| 		// gotoEnd: If true, the animation will end.
+| 		if(!this._timer){ return; }
+| 		this._stopTimer();
+| 		if(gotoEnd){
+| 			this._percent = 1;
+| 		}
+| 		this.fire("onStop", [this.curve.getValue(this._percent)]);
+| 		this._active = this._paused = false;
+- 		return this; // dojo._Animation
   	},
   
-  	status: function(){
-  		// summary: Returns a string token representation of the status of
-  		//			the animation, one of: "paused", "playing", "stopped"
-  		if(this._active){
-  			return this._paused ? "paused" : "playing"; // String
-  		}
-  		return "stopped"; // String
++ 	status: function(){
+| 		// summary: Returns a string token representation of the status of
+| 		//			the animation, one of: "paused", "playing", "stopped"
+| 		if(this._active){
+| 			return this._paused ? "paused" : "playing"; // String
+| 		}
+- 		return "stopped"; // String
   	},
   
-  	_cycle: function(){
-  		var _t = this;
-  		if(_t._active){
-  			var curr = new Date().valueOf();
-  			var step = (curr - _t._startTime) / (_t._endTime - _t._startTime);
-  
-  			if(step >= 1){
-  				step = 1;
-  			}
-  			_t._percent = step;
-  
-  			// Perform easing
-  			if(_t.easing){
-  				step = _t.easing(step);
-  			}
-  
-  			_t.fire("onAnimate", [_t.curve.getValue(step)]);
-  
-  			if(step < 1){
-  				_t._startTimer();
-  			}else{
-  				_t._active = false;
-  
-  				if(_t.repeat > 0){
-  					_t.repeat--;
-  					_t.play(null, true);
-  				}else if(_t.repeat == -1){
-  					_t.play(null, true);
-  				}else{
-  					if(_t._startRepeatCount){
-  						_t.repeat = _t._startRepeatCount;
-  						_t._startRepeatCount = 0;
-  					}
-  				}
-  				_t._percent = 0;
-  				_t.fire("onEnd");
-  			}
-  		}
-  		return _t; // dojo._Animation
-  	}
++ 	_cycle: function(){
+| 		var _t = this;
+| 		if(_t._active){
+| 			var curr = new Date().valueOf();
+| 			var step = (curr - _t._startTime) / (_t._endTime - _t._startTime);
+| 
+| 			if(step >= 1){
+| 				step = 1;
+| 			}
+| 			_t._percent = step;
+| 
+| 			// Perform easing
+| 			if(_t.easing){
+| 				step = _t.easing(step);
+| 			}
+| 
+| 			_t.fire("onAnimate", [_t.curve.getValue(step)]);
+| 
+| 			if(step < 1){
+| 				_t._startTimer();
+| 			}else{
+| 				_t._active = false;
+| 
+| 				if(_t.repeat > 0){
+| 					_t.repeat--;
+| 					_t.play(null, true);
+| 				}else if(_t.repeat == -1){
+| 					_t.play(null, true);
+| 				}else{
+| 					if(_t._startRepeatCount){
+| 						_t.repeat = _t._startRepeatCount;
+| 						_t._startRepeatCount = 0;
+| 					}
+| 				}
+| 				_t._percent = 0;
+| 				_t.fire("onEnd");
+| 			}
+| 		}
+| 		return _t; // dojo._Animation
+- 	}
   });
   
   (function(){

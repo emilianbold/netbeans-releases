@@ -343,15 +343,15 @@ public class TestUtils {
         po.next();
         wait(2000);
         if (projectName != null) {
-            new JTextFieldOperator(po).typeText(projectName);
+            new JTextFieldOperator(po, 0).typeText(projectName);
         } else {
-            projectName = new JTextFieldOperator(po).getText();
+            projectName = new JTextFieldOperator(po, 0).getText();
         }
         if (location != null) {
             if (!absoluteLocation){
                 location=new JTextFieldOperator(po, 2).getText() + "/" + location;
             }
-            new JTextFieldOperator(po,2).setText(location);
+            new JTextFieldOperator(po, 2).setText(location);
         } else {
             location = new JTextFieldOperator(po, 2).getText();
         }

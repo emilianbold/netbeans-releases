@@ -90,6 +90,13 @@ public interface XPathSchemaContext {
     boolean equalsChain(XPathSchemaContext obj);
     
     /**
+     * Calculates a text which represents the context. 
+     * Text must not contain mentioning the parent context.
+     * @return
+     */
+    String toStringWithoutParent();
+    
+    /**
      * This class contans current and parent schema components. 
      * It keeps track from which parent schema component the current 
      * component was taken from. 
@@ -113,7 +120,7 @@ public interface XPathSchemaContext {
         
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             //
             SchemaComponent parentComp = getParetnComp();
             if (parentComp != null) {
@@ -140,7 +147,7 @@ public interface XPathSchemaContext {
         /**
          * Helper method for toString
          */ 
-        public static void appendCompName(StringBuffer sb, SchemaComponent schemaComp) {
+        public static void appendCompName(StringBuilder sb, SchemaComponent schemaComp) {
             if (schemaComp instanceof Attribute) {
                 sb.append("@");
             }
@@ -186,6 +193,10 @@ public interface XPathSchemaContext {
          * @return
          */
         public static SchemaComponent getSchemaComp(XPathSchemaContext context) {
+            if (context == null)  {
+                return null;
+            }
+            //
             Set<SchemaCompPair> scPairSet = context.getUsedSchemaCompPairs();
             if (scPairSet != null && scPairSet.size() == 1) {
                 SchemaCompPair scPair = scPairSet.iterator().next();

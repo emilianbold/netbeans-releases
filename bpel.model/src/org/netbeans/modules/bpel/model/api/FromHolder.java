@@ -25,7 +25,7 @@ package org.netbeans.modules.bpel.model.api;
 /**
  * @author ads
  */
-public interface FromHolder {
+public interface FromHolder extends BpelContainer {
 
     /**
      * @return From child.

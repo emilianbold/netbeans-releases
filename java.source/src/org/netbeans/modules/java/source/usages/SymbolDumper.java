@@ -55,6 +55,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -404,7 +405,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
             return result;
         }
         
-        Logger.getLogger(SymbolDumper.class.getName()).info("Unhandled ElementKind: " + el.getKind());
+        Logger.getLogger(SymbolDumper.class.getName()).log(Level.FINE, "Unhandled ElementKind: {0}", el.getKind());
         
         return false;
     }

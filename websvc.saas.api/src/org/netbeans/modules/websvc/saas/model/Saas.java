@@ -133,9 +133,12 @@ public class Saas {
     public SaasGroup getTopLevelGroup() {
         if (topGroup == null && parentGroup != null) {
             topGroup = parentGroup;
-            while (topGroup.getParent() != SaasServicesModel.getInstance().getRootGroup()) {
+            while (topGroup != null && topGroup.getParent() != SaasServicesModel.getInstance().getRootGroup()) {
                 topGroup = topGroup.getParent();
             }
+            
+            if (topGroup == null) 
+                topGroup = SaasServicesModel.getInstance().getRootGroup();
         }
         return topGroup;
     }

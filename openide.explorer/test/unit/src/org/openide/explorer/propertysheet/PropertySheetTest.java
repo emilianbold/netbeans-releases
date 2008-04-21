@@ -213,6 +213,9 @@ public class PropertySheetTest extends NbTestCase {
     }
     
     public void testSheetCleared_126818 () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         final PropertySheet ps = new PropertySheet();
         Node n = new AbstractNode( Children.LEAF );
         ps.setNodes( new Node[] {n} );

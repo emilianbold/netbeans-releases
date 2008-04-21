@@ -68,7 +68,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.openide.ErrorManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  * A template wizard iterator (sequence of panels).
@@ -120,7 +120,7 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
       if (data == null) {
         return Collections.emptySet();
       }
-      SoaUiUtil.fixEncoding(data, dir);
+      SoaUtil.fixEncoding(data, dir);
       
       return Collections.singleton(data);
     }

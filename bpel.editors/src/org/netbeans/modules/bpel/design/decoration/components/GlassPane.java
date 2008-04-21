@@ -71,6 +71,7 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     
     private JPanel labelPane;
     private JButton hideButton;
+    private JComponent decoration;
     private JTextComponent editorPane;
     private JScrollPane scrollPane;
     private StringBuffer html = new StringBuffer();
@@ -80,12 +81,13 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     private int py = 0;
     
     private Shape borderShape = null;
-    
-    public GlassPane(String text, ActionListener actionListener, boolean editable) {
+    public GlassPane(String text, ActionListener actionListener, boolean editable, JComponent decoration){
         setLayout(new BorderLayout(0, 1));
         setBorder(new EmptyBorder(26, 26, 26, 26)); 
         setPreferredSize(new Dimension(320, 180)); 
         myEditable = editable;
+        this.decoration = decoration;
+        
         setOpaque(false);
 
         if (editable) {
@@ -173,6 +175,10 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     @Override
     public void requestFocus() {
       editorPane.requestFocus();
+    }
+    
+    public JComponent getDecoration(){
+        return decoration;
     }
     
     public boolean contains(int x, int y) {
@@ -404,10 +410,10 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     }
     
     public void setAnchorPoint(Point point) {
-        setAnchorPaint(point.x, point.y);
+        setAnchorPoint(point.x, point.y);
     }
     
-    public void setAnchorPaint(int px, int py) {
+    public void setAnchorPoint(int px, int py) {
         if (this.px != px || this.py != py) {
             this.px = px;
             this.py = py;

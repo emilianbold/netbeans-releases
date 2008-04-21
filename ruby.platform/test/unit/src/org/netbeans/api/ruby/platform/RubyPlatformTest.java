@@ -111,14 +111,14 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right long description", "JRuby 1.8.6 (2008-03-27 patchlevel 6255) [java]", jruby.getInfo().getLongDescription());
+        assertEquals("right long description", "JRuby 1.8.6 (2008-03-31 patchlevel 6360) [java]", jruby.getInfo().getLongDescription());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
     }
     
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC3)", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
     }

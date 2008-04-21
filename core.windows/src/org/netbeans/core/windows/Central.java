@@ -593,7 +593,7 @@ final class Central implements ControllerHandler {
             if (PersistenceHandler.isTopComponentPersistentWhenClosed(tcs[i])) {
                 model.addModeClosedTopComponent(mode, tcs[i]);
             } else {
-                if (tcs[i].getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+                if (Boolean.TRUE.equals(tcs[i].getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED))) {
                     model.addModeClosedTopComponent(mode, tcs[i]);
                 } else {
                     model.removeModeTopComponent(mode, tcs[i], null);
@@ -1222,7 +1222,7 @@ final class Central implements ControllerHandler {
                     if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
                         model.addModeClosedTopComponent(mode, tc);
                     } else {
-                        if (tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+                        if (Boolean.TRUE.equals(tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED))) {
                             model.addModeClosedTopComponent(mode, tc);
                         } else {
                             model.removeModeTopComponent(mode, tc, null);
@@ -1923,7 +1923,7 @@ final class Central implements ControllerHandler {
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
             addModeClosedTopComponent(mode, tc);
         } else {
-            if (tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+            if (Boolean.TRUE.equals(tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED))) {
                 addModeClosedTopComponent(mode, tc);
             } else {
                 removeModeTopComponent(mode, tc);

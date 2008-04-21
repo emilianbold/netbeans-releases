@@ -1,6 +1,6 @@
 br=br
-zh_tw=zh_TW
-zh_cn=zh_CN
+zh_TW=zh_TW
+zh_CN=zh_CN
 ru=ru
 ja=Japanese
 it=Italian
@@ -10,6 +10,6 @@ fi=fi
 du=Dutch
 da=da
 ko=ko
-pt=pt
+pt_BR=pt
 sv=sv
 english=English

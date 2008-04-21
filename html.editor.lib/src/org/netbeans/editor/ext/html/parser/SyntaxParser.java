@@ -445,6 +445,7 @@ public final class SyntaxParser {
                             case WS:
                                 break;
                             case VALUE:
+                            case VALUE_JAVASCRIPT:
                                 backup(1); //backup the value
                                 state = S_TAG_VALUE;
                                 break;
@@ -465,6 +466,7 @@ public final class SyntaxParser {
                     case S_TAG_VALUE:
                         switch(id) {
                             case VALUE:
+                            case VALUE_JAVASCRIPT:
                                 int index = attr_keys.indexOf(attrib);
                                 if(index == -1) {
                                     List<Token> values = new ArrayList<Token>();

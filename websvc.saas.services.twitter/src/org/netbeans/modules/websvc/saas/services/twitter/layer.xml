@@ -47,7 +47,6 @@
     <folder name="SaaSServices">
         <folder name="Twitter">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.twitter.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/profile.properties"/>
             <file name="Twitter.xml" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/Twitter.xml"/>
         </folder>
     </folder>

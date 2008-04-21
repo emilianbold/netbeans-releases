@@ -42,11 +42,13 @@
 package org.netbeans.core.xml;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.*;
 import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.parsers.SAXParserFactory;
 import junit.framework.*;
+import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.DOMFactoryImpl;
 import org.netbeans.core.startup.SAXFactoryImpl;
 import org.netbeans.junit.*;
@@ -69,26 +71,23 @@ public class FactoriesTest extends NbTestCase {
         origDOM = DocumentBuilderFactory.newInstance();
         SAXFactoryImpl.install();
         DOMFactoryImpl.install();
-        System.setSecurityManager (new org.netbeans.TopSecurityManager ());
+        TopSecurityManager.install();
     }
     /** Creates a new instance of FactoriesTest */
     public FactoriesTest(String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite(FactoriesTest.class);
         return suite;
     }
-
     
     protected void setUp () throws Exception {
         System.setProperty("org.openide.util.Lookup", "org.netbeans.core.xml.FactoriesTest$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
+        
+        TopSecurityManager.install();
         
         SAXParserFactory sax = SAXParserFactory.newInstance ();
         if (!(sax instanceof SAXFactoryImpl)) {
@@ -102,6 +101,12 @@ public class FactoriesTest extends NbTestCase {
         
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        Method m = TopSecurityManager.class.getDeclaredMethod("uninstall");
+        m.setAccessible(true);
+        m.invoke(null);
+    }
     
     /** Check whether factory provides cheap parser by default */
     public void testCreateCheapSAXParser() throws Exception {

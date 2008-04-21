@@ -67,19 +67,6 @@ public class AddCastAction extends MapperAction<RestartableIterator<Object>> {
     }
     
     public void actionPerformed(ActionEvent e) {
-        BpelDesignContext bdContext = 
-                mMapperTcContext.getDesignContextController().getContext();
-        assert bdContext != null;
-        SubtypeChooser chooser = new SubtypeChooser(mGType, bdContext.getBpelModel());
-        if (!SubtypeChooser.showDlg(chooser)) {
-            return; // The cancel is pressed
-        }
-        //
-        GlobalType subtype = chooser.getSelectedValue();
-        //
-        // Create a new TypeCast
-        RestartableIterator<Object> itr = getActionSubject();
-        SyntheticTypeCast newTypeCast = new SyntheticTypeCast(itr, subtype);
         //
         // Add the new type cast to the CastManager
         MapperModel mm = mMapperTcContext.getMapper().getModel();
@@ -95,9 +82,24 @@ public class AddCastAction extends MapperAction<RestartableIterator<Object>> {
         //
         MapperTreeModel sourceModel = treeModel.getSourceModel();
         CastManager castManager = CastManager.getCastManager(sourceModel);
-        if (castManager != null) {
-            castManager.addTypeCast(itr, newTypeCast);
+        if (castManager == null) {
+            return ;
         }
+        //
+        BpelDesignContext bdContext = 
+                mMapperTcContext.getDesignContextController().getContext();
+        assert bdContext != null;
+        SubtypeChooser chooser = new SubtypeChooser(mGType, bdContext.getBpelModel());
+        if (!SubtypeChooser.showDlg(chooser)) {
+            return; // The cancel is pressed
+        }
+        //
+        GlobalType subtype = chooser.getSelectedValue();
+        //
+        // The  iterator points to the casted component
+        RestartableIterator<Object> itr = getActionSubject();
+        SyntheticTypeCast newTypeCast = new SyntheticTypeCast(itr, subtype);
+        castManager.addTypeCast(itr, newTypeCast);
         //
         // Update tree
         TreePath parentPath = mTreePath.getParentPath();

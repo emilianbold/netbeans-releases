@@ -20,9 +20,6 @@
 package org.netbeans.modules.xslt.mapper.view;
 
 import java.util.Iterator;
-import org.netbeans.modules.soa.mapper.util.Duration;
-
-
 import org.netbeans.modules.xml.xpath.XPathCoreFunction;
 import org.netbeans.modules.xml.xpath.XPathCoreOperation;
 import org.netbeans.modules.xml.xpath.XPathExpression;
@@ -66,12 +63,10 @@ public class NodeCreatorVisitor extends AbstractXPathVisitor {
     }
     
     public void visit(XPathStringLiteral expr) {
-        IMethoidNode node = null;
-        try {
-            Duration.parse(expr.getExpressionString());
+        if (expr.getExpressionString().startsWith("'") && expr.getExpressionString().endsWith("'")) {
             setResult(createMethoidNode(expr, Constants.DURATION_LITERAL));
-        } catch (Exception e) {
-            // Not a duration literal
+        }
+        else {
             setResult(createLiteralNode(expr, Constants.STRING_LITERAL));
         }
     }

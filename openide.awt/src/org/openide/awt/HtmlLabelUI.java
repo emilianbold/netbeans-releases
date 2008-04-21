@@ -69,13 +69,11 @@ import org.openide.util.Exceptions;
 class HtmlLabelUI extends LabelUI {
 
     /** System property to automatically turn on antialiasing for html strings */
-    //static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());//NOI18N
-    static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID());//NOI18N
     
     private static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
          ||Boolean.getBoolean("swing.aatext") // NOI18N
          ||(isGTK() && gtkShouldAntialias()) // NOI18N
-         ||AQUA; 
+         || isAqua(); 
     
     private static HtmlLabelUI uiInstance;
     
@@ -220,7 +218,7 @@ class HtmlLabelUI extends LabelUI {
                 focus = Color.BLUE;
             }
 
-            if (!isGTK() && !AQUA) {
+            if (!isGTK() && !isAqua() && !isNimbus()) {
                 int x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
                 g.setColor(focus);
                 g.drawRect(x, 0, c.getWidth() - (x + 1), c.getHeight() - 1);
@@ -380,16 +378,24 @@ class HtmlLabelUI extends LabelUI {
     boolean paint, Color background) {  */
     static Color ensureContrastingColor(Color fg, Color bg) {
         if (bg == null) {
-            bg = UIManager.getColor("text"); //NOI18N
-
-            if (bg == null) {
+            if (isNimbus()) {
                 bg = Color.WHITE;
+            } else {
+                bg = UIManager.getColor("text"); //NOI18N
+
+                if (bg == null) {
+                    bg = Color.WHITE;
+                }
             }
         }
         if (fg == null) {
-            fg = UIManager.getColor("textText");
-            if (fg == null) {
+            if (isNimbus()) {
                 fg = Color.BLACK;
+            } else {
+                fg = UIManager.getColor("textText");
+                if (fg == null) {
+                    fg = Color.BLACK;
+                }
             }
         }
 
@@ -431,8 +437,8 @@ class HtmlLabelUI extends LabelUI {
         if (r.isOpaque()) {
             return r.getBackground();
         }
-
-        if (r.isSelected() && !r.isParentFocused() && !isGTK()) {
+        
+        if (r.isSelected() && !r.isParentFocused() && !isGTK() && !isNimbus()) {
             return getUnfocusedSelectionBackground();
         }
 
@@ -468,7 +474,7 @@ class HtmlLabelUI extends LabelUI {
     }
 
     static Color getForegroundFor(HtmlRendererImpl r) {
-        if (r.isSelected() && !r.isParentFocused()) {
+        if (r.isSelected() && !r.isParentFocused() && !isGTK() && !isNimbus()) {
             return getUnfocusedSelectionForeground();
         }
 
@@ -494,8 +500,16 @@ class HtmlLabelUI extends LabelUI {
         return (result == null) ? r.getForeground() : result;
     }
 
-    static boolean isGTK() {
+    static boolean isAqua () {
+        return "Aqua".equals(UIManager.getLookAndFeel().getID());
+    }
+    
+    static boolean isGTK () {
         return "GTK".equals(UIManager.getLookAndFeel().getID());
+    }
+    
+    static boolean isNimbus () {
+        return "Nimbus".equals(UIManager.getLookAndFeel().getID());
     }
 
     /** Get the system-wide unfocused selection background color */
@@ -503,11 +517,11 @@ class HtmlLabelUI extends LabelUI {
         if (unfocusedSelBg == null) {
             //allow theme/ui custom definition
             unfocusedSelBg = UIManager.getColor("nb.explorer.unfocusedSelBg"); //NOI18N
-
+            
             if (unfocusedSelBg == null) {
                 //try to get standard shadow color
                 unfocusedSelBg = UIManager.getColor("controlShadow"); //NOI18N
-
+                
                 if (unfocusedSelBg == null) {
                     //Okay, the look and feel doesn't suport it, punt
                     unfocusedSelBg = Color.lightGray;
@@ -529,11 +543,11 @@ class HtmlLabelUI extends LabelUI {
         if (unfocusedSelFg == null) {
             //allow theme/ui custom definition
             unfocusedSelFg = UIManager.getColor("nb.explorer.unfocusedSelFg"); //NOI18N
-
+            
             if (unfocusedSelFg == null) {
                 //try to get standard shadow color
                 unfocusedSelFg = UIManager.getColor("textText"); //NOI18N
-
+                
                 if (unfocusedSelFg == null) {
                     //Okay, the look and feel doesn't suport it, punt
                     unfocusedSelFg = Color.BLACK;

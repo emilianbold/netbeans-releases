@@ -52,7 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -97,7 +97,7 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
                         isSelected, cellHasFocus);
                 
                 if (value instanceof ElementHandle) {
-                    Icon i = UiUtils.getElementIcon(((ElementHandle) value).getKind(), Collections.singleton(Modifier.PUBLIC));
+                    Icon i = ElementIcons.getElementIcon(((ElementHandle) value).getKind(), Collections.singleton(Modifier.PUBLIC));
                     setIcon(i);
                 }
                 return this;

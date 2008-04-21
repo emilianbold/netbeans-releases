@@ -51,6 +51,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 
 
@@ -101,6 +103,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class JsTypeAnalyzer {
+
     private JsIndex index;
     /** Map from variable or field(etc) name to type. */
     private Map<String, String> types;
@@ -126,14 +129,14 @@ public class JsTypeAnalyzer {
         BROWSER_BUILTINS.put("document","HTMLDocument");
         BROWSER_BUILTINS.put("element","HTMLElement");
         BROWSER_BUILTINS.put("event","Event");
-        BROWSER_BUILTINS.put("form","Form");
+        //BROWSER_BUILTINS.put("form","Form");
         BROWSER_BUILTINS.put("navigator","Navigator");
-        BROWSER_BUILTINS.put("range","Range");
-        BROWSER_BUILTINS.put("screen","Screen");
+        //BROWSER_BUILTINS.put("range","Range");
+        //BROWSER_BUILTINS.put("screen","Screen");
         BROWSER_BUILTINS.put("style","Style");
         BROWSER_BUILTINS.put("stylesheet","Stylesheet");
         BROWSER_BUILTINS.put("table","Table");
-        BROWSER_BUILTINS.put("tableRow","TableRow");
+        //BROWSER_BUILTINS.put("tableRow","TableRow");
         BROWSER_BUILTINS.put("treeWalker","TreeWalker");
         BROWSER_BUILTINS.put("window","Window");
     }
@@ -175,6 +178,9 @@ public class JsTypeAnalyzer {
         
         if (n == null) {
             n = prev;
+            if (n == null) {
+                return false;
+            }
         }
         
         // See if the tree contain any local-variable references
@@ -185,7 +191,7 @@ public class JsTypeAnalyzer {
         if (n.getType() == Token.NAME) {
             if (p == null) {
                 return true;
-            } else if (p.getType() != Token.GETPROP) {
+            } else if (p.getType() != Token.GETPROP || Character.isLowerCase(n.getString().charAt(0))) {
                 return true;
             }
         }
@@ -323,6 +329,9 @@ public class JsTypeAnalyzer {
                             jQuery = true;
                         }
                     }
+                    if (!jQuery && index != null) {
+                        jQuery = index.getType("jQuery") != null;
+                    }
                     if (jQuery) {
                         return "jQuery"; // NOI18N
                     } else {
@@ -380,7 +389,7 @@ public class JsTypeAnalyzer {
                     return null;
                 }
                 String s = AstUtilities.getCallName(node, true);
-                if (s != null) {
+                if (s != null && s.length() > 0) {
                     return FunctionCache.INSTANCE.getType(s, index);
                 }
             }
@@ -447,6 +456,96 @@ public class JsTypeAnalyzer {
         return type;
     }
     
+    public static String getCallFqn(CompilationInfo info, Node callNode, boolean resolveLocals) {
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        Node methodNode = callNode.getParentNode();
+        while (methodNode != null) {
+            if (methodNode.getType() == Token.FUNCTION) {
+                break;
+            }
+            methodNode = methodNode.getParentNode();
+        }
+        if (methodNode == null) {
+            methodNode = AstUtilities.getRoot(info);
+        }
+        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, callNode, 0, 0, LexUtilities.getDocument(info, false), info.getFileObject());
+        if (resolveLocals && analyzer.dependsOnLocals()) {
+            analyzer.init();
+        }
+
+        String type = analyzer.getCallExpressionType(callNode);
+
+        return type;
+    }
+    
+    private String getCallExpressionType(Node node) {
+        switch (node.getType()) {
+        case Token.NEW:
+        case Token.CALL: {
+            Node first = node.getFirstChild();
+            if (first.getType() == Token.NAME) {
+                String s = first.getString();
+                return s;
+            } else if (first.getType() == Token.GETPROP) {
+                // Chained - figure out the type of this call before
+                // continuing
+                Node grandChild = first.getFirstChild();
+                if (grandChild.getType() == Token.CALL) {
+                    String lhs = expressionType(grandChild);
+                    if (lhs != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = lhs + "." + method; // NOI18N
+                            return fqn;
+                        }
+                    }
+                } else if (grandChild.getType() == Token.NAME) {
+                    String name = grandChild.getString();
+                    //String lhs = types.get(name);
+                    String lhs = getTypeInternal(name);
+                    if (lhs == null) {
+                        lhs = FunctionCache.INSTANCE.getType(name, index);
+                        if (lhs == null) {
+                            lhs = name;
+                        }
+                    }
+                    if (lhs != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = lhs + "." + method; // NOI18N
+                            return fqn;
+                        }
+                    }
+                } else {
+                    String type = expressionType(grandChild);
+                    if (type != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = type + "." + method; // NOI18N
+                            return fqn;
+                        }
+                    }
+                }
+            } else {
+                if (System.currentTimeMillis() > startTime+2000) {
+                    // Don't do a huge amount of computation here
+                    return null;
+                }
+                String s = AstUtilities.getCallName(node, true);
+                if (s != null && s.length() > 0) {
+                    return s;
+                }
+            }
+            break;
+        }
+        }
+        
+        return null;
+    }
+    
     private void init() {
         if (types == null) {
             startTime = System.currentTimeMillis();
@@ -474,6 +573,8 @@ public class JsTypeAnalyzer {
             
             // Look in the index to see if this is a known type
             if (type == null && index != null) {
+                // If the variable is local I shouldn't attempt to do this!!
+                // Stash the result in the node itself
                 type = FunctionCache.INSTANCE.getType(symbol, index);
 //                // TODO - only do this if the symbol is a global variable (and on the index side,
 //                // limit FQN matches to globals)

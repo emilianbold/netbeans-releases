@@ -97,6 +97,7 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
         this.primaryDefinitions = primaryDefinitions;
         this.model = this.portType.getModel();
         initComponents();
+        disableEnterKey();
         if(!isClient(node)){
             enableAsyncMappingCB.setVisible(false);
         }

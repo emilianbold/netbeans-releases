@@ -376,6 +376,7 @@ public final class TopLogging {
     private static final class NonClose extends Handler
     implements Runnable {
         private static RequestProcessor RP = new RequestProcessor("Logging Flush"); // NOI18N
+        private static ThreadLocal<Boolean> FLUSHING = new ThreadLocal<Boolean>();
 
         private final Handler delegate;
         private RequestProcessor.Task flush;
@@ -390,7 +391,14 @@ public final class TopLogging {
 
         public void publish(LogRecord record) {
             delegate.publish(record);
-            flush.schedule(delay);
+            if (!Boolean.TRUE.equals(FLUSHING.get())) {
+                try {
+                    FLUSHING.set(true);
+                    flush.schedule(delay);
+                } finally {
+                    FLUSHING.set(false);
+                }
+            }
         }
 
         public void flush() {

@@ -123,11 +123,19 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
                 return false;
             }
+            if (!isValidPackage(gui.getRootFolder(), gui.getTargetName())) {
+                setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
+                return false;
+            }
         }
         else if (type == NewJavaFileWizardIterator.TYPE_PKG_INFO) {
             assert "package-info".equals( gui.getTargetName() );        //NOI18N
             if ( !isValidPackageName( gui.getPackageName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
+                return false;
+            }
+            if (!isValidPackage(gui.getRootFolder(), gui.getPackageName())) {
+                setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
                 return false;
             }
         }
@@ -139,7 +147,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             else if ( !isValidPackageName( gui.getPackageName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
                 return false;
-            }            
+            }
+            if (!isValidPackage(gui.getRootFolder(), gui.getPackageName())) {
+                setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
+                return false;
+            }
         }
         
         // check if the file name can be created
@@ -319,6 +331,22 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 return false;
             if (!Utilities.isJavaIdentifier(token))
                 return false;
+        }
+        return true;
+    }
+    
+    private static boolean isValidPackage (FileObject root, final String path) {
+        assert root != null;
+        assert path != null;
+        final StringTokenizer tk = new StringTokenizer(path,".");   //NOI18N
+        while (tk.hasMoreTokens()) {
+            root = root.getFileObject(tk.nextToken());
+            if (root == null) {
+                return true;
+            }
+            else if (root.isData()) {
+                return false;
+            }
         }
         return true;
     }

@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
@@ -132,7 +133,8 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
     protected void addImportsToTargetFile() throws IOException {
         List<String> imports = new ArrayList<String>();
         imports.add(getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName());
-        imports.add(getBean().getSaasServicePackageName() + "." + getBean().getAuthenticatorClassName());
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.PLAIN)
+            imports.add(getBean().getSaasServicePackageName() + "." + getBean().getAuthenticatorClassName());
         imports.add(REST_CONNECTION_PACKAGE + "." + REST_RESPONSE);
         Util.addImportsToSource(getTargetSource(), imports);
     }
@@ -171,15 +173,5 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
        
         return methodBody;
     }
-    
-    @Override
-    public boolean canShowResourceInfo() {
-        return false;
-    }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
-    
+ 
 }

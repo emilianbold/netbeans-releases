@@ -52,6 +52,7 @@ public class JsUtils {
         return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType);
     }
 
+    public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
     public static boolean isRhtmlDocument(Document doc) {
@@ -308,6 +309,14 @@ public class JsUtils {
                 (c == '!') || (c == '?') || (c == '=');
     }
 
+    /** The following keywords apply inside a call expression */
+    public static final String[] CALL_KEYWORDS =
+            new String[] {
+        "true", // NOI18N
+        "false", // NOI18N
+        "null" // NOI18N
+    };
+    
     // Section 7.5.2 in ECMAScript Language Specification, ECMA-262
     public static final String[] JAVASCRIPT_KEYWORDS =
             new String[]{

@@ -109,7 +109,8 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         rto = RuntimeTabOperator.invoke();
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
         previousComparator = rto.tree().getComparator();
-        rto.setComparator(comparator);
+        //rto.setComparator(comparator);
+        rto.tree().setComparator(comparator);
         
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
         travelBaseNode.performPopupActionNoBlock("Connect"); // NOI18N
@@ -184,7 +185,13 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     }
     
     private void selectDBTableNode() {
-        RuntimeTabOperator.invoke();        
+        rto = RuntimeTabOperator.invoke();
+        
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+        previousComparator = rto.tree().getComparator();
+        //rto.setComparator(comparator);
+        rto.tree().setComparator(comparator);
+        
         Node TableNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName+"|"+DBTableName); // NOI18N
         TableNode.select();
         log("Selected Node path ="+TableNode.getPath()+" and node is "+TableNode.getText());
@@ -202,15 +209,24 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
         surface.clickOnSurface(10,10);
+        waitNoEvent(5000);
         
-        table = new Node(tree,"Page1|tripDataProvider");
+        navigator.makeComponentVisible();
+        tree =  new JTreeOperator(navigator);
+        table  = new Node(tree,"SessionBean1|trip:");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
         surface.clickOnSurface(10,10);
+        waitNoEvent(5000);
         
-        table  = new Node(tree,"SessionBean1|tripRowSet:");
+        navigator.makeComponentVisible();
+        tree =  new JTreeOperator(navigator);
+        table = new Node(tree,"Page1|trip");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
+
+        
+
     }
     
     @Override
@@ -219,7 +235,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
         travelBaseNode.performPopupActionNoBlock("Disconnect"); // NOI18N
-        rto.setComparator(previousComparator);
+        rto.tree().setComparator(previousComparator);
     }
     
     public static void main(String[] args) {

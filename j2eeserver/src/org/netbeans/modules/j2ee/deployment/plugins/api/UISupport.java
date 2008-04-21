@@ -47,7 +47,6 @@ import java.util.WeakHashMap;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;

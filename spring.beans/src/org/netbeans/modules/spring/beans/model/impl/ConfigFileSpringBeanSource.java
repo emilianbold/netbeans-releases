@@ -55,6 +55,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.beans.BeansAttributes;
+import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -134,10 +136,13 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             name2Bean.clear();
             beans.clear();
             Node rootNode = SpringXMLConfigEditorUtils.getDocumentRoot(document);
+            if (rootNode == null) {
+                return;
+            }
             NodeList childNodes = rootNode.getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node node = childNodes.item(i);
-                if (!"bean".equals(node.getNodeName())) { // NOI18N
+                if (!BeansElements.BEAN.equals(node.getNodeName())) { 
                     continue;
                 }
                 parseBean(node);
@@ -145,18 +150,18 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         }
 
         private void parseBean(Node node) {
-            String id = getTrimmedAttr(node, "id"); // NOI18N
-            String name = getTrimmedAttr(node, "name"); // NOI18N
+            String id = getTrimmedAttr(node, BeansAttributes.ID); 
+            String name = getTrimmedAttr(node, BeansAttributes.NAME);
             List<String> names;
             if (name != null) {
                 names = Collections.unmodifiableList(StringUtils.tokenize(name, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS));
             } else {
                 names = Collections.<String>emptyList();
             }
-            String clazz = getTrimmedAttr(node, "class"); // NOI18N
-            String parent = getTrimmedAttr(node, "parent"); // NOI18N
-            String factoryBean = getTrimmedAttr(node, "factory-bean"); // NOI18N
-            String factoryMethod = getTrimmedAttr(node, "factory-method"); // NOI18N
+            String clazz = getTrimmedAttr(node, BeansAttributes.CLASS); 
+            String parent = getTrimmedAttr(node, BeansAttributes.PARENT); 
+            String factoryBean = getTrimmedAttr(node, BeansAttributes.FACTORY_BEAN); 
+            String factoryMethod = getTrimmedAttr(node, BeansAttributes.FACTORY_METHOD); 
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, location);

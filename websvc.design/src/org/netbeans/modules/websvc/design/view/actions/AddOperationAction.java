@@ -78,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -224,9 +225,16 @@ public class AddOperationAction extends AbstractAction implements AddOperationCo
         List<ParamModel> faultTypes = panel.getFaultTypes();
         generatorHelper.addWsOperation(targetPortType,
                 operationName, parameterTypes, returnType, faultTypes);
+        saveWsdlFile(FileUtil.toFileObject(wsdlFile));
         generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
    
         saveImplementationClass(implementationClass);
+    }
+    
+    private void saveWsdlFile(FileObject wsdlFile) throws DataObjectNotFoundException, IOException{
+        DataObject wsdlDO = DataObject.find(wsdlFile);
+        SaveCookie saveCookie = wsdlDO.getCookie(SaveCookie.class);
+        saveCookie.save();
     }
     
     private void changeSchemaLocation(Set<Schema> newSchemas, WSDLModel wsdlModel)

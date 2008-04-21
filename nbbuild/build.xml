@@ -218,7 +218,7 @@ made subject to such option by the copyright holder.
   </target>
 
   <!-- build NBMs for selected modules -->
-  <target name="build-nbms" depends="init">
+  <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />
       <property name="base.nbm.target.dir" location="nbms" />
       
@@ -1330,6 +1330,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <zip destfile="${l10n.kit}">
         <fileset dir="${nb_all}" includesfile="${nb_all}/installer/l10n.list"/>
         <fileset dir="${nb_all}" includesfile="${nb_all}/nbi/l10n.list"/>
+        <fileset dir="${nb_all}" includesfile="${nb_all}/ide.branding/l10n.list"/>
     </zip>
   </target>
 
@@ -1422,6 +1423,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <exec executable="hg" failonerror="yes" outputproperty="hg.unknown.files">
       <arg value="--cwd"/>
       <arg file="."/>
+      <arg value="--config"/>
+      <arg value="defaults.status="/>
       <arg value="status"/>
       <arg value="--unknown"/>
       <arg value="--no-status"/>
@@ -1772,7 +1775,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${generated.files.dir}" />
   </target>
   <target name="generate-golden-files" depends="generate-golden-files-init" >
-    <property name="deps.max.friends" value="25"/> <!-- so high because of org.netbeans.modules.xml.wsdl.bindingsupport.api (21) -->
+    <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     
@@ -2019,7 +2022,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="gen-sigtests" depends="sigtests-init">
     <echo message="Generating signature files for ${cluster.config} modules"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}"/>
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+      <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
   </target>
 
   <target name="check-sigtests" depends="sigtests-init">
@@ -2030,6 +2035,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
     
     <concat destfile="${sigtest.output.dir}/all">

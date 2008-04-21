@@ -356,6 +356,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             return;
         }
         
+        // Check compiler collection. Fire if different (IZ 131825)
+        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())) {
+            fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
+            return;
+        }
+        
         // Check all items
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         Project project = getMakeConfigurationDescriptor().getProject();

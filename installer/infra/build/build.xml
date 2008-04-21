@@ -108,17 +108,18 @@
     </target>
 
     <target name="-get-translatedfiles" if="use.hg.root.translatedfiles">
-	<copy todir="${nbi.all.dir}/translatedfiles/src/nbi">
-            <fileset dir="${hg.root.translatedfiles}/translatedfiles/src/nbi">
-                <include name="**/*.*"/>
+	<copy todir="${nbi.all.dir}/translatedfiles/src">
+            <fileset dir="${hg.root.translatedfiles}/src">
+               <include name="*/other/nbi/**/*.*"/>
+               <include name="*/other/installer/**/*.*"/>
             </fileset>
+	    <regexpmapper handledirsep="true" from="(.*)/other/(.*)" to="\2"/>
         </copy>
-        <copy todir="${nbi.all.dir}/translatedfiles/src/installer">
-            <fileset dir="${hg.root.translatedfiles}/translatedfiles/src/installer">
-                <include name="components/**/*.*"/>
-                <include name="infra/**/*.*"/>
-                <include name="engine/**/*.*"/>
+	<copy todir="${nbi.all.dir}/translatedfiles/src/installer/engine/src">
+            <fileset dir="${hg.root.translatedfiles}/src">
+               <include name="*/nb*/reglib/reglib/**/*.*"/>
             </fileset>
+	    <regexpmapper handledirsep="true" from="(.*)/nb.*/reglib/reglib/(.*)" to="\2"/>
         </copy>
     </target>
 
@@ -279,7 +280,7 @@
 
 
 	<set property="nb.full.version"
-             value="6.1.0.${nb.build.type.number}.${build.number}"/>
+             value="6.5.0.${nb.build.type.number}.${build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -362,22 +363,22 @@
             prefix="sjsas"/>
 	-->
 
-	<set property="glassfish.milestone.number" value="02"/>
-	<set property="glassfish.milestone.number.real" value="02"/>
+	<set property="glassfish.milestone.number" value="04"/>
+	<set property="glassfish.milestone.number.real" value="04"/>
 	<set property="glassfish.build.type" value="fcs"/>
 	
-	<set property="sjsas.milestone.number" value="02"/>
-	<set property="sjsas.milestone.number.real" value="02"/>
+	<set property="sjsas.milestone.number" value="04"/>
+	<set property="sjsas.milestone.number.real" value="04"/>
 	<set property="sjsas.build.type" value="fcs"/>
 	        	        
 	<if property="gf.build.type" value="">
-        	<set property="glassfish.build.number" value="20080327"/>
-		<set property="sjsas.build.number" value="20080327"/>
+        	<set property="glassfish.build.number" value="20080411"/>
+		<set property="sjsas.build.number" value="20080411"/>
 	</if>
 
 	<if property="gf.build.type" value="ml">
-	        <set property="glassfish.build.number" value="20080328"/>
-	        <set property="sjsas.build.number" value="20080328"/>
+	        <set property="glassfish.build.number" value="20080412"/>
+	        <set property="sjsas.build.number" value="20080412"/>
 	</if>
 
         <!--
@@ -607,7 +608,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
                 <!-- glassfish -->
                 <include name="**/glassfish*"/>
-                <exclude name="**/glassfish*${glassfish.milestone.number}*"/>
+                <exclude name="**/glassfish*2.0.2.${glassfish.milestone.number}.*"/>
                 
                 <!-- openesb -->
 		<include name="**/openesb*"/>
@@ -651,7 +652,7 @@ jarsigner.storepass=${jarsigner.storepass}
 			<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
 
 		        <include name="**/sjsas*"/>
-		        <exclude name="**/sjsas*${sjsas.milestone.number}*"/>
+		        <exclude name="**/sjsas*9.1_02.${sjsas.milestone.number}.*"/>
 
 			<include name="**/nb-portalpack*"/>
 			<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>
@@ -2487,7 +2488,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<export-registry 
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
-            codebase="http://bits.netbeans.org/download/6.1/nightly/${build.number}/registry"/>
+            codebase="http://bits.netbeans.org/download/6.5/nightly/${build.number}/registry"/>
     </target>
 
     <target name="prepare-web-page" if="do.build.netbeans">

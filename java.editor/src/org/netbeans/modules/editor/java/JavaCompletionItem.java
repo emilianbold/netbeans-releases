@@ -1520,7 +1520,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1679,7 +1679,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1876,8 +1876,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
-            if (toAdd != null && !add.startsWith(toAdd))
-                add += toAdd;   
+            if (toAdd != null && !add.startsWith(toAdd)) {
+                add += toAdd;
+            } else {
+                toAdd = null;
+            }
             String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
@@ -3023,9 +3026,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
                             case EXPRESSION_STATEMENT:
-                                ExpressionTree expr = ((ExpressionStatementTree)tp.getLeaf()).getExpression();
-                                if (expr != null && expr.getKind() == Tree.Kind.ERRONEOUS)
-                                    break;
                             case IMPORT:                                
                                 t = tp.getLeaf();
                                 break;

@@ -471,18 +471,17 @@ public class Util {
         return folder;
     }
         
-    public static final void fillDefaultsToDefaultServer() {
+    public static final void fillDefaultsToServer(String serverID) {
+        
+        boolean glassfish = isGlassfish(serverID);
 
-        String sID = Deployment.getDefault().getDefaultServerInstanceID();
-        boolean glassfish = isGlassfish(sID);
-
-        String serverKeyStorePath = getStoreLocation(sID, false, false);
-        String serverTrustStorePath = getStoreLocation(sID, true, false);
-        String clientKeyStorePath = getStoreLocation(sID, false, true);
-        String clientTrustStorePath = getStoreLocation(sID, true, true);
+        String serverKeyStorePath = getStoreLocation(serverID, false, false);
+        String serverTrustStorePath = getStoreLocation(serverID, true, false);
+        String clientKeyStorePath = getStoreLocation(serverID, false, true);
+        String clientTrustStorePath = getStoreLocation(serverID, true, true);
 
         if (!glassfish) {
-            FileObject tomcatLocation = getTomcatLocation(sID);
+            FileObject tomcatLocation = getTomcatLocation(serverID);
             try {
                 FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
                 DataFolder folderDO = (DataFolder) DataObject.find(targetFolder);
@@ -551,7 +550,7 @@ public class Util {
             return;
         }
 
-        String dstPasswd = getDefaultPassword(sID);
+        String dstPasswd = getDefaultPassword(serverID);
         try {
             copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
             copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);

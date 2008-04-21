@@ -161,8 +161,31 @@ dojo._listener:CLASS:[]:ESCAPED{dojo._listener}:
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}) : ESCAPED{void}:
 dojo.Deferred:CLASS:[]:ESCAPED{dojo.Deferred}:
   Deferred:CONSTRUCTOR:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}) : ESCAPED{dojo.Deferred}:
+  _check:METHOD:[PRIVATE]:ESCAPED{_check} : ESCAPED{void}:
+  _fire:METHOD:[PRIVATE]:ESCAPED{_fire} : ESCAPED{void}:
+  _nextId:PROPERTY:[PRIVATE]:ESCAPED{_nextId}:
+  _resback:METHOD:[PRIVATE]:ESCAPED{_resback}(PARAMETERS{ESCAPED{res}}) : ESCAPED{void}:
+  addBoth:METHOD:[]:ESCAPED{addBoth}(PARAMETERS{ESCAPED{cb}, ESCAPED{cbfn}}):
+  addCallback:METHOD:[]:ESCAPED{addCallback}(PARAMETERS{ESCAPED{cb}, ESCAPED{cbfn}}):
+  addCallbacks:METHOD:[]:ESCAPED{addCallbacks}(PARAMETERS{ESCAPED{cb}, ESCAPED{eb}}):
+  addErrback:METHOD:[]:ESCAPED{addErrback}(PARAMETERS{ESCAPED{cb}, ESCAPED{cbfn}}):
+  callback:METHOD:[]:ESCAPED{callback}(PARAMETERS{ESCAPED{res}}) : ESCAPED{void}:
+  cancel:METHOD:[]:ESCAPED{cancel} : ESCAPED{void}:
+  errback:METHOD:[]:ESCAPED{errback}(PARAMETERS{ESCAPED{res}}) : ESCAPED{void}:
 dojo.Color:CLASS:[]:ESCAPED{dojo.Color}:
   Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}) : ESCAPED{dojo.Color}:
+  _set:METHOD:[PRIVATE]:ESCAPED{_set}(PARAMETERS{ESCAPED{r}, ESCAPED{g}, ESCAPED{b}, ESCAPED{a}}) : ESCAPED{void}:
+  a:PROPERTY:[]:ESCAPED{a} : ESCAPED{Number}:
+  b:PROPERTY:[]:ESCAPED{b} : ESCAPED{Number}:
+  g:PROPERTY:[]:ESCAPED{g} : ESCAPED{Number}:
+  r:PROPERTY:[]:ESCAPED{r} : ESCAPED{Number}:
+  sanitize:METHOD:[]:ESCAPED{sanitize}:
+  setColor:METHOD:[]:ESCAPED{setColor}(PARAMETERS{ESCAPED{color}}):
+  toCss:METHOD:[]:ESCAPED{toCss}(PARAMETERS{ESCAPED{includeAlpha}}):
+  toHex:METHOD:[]:ESCAPED{toHex}:
+  toRgb:METHOD:[]:ESCAPED{toRgb} : ESCAPED{Array}:
+  toRgba:METHOD:[]:ESCAPED{toRgba} : ESCAPED{Array}:
+  toString:METHOD:[]:ESCAPED{toString}:
 dojo.Color.named:CLASS:[]:ESCAPED{dojo.Color.named}:
   aqua:PROPERTY:[]:ESCAPED{aqua} : ESCAPED{Array}:
   black:PROPERTY:[]:ESCAPED{black} : ESCAPED{Array}:
@@ -278,6 +301,27 @@ ret:CLASS:[]:ESCAPED{ret}:
   y:PROPERTY:[]:ESCAPED{y} : ESCAPED{Number}:
 dojo.NodeList:CLASS:[]:ESCAPED{dojo.NodeList}:
   NodeList:CONSTRUCTOR:[]:ESCAPED{NodeList} : ESCAPED{dojo.NodeList}:
+  addClass:METHOD:[]:ESCAPED{addClass}(PARAMETERS{ESCAPED{className}}):
+  addContent:METHOD:[]:ESCAPED{addContent}(PARAMETERS{ESCAPED{content}, ESCAPED{position}}):
+  adopt:METHOD:[]:ESCAPED{adopt}(PARAMETERS{ESCAPED{queryOrListOrNode}, ESCAPED{position}}):
+  concat:METHOD:[]:ESCAPED{concat}:
+  connect:METHOD:[]:ESCAPED{connect}(PARAMETERS{ESCAPED{methodName}, ESCAPED{objOrFunc}, ESCAPED{funcName}}):
+  coords:METHOD:[]:ESCAPED{coords}:
+  every:METHOD:[]:ESCAPED{every}(PARAMETERS{ESCAPED{callback}, ESCAPED{thisObject}}):
+  filter:METHOD:[]:ESCAPED{filter}(PARAMETERS{ESCAPED{simpleQuery}}):
+  forEach:METHOD:[]:ESCAPED{forEach}(PARAMETERS{ESCAPED{callback}, ESCAPED{thisObj}}):
+  indexOf:METHOD:[]:ESCAPED{indexOf}(PARAMETERS{ESCAPED{value}, ESCAPED{fromIndex}}):
+  lastIndexOf:METHOD:[]:ESCAPED{lastIndexOf}:
+  map:METHOD:[]:ESCAPED{map}(PARAMETERS{ESCAPED{func}, ESCAPED{obj}}):
+  orphan:METHOD:[]:ESCAPED{orphan}(PARAMETERS{ESCAPED{simpleFilter}}):
+  place:METHOD:[]:ESCAPED{place}(PARAMETERS{ESCAPED{queryOrNode}, ESCAPED{position}}):
+  query:METHOD:[]:ESCAPED{query}(PARAMETERS{ESCAPED{queryStr}}):
+  removeClass:METHOD:[]:ESCAPED{removeClass}(PARAMETERS{ESCAPED{className}}):
+  slice:METHOD:[]:ESCAPED{slice}:
+  some:METHOD:[]:ESCAPED{some}(PARAMETERS{ESCAPED{callback}, ESCAPED{thisObject}}):
+  splice:METHOD:[]:ESCAPED{splice}:
+  style:METHOD:[]:ESCAPED{style}:
+  styles:METHOD:[]:ESCAPED{styles}:
 currentPart:CLASS:[]:ESCAPED{currentPart}:
   attrs:PROPERTY:[]:ESCAPED{attrs} : ESCAPED{Array}:
   classes:PROPERTY:[]:ESCAPED{classes} : ESCAPED{Array}:
@@ -323,11 +367,25 @@ ioArgs:CLASS:[]:ESCAPED{ioArgs}:
   url:PROPERTY:[]:ESCAPED{url}:
 _d:CLASS:[]:ESCAPED{_d}:
   _ioWatch:METHOD:[PRIVATE]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}) : ESCAPED{void}:
-runner:CLASS:[]:ESCAPED{runner}:
-  run:METHOD:[]:ESCAPED{run} : ESCAPED{void}:
 dojo._Animation:CLASS:[]:ESCAPED{dojo._Animation}:
+  _cycle:METHOD:[PRIVATE]:ESCAPED{_cycle}:
+  _percent:PROPERTY:[PRIVATE]:ESCAPED{_percent} : ESCAPED{Number}:
+  _play:METHOD:[PRIVATE]:ESCAPED{_play}(PARAMETERS{ESCAPED{gotoStart}}):
+  _startRepeatCount:PROPERTY:[PRIVATE]:ESCAPED{_startRepeatCount} : ESCAPED{Number}:
   _startTimer:METHOD:[PRIVATE]:ESCAPED{_startTimer} : ESCAPED{void}:
   _stopTimer:METHOD:[PRIVATE]:ESCAPED{_stopTimer} : ESCAPED{void}:
+  constructor:METHOD:[]:ESCAPED{constructor}(PARAMETERS{ESCAPED{args}}) : ESCAPED{void}:
+  duration:PROPERTY:[]:ESCAPED{duration} : ESCAPED{Number}:
+  fire:METHOD:[]:ESCAPED{fire}(PARAMETERS{ESCAPED{evt}, ESCAPED{args}}):
+  gotoPercent:METHOD:[]:ESCAPED{gotoPercent}(PARAMETERS{ESCAPED{percent}, ESCAPED{andPlay}}):
+  pause:METHOD:[]:ESCAPED{pause}:
+  play:METHOD:[]:ESCAPED{play}(PARAMETERS{ESCAPED{delay}, ESCAPED{gotoStart}}):
+  rate:PROPERTY:[]:ESCAPED{rate} : ESCAPED{Number}:
+  repeat:PROPERTY:[]:ESCAPED{repeat} : ESCAPED{Number}:
+  status:METHOD:[]:ESCAPED{status}:
+  stop:METHOD:[]:ESCAPED{stop}(PARAMETERS{ESCAPED{gotoEnd}}):
+runner:CLASS:[]:ESCAPED{runner}:
+  run:METHOD:[]:ESCAPED{run} : ESCAPED{void}:
 PropLine:CLASS:[]:ESCAPED{PropLine}:
   PropLine:CONSTRUCTOR:[]:ESCAPED{PropLine}(PARAMETERS{ESCAPED{properties}}) : ESCAPED{PropLine}:
   getValue:METHOD:[]:ESCAPED{getValue}(PARAMETERS{ESCAPED{r}}):

@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -91,6 +92,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -404,7 +406,8 @@ public abstract class ModelSet implements FileChangeListener {
     }
 
     
-    private static final String WEBSERVICE_CLIENTS_SUB_DIR = "webservice_clients"; // NOI18N    
+    private static final String WEBSERVICE_CLIENTS_SUB_DIR = "webservice_clients"; // NOI18N
+    private static final String EJB_DATA_SUB_DIR = "ejb-sources"; // NOI18N
     
     /**
      * Get the per-project class loader for this ModelSet. The class loader may change as project
@@ -448,7 +451,17 @@ public abstract class ModelSet implements FileChangeListener {
                     }
                 } catch (IOException e) {
                     // not found - ignore
-                }                    
+                }      
+            }
+            
+            // Check if project uses ejbs.
+            boolean hasEjbClients = false;
+            try {
+                FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory(project);
+                FileObject ejbClientsSubDir = projectLibDir.getFileObject(EJB_DATA_SUB_DIR);
+                hasEjbClients = (ejbClientsSubDir != null && hasJarFiles(ejbClientsSubDir));
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
             //"classpath/packaged" gives us all the jars excluding app server jars in case of maven project
@@ -460,14 +473,39 @@ public abstract class ModelSet implements FileChangeListener {
                 URLClassLoader classPathClassLoader = (URLClassLoader) classPath.getClassLoader(true);
                 URL urls[] = classPathClassLoader.getURLs();
                 urlSet.addAll(Arrays.asList(urls));                
-                //Remove the app server jars from the classpath to improve design time performance
+                //Remove the J2ee Classpath jars from the classpath to improve design time performance
                 String[] j2eeJars = JsfProjectUtils.getJ2eeClasspathEntries(project);
-                for (String j2eeJar : j2eeJars) {
-                    for (URL url : urls) {
-                        File file = FileUtil.toFile(URLMapper.findFileObject(url));
-                        if (j2eeJar.equals(file.getPath())) {
-                            urlSet.remove(url);
-                            break;
+                List<String> j2eeJarsList = Arrays.asList(j2eeJars);
+                for (URL url : urls) {
+                    URL fileURL = FileUtil.getArchiveFile(url);
+                    FileObject fileObj = URLMapper.findFileObject(fileURL != null ? fileURL : url);
+                    if (fileObj != null) {
+                        File file = FileUtil.toFile(fileObj);
+                        if (file == null) {
+                            continue;
+                        }
+                        if (hasEjbClients) {
+                            if (file.isFile() && file.getName().endsWith(".jar")) {
+                                try {
+                                    JarFile jarFile = new JarFile(file);
+                                    try {
+                                        // Found one of the ejb20 classes - use this jar file
+                                        if (jarFile.getEntry("javax/ejb/CreateException.class") != null) {
+                                            // We need to keep this jar in designtime classpath
+                                            continue;                                            
+                                        }
+                                    } finally {
+                                        jarFile.close();
+                                    }
+                                } catch (IOException e) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                } 
+                            }
+                        }
+                        // Is this a URL from J2ee Classpath
+                        if (j2eeJarsList.contains(file.getAbsolutePath())) {
+                            // Remove it from designtime classpath
+                            urlSet.remove(url);                            
                         }
                     }
                 }

@@ -46,7 +46,6 @@ import java.text.MessageFormat;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -55,14 +54,7 @@ public class RefreshChildrenAction extends DatabaseAction {
     static final long serialVersionUID =-2858583720506557569L;
 
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length == 1) {
-            Node[] children = activatedNodes[0].getChildren().getNodes();
-            if (children.length == 1 && children[0].getName().equals(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"))) // NOI18N
-                return false;
-            else
-                return true;
-        }
-        return false;
+        return true;
     }
     
     public void performAction (Node[] activatedNodes) {

@@ -50,7 +50,7 @@ import org.netbeans.modules.bpel.design.decoration.providers.ToolbarDecorationPr
 import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
 import org.netbeans.modules.bpel.design.model.patterns.SequencePattern;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.editors.multiview.DesignerMultiViewElement;
 import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -72,7 +72,7 @@ import org.openide.util.Lookup;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.components.GlassPane;
@@ -92,6 +92,7 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.RenameAction;
 import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
@@ -219,6 +220,14 @@ public class DesignView extends JPanel implements
         setFocusCycleRoot(true);
         setFocusTraversalKeysEnabled(false);
 
+        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
+
+            public void viewScrolled(JComponent view) {
+                overlayView.revalidate();
+                overlayView.repaint();
+            }
+        });
+        
         reloadModel();
         diagramChanged();
     }
@@ -329,22 +338,17 @@ public class DesignView extends JPanel implements
         selectionBridge.release();
     }
 
-    public BPELValidationController getValidationController() {
-        return getLookup().lookup(BPELValidationController.class);
+    public Controller getValidationController() {
+        return getLookup().lookup(Controller.class);
     }
 
     public EntitySelectionModel getSelectionModel() {
         return selectionModel;
     }
 
-
-
-
     public FlowlinkTool getFlowLinkTool() {
         return flowLinkTool;
     }
-
-
 
     public DecorationManager getDecorationManager() {
         return decorationManager;
@@ -387,8 +391,7 @@ public class DesignView extends JPanel implements
             return null;
         }
 
-        NodeType nodeType = Util.getBasicNodeType(pattern
-                .getOMReference());
+        NodeType nodeType = EditorUtil.getBasicNodeType(pattern.getOMReference());
 
         NodeFactory factory = getNodeFactory();
 
@@ -527,7 +530,7 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
 
-       // am.put("rename-something", new RenameAction()); // NOI18N
+        am.put("rename-something", new RenameAction(this)); // NOI18N
         am.put("delete-something", new DeleteAction(this)); // NOI18N
         am.put("cancel-something", new CancelAction(this)); // NOI18N
         am.put("gotosource-something", new GoToSourceAction(this)); // NOI18N
@@ -707,7 +710,6 @@ public class DesignView extends JPanel implements
     public double getCorrectedZoom() {
         return zoomManager.getScale() * DiagramFontUtil.getZoomCorrection();
     }
-
 
     public Pattern getRootPattern() {
         return diagramModel.getRootPattern();

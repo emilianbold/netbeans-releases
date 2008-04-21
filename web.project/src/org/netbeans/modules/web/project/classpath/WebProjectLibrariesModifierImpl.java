@@ -142,7 +142,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             ArrayList l = new ArrayList ();
                             l.addAll(cs.itemsList(projectProperties.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             l.addAll(resources);
-                            ProjectProperties.storeLibrariesLocations(l.iterator(), projectProperties, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), projectProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                             if (saveProject) {
                                 ProjectManager.getDefault().saveProject(project);
@@ -195,7 +195,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             ArrayList l = new ArrayList ();
                             l.addAll(resources);
                             l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                            ProjectProperties.storeLibrariesLocations(l.iterator(), props, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), props);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                             return true;
@@ -370,7 +370,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             libs.addAll(cs.itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             libs.addAll(WarIncludesUiSupport.getList(addModel));
 
-                            ProjectProperties.storeLibrariesLocations (libs.iterator(), props, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(), props);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
                             ProjectManager.getDefault().saveProject(project);

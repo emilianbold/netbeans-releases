@@ -87,7 +87,7 @@ public final class RubyPlatform {
     
     /** Required version of ruby-debug-base gem. */
     static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
-    
+
     private final Info info;
     
     private final String id;
@@ -450,6 +450,15 @@ public final class RubyPlatform {
         return new File(interpreter).isFile();
     }
 
+    public boolean showWarningIfInvalid() {
+        boolean valid = isValid();
+        if (!valid) {
+            Util.notifyLocalized(RubyPlatform.class, "RubyPlatform.InvalidInterpreter", // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE, getInterpreter());
+        }
+        return valid;
+    }
+
     /**
      * See also {@link #hasRubyGemsInstalled}.
      *
@@ -714,6 +723,11 @@ public final class RubyPlatform {
     public void setGemHome(File gemHome) {
         assert hasRubyGemsInstalled() : "has RubyGems installed";
         info.setGemHome(gemHome.getAbsolutePath());
+        try {
+            RubyPlatformManager.storePlatform(this);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+        }
         gemManager.reset();
     }
 
@@ -803,12 +817,12 @@ public final class RubyPlatform {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.1RC3"; // NOI18N
-            info.patchlevel = "6255"; // NOI18N
-            info.releaseDate = "2008-03-27"; // NOI18N
+            info.jversion = "1.1"; // NOI18N
+            info.patchlevel = "6360"; // NOI18N
+            info.releaseDate = "2008-03-31"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.1RC3", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath(); // NOI18N

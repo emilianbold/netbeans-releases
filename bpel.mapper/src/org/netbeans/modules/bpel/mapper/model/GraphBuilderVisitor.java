@@ -24,13 +24,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextControllerImpl2;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -73,11 +75,14 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
 
     protected Stack<VertexBuilderData> mVertexStack = new Stack<VertexBuilderData>();
     
+    protected BpelDesignContext currentBpelDesignContext;   
+    
     public GraphBuilderVisitor(Graph graph, MapperSwingTreeModel leftTreeModel, 
-            boolean connectToTargetTree) {
+            boolean connectToTargetTree, BpelDesignContext context) {
         mGraph = graph;
         mLeftTreeModel = leftTreeModel;
         mConnectToTargetTree = connectToTargetTree;
+        currentBpelDesignContext = context;
     }
 
     @Override
@@ -232,7 +237,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
         if (xPathVar != null) {
-            VariableDeclaration varDecl = xPathVar.getVarDecl();
+            AbstractVariableDeclaration varDecl = xPathVar.getVarDecl();
             if (varDecl != null) {
                 finderList.add(new VariableFinder(varDecl));
                 //
@@ -247,18 +252,24 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     }
 
     protected void connectToLeftTree(XPathExpressionPath path) {
-        connectToLeftTree(FinderListBuilder.build(path));
+        if ((! connectToLeftTree(FinderListBuilder.build(path))) && 
+            (currentBpelDesignContext != null)) {
+            DesignContextControllerImpl2.addErrMessage(
+                currentBpelDesignContext.getValidationErrMsgBuffer(), 
+                path.getExpressionString(), "from");
+        }
     }
 
-    protected void connectToLeftTree(List<TreeItemFinder> finderList) {
+    protected boolean connectToLeftTree(List<TreeItemFinder> finderList) {
         TreeFinderProcessor fProcessor = new TreeFinderProcessor(mLeftTreeModel);
         TreePath sourceTreePath = fProcessor.findFirstNode(finderList);
         // TreePath sourceTreePath = mLeftTreeModel.findFirstNode(finderList);
         if (sourceTreePath != null) {
             TreeSourcePin sourcePin = new TreeSourcePin(sourceTreePath);
-            //
             linkToParent(sourcePin);
+            return true;
         }
+        return false;
     }
 
     /**

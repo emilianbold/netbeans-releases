@@ -353,7 +353,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
-            if( compiler != null ) {
+            if( compiler != null  && compiler.getPath() != null && compiler.getPath().length() > 0) {
                 vec.addAll(compiler.getSystemIncludeDirectories());
             }
         }
@@ -405,7 +405,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            if( compiler != null ) {
+            if( compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
                 // Get macro definitions from compiler
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }

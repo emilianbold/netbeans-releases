@@ -2,6 +2,7 @@
 # See: http://wiki.netbeans.org/HgHowTos#section-HgHowTos-ServerHooksAbortPretxnchangegroup.somethingHookFailed
 
 cnd.editor/build/classes/org/netbeans/modules/cnd/editor/Bundle.properties
+nbbuild/velocity.log
 websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/Bundle.properties
 websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/resources/layer.xml
 websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/Bundle.properties

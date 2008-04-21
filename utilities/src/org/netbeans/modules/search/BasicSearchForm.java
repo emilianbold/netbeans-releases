@@ -129,7 +129,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         initHistory();
         initInteraction();
 
-        if (searchAndReplace) {
+        if (searchAndReplace && (searchCriteria.getReplaceExpr() == null)) {
             /* We must set the initial replace string, otherwise it might not
              * be initialized at all if the user keeps the field "Replace With:"
              * empty. One of the side-effects would be that method

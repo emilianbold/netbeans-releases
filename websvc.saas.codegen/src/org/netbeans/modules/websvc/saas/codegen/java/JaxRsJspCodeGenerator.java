@@ -70,7 +70,6 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
     public JaxRsJspCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
-        setSubresourceLocatorUriTemplate(findSubresourceLocatorUriTemplate());
         jspSpecialNamesMap.put("page", "page1");
     }
     

@@ -222,7 +222,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     }
     
     public String getToStringValue() throws InvalidExpressionException {
-        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger());
+        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger(), 0);
     }
     
     void setException (String exceptionDescription) {

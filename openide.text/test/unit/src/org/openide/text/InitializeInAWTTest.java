@@ -50,6 +50,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.junit.NbTestCase;
@@ -113,15 +114,16 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
         R r = new R();
         SwingUtilities.invokeAndWait(r);
         assertNotNull(r.p);
-        
-        if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
-            NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
-            assertNotNull("call method called", nb.callThread);
-            if (!nb.callThread.getName().contains("AWT")) {
-                fail("wrong thread this should be in AWT: " + nb.callThread);
-            }
+
+        assertKit(r.p.getEditorKit());
+    }
+    
+    private static void assertKit(EditorKit kit) {
+        if (kit instanceof NbLikeEditorKit) {
+            NbLikeEditorKit nb = (NbLikeEditorKit) kit;
+            assertNull("the kit's call mehtod is not called due to backward compat", nb.callThread);
         } else {
-            fail("Should use NbLikeEditorKit: " + r.p.getEditorKit());
+            fail("Should use NbLikeEditorKit: " + kit);
         }
     }
     
@@ -139,16 +141,8 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
         R r = new R();
         r.run();
         assertNotNull(r.p);
-        
-        if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
-            NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
-            assertNotNull("call method called", nb.callThread);
-            if (!nb.callThread.getName().contains("AWT")) {
-                fail("wrong thread this should be in AWT: " + nb.callThread);
-            }
-        } else {
-            fail("Should use NbLikeEditorKit: " + r.p.getEditorKit());
-        }
+
+        assertKit(r.p.getEditorKit());
     }
 
     public void testInitializeAndBlockInAWT() throws Exception {
@@ -175,15 +169,7 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
             assertNotNull(r.p);
         }
         
-        if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
-            NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
-            assertNotNull("call method called", nb.callThread);
-            if (!nb.callThread.getName().contains("AWT")) {
-                fail("wrong thread this should be in AWT: " + nb.callThread);
-            }
-        } else {
-            fail("Should use NbLikeEditorKit: " + r.p.getEditorKit());
-        }
+        assertKit(r.p.getEditorKit());
     }
     
     
@@ -211,15 +197,7 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
             assertNotNull(r.p);
         }
         
-        if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
-            NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
-            assertNotNull("call method called", nb.callThread);
-            if (!nb.callThread.getName().contains("AWT")) {
-                fail("wrong thread this should be in AWT: " + nb.callThread);
-            }
-        } else {
-            fail("Should use NbLikeEditorKit: " + r.p.getEditorKit());
-        }
+        assertKit(r.p.getEditorKit());
     }
     
     

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.spring.beans;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
@@ -71,8 +73,14 @@ public class ProjectLookupProvider implements LookupProvider {
         if (project == null) {
             throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
         }
-        return Lookups.fixed(
-                new ProjectSpringScopeProvider(project),
-                new RecommendedTemplatesImpl(web));
+        List<Object> instances = new ArrayList<Object>(3);
+        instances.add(new ProjectSpringScopeProvider(project));
+        instances.add(new RecommendedTemplatesImpl(web));
+        if (!web) {
+            // For a web project, SpringConfigFileLocationProvider is
+            // provided by the Web MVC support (since it needs to use the WebModule API).
+            instances.add(new SpringConfigFileLocationProviderImpl(project));
+        }
+        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
     }
 }

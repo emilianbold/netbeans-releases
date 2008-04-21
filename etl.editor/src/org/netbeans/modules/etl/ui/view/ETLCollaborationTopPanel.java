@@ -571,11 +571,12 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         am.put("Run Collaboration", new RunAction());
     }
 
-    public JComponent getSatelliteView() {
+    //For Navigator
+    /*public JComponent getSatelliteView() {
         GraphView graphView = (GraphView) getGraphView();
         BirdsEyeView satelliteView = graphView.getSatelliteView();
         return satelliteView;
-    }
+    }*/
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(dObj);

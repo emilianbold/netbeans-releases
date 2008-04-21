@@ -18,7 +18,7 @@ package org.netbeans.modules.bpel.editors.multiview;
 
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.openide.cookies.OpenCookie;
@@ -28,7 +28,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -63,7 +62,7 @@ public class BpelDesignViewOpenAction extends NodeAction {
             if (process != null) {
                 if (editorSupport.getOpenedPanes() == null ||
                         editorSupport.getOpenedPanes().length == 0) {
-                    Util.goToDesign(process);
+                    EditorUtil.goToDesign(process);
                 } else {
                     editorSupport.open();
                 }

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.design.DesignView;
@@ -53,7 +54,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements
     public AbstractGlassPaneButton(Icon icon, String text, boolean editable, ActionListener actionListener) {
         super(icon);
         myIcon = icon;
-        myGlassPane = new GlassPane(text, actionListener, editable);
+        myGlassPane = new GlassPane(text, actionListener, editable, this);
         myActionListener = actionListener;
         addActionListener(this);
         
@@ -133,13 +134,9 @@ public class AbstractGlassPaneButton extends JToggleButton implements
         return myGlassPane.getParent() != null;
     }
     
-    private void updateGlassPaneBounds() {
+    public void updateGlassPaneBounds() {
         DesignView designView = getDesignView();
         OverlayPanel overlayPanel = designView.getOverlayView();
-        Point coords = SwingUtilities.convertPoint(this, getWidth() + 1, 
-                getHeight() / 2, overlayPanel);
-        Dimension size = myGlassPane.getPreferredSize();
-        myGlassPane.setBounds(coords.x, coords.y, size.width, size.height);
         overlayPanel.revalidate();
         overlayPanel.repaint();
     }

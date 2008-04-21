@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -822,8 +824,10 @@ public final class CsmProjectContentResolver {
         
         handledNS.add(ns);
         List res = new ArrayList();
-        Iterator it = ns.getDeclarations().iterator();
-        filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
+        Iterator it;
+        //it = ns.getDeclarations().iterator();
+        //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
+        filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedMembers);
         // handle all nested namespaces
         if (searchNested) {
             for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
@@ -839,6 +843,29 @@ public final class CsmProjectContentResolver {
             }
         }
         return res;
+    }
+
+    /*package*/ void filterDeclarations(final CsmNamespace ns, final Collection out, final CsmDeclaration.Kind kinds[], final String strPrefix, final boolean match, final boolean returnUnnamedMembers) {
+        CsmFilter filter = null;
+        if (kinds != null && strPrefix != null){
+            filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
+                     CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds),
+                     CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers));
+        } else if (kinds != null){
+            filter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds);
+        } else if (strPrefix != null){
+            filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers);
+        }
+        Iterator in = CsmSelect.getDefault().getDeclarations(ns, filter);
+        while (in.hasNext()) {
+            CsmDeclaration decl = (CsmDeclaration) in.next();
+            if (isKindOf(decl.getKind(), kinds)) {
+                String name = decl.getName().toString();
+                if (matchName(name, strPrefix, match) || (name.length() == 0 && returnUnnamedMembers)) {
+                    out.add(decl);
+                }
+            }
+        }
     }
 
     /*package*/ void filterDeclarations(final Iterator in, final Collection out, final CsmDeclaration.Kind kinds[], final String strPrefix, final boolean match, final boolean returnUnnamedMembers) {

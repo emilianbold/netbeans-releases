@@ -192,13 +192,15 @@ public class GsfCompletionProvider implements CompletionProvider {
                 return false;
             }
 
-            TokenId tokenId = ts.token().id();
-            
-            Set s = language.tokenCategories().contains(COMMENT_CATEGORY_NAME) 
-                    ? language.tokenCategoryMembers(COMMENT_CATEGORY_NAME) 
-                    : null;
-            
-            return s == null || !s.contains(tokenId); //NOI18N
+// I used to block completion in comments... but why should I do that?            
+//            TokenId tokenId = ts.token().id();
+//            
+//            Set s = language.tokenCategories().contains(COMMENT_CATEGORY_NAME) 
+//                    ? language.tokenCategoryMembers(COMMENT_CATEGORY_NAME) 
+//                    : null;
+//            
+//            return s == null || !s.contains(tokenId); //NOI18N
+            return true;
         } finally {
             if (doc instanceof AbstractDocument) {
                 ((AbstractDocument) doc).readUnlock();

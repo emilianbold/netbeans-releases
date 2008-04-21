@@ -78,6 +78,7 @@ public class ProviderUtil {
     // known providers
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
+    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider();
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
@@ -638,7 +639,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-            TOPLINK_PROVIDER, HIBERNATE_PROVIDER, 
+            TOPLINK_PROVIDER, ECLIPSELINK_PROVIDER, HIBERNATE_PROVIDER, 
             KODO_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     

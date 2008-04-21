@@ -990,6 +990,9 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
+                if (attributeName != null && EVENT_HANDLER_NAMES.contains(attributeName)) {
+                    return token(HTMLTokenId.VALUE_JAVASCRIPT);
+                }
                 return token(HTMLTokenId.VALUE);
                 
             case ISI_SGML_DECL:

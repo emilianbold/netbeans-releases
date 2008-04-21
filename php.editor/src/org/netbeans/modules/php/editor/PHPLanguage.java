@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
  */
 public class PHPLanguage implements GsfLanguage {
 
-    public static final String PHP_MIME_TYPE = "text/x-php5";
+    public static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     
     public String getLineCommentPrefix() {
         return "//";    //NOI18N

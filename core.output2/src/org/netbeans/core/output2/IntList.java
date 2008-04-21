@@ -143,6 +143,7 @@ final class IntList {
         System.arraycopy(old, 0, array, 0, old.length);
     }
     
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer ("IntList [");
         for (int i=0; i < used; i++) {

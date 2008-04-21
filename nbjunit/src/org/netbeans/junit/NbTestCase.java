@@ -279,8 +279,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
 
                 if (!finished) {
-                    throw new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms\n" +
-                        threadDump());
+                    throw Log.wrapWithMessages(new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms\n" +
+                        threadDump())
+                    );
                 }
             }
         }
@@ -723,7 +724,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             boolean result = workdir.mkdirs();
             if (result == false) {
                 // mkdirs() failed - throw an exception
-                throw new IOException("workdir creation failed, workdir = "+path);
+                throw new IOException("workdir creation failed: " + workdir);
             } else {
                 // everything looks ok - return path
                 return workdir;

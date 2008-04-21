@@ -109,7 +109,7 @@ public class HgConfigFiles {
      *
      * @return the HgConfiles instance
      */
-    public static HgConfigFiles getInstance() {
+    public static HgConfigFiles getSysInstance() {
         if (instance==null) {
             instance = new HgConfigFiles();
         }
@@ -171,8 +171,16 @@ public class HgConfigFiles {
         setProperty(HG_UI_SECTION, HG_USERNAME, value); 
     }
 
-    public String getUserName() {
+    public String getSysUserName() {
         return getUserName(true);
+    }
+
+    public String getSysPushPath() {
+        return getDefaultPush(true);
+    }
+
+    public String getSysPullPath() {
+        return getDefaultPull(true);
     }
 
     public Properties getProperties(String section) {
@@ -323,9 +331,8 @@ public class HgConfigFiles {
         Ini system = null;
         try {            
             if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-                file.delete();
-                boolean bRenamed = tmpFile.renameTo(file);
-                system = bRenamed? new Ini(new FileReader(tmpFile)): null;
+                tmpFile.deleteOnExit();
+                system = new Ini(new FileReader(tmpFile));
             } else {
                 system = new Ini(new FileReader(file));
             }

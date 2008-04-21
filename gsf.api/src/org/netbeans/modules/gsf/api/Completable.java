@@ -80,13 +80,15 @@ public interface Completable {
         STOP
     }
 
-    List<CompletionProposal> complete(@NonNull CompilationInfo info, int caretOffset, String prefix,
+    @CheckForNull
+    List<CompletionProposal> complete(@NonNull CompilationInfo info, int caretOffset, @NonNull String prefix,
         @NonNull NameKind kind, @NonNull QueryType queryType, boolean caseSensitive, @NonNull HtmlFormatter formatter);
 
     /**
      *  Return the HTML documentation for the given program element (returned in CompletionProposals
      *  by the complete method)
      */
+    @CheckForNull
     String document(@NonNull CompilationInfo info, @NonNull ElementHandle element);
     
     /**
@@ -111,6 +113,7 @@ public interface Completable {
      *   to bring up a set of completion alternatives, whereas the latter is used
      *   to for example bring up the documentation under the symbol.)
      */
+    @CheckForNull
     String getPrefix(@NonNull CompilationInfo info, int caretOffset, boolean upToOffset);
 
     /**
@@ -119,7 +122,8 @@ public interface Completable {
      * @return A QueryType if automatic completion should be initiated, or {@link QueryType.NONE}
      *   if it should be left alon, or {@link QueryType.STOP} if completion should be terminated
      */
-    QueryType getAutoQuery(@NonNull JTextComponent component, String typedText);
+    @NonNull
+    QueryType getAutoQuery(@NonNull JTextComponent component, @NonNull String typedText);
     
     // TODO: 
     // processKey action stuff from GsfCompletionItem to handle "(", "." etc.
@@ -136,21 +140,25 @@ public interface Completable {
      *  while templates are used in template code completion it's unrelated to
      *  the regular Ruby code completion.
      */
+    @CheckForNull
     String resolveTemplateVariable(String variable, @NonNull CompilationInfo info, int caretOffset, 
-            @NonNull String name, Map parameters);
+            @NonNull String name, @CheckForNull Map parameters);
     
     /**
      * Compute the set of applicable templates for a given text selection
      */
+    @NonNull
     Set<String> getApplicableTemplates(@NonNull CompilationInfo info, int selectionBegin, int selectionEnd);
     
     /**
      * Compute parameter info for the given offset - parameters surrounding the given
      * offset, which particular parameter in that list we're currently on, and so on.
      * @param info The compilation info to pick an AST from
-     * @param caretOFfset The caret offset for the completion request
+     * @param caretOffset The caret offset for the completion request
      * @param proposal May be null, but if not, provide the specific completion proposal
      *   that the parameter list is requested for
+     * @return A ParameterInfo object, or ParameterInfo.NONE if parameter completion is not supported.
      */
-    ParameterInfo parameters(@NonNull CompilationInfo info, int caretOffset, CompletionProposal proposal);
+    @NonNull
+    ParameterInfo parameters(@NonNull CompilationInfo info, int caretOffset, @CheckForNull CompletionProposal proposal);
 }

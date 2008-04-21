@@ -47,10 +47,12 @@ public class HgMail {
 
     //Combined together, these form the allowed email regexp allowed by RFC 2822:
     private static final String addrSpec = "^" + localPart + "@" + domain + "$"; // NOI18N
+    private static final String addrLocalSpec = "^" + localPart + "@" + localPart + "$"; // NOI18N
 
 
     //now compile it:
     public static final Pattern VALID_PATTERN = Pattern.compile( addrSpec );
+    public static final Pattern VALID_LOCAL_PATTERN = Pattern.compile( addrLocalSpec );
 
     public static Boolean isUserNameValid(String name) {
         /*
@@ -62,10 +64,10 @@ public class HgMail {
             int startbr = name.lastIndexOf("<"); // NOI18N
             if (startbr != -1) {
                 String newName = name.substring(startbr + 1, name.length() -1); 
-                return VALID_PATTERN.matcher(newName).matches();
+                return VALID_PATTERN.matcher(newName).matches() || VALID_LOCAL_PATTERN.matcher(newName).matches();
             }
             return false;
         } 
-        return VALID_PATTERN.matcher(name).matches();
+        return VALID_PATTERN.matcher(name).matches() || VALID_LOCAL_PATTERN.matcher(name).matches();
     }
 }

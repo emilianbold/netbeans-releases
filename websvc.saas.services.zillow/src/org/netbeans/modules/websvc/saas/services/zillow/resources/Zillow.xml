@@ -61,18 +61,12 @@
         <group name="Zillow">
         </group>
 
-        <authentication profile="SaaSServices/Zillow/profile.properties">
+        <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="zws-id"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="getComps" href="#zillow.homevaluation_GetComps"/>
-        <method name="getRegionChart" href="#zillow.homevaluation_GetRegionChart"/>
-        <method name="getZestimate" href="#zillow.homevaluation_GetZestimate"/>
-    </methods>
-    -->
+    <methods/>
     
 </saas-services>

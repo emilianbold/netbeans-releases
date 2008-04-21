@@ -117,7 +117,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
             sourceGroups = Util.getSourceGroups(project);
             SourceGroupUISupport.connect(locationCB, sourceGroups);
-            folderTextField.setText(Constants.REST_JMAKI_DIR);
+            String folderName = Constants.REST_STUBS_DIR;
+            if(createJmakiCheckBox.isSelected())
+                folderName = Constants.REST_JMAKI_DIR;
+            folderTextField.setText(folderName);
             
             if (isJmakiEnabled(project)) {
                 if (!createJmakiCheckBox.isEnabled()) {
@@ -561,12 +564,21 @@ private void addButtonshowProjectDialog(java.awt.event.ActionEvent evt) {//GEN-F
 }//GEN-LAST:event_addButtonshowProjectDialog
 
 private void createJmakiCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_createJmakiCheckBoxStateChanged
-    if(createJmakiCheckBox.isSelected())
+    if(createJmakiCheckBox.isSelected()) {
         folderTextField.setText(Constants.REST_JMAKI_DIR);
-    else
+        enableFromWadl(false);
+    } else {
         folderTextField.setText(Constants.REST_STUBS_DIR);
+        enableFromWadl(true);
+    }
     fireChange();
 }//GEN-LAST:event_createJmakiCheckBoxStateChanged
+
+private void enableFromWadl(boolean enable) {
+    wadlRadioButton.setEnabled(enable);
+    wadlTextField.setEnabled(enable);
+    wadlBrowseButton.setEnabled(enable);
+}
 
 private void projectRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectRadioButtonActionPerformed
     isProjectSelection = true;

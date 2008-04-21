@@ -1147,8 +1147,22 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitParameterizedType(ParameterizedTypeTree tree, EnumSet<UseTypes> d) {
-            if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS &&
-                    getCurrentPath().getParentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
+            boolean alreadyHandled = false;
+            
+            if (getCurrentPath().getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                NewClassTree nct = (NewClassTree) getCurrentPath().getParentPath().getLeaf();
+                
+                alreadyHandled = nct.getTypeArguments().contains(tree) || nct.getIdentifier() == tree;
+            }
+            
+            if (getCurrentPath().getParentPath().getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                NewClassTree nct = (NewClassTree) getCurrentPath().getParentPath().getParentPath().getLeaf();
+                Tree leafToTest = getCurrentPath().getParentPath().getLeaf();
+
+                alreadyHandled = nct.getTypeArguments().contains(leafToTest) || nct.getIdentifier() == leafToTest;
+            }
+            
+            if (!alreadyHandled) {
                 //NewClass has already been handled as part of visitNewClass:
                 TreePath tp = new TreePath(getCurrentPath(), tree.getType());
                 handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));

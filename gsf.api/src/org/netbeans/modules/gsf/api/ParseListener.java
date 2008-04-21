@@ -40,24 +40,23 @@
  */
 package org.netbeans.modules.gsf.api;
 
-import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**
  * Based on the javac one
  *
- * Provides a listener to monitor the activity of the Sun Java Compiler, javac.
+ * Provides a listener to monitor the activity of the parser.
  *
  * @author Jonathan Gibbons
- * @since 1.6
  */
 public interface ParseListener
 {
-    public void started(ParseEvent e);
+    public void started(@NonNull ParseEvent e);
 
-    public void finished(ParseEvent e);
+    public void finished(@NonNull ParseEvent e);
     
-    public void error(Error e);
+    public void error(@NonNull org.netbeans.modules.gsf.api.Error e);
     
-    public void exception(Exception e);
+    public void exception(@NonNull Exception e);
 }

@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
  */
 public class HtmlGSFParser implements Parser, PositionManager {
 
-    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -98,35 +98,16 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 result = new HtmlParserResult(this, file, elements);
 
                 //highlight unpaired tags
-                AstNode root = result.root();
-
-                final DTD[] dtds = new DTD[]{org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null)};
-                //find document type declaration
-                AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
-
-                    public void visit(AstNode node) {
-                        if (node.type() == AstNode.NodeType.DECLARATION) {
-                            SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
-                            String publicID = declaration.getPublicIdentifier();
-                            if (publicID != null) {
-                                DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
-                                if (dtd != null) {
-                                    dtds[0] = dtd;
-                                }
-                            }
-                        }
-                    }
-                });
-
-                AstNodeUtils.visitChildren(root,
+                final DTD dtd = result.dtd();
+                AstNodeUtils.visitChildren(result.root(),
                         new AstNodeVisitor() {
 
                             public void visit(AstNode node) {
                                 if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
                                     AstNode unmatched = node.children().get(0);
-                                    if (dtds[0] != null) {
+                                    if (dtd != null) {
                                         //check the unmatched tag according to the DTD
-                                        Element element = dtds[0].getElement(node.name().toUpperCase());
+                                        Element element = dtd.getElement(node.name().toUpperCase());
                                         if (element != null) {
                                             if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() || unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()) {
                                                 return;
@@ -157,7 +138,8 @@ public class HtmlGSFParser implements Parser, PositionManager {
         return this;
     }
 
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle handle) {
+      ElementHandle object = resolveHandle(info, handle);
         if (object instanceof HtmlElementHandle) {
             ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
             final TranslatedSource source = presult.getTranslatedSource();
@@ -169,4 +151,82 @@ public class HtmlGSFParser implements Parser, PositionManager {
                     object) != null) ? object.getClass().getName() : "null"); //NOI18N
         }
     }
+    
+    public static ElementHandle resolveHandle(CompilationInfo info, ElementHandle handle) {
+        if (handle instanceof HtmlElementHandle) {
+           HtmlElementHandle element = (HtmlElementHandle)handle;
+            CompilationInfo oldInfo = element.compilationInfo();
+            if (oldInfo == info) {
+                return element;
+            }
+            AstNode oldNode = element.node(); 
+            
+            HtmlParserResult oldResult = (HtmlParserResult)oldInfo.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
+            AstNode oldRoot = oldResult.root();
+
+            HtmlParserResult newResult = (HtmlParserResult)info.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
+            AstNode newRoot = newResult.root();
+            
+            if (newRoot == null) {
+                return null;
+            }
+
+            // Find newNode
+            AstNode newNode = find(oldRoot, oldNode, newRoot);
+
+            if (newNode != null) {
+                return new HtmlElementHandle(newNode, info);
+            }
+        }
+        
+        return null;
+    }
+
+    private static AstNode find(AstNode oldRoot, AstNode oldObject, AstNode newRoot) {
+        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
+        if (oldRoot == oldObject) {
+            // Found it!
+            return newRoot;
+        }
+
+        List<AstNode> oChildren = oldRoot.children();
+        List<AstNode> nChildren = newRoot.children();
+        
+        for(int i = 0; i < oChildren.size(); i++) {
+            
+            AstNode oCh = oChildren.get(i);
+            
+            if(i == nChildren.size()) {
+                //no more new children
+                return null;
+            }
+            AstNode nCh = nChildren.get(i);
+
+            if (oCh == oldObject) {
+                // Found it!
+                return nCh;
+            }
+
+            // Recurse
+            AstNode match = find(oCh, oldObject, nCh);
+
+            if (match != null) {
+                return match;
+            }
+            
+        }
+
+        return null;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

@@ -39,6 +39,7 @@ public class AstAttributeElement extends AstElement {
         return symbolNode.getName();
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         // TODO compute!
         return Collections.emptySet();

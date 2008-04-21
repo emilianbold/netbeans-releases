@@ -44,7 +44,6 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
@@ -72,11 +71,11 @@ public interface BracketCompletion {
      *
      * XXX Fix javadoc.
      */
-    boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch)
+    boolean beforeCharInserted(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target, char ch)
         throws BadLocationException;
 
     /** @todo Rip out the boolean return value? What does it mean? */
-    boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch)
+    boolean afterCharInserted(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target, char ch)
         throws BadLocationException;
 
     /**
@@ -90,7 +89,7 @@ public interface BracketCompletion {
      */
 
     /** @todo Split into before and after? */
-    public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch)
+    public boolean charBackspaced(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target, char ch)
         throws BadLocationException;
 
     /**
@@ -102,7 +101,7 @@ public interface BracketCompletion {
      * @todo rip out return value
      * @todo Document why both caretOffset and caret is passed in!
      */
-    int beforeBreak(Document doc, int caretOffset, JTextComponent caret)
+    int beforeBreak(@NonNull Document doc, int caretOffset, @NonNull JTextComponent caret)
         throws BadLocationException;
 
     /**
@@ -110,14 +109,14 @@ public interface BracketCompletion {
      * is found, return {@link OffsetRange.NONE}.
      */
     @NonNull
-    OffsetRange findMatching(Document doc, int caretOffset);
+    OffsetRange findMatching(@NonNull Document doc, int caretOffset);
     
     /**
      * Compute set of selection ranges for the given parse tree (around the given offset),
      * in leaf-to-root order.
      */
     @NonNull
-    List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset);
+    List<OffsetRange> findLogicalRanges(@NonNull CompilationInfo info, int caretOffset);
     
     /**
      * Compute the previous word position, if any. Can be used to implement

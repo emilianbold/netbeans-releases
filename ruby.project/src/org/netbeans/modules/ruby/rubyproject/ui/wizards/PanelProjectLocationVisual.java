@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
+import org.netbeans.modules.ruby.rubyproject.ui.wizards.NewRubyProjectWizardIterator.Type;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -58,20 +58,14 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-/**
- *
- * @author  Petr Hrebejk
- */
-
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     
-    private PanelConfigureProject panel;
-    private int type;
+    private final PanelConfigureProject panel;
+    private final Type type;
         
-    /** Creates new form PanelProjectLocationVisual */
-    public PanelProjectLocationVisual( PanelConfigureProject panel, int type ) {
+    PanelProjectLocationVisual(PanelConfigureProject panel, Type type) {
         initComponents();
         this.panel = panel;
         this.type = type;
@@ -79,7 +73,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );        
     }
-    
     
     public String getProjectName () {
         return this.projectNameTextField.getText ();
@@ -181,7 +174,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if ( "BROWSE".equals( command ) ) { // NOI18N                
             JFileChooser chooser = new JFileChooser ();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle(NbBundle.getMessage(PanelSourceFolders.class,"LBL_NWP1_SelectProjectLocation"));
+            chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NWP1_SelectProjectLocation"));
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
             if (path.length() > 0) {
@@ -198,25 +191,23 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }//GEN-LAST:event_browseLocationAction
     
-    
-    public void addNotify() {
+    public @Override void addNotify() {
         super.addNotify();
-        //same problem as in 31086, initial focus on Cancel button
+        // same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
     
-    boolean valid( WizardDescriptor wizardDescriptor ) {
-        
-        if ( projectNameTextField.getText().length() == 0 
-            || projectNameTextField.getText().indexOf('/')  > 0         //NOI18N
-            || projectNameTextField.getText().indexOf('\\') > 0         //NOI18N
-            || projectNameTextField.getText().indexOf(':')  > 0) {      //NOI18N
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-            NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
+    boolean valid(final WizardDescriptor wizardDescriptor) {
+        if (projectNameTextField.getText().length() == 0
+                || projectNameTextField.getText().indexOf('/') > 0 //NOI18N
+                || projectNameTextField.getText().indexOf('\\') > 0 //NOI18N
+                || projectNameTextField.getText().indexOf(':') > 0) {      //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
         File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
-        if (getCanonicalFile (f)==null) {
+        if (getCanonicalFile(f) == null) {
             String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
             return false;
@@ -271,9 +262,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
     
     void store( WizardDescriptor d ) {        
-        
         String name = projectNameTextField.getText().trim();
-        String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
@@ -292,22 +281,23 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty ("name"); //NOI18N
         if (projectName == null) {
-            if (this.type == NewRubyProjectWizardIterator.TYPE_APP) {
+            if (this.type == Type.APPLICATION) {
                 int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
-                String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
-                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
-                    baseCount++;                
-                settings.putProperty (NewRubyProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "TXT_JavaApplication");
+                while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null) {
+                    baseCount++;
+                }
+                settings.putProperty(NewRubyProjectWizardIterator.PROP_NAME_INDEX, baseCount);
             }
 //            else {                
 //                int baseCount = FoldersListSettings.getDefault().getNewLibraryCount() + 1;
-//                String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary");
+//                String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"TXT_JavaLibrary");
 //                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
 //                    baseCount++;                
 //                settings.putProperty (NewRubyProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
 //            }            
         }
-        this.projectNameTextField.setText (projectName);                
+        this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
     }
         
@@ -325,20 +315,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
     
-    
     // Private methods ---------------------------------------------------------------------
     
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setName( "Select Project Directory" ); // XXX // NOI18N
-        return chooser;
-    }
-    
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+        String name = MessageFormat.format(formater, index);
         File file = new File (parentFolder, name);
         return file.exists() ? null : name;
     }
@@ -367,8 +347,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
     
     
-    /** Handles changes in the Project name and project directory
-     */
+    /** Handles changes in the Project name and project directory. */
     private void updateTexts( DocumentEvent e ) {
         Document doc = e.getDocument();
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {

@@ -69,10 +69,11 @@ public class LinkToolDecorationProvider extends DecorationProvider implements
     
     
     public Decoration getDecoration(BpelEntity entity) {
-        
+        // FIXME FLOW LINK TOOL disabled
         UniqueId entityID = entity.getUID();
         UniqueId selectedEntityID = getDesignView().getSelectionModel().getSelectedID();
         
+
         
         if (entityID!= null && entityID.equals(selectedEntityID) &&
             entity instanceof PartnerLinkReference &&
@@ -141,7 +142,7 @@ public class LinkToolDecorationProvider extends DecorationProvider implements
                 
                 DiagramView view = pattern.getView();
                 Point p = view.convertDiagramToScreen(
-                        new FPoint(bounds.getX(), bounds.getCenterY()));
+                        new FPoint(bounds.getCenterX(), bounds.getCenterY()));
                 
                 
                 btn.setPosition(p);

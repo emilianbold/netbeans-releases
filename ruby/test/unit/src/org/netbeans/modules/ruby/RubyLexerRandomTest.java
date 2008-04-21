@@ -60,6 +60,7 @@ public class RubyLexerRandomTest extends TestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         System.setProperty("netbeans.debug.lexer.test", "true");

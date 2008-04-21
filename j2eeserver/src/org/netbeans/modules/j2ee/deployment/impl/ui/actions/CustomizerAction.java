@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -57,8 +55,7 @@ import org.openide.util.actions.NodeAction;
 public class CustomizerAction extends NodeAction {
 
     public void performAction(Node[] nodes) {
-        ServerInstance instance = (ServerInstance)nodes[0].getCookie(ServerInstance.class);        
-        ServerManager.showCustomizer(instance.getUrl());
+        // do nothing, just for compatibility with bridging instance
     }
     
     protected boolean enable(Node[] nodes) {

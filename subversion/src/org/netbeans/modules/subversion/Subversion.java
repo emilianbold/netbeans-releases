@@ -56,7 +56,6 @@ import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 
@@ -93,6 +92,7 @@ public class Subversion {
     private FileStatusCache                     fileStatusCache;
     private FilesystemHandler                   filesystemHandler;
     private FileStatusProvider                  fileStatusProvider;
+    private SvnClientRefreshHandler             refreshHandler;
     private Annotator                           annotator;
     private HashMap<String, RequestProcessor>   processorsToUrl;
 
@@ -123,6 +123,7 @@ public class Subversion {
         annotator = new Annotator(this);
         fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
+        refreshHandler = new SvnClientRefreshHandler();
         cleanup();
     }
                            
@@ -145,7 +146,6 @@ public class Subversion {
                 try {
                     LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp();
-                    // TODO: refresh all annotations        
                 } finally {
                     Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
                 }
@@ -155,30 +155,6 @@ public class Subversion {
     
     public void shutdown() {
         fileStatusProvider.shutdown();
-        // TODO: refresh all annotations        
-    }
-
-    public SvnFileNode [] getNodes(Context context, int includeStatus) {
-        File [] files = fileStatusCache.listFiles(context, includeStatus);
-        SvnFileNode [] nodes = new SvnFileNode[files.length];
-        for (int i = 0; i < files.length; i++) {
-            nodes[i] = new SvnFileNode(files[i]);
-        }
-        return nodes;
-    }
-
-    /**
-     * Tests <tt>.svn</tt> directory itself.  
-     */
-    public boolean isAdministrative(File file) {
-        String name = file.getName();
-        boolean administrative = isAdministrative(name);
-        return ( administrative && !file.exists() ) || 
-               ( administrative && file.exists() && file.isDirectory() ); // lets suppose it's administrative if file doesnt exist
-    }  
-
-    public boolean isAdministrative(String fileName) {        
-        return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
     }
     
     public FileStatusCache getStatusCache() {
@@ -187,6 +163,10 @@ public class Subversion {
 
     public Annotator getAnnotator() {
         return annotator;
+    }
+    
+    public SvnClientRefreshHandler getRefreshHandler() {
+        return refreshHandler;
     }
 
     public boolean checkClientAvailable() {
@@ -291,18 +271,6 @@ public class Subversion {
         return filesystemHandler;
     }
 
-    /**
-     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
-     * All files and folders that have a parent with either .svn/entries or _svn/entries file are 
-     * considered versioned.
-     * 
-     * @param file a file or directory
-     * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
-     */ 
-    public boolean isManaged(File file) {
-        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
-    }
-
     public void versionedFilesChanged() {
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
@@ -322,7 +290,7 @@ public class Subversion {
         }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             for (;file != null; file = file.getParentFile()) {
-                if (isAdministrative(file)) {
+                if (SvnUtils.isAdministrative(file)) {
                     file = file.getParentFile();
                     break;
                 }
@@ -339,16 +307,15 @@ public class Subversion {
     }
     
     /**
-     * TODO: Backdoor for SvnClientFactory
+     * Backdoor for SvnClientFactory
      */ 
     public void cleanupFilesystem() {
         filesystemHandler.removeInvalidMetadata();
     }
 
-    private void attachListeners(SvnClient client) {
-        // XXX let the cache and logger register by themself (addXXXListener)
+    private void attachListeners(SvnClient client) {        
         client.addNotifyListener(getLogger(client.getSvnUrl())); 
-        client.addNotifyListener(fileStatusCache);
+        client.addNotifyListener(refreshHandler);
         
         List<ISVNNotifyListener> l = getSVNNotifyListeners();
         
@@ -487,6 +454,19 @@ public class Subversion {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
     }
 
+    /**
+     * Refreshes all textual annotations and badges for the given files.
+     * 
+     * @param files files to chage the annotations for
+     */
+    public void refreshAnnotations(File... files) {
+        Set<File> s = new HashSet<File>();
+        for (File file : files) {
+            s.add(file);
+        }        
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, s);
+    }
+    
     void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }

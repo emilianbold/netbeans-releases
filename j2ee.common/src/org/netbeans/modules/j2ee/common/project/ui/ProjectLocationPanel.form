@@ -34,34 +34,33 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="projectNameTextField" alignment="0" pref="371" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="0" pref="371" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="0" pref="371" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" alignment="0" pref="294" max="32767" attributes="0"/>
+                  <Component id="createdFolderTextField" alignment="0" pref="294" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="0" pref="294" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="580" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="0" pref="464" max="32767" attributes="0"/>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="sharableProject" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="librariesLocation" pref="373" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblHint" alignment="0" pref="296" max="32767" attributes="0"/>
+                          <Component id="librariesLocation" alignment="0" pref="296" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="browseLibraries" min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="jPanel1" alignment="0" pref="580" max="32767" attributes="0"/>
+          <Component id="jPanel1" alignment="0" pref="464" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="32767" attributes="0"/>
-              <Component id="lblHint" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -97,7 +96,7 @@
               <Component id="lblHint" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="100" max="32767" attributes="0"/>
+              <EmptySpace pref="41" max="32767" attributes="0"/>
               <Component id="jPanel1" min="-2" pref="14" max="-2" attributes="0"/>
           </Group>
       </Group>

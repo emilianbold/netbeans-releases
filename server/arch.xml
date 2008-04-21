@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    To provide easy way for clients to persist properties of its instances easily,
    module provides support API
-   <api group="java" name="CommonServerPropertiesAPI" type="export" category="devel" url="@TOP@@TOP@org/netbeans/api/server/properties/package-summary.html"/>
+   <api group="java" name="CommonServerPropertiesAPI" type="export" category="devel" url="@TOP@org/netbeans/api/server/properties/package-summary.html"/>
    to do that. This support API is not mandatory for clients to use in any way.
   </p>
  </answer>
@@ -802,7 +802,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="lookup-lookup">
   <p>
    Yes.
-   <a href="@TOP@org/openide/util/Lookups.html#forPath(java.lang.String)">Lookups.forPath()</a>.
+   <a href="@org-openide-util@/org/openide/util/lookup/Lookups.html#forPath(java.lang.String)">Lookups.forPath()</a>.
    The module search for all classes implementing
    <a href="@TOP@org/netbeans/spi/server/ServerInstanceProvider.html">ServerInstanceProvider</a>
    and

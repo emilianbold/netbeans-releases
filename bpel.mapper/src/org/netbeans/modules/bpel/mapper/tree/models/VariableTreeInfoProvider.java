@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.tree.models;
 
 import java.awt.Image;
@@ -32,11 +31,10 @@ import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
-import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddCastAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddSpecialStepAction;
@@ -72,6 +70,7 @@ import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.openide.util.NbBundle;
 
 /**
  * The implementation of the TreeItemInfoProvider for the variables' tree.
@@ -100,9 +99,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         } else if (treeItem instanceof VariableDeclarationScope) {
             return null;
         } else if (treeItem instanceof VariableDeclaration) {
-            targetSComp = Util.getVariableSchemaType((VariableDeclaration)treeItem);
+            targetSComp = EditorUtil.getVariableSchemaType((VariableDeclaration)treeItem);
         } else if (treeItem instanceof Part) {
-            targetSComp = Util.getPartType((Part)treeItem);
+            targetSComp = EditorUtil.getPartType((Part)treeItem);
         } else if (treeItem instanceof XPathSchemaContextHolder) {
             XPathSchemaContext sContext = 
                     ((XPathSchemaContextHolder)treeItem).getSchemaContext();
@@ -126,7 +125,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         //
         GlobalType gType = null;
         //
-        if (sComp instanceof TypeContainer) {
+        if (sComp instanceof GlobalType) {
+            gType = (GlobalType)sComp;
+        } else if (sComp instanceof TypeContainer) {
             TypeContainer typeContainer = (TypeContainer)sComp;
             NamedComponentReference<? extends GlobalType> typeRef = 
                     typeContainer.getType();
@@ -175,7 +176,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             //
             Class<? extends BpelEntity> bpelInterface = 
                     ((BpelEntity)treeItem).getElementType();
-            NodeType nodeType = Util.getBasicNodeType(bpelInterface);
+            NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 return nodeType.getDisplayName();
             }
@@ -183,6 +184,13 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof AbstractVariableDeclaration) {
             return ((AbstractVariableDeclaration)treeItem).getVariableName();
         }
+        //
+        if (treeItem instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            GlobalType gType = ((AbstractTypeCast)treeItem).getCastTo();
+            return "(" + gType + ")" + getDisplayName(castableObject);
+        }
+        //
         return null;
     }
 
@@ -190,7 +198,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof BpelEntity) {
             if (treeItem instanceof Variable) {
                 Variable var = (Variable)treeItem;
-                VariableStereotype vst = Util.getVariableStereotype(var);
+                VariableStereotype vst = EditorUtil.getVariableStereotype(var);
                 Image img = NodeType.VARIABLE.getImage(vst);
                 return new ImageIcon(img);
             }
@@ -201,7 +209,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             //
             Class<? extends BpelEntity> bpelInterface = 
                     ((BpelEntity)treeItem).getElementType();
-            NodeType nodeType = Util.getBasicNodeType(bpelInterface);
+            NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 Icon icon = nodeType.getIcon();
                 if (icon != null) {
@@ -212,7 +220,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         //
         if (treeItem instanceof AbstractVariableDeclaration) {
             AbstractVariableDeclaration var = (AbstractVariableDeclaration)treeItem;
-            VariableStereotype vst = Util.getVariableStereotype(var);
+            VariableStereotype vst = EditorUtil.getVariableStereotype(var);
             Image img = NodeType.VARIABLE.getImage(vst);
             return new ImageIcon(img);
         }
@@ -292,28 +300,17 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }
         //
         if (treeItem instanceof AbstractTypeCast) {
-            SchemaComponent sComp = ((AbstractTypeCast)treeItem).getSComponent();
-            return getIcon(sComp);
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            return getIcon(castableObject);
         }
         //
         return null;
     }
 
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
+    private void populateActionsList(Object treeItem, List<Action> result, 
+            MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
             RestartableIterator<Object> dataObjectPathItr) {
-        //
-        dataObjectPathItr.restart();
-        Object treeItem = dataObjectPathItr.next();
-        //
-        Mapper mapper = mapperTcContext.getMapper();
-        BpelDesignContext context = mapperTcContext.
-                getDesignContextController().getContext();
-        if (mapper == null || context == null) {
-            return Collections.EMPTY_LIST;
-        }
-        //
-        List<Action> result = new ArrayList<Action>();
         //
         boolean isProcessed = false;
         if (treeItem instanceof SchemaComponent) {
@@ -342,6 +339,13 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             Action action = new DeleteCastAction(
                     mapperTcContext, inLeftTree, treePath, dataObjectPathItr);
             result.add(action);
+            //
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            populateActionsList(castableObject, result, 
+                    mapperTcContext, inLeftTree, treePath, 
+                    dataObjectPathItr);
+
+            
             isProcessed = true;
         }
         //
@@ -353,12 +357,12 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             } else if (treeItem instanceof VariableDeclarationWrapper) {
                 VariableDeclaration varDecl = 
                         ((VariableDeclarationWrapper)treeItem).getDelegate();
-                sComp = Util.getVariableSchemaType(varDecl);
+                sComp = EditorUtil.getVariableSchemaType(varDecl);
             } else if (treeItem instanceof VariableDeclaration) {
-                sComp = Util.getVariableSchemaType((VariableDeclaration)treeItem);
+                sComp = EditorUtil.getVariableSchemaType((VariableDeclaration)treeItem);
             } else if (treeItem instanceof Part) {
                 Part part = (Part)treeItem;
-                sComp = Util.getPartType(part);
+                sComp = EditorUtil.getPartType(part);
             } 
             if (sComp != null) {
                 //
@@ -370,6 +374,23 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 }
             } 
         }
+    }
+    
+    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
+            boolean inLeftTree, TreePath treePath, 
+            RestartableIterator<Object> dataObjectPathItr) {
+        //
+        dataObjectPathItr.restart();
+        Object treeItem = dataObjectPathItr.next();
+        //
+        Mapper mapper = mapperTcContext.getMapper();
+        BpelDesignContext context = mapperTcContext.
+                getDesignContextController().getContext();
+        if (mapper == null || context == null) {
+            return Collections.EMPTY_LIST;
+        }
+        //
+        List<Action> result = new ArrayList<Action>();
         //
         if (!(treeItem instanceof LocationStep || 
                 treeItem instanceof AbstractPredicate || 
@@ -381,6 +402,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 result.add(action);
             }
         }
+        //
+        populateActionsList(treeItem, result, mapperTcContext, inLeftTree, 
+                treePath, dataObjectPathItr);
         //
         return result;
 //        if (result.isEmpty()) {
@@ -465,11 +489,16 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }    
         
         if (treeItem instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            String baseTooltip = getToolTipText(castableObject);
             GlobalType gType = ((AbstractTypeCast)treeItem).getCastTo();
-            return gType.getName();
+            String castedToLbl = NbBundle.getMessage(
+                    VariableTreeInfoProvider.class, "CASTED_TO"); // NOI18N
+            return baseTooltip + " " + castedToLbl + " " + gType.getName();
         }
-        
-        return "not named type";
+        //
+        String notNamedTypeLbl = NbBundle.getMessage(
+                VariableTreeInfoProvider.class, "NOT_NAMED_TYPE"); // NOI18N
+        return notNamedTypeLbl;
     }
-
 }

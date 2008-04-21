@@ -77,6 +77,7 @@ public final class CndLexerUtilities {
         return null;
     } 
     
+    @SuppressWarnings("unchecked")
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
         Language lang = (Language) doc.getProperty(Language.class);

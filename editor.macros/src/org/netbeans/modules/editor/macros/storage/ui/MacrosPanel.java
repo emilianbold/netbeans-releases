@@ -279,7 +279,10 @@ public class MacrosPanel extends JPanel {
 	
         if (act != null) {
             Set<String> set = Collections.<String>emptySet();
-            ((MacrosModel.Macro) act).setShortcuts(set);
+	    // This colliding SC is not a macro, don't try to clean it up
+	    if(act instanceof MacrosModel.Macro)
+		((MacrosModel.Macro) act).setShortcuts(set);
+	    
             shortcutsFinder.setShortcuts(act, set);
         }
         

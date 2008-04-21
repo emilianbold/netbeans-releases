@@ -43,8 +43,8 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     public NewFlatfileDatabaseVisualPanel() {
         initComponents();
         errorMsg.setForeground(Color.RED);
-        dbLoc.setForeground(Color.BLUE);
-        driverClass.setForeground(Color.BLUE);
+        dbLoc.setForeground(Color.BLACK);
+        driverClass.setForeground(Color.BLACK);
         dbName.setText("");
         errorMsg.setText("");
         dbName.addKeyListener(new NameFieldKeyAdapter());
@@ -125,8 +125,8 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         String nbBundle2 = mLoc.t("BUND267: Database name should start with an alphabet.");
         dbName.setToolTipText(nbBundle2.substring(15));
         dbName.addKeyListener(new NameFieldKeyAdapter());
-        String nbBundle3 = mLoc.t("BUND268: Location");
-        String nbBundle4 = mLoc.t("BUND269: Driver Class");
+        String nbBundle3 = mLoc.t("BUND109: Location:");
+        String nbBundle4 = mLoc.t("BUND269: Driver Class:");
         jLabel2.setDisplayedMnemonic(nbBundle3.substring(15).charAt(0));
         jLabel2.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, nbBundle3.substring(15));

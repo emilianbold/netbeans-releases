@@ -365,12 +365,13 @@ public class ProjectUtilities {
             relFileName.append('/');
         }
         relFileName.append(newObjectName);
+        String ext = "";
         if (extension != null && extension.length() != 0) {
-            relFileName.append('.');
-            relFileName.append(extension);
+            ext = "." + extension;
+            relFileName.append(ext);
         }
         if (targetFolder.getFileObject(relFileName.toString()) != null) {
-            return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
+            return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName + ext); // NOI18N
         }
         
         // all ok

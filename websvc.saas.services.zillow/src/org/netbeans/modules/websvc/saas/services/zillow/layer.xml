@@ -47,7 +47,6 @@
     <folder name="SaaSServices">
         <folder name="Zillow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.zillow.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/zillow/resources/profile.properties"/>
             <file name="Zillow.xml" url="/org/netbeans/modules/websvc/saas/services/zillow/resources/Zillow.xml"/>
         </folder>
     </folder>

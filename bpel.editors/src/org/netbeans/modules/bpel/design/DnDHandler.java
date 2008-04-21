@@ -287,7 +287,8 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
         DnDTool tool = null;
 
         if (tr.isDataFlavorSupported(flowDataFlavor)) {
-            //FIXME tool = getFlowLinkTool();
+            tool = getFlowLinkTool();
+            tool.move(null);
         } else {
 
                 DiagramView view = (DiagramView) dtde.getDropTargetContext().getComponent();

@@ -67,10 +67,9 @@ public class RefreshMetadataAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(synchroniseImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND025: Refresh Metadata (Shift-R)");
+        String nbBundle2 = mLoc.t("BUND025: Refresh Metadata ");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-        // Acceleratot Shift-R
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('R', InputEvent.SHIFT_DOWN_MASK));
+ 
     }
 
     /**

@@ -73,6 +73,10 @@ public class VariableSchemaContext implements XPathSchemaContext {
         return mXPathVar;
     }
 
+    public String toStringWithoutParent() {
+        return mXPathVar.toString();
+    }
+    
     @Override
     public String toString() {
         return mXPathVar.toString();

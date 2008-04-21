@@ -128,7 +128,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 Templates.getTargetFolder(wiz),
                 Templates.getTargetName(wiz),
                 ejbPanel.getPrimaryKeyClassName(),
-                false // setting PROPERTY access type by default
+                true // setting field access type by default
                 );
         
         try{
@@ -270,8 +270,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 classFields.add(serialVersionUID);
                 classFields.add(idField);
                 modifiedClazz = genUtils.addClassFields(clazz, classFields);
-                modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
+                modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
                 modifiedClazz = genUtils.addAnnotation(modifiedClazz, genUtils.createAnnotation("javax.persistence.Entity"));
                 

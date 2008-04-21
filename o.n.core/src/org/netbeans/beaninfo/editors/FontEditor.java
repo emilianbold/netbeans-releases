@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -247,10 +247,13 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             }
 
             lFont = new JList (getFonts ());
+            lFont.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
             lFont.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Font"));
             lStyle = new JList (styles);
+            lStyle.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
             lStyle.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_FontStyle"));
             lSize = new JList (sizes);
+            lSize.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
             lSize.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Size"));
             tfSize = new JTextField (String.valueOf(font.getSize ()));
             tfSize.getAccessibleContext().setAccessibleDescription(lSize.getAccessibleContext().getAccessibleDescription());
@@ -303,17 +306,19 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.gridwidth = GridBagConstraints.REMAINDER;
             
             tfSize.addKeyListener( new KeyAdapter() {
-                                    public void keyPressed(KeyEvent e) {
-                                        if ( e.getKeyCode() == KeyEvent.VK_ENTER )
-                                            setValue ();
-                                    }
-                                });
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if ( e.getKeyCode() == KeyEvent.VK_ENTER )
+                        setValue ();
+                }
+            });
             
             tfSize.addFocusListener (new FocusAdapter () {
-                                         public void focusLost (FocusEvent evt) {
-                                             setValue ();
-                                         }
-                                     });
+                @Override
+                 public void focusLost (FocusEvent evt) {
+                     setValue ();
+                 }
+            });
             la.setConstraints (tfSize, c);
             add (tfSize);
 
@@ -385,21 +390,24 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             p.setBorder (new TitledBorder (" " + NbBundle.getMessage(FontEditor.class, "CTL_Preview") + " "));
 
             JPanel pp = new JPanel () {
-                            public Dimension getPreferredSize () {
-                                return new Dimension (150, 60);
-                            }
+                @Override
+                public Dimension getPreferredSize () {
+                    return new Dimension (150, 60);
+                }
 
-                            public void paint (Graphics g) {
-                                //          super.paint (g);
-                                FontEditor.this.paintValue (g, new Rectangle (0, 0, this.getSize().width - 1, this.getSize().height - 1));
-                            }
-                        };
+                @Override
+                public void paint (Graphics g) {
+                    //          super.paint (g);
+                    FontEditor.this.paintValue (g, new Rectangle (0, 0, this.getSize().width - 1, this.getSize().height - 1));
+                }
+            };
             p.add ("Center", pp); // NOI18N
             c.insets = new Insets (12, 0, 0, 0);
             la.setConstraints (p, c);
             add (p);
         }
 
+        @Override
         public Dimension getPreferredSize () {
             return new Dimension (400, 250);
         }
@@ -449,7 +457,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     * the value should be available via the getValue method.
     * An IOException should be thrown when the value cannot be restored from the specified XML element
     * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
-    * @exception IOException thrown when the value cannot be restored from the specified XML element
+     * @throws java.io.IOException thrown when the value cannot be restored from the specified XML element
     */
     public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_FONT.equals (element.getNodeName ())) {

@@ -19,3 +19,13 @@ void fun(char* aaa, char**bbb) {
     int iiii = fun(null, null);
 }
 
+void sameNameDiffScope(int name) {
+    if (name++) {
+        string name;
+        name = "name";
+    } else if (name++) {
+        char* name;
+        strlen(name);     
+    }
+    name--;
+}

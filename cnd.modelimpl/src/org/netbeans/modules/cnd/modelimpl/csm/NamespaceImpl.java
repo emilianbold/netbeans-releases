@@ -49,6 +49,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -212,7 +213,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         Collection<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(uids);
         return decls;
     }
-    
+
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        // add all declarations
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
+        // add all unnamed declarations
+        synchronized (unnamedDeclarations) {
+            uids.addAll(unnamedDeclarations);
+        }
+        return UIDCsmConverter.UIDsToDeclarations(uids, filter);
+    }
+
     public boolean isGlobal() {
         return global;
     }
@@ -531,6 +542,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
         theFactory.readUIDCollection(this.unnamedDeclarations, input);
     }
-    
+
     
 }

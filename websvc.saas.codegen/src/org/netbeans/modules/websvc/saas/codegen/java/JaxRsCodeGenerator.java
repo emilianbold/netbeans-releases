@@ -382,16 +382,6 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return null;
     }
 
-    @Override
-    public String[] getUriParamTypes() {
-        String defaultType = String.class.getName();
-        String[] types = new String[getBean().getUriParams().length];
-        for (int i = 0; i < types.length; i++) {
-            types[i] = defaultType;
-        }
-        return types;
-    }
-
     protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params,
             String indent) {
         if (indent == null) {

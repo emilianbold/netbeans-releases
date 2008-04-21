@@ -1540,7 +1540,9 @@ public class EditorContextImpl extends EditorContext {
         if (url != null) {
             try {
                 FileObject fo = URLMapper.findFileObject(new URL(url));
-                js = JavaSource.forFileObject(fo);
+                if (fo != null) {
+                    js = JavaSource.forFileObject(fo);
+                }
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             }

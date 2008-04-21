@@ -429,7 +429,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     debugger.addPropertyChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent pe) {
                             if (pe.getPropertyName().equals(debugger.PROP_STATE)) {
-                                if (pe.getNewValue().equals(debugger.STATE_RUNNING)) {
+                                if (pe.getNewValue().equals(debugger.STATE_RUNNING) ||
+                                    pe.getNewValue().equals(debugger.STATE_DISCONNECTED)) {
                                     debugger.removePropertyChangeListener(this);
                                     tiPanelRef[0].dismiss();
                                 }

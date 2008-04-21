@@ -54,6 +54,7 @@ options {
     testLiterals = false;
     charVocabulary = '\0'..'\ufffe';
     classHeaderSuffix = "AntlrScanner";
+    filter = true;
 }
 
 

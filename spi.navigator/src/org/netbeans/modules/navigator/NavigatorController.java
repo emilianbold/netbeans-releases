@@ -62,7 +62,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.text.StyledEditorKit.ForegroundAction;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -87,6 +86,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.NodeListener;
+import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
@@ -192,7 +192,7 @@ public final class NavigatorController implements LookupListener, ActionListener
             selPanel.panelDeactivated();
         }
         lastActivatedRef = null;
-        navigatorTC.setPanels(null);
+        navigatorTC.setPanels(null, null);
         panelLookupNodesResult = null;
         LOG.fine("navigatorTCClosed: activated nodes: " + navigatorTC.getActivatedNodes());
         if (navigatorTC.getActivatedNodes() != null) {
@@ -235,6 +235,9 @@ public final class NavigatorController implements LookupListener, ActionListener
             }
             panel.panelActivated(clientsLookup);
             navigatorTC.setSelectedPanel(panel);
+            // selected panel changed, update selPanelLookup to listen correctly
+            panelLookup.lookup(Object.class);
+            cacheLastSelPanel(panel);
         }
     }
     
@@ -351,7 +354,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                 // we must disable combo-box listener to not receive unwanted events
                 // during combo box content change
                 navigatorTC.getPanelSelector().removeActionListener(this);
-                navigatorTC.setPanels(providers);
+                navigatorTC.setPanels(providers, null);
                 navigatorTC.setSelectedPanel(selPanel);
                 navigatorTC.getPanelSelector().addActionListener(this);
             }
@@ -376,14 +379,20 @@ public final class NavigatorController implements LookupListener, ActionListener
         // #67849: curNode's lookup cleanup, held through ClientsLookup delegates
         clientsLookup.lookup(Node.class);
         
+        NavigatorPanel newSel = null;
         if (areNewProviders) {
-            NavigatorPanel newSel = providers.get(0);
+            newSel = getLastSelPanel(providers);
+            if (newSel == null) {
+                newSel = providers.get(0);
+            }
             newSel.panelActivated(clientsLookup);
         }
         // we must disable combo-box listener to not receive unwanted events
         // during combo box content change
         navigatorTC.getPanelSelector().removeActionListener(this);
-        navigatorTC.setPanels(providers);
+        navigatorTC.setPanels(providers, newSel);
+        // selected panel changed, update selPanelLookup to listen correctly
+        panelLookup.lookup(Object.class);
         navigatorTC.getPanelSelector().addActionListener(this);
         
         updateActNodesAndTitle();
@@ -474,6 +483,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                 fileResult = null;
                 break;
             }
+            LOG.fine("File mime type providers size: " + providers.size());
             if (fileResult == null) {
                 fileResult = new ArrayList<NavigatorPanel>(providers.size());
                 fileResult.addAll(providers);
@@ -583,6 +593,53 @@ public final class NavigatorController implements LookupListener, ActionListener
     /** Runnable implementation - forces update */
     public void run() {
         updateContext(true);
+    }
+    
+    /** Remembers given panel for current context type */
+    private void cacheLastSelPanel (NavigatorPanel panel) {
+        String mime = findMimeForContext();
+        if (mime != null) {
+            String className = panel.getClass().getName();
+            NbPreferences.forModule(NavigatorController.class).put(mime, className);
+            LOG.fine("cached " + className + "for mime " + mime);
+        }
+    }
+    
+    /** Finds last selected panel for current context type */
+    private NavigatorPanel getLastSelPanel (List<NavigatorPanel> panels) {
+        String mime = findMimeForContext();
+        if (mime == null) {
+            return null;
+        }
+        String className = NbPreferences.forModule(NavigatorController.class).get(mime, null);
+        if (className == null) {
+            return null;
+        }
+        LOG.fine("found cached " + className + "for mime " + mime);
+        for (NavigatorPanel curPanel : panels) {
+            if (className.equals(curPanel.getClass().getName())) {
+                LOG.fine("returning cached " + className + "for mime " + mime);
+                return curPanel;
+            }
+        }
+        return null;
+    }    
+    
+    /** Returns current context type or null if not available */
+    private String findMimeForContext () {
+        // try hints first, they have preference
+        if (curHintsRes != null) {
+            Collection<? extends NavigatorLookupHint> hints = curHintsRes.allInstances();
+            if (!hints.isEmpty()) {
+                return hints.iterator().next().getContentType();
+            }
+        }
+        FileObject fob = getClientsLookup().lookup(FileObject.class);
+        if (fob != null) {
+            return fob.getMIMEType();
+        }
+        
+        return null;
     }
 
     /** Handles ESC key request - returns focus to previously focused top component

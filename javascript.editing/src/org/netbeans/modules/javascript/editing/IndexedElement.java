@@ -193,6 +193,10 @@ public abstract class IndexedElement extends JsElement {
         return in;
     }
     
+    void setKind(ElementKind kind) {
+        this.kind = kind;
+    }
+
     @Override
     public ElementKind getKind() {
         return kind;
@@ -201,7 +205,12 @@ public abstract class IndexedElement extends JsElement {
     @Override
     public Set<Modifier> getModifiers() {
         if (isStatic()) {
+            if (isPrivate()) {
+                return AstElement.STATIC_PRIVATE;
+            }
             return AstElement.STATIC;
+        } else if (isPrivate()) {
+            return AstElement.PRIVATE;
         }
         return Collections.emptySet();
     }
@@ -270,6 +279,15 @@ public abstract class IndexedElement extends JsElement {
             int docOffset = IndexedElement.decode(attributes, docOffsetIndex,-1);
             return docOffset;
         }
+        return -1;
+    }
+    
+    protected int getNodeOffset() {
+        int docOffsetIndex = getAttributeSection(NODE_INDEX);
+        if (docOffsetIndex != -1) {
+            return IndexedElement.decode(attributes, docOffsetIndex, -1);
+        }        
+        
         return -1;
     }
     
@@ -376,7 +394,13 @@ public abstract class IndexedElement extends JsElement {
 
     public IndexedElement findDocumentedSibling() {
         if (!isDocumented()) {
-            Set<IndexedElement> elements = getIndex().getAllElements(null, getFqn(), NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            String queryName = null;
+            String queryType = getFqn();
+            if (queryType.indexOf('.') == -1) {
+                queryName = queryType;
+                queryType = null;
+            }
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
             for (IndexedElement e : elements) {
                 if (e.isDocumented()) {
                     return e;
@@ -389,7 +413,13 @@ public abstract class IndexedElement extends JsElement {
 
     public IndexedElement findRealFileElement() {
         if (isDocOnly()) {
-            Set<IndexedElement> elements = getIndex().getAllElements(null, getFqn(), NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            String queryName = null;
+            String queryType = getFqn();
+            if (queryType.indexOf('.') == -1) {
+                queryName = queryType;
+                queryType = null;
+            }
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
             for (IndexedElement e : elements) {
                 if (!e.isDocOnly()) {
                     return e;

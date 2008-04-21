@@ -159,15 +159,15 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         }
 
         protected WizardDescriptor.Panel[] initializePanels() {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
             cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel();
             clonePathsWizardPanel = new ClonePathsWizardPanel();
             cloneDestinationDirectoryWizardPanel = new CloneDestinationDirectoryWizardPanel();
             panels = new WizardDescriptor.Panel[] {                
                 cloneRepositoryWizardPanel, clonePathsWizardPanel, cloneDestinationDirectoryWizardPanel
             };
-            panels[0].addChangeListener(CloneWizardAction.this);
-            panels[1].addChangeListener(CloneWizardAction.this);
+            for (int i = 0; i < panels.length; i++) {
+                panels[i].addChangeListener(CloneWizardAction.this);
+            }
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();

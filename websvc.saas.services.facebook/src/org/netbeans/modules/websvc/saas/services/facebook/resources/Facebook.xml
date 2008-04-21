@@ -68,7 +68,7 @@
                     url="Templates/SaaSServices/FacebookCallback.java"/>
             </artifacts>
         </code-gen>
-        <authentication profile="SaaSServices/Facebook/profile.properties">
+        <authentication profile="Templates/SaaSServices/sessionkey.properties">
             <session-key api-id="api_key" session-id="session_key" sig-id="sig">
                 <sign id="sig">
                     <params>

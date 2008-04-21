@@ -43,11 +43,13 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientRefreshHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -177,7 +179,7 @@ public class SwitchToAction extends ContextAction {
             recursive = false;
         } else {
             recursive = true;
-        }        
+        }                
 
         try {
             SvnClient client;
@@ -189,9 +191,14 @@ public class SwitchToAction extends ContextAction {
             }            
             // ... and switch
             client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
-            // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-            SvnUtils.refreshRecursively(root);
-            Subversion.getInstance().refreshAllAnnotations();
+            // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
+            List<File> switchedFiles = SvnUtils.listRecursively(root);
+            File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
+            Subversion.getInstance().getRefreshHandler().refreshImediately(fileArray);                        
+            // the cache fires status change events to trigger the annotation refresh
+            // unfortunatelly - we have to call the refresh explicitly for each file also 
+            // from this place as the branch label was changed evern if the files status didn't
+            Subversion.getInstance().refreshAnnotations(fileArray); 
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }

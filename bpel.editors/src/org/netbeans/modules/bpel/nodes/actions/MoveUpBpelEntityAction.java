@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.nodes.actions;
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.ActivityHolder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -60,7 +60,7 @@ public class MoveUpBpelEntityAction extends BpelNodeAction {
             // TODO m
             canMove = false;
         } else if (parent instanceof CompositeActivity) {
-            int childIndex = Util.getChildIndex(entity, (CompositeActivity) parent);
+            int childIndex = EditorUtil.getChildIndex(entity, (CompositeActivity) parent);
             if (childIndex > 0 ) {
                 canMove = true;
             } else if (childIndex == 0) {
@@ -107,7 +107,7 @@ public class MoveUpBpelEntityAction extends BpelNodeAction {
 //            }
             
         } else if (parent instanceof CompositeActivity) {
-            int childIndex = Util.getChildIndex(movingEntity, (CompositeActivity) parent);
+            int childIndex = EditorUtil.getChildIndex(movingEntity, (CompositeActivity) parent);
             // TODO m
             if (childIndex > 0) {
                 BpelEntity movingEntityCopy = movingEntity.cut();

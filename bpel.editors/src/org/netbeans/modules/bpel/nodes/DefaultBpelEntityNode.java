@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.nodes;
 
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.xml.xam.Named;
@@ -28,10 +28,8 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- *
  */
 public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
     
@@ -74,10 +72,10 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
             }
             
             // content of the element could contain html-elements, e.g.: documentation:
-            name = Util.getCorrectedHtmlRenderedString(name);
+            name = EditorUtil.getCorrectedHtmlRenderedString(name);
             
             if (name != null) {
-                String tagName = org.netbeans.modules.bpel.editors.api.utils.Util.getTagName(ref);
+                String tagName = org.netbeans.modules.bpel.editors.api.EditorUtil.getTagName(ref);
                 assert tagName != null;
                 name = tagName+" ( "  // NOI18N
                         +(name.length() > MAX_CONTENT_NAME_LENGTH 
@@ -85,12 +83,9 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
 
             }
         }
-        
         if (name == null) {
-            name = org.netbeans.modules.bpel.editors.api.utils.Util.getTagName(ref);
+            name = org.netbeans.modules.bpel.editors.api.EditorUtil.getTagName(ref);
         }
-        
         return (name != null) ? name : "";
     }
-    
 }

@@ -54,7 +54,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 import org.netbeans.api.project.FileOwnerQuery;
@@ -116,10 +115,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
-import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
@@ -143,6 +139,7 @@ import org.netbeans.modules.xml.xam.spi.Validator;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 public final class Utils {
 
@@ -217,7 +214,7 @@ public final class Utils {
         model.setExternalModelResolver(new ExternalModelResolver() {
             public Collection<SchemaModel> getModels(String modelNsUri) {
                 BpelModel bpelModel = ((BpelEntity) element).getBpelModel();
-                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri);
+                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri, true);
             }
 
             public Collection<SchemaModel> getVisibleModels() {
@@ -681,23 +678,8 @@ public final class Utils {
         }
     }
 
-    public static FileObject getFileObjectByModel(Model model) {
-        if (model != null){
-
-            ModelSource src = model.getModelSource();
-            if (src != null){
-
-                Lookup lookup = src.getLookup();
-                if (lookup != null){
-                    return lookup.lookup(FileObject.class);
-                }
-            }
-        }
-        return null;
-    }
-
     public static Project safeGetProject(BpelModel bpelModel) {
-        FileObject fo = getFileObjectByModel(bpelModel);
+        FileObject fo = SoaUtil.getFileObjectByModel(bpelModel);
         if (fo != null && fo.isValid()) {
             return FileOwnerQuery.getOwner(fo);
         } else {
@@ -717,7 +699,6 @@ public final class Utils {
         //
         return sModel;
     }
-    
     
     private static ActivityBuilder getActivityBuilder( String tagName ){
         return ActivityCreatorHolder.ACTIVITY_BUILDERS.get( tagName );

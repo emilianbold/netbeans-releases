@@ -165,7 +165,9 @@ public final class RailsServerManager {
         }
         if (debugSemaphore != null) {
             try {
-                execution.kill();
+                if(execution != null) {
+                    execution.kill();
+                }
                 debugSemaphore.acquire();
                 debugSemaphore = null;
             } catch (InterruptedException ex) {

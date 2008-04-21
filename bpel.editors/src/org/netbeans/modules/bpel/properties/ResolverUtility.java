@@ -45,7 +45,9 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xpath.ext.schema.GetNameVisitor;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -121,9 +123,9 @@ public final class ResolverUtility {
         } else if (comp instanceof SchemaComponent) {
             targetNamespace = ((SchemaComponent)comp).getModel().
                     getSchema().getTargetNamespace();
-            if (comp instanceof Named) {
-                compName = ((Named)comp).getName();
-            }
+            GetNameVisitor nameVisitor = new GetNameVisitor();
+            ((SchemaComponent)comp).accept(nameVisitor);
+            compName = nameVisitor.getName();
         }
         //
         assert compName != null :
@@ -149,11 +151,18 @@ public final class ResolverUtility {
      * Could return null
      */ 
     public static FileObject getProjectSource(Lookup lookup) {
-        BpelModel bpelModel = lookup.lookup(BpelModel.class);
+        return getProjectSource(lookup.lookup(BpelModel.class));
+    }
+    
+    /**
+     * Returns projectSource related to the given bpelModel which is in lookup
+     * Could return null
+     */ 
+    public static FileObject getProjectSource(BpelModel bpelModel) {
         if (bpelModel == null) {
             return null;
         }
-        FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
+        FileObject bpelFo = SoaUtil.getFileObjectByModel(bpelModel);
         if (bpelFo == null) {
             return null;
         }
@@ -173,7 +182,7 @@ public final class ResolverUtility {
         }
         return null;
     }
-    
+
     public static String encodeLocation(String location){
         return location.replace(" ", "%20");
     }

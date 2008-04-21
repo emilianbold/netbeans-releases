@@ -6,7 +6,10 @@
 	<mapID target="caps_basics_add_jbi" url="basics/add_jbi_module.html"/>
 	<mapID target="caps_basics_create" url="basics/create_project.html"/>
 	<mapID target="caps_basics_deploy" url="basics/deploy_project.html"/>
-	<mapID target="caps_basics_jbi" url="basics/jbi.html"/>
+	<mapID target="javaee-module-options" url="basics/javaee-module-options.html"/>
+	<mapID target="verify-server-resources" url="basics/verify-server-resources.html"/>
+	<mapID target="javaee-deployment-settings" url="basics/javaee-deployment-settings.html"/>
+        <mapID target="caps_basics_jbi" url="basics/jbi.html"/>
 	<mapID target="caps_credits" url="credits.html"/>
 	<mapID target="caps_jbi_runtime_function" url="jbinode/caps_jbi_node_RuntimeFunctionality.html"/>
 	<mapID target="caps_jbi_tester" url="basics/jbi_tester.html"/>

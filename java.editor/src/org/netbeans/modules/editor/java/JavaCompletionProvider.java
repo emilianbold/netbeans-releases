@@ -1427,9 +1427,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             if (e.getEnclosingElement() == el && Utilities.startsWith(e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), false, true));
                                         }
-                                } else {
-                                    addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew);
                                 }
+                                addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew);
                                 if (results.isEmpty() && ((PackageElement)el).getQualifiedName() == el.getSimpleName()) {
                                     // no package content? Check for unimported class
                                     ClassIndex ci = controller.getClasspathInfo().getClassIndex();
@@ -3544,6 +3543,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHILE_LOOP:
                         WhileLoopTree wl = (WhileLoopTree)tree;
                         return wl.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
+                    case DO_WHILE_LOOP:
+                        DoWhileLoopTree dwl = (DoWhileLoopTree)tree;
+                        return dwl.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
                     case FOR_LOOP:
                         ForLoopTree fl = (ForLoopTree)tree;
                         Tree cond = fl.getCondition();
@@ -4181,10 +4183,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
             CompilationUnitTree root = controller.getCompilationUnit();
             if (upToOffset && tree.getKind() == Tree.Kind.CLASS) {
-                controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 return new Env(offset, prefix, controller, orig, sourcePositions, null);
             } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
-                controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 TreeUtilities tu = controller.getTreeUtilities();
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                 String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
@@ -4225,7 +4227,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
                     parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
-                controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 TreeUtilities tu = controller.getTreeUtilities();
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
@@ -4255,7 +4257,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ((VariableTree)tree).getInitializer() != null && orig == path &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) >= 0 &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
-                controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 TreeUtilities tu = controller.getTreeUtilities();
                 tree = ((VariableTree)tree).getInitializer();
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
@@ -4280,15 +4282,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             }
             return null;
-        }
-        
-        private boolean withinAnonymousOrLocalClass(TreePath path) {
-            if (path == null)
-                return false;
-            TreePath parentPath = path.getParentPath();
-            if (path.getLeaf().getKind() == Tree.Kind.CLASS && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && parentPath.getLeaf().getKind() != Tree.Kind.CLASS)                
-                return true;
-            return withinAnonymousOrLocalClass(parentPath);
         }
         
         private boolean startsWith(Env env, String theString, String prefix) {

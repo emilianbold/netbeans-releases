@@ -48,7 +48,6 @@ import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.BracketCompleter;
 import org.netbeans.modules.ruby.RenameHandler;
-import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -57,6 +56,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 
 /**
  *
@@ -71,6 +71,16 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         super(testName);
     }
 
+    @Override
+    protected GsfLanguage getPreferredLanguage() {
+        return new RhtmlLanguage();
+    }
+    
+    @Override
+    protected String getPreferredMimeType() {
+        return RhtmlTokenId.MIME_TYPE;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();

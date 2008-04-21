@@ -20,9 +20,11 @@
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
@@ -42,6 +44,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
+import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
@@ -56,91 +59,6 @@ public class PathConverter {
     private static enum ParsingStage {
         SCHEMA, PART, VARIABLE;
     };
-
-    /**
-     * Builds an XPathSchemaContext by a RestartableIterator. 
-     * It is implied that the RestartableIterator provides a collection of 
-     * tree items' data objects in order from leafs to the tree root.
-     * 
-     * @param pathItr
-     * @return
-     */
-    public static XPathSchemaContext constructContext(
-            RestartableIterator<Object> pathItr) {
-        //
-        pathItr.restart();
-        //
-        LinkedList<SchemaComponent> sCompList = 
-                new LinkedList<SchemaComponent>();
-        Part part = null;
-        AbstractVariableDeclaration var = null;
-        //
-        // Process the path
-        ParsingStage stage = null;
-        while (pathItr.hasNext()) {
-            Object obj = pathItr.next();
-            if (obj instanceof SchemaComponent) {
-                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
-                    return null;
-                }
-                stage = ParsingStage.SCHEMA;
-                sCompList.addFirst((SchemaComponent)obj);
-            } else if (obj instanceof AbstractPredicate) {
-                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
-                    return null;
-                }
-                stage = ParsingStage.SCHEMA;
-                sCompList.addFirst(((AbstractPredicate)obj).getSComponent());
-            } else if (obj instanceof Part) {
-                if (!(stage == ParsingStage.SCHEMA || stage == null)) {
-                    return null;
-                }
-                stage = ParsingStage.PART;
-                part = (Part)obj;
-            } else if (obj instanceof AbstractVariableDeclaration) {
-                if (!(stage == ParsingStage.SCHEMA || 
-                        stage == ParsingStage.PART || 
-                        stage == null)) {
-                    return null;
-                }
-                stage = ParsingStage.VARIABLE;
-                var = (AbstractVariableDeclaration)obj;
-                //
-                // Everything found!
-                break;
-            } else {
-                if (stage == null) {
-                    return null;
-                }
-                break;
-            }
-        }
-        //
-        VariableDeclaration varDecl = null;
-        if (var != null) {
-            if (var instanceof VariableDeclaration) {
-                varDecl = (VariableDeclaration)var;
-            } else if (var instanceof VariableDeclarationWrapper) {
-                varDecl = ((VariableDeclarationWrapper)var).getDelegate();
-            }
-        }
-        //
-        XPathBpelVariable xPathVariable = null;
-        //
-        if (varDecl != null) {
-            xPathVariable = new XPathBpelVariable(varDecl, part);
-        }
-        //
-        VariableSchemaContext varContext = null;
-        if (xPathVariable != null) {
-            varContext = new VariableSchemaContext(xPathVariable);
-        }
-        //
-        XPathSchemaContext xPathContext = SimpleSchemaContext.
-                constructSimpleSchemaContext(varContext, sCompList);
-        //
-        return xPathContext;
-    }
 
     /**
      * Constructs a new list, which contains the schema elements, predicates, 
@@ -175,13 +93,14 @@ public class PathConverter {
                 stage = ParsingStage.SCHEMA;
                 treeItemList.add(obj);
             } else if (obj instanceof Part) {
-                if (stage != ParsingStage.SCHEMA) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
                 stage = ParsingStage.PART;
                 treeItemList.add(obj);
             } else if (obj instanceof AbstractVariableDeclaration) {
-                if (!(stage == ParsingStage.SCHEMA || 
+                if (!(stage == null || 
+                        stage == ParsingStage.SCHEMA || 
                         stage == ParsingStage.PART)) {
                     return null;
                 }
@@ -213,6 +132,42 @@ public class PathConverter {
         }
         //
         return treeItemList;
+    }
+
+    public static XPathBpelVariable constructXPathBpelVariable(
+            List<Object> pathList) {
+        //
+        AbstractVariableDeclaration var = null;
+        Part part = null;
+        //
+        // Process the path
+        ParsingStage stage = null;
+        for (Object obj: pathList) {
+            if (obj instanceof Part) {
+                if (stage != null) {
+                    return null;
+                }
+                stage = ParsingStage.PART;
+                part = (Part)obj;
+            } else if (obj instanceof AbstractVariableDeclaration) {
+                if (!(stage == null || stage == ParsingStage.PART)) {
+                    return null;
+                }
+                //
+                var = (AbstractVariableDeclaration)obj;
+                stage = ParsingStage.VARIABLE;
+                //
+                // Everything found!
+                break;
+            } else {
+                return null;
+            }
+        }
+        if (var == null) {
+            return null;
+        }
+        //
+        return new XPathBpelVariable(var, part);
     }
 
     public static List<Object> constructObjectLocationtList(
@@ -257,11 +212,11 @@ public class PathConverter {
             Part part = bpelVar.getPart();
             if (part != null) {
                 treeItemList.add(part);
-            } else {
-                VariableDeclaration varDecl = bpelVar.getVarDecl();
-                if (varDecl != null) {
-                    treeItemList.add(varDecl);
-                }
+            } 
+            //
+            AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
+            if (varDecl != null) {
+                treeItemList.add(varDecl);
             }
         }
         //
@@ -271,7 +226,7 @@ public class PathConverter {
     public static XPathExpression constructXPath(BpelEntity base, 
             RestartableIterator<Object> pathItr) {
         //
-        XPathModel xPathModel = BpelXPathModelFactory.create(base);
+        XPathModel xPathModel = BpelXPathModelFactory.create(base); 
         XPathModelFactory factory = xPathModel.getFactory();
         pathItr.restart();
         //
@@ -375,6 +330,91 @@ public class PathConverter {
         }
         //
         return sb.toString();
+    }
+
+    public static XPathSchemaContext constructContext(
+            RestartableIterator<Object> pathItr) {
+        //
+        SchemaContextBuilder builder = new SchemaContextBuilder();
+        return builder.constructContext(pathItr, null);
+    }
+    
+    public static class SchemaContextBuilder {
+        Part part = null;
+        AbstractVariableDeclaration var = null;
+        
+        /**
+         * Builds an XPathSchemaContext by a RestartableIterator. 
+         * It is implied that the RestartableIterator provides a collection of 
+         * tree items' data objects in order from leafs to the tree root.
+         * 
+         * @param pathItr
+         * @return
+         */
+        public XPathSchemaContext constructContext(
+                RestartableIterator<Object> pathItr, 
+                XPathSchemaContext initialContext) {
+            //
+            pathItr.restart();
+            //
+            return constructContextImpl(pathItr, initialContext);
+        }
+
+        private VariableSchemaContext buildVariableSchemaContext() {
+            VariableDeclaration varDecl = null;
+            if (var instanceof VariableDeclaration) {
+                varDecl = (VariableDeclaration)var;
+            } else if (var instanceof VariableDeclarationWrapper) {
+                varDecl = ((VariableDeclarationWrapper)var).getDelegate();
+            }
+            XPathBpelVariable xPathVariable = new XPathBpelVariable(varDecl, part);
+            if (xPathVariable != null) {
+                return new VariableSchemaContext(xPathVariable);
+            }
+            //
+            return null;
+        }
+        
+        private XPathSchemaContext constructContextImpl(Iterator<Object> pathItr, 
+                XPathSchemaContext baseContext) {
+            //
+            if (!pathItr.hasNext()) {
+                return baseContext;
+            }
+            //
+            Object obj = pathItr.next(); 
+            return constructContext(obj, pathItr, baseContext);
+        }
+        
+        private XPathSchemaContext constructContext(Object obj, Iterator<Object> pathItr, 
+                XPathSchemaContext baseContext) {
+            //
+            if (obj instanceof SchemaComponent) {
+                return new SimpleSchemaContext(
+                        constructContextImpl(pathItr, baseContext), 
+                        (SchemaComponent)obj);
+            } else if (obj instanceof AbstractPredicate) {
+                return new SimpleSchemaContext(
+                        constructContextImpl(pathItr, baseContext), 
+                        ((AbstractPredicate)obj).getSComponent());
+            } else if (obj instanceof AbstractVariableDeclaration) {
+                var = (AbstractVariableDeclaration)obj;
+                return buildVariableSchemaContext();
+            } else if (obj instanceof Part) {
+                part = (Part)obj;
+                return constructContextImpl(pathItr, baseContext);
+            } else if (obj instanceof AbstractTypeCast) {
+                AbstractTypeCast typeCast = (AbstractTypeCast)obj;
+                Object castedObj = typeCast.getCastedObject();
+                XPathSchemaContext castedContext = constructContext(
+                        castedObj, pathItr, 
+                        constructContextImpl(pathItr, baseContext));
+                return new CastSchemaContext(castedContext, typeCast);
+            } else {
+                return baseContext;
+            }
+        }
+        
     }
     
 }

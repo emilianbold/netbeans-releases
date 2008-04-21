@@ -232,8 +232,8 @@ public class DefaultTablePanel extends javax.swing.JPanel {
     
     public void setTitle(String title) {
         javax.swing.JLabel label = new javax.swing.JLabel(title);
-        label.setFont(new Font(getFont().getFontName(), Font.PLAIN, getFont().getSize() + 2));
-//        label.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        Font font = label.getFont();
+        label.setFont(font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize() + 2));
         label.setBorder(new javax.swing.border.EmptyBorder(5,5,5,0));
         add(label, java.awt.BorderLayout.NORTH);
     }

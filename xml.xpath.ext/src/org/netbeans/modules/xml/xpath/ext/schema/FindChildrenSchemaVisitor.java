@@ -41,6 +41,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.Collection;
+import org.netbeans.modules.xml.schema.model.AttributeReference;
 
 /**
  * This schema visitor is inteneded to look for a children elements or attributes 
@@ -70,6 +71,42 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 //out();
 //out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
+    
+    @Override
+    public void visit(ElementReference er) {
+        if (!isAttribute) {
+            //
+            // # 105159, #130053
+            if (!isXdmDomUsed(er)) {
+                checkComponent(er);
+            }
+            //
+            String name = fastGetRefName(er.getRef());
+            if (!mySoughtName.equals(name)) {
+                return;
+            }
+            super.visit(er);
+        }
+    }
+    
+    @Override
+    public void visit(AttributeReference ar) {
+        if (isAttribute) {
+            //
+            // # 105159, #130053
+            if (!isXdmDomUsed(ar)) {
+                checkComponent(ar);
+            }
+            //
+            String name = fastGetRefName(ar.getRef());
+            if (!mySoughtName.equals(name)) {
+                return;
+            }
+            super.visit(ar);
+        }
+    }
+    
+    //-----------------------------------------------------------------
     
     public List<SchemaComponent> getFound() {
         return myFound;

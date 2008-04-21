@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -129,7 +129,7 @@ public class ServletDebuggingTest extends JellyTestCase {
     }
 
     /** Step into in Servlet.
-     * - call Debug File popup on servlets node
+     * - call Debug "DivideServlet.java" popup on servlets node
      * - wait until debugger stops at previously set breakpoint
      * - set sources from TestFreeformLibrary to be used for debugging
      * - call Run|Step Into from main menu
@@ -140,7 +140,12 @@ public class ServletDebuggingTest extends JellyTestCase {
      * - finish debugger
      */
     public void testStepInto() {
-        new ActionNoBlock(null, new DebugAction().getPopupPath()).perform(servletNode);
+        // "Debug "DivideServlet.java""
+        String debugFileItem = 
+                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
+                                        "LBL_DebugSingleAction_Name",
+                                        new Object[] {new Integer(1), servletNode.getText()});
+        new ActionNoBlock(null, debugFileItem).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");

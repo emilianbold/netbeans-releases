@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -51,15 +51,15 @@ import static org.netbeans.modules.print.impl.util.UI.*;
  * @version 2006.03.09
  */
 public enum Macro {
-  NAME, // name of area
-  USER, // user name
+  NAME, // the name of area
+  USER, // the user name
   ROW, // row number
   COLUMN, // column number
   COUNT, // total count
-  MODIFIED_DATE, // date of last modification
-  MODIFIED_TIME, // time of last modification
-  PRINTED_DATE, // date of printing
-  PRINTED_TIME; // time of printing
+  MODIFIED_DATE, // the date of last modification
+  MODIFIED_TIME, // the time of last modification
+  PRINTED_DATE, // the date of printing
+  PRINTED_TIME; // the time of printing
 
   public interface Listener {
 

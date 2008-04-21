@@ -29,13 +29,11 @@ package org.netbeans.modules.javascript.hints;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
@@ -43,10 +41,7 @@ import org.mozilla.javascript.Token;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.modules.javascript.hints.spi.AstRule;
 import org.netbeans.modules.javascript.hints.spi.Description;
 import org.netbeans.modules.javascript.hints.spi.EditList;
@@ -55,15 +50,8 @@ import org.netbeans.modules.javascript.hints.spi.HintSeverity;
 import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
 import org.netbeans.modules.javascript.hints.spi.RuleContext;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  * JavaScript can contain unicode, but not all browsers support it.
@@ -80,14 +68,7 @@ public class UnicodeConvert implements AstRule {
     }
 
     public Set<Integer> getKinds() {
-        Set<Integer> integers = new HashSet<Integer>();
-        // XXX root
-//        integers.add(-1);
-//        integers.add(NodeTypes.LOCALASGNNODE);
-//        integers.add(NodeTypes.DEFNNODE);
-//        integers.add(NodeTypes.DEFSNODE);
-        integers.add(Token.STRING);
-        return integers;
+        return Collections.singleton(Token.STRING);
     }
     
     public void run(RuleContext context, List<Description> result) {
@@ -124,9 +105,10 @@ public class UnicodeConvert implements AstRule {
                 OffsetRange range = new OffsetRange(lexOffset, lexOffset+1);
                 List<Fix> fixList = new ArrayList<Fix>();
                 fixList.add(new ConvertFix(info, lexOffset, c));
-                    String displayName = getDisplayName();
-                    Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
-                    result.add(desc);
+                fixList.add(new MoreInfoFix("unicodeconvert")); // NOI18N
+                String displayName = getDisplayName();
+                Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
+                result.add(desc);
             }
         }
         

@@ -155,15 +155,5 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
        
         return methodBody;
     }
-    
-    @Override
-    public boolean canShowResourceInfo() {
-        return false;
-    }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
-    
+ 
 }

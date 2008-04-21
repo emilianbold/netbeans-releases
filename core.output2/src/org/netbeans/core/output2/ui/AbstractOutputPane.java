@@ -212,8 +212,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         oc.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         textView.setCaret (oc);
         
+        getCaret().setBlinkRate(500);
         getCaret().setVisible(true);
-        getCaret().setBlinkRate(0);
         getCaret().setSelectionVisible(true);
         
         getVerticalScrollBar().getModel().addChangeListener(this);
@@ -290,8 +290,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.setEditorKit(kit);
         textView.setDocument(doc);
         updateKeyBindings();
+        getCaret().setBlinkRate(500);
         getCaret().setVisible(true);
-        getCaret().setBlinkRate(0);
     }
     
     /**
@@ -661,23 +661,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     
     private class OCaret extends DefaultCaret {
         @Override
-        public void setSelectionVisible(boolean val) {
-            super.setSelectionVisible(true);
-            super.setBlinkRate(0);
-        }
-        @Override
-        public boolean isSelectionVisible() {
-            return true;
-        }
-        @Override
-        public void setBlinkRate(int rate) {
-            super.setBlinkRate(0);
-        }
- 
-        @Override
-        public boolean isVisible() { return true; }
-        
-        @Override
         public void paint(Graphics g) {
             JTextComponent component = textView;
             if(isVisible() && y >= 0) {
@@ -715,7 +698,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 //                    System.err.println("Can't render cursor");
                 }
             }
-        }    
+        }
         
         private boolean _contains(int X, int Y, int W, int H) {
             int w = this.width;
@@ -774,6 +757,16 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if( !e.isConsumed() ) {
                 super.mouseReleased(e);
             }
+        }
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            // do not change caret or selection visibility
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            // do not change caret or selection visibility
         }
     }
 }

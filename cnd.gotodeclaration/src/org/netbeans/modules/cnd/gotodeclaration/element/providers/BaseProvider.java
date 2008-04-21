@@ -37,9 +37,9 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 
@@ -97,7 +97,7 @@ public abstract class BaseProvider implements ElementProvider {
                 return isCancelled;
             }
 
-            protected abstract void processProject(CsmProject project, ResultSet result, NameMatcher comparator);
+            protected abstract void processProject(CsmProject project, ResultSet result, CsmSelect.CsmFilter filter);
 
             public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
                 if( TRACE ) System.err.printf("%s.getElements(%s, %s, %s)\n", getBriefClassName(), project, text, type);
@@ -106,8 +106,8 @@ public abstract class BaseProvider implements ElementProvider {
             }            
             
             /* package */ Collection<? extends ElementDescriptor> getElements(CsmProject csmProject, String text, SearchType type, boolean first) {
-                NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
-                if( comparator == null ) {
+                CsmSelect.CsmFilter filter = NameMatcherFactory.createNameFilter(text, type);
+                if (filter == null) {
                     return Collections.emptyList();
                 }
 
@@ -121,7 +121,7 @@ public abstract class BaseProvider implements ElementProvider {
                     if( ! processedProjects.contains(csmProject) ) {
                         processedProjects.add(csmProject);
                         currentProject = csmProject;
-                        processProject(csmProject, result, comparator);
+                        processProject(csmProject, result, filter);
                         currentProject = null;
                         if( PROCESS_LIBRARIES ) {
                             for( CsmProject lib : csmProject.getLibraries() ) {
@@ -132,7 +132,7 @@ public abstract class BaseProvider implements ElementProvider {
                                     if( ! processedProjects.contains(lib) ) {
                                         processedProjects.add(lib);
                                         currentProject = lib;
-                                        processProject(lib, result, comparator);
+                                        processProject(lib, result, filter);
                                         currentProject = null;
                                     }
                                 }
@@ -179,8 +179,15 @@ public abstract class BaseProvider implements ElementProvider {
     
     
     public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
-        cancel();
-	delegate = createDelegate();
+        if( first ) {
+            cancel();
+            delegate = createDelegate();
+        }
+        synchronized (this) {
+            if( delegate == null ) {
+                delegate = createDelegate();
+            }
+        }
         return delegate.getElements(project, text, type, first);
     }
     

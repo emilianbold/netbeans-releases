@@ -108,7 +108,7 @@ implements FileChangeListener, DataObject.Container {
     * Whenever a new change notification arrives (thru file listener)
     * the previous task is canceled (if not running) and new is created.
     */
-    transient private RequestProcessor.Task refreshTask;
+    transient private volatile RequestProcessor.Task refreshTask;
     /** task that is non-null if a setOrder has been called
      */
     transient private volatile RequestProcessor.Task comparatorTask;
@@ -272,14 +272,25 @@ implements FileChangeListener, DataObject.Container {
     /** Blocks if the processing of content of folder is in progress.
     */
     public void waitProcessingFinished () {
-        Task t = comparatorTask;
-        if (t != null) {
-            t.waitFinished ();
+        {
+            Task t;
+            synchronized (this) {
+                t = comparatorTask;
+                err.log(Level.FINE, "Waiting for comparator {0}", t);
+            }
+            if (t != null) {
+                t.waitFinished ();
+            }
         }
-        
-        t = refreshTask;
-        if (t != null) {
-            t.waitFinished ();
+        {
+            Task t;
+            synchronized (this) {
+                t = refreshTask;
+                err.log(Level.FINE, "Waiting for refresh {0}", t); 
+            }
+            if (t != null) {
+                t.waitFinished ();
+            }
         }
     }
 
@@ -393,6 +404,7 @@ implements FileChangeListener, DataObject.Container {
         if (REFRESH_TIME < 0) {
             REFRESH_TIME = 10;
         }
+        err.fine("getRefreshTime: " + REFRESH_TIME);
         return REFRESH_TIME;
     }
     

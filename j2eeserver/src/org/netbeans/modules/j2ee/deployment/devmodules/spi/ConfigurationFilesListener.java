@@ -60,7 +60,7 @@ public interface ConfigurationFilesListener {
 
     /**
      * A configuration file has been removed.
-     * @param added the newly removed configuration file.
+     * @param removed the removed configuration file.
      */
     public void fileDeleted(FileObject removed);
     

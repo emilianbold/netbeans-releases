@@ -119,18 +119,20 @@ public class JsElementCtx {
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
 
+    /*
     public JsElementCtx(IndexedFunction element, CompilationInfo info) {
-        Node[] rootRet = new Node[1];
-        Node node = AstUtilities.getForeignNode(element, rootRet);
-        Node root = rootRet[0];
+        CompilationInfo[] infoRet = new CompilationInfo[1];
+        Node node = AstUtilities.getForeignNode(element, infoRet);
+        Node root = AstUtilities.getRoot(infoRet[0]);
 
+// TODO - shouldn't I use infoRet[0] instead of info here?
         Element e = AstElement.getElement(info, node);
 
         FileObject fo = element.getFileObject();
         document = RetoucheUtils.getDocument(null, fo);
 
         initialize(root, node, e, fo, info);
-    }
+    }*/
 
     private void initialize(Node root, Node node, Element element, FileObject fileObject,
         CompilationInfo info) {

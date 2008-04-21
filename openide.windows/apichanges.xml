@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
 	ie. be able to reopen at the same place and some TopComponent wants to be removed from winsys model.
 	We added client boolean property KeepNonPersistentTCInModelWhenClosed. When this property is not set
 	nn persistent TopComponent is removed from model when closed - it is original behavior before fix of
-	issue #101700. If client property is set (!= null) then TopComponent is kept in model. It means that
+	issue #101700. If client property is set (to Boolean.TRUE) then TopComponent is kept in model. It means that
 	client must explicitly set this client property to get behavior requested by issue #101700.
     </description>
     <issue number="121218"/>

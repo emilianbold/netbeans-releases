@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -64,8 +64,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -95,7 +94,7 @@ final class Element
   }
 
   public String getText() {
-    return RefactorUtil.getName(myComponent);
+    return EditorUtil.getName(myComponent);
   }
 
   public String getText(boolean isLogical) {
@@ -103,11 +102,11 @@ final class Element
   }
 
   public String getDisplayText() {
-    return RefactorUtil.getHtmlName(myComponent);
+    return EditorUtil.getHtmlName(myComponent);
   }
 
   public Icon getIcon() {
-    return RefactorUtil.getIcon(myComponent);
+    return EditorUtil.getIcon(myComponent);
   }
 
   public PositionBounds getPosition() {
@@ -141,7 +140,7 @@ final class Element
   }
        
   public void openInEditor() {
-    Util.goToSource(myComponent);
+    EditorUtil.goToSource(myComponent);
   }
 
   public Object getUserObject() {

@@ -42,6 +42,7 @@ public class AstFieldElement extends AstElement {
         return name;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         if (modifiers == null) {
             // TODO - find access level!

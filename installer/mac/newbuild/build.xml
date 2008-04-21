@@ -22,7 +22,10 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Mac Installer" basedir="." default="build-all-dmg">
     
     <import file="${basedir}/build.pro"/>
-    <property file="${basedir}/Bundle.properties"/>     
+    <property file="${basedir}/Bundle.properties"/>
+    <condition property="ml.suffix" value="-ml" else="">
+        <istrue value="${mlbuild}"/>
+    </condition>      
             
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
@@ -66,84 +69,28 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
         <mkdir dir="build"/> 
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="cnd"/>
-            <property name="module.name" value="cpp"/>          
-        </ant>         
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="apisupport"/>
-            <property name="module.name" value="javase"/>          
-        </ant> 
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="profiler"/>
-            <property name="module.name" value="javase"/>          
-        </ant> 
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="java"/>
-            <property name="module.name" value="javase"/>          
-        </ant>         
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="harness"/>
-            <property name="module.name" value="javase"/>          
-        </ant>        
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="soa"/>
-            <property name="module.name" value="soa"/>          
-        </ant>          
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="ruby"/>
-            <property name="module.name" value="ruby"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="php"/>
-            <property name="module.name" value="php"/>          
-        </ant>            
-        
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="enterprise"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="identity"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="xml"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="visualweb"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>        
-        
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="ide"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>  
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="nb6.0-etc"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="platform"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>  
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="gsf"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>    
+        <property name="clusters" value="cnd(cpp),
+                                         apisupport(javase), profiler(javase), java(javase), harness(javase),
+                                         soa(soa),
+                                         ruby(ruby),                                       
+                                         php(php), 
+                                         enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee),
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
+        <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
+            <ant target="unzip-cluster"/>                           
+        </for-each>                                                  
     </target>
     
     <target name="unzip-cluster">
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml_postfix}.zip"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
         </exec>      
     </target>
     
-    <target name="size-pack-module" depends="instrument-module" description="Count up size of the module, pack200">           
-        <exec executable="sh" failonerror="yes" outputproperty="size">
+    <target name="size-pack-module" description="Count up size of the module, pack200">           
+        <exec executable="sh" failonerror="no" outputproperty="size">
             <arg value="-c"/>
             <arg value="cd ${basedir}/netBeans/${module.name}; du -sk build | sed 's/[\t]*build//'"/>
         </exec>        
@@ -153,41 +100,8 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
         </exec>           
     </target>
-
-    <target name="init-instrumentation">
-	<condition property="do.instrumentation">
-	    <and>
-	        <isset property="instrument.jars"/>
-	        <equals arg1="${instrument.jars}" arg2="true"/> 
-	    </and>
-        </condition>
-    </target>
-
-    <target name="add-instrumentation-option" if="do.instrumentation">
-        <echo message="Adding instrumentation option to etc/netbeans.conf"/>
-	<property name="baseide.dir" value="${basedir}/netBeans/baseide/build/netbeans"/>
-	<mkdir dir="${baseide.dir}/emma-lib"/>
-        <copy file="${emma.jar.file}" todir="${baseide.dir}/emma-lib"/>
-        <chmod dir="${baseide.dir}/emma-lib" perm="a+w"/>
-
-        <replace 
-              file="${baseide.dir}/etc/netbeans.conf" 
-              token="netbeans_default_options=&quot;"
-              value="netbeans_default_options=&quot;--cp:p &quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/emma.jar&quot;\&quot;&quot; -J-Demma.coverage.file=&quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/netbeans_coverage.ec&quot;\&quot;&quot; -J-Dnetbeans.security.nocheck=true "/>
-    </target>
-
-    <target name="instrument-module" if="do.instrumentation">
-	<echo message="Instrumenting module ${module.name}..."/>
-	<exec executable="${bash.executable}" failonerror="true" dir="${basedir}/netBeans/${module.name}/build/netbeans">
-                <arg value="${emma.sh.file}"/>
-                <arg value="."/>
-                <arg value="${emma.txt.file}"/>
-                <arg value="${emma.jar.file}"/>
-                <arg value="$[emma.out.file}"/>
-        </exec>
-    </target>    
     
-    <target name="build-pkg" depends="unzip-nb,init-instrumentation,add-instrumentation-option" description="Builds NB and packs packages" >                  
+    <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>            
         </ant>            
@@ -195,37 +109,16 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="build-modules"/>       
     </target>
     
-    <target name="build-modules">
-        <ant target="build-module">
-            <property name="module.name" value="javase"/>
-            <property name="module.title" value="${javase-title}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="javaee"/>
-            <property name="module.title" value="${javaee-title}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="cpp"/>
-            <property name="module.title" value="${cpp-title}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="ruby"/>
-            <property name="module.title" value="${ruby-title}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="soa"/>
-            <property name="module.title" value="${soa-title}"/>          
-        </ant>      
-        
-        <ant target="build-module">
-            <property name="module.name" value="php"/>
-            <property name="module.title" value="${php-title}"/>          
-        </ant>          
-        
+    <target name="build-modules">        
+        <property name="modules" value="javase(${javase-title}),
+                                        javaee(${javaee-title}),
+                                        cpp(${cpp-title}),
+                                        ruby(${ruby-title}),
+                                        soa(${soa-title}),
+                                        php(${php-title})"/>        
+        <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
+            <ant target="build-module"/>                           
+        </for-each>                        
     </target>
     
     <target name="build-module">
@@ -242,8 +135,11 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="TITLE" value="${module.title}"/>
             </filterset>
-        </copy>        
+        </copy>
         
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/env.sh"/> 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/addproduct_id.sh"/>        
+                        
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
@@ -251,35 +147,21 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
-        <property file="${basedir}/build/sizes.pro"/>  
-
-        <mkdir dir="dist"/>  
-        <ant target="build-dmg" > 
-           <property name="bundle.type" value=""/>           
-           <property name="packages" value="./build/*pkg"/>          
-        </ant>   
-        <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javase"/>                
-           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg"/>          
-        </ant> 
-        <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javaee"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg"/>          
-        </ant> 
-        <ant target="build-dmg"> 
-           <property name="bundle.type" value="-cpp"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/cpp.pkg"/>          
-        </ant> 
-        <ant target="build-dmg"> 
-           <property name="bundle.type" value="-ruby"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/ruby.pkg"/>          
-        </ant>
-        <ant target="build-dmg"> 
-           <property name="bundle.type" value="-php"/>         
-           <property name="packages" value="./build/baseide.pkg ./build/php.pkg"/>          
-        </ant>       
-        <delete file="${basedir}/build/sizes.pro"/>
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                             
+        <mkdir dir="dist"/>                  
+        <property name="bundles" value="        (./build/*pkg),
+                                             -javase(./build/baseide.pkg ./build/javase.pkg),
+                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg),
+                                             -cpp(./build/baseide.pkg ./build/cpp.pkg),
+                                             -ruby(./build/baseide.pkg ./build/ruby.pkg),
+                                             -php(./build/baseide.pkg ./build/php.pkg)"/>                                                 
+        <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
+            <delete dir="${basedir}/dist_dmg"/>                          
+            <ant target="build-dmg">
+                 <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+            </ant>     
+        </for-each>             
+        <delete file="${basedir}/build/sizes.pro"/>                                                
     </target>     
             
     <target name="prepare-lproj-dirs">  
@@ -292,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
        
         <condition property="nb.locales.nonzero.length">
             <and>
-                <isset property="${nb.locales}"/>
+                <isset property="nb.locales"/>
                 <length string="${nb.locales}" when="greater" length="0"/>
             </and>
         </condition>   
@@ -314,12 +196,14 @@ Microsystems, Inc. All Rights Reserved.
         </for-each>            
         <delete dir="${resources.full.dir}"/>
     </target> 
-  
-    <target name="copy-translated-files" if="do.copy.translated.files">    
-        <copy todir="${resources.full.dir}">   
-            <fileset dir="${basedir}/../translatedfiles/"/>
-        </copy>
-    </target>    
+       
+    <target name="copy-translated-files" if="do.copy.translated.files">         
+        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false" failonerror="false">                    
+            <fileset dir="${translatedfiles.src}"> 
+                <include name="**/mac/newbuild/**"/>
+            </fileset>
+        </copy>               
+    </target>        
        
     <target name="init-locale-propeties">
         <echo message="Init locale properties for locale: ${locale}"/>
@@ -343,29 +227,24 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${mpkgfile}/Contents/Resources/${locale.dir}.lproj"/>
         <!-- copy Welcome.html and Localizable.strings -->                 
         <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
-              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html"/>               
-        <exec executable="sh" failonerror="yes" outputproperty="size">
+              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
+        <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
-                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//' 
+                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//;
+                s/'\$${buildnumber}'/'${buildnumber}'/;s/'\$${tomcat.version}'/'${tomcat.version}'/' 
                 > ${resources.full.dir}/Localizable.strings"/>
-        </exec>                                           
-                            
-        <move file="${resources.full.dir}/Localizable.strings"
-              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Localizable.strings">
-            <filterchain>                       
-                <replacetokens begintoken="$" endtoken="}">
-                    <token key="{buildnumber" value="${buildnumber}"/>  
-                    <token key="{tomcat.version" value="${tomcat.version}"/>                        
-                </replacetokens>
-            </filterchain>
-        </move>                                                    
+        </exec>         
+        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkgfile}/Contents/Resources/${locale.dir}.lproj" 
+                      reverse="true" includes="Localizable.strings"/>                        
     </target>     
-            
-    <target name="build-dmg">     
-        <echo message="Building dmg for ${dmg.prefix.name}${bundle.type}..."/>             
-        <delete dir="dist_dmg"/>        
-        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>               
+                            
+    <target name="build-dmg">   
+        <property file="${basedir}/build/sizes.pro"/>         
+        <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
+        <property name="mpkgfile" value="dist_dmg/${mpkgname}.mpkg"/>   
+        <mkdir dir="${mpkgfile}/Contents/Packages"/> 
+        
         <copy file="${basedir}/dmg/Resources/bgimage.tif" 
               tofile="${mpkgfile}/Contents/Resources/background.tif"/>  
         <copy file="${basedir}/dmg/Resources/license.txt" 
@@ -385,23 +264,19 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
-                <filter token="SIZE_PHP" value="${sizeof.php}"/>                 
+                <filter token="SIZE_PHP" value="${sizeof.php}"/>                   
             </filterset>
         </copy>            
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RPf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
-        </exec>                      
-                  
-        <condition property="ml.suffix" value="-ml" else="">
-            <istrue value="${mlbuild}"/>
-        </condition>  
+            <arg value="cp -RPf ${packages} ./dist_dmg/'${mpkgname}'.mpkg/Contents/Packages"/>
+        </exec>                                            
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml.suffix}'.dmg '${appname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkgname}'"/>
         </exec>  
-        <delete dir="dist_dmg"/>
+        <delete dir="dist_dmg"/>                                                   
     </target>             
 </project>          

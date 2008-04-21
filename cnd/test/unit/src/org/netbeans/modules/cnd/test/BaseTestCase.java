@@ -173,7 +173,7 @@ public abstract class BaseTestCase extends NbTestCase {
                 // copy golden
                 File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
                 CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
-                fail("Files differ; check " + goldenDataFileCopy); // NOI18N
+                fail("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy); // NOI18N
             }             
         } catch (IOException ioe) {
             fail("Could not obtain working direcory " + ioe); // NOI18N

@@ -48,6 +48,9 @@ public final class BpelXPathModelFactory {
      * Try to create a new XPath model for BPEL. 
      * The BpelEntity is used as the context.
      * 
+     * ATTENTION! If you use this method, be sure you specify a 
+     * Type Cast Resolver. See the method setXPathCastResolver().
+     * 
      * @param expression text to parse
      * @param contextEntity BPEL entity which is used as context
      * @return the new XPath model.

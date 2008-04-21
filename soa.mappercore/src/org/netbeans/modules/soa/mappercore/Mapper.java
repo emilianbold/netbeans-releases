@@ -242,19 +242,19 @@ public class Mapper extends JPanel {
 
         invalidateNodes();
         
-        for (int i = expandedRightPathes.size() - 1; i >= 0; i--) {
-            TreePath treePath = expandedRightPathes.get(i);
-            if (!Utils.isTreePathExpandable(newFilteredModel, treePath)) {
-                expandedRightPathes.remove(i);
-            }
-        }
-        
-        for (int i = expandedGraphPathes.size() - 1; i >= 0; i--) {
-            TreePath treePath = expandedGraphPathes.get(i);
-            if (!Utils.isTreePathInModel(newFilteredModel, treePath)) {
-                expandedGraphPathes.remove(i);
-            }
-        }
+//        for (int i = expandedRightPathes.size() - 1; i >= 0; i--) {
+//            TreePath treePath = expandedRightPathes.get(i);
+//            if (!Utils.isTreePathExpandable(newFilteredModel, treePath)) {
+//                expandedRightPathes.remove(i);
+//            }
+//        }
+//        
+//        for (int i = expandedGraphPathes.size() - 1; i >= 0; i--) {
+//            TreePath treePath = expandedGraphPathes.get(i);
+//            if (!Utils.isTreePathInModel(newFilteredModel, treePath)) {
+//                expandedGraphPathes.remove(i);
+//            }
+//        }
         
         for (int i = expandedLeftPathes.size() - 1; i >= 0; i--) {
             TreePath treePath = expandedLeftPathes.get(i);
@@ -657,11 +657,16 @@ public class Mapper extends JPanel {
     public void applyExpandedPathes(List<TreePath> rightTreePathes) {
         if (rightTreePathes == null || rightTreePathes.isEmpty()) return;
 
+        MapperModel model = getFilteredModel();
+        if (model == null) return;
+                    
         for (TreePath treePath : rightTreePathes) {
-            MapperNode node = getNode(treePath, true);
-            if (node != null && !node.isLeaf() && node.isCollapsed()) {
-                node.setExpanded(true);
-                fireNodeExpanded(treePath);
+            if (Utils.isTreePathExpandable(model, treePath)) {
+                MapperNode node = getNode(treePath, true);
+                if (node != null && !node.isLeaf() && node.isCollapsed()) {
+                    node.setExpanded(true);
+                    fireNodeExpanded(treePath);
+                }
             }
         }
     }
@@ -674,11 +679,13 @@ public class Mapper extends JPanel {
         if (model == null) return;
         
         for (TreePath treePath : rightTreePathes) {
-            Graph graph = model.getGraph(treePath);
-            if (graph != null && !graph.isEmpty()) {
-                MapperNode node = getNode(treePath, true);
-                if (node != null && node.isGraphCollapsed()) {
-                    node.setGraphExpanded(true);
+            if (Utils.isTreePathInModel(model, treePath)) {
+                Graph graph = model.getGraph(treePath);
+                if (graph != null && !graph.isEmpty()) {
+                    MapperNode node = getNode(treePath, true);
+                    if (node != null && node.isGraphCollapsed()) {
+                        node.setGraphExpanded(true);
+                    }
                 }
             }
         }

@@ -110,7 +110,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     }
     
     private void expandSelection( String preselectedFileName ) {
-        
         Node root = manager.getRootContext();
         Children ch = root.getChildren();
         if ( ch == Children.LEAF ) {
@@ -144,7 +143,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             }
         }
         
-        
         if ( sel != null ) {
             // Select the node
             try {
@@ -154,7 +152,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 // No selection for some reason
             }
         }
-                
     }
     
     /** This method is called from within the constructor to
@@ -199,7 +196,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     // End of variables declaration//GEN-END:variables
         
     public static FileObject showDialog( SourceGroup[] folders, Class target, String preselectedFileName) {
-        
         BrowseFolders bf = new BrowseFolders( folders, target, preselectedFileName);
 
         JButton selectButton = new JButton( NbBundle.getMessage(BrowseFolders.class,(target == DataFolder.class?"LBL_SelectFolder":"LBL_SelectFile"))); 
@@ -233,10 +229,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
             
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-        dialog.show();
+        dialog.setVisible(true);
         
         return optionsListener.getResult();
-                
     }
     
     
@@ -244,7 +239,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     
     /** Children to be used to show FileObjects from given SourceGroups
      */
-	 
     private final class SourceGroupsChildren extends Children.Keys {
         
         private SourceGroup[] groups;
@@ -260,18 +254,19 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             this.group = group;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             setKeys( getKeys() );
         }
         
+        @Override
         protected void removeNotify() {
             setKeys( Collections.EMPTY_SET );
             super.removeNotify();
         }
         
         protected Node[] createNodes(Object key) {
-            
             FileObject fObj = null;
             SourceGroup group = null;
             boolean isFile=false;
@@ -302,8 +297,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             }
         }
                 
+        // FIXME: Collection is filled with objects of different types!
+        // (Arrays.asList( groups ) versus ArrayList children)
         private Collection getKeys() {
-			
             if ( groups != null ) {
                 return Arrays.asList( groups );                
             }
@@ -331,11 +327,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 
                 return children;
             }
-			
         }
         
         private class Key {
-            
             private FileObject folder;
             private SourceGroup group;
             
@@ -343,16 +337,12 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 this.folder = folder;
                 this.group = group;
             }
-            
-            
         }
         
     }
 
-    private class FileObjectComparator implements java.util.Comparator {
-        public int compare(Object o1, Object o2) {
-            FileObject fo1 = (FileObject)o1;
-            FileObject fo2 = (FileObject)o2;
+    private class FileObjectComparator implements java.util.Comparator<FileObject> {
+        public int compare(FileObject fo1, FileObject fo2) {
             return fo1.getName().compareTo(fo2.getName());
         }
     }
@@ -392,8 +382,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                     }
                     */
                 }
-                
-                
             }
         }
         

@@ -125,11 +125,15 @@ public class AstNode {
                 + endOffset() + ">\n" + childrenText.toString(); 
     }
     
+    String signature() {
+        return name() + "[" + type() + "]";
+    }
+    
     public AstNode parent() {
         return parent;
     }
     
-       /** returns the AST path from the root element */
+    /** returns the AST path from the root element */
     public AstPath path() {
         return new AstPath(null, this);
     }

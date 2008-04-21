@@ -221,7 +221,9 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 APTToken prev = null;
                 while (!APTUtils.isEOF(token)) {
                     if (token.getOffset() >= startOffset) {
-                        if (APTUtils.isID(token) && name.equals(token.getText())) {
+                        int id = token.getType();
+                        if ((id == APTTokenTypes.ID || id == APTTokenTypes.ID_DEFINED) &&
+                                name.equals(token.getText())) {
                             // this is candidate to resolve
                             if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
                                 tokens.add(token);

@@ -69,7 +69,6 @@
     <folder name="SaaSServices">
         <folder name="Flickr">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.flickr.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/flickr/resources/profile.properties"/>
             <file name="Flickr.xml" url="/org/netbeans/modules/websvc/saas/services/flickr/resources/Flickr.xml"/>
         </folder>
     </folder>

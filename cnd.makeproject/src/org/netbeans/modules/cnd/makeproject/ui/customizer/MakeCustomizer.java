@@ -363,9 +363,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         private ExplorerManager manager;
         private BeanTreeView btv;
+        private String preselectedNodeName;
         
         CategoryView( Node rootNode, String preselectedNodeName ) {
-            
+            this.preselectedNodeName = preselectedNodeName;
             // See #36315
             manager = new ExplorerManager();
             
@@ -416,6 +417,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             super.addNotify();
             //btv.expandAll();
             expandCollapseTree(manager.getRootContext(), btv);
+            if (preselectedNodeName != null && preselectedNodeName.length() > 0) {
+                selectNode( preselectedNodeName );
+            }
         }
         
         private Node findNode(Node pnode, String name) {

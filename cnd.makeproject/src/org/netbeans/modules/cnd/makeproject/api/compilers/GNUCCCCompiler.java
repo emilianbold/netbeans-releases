@@ -134,6 +134,9 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         systemIncludeDirectoriesList = new PersistentList();
         systemPreprocessorSymbolsList = new PersistentList();
         String path = getPath();
+        if (path != null && path.length() == 0) {
+            return;
+        }
         if (path == null || !new File(path).exists()) {
             path = getDefaultPath();
         }

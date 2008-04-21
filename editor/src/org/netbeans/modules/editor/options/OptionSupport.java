@@ -124,7 +124,7 @@ public class OptionSupport extends SystemOption {
     protected String getContentType() {
         if (mimeType == null) {
             for(String s : KitsTracker.getInstance().getMimeTypes()) {
-                if (s.toLowerCase().contains(typeName.toLowerCase())) {
+                if (!BaseOptions.BASE.equals(typeName) && s.toLowerCase().contains(typeName.toLowerCase())) {
                     mimeType = s;
                     break;
                 }

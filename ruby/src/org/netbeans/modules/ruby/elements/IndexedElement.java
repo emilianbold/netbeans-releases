@@ -125,6 +125,7 @@ public abstract class IndexedElement extends RubyElement {
         return index;
     }
 
+    @Override
     public String getIn() {
         return getClz();
     }
@@ -153,6 +154,7 @@ public abstract class IndexedElement extends RubyElement {
         return new DefaultParserFile(getFileObject(), null, platform);
     }
 
+    @Override
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = RubyIndex.getFileObject(fileUrl);
@@ -166,6 +168,7 @@ public abstract class IndexedElement extends RubyElement {
         return fileObject;
     }
 
+    @Override
     public final Set<Modifier> getModifiers() {
         if (modifiers == null) {
             Modifier access = Modifier.PUBLIC;

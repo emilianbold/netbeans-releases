@@ -1,0 +1,28 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/20080403222904_add_names.rb
+
+
+
+Document 1
+Indexed:
+  class : AddNames
+  class-ig : addnames
+  extends : ActiveRecord::Migration
+  fqn : AddNames
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |CLASS|
+
+
+Document 2
+Indexed:
+  dbtable : posts
+
+Not Indexed:
+  dbcolumn : address;-
+  dbcolumn : newaddress
+  dbversion : 20080403222904

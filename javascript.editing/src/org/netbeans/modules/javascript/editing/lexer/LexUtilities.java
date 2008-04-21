@@ -103,12 +103,19 @@ public class LexUtilities {
 
     public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
         try {
+            if (info == null) {
+                return null;
+            }
             BaseDocument doc = (BaseDocument) info.getDocument();
             if (doc == null && forceOpen) {
                 doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
             }
             
             return doc;
+        } catch (ClassCastException ex) {
+            // TESTS! If data object for GSF isn't found it will be a FilterDocument
+            // rather than a BaseDocument
+            return NbUtilities.getBaseDocument(info.getFileObject(), true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;

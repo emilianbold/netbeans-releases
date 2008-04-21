@@ -292,15 +292,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 	    }
 	}
 
-	/**
-	 *  Returns Editor pane for private use.
-	 *  @return Editor pane for private use.
-	 */
-        @Override
-	public JEditorPane getEditorPane() {
-	    return pane;
-	}
-
 	/** Return the current line number */
 	public int getLineNumber() {
 	    int l = NbDocument.findLineNumber(support.getDocument(),

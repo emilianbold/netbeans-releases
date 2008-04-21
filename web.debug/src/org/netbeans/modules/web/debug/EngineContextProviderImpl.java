@@ -42,9 +42,13 @@
 package org.netbeans.modules.web.debug;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 
@@ -54,35 +58,69 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
  */
 public class EngineContextProviderImpl extends SourcePathProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(EngineContextProviderImpl.class.getName());
+    
     private static boolean verbose =
         System.getProperty ("netbeans.debugger.enginecontextproviderimpl") != null;
 
     private static final Set virtualFolders = new HashSet (Arrays.asList (
         new String[] {
-            "org",
-            "org/apache",
-            "org/apache/jsp"
+            "org", // NOI18N
+            "org/apache", // NOI18N
+            "org/apache/jsp" // NOI18N
         }
     ));
 
     
     /**
-     * Translates a relative path ("java/lang/Thread.java") to url 
-     * ("file:///C:/Sources/java/lang/Thread.java"). Uses GlobalPathRegistry
-     * if global == true.
-     *
-     * @param relativePath a relative path (java/lang/Thread.java)
-     * @param global true if global path should be used
-     * @return url
+     * This method is workaround for {@link org.netbeans.modules.debugger.jpda.ui.SmartSteppingImpl#stopHere}
+     * which is asking for relative paths representing folders. Based on this
+     * queries non-existent packages are filtered out next time. However folders
+     * representing org.apache.jsp usually does not exist and on the other hand
+     * they can't be filtered out (we would filter out any jsp).
+     * <p>
+     * In such case method is returning valid url to nonexistent directory.
+     * <p>
+     * {@inheritDoc}
      */
+    // FIXME this should be fixed in SmartSteppingImpl after 6.1
     public String getURL (String relativePath, boolean global) {
         if (verbose) System.out.println ("ECPI(JSP): getURL " + relativePath + " global " + global);
         if ((relativePath == null) || (relativePath.endsWith(".java"))) {
            return null; 
         }
-        if (virtualFolders.contains (relativePath) || relativePath.startsWith("org/apache/jsp")) {
+        if (virtualFolders.contains (relativePath) || relativePath.startsWith("org/apache/jsp")) { // NOI18N
             if (verbose) System.out.println ("ECPI(JSP):  fo virtual folder");
-            return "virtual folder";
+
+            String userDir = System.getProperty("netbeans.user"); // NOI18N
+            try {
+                if (userDir != null) {
+                    File virtual = new File(userDir, "var" + File.separator + "virtual" + System.currentTimeMillis()); // NOI18N                    
+                    String url = virtual.toURI().toURL().toString();
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Returning fake URL: " + url);
+                    }
+                    return url;
+                }
+            } catch (MalformedURLException ex) {
+                // return default
+            }
+            String temp = System.getProperty("java.io.tmpdir"); // NOI18N
+            try {
+                if (temp != null) {
+                    File virtual = new File(temp, "virtual" + System.currentTimeMillis()); // NOI18N
+                    String url = virtual.toURI().toURL().toString();
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Returning fake URL: " + url);
+                    }
+                    return url;
+                }
+            } catch (MalformedURLException ex) {
+                // return default
+            }
+
+            LOGGER.log(Level.INFO, "Both netbeans.user and java.io.tmpdir properties are missing, returning null");
+            return null;
         }
         return null;
     }

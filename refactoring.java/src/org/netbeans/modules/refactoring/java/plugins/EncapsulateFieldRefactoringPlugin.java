@@ -59,7 +59,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -89,7 +88,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -208,14 +206,14 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         if (getter != null) {
             Types types = javac.getTypes();
             if (!types.isSameType(field.asType(), getter.getReturnType())) {
-                String msg = new MessageFormat(NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter")).format (
-                    new Object[] {getter.getReturnType().toString()}
-                );
-                p = createProblem(p, true, msg);
+                String msg = NbBundle.getMessage(
+                        EncapsulateFieldRefactoringPlugin.class,
+                        "ERR_EncapsulateWrongGetter",
+                        getname,
+                        getter.getReturnType().toString());
+                p = createProblem(p, false, msg);
             }
-            if (getter.getEnclosingElement() != field.getEnclosingElement()) {
-                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateGetterExists"));
-            } else {
+            if (getter.getEnclosingElement() == field.getEnclosingElement()) {
                 currentGetter = ElementHandle.create(getter);
             }
         }
@@ -226,11 +224,9 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         
         if (setter != null) {
             if (TypeKind.VOID != setter.getReturnType().getKind()) {
-                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongSetter", null));
+                p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongSetter", setname, setter.getReturnType()));
             }
-            if (setter.getEnclosingElement() != field.getEnclosingElement()) {
-                p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "MSG_EncapsulateSetterExists"));
-            } else {
+            if (setter.getEnclosingElement() == field.getEnclosingElement()) {
                 currentSetter = ElementHandle.create(setter);
             }
         }
@@ -311,7 +307,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return mods;
     }
 
-    private static ExecutableElement findMethod(CompilationInfo javac, TypeElement clazz, String name, List<? extends VariableElement> params, boolean includeSupertypes) {
+    public static ExecutableElement findMethod(CompilationInfo javac, TypeElement clazz, String name, List<? extends VariableElement> params, boolean includeSupertypes) {
         TypeElement c = clazz;
         while (true) {
             for (Element elm : c.getEnclosedElements()) {
@@ -885,10 +881,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         null);
                 newNode = GeneratorUtilities.get(workingCopy).insertClassMember(newNode == null? node: newNode, setter);
             }
-            if (newNode == null) {
-                node = newNode;
-            }
-            return newNode;
+            
+            return newNode != null ? newNode : node;
         }
         
         private void resolveFieldDeclaration(VariableTree node, EncapsulateDesc desc) {

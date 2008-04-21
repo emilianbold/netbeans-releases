@@ -1132,13 +1132,33 @@ class TokenStream
     {
         return xmlIsAttribute;
     }
+    
+    // <netbeans>
+    private boolean skipUngetCheck;
+    // </netbeans>
 
     int getFirstXMLToken() throws IOException
     {
         xmlOpenTagsCount = 0;
         xmlIsAttribute = false;
         xmlIsTagContent = false;
+        // <netbeans>
+        try {
+            // If we try to unget the < when the previous character was a newline, the
+            // ungetchar call will abort. However, we're using unget in a very specific
+            // case here - we KNOW we're just going to read it again in the getNextXMLToken
+            // call so we don't have to abort in ungetchar for this case, so set a flag
+            // which suppresses the newline check in ungetchar. See issue #131832 for 
+            // a testcase where this fix was needed.
+            skipUngetCheck = true;
+        // </netbeans>
         ungetChar('<');
+        // <netbeans>
+        } finally {
+            skipUngetCheck = false;
+        }
+        // </netbeans>
+        
         return getNextXMLToken();
     }
 
@@ -1434,7 +1454,11 @@ class TokenStream
 // </netbeans>
         
         // can not unread past across line boundary
-        if (ungetCursor != 0 && ungetBuffer[ungetCursor - 1] == '\n')
+        // <netbeans>
+        // For the XML processing use of ungetChar we need this -- see for example issue 131832
+        if (!skipUngetCheck)
+        // </netbeans>
+          if (ungetCursor != 0 && ungetBuffer[ungetCursor - 1] == '\n')
             Kit.codeBug();
         ungetBuffer[ungetCursor++] = c;
     }

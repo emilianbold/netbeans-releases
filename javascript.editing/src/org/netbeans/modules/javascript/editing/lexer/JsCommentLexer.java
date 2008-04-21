@@ -85,6 +85,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         return null;
     }
     
+    @SuppressWarnings("empty-statement")
     public Token<JsCommentTokenId> nextToken() {
         int ch = input.read();
         
@@ -105,11 +106,13 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
             //TODO: EOF
             ch = input.read();
             
-            while (!Character.isJavaIdentifierStart(ch) && "@<.#{}".indexOf(ch) == (-1) && ch != EOF)
+            while (!Character.isJavaIdentifierStart(ch) && "@<.#{}".indexOf(ch) == (-1) && ch != EOF) {
                 ch = input.read();
+            }
             
-            if (ch != EOF)
+            if (ch != EOF) {
                 input.backup(1);
+            }
             return token(JsCommentTokenId.OTHER_TEXT);
         }
         
@@ -171,6 +174,10 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                         TokenUtilities.textEquals("@argument", text)) { // NOI18N
                     int index = ts.index();
                     String type = nextType(ts);
+                    if (type == null) {
+                        ts.moveIndex(index);
+                        ts.moveNext();
+                    }
                     String name = nextIdent(ts);
                     if (name != null) {
                         result.put(name, type);

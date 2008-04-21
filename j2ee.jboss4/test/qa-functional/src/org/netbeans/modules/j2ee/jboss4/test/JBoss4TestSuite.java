@@ -121,7 +121,7 @@ public class JBoss4TestSuite extends NbTestCase {
 
             JBInstantiatingIterator inst = new JBInstantiatingIterator();
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {inst.current()});
-            wizard.putProperty(org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard.PROP_DISPLAY_NAME, displayName);
+            wizard.putProperty("ServInstWizard_displayName", displayName);
             
             JBPluginProperties.getInstance().setInstallLocation(installLocation);
             JBPluginProperties.getInstance().setDomainLocation(serverPath);

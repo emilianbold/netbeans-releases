@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -112,6 +113,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private static FileObject fo = null;
     
+    private static Logger LOG = Logger.getLogger("gdb.logger"); // NOI18N
+    
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
@@ -158,12 +161,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                     if (src_fo != null) {
                         try {
-                            text.addLine("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                            text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
                         } catch (DataObjectNotFoundException doe) {
                             // do nothing
                         }
                     } else {
-                        text.addLine("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
+                        text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                     }
                     pos = combinedPos+1;
                 } else {
@@ -253,7 +256,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public Collection<RegisterValue> getRegisterValues() {
         Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
+            String name = regNames.get(idx);
+            if (name == null) {
+                LOG.severe("Unknown register: " + idx); // NOI18N
+                name = String.valueOf(idx);
+            }
+            res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }

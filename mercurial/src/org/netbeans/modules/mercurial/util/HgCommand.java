@@ -216,6 +216,8 @@ public class HgCommand {
     private static final String HG_STRIP_NOBACKUP_CMD = "-n"; // NOI18N
     private static final String HG_STRIP_FORCE_MULTIHEAD_CMD = "-f"; // NOI18N
 
+    private static final String HG_VERIFY_CMD = "verify"; // NOI18N
+
     private static final String HG_VERSION_CMD = "version"; // NOI18N
     private static final String HG_INCOMING_CMD = "incoming"; // NOI18N
     private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
@@ -452,6 +454,22 @@ public class HgCommand {
         List<String> list = exec(command);
         if (list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_STRIP_FAILED"), logger);
+        
+        return list;
+    }
+
+        public static List<String> doVerify(File repository, OutputLogger logger) throws HgException {
+        if (repository == null ) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_VERIFY_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (list.isEmpty())
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_VERIFY_FAILED"), logger);
         
         return list;
     }
@@ -782,17 +800,17 @@ public class HgCommand {
         command.add(HG_FETCH_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+
         
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
         String proxy = getGlobalProxyIfNeeded(defaultPull, true, logger);
+        List<String> env = new ArrayList<String>(); 
+        env.add(HG_MERGE_ENV);
         if(proxy != null){
-            List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
-            list = execEnv(command, env);
-        }else{
-            list = exec(command);
         }
+        list = execEnv(command, env);
 
         if (!list.isEmpty()) {
             if (isErrorAbort(list.get(list.size() -1))) {
@@ -1197,7 +1215,9 @@ public class HgCommand {
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(HG_LOG_DEBUG_CMD);
+        if(bGetFileInfo){
+            command.add(HG_LOG_DEBUG_CMD);
+        }
         
         String dateStr = handleRevDates(from, to);
         if(dateStr != null){
@@ -1644,9 +1664,9 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-
+        
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
-        String globalUsername = HgConfigFiles.getInstance().getUserName();
+        String globalUsername = HgModuleConfig.getDefault().getSysUserName();
         String username = null;
         if(projectUserName != null && projectUserName.length() > 0)
             username = projectUserName;

@@ -145,7 +145,11 @@ public class UpdateAction extends ContextAction {
         SvnClient client;
         UpdateOutputListener listener = new UpdateOutputListener();
         try {
-            client = Subversion.getInstance().getClient(repositoryUrl);            
+            client = Subversion.getInstance().getClient(repositoryUrl); 
+            // this isn't clean - the client notifies only files which realy were updated. 
+            // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change =>
+            // we have to explicitly force the refresh for the relevant context - see bellow in updateRoots
+            client.removeNotifyListener(Subversion.getInstance().getRefreshHandler());
             client.addNotifyListener(listener);            
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
@@ -184,24 +188,29 @@ public class UpdateAction extends ContextAction {
             }
             client.update(root, SVNRevision.HEAD, recursive);
             
-            // XXX this isn't clean - the cache gets notified only about files which realy were updated. 
-            // However, the revision in the metadata is set to HEAD even if the file didn't change =>
-            // the status is refresh twice for each file which was updated just because we want to refresh 
-            // the cahced revision value...
+            // this isn't clean - the client notifies only files which realy were updated. 
+            // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change =>
+            // we have to explicitly force the refresh for the relevant context
+            List<File> filesToRefresh; 
             if(recursive) {
-                SvnUtils.refreshRecursively(root);
+                filesToRefresh = SvnUtils.listRecursively(root);                
             } else {                
-                FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                cache.onNotify(root, null);
-                if(root.isDirectory()) {
-                    File[] files = root.listFiles();
-                    if(files != null) {                        
-                        for(File f : files) {
-                            cache.onNotify(f, null);
-                        }
-                    }
-                }
+                filesToRefresh = new ArrayList<File>();
+                filesToRefresh.add(root);
+                File[] files = root.listFiles();
+                if(files != null) {                        
+                    for (File file : files) {
+                        filesToRefresh.add(file);    
+                    }                    
+                }                                                
             }
+            File[] fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);            
+            Subversion.getInstance().getRefreshHandler().refreshImediately(fileArray);
+            // the cache fires status change events to trigger the annotation refresh
+            // unfortunatelly - we have to call the refresh explicitly for each file also 
+            // from this place as the revision label was changed evern if the files status didn't
+            Subversion.getInstance().refreshAnnotations(fileArray); 
+            
             ISVNStatus status[] = client.getStatus(root, true, false);
             for (int k = 0; k<status.length; k++) {
                 ISVNStatus s = status[k];

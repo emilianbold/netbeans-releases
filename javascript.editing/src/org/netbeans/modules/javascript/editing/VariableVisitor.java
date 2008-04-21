@@ -315,7 +315,7 @@ public class VariableVisitor implements ParseTreeVisitor {
                         // Local
                         scope.locals.add(node.getString());
                     }
-                } else if (type == Token.CATCH_SCOPE) {
+                } else if (type == Token.CATCH) {
                     // It's a local variable defintion, or a variable in the catch clause
                     Scope scope = scopes.getCurrent();
                     scope.locals.add(node.getString());
@@ -331,7 +331,7 @@ public class VariableVisitor implements ParseTreeVisitor {
                     // A variable read
                     Scope scope = scopes.getCurrent();
                     String str = node.getString();
-                    if (!str.equals("undefined")) {
+                    if (!str.equals("undefined") && !str.equals("arguments")) { // NOI18N
                         scope.readVars.add(str);
                     }
                 }

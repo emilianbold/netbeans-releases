@@ -47,8 +47,6 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
@@ -69,11 +67,10 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 final class JavadocCompletionUtils {
     
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.javadoc.completion"); // NOI18N
-    
     static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\*?[ \\t]*\\z"); // NOI18N
     static final Pattern JAVADOC_LINE_INDENT = Pattern.compile("\\A[ \\t]*\\*.*"); // NOI18N
     static final Pattern JAVADOC_WHITE_SPACE = Pattern.compile("[^ \\t]"); // NOI18N
+    static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
             JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);
     
@@ -278,9 +275,23 @@ final class JavadocCompletionUtils {
         }
 
         CharSequence text = token.text();
-        LOG.log(Level.FINE, "isWhiteSpace: text: '" + text);
         boolean result = !JAVADOC_WHITE_SPACE.matcher(text).find();
-        LOG.log(Level.FINE, "isWhiteSpace: " + result);
+        return result;
+    }
+    
+    /**
+     * enhanced {@link #isWhiteSpace(org.netbeans.api.lexer.Token) isWhiteSpace}
+     * @param token "\t" or "\t**\t"
+     * @return same value as isWhiteSpace
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=131826">#131826</a>
+     */
+    public static boolean isFirstWhiteSpaceAtFirstLine(Token<JavadocTokenId> token) {
+        if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
+            return false;
+        }
+
+        CharSequence text = token.text();
+        boolean result = JAVADOC_FIRST_WHITE_SPACE.matcher(text).matches();
         return result;
     }
     
