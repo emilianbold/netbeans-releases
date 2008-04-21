@@ -336,11 +336,13 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
     }
     
     public void setEntityClassNames(String entity1Name, String entity2Name){
-        radioOwningSide.setText(NbBundle.getMessage(CreateRelationshipPanel.class,
-                "CreateRelationshipPanel.radioOwningSide.text", entity1Name));
+        org.openide.awt.Mnemonics.setLocalizedText(radioOwningSide,
+                NbBundle.getMessage(CreateRelationshipPanel.class,
+                "CreateRelationshipPanel.radioOwningSide.text", entity1Name)); // NOI18N
         
-        radioInversedSide.setText(NbBundle.getMessage(CreateRelationshipPanel.class,
-                "CreateRelationshipPanel.radioInversedSide.text", entity2Name));
+        org.openide.awt.Mnemonics.setLocalizedText(radioInversedSide,
+                NbBundle.getMessage(CreateRelationshipPanel.class,
+                "CreateRelationshipPanel.radioInversedSide.text", entity2Name)); // NOI18N
     }
     
     public void setAvailableSelection(AvailableSelection sel){
