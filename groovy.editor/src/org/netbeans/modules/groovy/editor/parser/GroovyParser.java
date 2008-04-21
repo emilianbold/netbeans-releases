@@ -96,7 +96,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /**
@@ -511,8 +510,7 @@ public class GroovyParser implements Parser {
         FileObject fo = context.file.getFileObject();
         ClassPath cp = ClassPathSupport.createProxyClassPath(
                 ClassPath.getClassPath(fo, ClassPath.BOOT),
-                ClassPath.getClassPath(fo, ClassPath.COMPILE),
-                ClassPath.getClassPath(fo, ClassPath.SOURCE)
+                ClassPath.getClassPath(fo, ClassPath.COMPILE)
                 );
         
         // temporary hack until #128978 is fixed
@@ -533,6 +531,7 @@ public class GroovyParser implements Parser {
         
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
+//        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, context.file.getFileObject());
         CompilationUnit compilationUnit = new CompilationUnit(configuration, null, classLoader);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
@@ -657,10 +656,8 @@ public class GroovyParser implements Parser {
                 startOffset, endOffset, severity);
         context.listener.error(error);
 
-        // FIXME: this looks like a bug to me below:
-        context.errorOffset = startOffset;
-
         if (sanitizing == Sanitize.NONE) {
+//            System.out.println("@@@ " + error);
             context.errorOffset = startOffset;
         }
     }
