@@ -580,7 +580,13 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         return true;
     }
     
-    
+    public String generateUniqueAttributeName(String baseName) {
+        if(mSelectPanel != null) {
+            return mSelectPanel.generateUniqueAttributeName(baseName);
+        }
+        
+        return null;
+    }
     
     class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
 
