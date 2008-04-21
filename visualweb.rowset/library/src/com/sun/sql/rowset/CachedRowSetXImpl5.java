@@ -769,7 +769,7 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
              md.setColumnDisplaySize(col, size);
 
              md.setColumnLabel(col, rsmd.getColumnLabel(col));
-             md.setColumnName(col, rsmd.getColumnName(col));
+             md.setColumnName(col, rsmd.getColumnLabel(col));
              md.setSchemaName(col, rsmd.getSchemaName(col));
 
              /*
@@ -1512,7 +1512,7 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
          int cols = rowSetMD.getColumnCount();
         
          for (int i=1; i <= cols; ++i) {
-             String colName = rowSetMD.getColumnName(i);
+             String colName = rowSetMD.getColumnLabel(i);
              if (colName != null)
                  if (name.equalsIgnoreCase(colName))
                      return (i);
