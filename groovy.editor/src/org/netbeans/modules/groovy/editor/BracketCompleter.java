@@ -110,7 +110,7 @@ public class BracketCompleter implements BracketCompletion {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
         //return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get("text/x-groovy");
+        EditorOptions options = EditorOptions.get(GroovyTokenId.GROOVY_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
         }

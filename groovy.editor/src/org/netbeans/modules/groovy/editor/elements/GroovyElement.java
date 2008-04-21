@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.editor.elements;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
@@ -59,7 +60,7 @@ public abstract class GroovyElement implements Element {
     public abstract ElementKind getKind();
 
     public String getMimeType() {
-        return "text/x-groovy"; // NOI18N
+        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
     public boolean signatureEquals(ElementHandle handle) {

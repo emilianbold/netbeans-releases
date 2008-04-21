@@ -96,7 +96,7 @@ public class GroovyTestBase extends GsfTestBase {
     
     @Override
     protected String getPreferredMimeType() {
-        return "text/x-groovy";
+        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
     @Override
@@ -173,7 +173,7 @@ public class GroovyTestBase extends GsfTestBase {
         try {
             BaseDocument doc = new BaseDocument(null, false);
             doc.putProperty(org.netbeans.api.lexer.Language.class, GroovyTokenId.language());
-            doc.putProperty("mimeType", "text/x-groovy");
+            doc.putProperty("mimeType", GroovyTokenId.GROOVY_MIME_TYPE);
 
             doc.insertString(0, s, null);
 

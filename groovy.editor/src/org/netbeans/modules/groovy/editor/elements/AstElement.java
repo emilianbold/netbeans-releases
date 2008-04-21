@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -137,7 +138,7 @@ public abstract class AstElement extends GroovyElement {
     }
     
     public String getMimeType() {
-        return "text/x-groovy"; // NOI18N
+        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
     
 

@@ -49,6 +49,7 @@ import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.groovy.editor.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /**
  *
@@ -64,7 +65,7 @@ public class GroovyParserResult extends ParserResult {
     private GroovyParser.Sanitize sanitized;
 
     public GroovyParserResult(GroovyParser parser, ParserFile parserFile, AstRootElement rootElement, AstTreeNode ast) {
-        super(parser, parserFile, "text/x-groovy");
+        super(parser, parserFile, GroovyTokenId.GROOVY_MIME_TYPE);
         this.rootElement = rootElement;
         this.ast = ast;
     }

@@ -140,7 +140,7 @@ public class FmtOptions {
     
     public static Class<? extends EditorKit> getKitClass() {
         if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-groovy")).lookup(EditorKit.class); //NOI18N
+            EditorKit kit = MimeLookup.getLookup(MimePath.get(GroovyTokenId.GROOVY_MIME_TYPE)).lookup(EditorKit.class);
             kitClass = kit != null ? kit.getClass() : EditorKit.class;
         }
         return kitClass;

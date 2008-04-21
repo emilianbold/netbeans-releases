@@ -97,6 +97,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /**
  *
@@ -764,7 +765,7 @@ public class GroovyParser implements Parser {
         }
 
         public String getMimeType() {
-            return "text/x-groovy";
+            return GroovyTokenId.GROOVY_MIME_TYPE;
         }
 
         public String getName() {

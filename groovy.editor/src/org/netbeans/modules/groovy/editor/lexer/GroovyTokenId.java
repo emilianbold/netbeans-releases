@@ -58,6 +58,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class GroovyTokenId implements TokenId {
 
+    /**
+     * MIME type for Groovy. Don't change this without also consulting the various XML files
+     * that cannot reference this value directly.
+     */
+    public static final String GROOVY_MIME_TYPE = "text/x-groovy"; // NOI18N
 
     public static final GroovyTokenId QUOTED_STRING_LITERAL = new GroovyTokenId("QUOTED_STRING_LITERAL", null, "string");
     public static final GroovyTokenId QUOTED_STRING_END = new GroovyTokenId("QUOTED_STRING_END", null, "string");
@@ -351,7 +356,7 @@ public class GroovyTokenId implements TokenId {
         new LanguageHierarchy<GroovyTokenId>() {
 
             protected String mimeType() {
-                return "text/x-groovy"; // NOI18N
+                return GroovyTokenId.GROOVY_MIME_TYPE;
             }
 
             protected Collection<GroovyTokenId> createTokenIds() {

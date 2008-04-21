@@ -63,6 +63,7 @@ import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /**
  * Warning: this is very experimental!
@@ -104,7 +105,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             return;
         }
 
-        GroovyParserResult parseResult = (GroovyParserResult)info.getEmbeddedResult("text/x-groovy", 0);
+        GroovyParserResult parseResult = (GroovyParserResult)info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
         if (parseResult == null) {
             return;
         }

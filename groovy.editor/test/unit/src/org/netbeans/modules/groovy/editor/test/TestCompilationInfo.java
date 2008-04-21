@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo.GsfTestParseListener;
@@ -67,7 +68,7 @@ public class TestCompilationInfo extends GsfTestCompilationInfo {
     
     @Override
     public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
-        assert embeddedMimeType.equals("text/x-groovy");
+        assert embeddedMimeType.equals(GroovyTokenId.GROOVY_MIME_TYPE);
         
         if (embeddedResults.size() == 0) {
             GsfTestParseListener listener = new GsfTestParseListener();
@@ -82,7 +83,7 @@ TranslatedSource translatedSource = null; // TODO
             for (Error error : listener.getErrors()) {
                 parserResult.addError(error);
             }
-            embeddedResults.put("text/x-groovy", parserResult);
+            embeddedResults.put(GroovyTokenId.GROOVY_MIME_TYPE, parserResult);
             parserResult.setInfo(this);
         }
         
@@ -90,6 +91,6 @@ TranslatedSource translatedSource = null; // TODO
     }
 
     public String getPreferredMimeType() {
-        return "text/x-groovy";
+        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 }

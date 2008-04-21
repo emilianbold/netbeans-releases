@@ -93,7 +93,7 @@ public class LexUtilities {
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -105,7 +105,7 @@ public class LexUtilities {
     }
     
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
-        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {

@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -104,7 +105,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
     }
 
     public String getMimetype() {
-        return "text/x-groovy";
+        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
     private static boolean isAllUpper( String text ) {

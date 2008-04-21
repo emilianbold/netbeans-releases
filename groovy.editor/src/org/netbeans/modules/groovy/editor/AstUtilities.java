@@ -72,6 +72,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -91,7 +92,7 @@ public class AstUtilities {
     
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -145,7 +146,7 @@ public class AstUtilities {
     }
 
     public static GroovyParserResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
 
         if (result == null) {
             return null;
@@ -156,7 +157,7 @@ public class AstUtilities {
 
     // TODO use this from all the various places that have this inlined...
     public static ASTNode getRoot(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
 
         if (result == null) {
             return null;
