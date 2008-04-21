@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
         <folder name="SOA_ETL">
             <attr name="position" intvalue="105"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
-            <file name="untitled.etl" url="empty.etl">
+            <file name="Collaboration.etl" url="empty.etl">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.etl.ui.view.wizards.ETLCollaborationWizard.newTemplateIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
