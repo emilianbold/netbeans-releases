@@ -305,6 +305,37 @@ public class Utilities {
         }
         return textLines;
     }
+    
+        public static ArrayList<String> parseFileByLinesLeaveSpaces(String filename) {
+            ArrayList<String> textLines = new ArrayList<String>();
+
+            try {
+                Scanner scanner = new Scanner(new File(filename));
+                while (scanner.hasNextLine()) {
+                    String nextLine = scanner.nextLine();
+                    int spaces = 0;
+                    while (nextLine.charAt(spaces) == ' ') {
+                        spaces++;
+                    }
+                    nextLine = nextLine.substring(spaces);
+                    for (int i = 0; i < spaces / 4; i++) {
+                        nextLine = "+-" + nextLine;
+                    }
+
+//                for(int i = 0; nextLine.charAt(i)==' ';i++){
+//                    nextLine = nextLine.substring(4);
+//                    nextLine = 
+////                    nextLine.replaceFirst("    ", "+-");
+////                    System.out.println("replacing");
+//                }
+                    textLines.add(nextLine);
+                }
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return textLines;
+    }
 
     /**
      * trims unnecessary spaces from text line
@@ -321,8 +352,11 @@ public class Utilities {
                 trimmedText.append(" ");
             }
         }
-
-        return trimmedText.substring(0, trimmedText.length() - 1);//remove the last space
+        int trimmedTextLengt = trimmedText.length(); 
+        if (trimmedTextLengt > 0){ 
+            trimmedTextLengt--; //remove the last space if line is not empty
+        }
+        return trimmedText.substring(0, trimmedTextLengt);
 
     }
 
