@@ -70,8 +70,8 @@ public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
         tree.setMinimumSize(new Dimension(5, 5));
         setPreferredSize(new Dimension(5, 5));
         setMinimumSize(new Dimension(5, 5));
-        tree.setOpaque(true);
-        setOpaque(true);
+//        tree.setOpaque(true);
+//        setOpaque(true);
         
         origCellRenderer = tree.getCellRenderer();
         // tree.setCellRenderer(this);
