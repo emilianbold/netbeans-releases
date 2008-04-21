@@ -226,7 +226,7 @@ class DataViewWorkerThread extends SwingWorker {
             ResultSet rs = pstmt.executeQuery();
 
             dataOutputPanel.queryView.setEditable(true);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount+1);
+            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount-1);
 
             rs.close();
             pstmt.close();
