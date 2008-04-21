@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.discovery.project.SolarisLogReader.InstallLine;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -75,6 +76,7 @@ public class OpenSolaris extends KnownProject {
     private String nb_root;
 
     private List<SourceFileProperties> sources;
+    private List<InstallLine> copyHeader;
     
     public OpenSolaris(){
     }
@@ -116,6 +118,12 @@ public class OpenSolaris extends KnownProject {
     }
     
     private boolean createImpl(){
+        File proto = new File(root+"/proto"); // NOI18N
+        if (!proto.exists()) {
+            for(InstallLine il : copyHeader){
+                il.install();
+            }
+        }
         String srcRoot = root+"/usr/src/"; // NOI18N
         Map<String,String> folders = new TreeMap<String,String>();
         for(SourceFileProperties s : sources){
@@ -171,6 +179,7 @@ public class OpenSolaris extends KnownProject {
             } else {
                 display = "os."+display; // NOI18N
             }
+            System.err.println("Creating "+n+"..."); //NOI18N
             createImpl(r, n, name, display, folders);
         }
         // and super projects
@@ -196,7 +205,9 @@ public class OpenSolaris extends KnownProject {
 
     private List<SourceFileProperties> scan(String log, String root){
         SolarisLogReader reader = new SolarisLogReader(log, root);
-        return reader.getResults();
+        List<SourceFileProperties> res = reader.getResults();
+        copyHeader = reader.getInstalls();
+        return res;
     }
 
     private String findMakeLog(String root) {
