@@ -138,6 +138,10 @@ public class ShortcutsFolderTest extends NbTestCase {
     }
     
     public void testShortcutsForDifferentFilesThanInstanceOrShadows () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
         FileObject shortcuts = fs.getRoot ().getFileObject ("Shortcuts");
         FileObject inst = FileUtil.createData (fs.getRoot (), "/Shortcuts/C-F11.xml");

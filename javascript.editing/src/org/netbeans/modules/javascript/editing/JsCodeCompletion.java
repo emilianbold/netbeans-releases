@@ -116,6 +116,7 @@ import org.openide.util.NbBundle;
  *  @todo Display more information in parameter tooltips, such as type hints (perhaps do smart
  *    filtering Java-style?), and explanations for each parameter
  *  @todo Need preindexing support for unit tests - and separate files
+ * @todo Insert semicolon too when you insert methods, in custom templates (unless you're in a call), a var block, etc.
  * 
  * @author Tor Norbye
  */
@@ -1813,6 +1814,7 @@ public class JsCodeCompletion implements Completable {
                 NameKind kind = request.kind;
                 JsParseResult result = request.result;
                 Set<IndexedElement> matches = request.index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+                boolean found = false;
 
                 for (IndexedElement element : matches) {
                     if (element.isNoDoc()) {
@@ -1822,6 +1824,18 @@ public class JsCodeCompletion implements Completable {
                     if (element.getKind() == ElementKind.METHOD || element.getKind() == ElementKind.CONSTRUCTOR) {
                         continue;
                     }
+                    
+                    // Skip constants
+                    String name = element.getName();
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        continue;
+                    }
+                    
+                    // Skip private fields
+                    // (Not sure about this)
+                    if (element.isPrivate()) {
+                        continue;
+                    }
 
                     JsCompletionItem item;
                     if (element instanceof IndexedFunction) {
@@ -1829,8 +1843,12 @@ public class JsCodeCompletion implements Completable {
                     } else {
                         item = new PlainItem(request, element);
                     }
+                    found = true;
                     proposals.add(item);
-
+                }
+                
+                if (found) {
+                    return true;
                 }
             }
         }
@@ -2440,10 +2458,17 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(true);
             }
-            boolean strike = indexedElement != null && indexedElement.isDeprecated();
+            
+            boolean strike = false;
+            if (indexedElement != null) {
+                if (indexedElement.isDeprecated() || !SupportedBrowsers.getInstance().isSupported(indexedElement.getCompatibility())) {
+                    strike = true;
+                }
+            }
             if (strike) {
                 formatter.deprecated(true);
             }
+            
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);

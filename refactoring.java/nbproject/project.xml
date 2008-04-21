@@ -82,6 +82,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.sourceui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.javahelp</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -214,6 +223,12 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>qa-functional</name>
+                    
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.refactoring.java.api</package>
                 <package>org.netbeans.modules.refactoring.java.api.ui</package>

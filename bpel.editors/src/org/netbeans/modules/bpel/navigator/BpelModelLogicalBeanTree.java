@@ -25,8 +25,8 @@ import java.beans.PropertyVetoException;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.netbeans.modules.soa.validation.Controller;
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
-import org.netbeans.modules.soa.core.validation.Controller;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -55,25 +55,18 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  * Created on 15 December 2005
  *
  * Listen to the model state changes, in case invalid bpel document state -
  * show invalid state message.
- *
  */
-public class BpelModelLogicalBeanTree
-        implements PropertyChangeListener, ChangeEventListener 
-{
+public class BpelModelLogicalBeanTree implements PropertyChangeListener, ChangeEventListener {
     
     private static final long serialVersionUID = 1L;
-    
     private BpelModel myBpelModel;
-    //context lookup
     private Lookup myContextLookup;
-    
     private BeanTreeView myBeanTreeView;
     private ExplorerManager myExplorerManager;
     

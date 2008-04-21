@@ -231,7 +231,6 @@ public class EditorUtil {
     }
     
     public static Icon getIcon(Component component) {
-        // vlv
         Node node = getNode(component);
 
         if (node  != null) {
@@ -256,7 +255,7 @@ public class EditorUtil {
         
         return icon;
     }
-                        
+
     // vlv
     public static String getToolTip(Component component) {
       String type = getType(component);
@@ -490,20 +489,6 @@ public class EditorUtil {
         return basicNode;
     }
 
-    // vlv
-    public static Component getRoot(Model model) {
-      if (model instanceof BpelModel) {
-        return ((BpelModel) model).getProcess();
-      }
-      if (model instanceof SchemaModel) {
-        return ((SchemaModel) model).getSchema();
-      }
-      if (model instanceof WSDLModel) {
-        return ((WSDLModel) model).getDefinitions();
-      }
-      return null;
-    }
-
     /**
      * This method don't aware about bpelModel lock
      * @param component Component
@@ -638,6 +623,7 @@ public class EditorUtil {
     public static void goToDesign(final Component component, Object cookie, Object view) {
         // vlv
         if ( !(component instanceof BpelEntity)) {
+        /* todo r
           HighlightManager manager = HighlightManager.getDefault();
           List<HighlightGroup> groups = manager.getHighlightGroups(HighlightGroup.SEARCH);
 
@@ -665,7 +651,7 @@ public class EditorUtil {
 //System.out.println();
             ((ShowCookie) cookie).show(new ResultItem(null, null, component, null));
             return;
-          }
+          } */
           return;
         }
         final BpelEntity bpelEntity = (BpelEntity) component;

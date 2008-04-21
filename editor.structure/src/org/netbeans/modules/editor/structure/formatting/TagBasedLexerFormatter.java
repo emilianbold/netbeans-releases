@@ -165,14 +165,15 @@ public abstract class TagBasedLexerFormatter {
         List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
         BaseDocument doc = (BaseDocument) context.document();
         doc.atomicLock();
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-
-        if (tokenHierarchy == null) {
-            logger.severe("Could not retrieve TokenHierarchy for document " + doc);
-            return;
-        }
-
+        
         try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+
+            if (tokenHierarchy == null) {
+                logger.severe("Could not retrieve TokenHierarchy for document " + doc);
+                return;
+            }
+            
             TransferData transferData = null;
             
             if (isTopLevelLanguage(doc)){

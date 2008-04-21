@@ -72,9 +72,10 @@ import org.xml.sax.*;
 */
 public class Util {
 
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
+    
     /** Waits for startup of a server, waits until the connection has
      * been established. */ 
-
     public static boolean waitForURLConnection(URL url, int timeout, int retryTime) { 
         Connect connect = new Connect(url, retryTime); 
         Thread t = new Thread(connect);
@@ -82,6 +83,7 @@ public class Util {
         try {
             t.join(timeout);
         } catch(InterruptedException ie) {
+            LOG.log(Level.FINE, "error", ie);
         }
         if (t.isAlive()) {
             connect.finishLoop();
@@ -112,7 +114,7 @@ public class Util {
                     in.close();
                 }
                 catch(IOException e) {
-                    //e.printStackTrace();
+                    LOG.log(Level.FINE, "error", e);
                 }
         }
     }
@@ -137,6 +139,7 @@ public class Util {
             try {
                 InetAddress.getByName(url.getHost());
             } catch (UnknownHostException e) {
+                LOG.log(Level.FINE, "error", e);
                 return;
             }
             while (loop) {
@@ -145,12 +148,17 @@ public class Util {
                     socket.close();
                     status = true;
                     break;
-                } catch (UnknownHostException e) {//nothing to do
-                } catch (IOException e) {//nothing to do
+                } catch (UnknownHostException e) {
+                    LOG.log(Level.FINE, "error", e);
+                    //nothing to do
+                } catch (IOException e) {
+                    LOG.log(Level.FINE, "error", e);
+                    //nothing to do
                 }
                 try {
                     Thread.currentThread().sleep(retryTime);
                 } catch(InterruptedException ie) {
+                    LOG.log(Level.FINE, "error", ie);
                 }
             }
         }
@@ -216,8 +224,8 @@ public class Util {
             if (sourceRoot != null) {
                 result.add(sourceRoot);
             } else {
-                if (Logger.getLogger("global").isLoggable(Level.FINE)) {  //NOI18N
-                    Logger.getLogger("global").log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));  //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {  //NOI18N
+                    LOG.log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));  //NOI18N
                 }
             }
         }
@@ -260,8 +268,7 @@ public class Util {
             try {
                 reader.parse(new InputSource(is));
             } catch (SAXException ex) {
-                // FIXME: log the error?
-                String message = ex.getMessage();
+                LOG.log(Level.FINE, "error", ex);
             }
             return handler.getValues();
         } catch(javax.xml.parsers.ParserConfigurationException ex) {
@@ -283,12 +290,14 @@ public class Util {
             this.tagName=tagName;
             values = new HashSet<String>();
         }
+        @Override
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if (elNames.contains(rawName)) insideEl=true;
             else if (tagName.equals(rawName) && insideEl) {
                 insideTag=true;
             }
         }
+        @Override
         public void endElement(String uri, String localName, String rawName) throws SAXException {
             if (elNames.contains(rawName)) insideEl=false;
             else if (tagName.equals(rawName) && insideEl) {
@@ -296,6 +305,7 @@ public class Util {
             }
         }
         
+        @Override
         public void characters(char[] ch,int start,int length) throws SAXException {
             if (insideTag) {
                 values.add(String.valueOf(ch,start,length).trim());

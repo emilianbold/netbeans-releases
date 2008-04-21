@@ -38,14 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
 import java.io.File;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -65,45 +62,43 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class ApplyDesignPattern extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-    private Node diag;  
-    private NbDialogOperator d_wizard; 
-   
+    private Node diag;
+    private NbDialogOperator d_wizard;
+
     /** Creates a new instance of ApplyDesignPattern */
     public ApplyDesignPattern(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 5000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    public ApplyDesignPattern(String testName, String  performanceDataName) {
+
+    public ApplyDesignPattern(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 5000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
-        
+
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        diag = new Node(pNode,"Model");
+        diag = new Node(pNode, "Model");
         diag.select();
         diag.performPopupActionNoBlock("Apply Design Pattern");
         NbDialogOperator a_wizard = new NbDialogOperator("Design Pattern Apply Wizard");
-        JButtonOperator a_wizard_next = new JButtonOperator(a_wizard,"Next");
+        JButtonOperator a_wizard_next = new JButtonOperator(a_wizard, "Next");
         a_wizard_next.push();
 
         d_wizard = new NbDialogOperator("Design Pattern Wizard");
-        JButtonOperator d_wizard_next = new JButtonOperator(d_wizard,"Next");
+        JButtonOperator d_wizard_next = new JButtonOperator(d_wizard, "Next");
         JComboBoxOperator projectCombo = new JComboBoxOperator(d_wizard);
         projectCombo.selectItem("EJB2.0");
 
@@ -112,35 +107,33 @@ public class ApplyDesignPattern extends org.netbeans.performance.test.utilities.
         d_wizard_next.push();
         new EventTool().waitNoEvent(1000);
         d_wizard_next.push();
-        JCheckBoxOperator d_wizardCheck = new JCheckBoxOperator(d_wizard,"Create class diagram");
+        JCheckBoxOperator d_wizardCheck = new JCheckBoxOperator(d_wizard, "Create class diagram");
         d_wizardCheck.doClick();
         d_wizard_next.push();
     }
 
     public ComponentOperator open() {
         log("::open");
-       
-        JButtonOperator d_wizard_finish = new JButtonOperator(d_wizard,"Finish");
+
+        JButtonOperator d_wizard_finish = new JButtonOperator(d_wizard, "Finish");
         d_wizard_finish.push();
 
         return new TopComponentOperator("BeanManagedDiagram");
 
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
     }
-   
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-//      new CloseAllDocumentsAction().performAPI();
- 
-    } 
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new ApplyDesignPattern("measureTime"));
-    }      
-
-
+    }
 }

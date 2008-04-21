@@ -47,6 +47,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
@@ -75,9 +76,11 @@ public class XMLCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int type = ((XMLSyntaxSupport)Utilities.getDocument(component).
-                getSyntaxSupport()).checkCompletion(component, typedText, false);
+        SyntaxSupport support = Utilities.getDocument(component).getSyntaxSupport();
+        if( (support == null) || !(support instanceof XMLSyntaxSupport))
+            return 0;
         
+        int type = ((XMLSyntaxSupport)support).checkCompletion(component, typedText, false);
         if(type == ExtSyntaxSupport.COMPLETION_POPUP)
             return COMPLETION_QUERY_TYPE;
         

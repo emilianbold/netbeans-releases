@@ -46,8 +46,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;

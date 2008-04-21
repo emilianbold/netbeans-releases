@@ -54,21 +54,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class TableRowDialog extends javax.swing.JPanel {
-
-    private final static boolean debug = false;    
 
     // Do we need this to close it?
     private Dialog dialog = null;
@@ -82,33 +78,25 @@ public class TableRowDialog extends javax.swing.JPanel {
     private Editable editable; 
     private Condition condition; 
     private String title = ""; //NOI18N
-    
-    //private static boolean repainting = false;
     private boolean repainting = false;
 
     private static final long serialVersionUID = -855447534116444417L;
     
     public TableRowDialog(String name, String value, Editable e, Condition c, 
 		       String title) { 
-	if(debug) log("::CONSTRUCTOR"); 
 	this.name = name; 
 	this.value = value; 
 	this.editable = e; 
-	if(debug) log("\tEditable: " + e.toString()); 
 	this.condition = c; 
-	if(debug) log("\tCondition: " + c.toString()); 
 	this.title = title;
 	initialize();
     }
 
     public boolean getDialogOK() {
-	if(debug) { 
-	    log("::getDialogOK()"); //NOI18N
-	    log("\tdialogOK = " + String.valueOf(dialogOK)); //NOI18N
-	} 
 	return dialogOK; 
     }
 
+    @Override
     public String getName() {
 	return name; 
     }
@@ -118,8 +106,6 @@ public class TableRowDialog extends javax.swing.JPanel {
     }
     
     public void initialize() {
-
-	if(debug) System.out.println("in (new) TableRowDialog.initialize()"); //NOI18N
 	this.setLayout(new GridBagLayout());
 
 	// Entity covers entire row
@@ -226,9 +212,7 @@ public class TableRowDialog extends javax.swing.JPanel {
     }
 
     public void showDialog() {
-
 	if(editable == Editable.NEITHER) {
-	    if(debug) log("Non-modal dialog, OK option only"); 
 	    NotifyDescriptor d = 
 		new NotifyDescriptor(this, title, 
 				     NotifyDescriptor.DEFAULT_OPTION,
@@ -258,41 +242,27 @@ public class TableRowDialog extends javax.swing.JPanel {
     /**
      * Handle user input...
      */
-
     public void evaluateInput() {
-
-	if (debug) { 
-	    log("::evaluateInput()");//NOI18N
-	} 
-
 	if (editDialog.getValue().equals(NotifyDescriptor.CANCEL_OPTION)) { 
-	    if(debug) log("\tGot cancel"); //NOI18N
 	    dialog.dispose();
 	    dialogOK = false; 
 	    return; 
 	}
 
-	if(debug) log("\tGot OK"); //NOI18N
 	if(editable == Editable.NEITHER) {
-	    if(debug) log("\tNot editable"); //NOI18N
+	    // Not editable
 	    dialog.dispose();
 	    dialogOK = false; 
 	    return;
 	}
-	if(debug) log("Name is " + name); 
-	if(debug) log("Value is " + value); 
 
 	errorMessage = null; 
 
 	if(name.equals("")) 
-	    errorMessage = NbBundle.getMessage(TableRowDialog.class, 
-					       "MSG_no_name"); 
+	    errorMessage = NbBundle.getMessage(TableRowDialog.class, "MSG_no_name"); 
 
 	else if(condition == Condition.VALUE && value.equals("")) 
-	    errorMessage = NbBundle.getMessage(TableRowDialog.class, 
-					       "MSG_no_value"); 
-
-	if(debug) log("ErrorMessage: " + errorMessage); 
+	    errorMessage = NbBundle.getMessage(TableRowDialog.class, "MSG_no_value"); 
 
 	if(errorMessage == null) { 
 	    dialog.dispose();
@@ -308,6 +278,7 @@ public class TableRowDialog extends javax.swing.JPanel {
 
 
     // Do we need this?
+    @Override
     public void repaint() {
 	super.repaint();
 	if (dialog != null && !repainting) {
@@ -317,10 +288,6 @@ public class TableRowDialog extends javax.swing.JPanel {
 	}
     }
 
-    private void log(String s) { 
-	System.out.println("TableRowDialog" + s);
-    } 
-
     static class Condition { 
 	private String condition; 
 
@@ -328,7 +295,10 @@ public class TableRowDialog extends javax.swing.JPanel {
 	    this.condition = condition; 
 	}
     
-	public String toString() { return condition; } 
+        @Override
+	public String toString() {
+            return condition;
+        } 
 
 	public static final Condition NONE = new Condition("none"); 
 	public static final Condition VALUE = new Condition("value"); 

@@ -348,6 +348,26 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       return;
     }
 
+    protected SchemaMultiView WaitSchemaMultiView( String sName )
+    {
+      for( int i = 0 ; i < 5; i++ )
+      {
+        try
+        {
+          SchemaMultiView result = new SchemaMultiView( sName );
+          if( null != result )
+            return result;
+        }
+        catch( Exception ex )
+        {
+          // TODO : report
+          System.out.println( "*** Schema exception ***\n" + ex.getMessage( ) );
+        }
+        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
+      }
+      return null;
+    }
+
     protected void ImportReferencedSchemaInternal(
         String sSample,
         String sModule,
@@ -377,10 +397,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Switch to schema view
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
       // ^ - remove???
 
       // Select first column
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      SchemaMultiView opMultiView = WaitSchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -672,6 +693,35 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     protected void GotoSchemaSource(
+        //JListOperator opListOriginal,
+        String sSection,
+        String sName,
+        String sRequiredText
+      )
+    {
+      System.out.println( "***" + sSection + "***" + sName + "***" );
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sSection );
+      opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      int iIndex = opList.findItemIndex( sName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+
+    }
+
+    protected void GotoSchemaSource(
         JListOperator opListOriginal,
         String sName,
         String sRequiredText
@@ -872,6 +922,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
           sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
         );
       prn.performPopupAction( "Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]" );
+      try { Thread.sleep( 1500 ); } catch( InterruptedException ex ) { }
       //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
 
       // Check source
@@ -1007,6 +1058,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         );
       prn.performPopupAction( "Refactor|Redo [Delete " + SIMPLE_NAMES[ 1 ] + "]" );
       //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+      try { Thread.sleep( 1500 ); } catch( InterruptedException ex ) { }
 
       // Check source
       sCompleteText = eoXMLCode.getText( );
@@ -1057,14 +1109,18 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     public void ExploreComplexInternal(
+        String sSection,
         String sName,
-        String sType
+        String sType,
+        String sIncode
       )
     {
       // Select in schema
       // Select newAttribute
       SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sSection );
+      opList = opMultiView.getColumnListOperator( 1 );
       opList.selectItem( sName );
 
       // Go to : schema -> definition
@@ -1101,9 +1157,9 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Go to : Schema -> Source
       // Check selected element
       GotoSchemaSource(
-          opList,
-          COMPLEX_NAMES[ 0 ],
-          "<xs:complexType name=\"" + sName + "\">"
+          sSection,//opList,
+          sName,
+          sIncode
         );
 
       // Go to : Source -> Design

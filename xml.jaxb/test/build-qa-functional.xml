@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
         <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
+        <pathelement location="${xtest.home}/../xml.schema/test/lib/tests-qa-functional.jar"/>
     </path>    
 <!--
     <pathconvert property="cp" refid="cp.extra" targetos="unix"/>

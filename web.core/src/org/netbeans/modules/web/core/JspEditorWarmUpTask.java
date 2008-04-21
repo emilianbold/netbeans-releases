@@ -46,7 +46,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -58,12 +57,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.View;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.Registry;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
@@ -83,6 +81,8 @@ import org.openide.util.RequestProcessor;
  */
 
 public class JspEditorWarmUpTask implements Runnable{
+    
+    private static final Logger LOG = Logger.getLogger(JspEditorWarmUpTask.class.getName());
     
     /**
      * Number of lines that an artificial document
@@ -115,17 +115,12 @@ public class JspEditorWarmUpTask implements Runnable{
     private static final int PAINT_COUNT = 1;
     
 
-    private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.warmup"); // NOI18N
-//            =true;
-    
     private static final int STATUS_INIT = 0;
     private static final int STATUS_CREATE_PANE = 1;
     private static final int STATUS_CREATE_DOCUMENTS = 2;
     private static final int STATUS_SWITCH_DOCUMENTS = 3;
     private static final int STATUS_TRAVERSE_VIEWS = 4;
     private static final int STATUS_RENDER_FRAME = 5;
-    private static final int STATUS_PREINIT_SCHLIEMAN = 6;
     
     private int status = STATUS_INIT;
 
@@ -134,9 +129,7 @@ public class JspEditorWarmUpTask implements Runnable{
     private Document emptyDoc;
     private Document longDoc;
     private Graphics bGraphics;
-    
     private EditorKit jspKit;
-
     private long startTime;
     
     //signals whether the warmuptask has already been performed
@@ -148,14 +141,11 @@ public class JspEditorWarmUpTask implements Runnable{
                 //test whether a WebProject is opened
                 if(!isWebProjectOpened()) return ;
         
-                if (debug) {
-                    startTime = System.currentTimeMillis();
-                }
+                startTime = System.currentTimeMillis();
         
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
-                Iterator componentIterator = Registry.getComponentIterator();
-                if (!componentIterator.hasNext()) { // no components opened yet
+                if (EditorRegistry.componentList().isEmpty()) { // no components opened yet
                     status = STATUS_CREATE_PANE;
                     SwingUtilities.invokeLater(this); // must run in AWT
                 } // otherwise stop because editor pane(s) already opened (optimized)
@@ -180,7 +170,7 @@ public class JspEditorWarmUpTask implements Runnable{
                     editorUI.getExtComponent();
                 }
 
-                Registry.removeComponent(pane);
+                // ??? No such method in EditorRegidtry: Registry.removeComponent(pane);
 
                 status = STATUS_CREATE_DOCUMENTS;
                 RequestProcessor.getDefault().post(this);
@@ -329,17 +319,14 @@ public class JspEditorWarmUpTask implements Runnable{
                 try {
                     JSPPaletteFactory.getPalette();
                 } catch (IOException e) {
-                    Logger.getLogger("global").log(Level.INFO, 
-                            "Palette per-initialization failed", e);
+                    LOG.log(Level.INFO, "Palette per-initialization failed", e);
                 }
                 
                 // Candidates Annotations.getLineAnnotations()
 
-                if (debug) {
-                    System.out.println("View hierarchy initialized: " // NOI18N
-                        + (System.currentTimeMillis()-startTime));
-                    startTime = System.currentTimeMillis();
-                }
+                LOG.fine("View hierarchy initialized: " // NOI18N
+                    + (System.currentTimeMillis()-startTime));
+                startTime = System.currentTimeMillis();
                 break;
             default:
                 throw new IllegalStateException();

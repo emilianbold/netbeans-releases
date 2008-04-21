@@ -400,8 +400,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreComplexInternal(
+          "Complex Types",
           COMPLEX_NAMES[ 0 ],
-          "CarType"
+          "CarType",
+          "<xs:complexType name=\"" + COMPLEX_NAMES[ 0 ] + "\">"
         );
 
       endTest( );
@@ -445,8 +447,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreComplexInternal(
+          "Elements",
           ELEMENT_NAMES[ 0 ],
-          "AddressType"
+          "AddressType",
+          "<xs:element name=\"" + ELEMENT_NAMES[ 0 ] + "\" type=\"ns2:AddressType\"></xs:element>"
         );
 
       endTest( );

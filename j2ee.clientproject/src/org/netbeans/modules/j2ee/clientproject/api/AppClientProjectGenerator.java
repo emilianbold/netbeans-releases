@@ -420,7 +420,10 @@ public class AppClientProjectGenerator {
             String srcRoot, String testRoot, String configFiles, String libraries,
             String resources, String mainClass, String j2eeLevel,
             String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
-        
+
+        Utils.logUI(NbBundle.getBundle(AppClientProjectGenerator.class), "UI_APP_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, AppClientProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();

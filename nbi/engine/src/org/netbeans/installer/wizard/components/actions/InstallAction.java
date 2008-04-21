@@ -125,6 +125,7 @@ public class InstallAction extends WizardAction {
     }
 
     public void execute() {
+        LogManager.logIndent("Start products installation");
         final Registry registry = Registry.getInstance();
         final List<Product> products = registry.getProductsToInstall();
         int percentageChunk = Progress.COMPLETE / products.size();
@@ -151,9 +152,12 @@ public class InstallAction extends WizardAction {
                 product.install(currentProgress);
 
                 if (isCanceled()) {
+                    LogManager.log("... installation is cancelled : " + 
+                            product.getDisplayName() + 
+                            "(" + product.getUid() + "/" + product.getVersion() + ")");
                     overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
                             product.getDisplayName()));
-                    product.rollback(currentProgress);
+                    product.rollback(currentProgress);                    
                     isProductRolledback = true;
                     
                     final RegistryFilter filter = new OrFilter(new ProductFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
@@ -163,9 +167,11 @@ public class InstallAction extends WizardAction {
                     }
 
                     for (Product toRollback : registry.getProductsToUninstall()) {
+                        LogManager.log("... also rollbacking " + toRollback.getDisplayName() + 
+                                "(" + toRollback.getUid() + "/" + toRollback.getVersion() + ")");
                         overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
                                 toRollback.getDisplayName()));
-                        toRollback.rollback(progresses.get(toRollback));                      
+                        toRollback.rollback(progresses.get(toRollback));                        
                     }
                     break;
                 }
@@ -176,6 +182,7 @@ public class InstallAction extends WizardAction {
                 // is happening
                 SystemUtils.sleep(200);
             } catch (Throwable e) {
+                LogManager.log(e);
                 if (!(e instanceof InstallationException)) {
                     e = new InstallationException(getProperty(INSTALL_UNKNOWN_ERROR_PROPERTY), e);
                 }
@@ -232,6 +239,7 @@ public class InstallAction extends WizardAction {
                  LogManager.log(ErrorLevel.ERROR, e);
             }            
         }
+        LogManager.logUnindent("... finished products installation");
     }
 
     public void cancel() {
