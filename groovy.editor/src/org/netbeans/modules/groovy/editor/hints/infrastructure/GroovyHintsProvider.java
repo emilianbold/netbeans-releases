@@ -58,6 +58,7 @@ import org.netbeans.modules.groovy.editor.hints.spi.Rule;
 import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
 import org.netbeans.modules.groovy.editor.hints.spi.SelectionRule;
 import org.netbeans.modules.groovy.editor.hints.spi.UserConfigurableRule;
+import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintsProvider;
@@ -131,6 +132,12 @@ public class GroovyHintsProvider implements HintsProvider{
     }
 
     public List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> hints) {
+        // Return all the errors we -haven't- added custom error hints for:
+        GroovyParserResult rpr = AstUtilities.getParseResult(info);
+        if (rpr != null) {
+            return rpr.getDiagnostics();
+        }
+        
         return Collections.emptyList();
     }
 
