@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,7 +54,9 @@ import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,6 +64,9 @@ import java.util.jar.JarInputStream;
  */
 public class Retriever implements Runnable {
 
+    public static final int LOCATION_DOWNLOAD_TIMEOUT = 10000;
+    public static final int ZIP_DOWNLOAD_TIMEOUT = 30000;
+    
     public static final int STATUS_START = 0;
     public static final int STATUS_CONNECTING = 1;
     public static final int STATUS_DOWNLOADING = 2;
@@ -86,14 +92,19 @@ public class Retriever implements Runnable {
     }
     
     private Updater updater;
-    private String targetUrlName;
+    private final String locationUrl;
+    private final String targetUrlPrefix;
+    private final String defaultTargetUrl;
     private File targetInstallDir;
     
     
-    public Retriever(File installDir, String targetUrl, Updater u) {
-        targetInstallDir = installDir;
-        targetUrlName = targetUrl;
-        updater = u;
+    public Retriever(File installDir, String locationUrl, String urlPrefix, 
+            String defaultTargetUrl, Updater u) {
+        this.targetInstallDir = installDir;
+        this.locationUrl = locationUrl;
+        this.targetUrlPrefix = urlPrefix;
+        this.defaultTargetUrl = defaultTargetUrl;
+        this.updater = u;
     }
 
     // Thread support for downloading...
@@ -161,10 +172,13 @@ public class Retriever implements Runnable {
         
         try {
             backupDir = backupInstallDir(targetInstallDir);
-            targetUrl = new URL(targetUrlName);
-            setDownloadState(STATUS_CONNECTING);
             
+            setDownloadState(STATUS_CONNECTING);
+            targetUrl = new URL(getDownloadLocation());
+
+            Logger.getLogger("glassfish").finer("Downloading V3 from " + targetUrl);
             connection = targetUrl.openConnection();
+            connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
             in = connection.getInputStream();
             setDownloadState(STATUS_DOWNLOADING);
             
@@ -173,10 +187,11 @@ public class Retriever implements Runnable {
             
             if(!shutdown) {
                 long end = System.currentTimeMillis();
-                updateMessage("Download & Install completed in " + (end - start) + "ms");
+                String duration = (end - start) + "ms";
+                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration));
                 setDownloadState(STATUS_COMPLETE);
             } else {
-                updateMessage("Download cancelled.");
+                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"));
                 setDownloadState(STATUS_TERMINATED);
             }
         } catch(ConnectException ex) {
@@ -198,6 +213,37 @@ public class Retriever implements Runnable {
             updater.clearCancelState();
         }
     }
+    
+    private String getDownloadLocation() {
+        URLConnection conn = null;
+        DataInputStream is = null;
+        String result = defaultTargetUrl;
+
+        if(locationUrl != null && locationUrl.length() > 0) {
+            try {
+                URL url = new URL(locationUrl);
+                Logger.getLogger("glassfish").finer("Attempting to get V3 download URL suffix from " + url);
+                conn = url.openConnection();
+                conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
+                is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
+                while((result = is.readLine()) != null) {
+                    return targetUrlPrefix + result; // First line is the one we want.
+                }
+            } catch(Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            } finally {
+                try {
+                    if(is != null) {
+                        is.close();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
+            }
+        }
+        
+        return result;
+    }    
 
     private static final int READ_BUF_SIZE = 131072; // 128k
     private static final int WRITE_BUF_SIZE = 131072; // 128k
@@ -285,13 +331,15 @@ public class Retriever implements Runnable {
                 File target = new File(parent, tempName + i);
                 if(!target.exists()) {
                     if(!installDir.renameTo(target)) {
-                        throw new IOException("Unable to move existing " + (installDir.isDirectory() ? "folder \"" : "file \"")
+                        throw new IOException("Unable to move existing " 
+                                + (installDir.isDirectory() ? "folder \"" : "file \"")
                                 + installDir.getAbsolutePath() + "\" out of the way.");
-                    };
+                    }
                     return target;
                 }
             }
-            throw new IOException("Unable to backup \"" + installDir.getAbsolutePath() + "\".  Too many V3 backups already.");
+            throw new IOException("Unable to backup \"" + installDir.getAbsolutePath() 
+                    + "\".  Too many V3 backups already.");
         }
         return null;
     }

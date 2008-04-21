@@ -44,28 +44,24 @@ package org.netbeans.modules.glassfish.common.wizards;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import java.awt.Component;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.spi.glassfish.ServerUtilities;
+import org.netbeans.spi.glassfish.TreeParser;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Ludo
@@ -143,10 +139,10 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         locationStr = (locationStr != null) ? locationStr.trim() : null;
         if(locationStr == null || locationStr.length() == 0) {
             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_BLANK_INSTALL_DIR"));
+                    AddServerLocationPanel.class, "ERR_BlankInstallDir"));
             return false;
         }
-            
+        
         // !PW Replace some or all of this with a single call to a validate method
         // that throws an exception with a precise reason for validation failure.
         // e.g. domain dir not found, domain.xml corrupt, no ports defined, etc.
@@ -154,22 +150,22 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         File installDir = new File(locationStr);
         if(!installDir.exists()) {
             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_INSTALL_DIR_NOT_EXIST", locationStr));
+                    AddServerLocationPanel.class, "ERR_InstallDirDoesNotExist", locationStr));
             return false;
         } else if(!isValidV3Install(installDir)) {
             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_INSTALL_DIR_NOT_VALID", locationStr));
+                    AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
             return false;
         } else if(!isValidV3Domain(getDefaultDomain(installDir))) {
             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_DEFAULT_DOMAIN_NOT_VALID", locationStr));
+                    AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
             return false;
         } else {
             String uri = "[" + installDir + "]" + CommonServerSupport.URI_PREFIX + 
                     ":" + GlassfishInstance.DEFAULT_HOST_NAME + ":" + Integer.toString(httpPort);
             if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
                 wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_DOMAIN_ALREADY_ADDED", locationStr));
+                    AddServerLocationPanel.class, "ERR_DomainExists", locationStr));
                 return false;
             } else {
                 String statusText = panel.getStatusText();
@@ -262,160 +258,44 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private boolean readServerConfiguration(File domainDir) {
         boolean result = false;
         File domainXml = new File(domainDir, DOMAIN_XML_PATH);
-
         if (domainXml.exists()) {
-            InputStream is = null;
-            try {
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                // !PW If namespace-aware is enabled, make sure localpart and
-                // qname are treated correctly in the handler code.
-                //                
-                factory.setNamespaceAware(false);
-                SAXParser saxParser = factory.newSAXParser();
-                DomainXmlParser handler = new DomainXmlParser();
-                is = new BufferedInputStream(new FileInputStream(domainXml));
-                saxParser.parse(new InputSource(is), handler);
-                httpPort = handler.getHttpPort();
-                httpsPort = handler.getHttpsPort();
-                adminPort = handler.getAdminPort();
-                result = true;
-            } catch (ParserConfigurationException ex) {
-                // Badly formed domain.xml, fail.
-            } catch (SAXException ex) {
-                // Badly formed domain.xml, fail.
-            } catch (IOException ex) {
-                // Badly formed domain.xml, fail.
-            } finally {
-                if (is != null) {
+            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            pathList.add(new TreeParser.Path("/domain/configs/config/http-service/http-listener",
+                    new TreeParser.NodeReader() {
+                @Override
+                public void readAttributes(Attributes attributes) throws SAXException {
+                    // <http-listener 
+                    //   id="http-listener-1" port="8080" xpowered-by="true" 
+                    //   enabled="true" address="0.0.0.0" security-enabled="false" 
+                    //   family="inet" default-virtual-server="server" 
+                    //   server-name="" blocking-enabled="false" acceptor-threads="1">
                     try {
-                        is.close();
-                    } catch (IOException ex) {
-                        // ignore
+                        String id = attributes.getValue("id");
+                        int port = Integer.parseInt(attributes.getValue("port"));
+                        
+                        if("admin-listener".equals(id)) {
+                            adminPort = port;
+                        } else {
+                            String secure = attributes.getValue("security-enabled");
+                            if("true".equals(secure)) {
+                                httpsPort = port;
+                            } else {
+                                httpPort = port;
+                            }
+                        }
+                    } catch(NumberFormatException ex) {
+                        throw new SAXException(ex);
                     }
                 }
+            }));
+            
+            try {
+                TreeParser.readXml(domainXml, pathList);
+                result = true;
+            } catch(IllegalStateException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
-
         return result;
     }
-
-    /**
-     * This is a weak parser that attempts to locate the http, https, and admin
-     * port definitions in domain.xml.
-     * 
-     * Obvious improvements include accurate tracking of xml nodes to be certain
-     * we read /domain/configs/config for the correct server (e.g. clusters) and
-     * the correct http-listener entries therein.
-     */
-    private static final class DomainXmlParser extends DefaultHandler {
-
-        // Parser state
-        private Tag wantedTag;
-        private Tag currentTag;
-        
-        // Results
-        private int httpPort;
-        private int httpsPort;
-        private int adminPort;
-
-        DomainXmlParser() {
-        }
-
-        @Override
-        public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
-            if(wantedTag.element().equals(qname)) {
-                currentTag = wantedTag;
-                wantedTag = wantedTag.next();
-            } else {
-                currentTag = null;
-            }
-            if(currentTag == Tag.HTTP_LISTENER) {
-                try {
-                    String id = attributes.getValue("id");
-                    int port = Integer.parseInt(attributes.getValue("port"));
-                    
-                    if("admin-listener".equals(attributes.getValue("id"))) {
-                        adminPort = port;
-                    } else {
-                        String secure = attributes.getValue("security-enabled");
-                        if("true".equals(secure)) {
-                            httpsPort = port;
-                        } else {
-                            httpPort = port;
-                        }
-                    }
-                } catch(NumberFormatException ex) {
-                    throw new SAXException(ex);
-                }
-            }
-        }
-        
-        @Override
-        public void endElement(String uri, String localname, String qname) throws SAXException {
-        }
-
-        @Override
-        public void startDocument() throws SAXException {
-            wantedTag = Tag.DOMAIN;
-            currentTag = null;
-            
-            httpPort = -1;
-            httpsPort = -1;
-            adminPort = -1;
-        }
-
-        @Override
-        public void endDocument() throws SAXException {
-        }
-
-        public int getHttpPort() {
-            return httpPort;
-        }
-        
-        public int getHttpsPort() {
-            return httpsPort;
-        }
-        
-        public int getAdminPort() {
-            return adminPort;
-        }
-        
-        private static enum Tag {
-            
-            DOMAIN { 
-                public String element() { return "domain"; } 
-                public Tag next() { return APPLICATIONS; }
-            },
-            APPLICATIONS { 
-                public String element() { return "applications"; } 
-                public Tag next() { return RESOURCES; }
-            },
-            RESOURCES { 
-                public String element() { return "resources"; } 
-                public Tag next() { return SERVERS; }
-            },
-            SERVERS { 
-                public String element() { return "servers"; } 
-                public Tag next() { return CONFIGS; }
-            },
-            CONFIGS { 
-                public String element() { return "configs"; } 
-                public Tag next() { return CONFIG; }
-            },
-            CONFIG { 
-                public String element() { return "config"; } 
-                public Tag next() { return HTTP_LISTENER; }
-            },
-            HTTP_LISTENER { 
-                public String element() { return "http-listener"; } 
-                public Tag next() { return HTTP_LISTENER; }
-            };
-            
-            public abstract String element();
-            public abstract Tag next();
-            
-        }
-        
-    }
-    
 }

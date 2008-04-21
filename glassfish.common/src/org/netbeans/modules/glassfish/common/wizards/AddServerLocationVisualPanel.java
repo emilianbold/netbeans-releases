@@ -41,14 +41,12 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.net.URL;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -57,55 +55,33 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.openide.util.NbBundle;
-
-import java.net.URL;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * @author pblaha
  * @author Peter Williams
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel implements Retriever.Updater {
+
+    public static enum DownloadState { UNAVAILABLE, AVAILABLE, DOWNLOADING, COMPLETED };
     
+    private static final String V3_LOCATION_REFERENCE_URL = 
+//            "https://glassfishplugins.dev.java.net/glassfishv3ziplocation.txt";
+            "http://serverplugins.netbeans.org/glassfishv3/v3zipfilename.txt"; // NOI18N
+    private static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
+    private static final String V3_DEFAULT_DOWNLOAD_URL = 
+            "http://java.net/download/javaee5/v3/releases/preview/glassfish-v3-preview2-final.zip"; // NOI18N
     
-    //backup copy, the real value is from the web...see below getDownloadLocation()
-    private static final String V3_DOWNLOAD_URL = 
-            "http://java.net/download/javaee5/v3/releases/preview/glassfish-snapshot-v3-preview-20_04_2008.zip";
-    
-    private final Set <ChangeListener> listeners = new HashSet<ChangeListener>();
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList();
     private Retriever retriever;
+    private volatile DownloadState downloadState;
     private volatile String statusText;
 
     public AddServerLocationVisualPanel() {
         initComponents();
         initUserComponents();
     }
-    private  String getDownloadLocation() {
-        InputStream is = null;
-        DataInputStream dis;
-        String s =V3_DOWNLOAD_URL;//default value
-
-        try {
-            is = new URL("https://glassfishplugins.dev.java.net/glassfishv3ziplocation.txt").openStream();
-            dis = new DataInputStream(new BufferedInputStream(is));
-            while ((s = dis.readLine()) != null) {
-                return s;//firs line is the one we want
-            }
-        } catch (Exception w) {
-           // w.printStackTrace();
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ioe) {
-                //what else to do
-            }
-
-        }
-        return s;
-    }    
     
     private void initUserComponents() {
         readlicenseButton.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
@@ -119,11 +95,12 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                 "</span></body></html>");
         
         downloadButton.setEnabled(false);
+        downloadState = DownloadState.UNAVAILABLE;
         
         setName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TITLE_ServerLocation"));
         
-        hk2HomeTextField.setText(System.getProperty("user.home") + File.separatorChar + "GlassFish_V3_TP2");
-//        hk2HomeTextField.setText("/space/tools/v3latest");
+        hk2HomeTextField.setText(System.getProperty("user.home") + File.separatorChar + 
+                "GlassFish_V3_TP2");
         hk2HomeTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 fireChangeEvent();
@@ -139,6 +116,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         updateMessageText("");
     }
     
+    public DownloadState getDownloadState() {
+        return downloadState;
+    }
+       
     /**
      * 
      * @return 
@@ -160,9 +141,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
      * @param l 
      */
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        listeners.add(l);
     }
     
     /**
@@ -170,19 +149,13 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
      * @param l 
      */
     public void removeChangeListener(ChangeListener l ) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        listeners.remove(l);
     }
 
     private void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged (ev);
+        for(ChangeListener listener: listeners) {
+            listener.stateChanged(ev);
         }
     }
     
@@ -212,14 +185,18 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
 
         // set the current directory
         File currentLocation = new File(hk2HomeTextField.getText());
-        if (currentLocation.exists() && currentLocation.isDirectory()) {
-            chooser.setCurrentDirectory(currentLocation.getParentFile());
-            chooser.setSelectedFile(currentLocation);
+        File currentLocationParent = currentLocation.getParentFile();
+        if(currentLocationParent != null && currentLocationParent.exists()) {
+            chooser.setCurrentDirectory(currentLocationParent);
         }
+        if (currentLocation.exists() && currentLocation.isDirectory()) {
+            chooser.setSelectedFile(currentLocation);
+        } 
         
         return chooser;
     }   
     
+    @Override
     public void removeNotify() {
         // !PW Is there a better place for this?  If the retriever is still running
         // the user must have hit cancel on the wizard, so tell the retriever thread
@@ -394,18 +371,18 @@ private void agreeCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 }//GEN-LAST:event_agreeCheckBoxStateChanged
 
 private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readlicenseButtonActionPerformed
-        try{
-            URLDisplayer.getDefault().showURL(new URL("https://glassfish.dev.java.net/public/CDDL+GPL.html"));//NOI18N
-        } catch (Exception eee){
-            return;//nothing much to do
-            
+        try {
+            URLDisplayer.getDefault().showURL(
+                    new URL("https://glassfish.dev.java.net/public/CDDL+GPL.html")); //NOI18N
+        } catch (Exception ex){
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
 }//GEN-LAST:event_readlicenseButtonActionPerformed
 
 private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if(retriever == null) {
             retriever = new Retriever(new File(hk2HomeTextField.getText()), 
-                    getDownloadLocation(), this);
+                    V3_LOCATION_REFERENCE_URL, V3_DOWNLOAD_PREFIX, V3_DEFAULT_DOWNLOAD_URL, this);
             new Thread(retriever).start();
             updateCancelState(true);
         } else {
