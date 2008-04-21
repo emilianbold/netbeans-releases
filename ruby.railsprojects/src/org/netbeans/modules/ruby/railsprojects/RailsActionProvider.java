@@ -541,6 +541,14 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String script = "script" + File.separator + "console"; // NOI18N
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String noreadlineArg = "--irb=irb --noreadline"; //NOI18N
+        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+        String[] additionalArgs = null;
+        if (railsEnv != null && !"".equals(railsEnv.trim())) {
+            additionalArgs = new String[]{noreadlineArg, railsEnv};
+        } else {
+            additionalArgs = new String[]{noreadlineArg};
+        }
 
         new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
@@ -548,7 +556,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 classPath(classPath).
                 allowInput().
                 // see #130264
-                additionalArgs("--irb=irb --noreadline"). //NOI18N
+                additionalArgs(additionalArgs). //NOI18N
                 fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)

@@ -60,6 +60,7 @@ public class JSPPaletteCustomizerAction extends CallableSystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.web.wizards;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -55,21 +54,14 @@ import org.netbeans.api.project.Sources;
 
 class TargetEvaluator extends Evaluator { 
 
-    private final boolean debug = false; 
-
-    private ArrayList pathItems = null; 
+    private List<String> pathItems = null; 
     private DeployData deployData = null; 
     private String errorMessage = null; 
     private String fileName;
-    private boolean initialized = false;
     private String className;
     
     TargetEvaluator(FileType fileType, DeployData deployData) {
 	super(fileType); 
-	if(debug) { 
-	    log("::CONSTRUCTOR"); 
-	    log("file type is " + getFileType().toString()); 
-	} 
 	this.deployData = deployData; 
     }
 
@@ -91,54 +83,17 @@ class TargetEvaluator extends Evaluator {
      */
     String getClassName() {
         return className;
-	/*
-	if(pathItems == null || pathItems.isEmpty()) return ""; 
-	else { 
-	    StringBuffer buf = new StringBuffer();
-	    Iterator iterator = pathItems.iterator(); 
-	    while(iterator.hasNext()) { 
-		buf.append((String)(iterator.next())); 
-		if(iterator.hasNext())
-		    buf.append("."); //NOI18N
-		
-	    }
-	    return buf.toString(); 
-	}
-        */
     } 
 
     /**
      * Used by the various wizard panels to display the classname of
      * the target
      */
-    
-    //void setClassName(String fileName, FileObject targetFolder) {
     void setClassName(String fileName, String targetFolder) {
         if (targetFolder.length()>0)
             className=targetFolder+"."+fileName;
         else className=fileName;
         this.fileName=fileName;
-        /*
-	if(debug) log("::setClassName(" + fileName + ")"); //NOI18N
-        if (!initialized) {
-            initialized=true;
-        } else {
-            pathItems.remove (pathItems.size()-1);
-        }
-        pathItems.add(fileName);
-        
-        try {
-            checkFile(pathItems.iterator(),targetFolder);
-            this.fileName=fileName;
-            if(debug) 
-                log("\tNumber of path items: " + pathItems.size()); //NOI18N
-            return;
-        } catch (IOException ex) {}
-        
-        setAlternativeName(fileName,targetFolder);
-	if(debug) 
-	    log("\tNumber of path items: " + pathItems.size()); //NOI18N
-        */
     }
     
     /**
@@ -151,8 +106,7 @@ class TargetEvaluator extends Evaluator {
     /**
      * Used by the servlet wizard when creating the files
      */
-    Iterator getPathItems() {
-        if(debug) log("::getPathItems()"+pathItems.size()); //NOI18N;
+    Iterator<String> getPathItems() {
 	return pathItems.iterator(); 
     } 
     
@@ -164,10 +118,8 @@ class TargetEvaluator extends Evaluator {
      * Used by the ObjectNameWizard panel to set the target folder
      * gotten from the system wizard initially. 
      */
-    
     void setInitialFolder(DataFolder selectedFolder, Project p) {
 	if(selectedFolder == null) { 
-	    if(debug) log("\t" + "No target folder!"); //NOI18N
 	    return; 
 	}
         FileObject targetFolder = selectedFolder.getPrimaryFile();
@@ -188,8 +140,6 @@ class TargetEvaluator extends Evaluator {
     boolean isValid() { 
         return true;
     } 
-    
-    
 
     /**
      * Calculates the package name for a new Servlet/Filter/Listener
@@ -198,12 +148,8 @@ class TargetEvaluator extends Evaluator {
      * file system under WEB-INF/classes, then we strip off the
      * WEB-INF/classes portion from the path name. 
      */ 
-    
     private void setInitialPath(String dirPath) { 
-
-	if(debug) log("::setInitialPath()"); 
-        
-	pathItems = new ArrayList(); 
+	pathItems = new ArrayList<String>(); 
         
 	String path[] = dirPath.split("/"); //NOI18N
 	if(path.length > 0) { 
@@ -213,30 +159,6 @@ class TargetEvaluator extends Evaluator {
 		}
 	    }
 	}
-        if(debug) log("::setInitialPath():pathItems.size() "+pathItems.size());
     } 
-
-    private static void log(String s) { 
-	System.out.println("TargetEvaluator" + s); 
-    }
-    
-    private void setAlternativeName (String fileName, FileObject targetFolder) {
- 	int index = 0; 
-	String tempName = fileName; 
-	boolean pathOK = false; 
-        while(!pathOK) {
-	    pathItems.remove(tempName); 
-	    tempName = fileName.concat("_").concat(String.valueOf(++index)); 
-	    pathItems.add(tempName);
-	    try { 
-		checkFile(pathItems.iterator(),targetFolder); 
-		pathOK = true;
-                this.fileName=tempName;
-	    }
-	    catch(IOException ioex) {
-                pathOK = true;
-            } 
-        }
-    }
 
 }
