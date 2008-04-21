@@ -290,8 +290,8 @@ public class DebuggerTest extends NbTestCase {
     private ProcessBuilder startDebugging(final SessionId sessionId, File scriptFile) {
         DebuggerFactory.getDebugger().debug(sessionId);
         String command = gePHPInterpreter();
-        ProcessBuilder processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});
-        processBuilder.environment().put("XDEBUG_CONFIG", "idekey=netbeans-xdebug"); //NOI18N
+        ProcessBuilder processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});        
+        processBuilder.environment().put("XDEBUG_CONFIG", "idekey="+sessionId.getId()); //NOI18N
         return processBuilder;
     }
 }
