@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
 
     <property name="s2b_root_cfg" location="src/org/netbeans/modules/hibernate/cfg/model"/>
     <property name="s2b_root_mapping" location="src/org/netbeans/modules/hibernate/mapping/model"/>
+    <property name="s2b_root_reveng" location="src/org/netbeans/modules/hibernate/reveng/model"/>
     <property name="s2b_res_root" location="src/org/netbeans/modules/hibernate/resources"/>
 
     <target name="s2binit" depends="build-init">
@@ -77,14 +78,25 @@ made subject to such option by the copyright holder.
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
     </target>
+    
+    <target name="s2bgen-reveng" depends="s2binit">
+     <echo message="generating code generation input file information" />
+	<schema2beans schema="${s2b_res_root}/hibernate-reverse-engineering-3.0.dtd"
+	  mddFile="${s2b_res_root}/hibernate-reverse-engineering-3.0.mdd"
+	  package="org.netbeans.modules.hibernate.reveng.model"
+	  validate="false"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+    </target>
 
-    <target name="compile" depends="s2bgen-cfg, s2bgen-mapping, projectized-common.compile"/>
+    <target name="compile" depends="s2bgen-cfg, s2bgen-mapping, s2bgen-reveng, projectized-common.compile"/>
 
     <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
 
     <target name="clean-s2b-src">
         <mkdir dir="${s2b_root_cfg}"/>
         <mkdir dir="${s2b_root_mapping}"/>
+        <mkdir dir="${s2b_root_reveng}"/>
         <delete>
             <fileset dir="${s2b_root_cfg}">
                 <include name="*.java"/>
@@ -95,8 +107,14 @@ made subject to such option by the copyright holder.
                 <include name="*.java"/>
             </fileset>
         </delete>
+        <delete>
+            <fileset dir="${s2b_root_reveng}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
         <delete dir="${s2b_root_cfg}"/>
         <delete dir="${s2b_root_mapping}"/>
+        <delete dir="${s2b_root_reveng}"/>
     </target>
 
     <!-- Unit test related -->
