@@ -153,27 +153,29 @@ public final class ServerUtilities {
      * 
      * @return the File with full path of the jar or null
      */
-   public static File getJarName (String AppServerInstallDir, String jarNamePrefix){
-       File modulesDir = new File(AppServerInstallDir+"/"+GFV3_MODULES_DIR_NAME);
-       File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
-        if (candidates.length >=1 ){
-            return candidates[0]; //the first one
-        }
-        else{
-           return null;
+   public static File getJarName(String AppServerInstallDir, String jarNamePrefix) {
+        File modulesDir = new File(AppServerInstallDir + File.separatorChar + GFV3_MODULES_DIR_NAME);
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+        
+        if(candidates != null && candidates.length > 0) {
+            return candidates[0]; // the first one
+        } else {
+            return null;
         }
     }
    
-   private static class VersionFilter implements FileFilter{
-        private String nameprefix;
-        public VersionFilter(String nameprefix){
-            this.nameprefix=nameprefix;
-            
-        }
-        public boolean accept(File arg0) {
-            return arg0.getName().startsWith(nameprefix);
-        }
+    private static class VersionFilter implements FileFilter {
        
-   }
-    
+        private String nameprefix;
+        
+        public VersionFilter(String nameprefix) {
+            this.nameprefix = nameprefix;
+        }
+        
+        public boolean accept(File file) {
+            return file.getName().startsWith(nameprefix);
+        }
+        
+    }
+   
 }
