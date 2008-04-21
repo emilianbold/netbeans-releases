@@ -137,6 +137,9 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
                         
                         // Resolve Hudson version
                         String sVersion = connection.getHeaderField("X-Hudson");
+                        if (sVersion == null) {
+                            return;
+                        }
                         
                         // Create a HudsonVersion object
                         HudsonVersion version = new HudsonVersionImpl(sVersion);
