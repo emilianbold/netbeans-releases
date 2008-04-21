@@ -51,10 +51,10 @@ import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
@@ -111,7 +111,7 @@ final class GsfSourcePathImplementation implements ClassPathImplementation, Prop
         
         // TODO - synchronize
         List<URL> roots = new ArrayList<URL>();
-        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(Sources.TYPE_GENERIC);
+        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         for (SourceGroup sg : sourceGroups) {
             try {
                 roots.add(FileUtil.toFile(sg.getRootFolder()).toURI().toURL());

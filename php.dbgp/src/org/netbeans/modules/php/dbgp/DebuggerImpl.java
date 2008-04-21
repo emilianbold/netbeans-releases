@@ -45,7 +45,6 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.api.Debugger;
 import org.netbeans.modules.php.dbgp.api.SessionId;
-import org.netbeans.modules.php.dbgp.api.StartActionProvider;
 
 
 /**
@@ -58,24 +57,12 @@ public class DebuggerImpl implements Debugger {
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
     public void debug( SessionId id ) {
-        DebuggerInfo dInfo = DebuggerInfo.create( ID ,new Object[] {id });
+        DebugSession session = new DebugSession();
+        DebuggerInfo dInfo = DebuggerInfo.create( ID ,new Object[] {id, session });
         
         DebuggerEngine[] engines = 
             DebuggerManager.getDebuggerManager().startDebugging(dInfo);
-        /*
-         * See StartActionProvider interface description about this code. 
-         */
-        String sessionName = null;
-        for (DebuggerEngine engine : engines) {
-            StartActionProvider provider = 
-                (StartActionProvider)engine.lookupFirst( null , 
-                        StartActionProvider.class );
-            if ( provider == null ){
-                continue;
-            }
-            provider.start( );
-            
-        }
+        StartActionProviderImpl.getInstance().start(id);
     }
 
 }

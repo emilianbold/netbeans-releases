@@ -41,8 +41,14 @@
 
 package org.netbeans.modules.web.jspcompiler;
 
-import java.util.*;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 //TODO - add support for other tags, e.g. server-specific -> make sure they do not block this code
 
@@ -116,6 +122,7 @@ public class SmapResolver {
         this.reader = reader;
     }
 
+    @Override
     public String toString() {
        return reader.toString();
     }
@@ -126,7 +133,6 @@ public class SmapResolver {
      * @param smap SMAP information as a string
      */
     private boolean resolve(String smap) {
-        
         String currentSection = "";
         if (smap == null) return false;
         
@@ -229,7 +235,6 @@ public class SmapResolver {
     /** stores line mappings into both java->jsp->java maps
      */
     private void storeLine(String token, String fileIndex) {
-//        System.err.println("storeLine: " + token + ", " + fileIndex);
         int delimIndex = token.indexOf(":");
         
         String jspLine = token.substring(0, delimIndex);
@@ -400,15 +405,4 @@ public class SmapResolver {
         return jspline;
     }
     
-//    public static void main(String[] args) {
-//        SmapResolver sr = new SmapResolver(new SmapFileReader(
-//            new java.io.File("/Users/mg116726/WebApplication3/build/generated/src/org/apache/jsp/index_jsp.class.smap")));
-//        System.err.println("resolved: " + sr.isResolved());
-//        try {
-//            System.err.println(sr.getJspFileName(43,0));
-//            System.err.println(sr.unmangle(43,0));
-//        } catch (Exception e) {
-//            System.err.println("exception");
-//        }
-//    }
 }

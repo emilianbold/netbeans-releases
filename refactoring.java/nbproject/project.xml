@@ -223,6 +223,12 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>qa-functional</name>
+                    
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.refactoring.java.api</package>
                 <package>org.netbeans.modules.refactoring.java.api.ui</package>
