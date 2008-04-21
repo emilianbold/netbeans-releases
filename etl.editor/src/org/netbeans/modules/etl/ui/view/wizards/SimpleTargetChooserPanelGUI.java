@@ -171,8 +171,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         putClientProperty("NewEtlWizard_Title", displayName); // NOI18N
 
         if (template != null) {
-            //documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());
-            documentNameTextField.setText(NEW_FILE_NAME);
+            documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());            
             documentNameTextField.selectAll();
         }
         String nbBundle2 = mLoc.t("BUND092: Folder Name:");
