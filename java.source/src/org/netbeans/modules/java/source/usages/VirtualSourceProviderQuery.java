@@ -45,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -70,7 +71,24 @@ public final class VirtualSourceProviderQuery {
         result.addLookupListener(WeakListeners.create(LookupListener.class, l, result));
     }
     
-    public static Iterable<Pair<String,CharSequence>> translate (final File[] files, final File root) {
+    public static boolean hasVirtualSource (final File file) {
+        Parameters.notNull("file", file);
+        final String ext = FileObjects.getExtension(file.getName());
+        return getExt2ProvMap().keySet().contains(ext);
+    }
+    
+    public static boolean hasVirtualSource (final FileObject file) {
+        Parameters.notNull("file", file);
+        final String ext = file.getExt();
+        return getExt2ProvMap().keySet().contains(ext);
+    }
+    
+    public static boolean hasVirtualSource (final String extension) {
+        Parameters.notNull("extension", extension);
+        return getExt2ProvMap().keySet().contains(extension);
+    }
+    
+    public static Iterable<FileObjects.InferableJavaFileObject> translate (final Iterable<? extends File> files, final File root) {
         Parameters.notNull("files", files);     //NOI18N
         Parameters.notNull("root", root);       //NOI18N
         final Map<String,Pair<VirtualSourceProvider,List<File>>> m = new HashMap<String,Pair<VirtualSourceProvider,List<File>>>();
@@ -91,15 +109,14 @@ public final class VirtualSourceProviderQuery {
                l.add(f);
            }
         }
-        final List<Pair<String,CharSequence>> res = new LinkedList<Pair<String, CharSequence>>();
+        
+        final R r = new R (root);        
         for (Pair<VirtualSourceProvider,List<File>> p : m.values()) {
             final VirtualSourceProvider prov = p.first;
             final List<File> tf = p.second;
-            List<Pair<String,CharSequence>> pr = prov.translate(tf, root);
-            assert pr != null;
-            res.addAll(pr);
+            prov.translate(tf, root,r);
         }
-        return res;
+        return r.getResult();
     }
     
     private static synchronized Map<String,VirtualSourceProvider> getExt2ProvMap () {
@@ -116,5 +133,24 @@ public final class VirtualSourceProviderQuery {
     
     private static synchronized void reset () {
         ext2prov = null;
+    }
+    
+    private static class R implements VirtualSourceProvider.Result {
+        
+        private final File root;
+        final List<FileObjects.InferableJavaFileObject> res = new LinkedList<FileObjects.InferableJavaFileObject>();
+        
+        public R (final File root) {
+            assert root != null;
+            this.root = root;
+        }
+        
+        public List<FileObjects.InferableJavaFileObject> getResult () {
+            return res;
+        }
+
+        public void add(final File source, final String packageName, final String relativeName, final CharSequence content) {
+            res.add(FileObjects.memoryFileObject(packageName, relativeName, source.toURI(), System.currentTimeMillis(), content));
+        }                
     }
 }
