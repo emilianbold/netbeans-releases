@@ -150,6 +150,11 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
     
+    // [TODO]
+    boolean isBreakpointHit(JPDAThread thread) {
+        return threadToMenuItem.containsKey(thread);
+    }
+    
     // **************************************************************************
     
     private void hideHitsPanel() {

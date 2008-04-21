@@ -276,18 +276,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             viewModelListener.setUp();
             return;
         }
-//        if (debuggingPanel == null) {
-//            setLayout(new BorderLayout ());
-//            debuggingPanel = new DebuggingPanel();
-//            debuggingPanel.setName(NbBundle.getMessage (DebuggingView2.class, "CTL_Debugging_tooltip")); // NOI18N
-//            add(debuggingPanel, BorderLayout.CENTER);
-//        }
-        if (viewModelListener != null)
+        if (viewModelListener != null) {
             throw new InternalError ();
-        viewModelListener = new ViewModelListener (
-            "DebuggingView",
-            this
-        );
+        }
+        viewModelListener = new ViewModelListener ("DebuggingView", this);
     }
     
     @Override
@@ -384,11 +376,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 int sx = (rightPanel.getWidth() - ICON_WIDTH) / 2;
                 JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
                 boolean isCurrent = false;
+                boolean isAtBreakpoint = false;
                 for (TreePath path : treeView.getVisiblePaths()) {
                     Node node = Visualizer.findNode(path.getLastPathComponent());
                     JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
                     if (jpdaThread != null) {
                         isCurrent = jpdaThread == currentThread;
+                        isAtBreakpoint = infoPanel.isBreakpointHit(jpdaThread);
                     }
                     
                     JTree tree = treeView.getTree();
@@ -399,6 +393,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     label.setPreferredSize(new Dimension(BAR_WIDTH, height));
                     if (isCurrent) {
                         label.setBackground(greenBarColor);
+                    } else if (isAtBreakpoint) {
+                        label.setBackground(hitsPanelColor);
                     } else {
                         label.setBackground(treeBackgroundColor);
                         label.setOpaque(false);
