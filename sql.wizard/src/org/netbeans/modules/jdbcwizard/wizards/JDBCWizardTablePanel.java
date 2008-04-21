@@ -403,13 +403,13 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     class ColumnAction implements ActionListener {
-        protected JButton okbutton = new JButton("OK");
+        protected JButton okbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_OK"));
 
-        protected JButton cancelbutton = new JButton("Cancel");
+        protected JButton cancelbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_CANCEL"));
         
-        protected JButton selectallbutton = new JButton("Select All");
+        protected JButton selectallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_SELECT_ALL"));
         
-        protected JButton clearallbutton = new JButton("Clear All");
+        protected JButton clearallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_CLEAR_ALL"));
 
         protected JPanel buttonpanel = new JPanel();
 
@@ -946,15 +946,11 @@ public class JDBCWizardTablePanel extends JPanel {
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
         column.setPreferredWidth(80);
-        column.setMaxWidth(120);
         
         final TableColumn columnAdv = this.metaDataTable.getColumnModel().getColumn(2);
         columnAdv.setResizable(true);
-        columnAdv.setMinWidth(60);
         columnAdv.setPreferredWidth(80);
-        columnAdv.setMaxWidth(100);
     }
 
     /**
@@ -975,9 +971,7 @@ public class JDBCWizardTablePanel extends JPanel {
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
         column.setPreferredWidth(40);
-        column.setMaxWidth(80);
         this.tableScroll = new JScrollPane(this.metaDataTable);
         final javax.swing.border.Border inside = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(3, 3, 3,
                 3), BorderFactory.createLineBorder(Color.GRAY));

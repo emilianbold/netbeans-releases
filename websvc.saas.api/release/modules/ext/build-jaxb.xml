@@ -55,8 +55,14 @@ made subject to such option by the copyright holder.
     
     <target name="-init-user">
         <property file="${user.build.properties.file}"/>
-        <condition property="platform.home" value="${platforms.JDK_1.5.home}" else="${java.home}/../">
-            <isset property="platforms.JDK_1.5.home"/> 
+        <condition property="isMacOs">
+            <os family="mac"/>
+        </condition>
+        <condition property="jdk.home" value="${java.home}/" else="${java.home}/../">
+            <istrue value="${isMacOs}"/>
+        </condition>
+        <condition property="platform.home" value="${platforms.JDK_1.5.home}" else="${jdk.home}">
+            <isset property="platforms.JDK_1.5.home"/>
         </condition>
         <property name="platform.javac" value="${platform.home}/bin/javac"/>
     </target>

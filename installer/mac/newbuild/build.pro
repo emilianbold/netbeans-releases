@@ -8,12 +8,12 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="6.1"/>
-    <property name="mpkgname_nb" value="NetBeans IDE 6.1 RC2"/> 
-    <property name="appname" value="NetBeans 6.1 RC2"/> 
+    <property name="mpkg.name_nb" value="NetBeans IDE 6.1"/> 
+    <property name="appname" value="NetBeans 6.1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.1"/>      
 
-    <property name="appversion" value="6.1 RC2"/>
+    <property name="appversion" value="6.1"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-6.0.16"/>
@@ -34,7 +34,7 @@
 
     <property name="dmg.prefix.name" value="${prefix}"/>                  
 
-    <property name="mpkgname_nb_mysql" value="NetBeans IDE with MySQL"/> 
+    <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
     <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
     <property name="mysql_10.5.dmg.name" value="netbeans-mysql_10.5"/>
@@ -45,4 +45,7 @@
     <property name="mysql_10.5.location" value="${binary_cache_host}/mysql/${mysql_10.5.pkg.name}.dmg"/>
     <property name="mysql_10.4.location" value="${binary_cache_host}/mysql/${mysql_10.4.pkg.name}.dmg"/>
     <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
+    <property name="mysql_license.name" value="NB_GF_MySQL.txt"/>   
+    <property name="mysql_readme.name" value="NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt"/>   
+
 </project>

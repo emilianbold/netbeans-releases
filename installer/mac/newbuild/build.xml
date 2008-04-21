@@ -137,8 +137,10 @@ Microsystems, Inc. All Rights Reserved.
             </filterset>
         </copy>  
         
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/env.sh"/> 
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/addproduct_id.sh"/>        
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/> 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
@@ -159,7 +161,8 @@ Microsystems, Inc. All Rights Reserved.
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
-                 <property name="mpkgname" value="${mpkgname_nb}"/>
+                 <property name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
         </for-each>         
         <delete file="${basedir}/build/sizes.pro"/>
@@ -225,10 +228,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-lproj-dir" depends="init-locale-propeties">
         <echo message="Building ${locale.dir}.lproj dir..."/>        
         <!-- create lproj dir -->
-        <mkdir dir="${mpkgfile}/Contents/Resources/${locale.dir}.lproj"/>
+        <mkdir dir="${mpkg.file}/Contents/Resources/${locale.dir}.lproj"/>
         <!-- copy Welcome.html and Localizable.strings -->                 
         <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
-              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
+              tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
         <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
@@ -236,7 +239,7 @@ Microsystems, Inc. All Rights Reserved.
                 s/'\$${buildnumber}'/'${buildnumber}'/;s/'\$${tomcat.version}'/'${tomcat.version}'/' 
                 > ${resources.full.dir}/Localizable.strings"/>
         </exec>         
-        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkgfile}/Contents/Resources/${locale.dir}.lproj" 
+        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
   
@@ -245,7 +248,13 @@ Microsystems, Inc. All Rights Reserved.
         <get src="${mysql_connector.location}" 
              dest="${basedir}/build/${mysql_connector.name}.jar"
              usetimestamp="true"/>
-        
+        <!-- temp workaround with productid for NB in MYSQL bundles: replace "NB" with "NBMYSQL" in postflight for baseide.pkg-->     
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBMYSQL&quot;/'
+                            ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
+        </exec>          
+
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.5.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
@@ -256,6 +265,12 @@ Microsystems, Inc. All Rights Reserved.
             <property name="mysql.pkg.name" value="${mysql_10.4.pkg.name}"/>
             <property name="dmg.name" value="${mysql_10.4.dmg.name}"/>                        
         </ant>
+        <!-- return "NB" in baseide.pkg-->         
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NBMYSQL&quot;/addproduct_id.sh &quot;NB&quot;/'
+                            ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
+        </exec>         
         <delete file="${basedir}/build/${mysql_connector.name}.jar"/> 
         <delete file="${basedir}/build/sizes.pro"/>        
     </target>    
@@ -295,20 +310,28 @@ Microsystems, Inc. All Rights Reserved.
         </ant>     
         
         <copy file="${basedir}/build/${mysql_connector.name}.jar" 
-              todir="${basedir}/build/mysql.pkg/Contents/Resources"/>        
+              todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>
+
+        <copy file="${basedir}/dmg/Resources/license_mysql.txt" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>    
+
+        <copy file="${basedir}/dmg/Resources/readme_mysql.txt" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>             
              
         <echo message="script_dir=`dirname &quot;$$0&quot;` ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/${mysql_license.name}&quot; ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/${mysql_readme.name}&quot; ${line.separator}
 if [ -d &quot;${glassfish.install.dir}&quot; ] ; then ${line.separator}
     cp -RPf &quot;$$script_dir&quot;/${mysql_connector.name}.jar &quot;${glassfish.install.dir}/lib/&quot;${line.separator}
 fi"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
-              append="true"/>        
+              append="true"/>                                          
               
         <ant target="build-dmg">             
              <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
-             <property name="mpkgname" value="${mpkgname_nb_mysql}"/> 
-             
+             <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
+             <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
         </ant>          
     </target>
     
@@ -324,18 +347,16 @@ fi"
     <target name="build-dmg">   
         <property file="${basedir}/build/sizes.pro"/>         
         <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
-        <property name="mpkgfile" value="dist_dmg/${mpkgname}.mpkg"/>   
-        <mkdir dir="${mpkgfile}/Contents/Packages"/> 
-        
+        <property name="mpkg.file" value="${basedir}/dist_dmg/${mpkg.name}.mpkg"/>   
+       
         <copy file="${basedir}/dmg/Resources/bgimage.tif" 
-              tofile="${mpkgfile}/Contents/Resources/background.tif"/>  
-        <copy file="${basedir}/dmg/Resources/license.txt" 
-              tofile="${mpkgfile}/Contents/Resources/License.txt" />                         
+              tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
+        <copy file="${license.file}" 
+              tofile="${mpkg.file}/Contents/Resources/License.txt" />                         
                          
         <ant target="prepare-lproj-dirs"/>                                             
-
-        <mkdir dir="${mpkgfile}/Contents/Packages"/>        
-        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">                                    
+        
+        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
@@ -350,16 +371,17 @@ fi"
                 <filter token="SIZE_MYSQL" value="${sizeof.mysql}"/> 
                 <filter token="SIZE_MYSQLSTARTUP" value="${sizeof.mysqlstartup}"/>                 
             </filterset>
-        </copy>            
+        </copy> 
         
+        <mkdir dir="${mpkg.file}/Contents/Packages"/>         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RPf ${packages} ./dist_dmg/'${mpkgname}'.mpkg/Contents/Packages"/>
+            <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
         </exec>                                            
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkgname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
     </target>             
