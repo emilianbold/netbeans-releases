@@ -321,6 +321,7 @@ public class PHPCodeCompletion implements Completable {
                 
                 String varName = tokenSequence.token().text().toString();
                 String typeName = null;
+                boolean completeDollarPrefix = true;
 
                 if (varName.equals("self")) { //NOI18N
                     ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -344,6 +345,7 @@ public class PHPCodeCompletion implements Completable {
                         typeName = classDecl.getName().getName();
                         staticContext = false;
                         instanceContext = true;
+                        completeDollarPrefix = false;
                     }
                 } else {
                     if (staticContext) {
@@ -379,7 +381,13 @@ public class PHPCodeCompletion implements Completable {
                     
                     for (IndexedConstant prop : properties){
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
-                            proposals.add(new VariableItem(prop, request));
+                            VariableItem item = new VariableItem(prop, request);
+                            
+                            if (!completeDollarPrefix) {
+                                item.doNotInsertDollarPrefix();
+                            }
+                            
+                            proposals.add(item);
                         }
                     }
                     
@@ -915,20 +923,21 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private class VariableItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
+        private boolean insertDollarPrefix = true;
 
         VariableItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);
-            this.constant = constant;
         }
         
         @Override public String getLhsHtml() {
             HtmlFormatter formatter = request.formatter;
-            String typeName = constant.getTypeName();
+            String typeName = ((IndexedConstant)getElement()).getTypeName();
             formatter.reset();
+            
             if (typeName == null) {
                 typeName = "?"; //NOI18N
             }
+            
             formatter.type(true);
             formatter.appendText(typeName);
             formatter.type(false);
@@ -943,6 +952,21 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            
+            if (!insertDollarPrefix && name.startsWith("$")){ //NOI18N
+                return name.substring(1);
+            }
+            
+            return name;
+        }
+        
+        void doNotInsertDollarPrefix(){
+            insertDollarPrefix = false;
         }
     }
     

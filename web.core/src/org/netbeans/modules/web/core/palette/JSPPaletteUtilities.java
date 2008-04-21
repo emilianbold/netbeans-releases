@@ -133,7 +133,6 @@ public final class JSPPaletteUtilities {
     }
 
     private static int insert(String s, JTextComponent target, Document doc) throws BadLocationException {
-
         int start = -1;
         try {
             //at first, find selected text range
