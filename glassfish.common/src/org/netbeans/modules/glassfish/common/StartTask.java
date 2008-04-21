@@ -175,15 +175,13 @@ public class StartTask extends BasicTask<OperationState> {
     private NbProcessDescriptor createProcessDescriptor() {
         String startScript = System.getProperty("java.home") + "/bin/java" ; 
         String serverHome = ip.get(GlassfishModule.HOME_FOLDER_ATTR);
-        String jarLocation = serverHome + "/" + ServerUtilities.GFV3_MODULES_DIR_NAME + "/" + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME;
-        if(!new File(jarLocation).exists()) {
-            // try TP2 jar names
-            jarLocation = serverHome + "/" + ServerUtilities.GFV3_MODULES_DIR_NAME + "/" + ServerUtilities.GFV3_TP2_JAR_NAME;
-            if(!new File(jarLocation).exists()) {
-                fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
+        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        if (jar==null){
+                 fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
                 return null;
-            }
+           
         }
+        String jarLocation = jar.getAbsolutePath();
         
         StringBuilder argumentBuf = new StringBuilder(1024);
         appendSystemVars(argumentBuf);

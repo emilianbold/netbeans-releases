@@ -78,15 +78,12 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
-        File jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME +
-                File.separatorChar + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME); // V3 regular builds
+        File jar = ServerUtilities.getJarName(glassfishHome, "glassfish-10.0");
 
-        if (jar.exists()) {
-            return true;
+
+        if (jar==null) {
+            return false;
         }
-        jar = new File(glassfishHome, ServerUtilities.GFV3_MODULES_DIR_NAME +
-                File.separatorChar + ServerUtilities.GFV3_TP2_JAR_NAME); // Tp2 build
-
         if (jar.exists()) {
             return true;
         }
@@ -138,9 +135,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
     
     private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-V3"; // NOI18N
-    private static final String EL_CORE_LIB = "eclipselink-wrapper-10.0-SNAPSHOT.jar"; // NOI18N
+    private static final String EL_CORE_LIB_PREFIX = "eclipselink-wrapper-10.0"; // NOI18N
 
-    private static final String PERSISTENCE_API_LIB = "persistence-api-1.0b.jar"; // NOI18N
+    private static final String PERSISTENCE_API_LIB_PREFIX = "javax.javaee-10.0"; // NOI18N
     private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
     
     public boolean ensureEclipseLinkSupport(String installRoot) {
@@ -172,8 +169,14 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src, javadoc -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                libraryList.add(new File(installRoot + "/modules/" + EL_CORE_LIB).toURI().toURL());
-                libraryList.add(new File(installRoot + "/modules/" + PERSISTENCE_API_LIB).toURI().toURL());
+                File f = ServerUtilities.getJarName(installRoot, EL_CORE_LIB_PREFIX);
+                if ((f!=null)&&(f.exists())){
+                    libraryList.add(f.toURI().toURL());
+                }
+                f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX);
+                if ((f!=null)&&(f.exists())){
+                    libraryList.add(f.toURI().toURL());
+                }
 
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(
                         "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
@@ -200,7 +203,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
  
     private static final String COMET_LIB = "Comet-GlassFish-V3"; // NOI18N
-    private static final String COMET_JAR_LIB = "grizzly-module-1.7.3.jar"; // NOI18N
+    private static final String COMET_JAR_LIB_PREFIX = "grizzly-module"; // NOI18N
     
     public boolean ensureCometSupport(String installRoot) {
         LibraryManager lmgr = LibraryManager.getDefault();
@@ -231,9 +234,10 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src,  -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                File f= new File(installRoot + "/modules/" + COMET_JAR_LIB); 
-
-                libraryList.add(f.toURI().toURL());
+                File f = ServerUtilities.getJarName(installRoot, COMET_JAR_LIB_PREFIX);
+                if ((f!=null)&&(f.exists())){
+                    libraryList.add(f.toURI().toURL());
+                }  
 
 
 //                File j2eeDoc = InstalledFileLocator.getDefault().locate(

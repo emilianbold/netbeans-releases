@@ -227,13 +227,15 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     private boolean isValidV3Install(File installDir) {
-        File glassfishRef = new File(installDir, ServerUtilities.GFV3_MODULES_DIR_NAME + File.separator + ServerUtilities.GFV3_SNAPSHOT_JAR_NAME);
-        if(!glassfishRef.exists()) {
-            // !tp2 release
-            glassfishRef = new File(installDir, ServerUtilities.GFV3_MODULES_DIR_NAME + File.separator + ServerUtilities.GFV3_TP2_JAR_NAME);
-            if(!glassfishRef.exists()) {
-                return false;
-            }
+        
+        File jar = ServerUtilities.getJarName(installDir.getAbsolutePath(), ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        
+        if (jar==null){
+           return false;          
+        }
+         if(!jar.exists()) {
+             return false;
+            
         }
         
         File containerRef = new File(installDir, "config" + File.separator + "glassfish.container");

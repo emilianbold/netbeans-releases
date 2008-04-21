@@ -39,6 +39,8 @@
 
 package org.netbeans.spi.glassfish;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.server.ServerInstance;
@@ -60,9 +62,7 @@ public final class ServerUtilities {
     public static final int ACTION_TIMEOUT = 10000;
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
-    public static final String GFV3_SNAPSHOT_JAR_NAME = "glassfish-10.0-SNAPSHOT.jar"; // NOI18N"
-    public static final String GFV3_VERSION_NAME = "-tp-2"; // NOI18N"
-    public static final String GFV3_TP2_JAR_NAME = "glassfish-10.0"+GFV3_VERSION_NAME+"+.jar"; // NOI18N"
+    public static final String GFV3_PREFIX_JAR_NAME = "glassfish-10.0"; // NOI18N"
     
     
     private ServerUtilities() {
@@ -145,5 +145,35 @@ public final class ServerUtilities {
     public static ServerInstanceProvider getServerProvider() {
         return GlassfishInstanceProvider.getDefault();
     }
+    
+     /**
+     * Returns the fqn jar name with the correct version 
+     * If jarNamePrefix is ""glassfish-10.0" the the return value
+     * will be INSTALL/modules/glassfish-10.0-SNAPSHOT.jar"
+     * 
+     * @return the File with full path of the jar or null
+     */
+   public static File getJarName (String AppServerInstallDir, String jarNamePrefix){
+       File modulesDir = new File(AppServerInstallDir+"/"+GFV3_MODULES_DIR_NAME);
+       File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+        if (candidates.length >=1 ){
+            return candidates[0]; //the first one
+        }
+        else{
+           return null;
+        }
+    }
+   
+   private static class VersionFilter implements FileFilter{
+        private String nameprefix;
+        public VersionFilter(String nameprefix){
+            this.nameprefix=nameprefix;
+            
+        }
+        public boolean accept(File arg0) {
+            return arg0.getName().startsWith(nameprefix);
+        }
+       
+   }
     
 }
