@@ -81,7 +81,7 @@ public final class GroovyIndex {
     /**
      * Return the full set of classes that match the given name.
      *
-     * @param name The name of the class - possibly a fqn like File::Stat, or just a class
+     * @param name The name of the class - possibly a fqn like file.Stat, or just a class
      *   name like Stat, or just a prefix like St.
      * @param kind Whether we want the exact name, or whether we're searching by a prefix.
      * @param includeAll If true, return multiple IndexedClasses for the same logical
@@ -114,13 +114,13 @@ public final class GroovyIndex {
         case PREFIX:
         case CAMEL_CASE:
         case REGEXP:
-            field = GroovyIndexer.FIELD_CLASS_NAME;
+            field = GroovyIndexer.CLASS_NAME;
 
             break;
 
         case CASE_INSENSITIVE_PREFIX:
         case CASE_INSENSITIVE_REGEXP:
-            field = GroovyIndexer.FIELD_CASE_INSENSITIVE_CLASS_NAME;
+            field = GroovyIndexer.CASE_INSENSITIVE_CLASS_NAME;
 
             break;
 
@@ -140,7 +140,7 @@ public final class GroovyIndex {
         final Set<IndexedClass> classes = new HashSet<IndexedClass>();
 
         for (SearchResult map : result) {
-            String clz = map.getValue(GroovyIndexer.FIELD_CLASS_NAME);
+            String clz = map.getValue(GroovyIndexer.CLASS_NAME);
 
             if (clz == null) {
                 // It's probably a module
@@ -158,11 +158,11 @@ public final class GroovyIndex {
             if (classFqn != null) {
                 if (kind == NameKind.CASE_INSENSITIVE_PREFIX ||
                         kind == NameKind.CASE_INSENSITIVE_REGEXP) {
-                    if (!classFqn.equalsIgnoreCase(map.getValue(GroovyIndexer.FIELD_IN))) {
+                    if (!classFqn.equalsIgnoreCase(map.getValue(GroovyIndexer.IN))) {
                         continue;
                     }
                 } else if (kind == NameKind.CAMEL_CASE) {
-                    String in = map.getValue(GroovyIndexer.FIELD_IN);
+                    String in = map.getValue(GroovyIndexer.IN);
                     if (in != null) {
                         // Superslow, make faster 
                         StringBuilder sb = new StringBuilder();
@@ -198,13 +198,13 @@ public final class GroovyIndex {
                         continue;
                     }
                 } else {
-                    if (!classFqn.equals(map.getValue(GroovyIndexer.FIELD_IN))) {
+                    if (!classFqn.equals(map.getValue(GroovyIndexer.IN))) {
                         continue;
                     }
                 }
             }
 
-            String attrs = map.getValue(GroovyIndexer.FIELD_CLASS_ATTRS);
+            String attrs = map.getValue(GroovyIndexer.CLASS_ATTRS);
             boolean isClass = true;
             if (attrs != null) {
                 int flags = IndexedElement.stringToFlag(attrs, 0);
@@ -220,7 +220,7 @@ public final class GroovyIndex {
                 continue;
             }
 
-            String fqn = map.getValue(GroovyIndexer.FIELD_FQN_NAME);
+            String fqn = map.getValue(GroovyIndexer.FQN_NAME);
 
             // Only return a single instance for this signature
             if (!includeAll) {
@@ -277,17 +277,17 @@ public final class GroovyIndex {
     }
     
     private IndexedClass createClass(String fqn, String clz, SearchResult map) {
-        String require = map.getValue(GroovyIndexer.FIELD_REQUIRE);
+        String require = map.getValue(GroovyIndexer.REQUIRE);
 
         // TODO - how do I determine -which- file to associate with the file?
         // Perhaps the one that defines initialize() ?
         String fileUrl = map.getPersistentUrl();
 
         if (clz == null) {
-            clz = map.getValue(GroovyIndexer.FIELD_CLASS_NAME);
+            clz = map.getValue(GroovyIndexer.CLASS_NAME);
         }
 
-        String attrs = map.getValue(GroovyIndexer.FIELD_CLASS_ATTRS);
+        String attrs = map.getValue(GroovyIndexer.CLASS_ATTRS);
         
         int flags = 0;
         if (attrs != null) {

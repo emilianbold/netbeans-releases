@@ -69,13 +69,15 @@ import org.openide.util.Exceptions;
  */
 public class GroovyIndexer implements Indexer {
 
-    static final String FIELD_FQN_NAME = "fqn"; //NOI18N
-    static final String FIELD_IN = "in"; //NOI18N
-    static final String FIELD_CLASS_NAME = "class"; //NOI18N
-    static final String FIELD_CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
-    static final String FIELD_REQUIRE = "require"; //NOI18N
+    // class
+    static final String FQN_NAME = "fqn"; //NOI18N
+    static final String CLASS_NAME = "class"; //NOI18N
+    static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
+    static final String REQUIRE = "require"; //NOI18N
+    // not indexed
+    static final String IN = "in"; //NOI18N
     /** Attributes: hh;nnnn where hh is a hex representing flags in IndexedClass, and nnnn is the documentation length */
-    static final String FIELD_CLASS_ATTRS = "attrs"; //NOI18N
+    static final String CLASS_ATTRS = "attrs"; //NOI18N
 
     private static FileObject preindexedDb;
 
@@ -211,9 +213,9 @@ public class GroovyIndexer implements Indexer {
         
         private void indexClass(AstClassElement element, IndexDocument document) {
             final String name = element.getName();
-            document.addPair(FIELD_FQN_NAME, element.getFqn(), true);
-            document.addPair(FIELD_CLASS_NAME, name, true);
-            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
+            document.addPair(FQN_NAME, element.getFqn(), true);
+            document.addPair(CLASS_NAME, name, true);
+            document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
         }
 
     }
