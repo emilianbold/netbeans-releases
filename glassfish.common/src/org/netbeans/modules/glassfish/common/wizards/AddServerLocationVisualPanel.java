@@ -73,7 +73,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     private static final String V3_DEFAULT_DOWNLOAD_URL = 
             "http://java.net/download/javaee5/v3/releases/preview/glassfish-v3-preview2-final.zip"; // NOI18N
     
-    private final List<ChangeListener> listeners = new CopyOnWriteArrayList();
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private Retriever retriever;
     private volatile DownloadState downloadState;
     private volatile String statusText;
