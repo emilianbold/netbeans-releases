@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.11.1
+#Version 1.13
 CLSS public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
 fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.EQUAL
 fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.GREATER
@@ -7,7 +7,7 @@ fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERIN
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -33,7 +33,7 @@ fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbe
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -177,6 +177,7 @@ meth public void org.netbeans.api.debugger.Breakpoint.setGroupName(java.lang.Str
 supr java.lang.Object
 CLSS public final org.netbeans.api.debugger.DebuggerEngine
 innr public org.netbeans.api.debugger.DebuggerEngine$Destructor
+intf org.netbeans.spi.debugger.ContextProvider
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)
@@ -193,6 +194,7 @@ meth public native int java.lang.Object.hashCode()
 meth public synchronized org.netbeans.api.debugger.ActionsManager org.netbeans.api.debugger.DebuggerEngine.getActionsManager()
 supr java.lang.Object
 CLSS public final org.netbeans.api.debugger.DebuggerInfo
+intf org.netbeans.spi.debugger.ContextProvider
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)
@@ -217,6 +219,7 @@ fld  constant public static final java.lang.String org.netbeans.api.debugger.Deb
 fld  constant public static final java.lang.String org.netbeans.api.debugger.DebuggerManager.PROP_SESSIONS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.DebuggerManager.PROP_WATCHES
 fld  constant public static final java.lang.String org.netbeans.api.debugger.DebuggerManager.PROP_WATCHES_INIT
+intf org.netbeans.spi.debugger.ContextProvider
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public [Lorg.netbeans.api.debugger.Breakpoint; org.netbeans.api.debugger.DebuggerManager.getBreakpoints()
@@ -238,6 +241,7 @@ meth public native int java.lang.Object.hashCode()
 meth public org.netbeans.api.debugger.DebuggerEngine org.netbeans.api.debugger.DebuggerManager.getCurrentEngine()
 meth public org.netbeans.api.debugger.Session org.netbeans.api.debugger.DebuggerManager.getCurrentSession()
 meth public org.netbeans.api.debugger.Watch org.netbeans.api.debugger.DebuggerManager.createWatch(java.lang.String)
+meth public static org.netbeans.spi.debugger.ContextProvider org.netbeans.api.debugger.DebuggerManager.join(org.netbeans.spi.debugger.ContextProvider,org.netbeans.spi.debugger.ContextProvider)
 meth public static synchronized org.netbeans.api.debugger.DebuggerManager org.netbeans.api.debugger.DebuggerManager.getDebuggerManager()
 meth public synchronized org.netbeans.api.debugger.ActionsManager org.netbeans.api.debugger.DebuggerManager.getActionsManager()
 meth public void org.netbeans.api.debugger.DebuggerManager.addBreakpoint(org.netbeans.api.debugger.Breakpoint)
@@ -380,6 +384,7 @@ supr java.lang.Object
 CLSS public final org.netbeans.api.debugger.Session
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Session.PROP_CURRENT_LANGUAGE
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Session.PROP_SUPPORTED_LANGUAGES
+intf org.netbeans.spi.debugger.ContextProvider
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public [Ljava.lang.String; org.netbeans.api.debugger.Session.getSupportedLanguages()
