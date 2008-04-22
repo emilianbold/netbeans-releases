@@ -3,8 +3,11 @@
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-	     xmlns="http://research.sun.com/wadl/2006/10">
-    <grammars/>
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:t="urn:twitter:twitterresponse" >
+    <grammars>
+        <include href="TwitterResponse.xsd"/>
+    </grammars>
     <resources base="http://twitter.com">
         <resource path="statuses">
             <resource path="public_timeline.{format}">
@@ -13,7 +16,9 @@
                     <request>
                         <param name="since_id" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="friends_timeline.{format}">
@@ -24,7 +29,9 @@
                         <param name="since_id" type="xsd:integer" style="query" required="false"/>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="friends_timeline">
@@ -37,7 +44,9 @@
                             <param name="since_id" type="xsd:integer" style="query" required="false"/>
                             <param name="page" type="xsd:integer" style="query" required="false"/>
                         </request>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statuses"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -48,7 +57,9 @@
                         <param name="since" type="xsd:string" style="query" required="false"/>
                         <param name="count" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="user_timeline">
@@ -60,7 +71,9 @@
                             <param name="since" type="xsd:string" style="query" required="false"/>
                             <param name="count" type="xsd:integer" style="query" required="false"/>
                         </request>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statuses"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -70,7 +83,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="showStatusById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -80,7 +95,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="destroyStatusById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -90,7 +107,9 @@
                     <request>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="update.{format}">
@@ -101,7 +120,9 @@
                             <param name="status" type="xsd:string" style="query" required="true"/>
                         </representation>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statusType"/>
+                    </response>
                 </method>
             </resource>
             <resource path="friends.{format}">
@@ -111,7 +132,9 @@
                         <param name="lite" type="xsd:string" style="query" required="false"/>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="friends">
@@ -123,7 +146,9 @@
                             <param name="lite" type="xsd:string" style="query" required="false"/>
                             <param name="page" type="xsd:integer" style="query" required="false"/>
                         </request>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statuses"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -134,14 +159,18 @@
                         <param name="lite" type="xsd:string" style="query" required="false"/>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="featured.{format}">
                 <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                 <method name="GET" id="getFeaturedStatuses">
                     <request/>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
         </resource>
@@ -154,7 +183,9 @@
                         <request>
                             <param name="email" type="xsd:string" style="query" required="false"/>
                         </request>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -167,7 +198,9 @@
                     <param name="since_id" type="xsd:integer" style="query" required="false"/>
                     <param name="page" type="xsd:integer" style="query" required="false"/>
                 </request>
-                <response/>
+                <response>
+                    <representation mediaType="text/xml" element="t:direct-messages"/>
+                </response>
             </method>
         </resource>
         <resource path="direct_messages">
@@ -190,7 +223,9 @@
                             </param>
                         </representation>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:directMessageType"/>
+                    </response>
                 </method>
             </resource>
             <resource path="sent.{format}">
@@ -201,7 +236,9 @@
                         <param name="since_id" type="xsd:integer" style="query" required="false"/>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:direct-messages"/>
+                    </response>
                 </method>
             </resource>
             <resource path="destroy">
@@ -210,7 +247,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="destroyDirectMessageById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:directMessageType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -222,7 +261,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="createFriendshipById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -232,7 +273,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="destryFriendshipById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -257,7 +300,9 @@
                     <request>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
         </resource>
@@ -267,7 +312,9 @@
                 <request>
                     <param name="page" type="xsd:integer" style="query" required="false"/>
                 </request>
-                <response/>
+                <response>
+                    <representation mediaType="text/xml" element="t:statuses"/>
+                </response>
             </method>
         </resource>
         <resource path="favorites">
@@ -278,7 +325,9 @@
                     <request>
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
-                    <response/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                    </response>
                 </method>
             </resource>
             <resource path="create">
@@ -287,7 +336,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="createFavoritesById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -297,7 +348,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="destroyFavoritesById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -309,7 +362,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="followById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>
@@ -319,7 +374,9 @@
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <method name="GET" id="leaveById">
                         <request/>
-                        <response/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                        </response>
                     </method>
                 </resource>
             </resource>

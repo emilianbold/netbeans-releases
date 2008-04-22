@@ -41,6 +41,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.soa.ui.util.ModelUtil;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -54,6 +55,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -75,6 +77,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
@@ -325,6 +328,31 @@ public class Util {
         return tMapFo;
     }
     
+    public static String getNewModelLocation(Model mainModel, FileObject newModelFo){
+        Lookup lookup = mainModel.getModelSource().getLookup();
+        if (lookup != null){
+            FileObject mainModelFo = SoaUtil.getFileObjectByModel(mainModel);
+            return ModelUtil.getRelativePath(mainModelFo.getParent(), newModelFo);
+        }
+        return null;
+    }
+    
+    public static String getNewModelNamespace(FileObject newModelFo){
+        ModelSource modelSource =
+                Utilities.getModelSource(newModelFo, true);
+        
+        if (modelSource == null) {
+            return null;
+        }
+        WSDLModel model = WSDLModelFactory.getDefault()
+                .getModel(modelSource);
+
+        if (model != null && model.getState() != Model.State.NOT_WELL_FORMED) {
+            return model.getDefinitions().getTargetNamespace();
+        }
+        return null;
+    }
+
     /**
      *   Basically acts like a xslt tranformer by
      *   replaceing _NS_ in fileObject contents with 'namespace'
