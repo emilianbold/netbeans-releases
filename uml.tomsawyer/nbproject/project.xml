@@ -46,34 +46,6 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.uml.tomsawyer</code-name-base>
             <module-dependencies/>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/tsalljlayoutclient601dev.jar</runtime-relative-path>
-                <binary-origin>build/external/tsalljlayoutclient601dev.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/exeditor601.jar</runtime-relative-path>
-                <binary-origin>build/external/exeditor601.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/pngEncoder.jar</runtime-relative-path>
-                <binary-origin>build/external/pngEncoder.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/tsalleditor601dev.jar</runtime-relative-path>
-                <binary-origin>build/external/tsalleditor601dev.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/batik-all.jar</runtime-relative-path>
-                <binary-origin>build/external/batik-all.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/tsalljlayoutserver601dev.jar</runtime-relative-path>
-                <binary-origin>build/external/tsalljlayoutserver601dev.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/drawingLibrary/iText.jar</runtime-relative-path>
-                <binary-origin>build/external/iText.jar</binary-origin>
-            </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.uml</friend>
                 <friend>org.netbeans.modules.uml.drawingarea</friend>
@@ -250,6 +222,34 @@ made subject to such option by the copyright holder.
                 <package>org.xml.sax.ext</package>
                 <package>org.xml.sax.helpers</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/tsalljlayoutclient601dev.jar</runtime-relative-path>
+                <binary-origin>build/external/tsalljlayoutclient601dev.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/exeditor601.jar</runtime-relative-path>
+                <binary-origin>build/external/exeditor601.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/pngEncoder.jar</runtime-relative-path>
+                <binary-origin>build/external/pngEncoder.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/tsalleditor601dev.jar</runtime-relative-path>
+                <binary-origin>build/external/tsalleditor601dev.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/batik-all.jar</runtime-relative-path>
+                <binary-origin>build/external/batik-all.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/tsalljlayoutserver601dev.jar</runtime-relative-path>
+                <binary-origin>build/external/tsalljlayoutserver601dev.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/drawingLibrary/iText.jar</runtime-relative-path>
+                <binary-origin>build/external/iText.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

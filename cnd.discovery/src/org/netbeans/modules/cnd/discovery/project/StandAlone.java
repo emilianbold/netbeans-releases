@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.discovery.api.KnownProject;
 public class StandAlone {
 
     public static void main(String[] args) {
+        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
         Map<String,String> res = processArguments(args);
         if (KnownProject.getDefault().canCreate(res)){
             KnownProject.getDefault().create(res);

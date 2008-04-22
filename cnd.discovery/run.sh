@@ -180,7 +180,7 @@ function main() {
     fi
 
     set -x
-    ${JAVA} -cp ${CP} ${MAIN} ${PARAMS}
+    ${JAVA} -Dorg.netbeans.modules.cnd.makeproject.api.runprofiles=true -cp ${CP} ${MAIN} ${PARAMS}
 }
 
 path_sep=":"
