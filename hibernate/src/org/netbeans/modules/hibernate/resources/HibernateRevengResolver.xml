@@ -9,7 +9,7 @@ and open the template in the editor.
         <ext name="xml"/>
         <resolver mime="text/x-hibernate-reveng+xml">
             <xml-rule>
-                <element ns="public-id="-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN""/>
+                <doctype public-id="-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN"/>
             </xml-rule>
         </resolver>
     </file>
