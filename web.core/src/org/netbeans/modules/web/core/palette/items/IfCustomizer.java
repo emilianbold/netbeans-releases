@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,10 +49,6 @@ import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
-
-
-
 
 /**
  *
@@ -74,11 +71,9 @@ public class IfCustomizer extends javax.swing.JPanel {
 
         jComboBox2.setModel(new DefaultComboBoxModel(If.scopes));
         jComboBox2.setSelectedIndex(iF.getScopeIndex());
-        
     }
     
     public boolean showDialog() {
-        
         dialogOK = false;
         
         String displayName = "";
@@ -109,8 +104,6 @@ public class IfCustomizer extends javax.swing.JPanel {
     }
     
     private void evaluateInput() {
-        
-        
         String condition = jTextField1.getText();
         iF.setCondition(condition);
         
@@ -119,7 +112,6 @@ public class IfCustomizer extends javax.swing.JPanel {
         
         int scopeIndex = jComboBox2.getSelectedIndex();
         iF.setScopeIndex(scopeIndex);
-        
     }
     
     /** This method is called from within the constructor to
