@@ -203,10 +203,7 @@ public class PhpProject implements Project, AntProjectListener {
     }
     
     public PropertyEvaluator getEvaluator() {
-        if ( myEvaluator == null ) {
-            myEvaluator = getHelper().getStandardPropertyEvaluator();
-        }
-        return myEvaluator;
+        return myHelper.getStandardPropertyEvaluator();
     }
 
     CopySupport getCopySupport() {
@@ -214,19 +211,16 @@ public class PhpProject implements Project, AntProjectListener {
     }
 
     private void initLookup( AuxiliaryConfiguration configuration ) {        
-        SubprojectProvider provider = getRefHelper().createSubprojectProvider();
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
         myLookup = Lookups.fixed(new Object[] {
 		CopySupport.getInstance(),
                 new Info(),
                 configuration,
-                new PhpXmlSavedHook(),
                 new PhpOpenedHook(),
-                provider,
                 new PhpActionProvider( this ),
-                getHelper().createCacheDirectoryProvider(),
+                getHelper().createCacheDirectoryProvider(), // XXX needed?
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
-                new PhpLogicalViewProvider( this , provider ),
+                new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery( getEvaluator(), 
                     new String[] { "${" + PhpProjectProperties.SRC_DIR + "}" } , new String[] {} ), // NOI18N
@@ -297,25 +291,6 @@ public class PhpProject implements Project, AntProjectListener {
  
     }
     
-    private final class PhpXmlSavedHook extends ProjectXmlSavedHook {
-        
-        protected void projectXmlSaved() {
-        /*
-            It seems we don't have "build" scripts here in this project.
-            So I commented out this code at least for now. 
-            
-            genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                MakeProject.class.getResource("resources/build-impl.xsl"),
-                false);
-            genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_XML_PATH,
-                MakeProject.class.getResource("resources/build.xsl"),
-                false);
-        */
-        }
-    }
-    
     private final class PhpOpenedHook extends ProjectOpenedHook {	
         protected void projectOpened() {
             ClassPathProviderImpl cpProvider = myLookup.lookup(ClassPathProviderImpl.class);
@@ -342,8 +317,6 @@ public class PhpProject implements Project, AntProjectListener {
     
     
     private final AntProjectHelper myHelper;
-    
-    private PropertyEvaluator myEvaluator;
     
     private final ReferenceHelper myRefHelper;
     
