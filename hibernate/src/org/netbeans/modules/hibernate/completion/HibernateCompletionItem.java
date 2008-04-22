@@ -268,6 +268,8 @@ public abstract class HibernateCompletionItem implements CompletionItem {
     protected ImageIcon getIcon() {
         return null;
     }
+    
+    public abstract String getDisplayText();
 
     /**
      * Represents a class in the completion popup. 
@@ -299,6 +301,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
+            return displayName;
+        }
+        
+        public String getDisplayText() {
             return displayName;
         }
 
@@ -403,6 +409,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         public CharSequence getInsertPrefix() {
             return smartItem ? "" : elemHandle.getBinaryName(); // NOI18N
+        }
+        
+        public String getDisplayText() {
+            return displayName;
         }
 
         @Override
@@ -525,6 +535,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
                 }
             }
         }
+        
+        public String getDisplayText() {
+            return simpleName;
+        }
 
         @Override
         protected ImageIcon getIcon() {
@@ -575,6 +589,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return displayText;
         }
+        
+        public String getDisplayText() {
+            return displayText;
+        }
 
         @Override
         protected String getLeftHtmlText() {
@@ -618,6 +636,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return displayText;
         }
+        
+        public String getDisplayText() {
+            return displayText;
+        }
 
         @Override
         protected String getLeftHtmlText() {
@@ -658,6 +680,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return displayText;
         }
+        
+        public String getDisplayText() {
+            return displayText;
+        }
 
         @Override
         protected String getLeftHtmlText() {
@@ -694,6 +720,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+        
+        public String getDisplayText() {
             return displayText;
         }
 
@@ -753,6 +783,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return displayText;
         }
+        
+        public String getDisplayText() {
+            return displayText;
+        }
 
         @Override
         protected String getLeftHtmlText() {
@@ -794,6 +828,10 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+        
+        public String getDisplayText() {
             return displayText;
         }
 
