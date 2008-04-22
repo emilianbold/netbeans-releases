@@ -112,6 +112,11 @@ public class EqualsHintTest extends TreeRuleTestBase {
                        "package test; public class Test{ public void test() {int[] a = null; boolean b = a == a;}}");
     }
     
+    public void testAnalysis132853() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = this.equal|s(c, o);} private boolean equals(Object o1, Object o2) { return false; } }");
+    }
+    
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         while (path != null && path.getLeaf().getKind() != Kind.METHOD_INVOCATION) {

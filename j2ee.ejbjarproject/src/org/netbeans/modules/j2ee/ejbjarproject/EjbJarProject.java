@@ -53,7 +53,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -161,8 +160,6 @@ import org.openide.util.Exceptions;
 public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
     
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
-    
-    private static final String UI_LOGGER_NAME = "org.netbeans.ui.ejb.project"; //NOI18N
     
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -917,13 +914,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     }
                 }
                 // UI Logging
-                LogRecord logRecord = new LogRecord(Level.INFO, "UI_EJB_PROJECT_OPENED");  //NOI18N
-                logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-                logRecord.setResourceBundle(NbBundle.getBundle(EjbJarProject.class));
-                logRecord.setParameters(new Object[] {
-                    (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
-                    servInstID});
-                Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+                Utils.logUI(NbBundle.getBundle(EjbJarProject.class), "UI_EJB_PROJECT_OPENED", // NOI18N
+                        new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }

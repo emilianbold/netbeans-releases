@@ -18,6 +18,7 @@ public class SchemaElementNode extends AbstractSchemaArtifactNode implements Sel
     
     public SchemaElementNode(Element element) {
         super(element);
+        
         boolean repeating = false;
         boolean optional = false;
         this.mIcon = NodeIcons.ELEMENT.getIcon();

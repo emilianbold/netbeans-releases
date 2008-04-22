@@ -91,11 +91,11 @@ public class JspLoader extends UniFileLoader {
         }
     }
     
+    @Override
     protected void initialize () {
         super.initialize();
         getExtensions().addMimeType(JSP_MIME_TYPE);
         getExtensions().addMimeType(TAG_MIME_TYPE);
-
     }
 
     /** Get the default display name of this loader.

@@ -80,8 +80,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 
 /**
  *

@@ -41,6 +41,7 @@
 
 
 package org.netbeans.modules.web.core.palette.items;
+
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,8 +51,6 @@ import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
-
 
 /**
  *
@@ -74,7 +73,6 @@ public class ChooseCustomizer extends javax.swing.JPanel {
     }
     
     public boolean showDialog() {
-        
         dialogOK = false;
         
         String displayName = "";
@@ -105,7 +103,6 @@ public class ChooseCustomizer extends javax.swing.JPanel {
     }
     
     private void evaluateInput() {
-        
         int whens = ((Integer)jSpinner1.getValue()).intValue();
         choose.setWhens(whens);
 

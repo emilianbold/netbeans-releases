@@ -58,6 +58,7 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.SourcePath;
+import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -354,11 +355,11 @@ public final class ClasspathInfo {
         }
 
         @Override
-        public boolean registerVirtualSource(final ClasspathInfo cpInfo, final String fqn, final CharSequence content) throws UnsupportedOperationException {
+        public boolean registerVirtualSource(final ClasspathInfo cpInfo, final InferableJavaFileObject jfo) throws UnsupportedOperationException {
             if (cpInfo.memoryFileManager == null) {
                 throw new UnsupportedOperationException ("The ClassPathInfo doesn't support memory JavacFileManager");  //NOI18N
             }
-            return cpInfo.memoryFileManager.register(fqn, System.currentTimeMillis(), content);
+            return cpInfo.memoryFileManager.register(jfo);
         }
 
         @Override

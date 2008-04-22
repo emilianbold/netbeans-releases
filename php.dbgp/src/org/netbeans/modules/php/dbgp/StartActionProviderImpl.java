@@ -41,7 +41,6 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -69,7 +68,6 @@ import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -83,8 +81,6 @@ public class StartActionProviderImpl  implements StartActionProvider
 
     private static final String LOCALHOST   = "localhost";          // NOI18N
 
-    private static final int DEFAULT_PORT   = 9000; 
-    
     private static final int PORT_RANGE     = 100;
     
     private static final int TIMEOUT        = 60000;
@@ -102,33 +98,14 @@ public class StartActionProviderImpl  implements StartActionProvider
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.StartActionProvider#start()
-     */
+     */    
     public synchronized void start( ) {
-        if ( myThread == null ){
-            /*
-             *  TODO : port may be red from options, found free port via 
-             *  #findFreePort(), suggest to user via option about free port.
-             */
-            int port = DEFAULT_PORT;
-            myThread = new ServerThread( port );
+    }
+    
+    public synchronized void start( SessionId sessionId) {
+            int port = DebuggerOptions.getPort();
+            myThread = new ServerThread( port, sessionId );
             RequestProcessor.getDefault().post( myThread );
-        }
-        else {
-            /*
-             *  Case stopping thread ( situation when debug session was 
-             *  started right after previous stopping ).
-             */ 
-            if ( myThread.isStopped() ){
-                /*
-                 *  Not accurate stop accepting from other thread.
-                 *  But otherwise one need to wait TIMEOUT seconds 
-                 *  for stopping listening thread.
-                 */
-                myThread.closeSocket();
-                myThread = null;
-                start();
-            }
-        }
     }
     
     public synchronized DebugSession getSessionById( String id ) {
@@ -149,15 +126,19 @@ public class StartActionProviderImpl  implements StartActionProvider
         if ( id == null ) {
             return null;
         }
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        /*Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             SessionId sessId = (SessionId)
                     session.lookupFirst( null , SessionId.class);
             if ( id.equals(sessId) ) {
-                return myCurrentSessions.get( session );
+                DebugSession retval = myCurrentSessions.get( session );
+                if (retval != ConversionUtils.toDebugSession(id)) {
+                     ConversionUtils.toDebugSession(id);
+                }
+                return retval;
             }
-        }
-        return null;
+        }*/
+        return ConversionUtils.toDebugSession(id);
     }
     
     public synchronized Collection<DebugSession> getSessions( SessionId id ){
@@ -243,7 +224,8 @@ public class StartActionProviderImpl  implements StartActionProvider
     }
     
     private int findFreePort() {
-        for (int port = DEFAULT_PORT ; port < DEFAULT_PORT + PORT_RANGE; port++) {
+        int dbgPort = DebuggerOptions.getPort();
+        for (int port = dbgPort ; port < dbgPort + PORT_RANGE; port++) {
             Socket testClient = null;
             
             try {
@@ -292,7 +274,8 @@ public class StartActionProviderImpl  implements StartActionProvider
     
     private class ServerThread implements Runnable {
         
-        ServerThread( int port ){
+        ServerThread( int port, SessionId sessionId ){
+            this.sessionId = sessionId;
             myPort = port;
             isStopped  = new AtomicBoolean( false );
         }
@@ -321,10 +304,15 @@ public class StartActionProviderImpl  implements StartActionProvider
                     log( e );
                 }
                 if (!isStopped.get() && sessionSocket != null) {
-                    DebugSession session = 
-                        new DebugSession( sessionSocket );
-                    session.start();
+                    /*DebugSession session = 
+                        new DebugSession(  );
+                    session.start(sessionSocket);
+                     */ 
+                    DebugSession session = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, DebugSession.class);
+                    assert session != null;
+                    session.start(sessionSocket);
                     setupCurrentSession( session );
+                    break;
                 }
             }
             
@@ -391,6 +379,7 @@ public class StartActionProviderImpl  implements StartActionProvider
         private ServerSocket myServer;
         
         private AtomicBoolean isStopped;
+        private SessionId sessionId;
         
     }
 

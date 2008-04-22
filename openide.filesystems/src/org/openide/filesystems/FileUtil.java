@@ -767,7 +767,11 @@ public final class FileUtil extends Object {
 
             Object value = source.getAttribute(key);
 
-            if (value != null) {
+            // #132801 and #16761 - don't set attributes where value is 
+            // instance of VoidValue because these attributes were previously written 
+            // by mistake in code. So it should happen only if you import some
+            // settings from old version.
+            if (value != null && !(value instanceof MultiFileObject.VoidValue)) {
                 dest.setAttribute(key, value);
             }
         }

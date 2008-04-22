@@ -59,7 +59,7 @@ public class CustomizerCommandLine extends javax.swing.JPanel {
 
         loadDefaultInterpreterPath();
 
-        String path = uiProperties.getProperty(PhpProjectProperties.COMMAND_PATH);
+        String path = null;//uiProperties.getProperty(PhpProjectProperties.COMMAND_PATH);
         if (path == null) {
             myDefaultRadio.setSelected(true);
         } else {
@@ -127,11 +127,11 @@ public class CustomizerCommandLine extends javax.swing.JPanel {
         mySpecialRadio.setSelected(true);
         interpreterPathIsValid();
         String path = myInterpreterPath.getText();
-        getProperties().setProperty(PhpProjectProperties.COMMAND_PATH, path);
+        //getProperties().setProperty(PhpProjectProperties.COMMAND_PATH, path);
     }
 
     private void useDefaultInterpreterPath() {
-        getProperties().remove(PhpProjectProperties.COMMAND_PATH);
+        //getProperties().remove(PhpProjectProperties.COMMAND_PATH);
     }
 
     boolean interpreterPathIsValid() {

@@ -375,8 +375,11 @@ public final class HighlightingManager {
             StringBuilder sb = new StringBuilder();
             
             sb.append("HighlighsLayers {\n"); //NOI18N
+            
             sb.append(" * document : "); //NOI18N
-            sb.append(doc.toString());
+            sb.append(doc.getClass().getName()).append('@').append(Integer.toHexString(System.identityHashCode(doc)));
+            Object streamDescriptor = doc.getProperty(Document.StreamDescriptionProperty);
+            sb.append(" [").append(streamDescriptor == null ? "no stream descriptor" : streamDescriptor.toString()).append(']');
             sb.append("\n"); //NOI18N
 
             sb.append(" * mime paths : \n"); //NOI18N

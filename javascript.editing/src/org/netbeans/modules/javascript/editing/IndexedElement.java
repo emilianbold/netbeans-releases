@@ -282,6 +282,15 @@ public abstract class IndexedElement extends JsElement {
         return -1;
     }
     
+    protected int getNodeOffset() {
+        int docOffsetIndex = getAttributeSection(NODE_INDEX);
+        if (docOffsetIndex != -1) {
+            return IndexedElement.decode(attributes, docOffsetIndex, -1);
+        }        
+        
+        return -1;
+    }
+    
     protected List<String> getComments() {
         int docOffsetIndex = getAttributeSection(DOC_INDEX);
         if (docOffsetIndex != -1) {

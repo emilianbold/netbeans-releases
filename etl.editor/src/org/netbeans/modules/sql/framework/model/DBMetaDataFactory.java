@@ -529,6 +529,20 @@ public class DBMetaDataFactory {
             while (rs.next()) {
                 String defaultValue = rs.getString("COLUMN_DEF");
                 int sqlTypeCode = rs.getInt("DATA_TYPE");
+                if (sqlTypeCode == java.sql.Types.OTHER && getDBType().equals(ORACLE)) {
+                    String sqlTypeStr = rs.getString("TYPE_NAME");
+                    if (sqlTypeStr.startsWith("TIMESTAMP")) {
+                        sqlTypeCode = java.sql.Types.TIMESTAMP;
+                    } else if (sqlTypeStr.startsWith("FLOAT")) {
+                        sqlTypeCode = java.sql.Types.FLOAT;
+                    } else if (sqlTypeStr.startsWith("REAL")) {
+                        sqlTypeCode = java.sql.Types.REAL;
+                    } else if (sqlTypeStr.startsWith("BLOB")) {
+                        sqlTypeCode = java.sql.Types.BLOB;
+                    } else if (sqlTypeStr.startsWith("CLOB")) {
+                        sqlTypeCode = java.sql.Types.CLOB;
+                    }
+                }
                 String colName = rs.getString("COLUMN_NAME");
                 int position = rs.getInt("ORDINAL_POSITION");
                 int scale = rs.getInt("DECIMAL_DIGITS");
