@@ -89,7 +89,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     
     DefaultComboBoxModel providers;
     
-    private static final String NEW_DATA_SOURCE = "New DataSource...";
+    private static final String NEW_DATA_SOURCE = NbBundle.getMessage(JDBCWizardSelectionPanel.class,"LBL_NDS");
 
     int visibleCt;
 
