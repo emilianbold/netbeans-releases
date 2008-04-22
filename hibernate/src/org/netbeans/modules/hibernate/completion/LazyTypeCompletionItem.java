@@ -127,6 +127,10 @@ public class LazyTypeCompletionItem extends HibernateCompletionItem implements L
     public CharSequence getInsertPrefix() {
         return simpleName;
     }
+    
+    public String getDisplayText() {
+        return simpleName;
+    }
 
     @Override
     public CompletionTask createDocumentationTask() {
