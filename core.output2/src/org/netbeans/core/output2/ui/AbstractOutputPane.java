@@ -213,8 +213,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         oc.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         textView.setCaret (oc);
         
-        getCaret().setBlinkRate(caretBlinkRate);
-        getCaret().setVisible(true);
         getCaret().setSelectionVisible(true);
         
         getVerticalScrollBar().getModel().addChangeListener(this);
@@ -291,8 +289,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.setEditorKit(kit);
         textView.setDocument(doc);
         updateKeyBindings();
-        getCaret().setBlinkRate(caretBlinkRate);
-        getCaret().setVisible(true);
     }
     
     /**
