@@ -62,6 +62,8 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import org.axiondb.AxionException;
 import org.axiondb.Database;
 import org.axiondb.engine.Databases;
@@ -131,6 +133,12 @@ public class DBExplorerUtil {
         String username = connProps.getProperty(DBConnectionFactory.PROP_USERNAME);
         String password = connProps.getProperty(DBConnectionFactory.PROP_PASSWORD);
         String url = connProps.getProperty(DBConnectionFactory.PROP_URL);
+        if(!(url.contains(AXION_URL_PREFIX))){
+            if (StringUtil.isNullString(username) || StringUtil.isNullString(password)){
+             JOptionPane.showMessageDialog(new JFrame(),"UserName/Password is empty.Please fill in the credentials ","Error", JOptionPane.ERROR_MESSAGE);                
+                return null;
+            }
+        }
         return createConnection(driver, url, username, password);
     }
     public static final String AXION_URL_PREFIX = "jdbc:axiondb:";
