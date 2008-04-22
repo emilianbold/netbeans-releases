@@ -80,6 +80,7 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.util.Exceptions;
 
 /**
  * @author Ahimanikya Satapathy
@@ -178,6 +179,18 @@ class DataViewWorkerThread extends SwingWorker {
         }
     }
 
+    private void shutdownConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                if(conn.getMetaData().getDriverName().contains("Axion")) {
+                    conn.createStatement().execute("shutdown");
+                }
+                conn.close();
+            } catch (SQLException e) {
+                conn = null;
+            }
+        }
+    }
     private void showDataForDBTable() {
         Statement stmt = null;
         Connection conn = null;
@@ -269,6 +282,7 @@ class DataViewWorkerThread extends SwingWorker {
         ResultSet rs = null;
         Statement stmt = null;
         Connection conn = null;
+        int dbType;
 
         try {
             SQLJoinOperator joinOperator = (SQLJoinOperator) dbTable;
@@ -358,7 +372,7 @@ class DataViewWorkerThread extends SwingWorker {
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {
-            closeConnection(conn);
+            shutdownConnection(conn);
         }
     }
 
@@ -450,7 +464,7 @@ class DataViewWorkerThread extends SwingWorker {
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {
-            closeConnection(conn);
+            shutdownConnection(conn);
         }
         
     }
