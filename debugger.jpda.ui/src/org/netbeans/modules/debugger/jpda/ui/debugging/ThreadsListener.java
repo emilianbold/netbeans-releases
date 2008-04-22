@@ -96,19 +96,21 @@ public final class ThreadsListener implements PropertyChangeListener {
             if (JPDADebugger.PROP_THREAD_STARTED.equals(propName)) {
                 //System.out.println("STARTED: " + evt.getNewValue());
 
-                JPDAThread jpdaThread = (JPDAThread)evt.getNewValue();
+                final JPDAThread jpdaThread = (JPDAThread)evt.getNewValue();
                 if (threads.add(jpdaThread)) {
-                    if (!isCurrent(jpdaThread) && isAtBreakpoint(jpdaThread)) {
-                        
-                        // System.out.println("ADD HIT: " + jpdaThread.getName());
-                        
-                        addBreakpointHit(jpdaThread);
-                    }
                     
                     ((Customizer)jpdaThread).addPropertyChangeListener(this);
-                    
                     // System.out.println("WATCHED: " + jpdaThread.getName());
-                    
+
+                    RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                        public void run() {
+                            if (!isCurrent(jpdaThread) && isAtBreakpoint(jpdaThread)) {
+                                // System.out.println("ADD HIT: " + jpdaThread.getName());
+                                addBreakpointHit(jpdaThread);
+                            }
+                        }
+                    });
+                    task.schedule(100);
                 }
             } else if (JPDADebugger.PROP_THREAD_DIED.equals(propName)) {
                 //System.out.println("DIED: " + evt.getOldValue());
