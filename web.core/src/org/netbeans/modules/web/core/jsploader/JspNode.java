@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.io.*;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.*;
 import org.openide.loaders.DataNode;
@@ -150,7 +150,6 @@ public class JspNode extends DataNode {
         // remove the debugger type property
         //ps.remove(ExecSupport.PROP_DEBUGGER_TYPE);
 
-        
 
         // text sheet
         ps = new Sheet.Set();
@@ -170,7 +169,6 @@ public class JspNode extends DataNode {
                }
            }
            );
-        
         
         return sheet;
     }

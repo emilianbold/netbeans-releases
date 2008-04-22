@@ -21,12 +21,17 @@ package org.netbeans.modules.etl.project;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.axiondb.AxionException;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
@@ -35,6 +40,7 @@ import org.openide.*;
 
 import org.netbeans.modules.compapp.projects.base.ui.NoSelectedServerWarning;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
 /** Action provider of the Web project. This is the place where to do
@@ -106,10 +112,34 @@ class EtlproActionProvider implements ActionProvider {
         }
 
         if (COMMAND_RENAME.equals(command)) {
+            List<DatabaseConnection> conn = DBExplorerUtil.getDatabasesForCurrentProject();
+            Iterator<DatabaseConnection> it = conn.iterator();
+            while (it.hasNext()) {
+                try {
+                    DatabaseConnection dconn = it.next();
+                    if (dconn.getDriverClass().contains("AxionDriver")) {
+                    DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                    }
+                } catch (AxionException ex) {
+                    //ignore
+                }
+            }
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         }
         if (COMMAND_DELETE.equals(command)) {
+            List<DatabaseConnection> conn = DBExplorerUtil.getDatabasesForCurrentProject();
+            Iterator<DatabaseConnection> it = conn.iterator();
+            while (it.hasNext()) {
+                try {
+                    DatabaseConnection dconn = it.next();
+                    if (dconn.getDriverClass().contains("AxionDriver")) {
+                    DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                    }
+                } catch (AxionException ex) {
+                    //ignore
+                }
+            }
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }

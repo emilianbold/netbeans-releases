@@ -110,7 +110,7 @@ public class ETLDataLoader extends UniFileLoader {
             SystemAction.get (DeleteAction.class),
             SystemAction.get (RenameAction.class),
             null,
-            SystemAction.get (ConfigureParametersAction.class),
+            //SystemAction.get (ConfigureParametersAction.class),
             SystemAction.get(ETLNodePropertiesAction.class)
         };
     }

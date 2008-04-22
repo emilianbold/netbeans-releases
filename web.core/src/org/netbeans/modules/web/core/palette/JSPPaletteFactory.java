@@ -40,17 +40,15 @@
  */
 
 package org.netbeans.modules.web.core.palette;
+
 import java.io.IOException;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
-
-
 
 /**
  *
  * @author Libor Kotouc
  */
-
 public final class JSPPaletteFactory {
 
     public static final String JSP_PALETTE_FOLDER = "JSPPalette";

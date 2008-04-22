@@ -420,6 +420,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(final File file, String revision) {
         final File root = Mercurial.getInstance().getTopmostManagedParent(file);
+        if(root == null) return;
+        
         File[] files = new File [1];
         files[0] = file; 
         final RevertModifications revertModifications = new RevertModifications(root, files, revision);

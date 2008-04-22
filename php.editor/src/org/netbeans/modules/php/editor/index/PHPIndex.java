@@ -279,9 +279,8 @@ public class PHPIndex {
 
         for (SearchResult classMap : classSearchResult) {
             String[] classSignatures = classMap.getValues(PHPIndexer.FIELD_CLASS);
-            String[] rawSignatures = classMap.getValues(fieldName);
-
-            if (classSignatures == null  || rawSignatures == null) {
+            
+            if (classSignatures == null) {
                 continue;
             }
             
@@ -293,13 +292,15 @@ public class PHPIndex {
                 continue;
             }
 
-            for (String signature : rawSignatures) {
-                String elemName = extractStringValueFromIndexSignature(signature, 0);
-                
-                // TODO: now doing IC prefix search only, handle other search types 
-                // according to 'kind'
-                if (elemName.toLowerCase().startsWith(name.toLowerCase())) {
-                    signatures.put(signature, persistentURL);
+            String[] rawSignatures = classMap.getValues(fieldName);
+            
+            if (rawSignatures != null) {
+                for (String signature : rawSignatures) {
+                    String elemName = extractStringValueFromIndexSignature(signature, 0);
+
+                    if (nameMatches(name, elemName, kind)) {
+                        signatures.put(signature, persistentURL);
+                    }
                 }
             }
         }
@@ -342,7 +343,7 @@ public class PHPIndex {
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(PHPIndexer.FIELD_BASE, name, kind, result, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_BASE, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
@@ -356,10 +357,12 @@ public class PHPIndex {
                     int firstSemicolon = signature.indexOf(";");
                     String funcName = signature.substring(0, firstSemicolon);
 
-                    IndexedFunction func = new IndexedFunction(funcName, null,
-                            this, map.getPersistentUrl(), signature, 0, ElementKind.METHOD);
+                    if (nameMatches(name, funcName, kind)) {
+                        IndexedFunction func = new IndexedFunction(funcName, null,
+                                this, map.getPersistentUrl(), signature, 0, ElementKind.METHOD);
 
-                    functions.add(func);
+                        functions.add(func);
+                    }
                 }
             }
         }
@@ -369,7 +372,7 @@ public class PHPIndex {
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_CONST);
+        search(PHPIndexer.FIELD_CONST, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_CONST);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
@@ -381,12 +384,15 @@ public class PHPIndex {
 
                 for (String signature : signatures) {
                     String constName = signature.substring(0, signature.indexOf(';'));
-                    int offset = extractIntValueFromIndexSignature(signature, 1);
 
-                    IndexedConstant constant = new IndexedConstant(constName, null,
-                            this, map.getPersistentUrl(), null, 0, offset);
+                    if (nameMatches(name, constName, kind)) {
+                        int offset = extractIntValueFromIndexSignature(signature, 1);
 
-                    constants.add(constant);
+                        IndexedConstant constant = new IndexedConstant(constName, null,
+                                this, map.getPersistentUrl(), null, 0, offset);
+
+                        constants.add(constant);
+                    }
                 }
             }
         }
@@ -410,15 +416,15 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     int firstSemicolon = signature.indexOf(";");
                     String className = signature.substring(0, firstSemicolon);
-                    
-                    //TODO: handle search kind
-                    
+               
+                    if (nameMatches(name, className, kind)){
                     int offset = extractIntValueFromIndexSignature(signature, 1);
 
                     IndexedClass clazz = new IndexedClass(className, null,
                             this, map.getPersistentUrl(), signature, 0, offset);
 
                     classes.add(clazz);
+                    }
                 }
             }
         }
@@ -548,6 +554,30 @@ public class PHPIndex {
 
         lastIsReachableReturnValue = false;
         return false;
+    }
+    
+    private boolean nameMatches(String testedName, String name, NameKind kind){
+        switch (kind) {
+            case CASE_INSENSITIVE_PREFIX:
+                return name.toLowerCase().startsWith(testedName.toLowerCase());
+            case EXACT_NAME:
+                return testedName.equals(name);
+            case PREFIX:
+                return name.startsWith(testedName);
+                
+            // kinds that are not currently supported
+                
+            case CAMEL_CASE:
+                break;
+            case CASE_INSENSITIVE_REGEXP:
+                break;
+            case REGEXP:
+                break;
+        }
+        
+        // TODO use logger to warn about unsupported search kind
+        
+        return true;
     }
     
     private static String fileURLToAbsPath(String url){
