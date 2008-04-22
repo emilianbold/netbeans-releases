@@ -209,8 +209,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // configure
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                PhpProjectSharedConstants.PHP_PROJECT_NAME);
+        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         helper.putPrimaryConfigurationData(data, true);
