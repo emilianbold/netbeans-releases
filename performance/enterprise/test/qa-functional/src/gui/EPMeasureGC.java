@@ -60,6 +60,7 @@ public class EPMeasureGC  {
         suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
         suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
         suite.addTest(new WatchProjects("testGCProjects"));
+        suite.addTest(new OpenSchemaView("testGCwithOpenComplexSchemaView", "Test GC of Schema View"));
         return suite;
     }
     
