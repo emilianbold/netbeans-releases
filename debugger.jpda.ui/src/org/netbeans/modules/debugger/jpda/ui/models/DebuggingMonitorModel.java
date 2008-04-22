@@ -103,6 +103,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
     private Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
+    private Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
     
     public DebuggingMonitorModel() {
         prefListener = new MonitorPreferenceChangeListener();
@@ -208,11 +209,18 @@ NodeActionsProviderFilter, TableModel, Constants {
                 List<MonitorInfo> monitors = frame.getOwnedMonitors();
                 int n = monitors.size();
                 if (n > 0) {
+                    synchronized (framesAskedForMonitors) {
+                        framesAskedForMonitors.add(frame);
+                    }
                     ObjectVariable[] ch = new ObjectVariable[n];
                     for (int i = 0; i < n; i++) {
                         ch[i] = monitors.get(i).getMonitor();
                     }
                     return ch;
+                }
+            } else {
+                synchronized (framesAskedForMonitors) {
+                    framesAskedForMonitors.add((CallStackFrame) o);
                 }
             }
         }
@@ -263,8 +271,14 @@ NodeActionsProviderFilter, TableModel, Constants {
             return true;
         if (o instanceof ObjectVariable)
             return true;
-        if (o instanceof CallStackFrame && preferences.getBoolean(SHOW_MONITORS, false)) {
-            return false;
+        if (o instanceof CallStackFrame) {
+            if (preferences.getBoolean(SHOW_MONITORS, false)) {
+                return false;
+            } else {
+                synchronized (framesAskedForMonitors) {
+                    framesAskedForMonitors.add((CallStackFrame) o);
+                }
+            }
         }
         return model.isLeaf (o);
     }
@@ -514,6 +528,14 @@ NodeActionsProviderFilter, TableModel, Constants {
                 for (JPDAThread t : threads) {
                     fireModelChange(new ModelEvent.NodeChanged(DebuggingMonitorModel.this,
                                     t, ModelEvent.NodeChanged.CHILDREN_MASK));
+                }
+                List<CallStackFrame> frames;
+                synchronized (framesAskedForMonitors) {
+                    frames = new ArrayList(framesAskedForMonitors);
+                }
+                for (CallStackFrame frame : frames) {
+                    fireModelChange(new ModelEvent.NodeChanged(DebuggingMonitorModel.this,
+                                    frame, ModelEvent.NodeChanged.CHILDREN_MASK));
                 }
             }
         }
