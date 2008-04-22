@@ -374,12 +374,11 @@ public final class AntBridge {
                 throw new IOException("Listing: " + libdir); // NOI18N
             }
             cp.addAll(Arrays.asList(libs));
-        } else {
-            // Classpath mode. Try to add in tools.jar if we can find it somewhere.
-            File toolsJar = new File(new File(new File(System.getProperty("java.home")).getParentFile(), "lib"), "tools.jar");
-            if (toolsJar.isFile()) {
-                cp.add(toolsJar);
-            }
+        }
+        // Try to add in tools.jar if we can find it somewhere.
+        File toolsJar = new File(new File(new File(System.getProperty("java.home")).getParentFile(), "lib"), "tools.jar");
+        if (toolsJar.isFile()) {
+            cp.add(toolsJar);
         }
         // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
         cp.addAll(AntSettings.getExtraClasspath());
