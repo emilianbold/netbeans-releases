@@ -129,7 +129,7 @@ public class RecurrentSuiteFactory {
         System.err.println("[debug] " + msg);
     }
 
-    private static void resolveServer(String projectName) {
+    public static void resolveServer(String projectName) {
         ProjectSupport.waitScanFinished();
         Logger log = Logger.getLogger(RecurrentSuiteFactory.class.getName());
         String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");

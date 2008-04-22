@@ -58,6 +58,9 @@ public class EnableDisableTest extends OperationsTestImpl {
     } 
     
     public void testSelf() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         UpdateUnit toEnable = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toEnable);
         installModule(toEnable, null);

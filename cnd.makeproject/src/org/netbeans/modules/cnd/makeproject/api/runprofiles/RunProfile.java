@@ -71,6 +71,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class RunProfile implements ConfigurationAuxObject {
+    private static final boolean NO_EXEPTION = Boolean.getBoolean("org.netbeans.modules.cnd.makeproject.api.runprofiles");
+
     public static final String PROFILE_ID = "runprofile"; // NOI18N
     
     /** Property name: runargs (args, cd, etc.) have changed */
@@ -155,13 +157,10 @@ public class RunProfile implements ConfigurationAuxObject {
         if (file != null && file.exists()) {
             return file.getAbsolutePath();
         } else {
-            IllegalStateException e = new IllegalStateException(getString("Err_MissingDorunScript")); // NOI18N
-            if (true) {
-                throw e;
-            } else {
-                e.printStackTrace();
-                return null;
+            if (!NO_EXEPTION) {
+                throw new IllegalStateException(getString("Err_MissingDorunScript")); // NOI18N
             }
+            return null;
         }
     }
     

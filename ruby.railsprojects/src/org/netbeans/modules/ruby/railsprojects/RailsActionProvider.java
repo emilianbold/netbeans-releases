@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
@@ -86,13 +87,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** 
  * Action provider of the Ruby project. This is the place where to do
  * strange things to Ruby actions. E.g. compile-single.
  */
 public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
-    
+
     /**
      * Standard command for running rdoc on a project.
      * @see org.netbeans.spi.project.ActionProvider
@@ -140,6 +143,8 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
+    
+    private static final Logger LOGGER = Logger.getLogger(RailsActionProvider.class.getName());
     
     public RailsActionProvider( RailsProject project, UpdateHelper updateHelper ) {
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
@@ -562,6 +567,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                 ).
                 run();
+                
+        // request focus for the output window - see #133519
+        final String outputWindowId = "output"; //NOI18N
+        TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
+        // outputWindow should not be null as the output window id is not likely to change, but 
+        // checking for null anyway since we are not relying on an API.
+        if (outputWindow != null) {
+            outputWindow.requestActive();
+        } else {
+            LOGGER.info("Could not find the output window using id " + outputWindowId);
+        }
     }
     
     private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,

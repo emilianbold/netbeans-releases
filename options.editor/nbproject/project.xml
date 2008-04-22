@@ -326,9 +326,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings.storage</code-name-base>
-                        <test/>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>

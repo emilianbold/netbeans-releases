@@ -1,5 +1,5 @@
 #API master signature file
-#Version 2.9.1
+#Version 2.10
 CLSS public static abstract interface org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
 meth public abstract boolean org.netbeans.api.visual.action.InplaceEditorProvider$EditorController.isEditorVisible()
 meth public abstract boolean org.netbeans.api.visual.action.InplaceEditorProvider$EditorController.openEditor(org.netbeans.api.visual.widget.Widget)
@@ -14,7 +14,7 @@ fld  public static final org.netbeans.api.visual.action.InplaceEditorProvider$Ex
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -45,7 +45,7 @@ fld  public static final org.netbeans.api.visual.action.ResizeProvider$ControlPo
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -436,7 +436,7 @@ fld  public static final org.netbeans.api.visual.anchor.Anchor$Direction org.net
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -485,7 +485,7 @@ fld  public static final org.netbeans.api.visual.anchor.AnchorFactory$Directiona
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -886,7 +886,7 @@ fld  public static final org.netbeans.api.visual.layout.LayoutFactory$Connection
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -913,7 +913,7 @@ fld  public static final org.netbeans.api.visual.layout.LayoutFactory$SerialAlig
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -943,7 +943,7 @@ fld  public static final org.netbeans.api.visual.widget.ConnectionWidget$Routing
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -970,7 +970,7 @@ fld  public static final org.netbeans.api.visual.widget.LabelWidget$Alignment or
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -995,7 +995,7 @@ fld  public static final org.netbeans.api.visual.widget.LabelWidget$Orientation 
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -1022,7 +1022,7 @@ fld  public static final org.netbeans.api.visual.widget.LabelWidget$VerticalAlig
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -1052,7 +1052,7 @@ fld  public static final org.netbeans.api.visual.widget.SeparatorWidget$Orientat
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -1080,7 +1080,7 @@ fld  public static final org.netbeans.api.visual.widget.general.IconNodeWidget$T
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -1206,7 +1206,7 @@ fld  public static final org.netbeans.api.visual.action.ConnectorState org.netbe
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -2338,7 +2338,7 @@ fld  public static final org.netbeans.api.visual.model.ObjectSceneEventType org.
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -3594,7 +3594,7 @@ fld  public static final org.netbeans.api.visual.widget.EventProcessingType org.
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
