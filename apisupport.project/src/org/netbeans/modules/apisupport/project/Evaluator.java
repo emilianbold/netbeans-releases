@@ -664,27 +664,64 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             }
         }
 
+        StringBuilder extra = new StringBuilder();
         if (!fullySpecified) {
             // Old module which failed to specify all its test dependencies.
-            // Basic dependencies many tests use:
-            for (String library : new String[] {"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
-                compileCnbs.add(library);
-                runtimeCnbs.add(library);
-            }
-            if (ttName.startsWith("qa-")) {
-                // ProjectSupport moved from the old nbjunit.ide:
-                testCompileCnbs.add("org.netbeans.modules.java.j2seproject");
-                testRuntimeCnbs.add("org.netbeans.modules.java.j2seproject");
-                // Common GUI testing tools:
-                for (String library : new String[] {"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
+            if (ml.getEntry("org.netbeans.libs.junit4") == null) {
+                // Old platform. For compatibility, compute a basic unit test lib classpath.
+                String[] testLibJars = {
+                    "${nb_all}/xtest/lib/insanelib.jar", // NOI18N
+                    "${nb_all}/xtest/lib/junit.jar", // NOI18N
+                    "${nb_all}/xtest/lib/nbjunit-ide.jar", // NOI18N
+                    "${nb_all}/xtest/lib/nbjunit.jar", // NOI18N
+                    "${netbeans.dest.dir}/../../xtest/lib/insanelib.jar", // NOI18N
+                    "${netbeans.dest.dir}/../../xtest/lib/junit.jar", // NOI18N
+                    "${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar", // NOI18N
+                    "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar", // NOI18N
+                    "${netbeans.dest.dir}/java2/modules/ext/junit-3.8.2.jar", // NOI18N
+                    "${netbeans.dest.dir}/java2/modules/ext/junit-4.1.jar", // NOI18N
+                    "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar", // NOI18N
+                    "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar", // NOI18N
+                    "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar", // NOI18N
+                    "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
+                    "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar", // NOI18N
+                    "${netbeans.home}/../java2/modules/ext/junit-3.8.2.jar", // NOI18N
+                    "${netbeans.home}/../java2/modules/ext/junit-4.1.jar", // NOI18N
+                    "${netbeans.home}/../testtools/modules/ext/insanelib.jar", // NOI18N
+                    "${netbeans.home}/../testtools/modules/ext/nbjunit.jar", // NOI18N
+                    "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit-ide.jar", // NOI18N
+                    "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
+                    "${netbeans.user}/modules/ext/insanelib.jar", // NOI18N
+                    "${netbeans.user}/modules/ext/nbjunit.jar", // NOI18N
+                    "${netbeans.user}/modules/org-netbeans-modules-nbjunit-ide.jar", // NOI18N
+                    "${netbeans.user}/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
+                };
+                for (String jar : testLibJars) {
+                    extra.append(":");
+                    extra.append(jar);
+                }
+            } else {
+                // Basic dependencies many tests use:
+                for (String library : new String[] {"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
                     compileCnbs.add(library);
                     runtimeCnbs.add(library);
+                }
+                if (ttName.startsWith("qa-")) {
+                    // ProjectSupport moved from the old nbjunit.ide:
+                    testCompileCnbs.add("org.netbeans.modules.java.j2seproject");
+                    testRuntimeCnbs.add("org.netbeans.modules.java.j2seproject");
+                    // Common GUI testing tools:
+                    for (String library : new String[] {"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
+                        compileCnbs.add(library);
+                        runtimeCnbs.add(library);
+                    }
                 }
             }
         }
 
-        TestClasspath testClasspath = new TestClasspath(mergePaths(compileCnbs,false,ttName,testDistDir, ml),
-                mergePaths(runtimeCnbs,false,ttName,testDistDir,ml),
+        TestClasspath testClasspath = new TestClasspath(
+                mergePaths(compileCnbs,false,ttName,testDistDir, ml) + extra,
+                mergePaths(runtimeCnbs,false,ttName,testDistDir,ml) + extra,
                 mergePaths(testCompileCnbs,true,ttName,testDistDir,ml),
                 mergePaths(testRuntimeCnbs,true,ttName,testDistDir,ml));
 
