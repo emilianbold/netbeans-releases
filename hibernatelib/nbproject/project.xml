@@ -51,6 +51,12 @@
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate/jta.jar</runtime-relative-path>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate/hibernate-tools.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate/hibernate-annotations.jar</runtime-relative-path>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

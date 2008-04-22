@@ -59,6 +59,8 @@ made subject to such option by the copyright holder.
                 <include name="hibernate-3.2.5-lib/jdbc2_0-stdext.jar"/>
                 <include name="hibernate-3.2.5-lib/jta.jar"/>
                 <include name="hibernate-3.2.5-lib/hibernate3.jar"/>
+                <include name="hibernate-3.2.5-lib/hibernate-tools.jar"/>
+                <include name="hibernate-3.2.5-lib/hibernate-annotations.jar"/>
             </patternset>
             <mapper type="flatten"/>
         </unzip>
