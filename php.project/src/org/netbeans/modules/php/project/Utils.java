@@ -43,12 +43,12 @@ package org.netbeans.modules.php.project;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.providers.impl.absent.AbsentServerProvider;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
-import org.netbeans.modules.php.rt.utils.PhpProjectUtils;
 import org.netbeans.modules.php.rt.utils.ServersUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -66,18 +66,27 @@ public final class Utils {
     }
 
     public static SourceGroup[] getSourceGroups(Project phpProject) {
-        return PhpProjectUtils.getSourceGroups(phpProject);
+        Sources sources = ProjectUtils.getSources(phpProject);
+        //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        SourceGroup[] groups = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
+        return groups;
     }
     public static FileObject[] getSourceObjects(Project phpProject) {
-        return PhpProjectUtils.getSourceObjects(phpProject);
+        SourceGroup[] groups = getSourceGroups(phpProject);
+
+        FileObject[] fileObjects = new FileObject[groups.length];
+        for (int i = 0; i < groups.length; i++) {
+            fileObjects[i] = groups[i].getRootFolder();
+        }
+        return fileObjects;
     }
 
     public static WebServerProvider getProvider(PhpProject project) {
         PropertyEvaluator evaluator = project.getEvaluator();
         String url = evaluator.getProperty(PhpProjectProperties.URL);
         String domain = null;
-        String baseDir = null;      
-        String port = null;        
+        String baseDir = null;
+        String port = null;
         if (url != null) {
             try {
                 URL u = new URL(url);
@@ -89,12 +98,12 @@ public final class Utils {
                 Exceptions.printStackTrace(mex);
             }
         }
-        String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);        
+        String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);
         String indexFile = evaluator.getProperty(PhpProjectProperties.INDEX_FILE);
         return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot, indexFile) : null;
     }
-    
-    
+
+
     public static Host findHostById(String hostId) {
         return ServersUtils.findHostById(hostId);
     }
