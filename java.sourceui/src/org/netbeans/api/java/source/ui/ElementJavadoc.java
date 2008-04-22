@@ -69,7 +69,16 @@ import org.openide.xml.XMLUtil;
 public class ElementJavadoc {
     
     private static final String API = "/api";                                   //NOI18N
-    private static final Set<String> LANGS = Collections.<String>unmodifiableSet(new HashSet<String>(Arrays.<String>asList(Locale.getISOLanguages())));
+    private static final Set<String> LANGS;
+    
+    static {
+        Locale[] availableLocales = Locale.getAvailableLocales();
+        Set<String> locNames = new HashSet<String>((int) (availableLocales.length/.75f) + 1);
+        for (Locale locale : availableLocales) {
+            locNames.add(locale.toString());
+        }
+        LANGS = Collections.unmodifiableSet(locNames);
+    }
     
     private ElementJavadoc() {
     }
