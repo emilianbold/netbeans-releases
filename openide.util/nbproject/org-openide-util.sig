@@ -5,12 +5,9 @@ cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.S
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
 fld  public static final java.lang.String javax.swing.Action.DEFAULT
-fld  public static final java.lang.String javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY
-fld  public static final java.lang.String javax.swing.Action.LARGE_ICON_KEY
 fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
 fld  public static final java.lang.String javax.swing.Action.NAME
-fld  public static final java.lang.String javax.swing.Action.SELECTED_KEY
 fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 intf java.awt.event.ActionListener
@@ -446,12 +443,9 @@ CLSS public abstract interface org.openide.util.ContextAwareAction
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
 fld  public static final java.lang.String javax.swing.Action.DEFAULT
-fld  public static final java.lang.String javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY
-fld  public static final java.lang.String javax.swing.Action.LARGE_ICON_KEY
 fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
 fld  public static final java.lang.String javax.swing.Action.NAME
-fld  public static final java.lang.String javax.swing.Action.SELECTED_KEY
 fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 intf java.awt.event.ActionListener
@@ -1147,12 +1141,9 @@ fld  constant public static final java.lang.String org.openide.util.actions.Syst
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
 fld  public static final java.lang.String javax.swing.Action.DEFAULT
-fld  public static final java.lang.String javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY
-fld  public static final java.lang.String javax.swing.Action.LARGE_ICON_KEY
 fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
 fld  public static final java.lang.String javax.swing.Action.NAME
-fld  public static final java.lang.String javax.swing.Action.SELECTED_KEY
 fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
@@ -1224,12 +1215,9 @@ fld  constant public static final java.lang.String org.openide.util.actions.Syst
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
 fld  public static final java.lang.String javax.swing.Action.DEFAULT
-fld  public static final java.lang.String javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY
-fld  public static final java.lang.String javax.swing.Action.LARGE_ICON_KEY
 fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
 fld  public static final java.lang.String javax.swing.Action.NAME
-fld  public static final java.lang.String javax.swing.Action.SELECTED_KEY
 fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
@@ -1301,12 +1289,9 @@ fld  constant public static final java.lang.String org.openide.util.actions.Syst
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
 fld  public static final java.lang.String javax.swing.Action.DEFAULT
-fld  public static final java.lang.String javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY
-fld  public static final java.lang.String javax.swing.Action.LARGE_ICON_KEY
 fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
 fld  public static final java.lang.String javax.swing.Action.NAME
-fld  public static final java.lang.String javax.swing.Action.SELECTED_KEY
 fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
@@ -1390,12 +1375,9 @@ fld  constant public static final java.lang.String org.openide.util.actions.Syst
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
 fld  public static final java.lang.String javax.swing.Action.DEFAULT
-fld  public static final java.lang.String javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY
-fld  public static final java.lang.String javax.swing.Action.LARGE_ICON_KEY
 fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
 fld  public static final java.lang.String javax.swing.Action.NAME
-fld  public static final java.lang.String javax.swing.Action.SELECTED_KEY
 fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
 fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 intf java.awt.event.ActionListener
