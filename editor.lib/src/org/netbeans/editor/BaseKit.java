@@ -673,8 +673,7 @@ public class BaseKit extends DefaultEditorKit {
         c.enableInputMethods(enableIM);
         executeInstallActions(c);
         
-        c.putClientProperty("hyperlink-operation", // NOI18N
-                org.netbeans.lib.editor.hyperlink.HyperlinkOperation.create(c, getContentType()));
+        org.netbeans.lib.editor.hyperlink.HyperlinkOperation.ensureRegistered(c, getContentType());
 
         // Mark that the editor's multi keymap adheres to context API in status displayer
         c.putClientProperty("context-api-aware", Boolean.TRUE); // NOI18N

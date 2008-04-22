@@ -62,13 +62,13 @@ public class MemoryFileManagerTest extends NbTestCase {
         assertTrue(jfos.isEmpty());
         long mtime = System.currentTimeMillis();
         String content = "package org.me;\n class Foo{}\n";
-        mgr.register("org.me.Foo", mtime, content);
+        mgr.register(FileObjects.memoryFileObject("org.me", "Foo.java", null, mtime, content));
         jfos = mgr.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals(1, jfos.size());        
         assertEquals("org.me.Foo", mgr.inferBinaryName(StandardLocation.SOURCE_PATH, jfos.get(0)));
         assertEquals(mtime, jfos.get(0).getLastModified());
         assertTrue(content.contentEquals(jfos.get(0).getCharContent(true)));
-        mgr.register("org.me.Test", mtime, content);
+        mgr.register(FileObjects.memoryFileObject("org.me", "Test.java", null, mtime, content));
         jfos = mgr.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals(2, jfos.size());
         JavaFileObject jfo = mgr.getJavaFileForInput(StandardLocation.SOURCE_PATH, "org.me.Foo", JavaFileObject.Kind.SOURCE);
