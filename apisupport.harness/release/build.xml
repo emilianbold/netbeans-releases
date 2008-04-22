@@ -98,12 +98,13 @@ made subject to such option by the copyright holder.
             <testtype name="unit" 
                       folder="test.unit.folder" 
                       runtimecp="test.unit.runtime.cp" 
-                      compilecp="test.unit.compile.cp"/>
+                      compilecp="test.unit.compile.cp"
+                      compiledep="test.unit.testdep"/>
             <testtype name="qa-functional" 
                       folder="test.qa-functional.folder" 
                       runtimecp="test.qa-functional.runtime.cp" 
-                      compilecp="test.qa-functional.compile.cp"/>         
-
+                      compilecp="test.qa-functional.compile.cp"
+                      compiledep="test.qa-functional.testdep"/>
         </parseprojectxml>
         <condition property="is.regular">
             <not>
@@ -215,13 +216,5 @@ made subject to such option by the copyright holder.
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
     </target>
-    
-     <target name="test-clean" depends="basic-init,files-init">
-         <parseprojectxml project=".">
-             <testtype name="unit"  folder="test.unit.folder" />
-         </parseprojectxml>      
-         <property name="test.unit.out.folder" location="${test.unit.folder}"/>
-         <delete dir="${test.unit.out.folder}"/>    
-     </target>
     
 </project>

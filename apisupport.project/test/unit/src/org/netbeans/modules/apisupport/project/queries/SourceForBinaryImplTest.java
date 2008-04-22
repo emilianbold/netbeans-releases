@@ -89,7 +89,7 @@ public class SourceForBinaryImplTest extends TestBase {
         check("o.n.bootstrap/src", TestBase.CLUSTER_PLATFORM + "/lib/boot.jar");
         check("diff/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-diff.jar");
         check("editor.lib/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-editor-lib.jar");
-        check("nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
+        check("nbjunit/src", "harness/modules/org-netbeans-modules-nbjunit.jar");
         check("apisupport.project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_APISUPPORT + "/org-netbeans-modules-apisupport-project/tests.jar"));
     }
     
