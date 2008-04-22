@@ -304,7 +304,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (repositoryUrl != null) return repositoryUrl;
         
         File root = Mercurial.getInstance().getTopmostManagedParent(roots[0]);
-        return root.toString();
+       
+        return root != null? root.toString(): null;
     }
 
     public File[] getRoots() {

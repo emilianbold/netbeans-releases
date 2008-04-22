@@ -1876,8 +1876,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
-            if (toAdd != null && !add.startsWith(toAdd))
-                add += toAdd;   
+            if (toAdd != null && !add.startsWith(toAdd)) {
+                add += toAdd;
+            } else {
+                toAdd = null;
+            }
             String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;

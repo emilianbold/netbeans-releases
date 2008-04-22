@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.tools.JavaFileObject;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -69,7 +70,7 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
         final File root = new File (getWorkDir(),"src");    //NOI18N
         root.mkdir();
         final File[] data = prepareData(root);
-        final Iterable<Pair<String,CharSequence>> res = VirtualSourceProviderQuery.translate(data, root);
+        final Iterable<FileObjects.InferableJavaFileObject> res = VirtualSourceProviderQuery.translate(Arrays.asList(data), root);
         assertEquals(new String[] {"a","b","c","d"}, res);      //NOI18N
     }
     
@@ -82,11 +83,11 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
         return result;        
     }
     
-    private static void assertEquals (final String[] expected, Iterable<Pair<String,CharSequence>> data) {
+    private static void assertEquals (final String[] expected, Iterable<FileObjects.InferableJavaFileObject> data) {
         final Set<String> es = new HashSet<String>();
         es.addAll(Arrays.asList(expected));
-        for (Pair<String,CharSequence> p : data) {
-            assertTrue (es.remove(p.first));
+        for (FileObjects.InferableJavaFileObject p : data) {
+            assertTrue (es.remove(p.inferBinaryName()));
         }
         assertTrue(es.isEmpty());
     }
@@ -100,9 +101,8 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
             return result;
         }
 
-        public List<Pair<String, CharSequence>> translate(Iterable<File> files, File sourceRoot) {
+        public void translate(Iterable<File> files, File sourceRoot, VirtualSourceProvider.Result r) {
             final Set<String> ext = new HashSet<String>();
-            final List<Pair<String,CharSequence>> result = new LinkedList<Pair<String, CharSequence>>();
             final CharSequence d = "";  //NOI18N
             for (File f : files) {
                 ext.add(FileObjects.getExtension(f.getName()));
@@ -111,10 +111,9 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
                 if (index >= 0) {
                     rp = rp.substring(0, index);
                 }
-                result.add(Pair.of(FileObjects.convertFolder2Package(rp, File.separatorChar), d));
+                r.add(f, "", rp, d);
             }
             assertEquals(1, ext.size());
-            return result;
         }
         
     }

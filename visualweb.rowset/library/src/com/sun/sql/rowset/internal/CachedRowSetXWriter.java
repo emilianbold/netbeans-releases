@@ -691,7 +691,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
                         if (first == false) {
                             updateExec += ", "; //NOI18N
                         }
-                        updateExec += crs.getMetaData().getColumnName(i);
+                        updateExec += crs.getMetaData().getColumnLabel(i);
                         cols.add(new Integer(i));
                         updateExec += " = ? "; //NOI18N
                         first = false;
@@ -726,7 +726,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
                                 if (first == false) {
                                     updateExec += ", "; //NOI18N
                                 }
-                                updateExec += crs.getMetaData().getColumnName(i);
+                                updateExec += crs.getMetaData().getColumnLabel(i);
                                 cols.add(new Integer(i));
                                 updateExec += " = ? "; //NOI18N
                                 first = false;
@@ -1159,7 +1159,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
         realColumnNames = new String[callerColumnCount];
         String[] callerColumnNames = ((CachedRowSetX)caller).getColumnNames();
         for (i=0; i < callerColumnCount; i++) {
-            realColumnNames[i] = callerMd.getColumnName(i+1);
+            realColumnNames[i] = callerMd.getColumnLabel(i+1);
             if (callerColumnNames != null && callerColumnNames.length > i
                     && callerColumnNames[i] != null) {
                 realColumnNames[i] = callerColumnNames[i];
@@ -1525,7 +1525,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
             } else {
                 whereClause += "AND "; //NOI18N
             }
-            whereClause += callerMd.getColumnName(keyCols[i]);
+            whereClause += callerMd.getColumnLabel(keyCols[i]);
             params[i] = rs.getObject(keyCols[i]);
             if (rs.wasNull() == true) {
                 whereClause += " IS NULL "; //NOI18N
@@ -1605,7 +1605,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
                 if (first == false) {
                     strSet += ", "; //NOI18N
                 }
-                strSet += crs.getMetaData().getColumnName(i);
+                strSet += crs.getMetaData().getColumnLabel(i);
                 strSet += " = ? "; //NOI18N
                 first = false;
             } //end if
@@ -1619,7 +1619,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
             if (i > 0) {
                 strWhere += "AND "; //NOI18N
             }
-            strWhere += crs.getMetaData().getColumnName(keyColumns[i]);
+            strWhere += crs.getMetaData().getColumnLabel(keyColumns[i]);
             param[i] = crs.getObject(keyColumns[i]);
             if (crs.wasNull() == true) {
                 strWhere += " IS NULL "; //NOI18N

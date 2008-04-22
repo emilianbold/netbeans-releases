@@ -1136,9 +1136,8 @@ public class Reformatter implements ReformatTask {
                 newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
-                blankLines(0);
+                appendToDiff("\n" + getIndent() + "}"); //NOI18N
                 col = indent + 1;
-                appendToDiff("}"); //NOI18N
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
