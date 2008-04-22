@@ -117,9 +117,11 @@ class EtlproActionProvider implements ActionProvider {
             while (it.hasNext()) {
                 try {
                     DatabaseConnection dconn = it.next();
+                    if (dconn.getDriverClass().contains("AxionDriver")) {
                     DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                    }
                 } catch (AxionException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //ignore
                 }
             }
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
@@ -131,9 +133,11 @@ class EtlproActionProvider implements ActionProvider {
             while (it.hasNext()) {
                 try {
                     DatabaseConnection dconn = it.next();
+                    if (dconn.getDriverClass().contains("AxionDriver")) {
                     DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                    }
                 } catch (AxionException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //ignore
                 }
             }
             DefaultProjectOperations.performDefaultDeleteOperation(project);

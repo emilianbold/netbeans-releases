@@ -82,7 +82,7 @@ public class SQLDBSynchronizationVisitor {
     
     public List<ValidationInfo> infoList = new ArrayList<ValidationInfo>();
 
-    private void mergeUpdates(SQLDBColumn collabColumn, List newColumns, SQLDBTable table, MetaTableModel tableModel) {
+    private void mergeUpdates(SQLDBColumn collabColumn, List newColumns, SQLDBTable table, MetaTableModel tableModel, boolean ignorePrecision) {
         SQLDBColumn newColumn = null;
         boolean columnMatched = true;
 
@@ -97,9 +97,9 @@ public class SQLDBSynchronizationVisitor {
             // If column name match
             if (columnMatched) {
                 // Check whether the column metadata is not matching
-                if (compareWith(collabColumn, newColumn) != 0) {
+                if (compareWith(collabColumn, newColumn, ignorePrecision) != 0) {
                     // *** UPDATE ***
-                    copyFrom(newColumn, collabColumn);
+                    copyFrom(newColumn, collabColumn, ignorePrecision);
                     tableModel.updateColumn(collabColName, collabColumn);
                     String desc = collabColumn.getQualifiedName() + " was updated from Database " + table.getParent().getModelName();
                     ValidationInfo vInfo = new ValidationInfoImpl(collabColumn, desc, ValidationInfo.VALIDATION_WARNING);
@@ -120,17 +120,19 @@ public class SQLDBSynchronizationVisitor {
         }
     }
 
-    public void copyFrom(SQLDBColumn source, SQLDBColumn target) {
+    public void copyFrom(SQLDBColumn source, SQLDBColumn target, boolean ignorePrecision) {
         target.setJdbcType(source.getJdbcType());
+        if(!ignorePrecision) {
         target.setScale(source.getScale());
         target.setPrecision(source.getPrecision());
+        }
         target.setOrdinalPosition(source.getOrdinalPosition());
         target.setPrimaryKey(source.isPrimaryKey());
         target.setForeignKey(source.isForeignKey());
         target.setNullable(source.isNullable());
     }
 
-    private int compareWith(SQLDBColumn collabCol, SQLDBColumn newCol) {
+    private int compareWith(SQLDBColumn collabCol, SQLDBColumn newCol, boolean ignorePrecision) {
         // compare primary keys
         if (collabCol.isPrimaryKey() && !newCol.isPrimaryKey()) {
             return -1;
@@ -150,6 +152,7 @@ public class SQLDBSynchronizationVisitor {
             return -1;
         }
 
+        if(!ignorePrecision) {
         // compare scale
         if (collabCol.getScale() != newCol.getScale()) {
             return -1;
@@ -158,6 +161,7 @@ public class SQLDBSynchronizationVisitor {
         // compare getPrecision
         if (collabCol.getPrecision() != newCol.getPrecision()) {
             return -1;
+        }
         }
 
         // compare getOrdinalPosition
@@ -229,10 +233,11 @@ public class SQLDBSynchronizationVisitor {
                 for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
                     SQLDBColumn oldCol = (SQLDBColumn) itr.next();
                     int sqlTypeCode = oldCol.getJdbcType();
+                    boolean ignorePrecision = false;
                     if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && connDef.getDBType().equals(DBMetaDataFactory.AXION)) {
-                        continue;
+                        ignorePrecision = true;
                     }
-                    mergeUpdates(oldCol, newColumns, collabTable, tableModel);
+                    mergeUpdates(oldCol, newColumns, collabTable, tableModel, ignorePrecision);
                 }
                 for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
                     mergeNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable, tableModel);
