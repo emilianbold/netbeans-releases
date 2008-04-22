@@ -113,8 +113,6 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -231,7 +229,7 @@ public class IDEValidation extends JellyTestCase {
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
     }
     
     /** Test new file wizard. 
@@ -793,7 +791,7 @@ public class IDEValidation extends JellyTestCase {
         eo.insert(defaultMethod, insertLine+3, 1);
         eo.save();
         // need to wait until new methods are parsed
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
 
         // "Tools"
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // NOI18N
