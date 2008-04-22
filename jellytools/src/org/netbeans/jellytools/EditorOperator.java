@@ -641,7 +641,8 @@ public class EditorOperator extends TopComponentOperator {
      * object. */
     private ArrayList<Object> getAnnotations(Object lineAnnotations) throws Exception {
         Class lineAnnotationsClass = Class.forName("org.netbeans.editor.Annotations$LineAnnotations");
-        Class annotationDescDelegateClass = Class.forName("org.netbeans.modules.editor.NbEditorDocument$AnnotationDescDelegate");
+        Class annotationDescDelegateClass = Class.forName("org.netbeans.modules.editor.NbEditorDocument$AnnotationDescDelegate",
+                true, Thread.currentThread().getContextClassLoader());
         Field delegateField = annotationDescDelegateClass.getDeclaredField("delegate");
         delegateField.setAccessible(true);
 
