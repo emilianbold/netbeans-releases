@@ -198,6 +198,8 @@ public class MySQLPanel extends DestinationPanel {
 
         protected MySQLPanel panel;
         private NbiPanel containerPanel;
+        private NbiPanel containerPanel2;
+
         private NbiPasswordField passwordField;
         private NbiPasswordField repeatPasswordField;
         private NbiLabel passwordLabel;
@@ -357,6 +359,7 @@ public class MySQLPanel extends DestinationPanel {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             containerPanel = new NbiPanel();
+            containerPanel2 = new NbiPanel();
             // passwordField ////////////////////////////////////////////////////////
             final Dimension longFieldSize = new Dimension(
                     200,
@@ -510,7 +513,7 @@ public class MySQLPanel extends DestinationPanel {
                     new Insets(4, securityPadding + 8, 11, 0), // padding
                     0, 0));                           // padx, pady - ???
 
-            containerPanel.add(networkCheckBox, new GridBagConstraints(
+            containerPanel2.add(networkCheckBox, new GridBagConstraints(
                     0, 4, // x, y
                     4, 1, // width, height
                     0.0, 0.0, // weight-x, weight-y
@@ -519,16 +522,16 @@ public class MySQLPanel extends DestinationPanel {
                     new Insets(4, 11, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
 
-            containerPanel.add(portLabel, new GridBagConstraints(
+            containerPanel2.add(portLabel, new GridBagConstraints(
                     0, 5, // x, y
                     1, 1, // width, height
                     0.0, 0.0, // weight-x, weight-y
                     GridBagConstraints.LINE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(4, securityPadding + 8, 0, 0), // padding
+                    new Insets(4, securityPadding + 11, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
 
-            containerPanel.add(portField, new GridBagConstraints(
+            containerPanel2.add(portField, new GridBagConstraints(
                     1, 5, // x, y
                     1, 1, // width, height
                     0.1, 0.0, // weight-x, weight-y
@@ -537,7 +540,7 @@ public class MySQLPanel extends DestinationPanel {
                     new Insets(4, 6, 0, 11), // padding
                     0, 0));                           // padx, pady - ???
 
-            containerPanel.add(new NbiPanel(), new GridBagConstraints(
+            containerPanel2.add(new NbiPanel(), new GridBagConstraints(
                     2, 5, // x, y
                     1, 1, // width, height
                     0.4, 0.0, // weight-x, weight-y
@@ -546,7 +549,7 @@ public class MySQLPanel extends DestinationPanel {
                     new Insets(0, 0, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
 
-            containerPanel.add(new NbiPanel(), new GridBagConstraints(
+            containerPanel2.add(new NbiPanel(), new GridBagConstraints(
                     3, 5, // x, y
                     1, 1, // width, height
                     1.0, 0.0, // weight-x, weight-y
@@ -564,6 +567,15 @@ public class MySQLPanel extends DestinationPanel {
                     GridBagConstraints.BOTH, // fill
                     new Insets(10, 0, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
+            add(containerPanel2, new GridBagConstraints(
+                    0, 4 , // x, y
+                    2, 1, // width, height
+                    1.0, 0.0, // weight-x, weight-y
+                    GridBagConstraints.LINE_START, // anchor
+                    GridBagConstraints.BOTH, // fill
+                    new Insets(0, 0, 0, 0), // padding
+                    0, 0));                           // padx, pady - ???
+
 
         }
     }
