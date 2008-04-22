@@ -215,9 +215,14 @@ public class NbModuleSuite {
                 }
             }
             
-            File tools = new File(new File(new File(System.getProperty("java.home")).getParentFile(), "lib"), "tools.jar");
-            Assert.assertTrue(tools.exists());
-            bootCP.add(tools.toURL());
+            File jdkLib = new File(new File(System.getProperty("java.home")).getParentFile(), "lib");
+            if (jdkLib.isDirectory()) {
+                for (File jar : jdkLib.listFiles()) {
+                    if (jar.getName().endsWith(".jar")) {
+                        bootCP.add(jar.toURI().toURL());
+                    }
+                }
+            }
             
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
