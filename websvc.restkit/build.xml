@@ -84,7 +84,7 @@
         <antcall target="clean"/>
     </target>
     
-    <target name="do-test-build-qa-functional" depends="init,test-init-qa-functional">
+    <target name="do-test-build-qa-functional" depends="init,test-init">
         <ant dir="../websvc.kit" target="do-test-build-qa-functional"/>
         <antcall target="projectized.do-test-build-qa-functional"/>
     </target>
