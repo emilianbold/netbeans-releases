@@ -115,4 +115,26 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         assertEquals(javadocFile.toURI().toURL(), urls[0]);
     }
     
+    public void testJavadocFolders () throws Exception {
+        final File wd = this.getWorkDir();
+        final FileObject wdfo = FileUtil.toFileObject(wd);
+        final FileObject golden1 = FileUtil.createFolder(wdfo,"test1/docs/api/index-files").getParent();        //NOI18N
+        final FileObject golden2 = FileUtil.createFolder(wdfo,"test2/docs/ja/api/index-files").getParent();     //NOI18N
+        FileObject testFo = wdfo.getFileObject("test1");                                                        //NOI18N
+        FileObject res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        assertEquals(res, golden1);
+        testFo = wdfo.getFileObject("test1/docs");                                                              //NOI18N
+        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        assertEquals(res, golden1);
+        testFo = wdfo.getFileObject("test2");                                                                   //NOI18N
+        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        assertEquals(res, golden2);
+        testFo = wdfo.getFileObject("test2/docs");                                                              //NOI18N
+        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        assertEquals(res, golden2);
+        testFo = wdfo.getFileObject("test2/docs/ja");                                                           //NOI18N
+        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        assertEquals(res, golden2);        
+    }
+    
 }

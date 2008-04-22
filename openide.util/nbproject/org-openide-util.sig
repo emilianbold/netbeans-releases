@@ -1,5 +1,5 @@
 #API master signature file
-#Version 7.10.1
+#Version 7.12.0
 CLSS public static abstract org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable
 cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.SystemAction,boolean)
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
@@ -612,6 +612,7 @@ CLSS public final org.openide.util.Mutex
 cons public Mutex()
 cons public Mutex(java.lang.Object)
 cons public Mutex(org.openide.util.Mutex$Privileged)
+cons public Mutex(org.openide.util.Mutex$Privileged,java.util.concurrent.Executor)
 fld  public static final org.openide.util.Mutex org.openide.util.Mutex.EVENT
 innr public static abstract interface org.openide.util.Mutex$Action
 innr public static abstract interface org.openide.util.Mutex$ExceptionAction
@@ -1988,9 +1989,9 @@ meth protected void org.openide.util.lookup.ProxyLookup.beforeLookup(org.openide
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final java.lang.Object org.openide.util.lookup.ProxyLookup.lookup(java.lang.Class)
 meth public final org.openide.util.Lookup$Item org.openide.util.lookup.ProxyLookup.lookupItem(org.openide.util.Lookup$Template)
+meth public final org.openide.util.Lookup$Result org.openide.util.lookup.ProxyLookup.lookup(org.openide.util.Lookup$Template)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String org.openide.util.lookup.ProxyLookup.toString()
 meth public java.util.Collection org.openide.util.Lookup.lookupAll(java.lang.Class)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -1999,7 +2000,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.util.Lookup$Result org.openide.util.Lookup.lookupResult(java.lang.Class)
 meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
-meth public synchronized final org.openide.util.Lookup$Result org.openide.util.lookup.ProxyLookup.lookup(org.openide.util.Lookup$Template)
+meth public synchronized java.lang.String org.openide.util.lookup.ProxyLookup.toString()
 supr org.openide.util.Lookup
 CLSS public abstract org.openide.xml.EntityCatalog
 cons public EntityCatalog()

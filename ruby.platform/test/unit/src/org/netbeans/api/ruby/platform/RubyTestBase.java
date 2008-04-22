@@ -85,15 +85,15 @@ public abstract class RubyTestBase extends GsfTestBase {
         return directory;
     }
 
-    protected File setUpRuby() throws Exception {
+    protected File setUpRuby() throws IOException {
         return setUpRuby(false, "");
     }
 
-    protected File setUpRubyWithGems() throws Exception {
+    protected File setUpRubyWithGems() throws IOException {
         return setUpRuby(true, "");
     }
     
-    protected File setUpRuby(final boolean withGems, final String suffix) throws Exception {
+    protected File setUpRuby(final boolean withGems, final String suffix) throws IOException {
         // Ensure that $GEM_HOME isn't picked up
         // I can't do this:
         //  System.getenv().remove("GEM_HOME");

@@ -66,7 +66,6 @@ import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -114,9 +113,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
     static final String SOURCE_ROOT_NODE_NAME = "LBL_PhpFiles";
 
-    PhpLogicalViewProvider(PhpProject project, SubprojectProvider provider) {
+    PhpLogicalViewProvider(PhpProject project) {
         myProject = project;
-        mySubProjectProvider = provider;
         myActionsByCommand = new HashMap<Command, Action>();
         getProject().getHelper().addAntProjectListener(this);
     }
@@ -218,10 +216,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
     private PhpProject getProject() {
         return myProject;
-    }
-
-    private SubprojectProvider getSubProjectProvider() {
-        return mySubProjectProvider;
     }
 
     private class PhpLogicalViewRootNode extends AbstractNode {
@@ -953,5 +947,4 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
     private final Map<Command, Action> myActionsByCommand;
 
     private final PhpProject myProject;
-    private final SubprojectProvider mySubProjectProvider;
 }
