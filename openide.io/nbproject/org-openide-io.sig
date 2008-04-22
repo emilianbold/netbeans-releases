@@ -70,7 +70,6 @@ intf java.io.Closeable
 intf java.io.Flushable
 intf java.lang.Appendable
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.io.PrintWriter.clearError()
 meth protected void java.io.PrintWriter.setError()
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public abstract void org.openide.windows.OutputWriter.println(java.lang.String,org.openide.windows.OutputListener) throws java.io.IOException
