@@ -545,8 +545,10 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 && !(action instanceof FileSystemAction)
                 && !(action instanceof ToolsAction)) {
             if (log.isLoggable(FINEST)) {
-                log.finest(" - using preferred action ("                //NOI18N
+                log.finest(" - using preferred action (\""              //NOI18N
                            + action.getValue(Action.NAME)
+                           + "\" - "                                    //NOI18N
+                           + action.getClass().getName()
                            + ") for opening the file");                 //NOI18N
             }
             EventQueue.invokeLater(new Runnable() {
