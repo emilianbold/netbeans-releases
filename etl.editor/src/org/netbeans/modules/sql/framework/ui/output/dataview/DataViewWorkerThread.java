@@ -151,10 +151,10 @@ class DataViewWorkerThread extends SwingWorker {
             }
             dataOutputPanel.insert.setEnabled(true);
         } else {
-            dataOutputPanel.first.setEnabled(false);
-            dataOutputPanel.next.setEnabled(false);
-            dataOutputPanel.last.setEnabled(false);
-            dataOutputPanel.previous.setEnabled(false);
+            dataOutputPanel.first.setEnabled(true);
+            dataOutputPanel.next.setEnabled(true);
+            dataOutputPanel.last.setEnabled(true);
+            dataOutputPanel.previous.setEnabled(true);
             dataOutputPanel.commit.setEnabled(false);
             dataOutputPanel.deleteRow.setEnabled(false);
             dataOutputPanel.insert.setEnabled(false);
@@ -436,7 +436,7 @@ class DataViewWorkerThread extends SwingWorker {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(buf.toString().trim());
             dataOutputPanel.queryView.setEditable(false);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.recordToRefresh, 0);
+            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows,dataOutputPanel.nowCount-1);
             rs.close();
             stmt.close();
             try {
