@@ -56,7 +56,6 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
-import org.openide.util.Exceptions;
 
 /**
  * Lexer based on old coyote groovy lexer.
@@ -71,20 +70,25 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.groovy.editor.lexer.GroovyLexer");
     
-    private org.codehaus.groovy.antlr.parser.GroovyLexer scanner;
+    private DelegateLexer scanner;
     private LexerInput lexerInput;
     private MyCharBuffer myCharBuffer;
     private TokenFactory<GroovyTokenId> tokenFactory;
     private final GroovyRecognizer parser;
     
     public GroovyLexer(LexerRestartInfo<GroovyTokenId> info) {
-        this.scanner = new org.codehaus.groovy.antlr.parser.GroovyLexer((LexerSharedInputState)null);
+        this.scanner = new DelegateLexer((LexerSharedInputState)null);
         scanner.setWhitespaceIncluded(true);
         parser = GroovyRecognizer.make(scanner);
         restart(info);
     }
     
     private void restart(LexerRestartInfo<GroovyTokenId> info) {
+        
+        if (info.state() != null) {
+            scanner.setState((Integer) info.state());
+        }
+        
         tokenFactory = info.tokenFactory();
         this.lexerInput = info.input();
 
@@ -172,7 +176,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     }
     
     public Object state() {
-        return null;
+        return scanner.getState();
     }
 
     public void release() {
@@ -223,4 +227,20 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         }
     }
 
+    private static class DelegateLexer extends org.codehaus.groovy.antlr.parser.GroovyLexer {
+
+        public DelegateLexer(LexerSharedInputState state) {
+            super(state);
+        }
+        
+        public int getState() {
+            return stringCtorState;
+        }
+        
+        public void setState(int state) {
+            stringCtorState = state;
+        }
+        
+    }
+    
 }

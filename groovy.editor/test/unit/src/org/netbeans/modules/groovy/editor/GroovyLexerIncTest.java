@@ -61,7 +61,7 @@ public class GroovyLexerIncTest extends NbTestCase {
         super(testName);
     }
     
-    public void test() throws Exception {
+    public void test1() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
         doc.putProperty(Language.class,GroovyTokenId.language());
@@ -162,13 +162,65 @@ public class GroovyLexerIncTest extends NbTestCase {
         next(ts, GroovyTokenId.WHITESPACE, " ", 7);
         next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
         next(ts, GroovyTokenId.IDENTIFIER, "name", 16);
-        // this is failing, only incremental lexing problem known to me so far
-//        next(ts, GroovyTokenId.STRING_LITERAL, " \"", 20);
+
+        next(ts, GroovyTokenId.STRING_LITERAL, " \"", 20);
+        assertFalse(ts.moveNext());
+        LexerTestUtilities.incCheck(doc, false);
+    }
+    
+    // failing
+//    public void test2() throws Exception {
+//        Document doc = new ModificationTextDocument();
+//        // Assign a language to the document
+//        doc.putProperty(Language.class,GroovyTokenId.language());
+//        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+//        assertNotNull("Null token hierarchy for document", hi);
+//        TokenSequence<?> ts = hi.tokenSequence();
+//        assertFalse(ts.moveNext());
+//        
+//        // Insert text into document
+//        String text = "println \"Hello ${name} !\"";
+//        doc.insertString(0, text, null);
+//
+//        // Last token sequence should throw exception - new must be obtained
+//        try {
+//            ts.moveNext();
+//            fail("TokenSequence.moveNext() did not throw exception as expected.");
+//        } catch (ConcurrentModificationException e) {
+//            // Expected exception
+//        }
+//        
+//        ts = hi.tokenSequence();
+//        
+//        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
+//        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
+//        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
+//        next(ts, GroovyTokenId.LBRACE, "{", 16);
+//        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
+//        next(ts, GroovyTokenId.RBRACE, "}", 21);
+//        next(ts, GroovyTokenId.STRING_LITERAL, " !\"", 22);
 //
 //        assertFalse(ts.moveNext());
 //
 //        LexerTestUtilities.incCheck(doc, false);
-    }
+//        
+//        int offset = text.length() - 3;
+//
+//        doc.insertString(offset, " ", null);
+//        
+//        ts = hi.tokenSequence();
+//        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
+//        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
+//        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
+//        next(ts, GroovyTokenId.LBRACE, "{", 16);
+//        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
+//        next(ts, GroovyTokenId.RBRACE, "}", 21);
+//        next(ts, GroovyTokenId.STRING_LITERAL, " \"", 22);
+//
+//        assertFalse(ts.moveNext());
+//        
+//        LexerTestUtilities.incCheck(doc, false);
+//    }
     
     void next(TokenSequence<?> ts, GroovyTokenId id, String fixedText, int offset){
         assertTrue(ts.moveNext());
