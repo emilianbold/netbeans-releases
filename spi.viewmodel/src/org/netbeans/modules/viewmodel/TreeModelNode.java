@@ -816,7 +816,7 @@ public class TreeModelNode extends AbstractNode {
                             DefaultTreeExpansionManager.get(model).setChildrenToActOn(getTreeDepth());
                             if (model.isExpanded (ch [i])) {
                                 TreeFeatures treeTable = treeModelRoot.getTreeFeatures ();
-                                if (treeTable.isExpanded(object)) {
+                                if (treeTable != null && treeTable.isExpanded(object)) {
                                     // Expand the child only if the parent is expanded
                                     treeTable.expandNode (ch [i]);
                                 }

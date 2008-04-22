@@ -183,5 +183,12 @@ public interface CallStackFrame {
      * @return thread
      */
     public abstract JPDAThread getThread ();
+    
+    /**
+     * Get the list of monitors aquired in this frame
+     * 
+     * @return the list of monitors aquired in this frame
+     */
+    List<MonitorInfo> getOwnedMonitors();
 }
  

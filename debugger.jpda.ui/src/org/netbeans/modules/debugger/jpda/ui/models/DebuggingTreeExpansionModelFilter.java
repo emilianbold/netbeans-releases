@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -100,6 +101,12 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
      * @return default state (collapsed, expanded) of given node
      */
     public boolean isExpanded (TreeExpansionModel original, Object node) throws UnknownTypeException {
+        if (node instanceof CallStackFrame) {
+            return true;
+        }
+        if (node instanceof DebuggingMonitorModel.OwnedMonitors) {
+            return ((DebuggingMonitorModel.OwnedMonitors) node).noFrame;
+        }
         return original.isExpanded(node);
     }
 

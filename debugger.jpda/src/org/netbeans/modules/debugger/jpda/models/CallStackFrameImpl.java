@@ -63,6 +63,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -77,7 +78,7 @@ import org.openide.ErrorManager;
 */
 public class CallStackFrameImpl implements CallStackFrame {
     
-    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
+    static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
     static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
                                                       !System.getProperty("java.version").equals("1.6.0_01");
     
@@ -89,6 +90,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     private boolean             valid;
     
     public CallStackFrameImpl (
+        JPDAThreadImpl      thread,
         StackFrame          sf,
         int                 depth,
         JPDADebuggerImpl    debugger
@@ -620,6 +622,20 @@ public class CallStackFrameImpl implements CallStackFrame {
             //System.err.println("CREATED  HASH CODE: "+hashCode+"   line = "+getLineNumber(null)+", valid = "+valid);
         }
         return hashCode.intValue();
+    }
+
+    public List<MonitorInfo> getOwnedMonitors() {
+        List<MonitorInfo> threadMonitors = getThread().getOwnedMonitorsAndFrames();
+        if (threadMonitors.size() == 0) {
+            return threadMonitors;
+        }
+        List<MonitorInfo> frameMonitors = new ArrayList<MonitorInfo>();
+        for (MonitorInfo mi : threadMonitors) {
+            if (this.equals(mi.getFrame())) {
+                frameMonitors.add(mi);
+            }
+        }
+        return Collections.unmodifiableList(frameMonitors);
     }
 }
 

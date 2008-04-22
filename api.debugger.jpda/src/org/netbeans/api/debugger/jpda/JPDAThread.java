@@ -252,4 +252,11 @@ public interface JPDAThread {
      * @return monitors owned by this thread
      */
     public abstract ObjectVariable[] getOwnedMonitors ();
+    
+    /**
+     * Get the list of monitors with stack frame info owned by this thread.
+     * 
+     * @return the list of monitors with stack frame info
+     */
+    List<MonitorInfo> getOwnedMonitorsAndFrames();
 }

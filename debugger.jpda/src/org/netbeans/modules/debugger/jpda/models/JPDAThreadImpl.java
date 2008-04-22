@@ -57,7 +57,9 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,10 +68,12 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -382,7 +386,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
-                frames[i] = new CallStackFrameImpl((StackFrame) l.get(i), from + i, debugger);
+                frames[i] = new CallStackFrameImpl(this, (StackFrame) l.get(i), from + i, debugger);
                 if (from == 0 && i == 0 && currentOperation != null) {
                     ((CallStackFrameImpl) frames[i]).setCurrentOperation(currentOperation);
                 }
@@ -800,4 +804,69 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         throw new UnsupportedOperationException("Not supported, do not call. Implementing Customizer interface just because of add/remove PropertyChangeListener.");
     }
 
+    public List<MonitorInfo> getOwnedMonitorsAndFrames() {
+        if (CallStackFrameImpl.IS_JDK_16) {
+            try {
+                java.lang.reflect.Method canGetMonitorFrameInfoMethod =
+                        threadReference.virtualMachine().getClass().getMethod("canGetMonitorFrameInfo"); // NOTICES
+                canGetMonitorFrameInfoMethod.setAccessible(true);
+                boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
+                //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
+                if (canGetMonitorFrameInfo) {
+                    java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
+                    List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
+                    if (monitorInfos.size() > 0) {
+                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                        for (Object monitorInfo : monitorInfos) {
+                            mis.add(createMonitorInfo(monitorInfo));
+                        }
+                        return Collections.unmodifiableList(mis);
+                    }
+                }
+            } catch (IllegalAccessException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);
+            } catch (InvocationTargetException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);
+            } catch (java.lang.NoSuchMethodException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * 
+     * @param mi com.sun.jdi.MonitorInfo
+     * @return monitor info
+     */
+    private MonitorInfo createMonitorInfo(Object mi) {
+        //com.sun.jdi.MonitorInfo _mi = (com.sun.jdi.MonitorInfo) mi;
+        try {
+            java.lang.reflect.Method stackDepthMethod =
+                    mi.getClass().getMethod("stackDepth"); // NOTICES
+            int depth = (Integer) stackDepthMethod.invoke(mi);
+            //int depth = _mi.stackDepth();
+            CallStackFrameImpl frame = null;
+            if (depth >= 0) {
+                try {
+                    frame = new CallStackFrameImpl(this, threadReference.frame(depth), depth, debugger);
+                } catch (IncompatibleThreadStateException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            java.lang.reflect.Method monitorMethod =
+                    mi.getClass().getMethod("monitor"); // NOTICES
+            ObjectReference or = (ObjectReference) monitorMethod.invoke(mi);
+            //ObjectReference or = _mi.monitor();
+            ObjectVariable monitor = new ThisVariable (debugger, or, "");
+            return new MonitorInfoImpl(this, frame, monitor);
+        } catch (IllegalAccessException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        } catch (InvocationTargetException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        } catch (java.lang.NoSuchMethodException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        return null;
+    }
 }

@@ -57,9 +57,11 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -90,11 +92,11 @@ NodeActionsProviderFilter, TableModel, Constants {
     public static final String SHOW_MONITORS = "show.monitors"; // NOI18N
 
     public static final String CONTENDED_MONITOR =
-        "org/netbeans/modules/debugger/resources/allInOneView/ContendedMonitor"; // NOI18N
+        "org/netbeans/modules/debugger/resources/allInOneView/waiting_on_monitor_16.png"; // NOI18N
     public static final String OWNED_MONITORS =
-        "org/netbeans/modules/debugger/resources/allInOneView/OwnedMonitors"; // NOI18N
+        "org/netbeans/modules/debugger/resources/allInOneView/monitor_acquired_16.png"; // NOI18N
     public static final String MONITOR =
-        "org/netbeans/modules/debugger/resources/allInOneView/Monitor"; // NOI18N
+        "org/netbeans/modules/debugger/resources/allInOneView/monitor_acquired_16.png"; // NOI18N
 
     private RequestProcessor evaluationRP = new RequestProcessor();
     private final Collection modelListeners = new HashSet();
@@ -127,9 +129,23 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (preferences.getBoolean(SHOW_MONITORS, false)) {
                 try {
                     ObjectVariable contended = t.getContendedMonitor ();
-                    ObjectVariable[] owned = t.getOwnedMonitors ();
-                    Object cm = null;
-                    Object om = null;
+                    ObjectVariable[] owned;
+                    boolean noFrameMonitors = false;
+                    List<MonitorInfo> mf = t.getOwnedMonitorsAndFrames();
+                    if (mf.size() > 0) {
+                        List<ObjectVariable> mlf = new ArrayList<ObjectVariable>();
+                        for (MonitorInfo m: mf) {
+                            if (m.getFrame() == null) {
+                                mlf.add(m.getMonitor());
+                            }
+                        }
+                        owned = mlf.toArray(new ObjectVariable[0]);
+                        noFrameMonitors = true;
+                    } else {
+                        owned = t.getOwnedMonitors ();
+                    }
+                    ContendedMonitor cm = null;
+                    OwnedMonitors om = null;
                     if ( (contended != null) &&
                          (from  == 0) && (to > 0)
                     ) cm = new ContendedMonitor (contended);
@@ -138,6 +154,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                            ((contended == null) && (from == 0) && (to > 0))
                          )
                     ) om = new OwnedMonitors (owned);
+                    if (om != null) om.noFrame = noFrameMonitors;
                     int i = 0;
                     if (cm != null) i++;
                     if (om != null) i++;
@@ -184,6 +201,20 @@ NodeActionsProviderFilter, TableModel, Constants {
             Object[] fo = new Object [to - from];
             System.arraycopy (om.variables, from, fo, 0, to - from);
             return fo;
+        }
+        if (o instanceof CallStackFrame) {
+            if (preferences.getBoolean(SHOW_MONITORS, false)) {
+                CallStackFrame frame = (CallStackFrame) o;
+                List<MonitorInfo> monitors = frame.getOwnedMonitors();
+                int n = monitors.size();
+                if (n > 0) {
+                    ObjectVariable[] ch = new ObjectVariable[n];
+                    for (int i = 0; i < n; i++) {
+                        ch[i] = monitors.get(i).getMonitor();
+                    }
+                    return ch;
+                }
+            }
         }
         return model.getChildren (o, from, to);
     }
@@ -232,6 +263,9 @@ NodeActionsProviderFilter, TableModel, Constants {
             return true;
         if (o instanceof ObjectVariable)
             return true;
+        if (o instanceof CallStackFrame && preferences.getBoolean(SHOW_MONITORS, false)) {
+            return false;
+        }
         return model.isLeaf (o);
     }
     
@@ -315,15 +349,6 @@ NodeActionsProviderFilter, TableModel, Constants {
     
     public String getIconBase (NodeModel model, Object o) throws 
     UnknownTypeException {
-        if (o instanceof ContendedMonitor) {
-            return CONTENDED_MONITOR;
-        } else
-        if (o instanceof OwnedMonitors) {
-            return OWNED_MONITORS;
-        } else
-        if (o instanceof ObjectVariable) {
-            return MONITOR;
-        } else
         return model.getIconBase (o);
     }
 
@@ -419,8 +444,9 @@ NodeActionsProviderFilter, TableModel, Constants {
     
     // innerclasses ............................................................
     
-    private static class OwnedMonitors {
+    static class OwnedMonitors {
         ObjectVariable[] variables;
+        boolean noFrame; // If true, these are monitors which are not part of a concrete frame.
         
         OwnedMonitors (ObjectVariable[] vs) {
             variables = vs;
@@ -464,13 +490,13 @@ NodeActionsProviderFilter, TableModel, Constants {
 
     public String getIconBaseWithExtension(ExtendedNodeModel model, Object node) throws UnknownTypeException {
         if (node instanceof ContendedMonitor) {
-            return CONTENDED_MONITOR + ".gif";
+            return CONTENDED_MONITOR;
         } else
         if (node instanceof OwnedMonitors) {
-            return OWNED_MONITORS + ".gif";
+            return OWNED_MONITORS;
         } else
         if (node instanceof ObjectVariable) {
-            return MONITOR + ".gif";
+            return MONITOR;
         } else
         return model.getIconBaseWithExtension(node);
     }
