@@ -8,7 +8,7 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="6.1"/>
-    <property name="mpkgname" value="NetBeans EA for PHP"/> 
+    <property name="mpkg.name_nb" value="NetBeans EA for PHP"/> 
     <property name="appname" value="NetBeans EA for PHP"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.1"/>
@@ -34,7 +34,7 @@
 
     <property name="dmg.prefix.name" value="${prefix}"/>                  
 
-    <property name="mpkgname_nb_mysql" value="NetBeans IDE with MySQL"/> 
+    <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
     <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
     <property name="mysql_10.5.dmg.name" value="netbeans-mysql_10.5"/>
