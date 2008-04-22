@@ -67,6 +67,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
 
 /**
@@ -107,6 +110,7 @@ public final class GrailsProject implements Project {
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectDeleteImplementation(this),
                 new GrailsProjectEncodingQueryImpl(),
+                new OpenHook(),
                 getSearchInfo(projectDir),
                 // new TemplatesImpl(),
                 logicalView, //Logical view of project implementation
@@ -196,4 +200,23 @@ public final class GrailsProject implements Project {
         }
     }
 
+    private class OpenHook extends ProjectOpenedHook {
+
+        @Override
+        protected void projectOpened() {
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        }
+
+        @Override
+        protected void projectClosed() {
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        }
+        
+    }
+            
+    
 }
