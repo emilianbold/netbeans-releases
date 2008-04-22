@@ -1976,29 +1976,14 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
       <mkdir dir="build"/>
       <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
-      <subant-junit buildpath="${modules.sorted}" target="build-all-tests" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
+      <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
-      <copy todir="${test.dist.dir}/unit"> 
-             <fileset dir="templates/testdist">
-                 <include name="*-all-unit.*"/>
-             </fileset>
+      <copy todir="${test.dist.dir}">
+          <fileset dir="templates/testdist"/>
       </copy>
-      <copy todir="${test.dist.dir}/qa-functional"> 
-             <fileset dir="templates/testdist">
-                 <include name="*-all-qa-functional.*"/>
-             </fileset>
-      </copy>
-      <copy todir="${test.dist.dir}" file="templates/testdist/build.xml"/>
-      <copy todir="${test.dist.dir}" file="templates/testdist/README.txt"/>
       <mkdir dir="${test.dist.dir}/nbbuild"/>
-      <copy todir="${test.dist.dir}/nbbuild"> 
-             <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties" excludes="templates/testdist"/>
-      </copy>
-      <!-- add xtest -->
-      <mkdir dir="${test.dist.dir}/xtest"/>
-      <copy todir="${test.dist.dir}/xtest" > 
-             <fileset dir="../xtest" includes="lib/**,plugins/**,standard-test-*cludes.txt"/>
-      </copy> 
+      <!-- XXX really only need a handful of tasks from this, would be better to select them explicitly: -->
+      <copy file="nbantext.jar" todir="${test.dist.dir}/nbbuild"/>
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 

@@ -104,6 +104,9 @@ public class FixTestDependencies extends Task {
             String xml = new String(xmlBytes);
             String oldXsd = "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2";
             int xsdIndex = xml.indexOf(oldXsd);
+            if (xsdIndex == -1) {
+                xsdIndex = xml.indexOf("<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/3");
+            }
             if (xsdIndex != -1 || testFix) {
                 // increase schema version
                 String part1 = xml.substring(0,xsdIndex + oldXsd.length() - 1);

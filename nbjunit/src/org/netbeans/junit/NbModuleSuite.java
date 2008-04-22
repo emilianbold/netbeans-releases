@@ -59,6 +59,7 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 /**
@@ -85,6 +86,54 @@ import junit.framework.TestResult;
 public class NbModuleSuite {
 
     private NbModuleSuite() {}
+    
+    
+    /** Settings object that allows one to configure execution of
+     * whole {@link NbModuleSuite}.
+     * 
+     * @since 1.48
+     * 
+     */
+    public static final class Configuration extends Object {
+        final Class<?> clazz;
+        final String clusterRegExp;
+        final String moduleRegExp;
+        final ClassLoader parentClassLoader;
+        final LinkedHashSet<String> tests;
+
+        private Configuration(Class<?> clazz, String clusterRegExp, String moduleRegExp, ClassLoader parent, LinkedHashSet<String> tests) {
+            this.clazz = clazz;
+            this.clusterRegExp = clusterRegExp;
+            this.moduleRegExp = moduleRegExp;
+            this.parentClassLoader = parent;
+            this.tests = tests;
+        }
+
+        static Configuration create(Class<? extends Test> clazz) {
+            return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null);
+        }
+        
+        public Configuration clusters(String regExp) {
+            return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader, tests);
+        }
+
+        public Configuration enableModules(String regExp) {
+            return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests);
+        }
+
+        public Configuration classLoader(ClassLoader parent) {
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests);
+        }
+
+        public Configuration addTest(String name) {
+            LinkedHashSet<String> tmp = new LinkedHashSet<String>();
+            if (tests != null) {
+                tmp.addAll(tests);
+            }
+            tmp.add(name);
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tmp);
+        }
+    }
 
     /** Factory method to create wrapper test that knows how to setup proper
      * NetBeans Runtime Container environment. 
@@ -107,19 +156,43 @@ public class NbModuleSuite {
      * @return runtime container ready test
      */
     public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp) {
-        return new S(clazz, clustersRegExp, moduleRegExp);
+        return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp));
+    }
+    
+    /** Creates default configuration wrapping a class that can be executed
+     * with the {@link NbModuleSuite} support.
+     * 
+     * @param clazz the class to test, the actual instances will be created
+     *   for the class of the same name, but loaded by different classloader
+     * @return config object prefilled with default values; the defaults may
+     *   be altered with its addition instance methods
+     * @since 1.48
+     */
+    public static Configuration createConfiguration(Class<? extends Test> clazz) {
+        return Configuration.create(clazz);
+    }
+    
+    
+    /** Factory method to create wrapper test that knows how to setup proper
+     * NetBeans Runtime Container environment. This method allows better
+     * customization and control over the executed set of tests.
+     * Wraps the provided class into a test that set ups properly the
+     * testing environment, read more in {@link Configuration}.
+     * 
+     * 
+     * @param config the configuration for the test
+     * @return runtime container ready test
+     * @since 1.48
+     */
+    public static Test create(Configuration config) {
+        return new S(config);
     }
 
     static final class S extends NbTestSuite {
-        private final Class<?> clazz;
-        private final String clusterRegExp;
-        private final String moduleRegExp;
+        final Configuration config;
 
-        public S(Class<?> aClass, String clusterRegExp, String moduleRegExp) {
-            super();
-            this.clazz = aClass;
-            this.clusterRegExp = clusterRegExp;
-            this.moduleRegExp = moduleRegExp;
+        public S(Configuration config) {
+            this.config = config;
         }
 
         @Override
@@ -147,8 +220,8 @@ public class NbModuleSuite {
             bootCP.add(tools.toURL());
             
             // loader that does not see our current classloader
-            ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
-            URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), parent);
+            JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
+            URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), junit);
             Class<?> main = loader.loadClass("org.netbeans.Main"); // NOI18N
             Assert.assertEquals("Loaded by our classloader", loader, main.getClassLoader());
             Method m = main.getDeclaredMethod("main", String[].class); // NOI18N
@@ -156,6 +229,7 @@ public class NbModuleSuite {
             System.setProperty("java.util.logging.config", "-");
             System.setProperty("netbeans.logger.console", "true");
             System.setProperty("netbeans.home", platform.getPath());
+            System.setProperty("netbeans.full.hack", "true");
 
             File ud = new File(new File(Manager.getWorkDirPath()), "userdir");
             ud.mkdirs();
@@ -171,12 +245,12 @@ public class NbModuleSuite {
             modules.remove("org.netbeans.insane");
             modules.add("org.netbeans.core.startup");
             modules.add("org.netbeans.bootstrap");
-            turnModules(ud, modules, moduleRegExp, platform);
+            turnModules(ud, modules, config.moduleRegExp, platform);
 
             StringBuilder sb = new StringBuilder();
             String sep = "";
             for (File f : findClusters()) {
-                turnModules(ud, modules, moduleRegExp, f);
+                turnModules(ud, modules, config.moduleRegExp, f);
                 sb.append(sep);
                 sb.append(f.getPath());
                 sep = File.pathSeparator;
@@ -192,13 +266,24 @@ public class NbModuleSuite {
             ClassLoader global = Thread.currentThread().getContextClassLoader();
             Assert.assertNotNull("Global classloader is initialized", global);
 
-            URL[] testCP = preparePath(clazz);
-            JUnitLoader testLoader = new JUnitLoader(testCP, global, NbTestSuite.class.getClassLoader());
+            URL[] testCP = preparePath(config.clazz);
+            ClassLoader testLoader = new URLClassLoader(testCP, global);
             try {
                 testLoader.loadClass("junit.framework.Test");
-                Class<?> sndClazz = testLoader.loadClass(clazz.getName());
-                new NbTestSuite(sndClazz).run(result);
+                testLoader.loadClass("org.netbeans.junit.NbTestSuite");
+                Class<? extends TestCase> sndClazz = 
+                    testLoader.loadClass(config.clazz.getName()).asSubclass(TestCase.class);
+                NbTestSuite toRun;
+                if (config.tests == null) {
+                    toRun = new NbTestSuite(sndClazz);
+                } else {
+                    toRun = new NbTestSuite();
+                    toRun.addTests(sndClazz, config.tests.toArray(new String[0]));
+                }
+                toRun.run(result);
             } catch (ClassNotFoundException ex) {
+                result.addError(this, ex);
+            } catch (NoClassDefFoundError ex) {
                 result.addError(this, ex);
             }
             
@@ -235,13 +320,13 @@ public class NbModuleSuite {
 
                 return util.getParentFile().getParentFile();
             } catch (Exception ex) {
-                Assert.fail("Cannot find utilities JAR");
+                Assert.fail("Cannot find utilities JAR: " + ex);
                 return null;
             }
         }
 
         private File[] findClusters() {
-            if (clusterRegExp == null) {
+            if (config.clusterRegExp == null) {
                 return new File[0];
             }
             
@@ -252,7 +337,7 @@ public class NbModuleSuite {
                 if (f.equals(plat)) {
                     continue;
                 }
-                if (!f.getName().matches(clusterRegExp)) {
+                if (!f.getName().matches(config.clusterRegExp)) {
                     continue;
                 }
                 File m = new File(new File(f, "config"), "Modules");
@@ -295,11 +380,11 @@ public class NbModuleSuite {
             return new String(arr, "UTF-8"); // NOI18N
         }
 
-        private static final class JUnitLoader extends URLClassLoader {
+        private static final class JUnitLoader extends ClassLoader {
             private final ClassLoader junit;
 
-            public JUnitLoader(URL[] urls, ClassLoader parent, ClassLoader junit) {
-                super(urls, parent);
+            public JUnitLoader(ClassLoader parent, ClassLoader junit) {
+                super(parent);
                 this.junit = junit;
             }
 
@@ -342,6 +427,7 @@ public class NbModuleSuite {
         }
 
         private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
+        private static Pattern AUTO = Pattern.compile("<param name=[\"']autoload[\"']>([^<]*)</param>", Pattern.MULTILINE);
 
         private static void turnModules(File ud, TreeSet<String> modules, String regExp, File... clusterDirs) throws IOException {
             File config = new File(new File(ud, "config"), "Modules");
@@ -358,32 +444,53 @@ public class NbModuleSuite {
                     n = n.replace('-', '.');
 
                     String xml = asString(new FileInputStream(m), true);
-                    Matcher matcherEnabled = ENABLED.matcher(xml);
-                 //   Matcher matcherEager = EAGER.matcher(xml);
-
-                    boolean found = matcherEnabled.find();
+                    
                     boolean contains = modules.contains(n);
                     if (!contains && modPattern != null) {
                         contains = modPattern.matcher(n).matches();
                     }
-                    boolean enabled = found && "true".equals(matcherEnabled.group(1));
-                    if (contains == enabled) {
+                    if (!contains) {
                         continue;
                     }
-
-                    if (found) {
-                        assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
-
-                        try {
-                            String out = 
-                                xml.substring(0, matcherEnabled.start(1)) +
-                                (contains ? "true" : "false") +
-                                xml.substring(matcherEnabled.end(1));
-                            writeModule(new File(config, m.getName()), out);
-                        } catch (IllegalStateException ex) {
-                            throw (IOException)new IOException("Unparsable:\n" + xml).initCause(ex);
+                    
+                    boolean toEnable = false;
+                    { 
+                        Matcher matcherEnabled = ENABLED.matcher(xml);
+                        if (matcherEnabled.find()) {
+                            toEnable = "false".equals(matcherEnabled.group(1));
+                        }
+                        if (toEnable) {
+                            assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
+                            try {
+                                String out =
+                                        xml.substring(0, matcherEnabled.start(1)) +
+                                        (contains ? "true" : "false") +
+                                        xml.substring(matcherEnabled.end(1));
+                                writeModule(new File(config, m.getName()), out);
+                            } catch (IllegalStateException ex) {
+                                throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
+                            }
                         }
                     }
+                    {
+                        Matcher matcherEager = AUTO.matcher(xml);
+                        if (matcherEager.find()) {
+                            int begin = xml.indexOf("<param name=\"autoload");
+                            int end = xml.indexOf("<param name=\"jar");
+                            String middle = 
+                                "<param name=\"autoload\">false</param>\n" +
+                                "    <param name=\"eager\">false</param>\n" +
+                                "    <param name=\"enabled\">true</param>\n" +
+                                "    ";
+                            String out = xml.substring(0, begin) + middle + xml.substring(end);
+                            try {
+                                writeModule(new File(config, m.getName()), out);
+                            } catch (IllegalStateException ex) {
+                                throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
+                            }
+                        }
+                    }
+
                 }
             }
         }
