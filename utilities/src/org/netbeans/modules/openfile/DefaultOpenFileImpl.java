@@ -501,7 +501,13 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * or by showing it in the Explorer.
      */
     public boolean open(final FileObject fileObject, int line) {
+        if (log.isLoggable(FINER)) {
+            log.finer("open(" + fileObject.getNameExt()                 //NOI18N
+                      + ", line=" + line + ") called from thread "      //NOI18N
+                      + Thread.currentThread().getName());
+        }
         if (!EventQueue.isDispatchThread()) {
+            log.finest(" - rescheduling to EDT using invokeLater(...)");//NOI18N
             EventQueue.invokeLater(
                     new DefaultOpenFileImpl(fileObject, line));
             return true;
@@ -509,6 +515,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         
         
         assert EventQueue.isDispatchThread();
+        log.finest(" - yes, it is an EDT");                             //NOI18N
 
         String fileName = fileObject.getNameExt();
                   
@@ -536,12 +543,18 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         final Action action = dataNode.getPreferredAction();
         if ((action != null)
                 && !(action instanceof FileSystemAction)
-                && !(action instanceof ToolsAction)) {            
+                && !(action instanceof ToolsAction)) {
+            if (log.isLoggable(FINEST)) {
+                log.finest(" - using preferred action ("                //NOI18N
+                           + action.getValue(Action.NAME)
+                           + ") for opening the file");                 //NOI18N
+            }
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
                 }
             });            
+            log.finest("   - call of action.actionPerformed(...) was scheduled to the EDT using invokeLater(...)");//NOI18N
             return true;            
         }             
         
