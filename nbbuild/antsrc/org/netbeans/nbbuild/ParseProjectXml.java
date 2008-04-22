@@ -486,11 +486,9 @@ public final class ParseProjectXml extends Task {
                                define(testType.getRuntimeCP(), cp);
                            }
                        }
-                       if (TestDeps.UNIT.equals(td.testtype)) {
-                           String testCompileDep = td.getTestCompileDep();   
-                           if (testType.getCompileDep() != null && testCompileDep != null ) {
-                               define(testType.getCompileDep(),testCompileDep);
-                           }
+                       String testCompileDep = td.getTestCompileDep();
+                       if (testType.getCompileDep() != null && testCompileDep != null) {
+                           define(testType.getCompileDep(), testCompileDep);
                        }
                    }
                }
@@ -1036,7 +1034,7 @@ public final class ParseProjectXml extends Task {
         }
         cnbs.add(cnb);
         if (entry != null) {
-            String testDeps[] = entry.getTestDependencies();
+            String testDeps[] = entry.getTestDependencies().get(testtype);
             if (testDeps != null) {
                 for (String cnb2 : testDeps) {
                     computeCompileDep(cnb2,cnbs,sb);
