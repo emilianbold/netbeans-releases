@@ -98,10 +98,10 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
                 }
 
                 projectComboBox.setModel(new DefaultComboBoxModel(projs));
-            // projectComboBox.setRenderer(new MyCellRenderer());
+                // projectComboBox.setRenderer(new MyCellRenderer());
 
-            // Set the default location
-            setDestinationLocation();
+                // Set the default location
+                setDestinationLocation();
 
             } else {
                 // Tell user to open project first.
@@ -180,8 +180,12 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
 
     // Validate the project relative location before extracting the library
     private boolean validateProjectFolder(Project project, Library library, String relativePath) throws IOException {
+
+        relativePath = relativePath + File.separator + library.getName().replaceAll(" ", "_");
         FileObject fo = project.getProjectDirectory().getFileObject(relativePath);
         // File jsDir = new File(FileUtil.toFile(project.getProjectDirectory()), relativePath);
+
+        // System.out.println("Testing: relativePath = " + relativePath);
 
         if (fo != null && fo.getChildren().length > 0 && overwriteCheckBox.isSelected() == false) {
 
@@ -194,7 +198,7 @@ public class AddJavaScriptLibraryToProjectPanel extends javax.swing.JPanel {
     // Get the library
     private boolean extractLibrary(Project project, Library library, String relativePath) {
         try {
-
+            relativePath = relativePath + File.separator + library.getName().replaceAll(" ", "_");
             File jsDir = new File(FileUtil.toFile(project.getProjectDirectory()), relativePath);
 
 
