@@ -129,14 +129,14 @@ public class SQLDBSynchronizationValidationVisitor {
         }
     }
 
-    private void checkForUpdates(SQLDBColumn collabColumn, List newColumns, SQLDBTable table) {
+    private void checkForUpdates(SQLDBColumn collabColumn, List newColumns, SQLDBTable table, boolean ignorePrecision) {
         Iterator itr = newColumns.iterator();
         SQLDBColumn newColumn = null;
         boolean columnMatched = true;
 
         while (itr.hasNext()) {
             newColumn = (SQLDBColumn) itr.next();
-            columnMatched = (compareWith(collabColumn, newColumn) == 0);
+            columnMatched = (compareWith(collabColumn, newColumn, ignorePrecision) == 0);
             if (columnMatched) {
                 break;
             }
@@ -151,14 +151,14 @@ public class SQLDBSynchronizationValidationVisitor {
         }
     }
 
-    private void checkForNewColumns(SQLDBColumn newColumn, List newColumns, SQLDBTable table) {
+    private void checkForNewColumns(SQLDBColumn newColumn, List newColumns, SQLDBTable table, boolean ignorePrecision) {
         Iterator itr = newColumns.iterator();
         SQLDBColumn collabColumn = null;
         boolean columnMatched = true;
 
         while (itr.hasNext()) {
             collabColumn = (SQLDBColumn) itr.next();
-            columnMatched = (compareWith(collabColumn, newColumn) == 0);
+            columnMatched = (compareWith(collabColumn, newColumn, ignorePrecision) == 0);
             if (columnMatched) {
                 break;
             }
@@ -173,7 +173,7 @@ public class SQLDBSynchronizationValidationVisitor {
         }
     }
 
-    private int compareWith(SQLDBColumn collabCol, SQLDBColumn newCol) {
+    private int compareWith(SQLDBColumn collabCol, SQLDBColumn newCol, boolean ignorePrecision) {
         // compare primary keys
         if (collabCol.isPrimaryKey() && !newCol.isPrimaryKey()) {
             return -1;
@@ -193,6 +193,7 @@ public class SQLDBSynchronizationValidationVisitor {
             return -1;
         }
 
+        if(!ignorePrecision) {
         // compare scale
         if (collabCol.getScale() != newCol.getScale()) {
             return -1;
@@ -201,6 +202,7 @@ public class SQLDBSynchronizationValidationVisitor {
         // compare getPrecision
         if (collabCol.getPrecision() != newCol.getPrecision()) {
             return -1;
+        }
         }
 
         // compare getOrdinalPosition
@@ -227,12 +229,24 @@ public class SQLDBSynchronizationValidationVisitor {
 
             //Check for update and delete
             for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
-                checkForUpdates((SQLDBColumn) itr.next(), newColumns, collabTable);
+                SQLDBColumn oldCol = (SQLDBColumn) itr.next();
+                int sqlTypeCode = oldCol.getJdbcType();
+                boolean ignorePrecision = false;
+                if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && meta.getDBType().equals(DBMetaDataFactory.AXION)) {
+                    ignorePrecision = true;
+                }
+                checkForUpdates(oldCol, newColumns, collabTable, ignorePrecision);
             }
 
             // check for new columns
             for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
-                checkForNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable);
+                SQLDBColumn newCol = (SQLDBColumn) itr.next();
+                int sqlTypeCode = newCol.getJdbcType();
+                boolean ignorePrecision = false;
+                if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && meta.getDBType().equals(DBMetaDataFactory.AXION)) {
+                    ignorePrecision = true;
+                }
+                checkForNewColumns(newCol, collabColumns, collabTable,ignorePrecision);
             }
 
         // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
