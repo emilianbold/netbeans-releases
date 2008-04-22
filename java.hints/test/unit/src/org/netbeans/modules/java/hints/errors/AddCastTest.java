@@ -86,6 +86,11 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "package test; import javax.swing.JComponent; public class Test {private static void test() {Class<? extends JComponent> c; c = (Class<? extends JComponent>) Class.forName(\"java.swingx.JLabel\");}}");
     }
     
+    public void test133392() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private static void test() {Unknown u |= }}");
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new AddCast().run(info, null, pos, path, null);

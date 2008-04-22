@@ -59,7 +59,7 @@ public class MeasureJ2EEMenus  {
         NbTestSuite suite = new NbTestSuite();
 
 // workaround. JAX-RPC support is a separate plugin, this test just closes warning dialog
-        suite.addTest(new gui.setup.EJBSetupTest("testJAXRPC"));
+//        suite.addTest(new gui.setup.EJBSetupTest("testJAXRPC"));
                
         suite.addTest(new J2EEProjectsViewPopupMenu("testEARProjectNodePopupMenu", "EAR Project node popup in Projects View"));
         suite.addTest(new J2EEProjectsViewPopupMenu("testEARConfFilesNodePopupMenu", "EAR Configuration Files node popup in Projects View"));

@@ -242,7 +242,16 @@ public class SessionId {
 
     private void setupBases( FileObject localFolder, String remoteFolder, String fileName)
     {
-        if (localFolder.equals(getProject().getProjectDirectory())) {
+        Project project = getProject();
+        FileObject projectDirectory = (project != null) ? project.getProjectDirectory() : null;
+        if (projectDirectory == null /*fos test purposes*/) {
+            assert "On".equals(System.getProperty("TestRun", "Off"));
+            setRemoteBase(  remoteFolder );
+            myLocalBase =  localFolder;
+            myDebugFile = myLocalBase.getFileObject( fileName );
+            return;
+        }
+        if (localFolder.equals(projectDirectory)) {
             //TODO: review this code  -just hot fix - for debugging project (debug not debug.single)
             setRemoteBase(  remoteFolder );
             myLocalBase = getSourceRoot();

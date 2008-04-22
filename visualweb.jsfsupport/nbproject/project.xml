@@ -45,16 +45,6 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.visualweb.jsfsupport</code-name-base>
-            <friend-packages>
-                <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
-                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
-                <friend>org.netbeans.modules.visualweb.insync</friend>
-                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
-                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
-                <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
-                <friend>org.netbeans.modules.visualweb.xhtml</friend>
-                <package>org.netbeans.modules.visualweb.jsfsupport.container</package>
-            </friend-packages>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.libs.xerces</code-name-base>
@@ -154,6 +144,16 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.insync</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.xhtml</friend>
+                <package>org.netbeans.modules.visualweb.jsfsupport.container</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

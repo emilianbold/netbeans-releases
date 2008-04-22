@@ -286,6 +286,7 @@ public class BasicSQLGraphController implements IGraphController {
                         }
                         if (sqlModel.getSQLDefinition().getSourceTables().size() > 1) {
                             if (dbTable instanceof SourceTableImpl) {
+								e.dropComplete(true);
                                 NotifyDescriptor d = new NotifyDescriptor.Confirmation("Do you want to create a join?", "Confirm join creation", NotifyDescriptor.YES_NO_OPTION);
                                 if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
                                     JoinMainDialog.showJoinDialog(sqlModel.getSQLDefinition().getJoinSources(), null, this.viewC, true);

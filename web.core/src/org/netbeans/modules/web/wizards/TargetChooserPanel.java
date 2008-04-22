@@ -69,7 +69,8 @@ import org.openide.util.NbBundle;
  */
 final class TargetChooserPanel implements WizardDescriptor.Panel {
 
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private static final Logger LOG = Logger.getLogger(TargetChooserPanel.class.getName());
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private TargetChooserPanelGUI gui;
 
     private Project project;
@@ -190,6 +191,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         return valid;
     }
 
+    // FIXME: use org.openide.util.ChangeSupport for ChangeListeners
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
@@ -200,9 +202,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
 
     protected void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
+        Iterator<ChangeListener> it = listeners.iterator();
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+            it.next().stateChanged(e);
         }
     }
 
@@ -257,7 +259,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
                 try {
                     FileUtil.createFolder(ff);
                 } catch (IOException exc) {
-                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                    LOG.log(Level.INFO, null, exc);
                 }
             }
             FileObject folder = FileUtil.toFileObject(ff);                

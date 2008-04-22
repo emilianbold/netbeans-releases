@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.3.1
+#Version 1.4
 CLSS public static final org.netbeans.api.autoupdate.InstallSupport$Installer
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -52,7 +52,7 @@ fld  public static final org.netbeans.api.autoupdate.OperationException$ERROR_TY
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -94,7 +94,7 @@ fld  public static final org.netbeans.api.autoupdate.UpdateManager$TYPE org.netb
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -120,7 +120,7 @@ fld  public static final org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
