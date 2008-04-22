@@ -592,7 +592,7 @@ public final class NbModuleProject implements Project {
     public List<String> supportedTestTypes() {
         List<String> types = new ArrayList<String>();
         for (String type : COMMON_TEST_TYPES) {
-            if (getTestSourceDirectory(type) != null) {
+            if (getTestSourceDirectory(type) != null && !Boolean.parseBoolean(evaluator().getProperty("disable." + type + ".tests"))) {
                 types.add(type);
             }
         }

@@ -364,7 +364,15 @@ made subject to such option by the copyright holder.
                         <mapper type="glob" from="build.test.@{test.type}.work.dir" to="nbjunit.workdir"/>
                     </propertyset>
                 </propertyset>
-                <available file="${test.@{test.type}.src.dir}" type="dir" property="exists.test.@{test.type}.src.dir"/>
+                <condition property="exists.test.@{test.type}.src.dir">
+                    <and>
+                        <available file="${test.@{test.type}.src.dir}" type="dir"/>
+                        <not>
+                            <istrue value="${disable.@{test.type}.tests}"/>
+                        </not>
+                    </and>
+                </condition>
+                
             </sequential>
         </macrodef>
         <test-init test.type="unit"/>
