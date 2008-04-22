@@ -45,11 +45,9 @@ import java.io.IOException;
 import javax.swing.text.Document;
 import java.net.URLClassLoader;
 import java.util.Map;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
@@ -62,7 +60,7 @@ public class JspContextInfoImpl extends JspContextInfo {
     public JspContextInfoImpl() {
     }
     
-    private static TagLibParseSupport getTagLibParseSupport(Document doc, FileObject fo){
+    private static TagLibParseSupport getTagLibParseSupport(Document doc, FileObject fo) {
         TagLibParseSupport tlps = null;
         if (fo != null && fo.isValid()){
             try {
@@ -75,7 +73,7 @@ public class JspContextInfoImpl extends JspContextInfo {
         return tlps;
     }
     
-    public URLClassLoader getModuleClassLoader(Document doc, FileObject fo){
+    public URLClassLoader getModuleClassLoader(Document doc, FileObject fo) {
         return JspParserFactory.getJspParser().getModuleClassLoader(WebModule.getWebModule (fo));
     }
     
@@ -104,17 +102,14 @@ public class JspContextInfoImpl extends JspContextInfo {
      * @param fo file object for which the icon is looking for
      * @return an Image which is dislayed in the explorer for the file. 
      */
-    public java.awt.Image getIcon(Document doc, FileObject fo){
-        
+    public java.awt.Image getIcon(Document doc, FileObject fo) {
         java.awt.Image icon = null;
-        
         try {
             icon = DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
         }
         catch(org.openide.loaders.DataObjectNotFoundException e) {
             e.printStackTrace(System.out);
         }
-        
         return icon;
     }
     

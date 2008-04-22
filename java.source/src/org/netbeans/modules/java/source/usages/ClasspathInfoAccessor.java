@@ -46,6 +46,7 @@ import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
@@ -90,7 +91,7 @@ public abstract class ClasspathInfoAccessor {
      * @return true when the binding replaced already bound virtual source
      * @throws java.lang.UnsupportedOperationException when the {@link ClasspathInfo} doesn't support memory {@link JavacFileManager}
      */
-    public abstract boolean registerVirtualSource (ClasspathInfo cpInfo, String fqn, CharSequence content) throws UnsupportedOperationException;
+    public abstract boolean registerVirtualSource (ClasspathInfo cpInfo, InferableJavaFileObject jfo) throws UnsupportedOperationException;
     
     /**
      * Unregisters virtual java source from memory {@link JavacFileManager}

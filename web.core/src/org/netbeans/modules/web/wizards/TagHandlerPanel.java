@@ -185,7 +185,6 @@ public class TagHandlerPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void itemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_itemStateChanged
-        // TODO add your handling code here:
         if (simpleTagButton.isSelected())
             descriptionArea.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "DESC_SimpleTag"));
         else

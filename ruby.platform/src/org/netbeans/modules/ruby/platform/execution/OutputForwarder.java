@@ -278,7 +278,7 @@ final class OutputForwarder implements Runnable {
             } catch (IOException e) {
                 // TODO: happens because at the end of the debugging session the
                 // underlying process is killed.
-                LOGGER.log(Level.INFO, "Process finished unexpectedly: " + e.getMessage());
+                LOGGER.log(Level.INFO, "Process finished unexpectedly: " + e.getMessage(), e);
             } finally {
                 try {
                     read.close();

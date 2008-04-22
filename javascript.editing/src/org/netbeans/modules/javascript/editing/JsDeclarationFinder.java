@@ -63,6 +63,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
@@ -113,6 +115,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     }
 
     /** Locate the method declaration for the given method call */
+    @CheckForNull
     IndexedFunction findMethodDeclaration(CompilationInfo info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -229,7 +232,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
             Node root = parseResult.getRootNode();
             final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return null;
+                return DeclarationLocation.NONE;
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
 
@@ -288,7 +291,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 element);
     }
 
-
+    @NonNull
     DeclarationLocation findLinkedMethod(CompilationInfo info, String url) {
         JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
