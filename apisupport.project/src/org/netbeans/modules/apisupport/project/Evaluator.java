@@ -369,7 +369,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         defaults.put("build.classes.dir", "build/classes"); // NOI18N
         defaults.put("javac.source", "1.4"); // NOI18N
         defaults.put("test.user.dir", new File(dir, "build/testuserdir").getAbsolutePath()); // NOI18N
-        Set<String> testTypes = new HashSet<String>(Arrays.asList("unit", "qa-functional", "qa-performance"));
+        Set<String> testTypes = new HashSet<String>(Arrays.asList(NbModuleProject.COMMON_TEST_TYPES));
         // XXX would be good to add in any other types defined in project.xml
         for (String testType : testTypes) {
             defaults.put("test." + testType + ".src.dir", "test/" + testType + "/src"); // NOI18N
