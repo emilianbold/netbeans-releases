@@ -40,11 +40,10 @@
  */
 
 package org.netbeans.modules.web.core.palette;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.openide.text.ActiveEditorDrop;
-
-
 
 /**
  *
@@ -59,7 +58,6 @@ public class JSPEditorDropDefault implements ActiveEditorDrop {
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-
         if (targetComponent == null)
             return false;
 
