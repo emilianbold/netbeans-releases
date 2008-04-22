@@ -62,7 +62,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.xml.xam.ui.search.SearchManager;
+import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -408,12 +408,9 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                     categoryPane.populateToolbar(mToolbar);
                 }
                 // vlv: search
-                SearchManager manager = SearchManager.getDefault();
+                mToolbar.addSeparator();
+                mToolbar.add(SearchManager.getDefault().getSearchAction());
 
-                if (manager != null) {
-                  mToolbar.addSeparator();
-                  mToolbar.add(manager.getSearchAction());
-                }
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));
             }

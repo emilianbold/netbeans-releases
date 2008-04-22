@@ -67,22 +67,16 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.java.api.MemberInfo;
-import org.netbeans.modules.refactoring.java.api.MemberInfo;
-import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 
 /** UI panel for collecting refactoring parameters.
@@ -206,7 +200,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // compute and set the preferred width for the first and the third column
                     UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
                     UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);
-                    String name = UiUtils.getHeader(handle.resolve(controller), controller, UiUtils.PrintPart.NAME);
+                    String name = ElementHeaders.getHeader(handle.resolve(controller), controller, ElementHeaders.NAME);
                     setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {name}) /* NOI18N */); // NOI18N
                 }
             }, true);

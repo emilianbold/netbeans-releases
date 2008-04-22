@@ -84,7 +84,7 @@ public class MasterIndexAction  extends CallableSystemAction {
     
     @Override
     public void performAction() {
-        mLogger.infoNoloc(mLoc.t("Generating Schema"));
+        mLogger.infoNoloc(mLoc.t("Generating Schema..."));
         //System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
         dialog.setVisible(true);
@@ -113,7 +113,7 @@ public class MasterIndexAction  extends CallableSystemAction {
 
     @Override
     public String getName() {
-        return "Generate Schema...";
+        return "Generate Schema";
     }
 
     @Override

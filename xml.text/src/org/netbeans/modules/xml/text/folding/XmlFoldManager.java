@@ -77,7 +77,6 @@ public class XmlFoldManager implements FoldManager {
     private long dirtyTimeMillis = 0;
     private Timer timer;
     private TimerTask timerTask;
-    private boolean initFolds = false;
    
     public static final int DELAY_SYNCER = 2000;  // milisecs.
     public static final int DELAY_DIRTY = 1000;  // milisecs.
@@ -86,23 +85,28 @@ public class XmlFoldManager implements FoldManager {
         this.operation = operation;
     }
 
-    //fold hiearchy has been released
+    /**
+     * Ideally release should get called, but god knows why it doesn't.
+     */
     public void release() {
+        releaseTimerTask();
+        timer = null;
     }
 
     protected FoldOperation getOperation() {
         return operation;
     }
       
+    
+    /**
+     * Do NOT update folds here. For some reason, three fold managers get
+     * instantiated by the infrastructure and three initFolds() get called.
+     * 
+     * Schedule fold updates in insertUpdate removeUpdate and changeUpdate.
+     * First fold will be created by changeUpdate.
+     * @param transaction
+     */
     public void initFolds(FoldHierarchyTransaction transaction) {
-        Document doc = getOperation().getHierarchy().getComponent().getDocument();
-        //filtering of the PlainDocument set during the JEditorPane initialization
-        if (!(doc instanceof BaseDocument)) {
-            return;
-        }
-        initFolds = true;
-        timer = new Timer();
-        scheduleFoldUpdate();
     }
     
     private BaseDocument getDocument() {
@@ -131,18 +135,17 @@ public class XmlFoldManager implements FoldManager {
     }
    
     private void scheduleFoldUpdate() {
-        dirtyTimeMillis = System.currentTimeMillis();
         if (timer == null) {
-            return;
+            timer = new Timer();
         }
+        dirtyTimeMillis = System.currentTimeMillis();
         
-        if(timerTask != null) {
-            timerTask.cancel();
-            timerTask = null;
-        }
+        //dump the old timerTask
+        releaseTimerTask();
+        
         timerTask = new TimerTask() {
             public void run() {
-                if (initFolds || (dirtyIntervalMillis() > DELAY_DIRTY)) {
+                if (dirtyIntervalMillis() > DELAY_DIRTY) {
                     updateFolds();
                     unsetDirty();
                 }
@@ -150,10 +153,19 @@ public class XmlFoldManager implements FoldManager {
         };
         timer.schedule(timerTask, DELAY_SYNCER);
     }
+    
+    private void releaseTimerTask() {
+        if(timerTask == null)
+            return;
+        
+        timerTask.cancel();
+        timerTask = null;
+    }
    
     public void unsetDirty() {
         dirtyTimeMillis = 0;
-        initFolds = false;        
+        timer.cancel();
+        timer = null;
     }
    
     private long dirtyIntervalMillis() {

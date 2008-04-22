@@ -24,7 +24,7 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.openide.filesystems.FileObject;
@@ -70,7 +70,7 @@ public class SchemaFileNode extends BpelNode<SchemaModel> {
     }
     
     protected String getImplHtmlDisplayName() {
-        return SoaUiUtil.getGrayString(super.getImplHtmlDisplayName());
+        return SoaUtil.getGrayString(super.getImplHtmlDisplayName());
     }
 
 }

@@ -42,8 +42,9 @@
 package org.netbeans.modules.ruby.options;
 
 import java.util.BitSet;
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.ListModel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 /** Model that can compute its values lazily and moreover handle some
  * kind of filtering.
@@ -294,7 +295,9 @@ implements ListModel, Runnable, javax.swing.event.ListDataListener {
     }
     
     private void fireChange (ListDataEvent ev) {
-        if (list.getListenerCount () == 0) return ;
+        if (list.getListenerCount () == 0) {
+            return;
+        }
         
         Object[] arr = list.getListenerList ();
         for (int i = arr.length - 1; i >= 0; i -= 2) {

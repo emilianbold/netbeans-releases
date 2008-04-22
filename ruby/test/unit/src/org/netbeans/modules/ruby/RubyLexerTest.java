@@ -199,7 +199,7 @@ public class RubyLexerTest extends RubyTestBase {
         assertFalse(ts.moveNext());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "empty-statement"})
     public void test93990() {
         String text = "f(<<EOT,\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\")\n0123456789\nEOT\ny=5";
         TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
@@ -210,7 +210,7 @@ public class RubyLexerTest extends RubyTestBase {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "empty-statement"})
     public void test93990b() {
 
         String text = "x = f(<<EOT,<<EOY, \"another string\", 50)  # Comment _here\n_xFoo bar\nEOT\nhello\nEOY\ndone\n";
@@ -222,7 +222,7 @@ public class RubyLexerTest extends RubyTestBase {
         }
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "empty-statement"})
     public void test93990c() {
         // Multiline
         String text="    javax.swing.JOptionPane.showMessageDialog(nil, <<EOS)\n<html>Hello from <b><u>JRuby</u></b>.<br>\nButton '#{evt.getActionCommand()}' clicked.\nEOS\n";

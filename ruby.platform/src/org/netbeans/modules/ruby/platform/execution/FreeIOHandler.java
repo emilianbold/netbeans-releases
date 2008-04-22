@@ -103,7 +103,6 @@ final class FreeIOHandler {
                 Entry<InputOutput, Data> entry = it.next();
                 final InputOutput freeIO = entry.getKey();
                 final Data data = entry.getValue();
-                freeIO.select(); // be sure it is not just docked (see issue #132356)
                 if (freeIO.isClosed()) {
                     it.remove();
                     continue;

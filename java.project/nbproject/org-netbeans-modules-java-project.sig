@@ -1,5 +1,123 @@
 #API master signature file
-#Version 1.12.1
+#Version 1.16
+CLSS public static abstract interface org.netbeans.api.java.queries.SourceForBinaryQuery$Result
+meth public abstract [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.queries.SourceForBinaryQuery$Result.getRoots()
+meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static final org.netbeans.spi.java.project.support.ui.EditJarSupport$Item
+cons public Item()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.getJarFile()
+meth public java.lang.String org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.getJavadocFile()
+meth public java.lang.String org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.getSourceFile()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.setJarFile(java.lang.String)
+meth public void org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.setJavadocFile(java.lang.String)
+meth public void org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.setSourceFile(java.lang.String)
+supr java.lang.Object
+CLSS public static abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
+intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
+meth public abstract [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.queries.SourceForBinaryQuery$Result.getRoots()
+meth public abstract boolean org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result.preferSources()
+meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static org.openide.WizardDescriptor$ArrayIterator
+cons public ArrayIterator()
+cons public ArrayIterator([Lorg.openide.WizardDescriptor$Panel;)
+cons public ArrayIterator(java.util.List)
+intf org.openide.WizardDescriptor$Iterator
+meth protected [Lorg.openide.WizardDescriptor$Panel; org.openide.WizardDescriptor$ArrayIterator.initializePanels()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected void org.openide.WizardDescriptor$ArrayIterator.reset()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.WizardDescriptor$ArrayIterator.hasNext()
+meth public boolean org.openide.WizardDescriptor$ArrayIterator.hasPrevious()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.openide.WizardDescriptor$ArrayIterator.name()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$ArrayIterator.current()
+meth public synchronized void org.openide.WizardDescriptor$ArrayIterator.nextPanel()
+meth public synchronized void org.openide.WizardDescriptor$ArrayIterator.previousPanel()
+meth public void org.openide.WizardDescriptor$ArrayIterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.WizardDescriptor$ArrayIterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr java.lang.Object
+CLSS public static abstract interface org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
+intf org.openide.WizardDescriptor$InstantiatingIterator
+intf org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract java.util.Set org.openide.WizardDescriptor$AsynchronousInstantiatingIterator.instantiate() throws java.io.IOException
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$InstantiatingIterator
+intf org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract java.util.Set org.openide.WizardDescriptor$InstantiatingIterator.instantiate() throws java.io.IOException
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$ProgressInstantiatingIterator
+intf org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
+intf org.openide.WizardDescriptor$InstantiatingIterator
+intf org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract java.util.Set org.openide.WizardDescriptor$AsynchronousInstantiatingIterator.instantiate() throws java.io.IOException
+meth public abstract java.util.Set org.openide.WizardDescriptor$ProgressInstantiatingIterator.instantiate(org.netbeans.api.progress.ProgressHandle) throws java.io.IOException
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public static abstract interface org.openide.filesystems.FileSystem$AtomicAction
+meth public abstract void org.openide.filesystems.FileSystem$AtomicAction.run() throws java.io.IOException
+supr null
 CLSS public static org.openide.nodes.Children$Array
 cons protected Array(java.util.Collection)
 cons public Array()
@@ -483,6 +601,9 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 supr java.lang.Object
+CLSS public static abstract interface org.openide.util.Mutex$ExceptionAction
+meth public abstract java.lang.Object org.openide.util.Mutex$ExceptionAction.run() throws java.lang.Exception
+supr null
 CLSS public org.netbeans.api.java.project.JavaProjectConstants
 fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.ARTIFACT_TYPE_FOLDER
 fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.ARTIFACT_TYPE_JAR
@@ -516,9 +637,11 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addLibraries([Lorg.netbeans.api.project.libraries.Library;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
+meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots([Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots([Ljava.net.URL;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeLibraries([Lorg.netbeans.api.project.libraries.Library;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
+meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeRoots([Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeRoots([Ljava.net.URL;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 supr java.lang.Object
 CLSS public abstract interface org.netbeans.spi.java.project.classpath.ProjectClassPathExtender
@@ -536,7 +659,11 @@ meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectC
 meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeLibraries([Lorg.netbeans.api.project.libraries.Library;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
 meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeRoots([Ljava.net.URL;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
+meth protected boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.addRoots([Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
+meth protected boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeRoots([Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
+meth protected final java.lang.String org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.performSharabilityHeuristics(java.net.URI,org.netbeans.spi.project.support.ant.AntProjectHelper) throws java.io.IOException,java.net.URISyntaxException
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected static [Ljava.net.URI; org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.convertURLsToURIs([Ljava.net.URL;)
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
@@ -562,6 +689,38 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport.createPropertyBasedClassPathImplementation(java.io.File,org.netbeans.spi.project.support.ant.PropertyEvaluator,[Ljava.lang.String;)
 supr java.lang.Object
+CLSS public org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport
+cons public ExtraSourceJavadocSupport()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+meth public static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+supr java.lang.Object
+CLSS public final org.netbeans.spi.java.project.support.LookupMergerSupport
+cons public LookupMergerSupport()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.spi.project.LookupMerger org.netbeans.spi.java.project.support.LookupMergerSupport.createJFBLookupMerger()
+meth public static org.netbeans.spi.project.LookupMerger org.netbeans.spi.java.project.support.LookupMergerSupport.createSFBLookupMerger()
+supr java.lang.Object
 CLSS public org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -577,6 +736,22 @@ meth public native int java.lang.Object.hashCode()
 meth public static boolean org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,[Ljava.lang.String;,[Ljava.lang.String;)
 meth public static synchronized void org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.showAlert()
 meth public static void org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.showCustomizer(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,[Ljava.lang.String;,[Ljava.lang.String;)
+supr java.lang.Object
+CLSS public final org.netbeans.spi.java.project.support.ui.EditJarSupport
+cons public EditJarSupport()
+innr public static final org.netbeans.spi.java.project.support.ui.EditJarSupport$Item
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.spi.java.project.support.ui.EditJarSupport$Item org.netbeans.spi.java.project.support.ui.EditJarSupport.showEditDialog(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.java.project.support.ui.EditJarSupport$Item)
 supr java.lang.Object
 CLSS public org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer
 cons public IncludeExcludeVisualizer()
@@ -619,6 +794,25 @@ meth public static javax.swing.ComboBoxModel org.netbeans.spi.java.project.suppo
 meth public static javax.swing.ListCellRenderer org.netbeans.spi.java.project.support.ui.PackageView.listRenderer()
 meth public static org.openide.nodes.Node org.netbeans.spi.java.project.support.ui.PackageView.createPackageView(org.netbeans.api.project.SourceGroup)
 meth public static org.openide.nodes.Node org.netbeans.spi.java.project.support.ui.PackageView.findPath(org.openide.nodes.Node,java.lang.Object)
+supr java.lang.Object
+CLSS public final org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils
+cons public SharableLibrariesUtils()
+fld  constant public static final java.lang.String org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.isLastProjectSharable()
+meth public static boolean org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.showMakeSharableWizard(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.util.List,java.util.List)
+meth public static java.lang.String org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.browseForLibraryLocation(java.lang.String,java.awt.Component,java.io.File)
+meth public static void org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.setLastProjectSharable(boolean)
 supr java.lang.Object
 CLSS public org.netbeans.spi.java.project.support.ui.templates.JavaTemplates
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

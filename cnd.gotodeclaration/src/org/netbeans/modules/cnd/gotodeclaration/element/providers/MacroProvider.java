@@ -40,11 +40,12 @@
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,23 +65,23 @@ private static class MacroDelegate extends ProviderDelegate {
             return NbBundle.getMessage(MacroProvider.class, "MACRO_PROVIDER_DISPLAY_NAME"); // NOI18N
         }
 
-        protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
+        protected void processProject(CsmProject project, ResultSet result, CsmSelect.CsmFilter filter) {
             if( TRACE ) System.err.printf("MacroProvider.processProject %s\n", project.getName());
-            processFiles(project.getAllFiles(), result, comparator);
+            processFiles(project.getAllFiles(), result, filter);
         }
 
-        private void processFiles(Collection<CsmFile> files, ResultSet result, NameMatcher comparator) {
+        private void processFiles(Collection<CsmFile> files, ResultSet result, CsmSelect.CsmFilter filter) {
             for( CsmFile file : files ) {
                 if( isCancelled() ) {
                     return;
                 }
-                for( CsmMacro macro : file.getMacros() ) {
+                Iterator<CsmMacro> iter = CsmSelect.getDefault().getMacros(file, filter);
+                while( iter.hasNext() ) {
                     if( isCancelled() ) {
                         return;
                     }
-                    if( comparator.matches(macro.getName().toString()) ) {
-                        result.add(new MacroElementDescriptor(macro));
-                    }
+                    CsmMacro macro = iter.next();
+                    result.add(new MacroElementDescriptor(macro));
                 }
             }
         }

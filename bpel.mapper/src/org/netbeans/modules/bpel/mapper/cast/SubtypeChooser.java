@@ -37,7 +37,7 @@ import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.ExtTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.ChooserLifeCycle;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
@@ -125,7 +125,7 @@ public class SubtypeChooser extends JPanel
         mDlgTitle = NbBundle.getMessage(SubtypeChooser.class,
             "SUBTYPE_CHOOSER_TITLE"); // NOI18N
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
 
     public boolean initControls() {
@@ -183,7 +183,7 @@ public class SubtypeChooser extends JPanel
         DefaultDialogDescriptor descriptor = 
                 new DefaultDialogDescriptor(editor, editor.getDlgTitle());
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
-        SoaUiUtil.setInitialFocusComponentFor(editor);
+        SoaUtil.setInitialFocusComponentFor(editor);
         dialog.setVisible(true);
 
         return descriptor.isOkHasPressed();

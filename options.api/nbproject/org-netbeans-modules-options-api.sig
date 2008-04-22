@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.1
+#Version 1.6
 CLSS public static abstract interface org.openide.util.Mutex$Action
 intf org.openide.util.Mutex$ExceptionAction
 meth public abstract java.lang.Object org.openide.util.Mutex$Action.run()

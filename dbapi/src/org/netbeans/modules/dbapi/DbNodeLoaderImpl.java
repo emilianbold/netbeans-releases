@@ -65,12 +65,17 @@ public class DbNodeLoaderImpl implements DbNodeLoader, ChangeListener {
      * Not private because used in the tests.
      */
     static final String NODE_PROVIDER_PATH = "Databases/NodeProviders"; // NOI18N
+    static Collection providers;
+    
     final CopyOnWriteArrayList<ChangeListener> listeners = 
             new CopyOnWriteArrayList<ChangeListener>();
-
+    
     public List<Node> getAllNodes() {
         List<Node> nodes = new ArrayList<Node>();
-        Collection providers = Lookups.forPath(NODE_PROVIDER_PATH).lookupAll(NodeProvider.class);
+        
+        if ( providers == null ) {
+            providers = Lookups.forPath(NODE_PROVIDER_PATH).lookupAll(NodeProvider.class);    
+        }
         
         for (Iterator i = providers.iterator(); i.hasNext();) {
             NodeProvider provider = (NodeProvider)i.next();

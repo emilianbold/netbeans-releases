@@ -360,6 +360,10 @@ public class DetectorTest extends TestBase {
 	performTest("UsedImport129988");
     }
     
+    public void testUsedImport132980() throws Exception {
+	performTest("UsedImport132980");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

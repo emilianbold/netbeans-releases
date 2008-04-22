@@ -282,16 +282,23 @@ public class JsBracketCompleter implements BracketCompletion {
         // (in that case we'd notice the brace imbalance, and insert the closing
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
-        if ((id == JsTokenId.RBRACE || id == JsTokenId.RBRACKET) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
-            int indent = LexUtilities.getLineIndent(doc, offset);
-            StringBuilder sb = new StringBuilder();
-            // XXX On Windows, do \r\n?
-            sb.append("\n"); // NOI18N
-            LexUtilities.indent(sb, indent);
+        if ((id == JsTokenId.RBRACE || id == JsTokenId.RBRACKET) && offset > 0) {
+            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+            if (prevToken != null) {
+                JsTokenId prevTokenId = prevToken.id();
+                if (id == JsTokenId.RBRACE && prevTokenId == JsTokenId.LBRACE ||
+                        id == JsTokenId.RBRACKET && prevTokenId == JsTokenId.LBRACKET) {
+                    int indent = LexUtilities.getLineIndent(doc, offset);
+                    StringBuilder sb = new StringBuilder();
+                    // XXX On Windows, do \r\n?
+                    sb.append("\n"); // NOI18N
+                    LexUtilities.indent(sb, indent);
 
-            int insertOffset = offset; // offset < length ? offset+1 : offset;
-            doc.insertString(insertOffset, sb.toString(), null);
-            caret.setDot(insertOffset);
+                    int insertOffset = offset; // offset < length ? offset+1 : offset;
+                    doc.insertString(insertOffset, sb.toString(), null);
+                    caret.setDot(insertOffset);
+                }
+            }
         }
         
         if (id == JsTokenId.WHITESPACE) {

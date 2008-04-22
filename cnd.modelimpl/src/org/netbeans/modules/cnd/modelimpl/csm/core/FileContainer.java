@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -144,7 +145,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
         CsmUID<CsmFile> fileUID = f.fileNew;
         FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
-        assert (impl != null) : "no file for UID " + fileUID;
+        if( impl == null ) {
+            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID));
+        }
         return impl;
     }
     

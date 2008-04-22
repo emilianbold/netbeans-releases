@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.Listener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationListener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
 import org.netbeans.modules.bpel.core.annotations.DiagramAnnotation;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
@@ -38,36 +39,32 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.1
- *
  */
-public class ValidationProxyListener implements BPELValidationListener, AnnotationListener {
+public class ValidationProxyListener implements Listener, AnnotationListener {
     private Map<Component, Validator.ResultType> cachedResultMap = new HashMap<Component, Validator.ResultType>();
     private ChangeValidationSupport myValidationSupport;
     private Lookup myLookup;
-    private BPELValidationController myValidationController;
+    private Controller myValidationController;
     private AnnotationManagerCookie cookie;
     
-    private ValidationProxyListener(Lookup lookup
-            , BPELValidationController validationController) {
+    private ValidationProxyListener(Lookup lookup, Controller validationController) {
         assert lookup != null && validationController != null;
         myLookup = lookup;
         myValidationController = validationController;
         myValidationSupport = new ChangeValidationSupport();
         attachValidationController(this);
         subscribeOnAnnotationChanges();
-        runValidation();
+        myValidationController.triggerValidation();
     }
     
     public synchronized static ValidationProxyListener getInstance(Lookup lookup) {
         if (lookup == null) {
             return null;
         }
-        
-        BPELValidationController validationController =
-                (BPELValidationController) lookup.lookup(BPELValidationController.class);
+        Controller validationController = (Controller) lookup.lookup(Controller.class);
+
         if (validationController == null) {
             return null;
         }
@@ -92,7 +89,7 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
     }
     
     public synchronized void validationUpdated(List<Validator.ResultItem> validationResults ) {
-        validationResults = ValidationUtil.filterBpelResultItems(validationResults);
+        validationResults = EditorUtil.filterBpelResultItems(validationResults);
         
         Map<Component, Validator.ResultType> newResultMap
                 = getComponentResultMap(validationResults);
@@ -112,22 +109,6 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         if (changedResults != null && changedResults.size() > 0) {
             myValidationSupport.fireChangeValidation(changedResults);
         }
-        
-//        List<Validator.ResultItem> changedItems = new ArrayList<Validator.ResultItem>();
-        
-//        List<Validator.ResultItem> removedResultItem = ValidationUtil
-//                .getRemovedResultItems(previousResultItems, validationResults);
-//        if (removedResultItem != null) {
-//            myValidationSupport.fireRemoveValidation(removedResultItem);
-//        }
-//
-//        List<Validator.ResultItem> addedResultItem = ValidationUtil
-//                .getAddedResultItems(previousResultItems, validationResults);
-//        if (addedResultItem != null && addedResultItem.size() > 0) {
-//            myValidationSupport.fireChangeValidation(addedResultItem);
-//        }
-//
-//        previousResultItems = validationResults;
     }
     
     private Map<Component, Validator.ResultType> getRemovedComponentResultMap(
@@ -204,37 +185,12 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         return null;
     }
     
-    private synchronized void runValidation() {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
-        myValidationController.triggerValidation();
+    private void attachValidationController(Listener listener) {
+        myValidationController.addListener(listener);
     }
     
-    /**
-     *  Attach listener to validation changes.
-     */
-    private void attachValidationController(BPELValidationListener listener) {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
-        myValidationController.addValidationListener(listener);
-    }
-    
-    /**
-     *  Dettach listener to validation changes.
-     */
-    private void detachValidationController(BPELValidationListener listener) {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
-        myValidationController.removeValidationListener(listener);
+    private void detachValidationController(Listener listener) {
+        myValidationController.removeListener(listener);
     }
     
     /**
@@ -242,22 +198,14 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
      */
     private void subscribeOnAnnotationChanges() {
         DataObject dobj = (DataObject) myLookup.lookup(DataObject.class);
-//        System.out.println("annotation : dataobj "+dobj);
+
         if (dobj != null){
             cookie = (AnnotationManagerCookie) dobj.getCookie(AnnotationManagerCookie.class);
         }
         cookie.addAnnotationListener(this);
     }
     
-    /**
-     *  Dettach listener to validation changes.
-     */
     private void unSubscribeOnAnnotationChanges() {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
         cookie.removeAnnotationListener(this);
     }
 

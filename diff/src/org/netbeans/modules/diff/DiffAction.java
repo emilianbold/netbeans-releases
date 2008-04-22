@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,41 +41,35 @@
 
 package org.netbeans.modules.diff;
 
-import java.awt.Component;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import javax.swing.SwingUtilities;
+import java.io.File;
+import java.util.*;
+import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
-
-//import org.netbeans.modules.diff.cmdline.DiffCommand;
-//import org.netbeans.modules.vcscore.diff.AbstractDiff;
+import org.openide.windows.WindowManager;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.diff.builtin.DefaultDiff;
+import org.netbeans.modules.diff.builtin.SingleDiffPanel;
+import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
-
-//import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-//import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
-//import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
-
-//import org.netbeans.modules.diff.io.diff.*;
 
 /**
  * Diff Action. It gets the default diff visualizer and diff provider if needed
@@ -90,6 +84,33 @@ public class DiffAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    private class DiffActionImpl extends AbstractAction {
+        
+        private final Node [] nodes;
+
+        private DiffActionImpl(Lookup context) {
+            Collection<? extends Node> nodez = context.lookup(new Lookup.Template<Node>(Node.class)).allInstances();
+            nodes = nodez.toArray(new Node[nodez.size()]);
+            if (nodes.length == 1) {
+                putValue(Action.NAME, NbBundle.getMessage(DiffAction.class, "CTL_DiffToActionName"));
+            } else {
+                putValue(Action.NAME, getName());                
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            performAction(nodes);
+        }
+
+        public boolean isEnabled() {
+            return DiffAction.this.enable(nodes);
+        }
+    }
+    
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new DiffActionImpl(actionContext);
+    }
+
     public String getName() {
         return NbBundle.getMessage(DiffAction.class, "CTL_DiffActionName");
     }
@@ -122,6 +143,14 @@ public class DiffAction extends NodeAction {
                     return d != null;
                 }
             }
+        } else if (nodes.length == 1) {
+            FileObject fo1 = getFileFromNode(nodes[0]);
+            if (fo1 != null) {
+                if (fo1.isData()) {
+                    Diff d = Diff.getDefault();
+                    return d != null;
+                }
+            }
         }
         return false;
     }
@@ -132,7 +161,7 @@ public class DiffAction extends NodeAction {
      * @return true not to run in AWT thread!
      */
     protected boolean asynchronous() {
-        return true;
+        return false;
     }
     
     public void performAction(Node[] nodes) {
@@ -143,19 +172,44 @@ public class DiffAction extends NodeAction {
                 fos.add(fo);
             }
         }
-        if (fos.size() < 2) return ;
+        if (fos.size() < 1) return ;
         final FileObject fo1 = fos.get(0);
-        final FileObject fo2 = fos.get(1);
-        performAction(fo1, fo2);
+        final FileObject fo2;
+        if (fos.size() > 1) {
+            fo2 = fos.get(1);
+        } else {
+            fo2 = promptForFileobject(fo1);
+            if (fo2 == null) return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                performAction(fo1, fo2, null);
+            }
+        });
+    }
+
+    private FileObject promptForFileobject(FileObject peer) {
+        String path = DiffModuleConfig.getDefault().getPreferences().get("diffToLatestFolder", peer.getParent().getPath());
+        File latestPath = FileUtil.normalizeFile(new File(path));
+        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(DiffAction.class, "ACSD_BrowseDiffToFile"), latestPath); // NOI18N
+        fileChooser.setDialogTitle(NbBundle.getMessage(DiffAction.class, "DiffTo_BrowseFile_Title", peer.getName())); // NOI18N
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        EditorBufferSelectorPanel editorSelector = new EditorBufferSelectorPanel(fileChooser, peer);
+        fileChooser.setAccessory(editorSelector);
+
+        int result = fileChooser.showDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(DiffAction.class, "DiffTo_BrowseFile_OK")); // NOI18N
+        if (result != JFileChooser.APPROVE_OPTION) return null;
+
+        File f = fileChooser.getSelectedFile();
+        if (f != null) {
+            File file = f.getAbsoluteFile();
+            DiffModuleConfig.getDefault().getPreferences().put("diffToLatestFolder", file.getParent());
+            return FileUtil.toFileObject(f);
+        }
+        return null;
     }
     
-    /**
-     * Shows the diff between two FileObject objects.
-     * This is expected not to be called in AWT thread.
-     */
-    public static void performAction(final FileObject fo1, final FileObject fo2) {
-        performAction(fo1, fo2, null);
-    }
     /**
      * Shows the diff between two FileObject objects.
      * This is expected not to be called in AWT thread.
@@ -172,24 +226,8 @@ public class DiffAction extends NodeAction {
                     "MSG_NoDiffVisualizer")));
             return ;
         }
-        Component tp;
-        Reader r1 = null;
-        Reader r2 = null;
+        SingleDiffPanel sdp = null;
         try {
-            if (type != null) {
-                r1 = new InputStreamReader(fo1.getInputStream(), FileEncodingQuery.getEncoding(type));
-                r2 = new InputStreamReader(fo2.getInputStream(), FileEncodingQuery.getEncoding(type));
-            } else {
-                r1 = new InputStreamReader(fo1.getInputStream(), FileEncodingQuery.getEncoding(fo1));
-                r2 = new InputStreamReader(fo2.getInputStream(), FileEncodingQuery.getEncoding(fo2));
-            }
-            String mimeType;
-            if (type != null) {
-                mimeType = type.getMIMEType();
-            } else {
-                mimeType = fo1.getMIMEType();
-            }
-            
             final Thread victim = Thread.currentThread();
             Cancellable killer = new Cancellable() {
                 public boolean cancel() {
@@ -201,36 +239,22 @@ public class DiffAction extends NodeAction {
             ProgressHandle ph = ProgressHandleFactory.createHandle(name, killer);
             try {
                 ph.start();
-                tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
-                                     r1,
-                                     fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
-                                     r2, mimeType);
+                sdp = new SingleDiffPanel(fo1, fo2, type);
             } finally {
                 ph.finish();
             }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return ;
-        } finally {
-            try {
-                if (r1 != null) r1.close();
-            } catch (IOException ioex) {}
-            try {
-                if (r2 != null) r2.close();
-            } catch (IOException ioex) {}
         }
         //System.out.println("tp = "+tp);
-        if (tp != null) {
-            final Component ftp = tp;
+        if (sdp != null) {
+            final SingleDiffPanel fsdp = sdp;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (ftp instanceof TopComponent) {
-                        ((TopComponent) ftp).open();
-                        ((TopComponent) ftp).requestActive();
-                    } else {
-                        ftp.setVisible(true);
-                        ftp.requestFocusInWindow();
-                    }
+                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp);
+                    dtc.open();
+                    dtc.requestActive();
                 }
             });
         }

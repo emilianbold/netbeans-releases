@@ -59,12 +59,15 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.spring.beans.BeansAttributes;
+import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyFinder;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -75,50 +78,6 @@ import org.openide.util.NbBundle;
  */
 public final class CompletionManager {
 
-    private static final String BEAN_TAG = "bean"; // NOI18N
-    private static final String ALIAS_TAG = "alias"; // NOI18N
-    private static final String BEANS_TAG = "beans"; // NOI18N
-    private static final String LIST_TAG = "list"; // NOI18N
-    private static final String SET_TAG = "set"; // NOI18N
-    private static final String MAP_TAG = "map"; // NOI18N
-    private static final String PROPS_TAG = "props"; // NOI18N
-    private static final String IMPORT_TAG = "import"; // NOI18N
-    private static final String VALUE_TAG = "value"; // NOI18N
-    private static final String CONSTRUCTOR_ARG_TAG = "constructor-arg"; // NOI18N
-    private static final String REF_TAG = "ref"; // NOI18N
-    private static final String IDREF_TAG = "idref"; // NOI18N
-    private static final String ENTRY_TAG = "entry"; // NOI18N
-    private static final String PROPERTY_TAG = "property"; // NOI18N
-    private static final String LOOKUP_METHOD_TAG = "lookup-method"; // NOI18N
-    private static final String REPLACED_METHOD_TAG = "replaced-method";  // NOI18N
-    private static final String DEPENDS_ON_ATTRIB = "depends-on"; // NOI18N
-    private static final String PARENT_ATTRIB = "parent"; // NOI18N
-    private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
-    private static final String NAME_ATTRIB = "name"; // NOI18N
-    private static final String DEFAULT_LAZY_INIT_ATTRIB = "default-lazy-init"; // NOI18N
-    private static final String AUTOWIRE_ATTRIB = "autowire"; // NOI18N
-    private static final String DEFAULT_MERGE_ATTRIB = "default-merge"; // NOI18N
-    private static final String DEFAULT_DEPENDENCY_CHECK_ATTRIB = "default-dependency-check"; // NOI18N
-    private static final String DEFAULT_AUTOWIRE_ATTRIB = "default-autowire"; // NOI18N
-    private static final String DEPENDENCY_CHECK_ATTRIB = "dependency-check"; // NOI18N
-    private static final String LAZY_INIT_ATTRIB = "lazy-init"; // NOI18N
-    private static final String ABSTRACT_ATTRIB = "abstract"; // NOI18N
-    private static final String AUTOWIRE_CANDIDATE_ATTRIB = "autowire-candidate"; // NOI18N
-    private static final String MERGE_ATTRIB = "merge"; // NOI18N
-    private static final String RESOURCE_ATTRIB = "resource"; // NOI18N
-    private static final String INIT_METHOD_ATTRIB = "init-method"; // NOI18N
-    private static final String DESTROY_METHOD_ATTRIB = "destroy-method"; // NOI18N
-    private static final String CLASS_ATTRIB = "class"; // NOI18N
-    private static final String VALUE_TYPE_ATTRIB = "value-type"; // NOI18N
-    private static final String KEY_TYPE_ATTRIB = "key-type"; // NOI18N
-    private static final String TYPE_ATTRIB = "type"; // NOI18N
-    private static final String REF_ATTRIB = "ref"; // NOI18N
-    private static final String BEAN_ATTRIB = "bean"; // NOI18N
-    private static final String LOCAL_ATTRIB = "local"; // NOI18N
-    private static final String KEY_REF_ATTRIB = "key-ref"; // NOI18N
-    private static final String VALUE_REF_ATTRIB = "value-ref"; // NOI18N
-    private static final String REPLACER_ATTRIB = "replacer";  // NOI18N
-    private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N
     private static Map<String, CompletorFactory> completorFactories = new HashMap<String, CompletorFactory>();
 
     private CompletionManager() {
@@ -135,21 +94,28 @@ public final class CompletionManager {
             "autodetect", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_autodetect") // NOI18N
         };
         AttributeValueCompletorFactory completorFactory = new AttributeValueCompletorFactory(defaultAutoWireItems);
-        registerCompletorFactory(BEANS_TAG, DEFAULT_AUTOWIRE_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_AUTOWIRE, completorFactory);
         
         String[] autoWireItems = new String[defaultAutoWireItems.length + 2];
         System.arraycopy(defaultAutoWireItems, 0, autoWireItems, 0, defaultAutoWireItems.length);
         autoWireItems[defaultAutoWireItems.length] = "default"; // NOI18N
         autoWireItems[defaultAutoWireItems.length + 1] = null; // XXX: Documentation
         completorFactory = new AttributeValueCompletorFactory(autoWireItems);
-        registerCompletorFactory(BEAN_TAG, AUTOWIRE_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.AUTOWIRE, completorFactory);
+        
+        String[] primaryItems = new String[] {
+            "true", null, //XXX: Documentation // NOI18N
+            "false", null, //XXX: Documentation // NOI18N
+        };
+        completorFactory = new AttributeValueCompletorFactory(primaryItems);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.PRIMARY, completorFactory);
         
         String[] defaultLazyInitItems = new String[]{
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(defaultLazyInitItems);
-        registerCompletorFactory(BEANS_TAG, DEFAULT_LAZY_INIT_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_LAZY_INIT, completorFactory);
         
         String[] lazyInitItems = new String[] {
             defaultLazyInitItems[0], defaultLazyInitItems[1],
@@ -157,14 +123,14 @@ public final class CompletionManager {
             "default", null // XXX: Documentation // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(lazyInitItems);
-        registerCompletorFactory(BEAN_TAG, LAZY_INIT_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.LAZY_INIT, completorFactory);
         
         String[] defaultMergeItems = new String[] {
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(defaultMergeItems);
-        registerCompletorFactory(BEANS_TAG, DEFAULT_MERGE_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_MERGE, completorFactory);
         
         String[] defaultDepCheckItems = new String[] {
             "none", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_none"), // NOI18N
@@ -173,20 +139,21 @@ public final class CompletionManager {
             "all", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_all"), // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(defaultDepCheckItems);
-        registerCompletorFactory(BEANS_TAG, DEFAULT_DEPENDENCY_CHECK_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_DEPENDENCY_CHECK, completorFactory);
 
         String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
+        System.arraycopy(defaultDepCheckItems, 0, depCheckItems, 0, defaultDepCheckItems.length);
         depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
         depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
         completorFactory = new AttributeValueCompletorFactory(depCheckItems);
-        registerCompletorFactory(BEAN_TAG, DEPENDENCY_CHECK_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.DEPENDENCY_CHECK, completorFactory);
         
         String[] abstractItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(abstractItems);
-        registerCompletorFactory(BEAN_TAG, ABSTRACT_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.ABSTRACT, completorFactory);
         
         String[] autowireCandidateItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
@@ -194,7 +161,7 @@ public final class CompletionManager {
             "default", null, // XXX: documentation? // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(autowireCandidateItems);
-        registerCompletorFactory(BEAN_TAG, AUTOWIRE_CANDIDATE_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.AUTOWIRE_CANDIDATE, completorFactory);
         
         String[] mergeItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
@@ -202,55 +169,55 @@ public final class CompletionManager {
             "default", null, // XXX: documentation? // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(mergeItems);
-        registerCompletorFactory(LIST_TAG, MERGE_ATTRIB, completorFactory);
-        registerCompletorFactory(SET_TAG, MERGE_ATTRIB, completorFactory);
-        registerCompletorFactory(MAP_TAG, MERGE_ATTRIB, completorFactory);
-        registerCompletorFactory(PROPS_TAG, MERGE_ATTRIB, completorFactory);
+        registerCompletorFactory(BeansElements.LIST, BeansAttributes.MERGE, completorFactory);
+        registerCompletorFactory(BeansElements.SET, BeansAttributes.MERGE, completorFactory);
+        registerCompletorFactory(BeansElements.MAP, BeansAttributes.MERGE, completorFactory);
+        registerCompletorFactory(BeansElements.PROPS, BeansAttributes.MERGE, completorFactory);
         
-        registerCompletorFactory(IMPORT_TAG, RESOURCE_ATTRIB, new GenericCompletorFactory(ResourceCompletor.class));
+        registerCompletorFactory(BeansElements.IMPORT, BeansAttributes.RESOURCE, new GenericCompletorFactory(ResourceCompletor.class));
 
         GenericCompletorFactory javaClassCompletorFactory = new GenericCompletorFactory(JavaClassCompletor.class);
-        registerCompletorFactory(BEAN_TAG, CLASS_ATTRIB, javaClassCompletorFactory);
-        registerCompletorFactory(LIST_TAG, VALUE_TYPE_ATTRIB, javaClassCompletorFactory);
-        registerCompletorFactory(MAP_TAG, VALUE_TYPE_ATTRIB, javaClassCompletorFactory);
-        registerCompletorFactory(MAP_TAG, KEY_TYPE_ATTRIB, javaClassCompletorFactory);
-        registerCompletorFactory(SET_TAG, VALUE_TYPE_ATTRIB, javaClassCompletorFactory);
-        registerCompletorFactory(VALUE_TAG, TYPE_ATTRIB, javaClassCompletorFactory);
-        registerCompletorFactory(CONSTRUCTOR_ARG_TAG, TYPE_ATTRIB, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.CLASS, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.LIST, BeansAttributes.VALUE_TYPE, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.MAP, BeansAttributes.VALUE_TYPE, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.MAP, BeansAttributes.KEY_TYPE, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.SET, BeansAttributes.VALUE_TYPE, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.VALUE, BeansAttributes.TYPE, javaClassCompletorFactory);
+        registerCompletorFactory(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.TYPE, javaClassCompletorFactory);
         
         BeansRefCompletorFactory beansRefCompletorFactory = new BeansRefCompletorFactory(true);
-        registerCompletorFactory(ALIAS_TAG, NAME_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(BEAN_TAG, PARENT_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(BEAN_TAG, DEPENDS_ON_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(BEAN_TAG, FACTORY_BEAN_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(CONSTRUCTOR_ARG_TAG, REF_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(REF_TAG, BEAN_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(IDREF_TAG, BEAN_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(ENTRY_TAG, KEY_REF_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(ENTRY_TAG, VALUE_REF_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(PROPERTY_TAG, REF_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(REPLACED_METHOD_TAG, REPLACER_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.ALIAS, BeansAttributes.NAME, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.PARENT, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.DEPENDS_ON, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.FACTORY_BEAN, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.REF, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.REF, BeansAttributes.BEAN, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.IDREF, BeansAttributes.BEAN, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.ENTRY, BeansAttributes.KEY_REF, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.ENTRY, BeansAttributes.VALUE_REF, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.PROPERTY, BeansAttributes.REF, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.LOOKUP_METHOD, BeansAttributes.BEAN, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.REPLACED_METHOD, BeansAttributes.REPLACER, beansRefCompletorFactory);
         
         beansRefCompletorFactory = new BeansRefCompletorFactory(false);
-        registerCompletorFactory(REF_TAG, LOCAL_ATTRIB, beansRefCompletorFactory);
-        registerCompletorFactory(IDREF_TAG, LOCAL_ATTRIB, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.REF, BeansAttributes.LOCAL, beansRefCompletorFactory);
+        registerCompletorFactory(BeansElements.IDREF, BeansAttributes.LOCAL, beansRefCompletorFactory);
         
         GenericCompletorFactory javaMethodCompletorFactory = new GenericCompletorFactory(InitDestroyMethodCompletor.class);
-        registerCompletorFactory(BEAN_TAG, INIT_METHOD_ATTRIB, javaMethodCompletorFactory);
-        registerCompletorFactory(BEAN_TAG, DESTROY_METHOD_ATTRIB, javaMethodCompletorFactory);
-        registerCompletorFactory(LOOKUP_METHOD_TAG, NAME_ATTRIB, javaMethodCompletorFactory);
-        registerCompletorFactory(REPLACED_METHOD_TAG, NAME_ATTRIB, javaMethodCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.INIT_METHOD, javaMethodCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.DESTROY_METHOD, javaMethodCompletorFactory);
+        registerCompletorFactory(BeansElements.LOOKUP_METHOD, BeansAttributes.NAME, javaMethodCompletorFactory);
+        registerCompletorFactory(BeansElements.REPLACED_METHOD, BeansAttributes.NAME, javaMethodCompletorFactory);
         
         javaMethodCompletorFactory = new GenericCompletorFactory(FactoryMethodCompletor.class);
-        registerCompletorFactory(BEAN_TAG, FACTORY_METHOD_ATTRIB, javaMethodCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.FACTORY_METHOD, javaMethodCompletorFactory);
         
         GenericCompletorFactory propertyCompletorFactory = new GenericCompletorFactory(PropertyCompletor.class);
-        registerCompletorFactory(PROPERTY_TAG, NAME_ATTRIB, propertyCompletorFactory);
+        registerCompletorFactory(BeansElements.PROPERTY, BeansAttributes.NAME, propertyCompletorFactory);
         
         GenericCompletorFactory pNamespaceBeanRefCompletorFactory 
                 = new GenericCompletorFactory(PNamespaceBeanRefCompletor.class);
-        registerCompletorFactory(BEAN_TAG, null, pNamespaceBeanRefCompletorFactory);
+        registerCompletorFactory(BeansElements.BEAN, null, pNamespaceBeanRefCompletorFactory);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -275,9 +242,9 @@ public final class CompletionManager {
 
     public void completeAttributes(final CompletionResultSet resultSet, final CompletionContext context) {
         String tagName = context.getTag().getNodeName();
-        if(tagName.equals(BEAN_TAG) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
+        if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
             try {
-                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
+                final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
                 if (js == null) {
                     return;
                 }
@@ -293,7 +260,7 @@ public final class CompletionManager {
                         if (className == null) {
                             return;
                         }
-                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
                         if (te == null) {
                             return;
                         }

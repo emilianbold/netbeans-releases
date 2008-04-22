@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -167,68 +167,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return -1;
     }
     
-//    private synchronized ClassPath getCompileTimeClasspath(FileObject file) {
-//        int type = getType(file);
-//        return this.getCompileTimeClasspath(type);
-//    }
-//    
-//    private ClassPath getCompileTimeClasspath(int type) {        
-//        if (type < 0 || type > 1) {
-//            // Not a source file.
-//            return null;
-//        }
-//        ClassPath cp = cache[2+type];
-//        if ( cp == null) {            
-//            if (type == 0) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {JAVAC_CLASSPATH})); // NOI18N
-//            }
-//            else {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {JAVAC_TEST_CLASSPATH})); // NOI18N
-//            }
-//            cache[2+type] = cp;
-//        }
-//        return cp;
-//    }
-//    
-//    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
-//        int type = getType(file);
-//        if (type < 0 || type > 4) {
-//            // Unregistered file, or in a JAR.
-//            // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
-//            // run.classpath since that does not actually contain the file!
-//            // (It contains file:$projdir/build/classes/ instead.)
-//            return null;
-//        } else if (type > 1) {
-//            type-=2;            //Compiled source transform into source
-//        }
-//        ClassPath cp = cache[4+type];
-//        if ( cp == null) {
-//            if (type == 0) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {RUN_CLASSPATH})); // NOI18N
-//            }
-//            else if (type == 1) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {RUN_TEST_CLASSPATH})); // NOI18N
-//            }
-//            else if (type == 2) {
-//                //Only to make the CompiledDataNode hapy
-//                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {DIST_JAR})); // NOI18N
-//            }
-//            cache[4+type] = cp;
-//        }
-//        return cp;
-//    }
-//    
     private synchronized ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
         return this.getSourcepath(type);
@@ -298,19 +236,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (ClassPath.BOOT.equals(type)) {
             return new ClassPath[]{getBootClassPath()};
         }
-//        if (ClassPath.COMPILE.equals(type)) {
-//            ClassPath[] l = new ClassPath[2];
-//            l[0] = getCompileTimeClasspath(0);
-//            l[1] = getCompileTimeClasspath(1);
-//            return l;
-//        }
         if (ClassPath.SOURCE.equals(type)) {
             ClassPath[] l = new ClassPath[2];
             l[0] = getSourcepath(0);
             l[1] = getSourcepath(1);
             return l;
         }
-//        assert false;
         return null;
     }
 
@@ -325,10 +256,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (ClassPath.SOURCE.equals(type)) {
             return getSourcepath(0);
         }
-//        if (ClassPath.COMPILE.equals(type)) {
-//            return getCompileTimeClasspath(0);
-//        }
-//        assert false;
         return null;
     }
 

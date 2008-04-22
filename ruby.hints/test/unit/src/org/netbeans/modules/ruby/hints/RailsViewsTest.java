@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import org.netbeans.modules.ruby.hints.HintTestBase;
-
 /**
  *
  * @author Tor Norbye

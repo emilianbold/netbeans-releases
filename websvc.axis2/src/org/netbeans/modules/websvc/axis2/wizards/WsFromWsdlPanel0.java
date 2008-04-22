@@ -56,7 +56,7 @@ import org.openide.util.HelpCtx;
  *
  * @author mkuchtiak
  */
-public class WsFromWsdlPanel0 implements  WizardDescriptor.FinishablePanel<WizardDescriptor>, WizardProperties {
+public class WsFromWsdlPanel0 implements WizardDescriptor.Panel<WizardDescriptor>, WizardProperties {
 
     private WsFromWsdlGUIPanel0 component;
     private WizardDescriptor wizardDescriptor;
@@ -92,14 +92,6 @@ public class WsFromWsdlPanel0 implements  WizardDescriptor.FinishablePanel<Wizar
     }
 
     public boolean isValid() {
-//        Preferences prefs = AxisUtils.getPreferences();
-//        String axisHome = prefs.get("AXIS_HOME",null); //NOI18N
-//        if (axisHome == null || axisHome.length() == 0) {
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WsFromWsdlPanel0.class, "MSG_NoAxisHome")); // NOI18N
-//            return false;
-//        } else {
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
-//        }
         return component.dataIsValid();
     }
 
@@ -116,14 +108,6 @@ public class WsFromWsdlPanel0 implements  WizardDescriptor.FinishablePanel<Wizar
             listeners.remove(l);
         }
     }
-
-    public boolean isFinishPanel() {
-        return false;
-    }
-
-//    public void stateChanged(ChangeEvent e) {
-//        fireChange();
-//    }
     
     void fireChange() {
         ChangeEvent e = new ChangeEvent(this);

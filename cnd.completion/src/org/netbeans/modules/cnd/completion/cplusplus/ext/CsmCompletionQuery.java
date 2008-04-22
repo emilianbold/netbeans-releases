@@ -1504,7 +1504,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         private CsmClass findExactClass(final String var, final int varPos) {
             CsmClass cls = null;
-            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES);
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES);
             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Iterator it = res.getProjectClassesifiersEnums().iterator();
@@ -1513,6 +1513,16 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     if (CsmKindUtilities.isClass(obj)) {
                         cls = (CsmClass)obj;
                         break;
+                    }
+                }
+                if (cls == null) {
+                    it = res.getLibClassifiersEnums().iterator();
+                    while (it.hasNext()) {
+                        CsmObject obj = (CsmObject) it.next();
+                        if (CsmKindUtilities.isClass(obj)) {
+                            cls = (CsmClass) obj;
+                            break;
+                        }
                     }
                 }
             }

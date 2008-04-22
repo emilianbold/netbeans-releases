@@ -101,13 +101,21 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
     }
 
     @Override
+    protected void initialize() {
+        super.initialize();
+        System.gc();
+        new EventTool().waitNoEvent(3000);
+    }
+
+    @Override
     protected void shutdown() {
         super.shutdown();
     }
     
     public void close(){
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        new EventTool().waitNoEvent(2000);
+        System.gc();
+        new EventTool().waitNoEvent(3000);
     }
     
 }

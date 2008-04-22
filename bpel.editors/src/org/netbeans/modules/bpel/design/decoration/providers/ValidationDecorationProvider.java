@@ -16,16 +16,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.design.decoration.providers;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.Listener;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
@@ -42,56 +42,42 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+
 /**
- *
  * @author aa160298
  */
-public class ValidationDecorationProvider extends DecorationProvider
-        implements BPELValidationListener {
+public class ValidationDecorationProvider extends DecorationProvider implements Listener {
     
-        
     private Object list_key = new Object();
     private Object decoration_key = new Object();
     
     private List<ResultItem> results = new ArrayList<ResultItem>();
     
-    /** Creates a new instance of ValidationDecorationProvider */
     public ValidationDecorationProvider(DesignView designView) {
         super(designView);
-        
-        
-  
-        
-        
-        final BPELValidationController vc = getDesignView().getValidationController();
-        
-        vc.addValidationListener(this);
-        
+        final Controller controller = getDesignView().getValidationController();
+        controller.addListener(this);
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                vc.triggerValidation();
+                controller.triggerValidation();
             }
         });
-        
-        
     }
-    
     
     public void release(){
-        // Removed validation listener.
-        getDesignView().getValidationController().removeValidationListener(this);
+        getDesignView().getValidationController().removeListener(this);
         list_key = null;
         decoration_key = null;
-        
     }
+
     public Decoration getDecoration(BpelEntity entity){
         return (Decoration) entity.getCookie(decoration_key);
-        
     }
     
     public void updateDecorations(){
         
-        final List<ResultItem> resultsFiltered = ValidationUtil.filterBpelResultItems(results);
+        final List<ResultItem> resultsFiltered = EditorUtil.filterBpelResultItems(results);
        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -210,7 +196,7 @@ public class ValidationDecorationProvider extends DecorationProvider
         for (ResultItem item1: list1){
             boolean found = false;
             for (ResultItem item2: list2){
-                if (ValidationUtil.equals(item1, item2)){
+                if (EditorUtil.equals(item1, item2)){
                     found = true;
                     break;
                 }

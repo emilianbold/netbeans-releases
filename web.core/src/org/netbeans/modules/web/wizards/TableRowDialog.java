@@ -47,7 +47,6 @@ package org.netbeans.modules.web.wizards;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -251,7 +250,7 @@ public class TableRowDialog extends javax.swing.JPanel {
 	    dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	    dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TableRowDialog.class, "ACSD_initparam_edit")); // NOI18N
 
-	    dialog.show();
+	    dialog.setVisible(true);
 	    this.repaint();
 	}
     }

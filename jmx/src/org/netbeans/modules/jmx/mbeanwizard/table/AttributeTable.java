@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;

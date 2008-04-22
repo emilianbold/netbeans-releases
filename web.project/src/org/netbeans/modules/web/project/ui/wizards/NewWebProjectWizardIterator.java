@@ -50,9 +50,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -80,6 +77,7 @@ import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
@@ -89,8 +87,6 @@ import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    
-    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
 
     /** Create a new wizard iterator. */
     public NewWebProjectWizardIterator() {}
@@ -192,9 +188,6 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_CREATE");  //NOI18N
-        logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-        logRecord.setResourceBundle(NbBundle.getBundle(NewWebProjectWizardIterator.class));
         
         List <String> selectedFrameworkNames = (List<String>) wiz.getProperty(WizardProperties.FRAMEWORK_NAMES);
         int frameworkCount = (selectedFrameworkNames != null) ? selectedFrameworkNames.size() : 0;
@@ -210,8 +203,8 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             }
         }
         
-        logRecord.setParameters(parameters);
-        Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+        Utils.logUI(NbBundle.getBundle(NewWebProjectWizardIterator.class),
+                "UI_WEB_PROJECT_CREATE", parameters); // NOI18N
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main

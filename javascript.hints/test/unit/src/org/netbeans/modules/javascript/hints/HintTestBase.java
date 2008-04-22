@@ -505,7 +505,7 @@ public abstract class HintTestBase extends JsTestBase {
         return null;
     }
     
-    private static class ComputedHints {
+    protected static class ComputedHints {
         ComputedHints(CompilationInfo info, List<ErrorDescription> hints, int caretOffset) {
             this.info = info;
             this.hints = hints;

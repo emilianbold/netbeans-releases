@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.25.1
+#Version 1.26.0
 CLSS public static abstract org.netbeans.lib.editor.util.AbstractCharSequence$StringLike
 cons public StringLike()
 innr public static abstract org.netbeans.lib.editor.util.AbstractCharSequence$StringLike
@@ -97,7 +97,7 @@ fld  public static final org.netbeans.api.lexer.PartType org.netbeans.api.lexer.
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -226,7 +226,7 @@ fld  public static final org.netbeans.api.lexer.TokenHierarchyEventType org.netb
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -323,7 +323,7 @@ fld  public static final org.netbeans.spi.lexer.EmbeddingPresence org.netbeans.s
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -506,7 +506,7 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
-meth public synchronized org.netbeans.api.lexer.TokenHierarchy org.netbeans.spi.lexer.TokenHierarchyControl.tokenHierarchy()
+meth public org.netbeans.api.lexer.TokenHierarchy org.netbeans.spi.lexer.TokenHierarchyControl.tokenHierarchy()
 meth public void org.netbeans.spi.lexer.TokenHierarchyControl.rebuild()
 meth public void org.netbeans.spi.lexer.TokenHierarchyControl.setActive(boolean)
 meth public void org.netbeans.spi.lexer.TokenHierarchyControl.textModified(int,int,java.lang.CharSequence,int)

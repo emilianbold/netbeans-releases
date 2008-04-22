@@ -38,12 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package gui.actions;
 
 import gui.MPUtilities;
 import gui.window.MIDletEditorOperator;
-import java.io.PrintStream;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -60,17 +58,17 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
  * @author mmirilovic@netbeans.org
  */
 public class SwitchConfiguration extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private Node openNode;
     private ProjectRootNode projectNode;
-    private String targetProject, midletName;
+    private String targetProject,  midletName;
     private WizardOperator propertiesWindow;
     private MIDletEditorOperator editor;
-            
+
     /**
      * Creates a new instance of OpenMIDletEditor
      * @param testName the name of the test
-     */    
+     */
     public SwitchConfiguration(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
@@ -80,63 +78,71 @@ public class SwitchConfiguration extends org.netbeans.performance.test.utilities
      * Creates a new instance of OpenMIDletEditor
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
-     */    
+     */
     public SwitchConfiguration(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+    @Override
     public void initialize() {
         log(":: initialize");
-        targetProject = "MobileApplicationSwitchConfiguration";        
-        midletName = "Midlet.java";        
-        EditorOperator.closeDiscardAll();        
-    } 
-    
+        targetProject = "MobileApplicationSwitchConfiguration";
+        midletName = "Midlet.java";
+        EditorOperator.closeDiscardAll();
+    }
+
     public void prepare() {
         log(":: prepare");
-        String documentPath = MPUtilities.SOURCE_PACKAGES+"|"+"switchit"+"|"+midletName;
+        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "switchit" + "|" + midletName;
         projectNode = new ProjectsTabOperator().getProjectRootNode(targetProject);
         openNode = new Node(projectNode, documentPath);
-        
+
         if (this.openNode == null) {
             throw new Error("Cannot find expected node ");
         }
-        
+
         new OpenAction().perform(openNode);
         editor = MIDletEditorOperator.findMIDletEditorOperator(midletName);
-        
+
         projectNode.properties();
         propertiesWindow = new WizardOperator(targetProject);
-        
+
     }
 
     public ComponentOperator open() {
         log(":: open");
         JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow);
         combo.selectItem(1); // NotDefaultConfiguration
-        
+
         propertiesWindow.ok();
         return MIDletEditorOperator.findMIDletEditorOperator(midletName);
     }
-    
+
+    @Override
     public void close() {
         log(":: close");
-        projectNode.properties();
-        propertiesWindow = new WizardOperator(targetProject);
-        
-        // switch back to default config
-        JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow,0);
-        combo.selectItem(0); //DefaultConfiguration
-        propertiesWindow.ok();
+        if (projectNode != null) {
+            projectNode.properties();
+            propertiesWindow = new WizardOperator(targetProject);
+
+            // switch back to default config
+            JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow, 0);
+            combo.selectItem(0); //DefaultConfiguration
+
+            propertiesWindow.ok();
+        }
     }
-    
+
+    @Override
     public void shutdown() {
         log("::shutdown");
-        editor.close();
+        if (editor != null) {
+            editor.close();
+        }
     }
 
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new SwitchConfiguration("measureTime"));
     }
-    
 }

@@ -65,6 +65,12 @@ public class StrictWarningTest extends HintTestBase {
         }
     }
     
+    //Uncomment to generate all the golden files over again
+    //@Override
+    //protected boolean failOnMissingGoldenFile() {
+    //    return false;
+    //}
+    
     public void testReservedKeyword() throws Exception {
         goldenfileSuffix = "";
         findHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);

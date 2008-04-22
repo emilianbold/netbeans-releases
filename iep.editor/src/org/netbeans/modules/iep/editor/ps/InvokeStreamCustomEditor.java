@@ -303,6 +303,7 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
                             mSizePanel.setStringValue(displayName);
                             SchemaComponent sc = inComp.getOutputSchemaId();
                             if(sc != null) {
+                            	mSelectPanel.clearTable();
                             	mSelectPanel.setAttributes(sc.getSchemaAttributes());
                             }
                         }

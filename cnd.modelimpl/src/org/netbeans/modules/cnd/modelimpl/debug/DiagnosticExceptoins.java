@@ -73,7 +73,11 @@ public class DiagnosticExceptoins {
      * See Hook.exception description for more details
      */
     public static void register(Throwable thr) {
-	thr.printStackTrace();
+        if( TraceFlags.TIMING ) {
+            thr.printStackTrace();
+        } else {
+            System.err.println(thr.getMessage());
+        }
 	Hook aHook = hook;
 	if( aHook != null ) {
 	    hook.exception(thr);
