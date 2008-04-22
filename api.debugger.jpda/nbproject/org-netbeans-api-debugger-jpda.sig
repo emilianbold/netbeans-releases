@@ -1,5 +1,5 @@
 #API master signature file
-#Version 2.13.1
+#Version 2.14
 CLSS public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
 fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.EQUAL
 fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.GREATER
@@ -7,7 +7,7 @@ fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERIN
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -33,7 +33,7 @@ fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbe
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth protected final void java.lang.Enum.finalize()
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
