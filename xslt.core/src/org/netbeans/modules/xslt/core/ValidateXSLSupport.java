@@ -25,32 +25,25 @@ import javax.xml.transform.sax.*;
 import org.netbeans.api.xml.cookies.*;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
- * Validates XSL transformation
- * @author asgeir@dimonsoftware.com
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.04.10
  */
 public class ValidateXSLSupport implements ValidateXMLCookie {
     
-    // associated input source
-    private final InputSource inputSource;
-
-    // it will viasualize our results
-    private CookieObserver console;
-
-    // fatal error counter
-    private int fatalErrors;
-    
-    // error counter
-    private int errors;
-
-    /** Creates a new instance of ValidateXSLSupport */
     public ValidateXSLSupport(InputSource inputSource) {
         this.inputSource = inputSource;
     }
     
-    // inherit JavaDoc
     public boolean validateXML(CookieObserver l) {
+//out();
+//out("!!!!!!!!");
+//out();
+
+if (true) return true;
+
        try {
             console = l;
 
@@ -58,9 +51,6 @@ public class ValidateXSLSupport implements ValidateXMLCookie {
             int errors = 0;
 
             String checkedFile = inputSource.getSystemId();
-             
-         
-    
             sendMessage(NbBundle.getMessage(ValidateXSLSupport.class, "MSG_checking" , checkedFile));//NOI18N
 
             ErrorListener errorListener = new XslErrorListener();
@@ -95,10 +85,6 @@ public class ValidateXSLSupport implements ValidateXMLCookie {
         }
     }
 
-
-    //
-    // class XslErrorListener
-    //
     private class XslErrorListener implements ErrorListener {
         public void error(TransformerException ex) throws TransformerException{
             if (errors++ == getMaxErrorCount()) {
@@ -136,6 +122,10 @@ public class ValidateXSLSupport implements ValidateXMLCookie {
         private int getMaxErrorCount() {
             return 20;  //??? load from option
         }    
-    } // class XslErrorListener
-  
+    }
+
+    private final InputSource inputSource;
+    private CookieObserver console;
+    private int fatalErrors;
+    private int errors;
 }

@@ -83,6 +83,9 @@ public class Deadlock60917Test extends NbTestCase {
 
     
     public void testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         final ForgetableLoader l = (ForgetableLoader)DataLoader.getLoader(ForgetableLoader.class);
 		FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
 			"folder/f.keep",
@@ -166,6 +169,9 @@ public class Deadlock60917Test extends NbTestCase {
     }
     
     public void testWhatHappenUnderLock () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         org.openide.nodes.Children.MUTEX.readAccess (new org.openide.util.Mutex.ExceptionAction () {
             public Object run () throws Exception {
                 testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened();

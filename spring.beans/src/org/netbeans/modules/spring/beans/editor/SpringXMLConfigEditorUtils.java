@@ -84,6 +84,8 @@ import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.BeansAttributes;
+import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
@@ -156,8 +158,8 @@ public final class SpringXMLConfigEditorUtils {
         Node bean = getBean(tag);
         if (bean != null) {
             NamedNodeMap attribs = bean.getAttributes();
-            if (attribs != null && attribs.getNamedItem("factory-method") != null) { // NOI18N
-                return attribs.getNamedItem("factory-method").getNodeValue(); // NOI18N
+            if (attribs != null && attribs.getNamedItem(BeansAttributes.FACTORY_METHOD) != null) { 
+                return attribs.getNamedItem(BeansAttributes.FACTORY_METHOD).getNodeValue(); 
             }
         }
 
@@ -229,13 +231,15 @@ public final class SpringXMLConfigEditorUtils {
             return null;
         }
 
-        if (tag.getNodeName().equals("bean")) { // NOI18N
+        if (tag.getNodeName().equals(BeansElements.BEAN)) { 
             return tag;
         }
 
-        if (tag.getNodeName().equals("lookup-method") || tag.getNodeName().equals("replaced-method") || tag.getNodeName().equals("property")) { // NOI18N
+        if (tag.getNodeName().equals(BeansElements.LOOKUP_METHOD) 
+                || tag.getNodeName().equals(BeansElements.REPLACED_METHOD) 
+                || tag.getNodeName().equals(BeansElements.PROPERTY)) { 
             Node parent = tag.getParentNode();
-            if (parent.getNodeName().equals("bean")) { // NOI18N
+            if (parent.getNodeName().equals(BeansElements.BEAN)) { // NOI18N
                 return parent;
             } else {
                 return null;
@@ -250,8 +254,8 @@ public final class SpringXMLConfigEditorUtils {
         Node bean = getBean(tag);
         if (bean != null) {
             NamedNodeMap attribs = bean.getAttributes();
-            if (attribs != null && attribs.getNamedItem("class") != null) { // NOI18N
-                return attribs.getNamedItem("class").getNodeValue(); // NOI18N
+            if (attribs != null && attribs.getNamedItem(BeansAttributes.CLASS) != null) { // NOI18N
+                return attribs.getNamedItem(BeansAttributes.CLASS).getNodeValue(); // NOI18N
             }
         }
 
@@ -665,16 +669,16 @@ public final class SpringXMLConfigEditorUtils {
         private List<String> names;
 
         public NodeBasedSpringBean(Map<String, String> beanAttribs) {
-            this.className = beanAttribs.get("class"); // NOI18N
-            this.factoryBean = beanAttribs.get("factory-bean"); // NOI18N
-            this.factoryMethod = beanAttribs.get("factory-method"); // NOI18N
-            this.parent = beanAttribs.get("parent"); // NOI18N
-            this.id = beanAttribs.get("id"); // NOI18N
+            this.className = beanAttribs.get(BeansAttributes.CLASS); 
+            this.factoryBean = beanAttribs.get(BeansAttributes.FACTORY_BEAN); 
+            this.factoryMethod = beanAttribs.get(BeansAttributes.FACTORY_METHOD); 
+            this.parent = beanAttribs.get(BeansAttributes.PARENT); 
+            this.id = beanAttribs.get(BeansAttributes.ID); 
             
-            if(beanAttribs.get("name") == null) { // NOI18N
+            if(beanAttribs.get(BeansAttributes.NAME) == null) { // NOI18N
                 this.names = Collections.<String>emptyList();
             }
-            this.names = StringUtils.tokenize(beanAttribs.get("name"), BEAN_NAME_DELIMITERS); // NOI18N
+            this.names = StringUtils.tokenize(beanAttribs.get(BeansAttributes.NAME), BEAN_NAME_DELIMITERS); // NOI18N
         }
         
         public String getId() {

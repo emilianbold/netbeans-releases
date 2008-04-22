@@ -18,12 +18,21 @@
  */
 package org.netbeans.modules.xslt.project.wizard;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 import org.netbeans.modules.xslt.project.XsltproProjectGenerator;
 import org.netbeans.modules.xslt.tmap.util.Util;
@@ -43,6 +52,7 @@ import org.openide.loaders.DataObject;
 public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIterator {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(NewXsltproProjectWizardIterator.class.getName());
 
     public NewXsltproProjectWizardIterator() {
         super();
@@ -92,7 +102,14 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
                     .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     srcFo, "transformmap"); //NOI18N
 
+            // TODO m
+            String projectNamespace = "http://enterprise.netbeans.org/transformmap/"+ProjectUtils.getInformation(p).getName(); // NOI18N
+            Util.initialiseNamespace(tMapFo, projectNamespace);
+            
             SoaUiUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
         }
+    }
+    
+    private void filterOutWrongCharacters() {
     }
 }

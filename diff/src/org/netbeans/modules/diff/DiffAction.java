@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.diff;
 
-import java.awt.Component;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -59,23 +56,14 @@ import org.openide.util.Cancellable;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 
-//import org.netbeans.modules.diff.cmdline.DiffCommand;
-//import org.netbeans.modules.vcscore.diff.AbstractDiff;
-
 import org.netbeans.api.diff.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.diff.builtin.DefaultDiff;
+import org.netbeans.modules.diff.builtin.SingleDiffPanel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
-
-//import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-//import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
-//import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
-
-//import org.netbeans.modules.diff.io.diff.*;
 
 /**
  * Diff Action. It gets the default diff visualizer and diff provider if needed
@@ -172,24 +160,8 @@ public class DiffAction extends NodeAction {
                     "MSG_NoDiffVisualizer")));
             return ;
         }
-        Component tp;
-        Reader r1 = null;
-        Reader r2 = null;
+        SingleDiffPanel sdp = null;
         try {
-            if (type != null) {
-                r1 = new InputStreamReader(fo1.getInputStream(), FileEncodingQuery.getEncoding(type));
-                r2 = new InputStreamReader(fo2.getInputStream(), FileEncodingQuery.getEncoding(type));
-            } else {
-                r1 = new InputStreamReader(fo1.getInputStream(), FileEncodingQuery.getEncoding(fo1));
-                r2 = new InputStreamReader(fo2.getInputStream(), FileEncodingQuery.getEncoding(fo2));
-            }
-            String mimeType;
-            if (type != null) {
-                mimeType = type.getMIMEType();
-            } else {
-                mimeType = fo1.getMIMEType();
-            }
-            
             final Thread victim = Thread.currentThread();
             Cancellable killer = new Cancellable() {
                 public boolean cancel() {
@@ -201,36 +173,22 @@ public class DiffAction extends NodeAction {
             ProgressHandle ph = ProgressHandleFactory.createHandle(name, killer);
             try {
                 ph.start();
-                tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
-                                     r1,
-                                     fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
-                                     r2, mimeType);
+                sdp = new SingleDiffPanel(fo1, fo2, type);
             } finally {
                 ph.finish();
             }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return ;
-        } finally {
-            try {
-                if (r1 != null) r1.close();
-            } catch (IOException ioex) {}
-            try {
-                if (r2 != null) r2.close();
-            } catch (IOException ioex) {}
         }
         //System.out.println("tp = "+tp);
-        if (tp != null) {
-            final Component ftp = tp;
+        if (sdp != null) {
+            final SingleDiffPanel fsdp = sdp;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (ftp instanceof TopComponent) {
-                        ((TopComponent) ftp).open();
-                        ((TopComponent) ftp).requestActive();
-                    } else {
-                        ftp.setVisible(true);
-                        ftp.requestFocusInWindow();
-                    }
+                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp);
+                    dtc.open();
+                    dtc.requestActive();
                 }
             });
         }

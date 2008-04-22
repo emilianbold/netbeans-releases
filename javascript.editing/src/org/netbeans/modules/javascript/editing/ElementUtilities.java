@@ -61,7 +61,10 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
-public class ElementUtilities {
+public final class ElementUtilities {
+    private ElementUtilities() {
+        // Utility class, not instantiatable
+    }
 
     public static Element getElement(CompilationInfo info, ElementHandle handle) {
         Element element = null;

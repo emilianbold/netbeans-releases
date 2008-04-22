@@ -729,7 +729,7 @@ Can also register global XML catalogs as instances of <code>CatalogReader</code>
  <answer id="arch-overall">
   <p>
   XML APIs provide support for editing XML files and leveraging XML in developed application.
-   <api name="XMLAPIs" group="java" type="export" category="devel" url="index.html"/>
+   <api name="XMLAPIs" group="java" type="export" category="official" url="index.html"/>
   </p>
   <!-- XXX need more detailed description -->
  </answer>

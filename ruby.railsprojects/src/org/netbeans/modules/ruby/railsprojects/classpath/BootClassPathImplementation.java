@@ -109,13 +109,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
     }
 
-//    private static final String PLATFORM_ACTIVE = "platform.active";        //NOI18N
-//    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
-//    private static final String J2SE = "j2se";                              //NOI18N
-
     private File projectDirectory;
     private final PropertyEvaluator evaluator;
-//    private JavaPlatformManager platformManager;
     //name of project active platform
     private String activePlatformName;
     //active platform is valid (not broken reference)
@@ -132,8 +127,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     public synchronized List<PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
-//            JavaPlatform jp = findActivePlatform ();
-//            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
             List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
             RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
@@ -259,17 +252,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.support.removePropertyChangeListener (listener);
     }
 
-//    private JavaPlatform findActivePlatform () {
-//        if (this.platformManager == null) {
-//            this.platformManager = JavaPlatformManager.getDefault();
-//            this.platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, this.platformManager));
-//        }                
-//        this.activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-//        final JavaPlatform activePlatform = RubyProjectUtil.getActivePlatform (this.activePlatformName);
-//        this.isActivePlatformValid = activePlatform != null;
-//        return activePlatform;
-//    }
-//    
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == RubyInstallation.getInstance() && evt.getPropertyName().equals("roots")) {
             resetCache();

@@ -48,15 +48,12 @@ import org.openide.util.lookup.ProxyLookup;
 import org.xml.sax.InputSource;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
 public class XSLTDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 1L;
-    
-//    private transient final DataObjectCookieManager cookieManager;
     private static final String FILE_DESC = "LBL_FileNode_desc";      // NOI18N
     private transient AtomicReference<Lookup> myLookup =
             new AtomicReference<Lookup>();
@@ -72,14 +69,12 @@ public class XSLTDataObject extends MultiDataObject {
         CookieSet cookies = getCookieSet();
         cookies.add( getEditorSupport() );
         
-               // add check and validate cookies
-        InputSource is = DataObjectAdapters.inputSource (this);
-        cookies.add(new CheckXMLSupport (is));
-        cookies.add(new ValidateXSLSupport (is));
+        InputSource is = DataObjectAdapters.inputSource(this);
+        cookies.add(new CheckXMLSupport(is));
+        cookies.add(new ValidateXSLSupport(is));
         
         Source source = DataObjectAdapters.source(this);
         cookies.add(new TransformableSupport(source));
-//        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
     
     public Lookup getLookup() {
@@ -98,9 +93,6 @@ public class XSLTDataObject extends MultiDataObject {
             // add lazy initialization elements
             InstanceContent.Convertor<Class, Object> conv =
                     new InstanceContent.Convertor<Class, Object>() {
-// TODO a
-//                private AtomicReference<XSLTValidationController> valControllerRef = 
-//                        new AtomicReference<XSLTValidationController>();
                 
                 public Object convert(Class obj) {
                     if (obj == XslModel.class) {
@@ -114,12 +106,6 @@ public class XSLTDataObject extends MultiDataObject {
                     if (obj == XSLTDataEditorSupport.class) {
                         return getEditorSupport();
                     }
-                    //
-//                    if (obj == XSLTValidationController.class) {
-//                        valControllerRef.compareAndSet(null, 
-//                                new XSLTValidationController(getEditorSupport().getXslModel()));
-//                        return valControllerRef.get();
-//                    }
                     return null;
                 }
 
@@ -139,18 +125,13 @@ public class XSLTDataObject extends MultiDataObject {
             list.add(Lookups.fixed(
                     new Class[] {XslModel.class, 
                     MapperContext.class, 
-                    XSLTDataEditorSupport.class
-                    /*, XSLTValidationController.class*/}
-                    , conv));
-            //
-            
+                    XSLTDataEditorSupport.class}, conv));
             //
             // WARNING
             // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
             // overflow
             // WARNING
             //
-            
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
             
             // Lookup is now available from this Lookup.Provider but only from this
@@ -240,6 +221,5 @@ public class XSLTDataObject extends MultiDataObject {
 //            }
 //            };
         }
-        
     }
 }

@@ -102,7 +102,7 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
 
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         Node diag1 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|AbbrevEditor");        
-        Node diag2 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|ViewRegisters");        
+        Node diag2 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|IOProgressMonitor");        
         JTreeOperator projectTree = new ProjectsTabOperator().tree();
 
         TreePath path1 = diag1.getTreePath();
@@ -114,6 +114,8 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
         new EventTool().waitNoEvent(500);
         projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
 
+        log(projectTree.getSelectionCount() + " elements selected");
+        
         JPopupMenuOperator selectMenu = new JPopupMenuOperator();
  
         selectMenu.pushMenu("Create Diagram From Selected Elements");

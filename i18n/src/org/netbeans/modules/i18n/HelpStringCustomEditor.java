@@ -52,6 +52,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
@@ -93,10 +94,16 @@ public class HelpStringCustomEditor extends JPanel {
 
     /**
     * @return property value that is result of <code>CodeCustomEditor</code>.
-    * @exception <code>InvalidStateException</code> when the custom property editor does not represent valid property value
     */
     public Object getPropertyValue() {
-        return (String)combo.getSelectedItem();
+        Document d = ((JTextField) combo.getEditor().getEditorComponent()).getDocument();
+        String res = "";
+        try {
+            res = d.getText(0, d.getLength());
+        } catch (BadLocationException ble) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+        }
+        return res;
     }
     
     

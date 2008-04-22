@@ -891,8 +891,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         
         // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
         private EditorKit getEditorKit() {
-            if(kit == null)
+            if(kit == null) {
                 kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
+            } // NOI18N
             return kit;
         }
 

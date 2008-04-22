@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 
 /**
@@ -27,41 +25,31 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Param extends TMapComponent, ReferenceCollection {
+public interface Param extends Nameable, ReferenceCollection {
     TMapComponents EL_TYPE = TMapComponents.PARAM;
-    
-    String NAME = "name"; // NOI18N
-     
+
     String TYPE = "type"; // NOI18N
-    
+
     String VALUE = "value"; // NOI18N
-    
+
     String CONTENT = "content"; // NOI18N property to describe text value of param element
-    
-    String getName();
-    
-    void setName(String name);
-    
+
     ParamType getType();
-    
+
     void setType(ParamType type);
-    
+
     String getValue();
-    
+
     VariableReference getVariableReference();
-    
+
     void setVariableReference(VariableReference varRef);
-    
-    URI getUri() throws URISyntaxException ;
-    
-    void setUri(URI uri);
-    
+
     void setLiteralValue(String value);
-    
+
     String getLiteralValue();
-    
+
     void setContent(String content);
-    
+
     String getContent();
-    
+
 }

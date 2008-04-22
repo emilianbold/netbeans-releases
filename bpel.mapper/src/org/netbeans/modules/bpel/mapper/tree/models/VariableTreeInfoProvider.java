@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.tree.models;
 
 import java.awt.Image;
@@ -32,7 +31,7 @@ import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
@@ -100,9 +99,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         } else if (treeItem instanceof VariableDeclarationScope) {
             return null;
         } else if (treeItem instanceof VariableDeclaration) {
-            targetSComp = Util.getVariableSchemaType((VariableDeclaration)treeItem);
+            targetSComp = EditorUtil.getVariableSchemaType((VariableDeclaration)treeItem);
         } else if (treeItem instanceof Part) {
-            targetSComp = Util.getPartType((Part)treeItem);
+            targetSComp = EditorUtil.getPartType((Part)treeItem);
         } else if (treeItem instanceof XPathSchemaContextHolder) {
             XPathSchemaContext sContext = 
                     ((XPathSchemaContextHolder)treeItem).getSchemaContext();
@@ -177,7 +176,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             //
             Class<? extends BpelEntity> bpelInterface = 
                     ((BpelEntity)treeItem).getElementType();
-            NodeType nodeType = Util.getBasicNodeType(bpelInterface);
+            NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 return nodeType.getDisplayName();
             }
@@ -199,7 +198,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof BpelEntity) {
             if (treeItem instanceof Variable) {
                 Variable var = (Variable)treeItem;
-                VariableStereotype vst = Util.getVariableStereotype(var);
+                VariableStereotype vst = EditorUtil.getVariableStereotype(var);
                 Image img = NodeType.VARIABLE.getImage(vst);
                 return new ImageIcon(img);
             }
@@ -210,7 +209,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             //
             Class<? extends BpelEntity> bpelInterface = 
                     ((BpelEntity)treeItem).getElementType();
-            NodeType nodeType = Util.getBasicNodeType(bpelInterface);
+            NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 Icon icon = nodeType.getIcon();
                 if (icon != null) {
@@ -221,7 +220,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         //
         if (treeItem instanceof AbstractVariableDeclaration) {
             AbstractVariableDeclaration var = (AbstractVariableDeclaration)treeItem;
-            VariableStereotype vst = Util.getVariableStereotype(var);
+            VariableStereotype vst = EditorUtil.getVariableStereotype(var);
             Image img = NodeType.VARIABLE.getImage(vst);
             return new ImageIcon(img);
         }
@@ -358,12 +357,12 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             } else if (treeItem instanceof VariableDeclarationWrapper) {
                 VariableDeclaration varDecl = 
                         ((VariableDeclarationWrapper)treeItem).getDelegate();
-                sComp = Util.getVariableSchemaType(varDecl);
+                sComp = EditorUtil.getVariableSchemaType(varDecl);
             } else if (treeItem instanceof VariableDeclaration) {
-                sComp = Util.getVariableSchemaType((VariableDeclaration)treeItem);
+                sComp = EditorUtil.getVariableSchemaType((VariableDeclaration)treeItem);
             } else if (treeItem instanceof Part) {
                 Part part = (Part)treeItem;
-                sComp = Util.getPartType(part);
+                sComp = EditorUtil.getPartType(part);
             } 
             if (sComp != null) {
                 //
@@ -502,5 +501,4 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 VariableTreeInfoProvider.class, "NOT_NAMED_TYPE"); // NOI18N
         return notNamedTypeLbl;
     }
-
 }

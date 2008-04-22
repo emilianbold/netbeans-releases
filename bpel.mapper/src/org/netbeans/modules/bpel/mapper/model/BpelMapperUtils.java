@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
@@ -55,7 +55,7 @@ public final class BpelMapperUtils {
             if (lastPathObj instanceof VariableDeclarationScope) {
                 return null;
             } else if (lastPathObj instanceof AbstractVariableDeclaration) {
-                SchemaComponent varType = Util.getVariableSchemaType(
+                SchemaComponent varType = EditorUtil.getVariableSchemaType(
                         (AbstractVariableDeclaration)lastPathObj);
                 if (varType == null) {
                     // Null can be for example in case of message variable
@@ -66,7 +66,7 @@ public final class BpelMapperUtils {
                 }
             } else if (lastPathObj instanceof Part) {
                 Part part = (Part)lastPathObj;
-                SchemaComponent partType = Util.getPartType(part);
+                SchemaComponent partType = EditorUtil.getPartType(part);
                 if (partType != null) {
                     return XPathMetadataUtils.calculateXPathType(partType);
                 }

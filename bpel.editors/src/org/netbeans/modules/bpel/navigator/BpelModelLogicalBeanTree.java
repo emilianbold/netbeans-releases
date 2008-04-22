@@ -134,9 +134,9 @@ public class BpelModelLogicalBeanTree
                 elem = ((UsageFilterNode)elem).getOriginal();
             } else if (elem instanceof BpelNode 
                     && ((BpelNode)elem).getReference() instanceof BpelEntity
-                    && !(org.netbeans.modules.bpel.editors.api.utils.Util.isNavigatorShowableNodeType(((BpelNode)elem).getNodeType()))) 
+                    && !(org.netbeans.modules.bpel.editors.api.utils.EditorUtil.isNavigatorShowableNodeType(((BpelNode)elem).getNodeType()))) 
             {
-                elem = org.netbeans.modules.bpel.editors.api.utils.Util.getClosestNavigatorNode(
+                elem = org.netbeans.modules.bpel.editors.api.utils.EditorUtil.getClosestNavigatorNode(
                         (BpelEntity)((BpelNode)elem).getReference(),
                         elem.getLookup());
             }
@@ -191,8 +191,7 @@ public class BpelModelLogicalBeanTree
     
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        TopComponent navigatorTopComponent 
-                = BpelNavigatorController.getNavigatorTC();
+        TopComponent navigatorTopComponent = BpelNavigatorController.getNavigatorTC();
         
         if (propertyName.equals(TopComponent.Registry.PROP_ACTIVATED)) {
             if (TopComponent.getRegistry().getActivated() == navigatorTopComponent) {
@@ -280,8 +279,7 @@ public class BpelModelLogicalBeanTree
         });
     }
     
-    public void notifyArrayUpdated(ArrayUpdateEvent event) {
-    }
+    public void notifyArrayUpdated(ArrayUpdateEvent event) {}
     
     private void selectEntity(BpelEntity entity){
         if (entity == null){
@@ -313,11 +311,10 @@ public class BpelModelLogicalBeanTree
     }
     
     private void triggerValidation() {
-        BPELValidationController controller = (BPELValidationController) 
-             myContextLookup.lookup( BPELValidationController.class );
-        if ( controller!= null ) {
-            controller.triggerValidation( true );
+        BPELValidationController controller = (BPELValidationController) myContextLookup.lookup(BPELValidationController.class);
+
+        if (controller != null) {
+            controller.triggerValidation();
         }
     }
 }
-

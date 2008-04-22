@@ -61,12 +61,12 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
-import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
+import org.netbeans.modules.bpel.search.impl.output.View;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
-import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -83,7 +83,7 @@ public final class SearchAction extends IconAction {
     super(
       i18n(SearchAction.class, name),
       i18n(SearchAction.class, toolTip),
-      icon(Util.class, icon)
+      icon(View.class, icon)
     );
     setEnabled(false);
   }
@@ -196,7 +196,7 @@ public final class SearchAction extends IconAction {
     if (data == null) {
       return null;
     }
-    Model model = CoreUtil.getBpelModel(data);
+    Model model = EditorUtil.getBpelModel(data);
 //out("model: " + model);
 
     if (model != null) {

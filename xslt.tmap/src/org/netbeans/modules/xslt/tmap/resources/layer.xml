@@ -76,7 +76,8 @@
 
 
     <folder name="org-netbeans-xsltpro">
-        <file name="transformmap.xml" url="TMapTemplate.xml"/>
+        <file name="transformmap.xml" url="EmptyTMap.template"/>
+        <!--file name="transformmap.xml" url="TMapTemplate.xml"/-->
         <file name="genPortmap.xsl" url="genPortmap.xsl"/>
     </folder>
     <!--folder name="Templates">

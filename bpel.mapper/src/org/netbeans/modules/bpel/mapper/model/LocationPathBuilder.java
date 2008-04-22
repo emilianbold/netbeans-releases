@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -45,14 +45,14 @@ public class LocationPathBuilder {
         
         public LocationPathBuilder(BpelEntity contextEntity, Part part, Query query) {
             mContextEntity = contextEntity;
-            mSchemaContextComp = Util.getPartType(part);
+            mSchemaContextComp = EditorUtil.getPartType(part);
             mLocationPathText = query.getContent();
         }
 
         public LocationPathBuilder(BpelEntity contextEntity, 
                 AbstractVariableDeclaration varDecl, Query query) {
             mContextEntity = contextEntity;
-            mSchemaContextComp = Util.getVariableSchemaType(varDecl);
+            mSchemaContextComp = EditorUtil.getVariableSchemaType(varDecl);
             mLocationPathText = query.getContent();
         }
 

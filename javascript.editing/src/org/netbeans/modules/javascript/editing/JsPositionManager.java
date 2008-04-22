@@ -40,15 +40,13 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import java.util.List;
 
 import org.mozilla.javascript.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.javascript.editing.embedding.JsModel;
+import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 
 /**
@@ -66,7 +64,7 @@ public class JsPositionManager implements PositionManager {
         Element object = JsParser.resolveHandle(info, objectHandle);
         if (object instanceof AstElement) {
             Node target = ((AstElement)object).getNode();
-            return new OffsetRange(target.getSourceStart(), target.getSourceEnd());
+            return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
         } else {
             throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
                 object) != null) ? object.getClass().getName() : "null");

@@ -131,7 +131,7 @@ public class XsltproProjectGenerator {
             dirFO = FileUtil.toFileObject(dir);
         }
 
-        // vlv # 113228
+        // # 113228
         if (dirFO == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -165,7 +165,7 @@ public class XsltproProjectGenerator {
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject (dir);
 
-        // vlv # 113228
+        // # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }

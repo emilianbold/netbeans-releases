@@ -335,6 +335,10 @@ public final class WebProject implements Project, AntProjectListener {
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
     }
+
+    public ClassPathModifier getClassPathModifier() {
+        return cpMod;
+    }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
         return new ClassPathModifier.Callback() {

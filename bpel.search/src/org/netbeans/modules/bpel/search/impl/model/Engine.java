@@ -44,7 +44,7 @@ import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.EditorUtil;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
@@ -69,7 +69,7 @@ public final class Engine extends SearchEngine.Adapter {
     }
 //out();
     fireSearchStarted(option);
-    search(Util.getRoot((Model) myList.get(0)), ""); // NOI18N
+    search(EditorUtil.getRoot((Model) myList.get(0)), ""); // NOI18N
     fireSearchFinished(option);
   }
 

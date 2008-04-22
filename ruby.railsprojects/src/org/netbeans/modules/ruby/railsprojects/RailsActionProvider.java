@@ -134,7 +134,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     RailsProject project;
     
     // Ant project helper of the project
-    private UpdateHelper updateHelper;
+    private final UpdateHelper updateHelper;
     
         
     /**Set of commands which are affected by background scanning*/
@@ -557,6 +557,9 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
+        if (!getPlatform().showWarningIfInvalid()) {
+            return;
+        }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
         RubyExecution service = new RubyExecution(desc,
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
@@ -608,24 +611,22 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         // Locate the target and specify it by full path.
         // This is necessary because JRuby and Ruby don't locate the script from the load
         // path it seems.
-        if (!new File(target).exists()) {
-            if (srcPath != null && srcPath.length > 0) {
-                boolean found = false; // Prefer the first match
-                for (FileObject root : srcPath) {
+        if (!new File(target).exists() && srcPath != null && srcPath.length > 0) {
+            boolean found = false; // Prefer the first match
+            for (FileObject root : srcPath) {
+                FileObject fo = root.getFileObject(target);
+                if (fo != null) {
+                    target = FileUtil.toFile(fo).getAbsolutePath();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && testPath != null) {
+                for (FileObject root : testPath) {
                     FileObject fo = root.getFileObject(target);
                     if (fo != null) {
                         target = FileUtil.toFile(fo).getAbsolutePath();
-                        found = true;
                         break;
-                    }
-                }
-                if (!found && testPath != null) {
-                    for (FileObject root : testPath) {
-                        FileObject fo = root.getFileObject(target);
-                        if (fo != null) {
-                            target = FileUtil.toFile(fo).getAbsolutePath();
-                            break;
-                        }
                     }
                 }
             }

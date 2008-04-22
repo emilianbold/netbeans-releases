@@ -266,7 +266,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
-            gdb.data_list_register_names("");
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb);
@@ -375,6 +374,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.info_proc(); // we get the PID from this...
                 }
             }
+            gdb.data_list_register_names("");
         } catch (Exception ex) {
             if (startupTimer != null) {
                 startupTimer.cancel();

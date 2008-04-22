@@ -48,6 +48,8 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.BeansAttributes;
+import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
@@ -62,8 +64,6 @@ import org.openide.util.Exceptions;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class BeansRefCompletor extends Completor {
-
-    private static final String BEAN_TAG = "bean"; // NOI18N
 
     final private boolean includeGlobal;
 
@@ -84,14 +84,14 @@ public class BeansRefCompletor extends Completor {
         final List<String> cNames = new ArrayList<String>();
         String tagName = context.getTag().getNodeName();
         // get current bean parameters
-        if (tagName.equals(BEAN_TAG) && SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "id")) { // NOI18N
-            String cId = SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "id"); // NOI18N
+        if (tagName.equals(BeansElements.BEAN) && SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), BeansAttributes.ID)) {
+            String cId = SpringXMLConfigEditorUtils.getAttribute(context.getTag(), BeansAttributes.ID); 
             cNames.add(cId);
         }
-        if (tagName.equals(BEAN_TAG) && SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
+        if (tagName.equals(BeansElements.BEAN) && SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), BeansAttributes.NAME)) { 
             List<String> names = StringUtils.tokenize(
-                    SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"),
-                    SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
+                    SpringXMLConfigEditorUtils.getAttribute(context.getTag(), BeansAttributes.NAME),
+                    SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS);
             cNames.addAll(names);
         }
 

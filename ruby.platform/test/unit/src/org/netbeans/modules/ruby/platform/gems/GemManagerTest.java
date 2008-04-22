@@ -167,7 +167,7 @@ public class GemManagerTest extends RubyTestBase {
         jruby.setGemHome(FileUtil.toFile(gemRepo));
         String version = "0.10.0";
         installFakeGem("ruby-debug-base", version, platform);
-        assertEquals("native fast debugger available", version, gemManager.getVersion("ruby-debug-base"));
+        assertEquals("native fast debugger available", version, gemManager.getLatestVersion("ruby-debug-base"));
         assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
         uninstallFakeGem("ruby-debug-base", version, platform);
         installFakeGem("ruby-debug-base", version, "java", platform);
@@ -229,15 +229,15 @@ public class GemManagerTest extends RubyTestBase {
         assertFalse(installedGems.contains("sqlite"));
         assertFalse(installedGems.contains("sqlite3-ruby"));
 
-        assertEquals("1.0.0", gemManager.getVersion("foo"));
-        assertEquals(null, gemManager.getVersion("notagem"));
-        assertEquals(null, gemManager.getVersion("nosuchgem"));
-        assertEquals(null, gemManager.getVersion("sqlite"));
-        assertEquals(null, gemManager.getVersion("sqlite3-ruby"));
-        assertEquals("1.0.0", gemManager.getVersion("mongrel"));
-        assertEquals("0.3.3", gemManager.getVersion("bar-baz"));
-        assertEquals("0.1.1", gemManager.getVersion("pdf-writer"));
-        assertEquals("1.15.3.6752", gemManager.getVersion("activerecord"));
+        assertEquals("1.0.0", gemManager.getLatestVersion("foo"));
+        assertEquals(null, gemManager.getLatestVersion("notagem"));
+        assertEquals(null, gemManager.getLatestVersion("nosuchgem"));
+        assertEquals(null, gemManager.getLatestVersion("sqlite"));
+        assertEquals(null, gemManager.getLatestVersion("sqlite3-ruby"));
+        assertEquals("1.0.0", gemManager.getLatestVersion("mongrel"));
+        assertEquals("0.3.3", gemManager.getLatestVersion("bar-baz"));
+        assertEquals("0.1.1", gemManager.getLatestVersion("pdf-writer"));
+        assertEquals("1.15.3.6752", gemManager.getLatestVersion("activerecord"));
     }
     
     public void testInstallLocal() throws IOException {
@@ -249,9 +249,9 @@ public class GemManagerTest extends RubyTestBase {
         jruby.setGemHome(FileUtil.toFile(gemRepo));
         jruby.getInfo().setGemPath("");
         File rakeGem = getRakeGem();
-        assertNull("rake is not installed", gemManager.getVersion("rake"));
+        assertNull("rake is not installed", gemManager.getLatestVersion("rake"));
         gemManager.installLocal(rakeGem, null, false, false, false, null);
-        assertNotNull("rake is installed", gemManager.getVersion("rake"));
+        assertNotNull("rake is installed", gemManager.getLatestVersion("rake"));
     }
 
     private File getRakeGem() throws IOException {

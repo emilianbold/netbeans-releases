@@ -51,7 +51,6 @@ import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
 import org.netbeans.modules.bpel.search.impl.ui.Element;
-import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -61,7 +60,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class View extends TopComponent implements SearchListener {
 
   public View() {
-    setIcon(icon(Util.class, "find").getImage()); // NOI18N
+    setIcon(icon(View.class, "find").getImage()); // NOI18N
     setLayout(new GridBagLayout());
     setFocusable(true);
     myList = new Tree();
@@ -149,6 +148,7 @@ public final class View extends TopComponent implements SearchListener {
   protected void componentClosed()
   {
     super.componentClosed();
+    myTabbed.closeAllTabs();
     myList = null;
     myTree = null;
   }

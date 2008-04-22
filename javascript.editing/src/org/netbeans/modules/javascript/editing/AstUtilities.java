@@ -71,7 +71,11 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class AstUtilities {
+public final class AstUtilities {
+    private AstUtilities() {
+        // This is a utility class
+    }
+
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
@@ -278,7 +282,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 BaseDocument doc = (BaseDocument) info.getDocument();
                 int astOffset = node.getSourceStart();
                 int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-                if (lexOffset != -1) {
+                if (lexOffset != -1 && doc != null) {
                     int rowStart = Utilities.getRowStart(doc, lexOffset);
                     int rowEnd = Utilities.getRowEnd(doc, rowStart);
                     String line = doc.getText(rowStart, rowEnd-rowStart);

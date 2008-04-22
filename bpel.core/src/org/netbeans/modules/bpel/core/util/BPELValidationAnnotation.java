@@ -53,15 +53,7 @@ import org.openide.text.Line;
  */
 final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
     
-  public String getAnnotationType() {
-    return "bpel-validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void show(Annotatable annotatable, String message) {
+  public BPELValidationAnnotation(Annotatable annotatable, String message) {
     myMessage = message;
 
     if (annotatable != null) {
@@ -74,6 +66,14 @@ final class BPELValidationAnnotation extends Annotation implements PropertyChang
       attach(annotatable);
       annotatable.addPropertyChangeListener(this);
     }
+  }
+
+  public String getAnnotationType() {
+    return "bpel-validation-annotation"; // NOI18N
+  }
+  
+  public String getShortDescription() {
+    return myMessage;
   }
   
   public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {

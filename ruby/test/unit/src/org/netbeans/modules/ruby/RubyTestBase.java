@@ -153,29 +153,12 @@ TranslatedSource translatedSource = null; // TODO
         return RubyInstallation.RUBY_MIME_TYPE;
     }
     
-//    protected TestCompilationInfo getInfo(String file) throws Exception {
-//        FileObject fileObject = getTestFile(file);
-//        return getInfo(fileObject);
-//    }
-
     @Override
     protected GsfTestCompilationInfo getInfo(FileObject fo, BaseDocument doc, String source) throws Exception {
         return new TestCompilationInfo(this, fo, doc, source);
     }
     
-//    
-//    protected TestCompilationInfo getInfo(FileObject fileObject) throws Exception {
-//        String text = readFile(fileObject);
-//        if (text == null) {
-//            text = "";
-//        }
-//        BaseDocument doc = getDocument(text);
-//
-//        TestCompilationInfo info = new TestCompilationInfo(this, fileObject, doc, text);
-//
-//        return info;
-//    }
-    
+    @Override
     protected Formatter getFormatter(IndentPrefs preferences) {
         if (preferences == null) {
             preferences = new IndentPrefs(2,2);
