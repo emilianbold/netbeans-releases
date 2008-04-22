@@ -242,7 +242,11 @@ public class Action {
         } else try {
             this.systemActionClass = Class.forName(systemActionClass);
         } catch (ClassNotFoundException e) {
-            this.systemActionClass = null;
+            try {
+                this.systemActionClass = Class.forName(systemActionClass, true, Thread.currentThread().getContextClassLoader());
+            } catch (ClassNotFoundException e2) {
+                this.systemActionClass = null;
+            }
         }            
         this.keystrokes = keystrokes;
     }
