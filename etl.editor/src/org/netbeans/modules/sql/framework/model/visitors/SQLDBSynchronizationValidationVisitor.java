@@ -166,7 +166,7 @@ public class SQLDBSynchronizationValidationVisitor {
 
         if (!columnMatched) {
             // new column found
-            String nbBundle2 = mLoc.t("BUND298: Column {0} is removed or updated for table {1} in Database", collabColumn.getName(), table.getName());
+            String nbBundle2 = mLoc.t("BUND928: Found new column{0} in Database ->{1}" , collabColumn.getName(),table.getParent().getModelName());
             String desc = nbBundle2.substring(15);
             ValidationInfo vInfo = new ValidationInfoImpl(table, desc, ValidationInfo.VALIDATION_ERROR);
             this.validationInfoList.add(vInfo);
