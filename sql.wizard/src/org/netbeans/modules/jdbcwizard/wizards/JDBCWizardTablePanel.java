@@ -242,9 +242,8 @@ public class JDBCWizardTablePanel extends JPanel {
         private static final long serialVersionUID = 1L;
         private JPanel myButPanel;
 
-        MyButtonRenderer(final String disp) {
+        MyButtonRenderer() {
             super();
-            this.setText(disp);
             this.setOpaque(true);
             this.setHorizontalAlignment(SwingConstants.CENTER);
             this.myButPanel = new JPanel();
@@ -301,7 +300,8 @@ public class JDBCWizardTablePanel extends JPanel {
 
                 this.setEnabled(true);
                 this.setFocusable(true);
-                this.setText("Advanced..");
+                this.setText(NbBundle.getMessage(JDBCWizardTablePanel.class,"LABEL_BTN_ADV"));
+                this.setMnemonic(NbBundle.getMessage(JDBCWizardTablePanel.class,"MNE_BTN_ADV").charAt(0));
             }
             return this.myButPanel;
         }
@@ -348,7 +348,8 @@ public class JDBCWizardTablePanel extends JPanel {
 					this.myButPanel.setBackground(table.getBackground());
 				}
 				this.setFocusable(true);
-				this.setText("Advanced..");
+				this.setText(NbBundle.getMessage(JDBCWizardTablePanel.class,"LABEL_BTN_ADV"));
+                                this.setMnemonic(NbBundle.getMessage(JDBCWizardTablePanel.class,"MNE_BTN_ADV").charAt(0));
 			}
 			return this.myButPanel;
 		}
@@ -403,13 +404,13 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     class ColumnAction implements ActionListener {
-        protected JButton okbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_OK"));
+        protected JButton okbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"LABEL_BTN_OK"));
 
-        protected JButton cancelbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_CANCEL"));
+        protected JButton cancelbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"LABEL_BTN_CANCEL"));
         
-        protected JButton selectallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_SELECT_ALL"));
+        protected JButton selectallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"LABEL_BTN_SELECT_ALL"));
         
-        protected JButton clearallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"BTN_CLEAR_ALL"));
+        protected JButton clearallbutton = new JButton(NbBundle.getMessage(JDBCWizardTablePanel.class,"LABEL_BTN_CLEAR_ALL"));
 
         protected JPanel buttonpanel = new JPanel();
 
@@ -441,12 +442,17 @@ public class JDBCWizardTablePanel extends JPanel {
         
         RowDataWrapper takes;
         public ColumnAction(final RowDataWrapper takes) {
-        	this.takes = takes;
-        	columnDisplayDialog = new ColumnDialog(new JDialog(), true);
-        	this.columnDisplayDialog.setAlwaysOnTop(true);
+            this.takes = takes;
+            columnDisplayDialog = new ColumnDialog(new JDialog(), true);
+            this.columnDisplayDialog.setAlwaysOnTop(true);
             this.columnDisplayDialog.setResizable(true);
             this.columnDisplayDialog.setEnabled(true);
             this.columnDisplayDialog.setFocusable(true);
+            //set mnemonics for buttons
+            okbutton.setMnemonic(NbBundle.getMessage(JDBCWizardTablePanel.class,"MNE_BTN_OK").charAt(0));
+            cancelbutton.setMnemonic(NbBundle.getMessage(JDBCWizardTablePanel.class,"MNE_BTN_CANCEL").charAt(0));
+            selectallbutton.setMnemonic(NbBundle.getMessage(JDBCWizardTablePanel.class,"MNE_BTN_SELECT_ALL").charAt(0));
+            clearallbutton.setMnemonic(NbBundle.getMessage(JDBCWizardTablePanel.class,"MNE_BTN_CLEAR_ALL").charAt(0));
         }
 
         // this is the default action when the button corresponding to the
@@ -940,9 +946,9 @@ public class JDBCWizardTablePanel extends JPanel {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
-                .setCellRenderer(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
+                .setCellRenderer(new MyButtonRenderer());
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
-                .setCellEditor(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
+                .setCellEditor(new MyButtonRenderer());
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(true);
@@ -961,9 +967,9 @@ public class JDBCWizardTablePanel extends JPanel {
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
-                .setCellRenderer(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
+                .setCellRenderer(new MyButtonRenderer());
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
-                .setCellEditor(new MyButtonRenderer(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_ADV")));
+                .setCellEditor(new MyButtonRenderer());
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
         this.setPreferredSize(new Dimension(100, 100));
