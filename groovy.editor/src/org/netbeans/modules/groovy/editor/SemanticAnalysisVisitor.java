@@ -96,11 +96,13 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitField(FieldNode node) {
-        OffsetRange range = AstUtilities.getRange(node, doc);
-        highlights.put(range, ColoringAttributes.FIELD);
+        if (node.getLineNumber() > 0) {
+            OffsetRange range = AstUtilities.getRange(node, doc);
+            highlights.put(range, ColoringAttributes.FIELD);
 
-        if (node.isStatic()) {
-            highlights.put(range, ColoringAttributes.STATIC);
+            if (node.isStatic()) {
+                highlights.put(range, ColoringAttributes.STATIC);
+            }
         }
         super.visitField(node);
     }
