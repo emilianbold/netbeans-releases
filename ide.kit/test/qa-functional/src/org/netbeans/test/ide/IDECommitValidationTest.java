@@ -52,11 +52,11 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class IDECommitValidation extends JellyTestCase {
+public class IDECommitValidationTest extends JellyTestCase {
     
     
     /** Need to be defined because of JUnit */
-    public IDECommitValidation(String name) {
+    public IDECommitValidationTest(String name) {
         super(name);
     }
     
