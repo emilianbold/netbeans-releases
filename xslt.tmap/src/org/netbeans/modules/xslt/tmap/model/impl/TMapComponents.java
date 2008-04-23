@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;

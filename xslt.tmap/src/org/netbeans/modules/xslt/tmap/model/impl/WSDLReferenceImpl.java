@@ -33,7 +33,7 @@ import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
  */
 public class WSDLReferenceImpl<T extends ReferenceableWSDLComponent>
     extends AbstractNamedComponentReference<T> 
-    implements NamedComponentReference<T>, WSDLReference<T> 
+    implements NamedComponentReference<T>, WSDLReference<T>
 {
 
 
@@ -66,7 +66,7 @@ public class WSDLReferenceImpl<T extends ReferenceableWSDLComponent>
      * @see org.netbeans.modules.xml.xam.NamedComponentReference#getEffectiveNamespace()
      */
     public String getEffectiveNamespace() {
-        if  ( isBroken() ) {
+        if  ( !isResolved() ) {
             return XMLConstants.NULL_NS_URI;
         }
         return getReferenced().getModel().getDefinitions()
