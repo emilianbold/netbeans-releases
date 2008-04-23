@@ -199,7 +199,7 @@ class DataViewWorkerThread extends SwingWorker {
             DBTableMetadata meta = dataOutputPanel.meta;
             DB db = DBFactory.getInstance().getDatabase(meta.getDBType());
             conn = meta.createConnection();
-
+            if (conn != null) {
             String resetFetchSizeSQL = null;
             if (meta.isDBType(DBConstants.SYBASE)) {
                 conn.setAutoCommit(false);
@@ -261,7 +261,7 @@ class DataViewWorkerThread extends SwingWorker {
             if (resetFetchSizeSQL != null) {
                 stmt.execute(resetFetchSizeSQL);
             }
-
+            }
         } catch (Exception e) {
             this.errMsg = e.getMessage();
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
