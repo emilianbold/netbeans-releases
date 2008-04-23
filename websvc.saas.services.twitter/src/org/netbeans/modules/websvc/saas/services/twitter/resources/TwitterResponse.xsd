@@ -24,7 +24,7 @@
     <xsd:element name="authorized" type="xsd:boolean"/>
     <xsd:complexType name="statusType">
         <xsd:sequence>
-            <xsd:element name="created_at" type="xsd:dateTime"/>
+            <xsd:element name="created_at" type="xsd:string"/>
             <xsd:element name="id" type="xsd:string"/>
             <xsd:element name="text" type="xsd:string"/>
             <xsd:element name="source" type="xsd:string"/>
@@ -40,7 +40,7 @@
             <xsd:element name="text" type="xsd:string"/>
             <xsd:element name="sender_id" type="xsd:string"/>
             <xsd:element name="recipient_id" type="xsd:string"/>
-            <xsd:element name="created_at" type="xsd:dateTime"/>
+            <xsd:element name="created_at" type="xsd:string"/>
             <xsd:element name="sender_screen_name" type="xsd:string"/>
             <xsd:element name="recipient_screen_name" type="xsd:string"/>
             <xsd:element name="sender" type="userType"/>
@@ -70,7 +70,7 @@
             <xsd:element name="following" minOccurs="0" type="xsd:boolean"/>
             <xsd:element name="statuses_count" minOccurs="0" type="xsd:integer"/>
             <xsd:element name="status" minOccurs="0" type="statusType"/>
-            <xsd:element name="created_at" minOccurs="0" type="xsd:dateTime"/>
+            <xsd:element name="created_at" minOccurs="0" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
 </xsd:schema>
