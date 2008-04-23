@@ -69,7 +69,8 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
     }
 
     public void run(CompilationInfo ci) throws Exception {
-
+        cancelled = false;
+        
         if (cancelled) {
             return;
         }
