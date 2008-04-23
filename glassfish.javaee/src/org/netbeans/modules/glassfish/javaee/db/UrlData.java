@@ -54,11 +54,11 @@ public class UrlData {
     private static String DBURL_PATTERN =
             "([^/]*?)//([^:/]*?)(?::([^/]*?)|)/([^;\"]*)(?:;([^\"]*)|)"; // NOI18N
 
-    private static final int DB_PREFIX = 1;
-    private static final int DB_HOST = 2;
-    private static final int DB_PORT = 3;
-    private static final int DB_DATABASE_NAME= 4;
-    private static final int DB_SID = 5;
+    private static final int DB_PREFIX = 0;
+    private static final int DB_HOST = 1;
+    private static final int DB_PORT = 2;
+    private static final int DB_DATABASE_NAME = 3;
+    private static final int DB_SID = 4;
     private static final int NUM_PARTS = 5;
     
     private static Pattern urlPattern = Pattern.compile(DBURL_PATTERN);
