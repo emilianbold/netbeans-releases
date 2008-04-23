@@ -41,9 +41,11 @@
 
 package org.netbeans.junit;
 
+import java.lang.reflect.Constructor;
 import java.util.*;
 import junit.framework.TestSuite;
 import junit.framework.Test;
+import junit.framework.TestCase;
 
 /**
  * NetBeans extension to JUnit's TestSuite class.
@@ -65,7 +67,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * starting with "test" as test cases to the suite.
      *
      */
-    public NbTestSuite(Class theClass) {       
+    public NbTestSuite(Class<? extends TestCase> theClass) {       
         super(theClass);
     }
 
@@ -76,10 +78,19 @@ public class NbTestSuite extends TestSuite implements NbTest {
         super(name);
     }
     
+    void addTests(Class<? extends TestCase> clazz, String... names) throws Exception {
+        Constructor cnt = clazz.getConstructor(String.class);
+        for (String n : names) {
+            Test t = (Test)cnt.newInstance(n);
+            addTest(t);
+        }
+    }
+    
     
     /**
      * Adds a test to the suite.
      */
+    @Override
     public void addTest(Test test) {
         if (test instanceof NbTest) {
             //System.out.println("NbTestSuite.addTest(): Adding test with filter, test:"+test);
@@ -94,7 +105,8 @@ public class NbTestSuite extends TestSuite implements NbTest {
     /**
      * adds a test suite to this test suite
      */
-    public void addTestSuite(Class testClass) {
+    @Override
+    public void addTestSuite(Class<? extends TestCase> testClass) {
         NbTest t = new NbTestSuite(testClass);
         t.setFilter(fFilter);
         addTest(t);
@@ -140,7 +152,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param slowness this must be true: slowness * min &lt; max
      * @param repeat number of times to repeat the test
      */
-    public static NbTestSuite speedSuite (Class clazz, int slowness, int repeat) {
+    public static NbTestSuite speedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
         if (Boolean.getBoolean("ignore.random.failures")) {
             return new NbTestSuite("skipping");
         }
@@ -158,7 +170,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param slowness this must be true: slowness * min < max
      * @param repeat number of times to repeat the test
      */
-    public static NbTestSuite linearSpeedSuite (Class clazz, int slowness, int repeat) {
+    public static NbTestSuite linearSpeedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
         if (Boolean.getBoolean("ignore.random.failures")) {
             return new NbTestSuite("skipping");
         }
@@ -180,13 +192,14 @@ public class NbTestSuite extends TestSuite implements NbTest {
         /** type of query CONSTANT, LINEAR, etc. */
         private int type;
         
-        public SpeedSuite (Class clazz, int repeat, int slowness, int type) {
+        public SpeedSuite (Class<? extends TestCase> clazz, int repeat, int slowness, int type) {
             super (clazz);
             this.repeat = repeat;
             this.slowness = slowness;
             this.type = type;
         }
         
+        @Override
         public void run (junit.framework.TestResult result) {
             StringBuffer error = new StringBuffer ();
             for (int i = 0; i < repeat; i++) {
