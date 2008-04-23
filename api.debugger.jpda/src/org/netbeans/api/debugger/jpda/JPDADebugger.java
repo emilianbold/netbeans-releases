@@ -507,5 +507,13 @@ public abstract class JPDADebugger {
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Not supported.");
     }
+    
+    /**
+     * Creates a deadlock detector.
+     * @return deadlock detector with automatic detection of deadlock among suspended threads
+     */
+    public DeadlockDetector getDeadlockDetector() {
+        return new DeadlockDetector() {};
+    }
 
 }

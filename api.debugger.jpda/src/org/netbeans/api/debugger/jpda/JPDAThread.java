@@ -247,6 +247,14 @@ public interface JPDAThread {
     public abstract ObjectVariable getContendedMonitor ();
     
     /**
+     * Returns monitor this thread is waiting on, with the information
+     * about the owner of the monitor.
+     *
+     * @return monitor this thread is waiting on, with the owner.
+     */
+    public abstract MonitorInfo getContendedMonitorAndOwner ();
+    
+    /**
      * Returns monitors owned by this thread.
      *
      * @return monitors owned by this thread

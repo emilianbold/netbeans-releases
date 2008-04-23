@@ -85,6 +85,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
 
+import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
@@ -161,6 +162,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ObjectTranslation           localsTranslation;
     private ExpressionPool              expressionPool;
     private ThreadsCache                threadsCache;
+    private DeadlockDetector            deadlockDetector;
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -1684,4 +1686,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         return false;
     }
+
+    @Override
+    public synchronized DeadlockDetector getDeadlockDetector() {
+        if (deadlockDetector == null) {
+            deadlockDetector = new DeadlockDetectorImpl(this);
+        }
+        return deadlockDetector;
+    }
+    
 }

@@ -717,6 +717,39 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return new ThisVariable (debugger, or, "");
     }
     
+    public MonitorInfo getContendedMonitorAndOwner() {
+        ObjectVariable monitor = getContendedMonitor();
+        if (monitor == null) return null;
+        // Search for the owner:
+        MonitorInfo monitorInfo = null;
+        JPDAThread thread = null;
+        List<JPDAThread> threads = debugger.getAllThreads();
+        for (JPDAThread t : threads) {
+            if (this == t) continue;
+            ObjectVariable[] ms = t.getOwnedMonitors();
+            for (ObjectVariable m : ms) {
+                if (monitor.equals(m)) {
+                    thread = t;
+                    List<MonitorInfo> mf = t.getOwnedMonitorsAndFrames();
+                    for (MonitorInfo mi : mf) {
+                        if (monitor.equals(mi.getMonitor())) {
+                            monitorInfo = mi;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (thread != null) {
+                break;
+            }
+        }
+        if (monitorInfo != null) {
+            return monitorInfo;
+        }
+        return new MonitorInfoImpl(thread, null, monitor);
+    }
+    
     /**
      * Returns monitors owned by this thread.
      *
