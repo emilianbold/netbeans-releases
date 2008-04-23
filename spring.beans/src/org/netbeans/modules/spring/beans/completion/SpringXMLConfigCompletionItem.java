@@ -907,6 +907,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             int newCaretPos = c.getCaretPosition() - 1; // for achieving p:something-ref="|" on completion
             c.setCaretPosition(newCaretPos);
         }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
     }
     
     private static class FileItem extends SpringXMLConfigCompletionItem {
