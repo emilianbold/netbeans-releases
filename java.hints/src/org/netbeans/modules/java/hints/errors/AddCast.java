@@ -152,7 +152,9 @@ public final class AddCast implements ErrorRule<Void> {
             path = path.getParentPath();
         }
         
-        tm[0] = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, tm[0]);
+        if (tm[0] != null) {
+            tm[0] = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, tm[0]);
+        }
     }
     
     public Set<String> getCodes() {

@@ -571,7 +571,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                     if (metaData.getTableName(i + 1) != null && !metaData.getTableName(i + 1).equals("")) {
                         tableName = metaData.getTableName(i + 1) + ".";
                     }
-                    fieldKeys[i] = new FieldKey(tableName + metaData.getColumnName(i + 1));
+                    fieldKeys[i] = new FieldKey(tableName + metaData.getColumnLabel(i + 1));
                 }
             } catch (SQLException e) {
                 fieldKeys = null;
@@ -992,7 +992,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                                 try {
                                     if (resolver.getConflictValue(i) != null)  {
                                         message += ": " + resolver.getConflictValue( //NOI18N
-                                            getCachedRowSet().getMetaData().getColumnName(i));
+                                            getCachedRowSet().getMetaData().getColumnLabel(i));
                                     }
                                 } catch (SQLException se) {
                                     // should never be here.

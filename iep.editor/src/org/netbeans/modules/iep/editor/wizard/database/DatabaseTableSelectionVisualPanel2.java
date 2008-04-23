@@ -40,6 +40,10 @@ public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
     	mDBTableColumnSelectionPanel.setJoinCondition(joinCondition);
     }
     
+    public String getJoinCondition() {
+    	return mDBTableColumnSelectionPanel.getJoinCondition();
+    }
+    
     public List<ColumnInfo> getSelectedColumns() {
     	return mDBTableColumnSelectionPanel.getSelectedColumns();
     }

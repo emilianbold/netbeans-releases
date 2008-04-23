@@ -39,7 +39,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -117,7 +116,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         readSources(labels, roots);
         for (int i = 0; i < labels.size(); i++) {
             sourcesHelper.addPrincipalSourceRoot(roots.get(i), labels.get(i), null, null);
-            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProjectSharedConstants.SOURCES_TYPE_PHP, labels.get(i), null, null);
+            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProject.SOURCES_TYPE_PHP, labels.get(i), null, null);
         }
 
 

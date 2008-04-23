@@ -279,7 +279,7 @@ public class ProjectCreator {
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         baseDir = projectDescriptor.getBaseDir();
-        projectDescriptor.initLogicalFolders(null, sourceFiles == null, importantItems);
+        projectDescriptor.initLogicalFolders(null, false, importantItems);
         rootFolder = projectDescriptor.getLogicalFolders();
         projectDescriptor.addSourceRootRaw(workingDir);
 
@@ -463,11 +463,11 @@ public class ProjectCreator {
                }
                if (displayName.indexOf(".lib.")>0) { // NOI18N
                     sub = "../../cmd/"+sub; // NOI18N
-               } else if (displayName.indexOf(".cmd.")>0) { // NOI18Nelse {
+               } else if (displayName.indexOf(".cmd.")>0) { // NOI18N
                     sub = "../"+sub; // NOI18N
                }
             }
-            if (sub != null){
+            if (sub != null && sub.lastIndexOf("../") >=0 ){// NOI18N
                 int i = sub.lastIndexOf("../"); // NOI18N
                 String f = sub.substring(i+3);
                 if (f.startsWith("cmd") || f.startsWith("lib")) { // NOI18N

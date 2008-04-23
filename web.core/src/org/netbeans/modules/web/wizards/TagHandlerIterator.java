@@ -53,7 +53,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.core.Util;
-
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.SaveCookie;
@@ -61,14 +60,12 @@ import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
-
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagType;
@@ -83,7 +80,7 @@ import org.netbeans.modules.web.taglib.model.TldAttributeType;
  * @author  mk115033
  */
 public class TagHandlerIterator implements TemplateWizard.Iterator {
-    private transient FileType fileType;
+    private static final Logger LOG = Logger.getLogger(TagHandlerIterator.class.getName());
     private WizardDescriptor.Panel packageChooserPanel,tagHandlerSelectionPanel,tagInfoPanel;
     
     // You should define what panels you want to use here:
@@ -109,7 +106,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
         };
     }
 
-    public Set instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
         // in createPanels(), or at least set the properties targetName and
@@ -143,7 +140,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
             try {
                 generator.generate();
             } catch (IOException ex){
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                LOG.log(Level.INFO, null, ex);
             }
         }
         
@@ -197,7 +194,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
                         try {
                             tldDO.write(taglib);
                         } catch (IOException ex) {
-                            Logger.getLogger("global").log(Level.WARNING, null, ex);
+                            LOG.log(Level.WARNING, null, ex);
                         }
                     }
                 }

@@ -43,14 +43,13 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.io.File;
 import java.net.URI;
-import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-
-
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /** Data related to compilation attached to one JSP page.
  *  Basically a copy of the data retrieved from the compilation plugin.
@@ -65,11 +64,7 @@ public class CompileData {
 
     private JspDataObject jspPage;
     private FileObject docRoot;
-    //private ServerInstance serverInstance;
     private String servletEncoding;
-    
-    private final static boolean debug = false;
-    
     private File servletJavaRoot;
     private String servletResourceName;
      
@@ -96,11 +91,6 @@ public class CompileData {
             return null;
         }
     }
-    
-/*    public FileObject getServletJavaRoot() {
-        // PENDING - this is incorrect!!!
-        return WebModule.getWebModule (jspPage.getPrimaryFile ()).getJavaSourcesFolder ();
-    }*/
     
     public String getServletResourceName() {
         return servletResourceName;
@@ -130,7 +120,6 @@ public class CompileData {
             return fo;
         }
         try {
-            FileSystem rootFs = root.getFileSystem();
             root.getFileSystem().refresh(false);
             return root.getFileObject(getServletResourceName());
         }
@@ -147,12 +136,11 @@ public class CompileData {
         return servletEncoding;
     }
     
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("--COMPILE DATA--"); // NOI18N
         sb.append("\n"); // NOI18N
-//        sb.append("server          : " + serverInstance); // NOI18N
-//        sb.append("\n"); // NOI18N
         sb.append("JSP page        : " + FileUtil.getFileDisplayName(jspPage.getPrimaryFile())); // NOI18N
         sb.append("\n"); // NOI18N
         sb.append("servletJavaRoot : " + servletJavaRoot + ", exists= " +  // NOI18N

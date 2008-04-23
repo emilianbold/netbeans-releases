@@ -108,10 +108,12 @@ public final class GemManager {
 
     /** 
      * Contains the locally installed gems. All installed versions are included.
-     * 
-     * Map&lt;gemName, List&lt;GemInfo&gt;&gt; 
+     * <p>
+     * Maps <i>gem name</i> to <i>sorted-by-version list of {@link GemInfo}s</i>
+     * </p>
      */
-    private Map<String, List<GemInfo>> gemFiles;
+    private Map<String, List<GemInfo>> localGems;
+    
     private Map<String, String> gemVersions;
     private Map<String, URL> gemUrls;
     private Set<URL> nonGemUrls;
@@ -373,8 +375,34 @@ public final class GemManager {
      * @return whether the installed version matches
      */
     public boolean isGemInstalledForPlatform(final String gemName, final String version, final boolean exact) {
-        String currVersion = getVersionForPlatform(gemName);
-        return isRightVersion(currVersion, version, exact);
+        // TODO - use gemVersions map instead!
+        initGemList();
+
+        // filtering
+        for (GemInfo gemInfo : getVersions(gemName)) {
+            // TODO: the platform info should rather be encapsulated in GemInfo
+            String specName = gemInfo.getSpecFile().getName();
+            // filter out all java gems for non-java platforms
+            // hack until we support proper .gemspec parsing
+            if (!platform.isJRuby() && specName.endsWith("-java.gemspec")) { // NOI18N
+                continue;
+            }
+
+            // special hack for fast debugger
+            if (specName.startsWith("ruby-debug-base-")) { // NOI18N
+                boolean forJavaPlaf = specName.endsWith("-java.gemspec"); // NOI18N
+                if (platform.isJRuby() && !forJavaPlaf) {
+                    continue;
+                }
+                if (!platform.isJRuby() && forJavaPlaf) {
+                    continue;
+                }
+            }
+            if (isRightVersion(gemInfo.getVersion(), version, exact)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
@@ -414,7 +442,7 @@ public final class GemManager {
     public List<GemInfo> getVersions(String gemName) {
         initGemList();
 
-        List<GemInfo> versions = gemFiles.get(gemName);
+        List<GemInfo> versions = localGems.get(gemName);
 
         if (versions == null || versions.isEmpty()) {
             return Collections.<GemInfo>emptyList();
@@ -424,36 +452,6 @@ public final class GemManager {
         
     }
     
-    public String getVersionForPlatform(String gemName) {
-        // TODO - use gemVersions map instead!
-        initGemList();
-
-        // filtering
-        for (GemInfo gemInfo : getVersions(gemName)) {
-            // TODO: the platform info should rather be encapsulated in GemInfo
-            String specName = gemInfo.getSpecFile().getName();
-            // filter out all java gems for non-java platforms
-            // hack until we support proper .gemspec parsing
-            if (!platform.isJRuby() && specName.endsWith("-java.gemspec")) { // NOI18N
-                continue;
-            }
-
-            // special hack for fast debugger
-            if (specName.startsWith("ruby-debug-base-")) { // NOI18N
-                boolean forJavaPlaf = specName.endsWith("-java.gemspec"); // NOI18N
-                if (platform.isJRuby() && !forJavaPlaf) {
-                    continue;
-                }
-                if (!platform.isJRuby() && forJavaPlaf) {
-                    continue;
-                }
-            }
-            return gemInfo.getVersion();
-        }
-
-        return null;
-    }
-
     /**
      * Logs the installed gems using the given logging level.
      */ 
@@ -462,13 +460,13 @@ public final class GemManager {
             return;
         }
         
-        if (gemFiles == null) {
+        if (localGems == null) {
             LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
         
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
-        for (String key : gemFiles.keySet()) {
+        LOGGER.log(level, "Found " + localGems.size() + " gems."); // NOI18N
+        for (String key : localGems.keySet()) {
             List<GemInfo> versions = getVersions(key);
             LOGGER.log(level, key + " has " + versions.size() + " version(s):"); // NOI18N
             for (GemInfo version : versions) {
@@ -478,10 +476,10 @@ public final class GemManager {
     }
     
     private void initGemList() {
-        if (gemFiles == null) {
+        if (localGems == null) {
             // Initialize lazily
             assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
-            gemFiles = new HashMap<String, List<GemInfo>>();
+            localGems = new HashMap<String, List<GemInfo>>();
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
@@ -489,9 +487,7 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        GemFilesParser gemFilesParser = new GemFilesParser(specFiles);
-                        gemFilesParser.parseGems();
-                        gemFiles.putAll(gemFilesParser.getGemInfos());
+                        localGems.putAll(GemFilesParser.getGemInfos(specFiles));
                     }
                 } else {
                     LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
@@ -503,7 +499,7 @@ public final class GemManager {
 
     public Set<String> getInstalledGemsFiles() {
         initGemList();
-        return gemFiles.keySet();
+        return localGems.keySet();
     }
 
     public void reset() {
@@ -518,7 +514,7 @@ public final class GemManager {
     
     public void resetLocal() {
         installed = null;
-        gemFiles = null;
+        localGems = null;
         platform.fireGemsChanged();
     }
     
@@ -1052,10 +1048,10 @@ public final class GemManager {
                             }
                         }
                     }
-                } else if (gemFiles != null) {
-                    Set<String> gems = gemFiles.keySet();
+                } else if (localGems != null) {
+                    Set<String> gems = localGems.keySet();
                     for (String name : gems) {
-                        List<GemInfo> versions = gemFiles.get(name);
+                        List<GemInfo> versions = localGems.get(name);
 //                        Map<String, File> m = gemFiles.get(name);
                         assert !versions.isEmpty();
                         GemInfo newestVersion = versions.get(0);

@@ -3543,6 +3543,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHILE_LOOP:
                         WhileLoopTree wl = (WhileLoopTree)tree;
                         return wl.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
+                    case DO_WHILE_LOOP:
+                        DoWhileLoopTree dwl = (DoWhileLoopTree)tree;
+                        return dwl.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
                     case FOR_LOOP:
                         ForLoopTree fl = (ForLoopTree)tree;
                         Tree cond = fl.getCondition();

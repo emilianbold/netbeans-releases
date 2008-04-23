@@ -1,6 +1,7 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -27,16 +30,23 @@ import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableSelectionWizardAction;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
+import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
+import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
+import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
 import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -183,8 +193,8 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            
             
             JButton selectIEPProcessButton = new JButton("...");
-            //selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
-            selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
+            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
+            //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
             gbc.gridx = 5;
             gbc.gridy = 0;
             gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -288,30 +298,71 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 
             public void actionPerformed(ActionEvent e) {
                 IEPModel model = getOperatorComponent().getModel();
-                FileObject fileObj = model.getModelSource().getLookup().lookup(FileObject.class);
-                if(fileObj != null) {
-                    Project project = FileOwnerQuery.getOwner(fileObj);
-                    StreamInputChooserPanel panel = new StreamInputChooserPanel(project);
-                    DialogDescriptor dd = new DialogDescriptor(panel, "Select Stream Input", true, null);
-                    panel.addPropertyChangeListener(new StreamInputChooserPanelPropertyListener(dd));
-
-                    DialogDisplayer dDisplayer = DialogDisplayer.getDefault();
-                    if(dDisplayer.notify(dd) == DialogDescriptor.OK_OPTION) {
-                        InputOperatorComponent inComp = panel.getSelectedInputOperatorComponent();
-                        if(inComp != null) {
-                            String displayName = inComp.getDisplayName();
-                            String iepQualifiedName = inComp.getModel().getQualifiedName();
-                            mAttributePanel.setStringValue(iepQualifiedName);
-                            mSizePanel.setStringValue(displayName);
-                            SchemaComponent sc = inComp.getOutputSchemaId();
-                            if(sc != null) {
-                            	mSelectPanel.clearTable();
-                            	mSelectPanel.setAttributes(sc.getSchemaAttributes());
-                            }
-                        }
+                
+                TablePollingStreamWizardHelper helper = new TablePollingStreamWizardHelper();
+                WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
+                
+                Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+                dialog.setVisible(true);
+                dialog.toFront();
+                boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+                if (!cancelled) {
+                    List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
+                    List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
+                    String joinCondition = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION);
+                    String pollingInterval = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL);
+                    String timeUnit = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT);
+                    String jndiName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
+                    
+                    List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
+                    List<String> expressionList = new ArrayList<String>();
+                    
+                    Iterator<ColumnInfo> it = columns.iterator();
+                    while(it.hasNext()) {
+                        ColumnInfo column = it.next();
+                        IEPComponentFactory factory = model.getFactory();
+                        SchemaAttribute sa = factory.createSchemaAttribute(model);
+                        String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
+                        sa.setAttributeName(attrName);
+                        sa.setAttributeType(column.getColumnDataType());
+                        sa.setAttributeSize(""+column.getPrecision());
+                        sa.setAttributeScale(""+column.getScale());
                         
+                        
+                        attrs.add(sa);
+                        expressionList.add(column.getQualifiedName());
                     }
+                    
+                    mSelectPanel.clearTable();
+                    mSelectPanel.setAttributes(attrs);
+                    mSelectPanel.setExpressions(expressionList);
                 }
+                
+                
+//                FileObject fileObj = model.getModelSource().getLookup().lookup(FileObject.class);
+//                if(fileObj != null) {
+//                    Project project = FileOwnerQuery.getOwner(fileObj);
+//                    StreamInputChooserPanel panel = new StreamInputChooserPanel(project);
+//                    DialogDescriptor dd = new DialogDescriptor(panel, "Select Stream Input", true, null);
+//                    panel.addPropertyChangeListener(new StreamInputChooserPanelPropertyListener(dd));
+//
+//                    DialogDisplayer dDisplayer = DialogDisplayer.getDefault();
+//                    if(dDisplayer.notify(dd) == DialogDescriptor.OK_OPTION) {
+//                        InputOperatorComponent inComp = panel.getSelectedInputOperatorComponent();
+//                        if(inComp != null) {
+//                            String displayName = inComp.getDisplayName();
+//                            String iepQualifiedName = inComp.getModel().getQualifiedName();
+//                            mAttributePanel.setStringValue(iepQualifiedName);
+//                            mSizePanel.setStringValue(displayName);
+//                            SchemaComponent sc = inComp.getOutputSchemaId();
+//                            if(sc != null) {
+//                            	mSelectPanel.clearTable();
+//                            	mSelectPanel.setAttributes(sc.getSchemaAttributes());
+//                            }
+//                        }
+//                        
+//                    }
+//                }
             }
         }
         

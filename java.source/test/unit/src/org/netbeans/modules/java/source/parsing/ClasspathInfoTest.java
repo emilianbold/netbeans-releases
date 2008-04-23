@@ -211,7 +211,8 @@ public class ClasspathInfoTest extends NbTestCase {
         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
-        ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, "org.me.Main", "package org.me;\n class Main{}\n");        
+        ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, FileObjects.memoryFileObject("org.me","Main.java",
+        null,System.currentTimeMillis(),"package org.me;\n class Main{}\n"));
         jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos, fm);
         ClasspathInfoAccessor.getINSTANCE().unregisterVirtualSource(cpInfo, "org.me.Main");

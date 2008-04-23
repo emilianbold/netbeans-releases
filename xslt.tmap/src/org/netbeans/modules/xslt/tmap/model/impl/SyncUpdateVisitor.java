@@ -70,7 +70,7 @@ public class SyncUpdateVisitor implements ComponentUpdater<TMapComponent>, TMapV
         assert getParent() instanceof TransformMap;
         TransformMap transformMap = (TransformMap)getParent();
         if (isAdd()) {
-            transformMap.appendImport(imprt);
+            transformMap.addImport(imprt);
         } else if (isRemove()) {
             transformMap.removeImport(imprt);
         }
