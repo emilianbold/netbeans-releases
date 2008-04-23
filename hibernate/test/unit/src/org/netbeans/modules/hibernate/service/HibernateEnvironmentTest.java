@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.hibernate.service;
 
-import java.net.URL;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
@@ -75,7 +74,7 @@ public class HibernateEnvironmentTest extends NbTestCase {
     @Before
     @Override
     public void setUp() {
-        hibernateConfiguration = new HibernateConfiguration().createGraph((java.io.InputStream) new java.io.ByteArrayInputStream(hibConfigString.getBytes()));
+        hibernateConfiguration = HibernateConfiguration.createGraph((java.io.InputStream) new java.io.ByteArrayInputStream(hibConfigString.getBytes()));
         
         try {
         JDBCDriverManager.getDefault().addDriver(
