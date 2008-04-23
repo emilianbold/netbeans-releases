@@ -41,6 +41,8 @@ package org.netbeans.spi.glassfish;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.server.ServerInstance;
@@ -49,6 +51,7 @@ import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -177,5 +180,22 @@ public final class ServerUtilities {
         }
         
     }
+    
+    /**
+     * Get the url for a file, including proper protocol for archive files (jars).
+     * 
+     * @param file File to create URL from.
+     * 
+     * @return url URL for file with proper protocol specifier.
+     * 
+     * @throws java.net.MalformedURLException
+     */
+    public static URL fileToUrl(File file) throws MalformedURLException {
+        URL url = file.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        }
+        return url;
+    }    
    
 }
