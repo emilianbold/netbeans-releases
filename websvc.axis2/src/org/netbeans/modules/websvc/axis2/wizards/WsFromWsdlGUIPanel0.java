@@ -147,7 +147,7 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
             @Override
             public String getDescription() {
-                return "WSDL file";
+                return org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class,"DESC_FileFilter");
             }
             
         };
