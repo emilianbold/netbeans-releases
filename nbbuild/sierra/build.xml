@@ -180,13 +180,20 @@
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
 
+
             <buildpath location="${home}/xml.validation"/> <!-- todo r -->
             <buildpath location="${home}/xml.search"/>
-
             <buildpath location="${home}/xml.schema"/> <!-- todo r -->
             <buildpath location="${home}/xml.schema.ui.basic"/> <!-- todo r -->
             <buildpath location="${home}/xml.wsdlui"/> <!-- todo r -->
 
+            <buildpath location="${home}/xml.validation"/> <!-- todo r -->
+            <buildpath location="${home}/xml.search"/>
+            <buildpath location="${home}/xml.schema"/> <!-- todo r -->
+            <buildpath location="${home}/xml.schema.ui.basic"/> <!-- todo r -->
+            <buildpath location="${home}/xml.wsdlui"/> <!-- todo r -->
+
+            
             <buildpath location="${home}/xml.xpath.ext"/>
             <buildpath location="${home}/xml.wsdl.extensions"/>
         </subant>
