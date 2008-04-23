@@ -696,9 +696,9 @@ public class GroovyParser implements Parser {
      * we don't have full integration with Java yet, so it's just less evil
      */
     private static boolean isRealError(String errorMessage) {
-        if (errorMessage.startsWith("unable to resolve class ")) { // NOI18N
-            return false;
-        }
+//        if (errorMessage.startsWith("unable to resolve class ")) { // NOI18N
+//            return false;
+//        }
         return true;
     }
     
