@@ -700,6 +700,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     extra.append(":");
                     extra.append(jar);
                 }
+                if (ttName.startsWith("qa-")) {
+                    extra.append(":${nb_all}/jemmy/builds/jemmy.jar:${nb_all}/jellytools/builds/jelly2-nb.jar");
+                }
             } else {
                 // Basic dependencies many tests use:
                 for (String library : new String[] {"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
