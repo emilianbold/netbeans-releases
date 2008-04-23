@@ -41,16 +41,8 @@ package org.netbeans.modules.hibernate.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.Document;
-import javax.tools.FileObject;
 import org.hibernate.cfg.Environment;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
