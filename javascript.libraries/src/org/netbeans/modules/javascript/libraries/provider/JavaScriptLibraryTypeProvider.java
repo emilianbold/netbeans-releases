@@ -80,8 +80,8 @@ public class JavaScriptLibraryTypeProvider
 
     // public static final String VOLUME_TYPE_RUNTIME = "runtime";       //NOI18N
     public static final String[] VOLUME_TYPES = new String[]{
-        VOLUME_TYPE_CLASSPATH,
-        VOLUME_TYPE_SCRIPTPATH /*,
+        VOLUME_TYPE_SCRIPTPATH,
+        VOLUME_TYPE_CLASSPATH /*,
     VOLUME_TYPE_SRC,
     VOLUME_TYPE_JAVADOC,
     VOLUME_TYPE_RUNTIME, */
