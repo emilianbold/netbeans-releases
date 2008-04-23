@@ -348,6 +348,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Normal version
       // just click
       table.clickOnCell( row, col, count );
+      table.pushKey( KeyEvent.VK_RIGHT );
 
       // HaCk version
       /*
@@ -363,7 +364,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       table.releaseMouse( pt.x, pt.y );
       */
 
-      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+      try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
       int iRows = table.getRowCount( );
       if( result != iRows )
         fail( error + iRows );
@@ -1307,6 +1308,15 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     protected void ValidateAndBuildInternal( String sSample )
     {
+      ValidateAndBuildInternal( sSample, false, "dist_se" );
+    }
+
+    protected void ValidateAndBuildInternal(
+        String sSample,
+        boolean bWarnings,
+        String sBuildName
+      )
+    {
       // Set focus to file for validation to ensure Validate menu enabled
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
       
@@ -1336,6 +1346,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
 
       // Build
+      BuildCompositeApplicationInternal( sSample, bWarnings, sBuildName );
+      /*
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
@@ -1349,14 +1361,28 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       prn.performPopupActionNoBlock( "Build" );
 
-      // Wait till JAXB really created
-      try
+      if( bWarnings )
       {
-        stt.waitText( "Finished building build.xml (dist_se)." );
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
       }
-      catch( JemmyException ex )
+
+      for( int i = 0; i < 3; i++ )
       {
-        // Check after exception anyway to avoid some fails.
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
       }
       stt.stop( );
 
@@ -1370,6 +1396,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Close output
       out.close( );
+      */
     }
 
     protected void DeployCompositeApplicationInternal( String sName )
@@ -1417,6 +1444,15 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     public void BuildCompositeApplicationInternal( String sName )
     {
+      BuildCompositeApplicationInternal( sName, false, "dist_se" );
+    }
+
+    public void BuildCompositeApplicationInternal(
+        String sName,
+        boolean bWarnings,
+        String sBuildName
+      )
+    {
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -1429,18 +1465,41 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       prn.performPopupActionNoBlock( "Build" );
 
-      // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (jbi-build)." );
+      if( bWarnings )
+      {
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
+      }
+
+      for( int i = 0; i < 3; i++ )
+      {
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
+      }
       stt.stop( );
 
-      // Check output for BUILD SUCCESSFUL
       // Get output
       OutputOperator out = OutputOperator.invoke( );
       String sText = out.getText( );
       if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
-        fail( "Unable to build composite application.\n" + sText + "\n" );
+        fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( BUILD_FAILED ) )
-        fail( "BUILD FAILED mark found for build CA:\n" + sText + "\n" );
+        fail( "BUILD FAILED mark found:\n" + sText + "\n" );
+
+      // Close output
+      out.close( );
     }
 
     public void tearDown() {

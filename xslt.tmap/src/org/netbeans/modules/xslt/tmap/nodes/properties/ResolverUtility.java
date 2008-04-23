@@ -20,32 +20,17 @@ package org.netbeans.modules.xslt.tmap.nodes.properties;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
-import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
-import org.openide.util.NbBundle;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -179,13 +164,13 @@ public final class ResolverUtility {
 //    }
 //    
     public static String encodeLocation(String location){
-        return location.replace(" ", "%20");
+        return location.replace(" ", "%20"); // NOI18N
     }
     
     public static String decodeLocation(String location){
-        return location.replace("%20", " ");
+        return location.replace("%20", " "); // NOI18N
     }
-    
+
 //    /**
 //     * Returns the FileObject which points to the folder where the specified
 //     * BPEL Process is located.
@@ -239,6 +224,7 @@ public final class ResolverUtility {
         
         return false;
     }
+
     
     /**
      * Tries to resolve the reference and take it's name.

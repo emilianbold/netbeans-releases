@@ -246,9 +246,13 @@ public class SQLDBSynchronizationVisitor {
 
             // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
             } else {
+                boolean createIfNotExists = false;
+                if (ct instanceof TargetTable) {
+                    createIfNotExists = ((TargetTable) ct).isCreateTargetTable();
+                }
                 String nbBundle1 = mLoc.t("BUND299: Table {0} is removed or renamed in Database",collabTable.getName());
                 String desc = nbBundle1.substring(15) + " " + connDef.getConnectionURL();
-                ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
+                ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, createIfNotExists ? ValidationInfo.VALIDATION_WARNING : ValidationInfo.VALIDATION_ERROR);
                 infoList.add(vInfo);
                 return;
             }
