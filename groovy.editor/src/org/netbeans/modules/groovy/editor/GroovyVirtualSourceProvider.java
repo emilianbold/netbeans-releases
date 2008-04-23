@@ -84,13 +84,11 @@ import org.openide.util.Exceptions;
 public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
     public Set<String> getSupportedExtensions() {
-        System.out.println("> getSupportedExtensions");
         return Collections.singleton("groovy"); // NOI18N
 
     }
 
     public void translate(Iterable<File> files, File sourceRoot, Result result) {
-        System.out.println("> translate");
         JavaStubGenerator generator = new JavaStubGenerator();
         FileObject rootFO = FileUtil.toFileObject(sourceRoot);
         Iterator<File> it = files.iterator();
@@ -110,9 +108,6 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     }
                     String name = fo.getName();
                     sb.append("public class " + name + "{}"); // NOI18N
-                    
-                    System.out.println("### BROKEN SOURCE, generates: [" + sb + "]");
-                    
                     result.add(file, pkg, file.getName(), sb.toString());
                 }
             } else {
