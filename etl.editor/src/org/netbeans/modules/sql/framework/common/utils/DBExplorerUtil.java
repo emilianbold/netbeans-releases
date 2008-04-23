@@ -448,6 +448,6 @@ public class DBExplorerUtil {
         int endDBIndex = url.indexOf(":", initialDBIndex);
         String dbName = url.substring(initialDBIndex, endDBIndex);
         String dbLoc = url.substring(endDBIndex + 1);
-        return (Databases.getOrCreateDatabase(dbName, new File(dbLoc)));
+        return (Databases.getOrCreateDatabase(dbName, new File(dbLoc))); 
     }
 }
