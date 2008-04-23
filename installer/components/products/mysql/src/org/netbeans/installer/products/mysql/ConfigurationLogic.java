@@ -94,6 +94,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     // configuration logic implementation ///////////////////////////////////////////
     public void install(
             final Progress progress) throws InstallationException {
+        LogManager.log("Starting MySQL installation...");
         if (SystemUtils.isWindows()) {
             installWindows(progress);
         } else {
@@ -239,8 +240,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             } catch (InterruptedException e) {
                 LogManager.log(e);
             }
-            LogManager.log("... query output: " + StreamUtils.readStream(p.getInputStream()));
-            LogManager.log("... query errorcode: " + p.exitValue());
+            LogManager.logIndent("... query output: ");
+            LogManager.log(StreamUtils.readStream(p.getInputStream()));           
+            LogManager.logUnindent("... query errorcode: " + p.exitValue());
             p.destroy();
         } catch (IOException e) {
             LogManager.log(e);
