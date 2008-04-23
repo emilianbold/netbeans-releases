@@ -52,11 +52,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -119,7 +122,7 @@ public class Retriever implements Runnable {
     
     private void setDownloadState(int newState) {
         status = newState;
-        updateStatus(STATUS_MESSAGE[newState]);
+        updateMessage(STATUS_MESSAGE[newState]);
     }
     
     private void setDownloadState(int newState, String msg, Exception ex) {
@@ -188,12 +191,12 @@ public class Retriever implements Runnable {
             
             if(!shutdown) {
                 long end = System.currentTimeMillis();
-                String duration = (end - start) + "ms";
-                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration));
+                String duration = getDurationString((int) (end - start));
                 setDownloadState(STATUS_COMPLETE);
+                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration));
             } else {
-                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"));
                 setDownloadState(STATUS_TERMINATED);
+                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"));
             }
         } catch(ConnectException ex) {
             setDownloadState(STATUS_FAILED, "Connection Exception", ex); // NOI18N
@@ -314,7 +317,59 @@ public class Retriever implements Runnable {
             }
         }
         
+        if(!shutdown) {
+            // enable execute permission for asadmin on UNIX
+            ensureExecutable(targetFolder);
+        }
+        
         return shutdown;
+    }
+    
+    // Borrowed from RubyPlatform...
+    private void ensureExecutable(File installDir) {
+        // No excute permissions on Windows. On Unix and Mac, try.
+        if(Utilities.isWindows()) {
+            return;
+        }
+
+        File binDir = new File(installDir, "bin");
+        if(!binDir.exists()) {
+            return;
+        }
+
+        // Ensure that the binaries are installed as expected
+        // The following logic is from CLIHandler in core/bootstrap:
+        File chmod = new File("/bin/chmod"); // NOI18N
+
+        if(!chmod.isFile()) {
+            // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
+            chmod = new File("/usr/bin/chmod"); // NOI18N
+        }
+
+        if(chmod.isFile()) {
+            try {
+                List<String> argv = new ArrayList<String>();
+                argv.add(chmod.getAbsolutePath());
+                argv.add("u+rx"); // NOI18N
+
+                String[] files = binDir.list();
+
+                for(String file : files) {
+                    argv.add(file);
+                }
+
+                ProcessBuilder pb = new ProcessBuilder(argv);
+                pb.directory(binDir);
+                Process process = pb.start();
+                int chmoded = process.waitFor();
+                
+                if(chmoded != 0) {
+                    throw new IOException("could not run " + argv + " : Exit value=" + chmoded); // NOI18N
+                }
+            } catch (Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
     }
     
     private String stripGlassfish(String name) {
@@ -357,4 +412,50 @@ public class Retriever implements Runnable {
             backupDir.renameTo(installDir);
         }
     }
+    
+    private String getDurationString(int time) {
+        // < 1000 -> XXX ms
+        // > 1000 -> XX seconds
+        // > 60000 -> XX minutes, XX seconds
+        StringBuilder builder = new StringBuilder(100);
+        if(time < 0) {
+            builder.append("an eternity");
+        } else if(time == 0) {
+            builder.append("no time at all");
+        } else {
+            if(time > 360000) {
+                int hours = time / 360000;
+                time %= 360000;
+                builder.append(hours);
+                builder.append(hours > 1 ? " hours" : " hour");
+            }
+            if(time > 60000) {
+                if(builder.length() > 0) {
+                    builder.append(", ");
+                }
+                int minutes = time / 60000;
+                time %= 60000;
+                builder.append(minutes);
+                builder.append(minutes > 1 ? " minutes" : " minute");
+            }
+            if(time > 1000 || builder.length() > 0) {
+                if(builder.length() > 0) {
+                    builder.append(", ");
+                }
+                int seconds = (time + 500) / 1000;
+                time %= 1000;
+                
+                if(seconds > 0) {
+                    builder.append(seconds);
+                    builder.append(seconds > 1 ? " seconds" : " second");
+                }
+            } else {
+                builder.append(time);
+                builder.append(" ms");
+            }
+        }
+        
+        return builder.toString();
+    }
+    
 }

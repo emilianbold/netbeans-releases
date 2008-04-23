@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -128,61 +129,97 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         // !PW FIXME correct help context
         return new HelpCtx("registering_app_server_hk2_location"); //NOI18N
     }
+
+    private AtomicBoolean isValidating = new AtomicBoolean();
     
     /**
      * 
      * @return 
      */
     public boolean isValid() {
-        AddServerLocationVisualPanel panel = (AddServerLocationVisualPanel) getComponent();
-        String locationStr = panel.getHk2HomeLocation();
-        locationStr = (locationStr != null) ? locationStr.trim() : null;
-        if(locationStr == null || locationStr.length() == 0) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_BlankInstallDir"));
-            return false;
-        }
-        
-        // !PW Replace some or all of this with a single call to a validate method
-        // that throws an exception with a precise reason for validation failure.
-        // e.g. domain dir not found, domain.xml corrupt, no ports defined, etc.
-        //
-        File installDir = new File(locationStr);
-        if(!installDir.exists()) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_InstallDirDoesNotExist", locationStr));
-            return false;
-        } else if(!isValidV3Install(installDir)) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
-            return false;
-        } else if(!isValidV3Domain(getDefaultDomain(installDir))) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
-            return false;
-        } else {
-            String uri = "[" + installDir + "]" + CommonServerSupport.URI_PREFIX + 
-                    ":" + GlassfishInstance.DEFAULT_HOST_NAME + ":" + Integer.toString(httpPort);
-            if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
-                wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                    AddServerLocationPanel.class, "ERR_DomainExists", locationStr));
-                return false;
-            } else {
-                String statusText = panel.getStatusText();
-                if(statusText != null && statusText.length() > 0) {
-                    wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
+        if(isValidating.compareAndSet(false, true)) {
+            try {
+                AddServerLocationVisualPanel panel = (AddServerLocationVisualPanel) getComponent();
+
+                AddServerLocationVisualPanel.DownloadState downloadState = panel.getDownloadState();
+                if(downloadState == AddServerLocationVisualPanel.DownloadState.DOWNLOADING) {
+                    wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                     return false;
                 }
+
+                String locationStr = panel.getHk2HomeLocation();
+                locationStr = (locationStr != null) ? locationStr.trim() : null;
+                if(locationStr == null || locationStr.length() == 0) {
+                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                            AddServerLocationPanel.class, "ERR_BlankInstallDir"));
+                    return false;
+                }
+
+                // !PW Replace some or all of this with a single call to a validate method
+                // that throws an exception with a precise reason for validation failure.
+                // e.g. domain dir not found, domain.xml corrupt, no ports defined, etc.
+                //
+                File installDir = new File(locationStr);
+                if(!installDir.exists()) {
+                    if(canCreate(installDir)) {
+                        if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
+                            panel.updateMessageText(NbBundle.getMessage(
+                                    AddServerLocationPanel.class, "LBL_InstallDirWillBeUsed", locationStr));
+                            wizard.putProperty(PROP_ERROR_MESSAGE, "");
+                            return false;
+                        } else {
+                            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                                    AddServerLocationPanel.class, "ERR_InstallDirDoesNotExist", locationStr));
+                            return false;
+                        }
+                    } else {
+                        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                                AddServerLocationPanel.class, "ERR_CannotCreate", locationStr));
+                        return false;
+                    }
+                } else if(!isValidV3Install(installDir)) {
+                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                            AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
+                    return false;
+                } else if(!isValidV3Domain(getDefaultDomain(installDir))) {
+                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                            AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
+                    return false;
+                } else {
+                    String uri = "[" + installDir + "]" + CommonServerSupport.URI_PREFIX + 
+                            ":" + GlassfishInstance.DEFAULT_HOST_NAME + ":" + Integer.toString(httpPort);
+                    if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                            AddServerLocationPanel.class, "ERR_DomainExists", locationStr));
+                        return false;
+                    } else {
+                        String statusText = panel.getStatusText();
+                        if(statusText != null && statusText.length() > 0) {
+                            wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
+                            return false;
+                        }
+                    }
+                }
+
+                wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                wizardIterator.setHk2HomeLocation(locationStr);
+                wizardIterator.setHttpPort(httpPort);
+                wizardIterator.setHttpsPort(httpsPort);
+                wizardIterator.setAdminPort(adminPort);
+
+                return true;
+            } finally {
+                isValidating.set(false);
             }
         }
-        
-        wizard.putProperty(PROP_ERROR_MESSAGE, null);
-        wizardIterator.setHk2HomeLocation(locationStr);
-        wizardIterator.setHttpPort(httpPort);
-        wizardIterator.setHttpsPort(httpsPort);
-        wizardIterator.setAdminPort(adminPort);
-        
         return true;
+    }
+    
+    private boolean canCreate(File dir) {
+        while(dir != null && !dir.exists()) {
+            dir = dir.getParentFile();
+        }
+        return dir != null ? dir.canRead() && dir.canWrite() : false;
     }
     
     /**
