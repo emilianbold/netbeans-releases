@@ -180,7 +180,8 @@ function main() {
     fi
 
     set -x
-    ${JAVA} -Dorg.netbeans.modules.cnd.makeproject.api.runprofiles=true -cp ${CP} ${MAIN} ${PARAMS}
+#    ${JAVA} -Xmx512M -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888 -agentlib:yjpagent=dir=/home/as204739/yjp_data/IDE -Dorg.netbeans.modules.cnd.makeproject.api.runprofiles=true -cp ${CP} ${MAIN} ${PARAMS}
+    ${JAVA} -Xmx512M -Dorg.netbeans.modules.cnd.makeproject.api.runprofiles=true -cp ${CP} ${MAIN} ${PARAMS}
 }
 
 path_sep=":"
