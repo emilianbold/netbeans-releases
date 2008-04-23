@@ -163,7 +163,7 @@ public class CodeCompleter implements Completable {
         LOG.log(Level.FINEST, "toString()          : " + mm.toString());
         LOG.log(Level.FINEST, "getDescriptor()     : " + mm.getDescriptor());
         LOG.log(Level.FINEST, "getSignature()      : " + mm.getSignature());
-        LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParamTypes());
+        LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParameterTypes());
         LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 

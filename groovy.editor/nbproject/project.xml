@@ -273,9 +273,10 @@
                 <package>org.netbeans.modules.groovy.editor</package>
                 <package>org.netbeans.modules.groovy.editor.lexer</package>
             </friend-packages>
+            
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>
-                <binary-origin>external/groovy-all-1.5.0.jar</binary-origin>
+                <binary-origin>external/groovy-all-1.5.5.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
