@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.text.Document;
@@ -54,6 +55,8 @@ import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -65,11 +68,29 @@ public class GroovyHyperlinkProvider implements HyperlinkProvider {
 
     private int startOffset;
     private int endOffset;
+    private Document lastDoc;
+    Token<GroovyTokenId> tok;
     
     private  final Logger LOG = Logger.getLogger(GroovyHyperlinkProvider.class.getName());
 
     private Document getLastDocument() {
         return lastDocument == null ? null : lastDocument.get();
+    }
+
+    private TokenSequence<GroovyTokenId> getSequenceForDoc(Document doc) {
+
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<GroovyTokenId> ts = hi.tokenSequence(GroovyTokenId.language());
+
+        return ts;
+    }
+
+    private Token<GroovyTokenId> getTokenForPosition(TokenSequence<GroovyTokenId> ts, int offset) {
+
+        ts.move(offset);
+        ts.moveNext();
+
+        return ts.token();
     }
 
     private void setLastDocument(Document doc) {
@@ -100,13 +121,12 @@ public class GroovyHyperlinkProvider implements HyperlinkProvider {
             return false;
         }
         
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<GroovyTokenId> ts = hi.tokenSequence(GroovyTokenId.language());
+        if(doc != null) {
+            lastDoc = doc;
+        }
         
-        ts.move(offset);
-        ts.moveNext();
-        
-        Token<GroovyTokenId> tok = ts.token();
+        TokenSequence<GroovyTokenId> ts = getSequenceForDoc(doc);
+        tok = getTokenForPosition(ts, offset);
         
         if (tok != null) {
             LOG.log(Level.FINEST, "Token   : " + tok);
@@ -140,6 +160,18 @@ public class GroovyHyperlinkProvider implements HyperlinkProvider {
     }
 
     public void performClickAction(Document doc, int offset) {
+        if( doc == lastDoc && 
+            offset >= startOffset && 
+            offset <= endOffset &&
+            tok != null){
+                LOG.log(Level.FINEST, "performClickAction(), opening File at offset: " + offset);
+               
+//                File f = new File("C:\\test.txt");
+//                FileObject fileobject = FileUtil.toFileObject(FileUtil.normalizeFile(f)); 
+                
+//                NbUtilities.open(fileobject, 1, "ein");
+
+        }
     }
 
 }
