@@ -170,18 +170,18 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 // classpath, src, javadoc -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
                 File f = ServerUtilities.getJarName(installRoot, EL_CORE_LIB_PREFIX);
-                if ((f!=null)&&(f.exists())){
-                    libraryList.add(f.toURI().toURL());
+                if(f != null && f.exists()) {
+                    libraryList.add(ServerUtilities.fileToUrl(f));
                 }
                 f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX);
-                if ((f!=null)&&(f.exists())){
-                    libraryList.add(f.toURI().toURL());
+                if(f != null && f.exists()) {
+                    libraryList.add(ServerUtilities.fileToUrl(f));
                 }
-
+                
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(
                         "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
                 List<URL> docList = new ArrayList<URL>();
-                docList.add(j2eeDoc.toURI().toURL());
+                docList.add(ServerUtilities.fileToUrl(j2eeDoc));
 
                 Map<String, List<URL>> contents = new HashMap<String, List<URL>>();
                 contents.put(CLASSPATH_VOLUME, libraryList);
@@ -236,13 +236,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 // classpath, src,  -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
                 File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_LIB_PREFIX);
-                if ((f != null) && (f.exists())) {
-                    libraryList.add(f.toURI().toURL());
-                } else {
+                if(f == null || !f.exists()) {
                     f = ServerUtilities.getJarName(installRoot, COMET_JAR_LIB_PREFIX);
-                    if ((f != null) && (f.exists())) {
-                        libraryList.add(f.toURI().toURL());
-                    }
+                }
+                if(f != null && f.exists()) {
+                    libraryList.add(ServerUtilities.fileToUrl(f));
                 }
 
 //                File j2eeDoc = InstalledFileLocator.getDefault().locate(
