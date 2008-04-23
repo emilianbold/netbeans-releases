@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.util.List;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
+import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.DocumentRoots;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -272,9 +272,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         MutableComboBoxModel model = new LocalServer.ComboBoxModel(DEFAULT_LOCAL_SERVER);
 
         String projectName = getWebFolderName();
-        List<Root> roots = DocumentRoots.getRoots(null);
+        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots();
         descriptor.putProperty(ROOTS, roots);
-        for (Root root : roots) {
+        for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             model.addElement(ls);
             if (root.isPreferred()) {
@@ -306,8 +306,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // /var/www or similar => check source folder name and url
             String srcRoot = sources.getSrcRoot();
             @SuppressWarnings("unchecked")
-            List<Root> roots = (List<Root>) descriptor.getProperty(ROOTS);
-            for (Root root : roots) {
+            List<DocumentRoot> roots = (List<DocumentRoot>) descriptor.getProperty(ROOTS);
+            for (DocumentRoot root : roots) {
                 String docRoot = root.getDocumentRoot() + File.separator;
                 if (srcRoot.startsWith(docRoot)) {
                     String urlSuffix = srcRoot.replaceFirst(Pattern.quote(docRoot), ""); // NOI18N

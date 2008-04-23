@@ -37,44 +37,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui;
+package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 
 /**
  * @author Tomas Mysik
- * @see DocumentRoots
  */
-final class DocumentRootsSolaris {
+final class SolarisPhpEnvironment extends PhpEnvironment {
 
-    private DocumentRootsSolaris() {
+    SolarisPhpEnvironment() {
     }
 
-    static List<Root> getDocumentRoots(String projectName) {
-        List<Root> roots = new ArrayList<Root>(2);
+    @Override
+    public List<DocumentRoot> getDocumentRoots(String projectName) {
+        List<DocumentRoot> roots = new ArrayList<DocumentRoot>(2);
+
+        // ~/public_html
+        DocumentRoot userPublicHtml = getUserPublicHtmlDocumentRoot(projectName);
+        if (userPublicHtml != null) {
+            roots.add(userPublicHtml);
+        }
 
         // /var/apache*/*/htdocs
         File varDir = new File("/var/"); // NOI18N
         if (!varDir.isDirectory()) {
-            return roots;
+            return Collections.<DocumentRoot>emptyList();
         }
-        String[] apaches = varDir.list(DocumentRoots.APACHE_FILENAME_FILTER);
+        String[] apaches = varDir.list(APACHE_FILENAME_FILTER);
         if (apaches == null || apaches.length == 0) {
-            return roots;
+            return Collections.<DocumentRoot>emptyList();
         }
+        File htDocs = null;
         for (String apache : apaches) {
-            File htDocs = DocumentRoots.findHtDocsDirectory(new File(varDir, apache), null);
+            htDocs = findHtDocsDirectory(new File(varDir, apache), null);
             if (htDocs != null) {
-                String documentRoot = DocumentRoots.getFolderName(htDocs, projectName);
-                String url = DocumentRoots.getDefaultUrl(projectName);
-                roots.add(new Root(documentRoot, url, htDocs.canWrite()));
                 // one htdocs is enough
+                String documentRoot = getFolderName(htDocs, projectName);
+                String url = getDefaultUrl(projectName);
+                roots.add(new DocumentRoot(documentRoot, url, roots.isEmpty() && htDocs.canWrite()));
                 break;
             }
         }
-        return roots;
+        if (!roots.isEmpty()) {
+            return roots;
+        }
+        return Collections.<DocumentRoot>emptyList();
+    }
+
+    @Override
+    public List<String> getAllPhpInterpreters() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

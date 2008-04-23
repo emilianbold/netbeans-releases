@@ -37,51 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui;
+package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 
 /**
  * @author Tomas Mysik
- * @see DocumentRoots
  */
-final class DocumentRootsUnix {
+final class MacPhpEnvironment extends PhpEnvironment {
 
-    private DocumentRootsUnix() {
+    MacPhpEnvironment() {
     }
 
-    static List<Root> getDocumentRoots(String projectName) {
-        List<Root> roots = new ArrayList<Root>(2);
+    @Override
+    public List<DocumentRoot> getDocumentRoots(String projectName) {
+        // MAMP
+        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
+        if (mamp.isDirectory()) {
+            String documentRoot = getFolderName(mamp, projectName);
+            String url = getDefaultUrl(projectName, 8888);
+            return Arrays.asList(new DocumentRoot(documentRoot, url, true));
+        }
+        return Collections.<DocumentRoot>emptyList();
+    }
 
-        // ~/public_html
-        File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
-        if (userDir.isDirectory()) {
-            String documentRoot = DocumentRoots.getFolderName(userDir, projectName);
-            String user = System.getProperty("user.name"); // NOI18N
-            String urlSuffix = projectName != null ? "/" + projectName : ""; // NOI18N
-            String url = DocumentRoots.getDefaultUrl("~" + user + urlSuffix); // NOI18N
-            roots.add(new Root(documentRoot, url, userDir.canWrite()));
-        }
-
-        // /var/www
-        File www = new File("/var/www"); // NOI18N
-        File wwwLocalhost = new File(www, "localhost"); // NOI18N
-        String documentRoot = null;
-        boolean canWrite = false;
-        if (wwwLocalhost.isDirectory()) {
-            documentRoot = DocumentRoots.getFolderName(wwwLocalhost, projectName);
-            canWrite = wwwLocalhost.canWrite();
-        } else if (www.isDirectory()) {
-            documentRoot = DocumentRoots.getFolderName(www, projectName);
-            canWrite = www.canWrite();
-        }
-        if (documentRoot != null) {
-            String url = DocumentRoots.getDefaultUrl(projectName);
-            roots.add(new Root(documentRoot, url, roots.isEmpty() && canWrite));
-        }
-        return roots;
+    @Override
+    public List<String> getAllPhpInterpreters() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

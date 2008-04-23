@@ -44,7 +44,6 @@ import org.openide.util.Utilities;
  */
 public abstract class SystemPackageFinder {
 
-    
     private static final String LABEL_CHOOSE_PHP_TITLE = "LBL_ChoosePhpTitle";
     
     private static final String LABEL_CHOOSE_PHP_MSG = "LBL_ChoosePhpMessage";
@@ -320,6 +319,7 @@ class SystemPackageFinderUnixImpl extends SystemPackageFinder {
 class SystemPackageFinderMacImpl extends SystemPackageFinder {
 
     protected void fillPhpSet() {
+        // /Applications/MAMP/bin/php5/bin/php
         // is not supported. Do nothing
     }
 
