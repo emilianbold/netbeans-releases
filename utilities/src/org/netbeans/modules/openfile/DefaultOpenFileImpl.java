@@ -541,8 +541,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         } 
                             
         /* try to open the object using the default action */
-        final Node dataNode = dataObject.getNodeDelegate();        
-        final Action action = dataNode.getPreferredAction();
+        Node dataNode = dataObject.getNodeDelegate();        
+        Action action = dataNode.getPreferredAction();
         if ((action != null)
                 && !(action instanceof FileSystemAction)
                 && !(action instanceof ToolsAction)) {
@@ -554,28 +554,21 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                            + ") for opening the file");                 //NOI18N
             }
 
-            final Action theAction;
             if (action instanceof ContextAwareAction) {
-                theAction = ((ContextAwareAction) action)
+                action = ((ContextAwareAction) action)
                               .createContextAwareInstance(
                                       Lookups.singleton(dataNode));
                 if (log.isLoggable(FINEST)) {
                     log.finest("    - it is a ContextAwareAction");
                     log.finest("    - using a context-aware instance instead (\"" //NOI18N
-                                      + theAction.getValue(Action.NAME)
+                                      + action.getValue(Action.NAME)
                                       + "\" - "                         //NOI18N
-                                      + theAction.getClass().getName() + ')');
+                                      + action.getClass().getName() + ')');
                 }
-            } else {
-                theAction = action;
             }
 
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    theAction.actionPerformed(new ActionEvent(dataNode, 0, ""));                                 
-                }
-            });            
-            log.finest("   - call of action.actionPerformed(...) was scheduled to the EDT using invokeLater(...)");//NOI18N
+            log.finest("   - will call action.actionPerformed(...)");   //NOI18N
+            action.actionPerformed(new ActionEvent(dataNode, 0, ""));                                 
             return true;            
         }             
         
