@@ -71,9 +71,12 @@ import org.openide.util.Exceptions;
  * @author AlexanderSimon
  */
 public class OpenSolaris extends KnownProject {
+    private static final boolean TRACE = true;
     public static final String PROJECT_NAME = "OpenSolaris"; // NOI18N
+    public static final String LOG_FILE = "NightlyLog"; // NOI18N
     private String root;
     private String nb_root;
+    private String nightly_log;
 
     private List<SourceFileProperties> sources;
     private List<InstallLine> copyHeader;
@@ -90,12 +93,21 @@ public class OpenSolaris extends KnownProject {
         if (root == null) {
             return false;
         }
-        nb_root =parameters.get(KnownProject.NB_ROOT);
+        nb_root = parameters.get(KnownProject.NB_ROOT);
         if (nb_root == null) {
             return false;
         }
-        if (findMakeLog(root) == null) {
-            return false;
+        nightly_log = parameters.get(OpenSolaris.LOG_FILE);
+        if (nightly_log == null) {
+            nightly_log = findMakeLog(root);
+            if (nightly_log == null) {
+                return false;
+            }
+        } else {
+            File log = new File(nightly_log);
+            if (!log.exists() || log.isDirectory()){
+                return false;
+            }
         }
         return true;
     }
@@ -103,11 +115,12 @@ public class OpenSolaris extends KnownProject {
     @Override
     public boolean create(Map<String, String> parameters){
         try{
-            String log = findMakeLog(root);
-            if (log == null) {
-                return false;
-            }
-            sources = scan(log, root);
+            if (TRACE) System.out.println(KnownProject.PROJECT+"="+OpenSolaris.PROJECT_NAME); //NOI18N
+            if (TRACE) System.out.println(KnownProject.ROOT+"="+root); //NOI18N
+            if (TRACE) System.out.println(KnownProject.PROJECT+"="+nb_root); //NOI18N
+            if (TRACE) System.out.println(OpenSolaris.LOG_FILE+"="+nightly_log); //NOI18N
+            if (TRACE) System.out.println("Scaning log..."); //NOI18N
+            sources = scan(nightly_log, root);
             if (sources == null || sources.size() == 0) {
                 return false;
             }
@@ -120,6 +133,7 @@ public class OpenSolaris extends KnownProject {
     private boolean createImpl(){
         File proto = new File(root+"/proto"); // NOI18N
         if (!proto.exists()) {
+            if (TRACE) System.out.println("Iinstalling proto..."); //NOI18N
             for(InstallLine il : copyHeader){
                 il.install();
             }
@@ -179,12 +193,15 @@ public class OpenSolaris extends KnownProject {
             } else {
                 display = "os."+display; // NOI18N
             }
-            System.err.println("Creating "+n+"..."); //NOI18N
+            if (TRACE) System.out.println("Creating "+n+"..."); //NOI18N
             createImpl(r, n, name, display, folders);
         }
         // and super projects
+        if (TRACE) System.out.println("Creating commands..."); //NOI18N
         createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", folders); // NOI18N
+        if (TRACE)  System.out.println("Creating libraries..."); //NOI18N
         createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", folders); // NOI18N
+        if (TRACE)  System.out.println("Creating sources..."); //NOI18N
         createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", folders); // NOI18N
         return true;
     }
@@ -218,13 +235,15 @@ public class OpenSolaris extends KnownProject {
             for (File when : log.listFiles()) {
                 if (when.isDirectory()) {
                     for (File l : when.listFiles()) {
-                        if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
-
+                        String current = l.getAbsolutePath();
+                        if (current.endsWith("/nightly.log")) { // NOI18N
                             if (latest == null) {
-                                latest = l.getAbsolutePath();
+                                latest = current;
                             } else {
-                                if (latest.compareTo(l.getAbsolutePath()) < 0) {
-                                    latest = l.getAbsolutePath();
+                                String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log"));
+                                String folder2 = current.substring(0, current.lastIndexOf("/nightly.log"));
+                                if (folder1.compareTo(folder2) < 0) {
+                                    latest = current;
                                 }
                             }
                             break;
