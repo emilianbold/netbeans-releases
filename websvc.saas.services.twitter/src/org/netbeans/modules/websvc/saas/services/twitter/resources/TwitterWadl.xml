@@ -199,7 +199,7 @@
                     <param name="page" type="xsd:integer" style="query" required="false"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="t:direct_messages"/>
+                    <representation mediaType="text/xml" element="t:direct-messages"/>
                 </response>
             </method>
         </resource>
@@ -237,7 +237,7 @@
                         <param name="page" type="xsd:integer" style="query" required="false"/>
                     </request>
                     <response>
-                        <representation mediaType="text/xml" element="t:direct_messages"/>
+                        <representation mediaType="text/xml" element="t:direct-messages"/>
                     </response>
                 </method>
             </resource>
@@ -313,7 +313,7 @@
                     <param name="page" type="xsd:integer" style="query" required="false"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="t:userType"/>
+                    <representation mediaType="text/xml" element="t:statuses"/>
                 </response>
             </method>
         </resource>
