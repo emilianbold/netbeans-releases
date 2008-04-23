@@ -68,7 +68,7 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author cincura, ehucka
+ * @author cincura, ehucka, Jiri Vagner
  */
 public class Actions extends JellyTestCase {
 
@@ -161,13 +161,16 @@ public class Actions extends JellyTestCase {
             new EventTool().waitNoEvent(1000); //because of issue 70731
             //main menu file actions
             //check run file action
-            String actionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Object[]{new Integer(1), "MemoryView.java"});
-            assertTrue(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName, true));
+            String runActionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Object[]{new Integer(1), "MemoryView.java"});
+            assertTrue(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + runActionName + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + runActionName, true));
+
             //check debug file action
-            actionName = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugSingleAction_Name", new Object[]{new Integer(1), "MemoryView.java"});
-            assertTrue(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName, true));
+            String debugActionName = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugSingleAction_Name", new Object[]{new Integer(1), "MemoryView.java"});
+            assertTrue(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + debugActionName + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + debugActionName, true));
+
             //run to cursor
             assertTrue(Utilities.runMenu + "|" + Utilities.runToCursorItem + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runToCursorItem, true));
+            
             //toggle breakpoint
             assertTrue(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, true));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
@@ -175,7 +178,13 @@ public class Actions extends JellyTestCase {
 
             //source popup menu actions
             JPopupMenuOperator operator = new JPopupMenuOperator(JPopupMenuOperator.callPopup(eo, 50, 50));
-            Utilities.verifyPopup(operator, new String[]{Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action"), Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch"), Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Toggle_breakpoint")});
+            Utilities.verifyPopup(operator,
+                    new String[]{
+                        debugActionName,
+                        Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch"),
+                        Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Toggle_breakpoint")
+                    }
+            );
 
             //tools menu
             //debug is not visible
@@ -361,7 +370,8 @@ public class Actions extends JellyTestCase {
     public void testStepOut() throws Throwable {
         try {
             new StepOutAction().performShortcut();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber + 1);
+            String msg = "Thread main stopped after return from 'updateStatus()' at MemoryView.java:80";
+            lastLineNumber = Utilities.waitDebuggerConsole(msg, lastLineNumber + 1);
             //check 82, 92
             EditorOperator eo = new EditorOperator("MemoryView.java");
             assertFalse("Current PC annotation remains on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
@@ -393,22 +403,37 @@ public class Actions extends JellyTestCase {
             EditorOperator eo = new EditorOperator("MemoryView.java");
 
             new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
+            String msg = "Thread main stopped before call to '<init>()' at MemoryView.java:104";
+            lastLineNumber = Utilities.waitDebuggerConsole(msg, lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 105", Utilities.checkAnnotation(eo, 105, "CurrentExpressionLine"));
+
             new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
+            lastLineNumber = Utilities.waitDebuggerConsole(msg, lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 106", Utilities.checkAnnotation(eo, 106, "CurrentExpressionLine"));
+            
             new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
+            lastLineNumber = Utilities.waitDebuggerConsole(msg, lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 107", Utilities.checkAnnotation(eo, 107, "CurrentExpressionLine"));
+            
             new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
+            lastLineNumber = Utilities.waitDebuggerConsole(
+                    "Thread main stopped before call to 'format()' at MemoryView.java:104",
+                    lastLineNumber + 1
+                    );
             assertTrue("CurrentExpressionLine annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentExpressionLine"));
+
             new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
+            lastLineNumber = Utilities.waitDebuggerConsole(
+                    "Thread main stopped before call to 'println()' at MemoryView.java:104",
+                    lastLineNumber + 1
+                    );
             assertTrue("CurrentExpressionLine annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentExpressionLine"));
+
             new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lastLineNumber + 1);
+            lastLineNumber = Utilities.waitDebuggerConsole(
+                    "Thread main stopped at MemoryView.java:109",
+                    lastLineNumber + 1
+                    );
             assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -419,6 +444,8 @@ public class Actions extends JellyTestCase {
     public void testPause() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
+
+            new ContinueAction().perform();
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 80);
             //continue
