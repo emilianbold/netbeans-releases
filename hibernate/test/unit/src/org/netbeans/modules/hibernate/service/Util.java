@@ -251,7 +251,7 @@ public class Util {
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo != null && fo.getNameExt().equals("cfg.xml")) {
+                if(fo != null && fo.getNameExt().endsWith("cfg.xml")) {
                     files.add(fo);
                 }
             }
