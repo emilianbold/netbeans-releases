@@ -54,15 +54,15 @@ public class StandAlone {
         if (KnownProject.getDefault().canCreate(res)){
             KnownProject.getDefault().create(res);
         } else {
-            System.err.println("No providers found"); //NOI18N
+            System.err.println("Provider not found"); //NOI18N
             if (!res.containsKey(KnownProject.PROJECT)) {
-                System.err.println("It seems input parameter "+KnownProject.PROJECT+" missing"); //NOI18N
+                System.err.println("Input parameter "+KnownProject.PROJECT+" missing"); //NOI18N
             }
             if (!res.containsKey(KnownProject.ROOT)) {
-                System.err.println("It seems input parameter "+KnownProject.ROOT+" missing"); //NOI18N
+                System.err.println("Input parameter "+KnownProject.ROOT+" missing"); //NOI18N
             }
             if (!res.containsKey(KnownProject.NB_ROOT)) {
-                System.err.println("It seems input parameter "+KnownProject.NB_ROOT+" missing"); //NOI18N
+                System.err.println("Input parameter "+KnownProject.NB_ROOT+" missing"); //NOI18N
             }
         }
     }
