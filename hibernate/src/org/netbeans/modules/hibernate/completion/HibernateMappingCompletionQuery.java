@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.hibernate.completion;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.hibernate.completion.CompletionContext.CompletionType;
@@ -72,27 +74,38 @@ public class HibernateMappingCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        List<HibernateCompletionItem> completionItems = new ArrayList<HibernateCompletionItem>();
+        int anchorOffset = getCompletionItems(doc, caretOffset, completionItems);
+        resultSet.addAllItems(completionItems);
+        if(anchorOffset != -1) {
+            resultSet.setAnchorOffset(anchorOffset);
+        }
+        
+        resultSet.finish();
+    }
+    
+    // This method is here for unit testing purpose
+    int getCompletionItems(Document doc, int caretOffset, List<HibernateCompletionItem> completionItems) {
+        int anchorOffset = -1;
         
         CompletionContext context = new CompletionContext(doc, caretOffset);
         
         if (context.getCompletionType() == CompletionType.NONE) {
-            resultSet.finish();
-            return;
+            return anchorOffset;
         }
 
         switch (context.getCompletionType()) {
             case ATTRIBUTE_VALUE:
-                HibernateMappingCompletionManager.getDefault().completeAttributeValues(resultSet, context);
+                anchorOffset = HibernateMappingCompletionManager.getDefault().completeAttributeValues(context, completionItems);
                 break;
             case ATTRIBUTE:
-                HibernateMappingCompletionManager.getDefault().completeAttributes(resultSet, context);
+                anchorOffset = HibernateMappingCompletionManager.getDefault().completeAttributes(context, completionItems);
                 break;
             case TAG:
-                HibernateMappingCompletionManager.getDefault().completeElements(resultSet, context);
+                anchorOffset = HibernateMappingCompletionManager.getDefault().completeElements(context, completionItems);
                 break;
             }
-
         
-        resultSet.finish();
+        return anchorOffset;
     }
 }

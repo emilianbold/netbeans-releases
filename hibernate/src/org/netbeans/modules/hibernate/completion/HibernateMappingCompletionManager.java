@@ -42,6 +42,7 @@ package org.netbeans.modules.hibernate.completion;
 
 import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
@@ -230,9 +231,10 @@ public final class HibernateMappingCompletionManager {
         return INSTANCE;
     }
 
-    public void completeAttributeValues(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeAttributeValues(CompletionContext context, List<HibernateCompletionItem> valueItems) {
+        int anchorOffset = -1;    
         if(context.getTag() == null)
-            return;
+            return anchorOffset;
         
         String tagName = context.getTag().getNodeName();
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
@@ -240,17 +242,21 @@ public final class HibernateMappingCompletionManager {
 
         Completor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
-            resultSet.addAllItems(completor.doCompletion(context));
+            valueItems.addAll(completor.doCompletion(context));
             if (completor.getAnchorOffset() != -1) {
-                resultSet.setAnchorOffset(completor.getAnchorOffset());
+                anchorOffset = completor.getAnchorOffset();
             }
         }
+        
+        return anchorOffset;
     }
 
-    public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeAttributes(CompletionContext context, List<HibernateCompletionItem> items) {
+        return -1;
     }
 
-    public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeElements(CompletionContext context, List<HibernateCompletionItem> items) {
+        return -1;
     }
 
     private void registerCompletor(String tagName, String attribName,
