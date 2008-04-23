@@ -39,21 +39,13 @@
 
 package org.netbeans.junit;
 
+import java.io.File;
 import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringBufferInputStream;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
-import org.netbeans.insane.impl.InsaneEngine;
 import org.netbeans.insane.scanner.ObjectMap;
 import org.openide.util.Exceptions;
 
@@ -88,6 +80,22 @@ public class NbModuleSuiteTest extends TestCase {
         
         assertEquals("OK", System.getProperty("t.one"));
         assertProperty("netbeans.full.hack", "true");
+    }
+    
+    public void testPreparePathes() {
+        Properties p = new Properties();
+        
+        NbModuleSuite.S.preparePatches(
+            File.separator + "x" + File.separator + "c:org-openide-util.jar" + File.pathSeparator + 
+            File.separator + "x" + File.separator + "org-openide-nodes.jar" + File.pathSeparator +
+            File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar" + File.pathSeparator +
+            File.separator + "x" + File.separator + "org-openide-filesystems.jar", p);
+        
+        
+        assertEquals(
+            File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar",
+            p.getProperty("netbeans.patches.org.openide.util")
+        );
     }
 
     public void testAccessToInsane() {

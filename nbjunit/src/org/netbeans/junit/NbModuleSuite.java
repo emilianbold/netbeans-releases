@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -121,7 +122,7 @@ public class NbModuleSuite {
             return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests);
         }
 
-        public Configuration classLoader(ClassLoader parent) {
+        Configuration classLoader(ClassLoader parent) {
             return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests);
         }
 
@@ -263,6 +264,8 @@ public class NbModuleSuite {
             System.setProperty("netbeans.dirs", sb.toString());
 
             System.setProperty("netbeans.security.nocheck", "true");
+
+            preparePatches(System.getProperty("java.class.path"), System.getProperties());
             
             List<String> args = new ArrayList<String>();
             args.add("--nosplash");
@@ -372,6 +375,16 @@ public class NbModuleSuite {
 
             return cnbs;
         }
+        
+        static void preparePatches(String path, Properties prop) {
+            Pattern tests = Pattern.compile(".*" + File.separator + "([^" + File.separator + "]+)" + File.separator + "tests.jar");
+            for (String jar : path.split(File.pathSeparator)) {
+                Matcher m = tests.matcher(jar);
+                if (m.matches()) {
+                    prop.setProperty("netbeans.patches." + m.group(1).replace('-', '.'), jar);
+                }
+            }
+        }
 
         private static String asString(InputStream is, boolean close) throws IOException {
             byte[] arr = new byte[is.available()];
@@ -425,6 +438,9 @@ public class NbModuleSuite {
                     return true;
                 }
                 if (res.startsWith("org.netbeans.junit") || res.startsWith("org/netbeans/junit")) {
+                    if (res.startsWith("org.netbeans.junit.ide") || res.startsWith("org/netbeans/junit/ide")) {
+                        return false;
+                    }
                     return true;
                 }
                 return false;
