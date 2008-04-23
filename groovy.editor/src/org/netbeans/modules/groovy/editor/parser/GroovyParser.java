@@ -96,6 +96,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /**
@@ -108,6 +110,7 @@ public class GroovyParser implements Parser {
 
     private final PositionManager positions = createPositionManager();
     private final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
+    private JavaSource javaSource;
 
     public void parseFiles(Job job) {
         ParseListener listener = job.listener;
@@ -508,37 +511,36 @@ public class GroovyParser implements Parser {
         }
         
         FileObject fo = context.file.getFileObject();
-        ClassPath cp = ClassPathSupport.createProxyClassPath(
-                ClassPath.getClassPath(fo, ClassPath.BOOT),
-                ClassPath.getClassPath(fo, ClassPath.COMPILE)
-                );
+        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath);
         
-        // temporary hack until #128978 is fixed
-        // improves speed of compilation significantly
-        List<URL> urls = new ArrayList<URL>();
-        try {
-            for (FileObject cpRoot : cp.getRoots()) {
-                URL url = FileUtil.getArchiveFile(cpRoot.getURL());
-                if (url == null) {
-                    url = cpRoot.getURL();
-                }
-                urls.add(url);
-            }
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        ClassLoader parentLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+        ClassLoader parentLoader = cp.getClassLoader(true);
         
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
-//        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, context.file.getFileObject());
-        CompilationUnit compilationUnit = new CompilationUnit(configuration, null, classLoader);
+        
+        if (javaSource == null) {
+            ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            ClasspathInfo cpInfo = ClasspathInfo.create(
+                    // we should try to load everything by javac instead of classloader,
+                    // but for now it is faster to use javac only for sources
+                    ClassPathSupport.createClassPath(new FileObject[] {}),
+                    ClassPathSupport.createClassPath(new FileObject[] {}),
+                    sourcePath);
+            javaSource = JavaSource.create(cpInfo);
+        }
+        
+        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, javaSource);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
+//        long start = System.currentTimeMillis();
         try {
             compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
+//            System.out.println("### compilation success in " + (System.currentTimeMillis() - start));
         } catch (Throwable e) {
+//            System.out.println("### compilation failure in " + (System.currentTimeMillis() - start));
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
@@ -691,7 +693,7 @@ public class GroovyParser implements Parser {
     
     /**
      * Hack to remove errors about unresolved class,
-     * we don't have integration with Java yet, so it's just less evil
+     * we don't have full integration with Java yet, so it's just less evil
      */
     private static boolean isRealError(String errorMessage) {
         if (errorMessage.startsWith("unable to resolve class ")) { // NOI18N

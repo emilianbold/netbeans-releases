@@ -52,7 +52,6 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,27 +60,25 @@ import org.openide.util.Exceptions;
  */
 public final class NbCompilationUnit extends CompilationUnit {
 
-    public NbCompilationUnit(CompilerConfiguration configuration, CodeSource security, GroovyClassLoader loader, FileObject fileObject) {
+    public NbCompilationUnit(CompilerConfiguration configuration, CodeSource security, GroovyClassLoader loader, JavaSource javaSource) {
         super(configuration, security, loader);
-        this.ast = new NbCompileUnit(this.classLoader, security, this.configuration, fileObject);
+        this.ast = new NbCompileUnit(this.classLoader, security, this.configuration, javaSource);
     }
     
     private static final class NbCompileUnit extends CompileUnit {
         
-        private final FileObject fileObject;
+        private final JavaSource javaSource;
         
-        public NbCompileUnit(GroovyClassLoader classLoader, CodeSource codeSource, CompilerConfiguration config, FileObject fileObject) {
+        public NbCompileUnit(GroovyClassLoader classLoader, CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource) {
             super(classLoader, codeSource, config);
-            this.fileObject = fileObject;
+            this.javaSource = javaSource;
         }
 
         @Override
         public ClassNode getClass(final String name) {
             final ClassNode[] classNodes = new ClassNode[] { super.getClass(name) };
             if (classNodes[0] == null) {
-                JavaSource javaSource = JavaSource.forFileObject(fileObject);
                 try {
-                    
                     javaSource.runUserActionTask(new Task<CompilationController>() {
                         public void run(CompilationController controller) throws Exception {
                             TypeElement typeElement = controller.getElements().getTypeElement(name);
