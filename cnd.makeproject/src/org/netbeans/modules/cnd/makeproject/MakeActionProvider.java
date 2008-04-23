@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.JButton;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -87,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -101,7 +101,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /** Action provider of the Make project. This is the place where to do
@@ -816,7 +815,7 @@ public class MakeActionProvider implements ActionProvider {
         
         // Check for a valid make program
         file = new File(cs.getTool(Tool.MakeTool).getPath());
-        if (!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) {
+        if ((!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
             runBTA = true;
         }
         
