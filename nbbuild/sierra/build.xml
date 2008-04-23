@@ -179,8 +179,14 @@
     <target name="do-xml">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
-            <buildpath location="${home}/xml.xam.ui"/> <!-- todo r -->
+
+            <buildpath location="${home}/xml.validation"/> <!-- todo r -->
             <buildpath location="${home}/xml.search"/>
+
+            <buildpath location="${home}/xml.schema"/> <!-- todo r -->
+            <buildpath location="${home}/xml.schema.ui.basic"/> <!-- todo r -->
+            <buildpath location="${home}/xml.wsdlui"/> <!-- todo r -->
+
             <buildpath location="${home}/xml.xpath.ext"/>
             <buildpath location="${home}/xml.wsdl.extensions"/>
         </subant>
@@ -255,7 +261,7 @@
     <target name="do-etl">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/etl.editor/build.xml"/>
-            <buildpath location="${home}/etl.project/build.xml"/>
+            <!--buildpath location="${home}/etl.project/build.xml"/ todo a -->
         </subant>
     </target>
 

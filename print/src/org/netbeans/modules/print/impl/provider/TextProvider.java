@@ -58,7 +58,7 @@ import org.openide.text.AttributedCharacters;
 import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
