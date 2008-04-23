@@ -179,8 +179,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY));
                 }
                 SystemUtils.sleep(3000);//wait for 3 seconds so that mysql really starts
-                fixSecuritySettingsWindows(location);
-
+                if(Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+                    fixSecuritySettingsWindows(location);
+                }
             //createWindowsShortcuts(location);
 
             }
@@ -268,6 +269,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
             if(!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
                 SystemUtils.setEnvironmentVariable("REMOVE_ANONYMOUS", "true", EnvironmentScope.PROCESS, false);
+            }
+            if(Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+                SystemUtils.setEnvironmentVariable("MODIFY_SECURITY", "true", EnvironmentScope.PROCESS, false);
             }
             SystemUtils.executeCommand(location, commandsList.toArray(new String[0]));
         } catch (NativeException e) {
