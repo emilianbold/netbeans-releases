@@ -44,9 +44,8 @@ import java.util.List;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
 import static org.netbeans.modules.xml.ui.UI.*;
@@ -72,21 +71,20 @@ public final class Construct extends Engine {
     List<Diagram.Element> elements = diagram.getElements(useSelection);
 
     for (Diagram.Element element : elements) {
-      Component component = element.getComponent();
+      BpelEntity entity = element.getBpelEntity();
 
-      if (acceptsAttribute(component) || acceptsComponent(component)) {
+      if (acceptsAttribute(entity) || acceptsComponent(entity)) {
 //out(indent + "      add.");
         fireSearchFound(new Element(element));
       }
     }
   }
   
-  private boolean acceptsAttribute(Component component) {
-    if ( !(component instanceof DocumentComponent)) {
+  private boolean acceptsAttribute(BpelEntity entity) {
+    if ( !(entity instanceof DocumentComponent)) {
       return false;
     }
-    NamedNodeMap attributes = ((DocumentComponent) component).
-      getPeer().getAttributes();
+    NamedNodeMap attributes = ((DocumentComponent) entity).getPeer().getAttributes();
 
     for (int i=0; i < attributes.getLength(); i++) {
       Node attribute = attributes.item(i);
@@ -101,11 +99,11 @@ public final class Construct extends Engine {
     return false;
   }
 
-  private boolean acceptsComponent(Component component) {
-    if ( !(component instanceof DocumentComponent)) {
+  private boolean acceptsComponent(BpelEntity entity) {
+    if ( !(entity instanceof DocumentComponent)) {
       return false;
     }
-    return accepts(((DocumentComponent) component).getPeer().getTagName());
+    return accepts(((DocumentComponent) entity).getPeer().getTagName());
   }
 
   @Override

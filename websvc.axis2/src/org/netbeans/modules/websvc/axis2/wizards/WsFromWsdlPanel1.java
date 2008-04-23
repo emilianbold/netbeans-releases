@@ -112,10 +112,10 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
                         }
                         String packageName = WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace());
                         component.setPackageName(packageName);
-                        component.setW2JOptions("-ss -sd -sn "+component.getServiceName()+
-                                    " -pn "+component.getPortName()+
-                                    " -d " +component.getDatabindingName()+"\n"+
-                                    " -p "+packageName+(component.isSEI() ? " -ssi" : "")
+                        component.setW2JOptions("-ss -sd -sn "+component.getServiceName()+ // NOI18N
+                                    " -pn "+component.getPortName()+ // NOI18N
+                                    " -d " +component.getDatabindingName()+"\n"+ // NOI18N
+                                    " -p "+packageName+(component.isSEI() ? " -ssi" : "") // NOI18N
                         );
                     }
                 }

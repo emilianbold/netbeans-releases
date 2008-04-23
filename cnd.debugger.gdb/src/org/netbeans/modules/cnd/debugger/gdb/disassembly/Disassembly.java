@@ -105,10 +105,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static final String NUMBER_HEADER="number"; // NOI18N
     private static final String VALUE_HEADER="value"; // NOI18N
     
-    public static final String REGISTER_NAMES_HEADER="^done,register-names=["; // NOI18N
-    public static final String REGISTER_VALUES_HEADER="^done,register-values=["; // NOI18N
-    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers=["; // NOI18N
-    public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
+    public static final String REGISTER_NAMES_HEADER="^done,register-names="; // NOI18N
+    public static final String REGISTER_VALUES_HEADER="^done,register-values="; // NOI18N
+    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers="; // NOI18N
+    public static final String RESPONSE_HEADER="^done,asm_insns="; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
     private static FileObject fo = null;
@@ -122,7 +122,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-
+        
         synchronized (lines) {
             lines.clear();
             disLength = 0;
@@ -203,7 +203,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         assert msg.startsWith(REGISTER_NAMES_HEADER) : "Invalid asm response message"; // NOI18N
         regNames.clear();
         int idx = 0;
-        int pos = REGISTER_NAMES_HEADER.length();
+        int pos = msg.indexOf("\"", REGISTER_NAMES_HEADER.length()); // NOI18N
         while (pos != -1) {
             int end = msg.indexOf("\"", pos+1); // NOI18N
             if (end == -1) {
@@ -218,7 +218,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public void updateRegModified(String msg) {
         assert msg.startsWith(REGISTER_MODIFIED_HEADER) : "Invalid asm response message"; // NOI18N
         regModified.clear();
-        int pos = REGISTER_MODIFIED_HEADER.length();
+        int pos = msg.indexOf("\"", REGISTER_MODIFIED_HEADER.length()); // NOI18N
         while (pos != -1) {
             int end = msg.indexOf("\"", pos+1); // NOI18N
             if (end == -1) {

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.jmx.test.configwizard;
 
 import java.io.File;
@@ -62,25 +61,24 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  * - wizards robustness
  */
 public class ManagementConfigurationWizard extends JMXTestCase {
-    
+
     private static final String PROPERTIES_EXT = "properties";
     private static final String ACCESS_EXT = "access";
     private static final String PASSWORD_EXT = "password";
     private static final String ACL_EXT = "acl";
-    
     private static final String FOLDER_TAG = "<defined folder>";
-    
+
     /** Need to be defined because of JUnit */
     public ManagementConfigurationWizard(String name) {
         super(name);
     }
-    
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
         junit.textui.TestRunner.run(suite());
     }
-    
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ManagementConfigurationWizard("init"));
@@ -93,16 +91,15 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         suite.addTest(new ManagementConfigurationWizard("test7"));
         suite.addTest(new ManagementConfigurationWizard("test8"));
         suite.addTest(new ManagementConfigurationWizard("test9"));
-        
+
         return suite;
     }
-    
+
     //========================= Init ==================================//
-    
     public void init() {
-        
+
         System.out.println("====================  init  ====================");
-        
+
         System.out.println("Create project for Management Configuration file tests");
         newProject(
                 PROJECT_CATEGORY_JAVA,
@@ -119,26 +116,25 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 PACKAGE_COM_FOO_BAR, null);
         nfnlso.finish();
     }
-    
+
     //========================= Test Wizard ==================================//
-    
     /**
      * Check management configuration file creation when the properties file
      * already exists.
      */
     public void test1() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
-        
+
         String objectName = "Test1";
-        
+
         System.out.println("====================  test1  ====================");
-        
+
         System.out.println("Create empty property file " +
                 objectName + "." + PROPERTIES_EXT);
         nfnlso = createEmptyFile(objectName + "." + PROPERTIES_EXT);
         nfnlso.finish();
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -151,24 +147,24 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         checkNameAndLocationWizardValues(nfnlso, objectName, false);
         nfnlso.cancel();
     }
-    
+
     /**
      * Check management configuration file creation when the access file
      * already exists.
      */
     public void test2() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
-        
+
         String objectName = "Test2";
-        
+
         System.out.println("====================  test2  ====================");
-        
+
         System.out.println("Create empty access file " +
                 objectName + "." + ACCESS_EXT);
         nfnlso = createEmptyFile(objectName + "." + ACCESS_EXT);
         nfnlso.finish();
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -181,24 +177,24 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         checkNameAndLocationWizardValues(nfnlso, objectName, false);
         nfnlso.cancel();
     }
-    
+
     /**
      * Check management configuration file creation when the password file
      * already exists.
      */
     public void test3() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
-        
+
         String objectName = "Test3";
-        
+
         System.out.println("====================  test3  ====================");
-        
+
         System.out.println("Create empty password file " +
                 objectName + "." + PASSWORD_EXT);
         nfnlso = createEmptyFile(objectName + "." + PASSWORD_EXT);
         nfnlso.finish();
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -211,21 +207,21 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         checkNameAndLocationWizardValues(nfnlso, objectName, false);
         nfnlso.cancel();
     }
-    
+
     /**
      * Create basic management configuration from menu.
      * Check wizard components and values.
      */
     public void test4() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
         SNMPManagementConfiguration snmpConfig = null;
-        
+
         String objectName = "Test4";
-        
+
         System.out.println("====================  test4  ====================");
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -241,8 +237,13 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         String createdFile = nfnlso.txtCreatedFile().getText();
         String path = createdFile.substring(0,
                 createdFile.lastIndexOf(File.separator) + 1);
+        // The path returned above is platform dependent and may contain 
+        // either "/" (UNIX systems) or "\" (WINDOWS systems).
+        // BUT the generated properties file will contain only "UNIX like" path values.
+        // So we update the returned path replacing "\" with "/".
+        path = path.replace("\\", "/");
         nfnlso.next();
-        
+
         // Enable RMI wizard
         //---------------------------------------
         rmiConfig = new RMIManagementConfiguration();
@@ -263,7 +264,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Check Enable RMI wizard value wits");
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
         nfnlso.next();
-        
+
         // SNMP configuration wizard
         //---------------------------------------
         snmpConfig = new SNMPManagementConfiguration();
@@ -274,27 +275,27 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Check SNMP Configuration wizard values");
         checkSNMPConfigurationWizardValues(nfnlso, snmpConfig);
         nfnlso.finish();
-        
+
         // Check generated file contents
         System.out.println("Check created files");
         checkCreatedFiles(objectName, path);
     }
-    
+
     /**
      * Create management configuration from menu.
      * Then update some fields with valid values.
      * Check wizard components and values.
      */
     public void test5() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
         SNMPManagementConfiguration snmpConfig = null;
-        
+
         String objectName = "Test5";
-        
+
         System.out.println("====================  test5  ====================");
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -313,8 +314,13 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         String createdFile = nfnlso.txtCreatedFile().getText();
         String path = createdFile.substring(0,
                 createdFile.lastIndexOf(File.separator) + 1);
+        // The path returned above is platform dependent and may contain 
+        // either "/" (UNIX systems) or "\" (WINDOWS systems).
+        // BUT the generated properties file will contain only "UNIX like" path values.
+        // So we update the returned path replacing "\" with "/".
+        path = path.replace("\\", "/");
         nfnlso.next();
-        
+
         // Enable RMI wizard
         //---------------------------------------
         rmiConfig = new RMIManagementConfiguration();
@@ -345,7 +351,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Check Enable RMI wizard values");
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
         nfnlso.next();
-        
+
         // SNMP configuration wizard
         //---------------------------------------
         snmpConfig = new SNMPManagementConfiguration();
@@ -375,39 +381,39 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Check SNMP Configuration wizard values");
         checkSNMPConfigurationWizardValues(nfnlso, snmpConfig);
         nfnlso.finish();
-        
+
         // When require remote manager to authenticate is selected
         // (enable RMI wizard), an information dialog is displayed
         // when clicking on the finish button.
         NbDialogOperator dialog = new NbDialogOperator(INFORMATION_DIALOG_TITLE);
         dialog.ok();
-        
+
         // Check generated file contents
         System.out.println("Check created files");
         checkCreatedFiles(objectName, path);
     }
-    
+
     /**
      * Create management configuration from node.
      * Then update some fields with invalid values.
      * Check wizard components and values.
      */
     public void test6() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
         SNMPManagementConfiguration snmpConfig = null;
-        
+
         String objectName = "Test6";
-        
+
         System.out.println("====================  test6  ====================");
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
         nfnlso = createManagementConfigurationFileFromNode(objectName);
         nfnlso.next();
-        
+
         // Enable RMI wizard
         //---------------------------------------
         rmiConfig = new RMIManagementConfiguration();
@@ -417,7 +423,8 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         try {
             setTextFieldContent(RMI_PORT_TEXT_FIELD, nfnlso, "a");
             fail("The user shouldn't be able to enter a letter for RMI port.");
-        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {}
+        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {
+        }
         // Check Enable RMI wizard components
         System.out.println("Check Enable RMI wizard components");
         checkEnableRMIWizardComponents(nfnlso, rmiConfig);
@@ -428,7 +435,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Update RMI port with valid value");
         setTextFieldContent(RMI_PORT_TEXT_FIELD, nfnlso, "1099");
         nfnlso.next();
-        
+
         // SNMP configuration wizard
         //---------------------------------------
         // Update SNMP port with a letter
@@ -442,38 +449,40 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         try {
             setTextFieldContent(SNMP_PORT_TEXT_FIELD, nfnlso, "a");
             fail("The user shouldn't be able to enter a letter for SNMP port.");
-        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {}
+        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {
+        }
         // Update SNMP trap port with a letter
         System.out.println("Update SNMP trap port with invalid value (letter)");
         snmpConfig.trapPort = "";
         try {
             setTextFieldContent(SNMP_TRAP_PORT_TEXT_FIELD, nfnlso, "a");
             fail("The user shouldn't be able to enter a letter for SNMP trap port.");
-        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {}
+        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {
+        }
         // Check SNMP Configuration wizard components
         System.out.println("Check SNMP Configuration wizard components");
         checkSNMPConfigurationWizardComponents(nfnlso, snmpConfig);
         // Check SNMP Configuration wizard default values
         System.out.println("Check SNMP Configuration wizard values");
         checkSNMPConfigurationWizardValues(nfnlso, snmpConfig);
-        
+
         nfnlso.cancel();
     }
-    
+
     /**
      * Create management configuration from menu.
      * Then add valid credential (non null role/password).
      * Check wizard components and values.
      */
     public void test7() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
-        
+
         String objectName = "Test7";
-        
+
         System.out.println("====================  test7  ====================");
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -483,8 +492,13 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         String createdFile = nfnlso.txtCreatedFile().getText();
         String path = createdFile.substring(0,
                 createdFile.lastIndexOf(File.separator) + 1);
+        // The path returned above is platform dependent and may contain 
+        // either "/" (UNIX systems) or "\" (WINDOWS systems).
+        // BUT the generated properties file will contain only "UNIX like" path values.
+        // So we update the returned path replacing "\" with "/".
+        path = path.replace("\\", "/");
         nfnlso.next();
-        
+
         // Enable RMI wizard
         //---------------------------------------
         rmiConfig = new RMIManagementConfiguration();
@@ -511,38 +525,38 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
         nfnlso.next();
         nfnlso.finish();
-        
+
         // When require remote manager to authenticate is selected
         // (enable RMI wizard), an information dialog is displayed
         // when clicking on the finish button.
         NbDialogOperator dialog = new NbDialogOperator(INFORMATION_DIALOG_TITLE);
         dialog.ok();
-        
+
         // Check generated file contents
         System.out.println("Check created files");
         checkCreatedFiles(objectName, path);
     }
-    
+
     /**
      * Create management configuration from menu.
      * Then add invalid credential (null role/password).
      * Check wizard components and values.
      */
     public void test8() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
-        
+
         String objectName = "Test8";
-        
+
         System.out.println("====================  test8  ====================");
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
         nfnlso = createManagementConfigurationFileFromMenu(objectName);
         nfnlso.next();
-        
+
         // Enable RMI wizard
         //---------------------------------------
         rmiConfig = new RMIManagementConfiguration();
@@ -552,7 +566,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         setCheckBoxSelection(RMI_REQUIRE_AUTH_CHECK_BOX, nfnlso, true);
         JTableOperator jto = getTableOperator(RMI_CREDENTIALS_TABLE, nfnlso);
         JTableMouseDriver jtmd = new JTableMouseDriver();
-        
+
         // Add invalid credential (null role)
         System.out.println("Add invalid credential (null role)");
         rmiConfig.invalidCredential = true;
@@ -566,7 +580,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Check Enable RMI wizard default values
         System.out.println("Check Enable RMI wizard values");
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
-        
+
         // Remove invalid credential (null role)
         System.out.println("Remove invalid credential (null role)");
         rmiConfig.invalidCredential = false;
@@ -579,7 +593,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Check Enable RMI wizard default values
         System.out.println("Check Enable RMI wizard values");
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
-        
+
         // Add invalid credential (null password)
         System.out.println("Add invalid credential (null password)");
         rmiConfig.invalidCredential = true;
@@ -593,24 +607,24 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Check Enable RMI wizard default values
         System.out.println("Check Enable RMI wizard values");
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
-        
+
         nfnlso.cancel();
     }
-    
+
     /**
      * Create management configuration from menu.
      * Then add/remove credentials.
      * Check wizard components and values.
      */
     public void test9() {
-        
+
         NewFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
-        
+
         String objectName = "Test9";
-        
+
         System.out.println("====================  test9  ====================");
-        
+
         // Name and location wizard
         //---------------------------------------
         System.out.println("Create management configuration file " + objectName);
@@ -620,8 +634,13 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         String createdFile = nfnlso.txtCreatedFile().getText();
         String path = createdFile.substring(0,
                 createdFile.lastIndexOf(File.separator) + 1);
+        // The path returned above is platform dependent and may contain 
+        // either "/" (UNIX systems) or "\" (WINDOWS systems).
+        // BUT the generated properties file will contain only "UNIX like" path values.
+        // So we update the returned path replacing "\" with "/".
+        path = path.replace("\\", "/");
         nfnlso.next();
-        
+
         // Enable RMI wizard
         //---------------------------------------
         rmiConfig = new RMIManagementConfiguration();
@@ -668,27 +687,26 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         checkEnableRMIWizardValues(nfnlso, rmiConfig);
         nfnlso.next();
         nfnlso.finish();
-        
+
         // When require remote manager to authenticate is selected
         // (enable RMI wizard), an information dialog is displayed
         // when clicking on the finish button.
         NbDialogOperator dialog = new NbDialogOperator(INFORMATION_DIALOG_TITLE);
         dialog.ok();
-        
+
         // Check generated file contents
         System.out.println("Check created files");
         checkCreatedFiles(objectName, path);
     }
-    
+
     //========================= Check Wizard ==================================//
-    
     /**
      * Check name and location wizard components are enabled/disabled
      */
     private void checkNameAndLocationWizardComponents(
             NewFileNameLocationStepOperator nfnlso,
             String fileNameAlreadyExists) {
-        
+
         // Check text fields
         assertTrue(nfnlso.txtObjectName().isEnabled());
         assertTrue(nfnlso.txtObjectName().isEditable());
@@ -697,7 +715,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertTrue(getTextFieldOperator(RMI_PASSWORD_FILE_TEXT_FIELD, nfnlso).isEnabled());
         assertFalse(getTextFieldOperator(RMI_PASSWORD_FILE_TEXT_FIELD, nfnlso).isEditable());
         assertTrue(getCheckBoxOperator(ENABLE_THREAD_CONTENTION_CHECK_BOX, nfnlso).isEnabled());
-        
+
         // Check buttons
         assertTrue(nfnlso.btBack().isEnabled());
         if (fileNameAlreadyExists != null) {
@@ -713,7 +731,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertTrue(nfnlso.btCancel().isEnabled());
         assertTrue(nfnlso.btHelp().isEnabled());
     }
-    
+
     /**
      * Check name and location wizard values
      */
@@ -721,7 +739,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
             NewFileNameLocationStepOperator nfnlso,
             String objectName,
             boolean enableThreadContentionMonitoring) {
-        
+
         String rmiAccessFile = getTextFieldContent(
                 RMI_ACCESS_FILE_TEXT_FIELD, nfnlso);
         String rmiPasswordFile = getTextFieldContent(
@@ -730,26 +748,26 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertTrue(rmiAccessFile.endsWith(expectedPackage +
                 File.separator + objectName + "." + ACCESS_EXT));
         assertTrue(rmiPasswordFile.endsWith(expectedPackage +
-                File.separator + objectName + "."+ PASSWORD_EXT));
+                File.separator + objectName + "." + PASSWORD_EXT));
         // Check box values
         assertEquals(enableThreadContentionMonitoring,
                 getCheckBoxOperator(ENABLE_THREAD_CONTENTION_CHECK_BOX, nfnlso).isSelected());
     }
-    
+
     /**
      * Check Enable RMI wizard components are enabled/disabled
      */
     private void checkEnableRMIWizardComponents(
             NewFileNameLocationStepOperator nfnlso,
             RMIManagementConfiguration rmiConfig) {
-        
+
         assertTrue(getCheckBoxOperator(ENABLE_RMI_CHECK_BOX, nfnlso).isEnabled());
-        
+
         assertEquals(rmiConfig.allowConnection,
                 getLabelOperator(RMI_PORT_LABEL, nfnlso).isEnabled());
         assertEquals(rmiConfig.allowConnection,
                 getTextFieldOperator(RMI_PORT_TEXT_FIELD, nfnlso).isEnabled());
-        
+
         // Require Remore Manager to Authenticate
         assertEquals(rmiConfig.allowConnection,
                 getCheckBoxOperator(RMI_REQUIRE_AUTH_CHECK_BOX, nfnlso).isEnabled());
@@ -762,7 +780,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertEquals(rmiConfig.allowConnection && rmiConfig.requireAuthentication &&
                 !rmiConfig.allowedCredentials.isEmpty(),
                 getButtonOperator(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso).isEnabled());
-        
+
         // Use SSL
         assertEquals(rmiConfig.allowConnection,
                 getCheckBoxOperator(RMI_SSL_CHECK_BOX, nfnlso).isEnabled());
@@ -776,7 +794,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 getTextFieldOperator(RMI_SSL_CIPHER_TEXT_FIELD, nfnlso).isEnabled());
         assertEquals(rmiConfig.allowConnection && rmiConfig.useSSL,
                 getCheckBoxOperator(RMI_SSL_CLIENT_CHECK_BOX, nfnlso).isEnabled());
-        
+
         // Check buttons
         assertTrue(nfnlso.btBack().isEnabled());
         JLabel jl = getLabel(INVALID_CREDENTIAL_WARNING, nfnlso.getContentPane());
@@ -793,21 +811,21 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertTrue(nfnlso.btCancel().isEnabled());
         assertTrue(nfnlso.btHelp().isEnabled());
     }
-    
+
     /**
      * Check Enable RMI wizard values
      */
     private void checkEnableRMIWizardValues(
             NewFileNameLocationStepOperator nfnlso,
             RMIManagementConfiguration rmiConfig) {
-        
+
         JTableOperator jto = getTableOperator(RMI_CREDENTIALS_TABLE, nfnlso);
-        
+
         int rowIndex = 0;
         int roleColumnIndex = jto.findColumn(CREDENTIAL_ROLE_COLUMN_NAME);
         int passwordColumnIndex = jto.findColumn(CREDENTIAL_PASSWORD_COLUMN_NAME);
         int accessColumnIndex = jto.findColumn(CREDENTIAL_ACCESS_COLUMN_NAME);
-        
+
         // Check box values
         assertEquals(rmiConfig.allowConnection,
                 getCheckBoxOperator(ENABLE_RMI_CHECK_BOX, nfnlso).isSelected());
@@ -828,8 +846,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Empty list
         if (rmiConfig.allowedCredentials.isEmpty()) {
             assertTrue(jto.getRowCount() == 0);
-        }
-        // Not empty list
+        } // Not empty list
         else {
             assertTrue(jto.getRowCount() == rmiConfig.allowedCredentials.size());
             for (AllowedCredential allowedCredential : rmiConfig.allowedCredentials) {
@@ -839,21 +856,21 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                         jto.getValueAt(rowIndex, passwordColumnIndex));
                 assertEquals(allowedCredential.access,
                         jto.getValueAt(rowIndex, accessColumnIndex));
-                
+
                 rowIndex++;
             }
         }
     }
-    
+
     /**
      * Check SNMP Configuration wizard components are enabled/disabled
      */
     private void checkSNMPConfigurationWizardComponents(
             NewFileNameLocationStepOperator nfnlso,
             SNMPManagementConfiguration snmpConfig) {
-        
+
         assertTrue(getCheckBoxOperator(ENABLE_SNMP_CHECK_BOX, nfnlso).isEnabled());
-        
+
         assertEquals(snmpConfig.allowConnection,
                 getLabelOperator(SNMP_PORT_LABEL, nfnlso).isEnabled());
         assertEquals(snmpConfig.allowConnection,
@@ -866,7 +883,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 getLabelOperator(SNMP_TRAP_PORT_LABEL, nfnlso).isEnabled());
         assertEquals(snmpConfig.allowConnection,
                 getTextFieldOperator(SNMP_TRAP_PORT_TEXT_FIELD, nfnlso).isEnabled());
-        
+
         // Use ACL
         assertEquals(snmpConfig.allowConnection,
                 getCheckBoxOperator(SNMP_ACL_CHECK_BOX, nfnlso).isEnabled());
@@ -876,7 +893,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 getTextFieldOperator(SNMP_ACL_FILE_TEXT_FIELD, nfnlso).isEnabled());
         assertEquals(snmpConfig.allowConnection && snmpConfig.enableAuthentication,
                 getButtonOperator(SNMP_ACL_FILE_BROWSE_BUTTON, nfnlso).isEnabled());
-        
+
         // Check buttons
         assertTrue(nfnlso.btBack().isEnabled());
         assertFalse(nfnlso.btNext().isEnabled());
@@ -884,14 +901,14 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertTrue(nfnlso.btCancel().isEnabled());
         assertTrue(nfnlso.btHelp().isEnabled());
     }
-    
+
     /**
      * Check SNMP Configuration wizard values
      */
     private void checkSNMPConfigurationWizardValues(
             NewFileNameLocationStepOperator nfnlso,
             SNMPManagementConfiguration snmpConfig) {
-        
+
         // Check box values
         assertEquals(snmpConfig.allowConnection,
                 getCheckBoxOperator(ENABLE_SNMP_CHECK_BOX, nfnlso).isSelected());
@@ -907,18 +924,16 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertEquals(snmpConfig.aclFile,
                 getTextFieldContent(SNMP_ACL_FILE_TEXT_FIELD, nfnlso));
     }
-    
-    
+
     //========================= Check created files ==================================//
-    
     /**
      * Check the created files with expected golden files.
      */
     private void checkCreatedFiles(String objectName, String path) {
-        
+
         Properties properties = new Properties();
         properties.put(FOLDER_TAG, path);
-        
+
         assertTrue(compareFiles(
                 new File(path + objectName + "." + PROPERTIES_EXT),
                 getGoldenFile(objectName + "." + PROPERTIES_EXT), properties));
@@ -929,10 +944,8 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 new File(path + objectName + "." + PASSWORD_EXT),
                 getGoldenFile(objectName + "." + PASSWORD_EXT), properties));
     }
-    
-    
+
     //========================= Files creation ==================================//
-    
     /**
      * Create empty file into PACKAGE_NAME directory.
      */
@@ -949,7 +962,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 objectName, null);
         return nfnlso;
     }
-    
+
     /**
      * Create management configuration file into PACKAGE_NAME directory.
      */
@@ -967,7 +980,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 objectName, null);
         return nfnlso;
     }
-    
+
     /**
      * Create management configuration file into PACKAGE_NAME directory.
      */
@@ -983,62 +996,57 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 objectName, null);
         return nfnlso;
     }
-    
-    
+
     //========================= Inner class ==================================//
-    
     /**
      * Inner class used to check RMI management configuration wizard
      * components/values.
      */
     private class RMIManagementConfiguration {
-        
+
         // Variables initialized with wizard default values
         boolean allowConnection = true;
         boolean requireAuthentication = false;
         boolean useSSL = false;
         boolean requireClientAuthentication = false;
         boolean invalidCredential = false;
-        
         String port = "1099";
         String protocol = "";
         String cipher = "";
-        
         // The key is the role, the value is the password
         ArrayList<AllowedCredential> allowedCredentials =
                 new ArrayList<AllowedCredential>();
     }
-    
+
     /**
      * Inner class used to check RMI allowed credentials.
      */
     private class AllowedCredential {
-        
+
         // Variables initialized with wizard default values
         String role = null;
         String password = null;
         String access = "readonly";
-        
+
         public AllowedCredential() {
         }
-        
+
         public AllowedCredential(String role, String password, String access) {
             this.role = role;
             this.password = password;
             this.access = access;
         }
     }
-    
+
     /**
      * Inner class used to check SNMP management configuration wizard
      * components/values.
      */
     private class SNMPManagementConfiguration {
-        
+
         // Variables initialized with wizard default values
         boolean allowConnection = false;
         boolean enableAuthentication = false;
-        
         String port = "161";
         String intf = "localhost";
         String trapPort = "162";

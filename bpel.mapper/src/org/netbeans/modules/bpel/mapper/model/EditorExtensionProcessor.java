@@ -87,6 +87,11 @@ public class EditorExtensionProcessor {
         }
     }
     
+    public void registerCasts(BpelEntityCasts castList) {
+        registerCasts(castList.getFromCasts());
+        registerCasts(castList.getToCasts());
+    }
+    
     public boolean registerCasts(List<Cast> castList) {
         boolean anyRegistered = false;
         //

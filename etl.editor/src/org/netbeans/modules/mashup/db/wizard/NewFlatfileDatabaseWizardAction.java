@@ -89,7 +89,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     }
 
     public String getName() {
-        return nbBundle1.substring(15);
+        return nbBundle6.substring(15);
     }
 
     @Override

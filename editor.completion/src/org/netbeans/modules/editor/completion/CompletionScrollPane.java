@@ -112,7 +112,7 @@ public class CompletionScrollPane extends JScrollPane {
             getMaximumSize().height / CompletionLayout.COMPLETION_ITEM_HEIGHT - 1);
 
         // Add the completion view
-        view = new CompletionJList(maxVisibleRowCount, mouseListener, editorComponent.getFont());
+        view = new CompletionJList(maxVisibleRowCount, mouseListener, editorComponent);
         if (listSelectionListener != null) {
             view.addListSelectionListener(listSelectionListener);
         }
