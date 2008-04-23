@@ -36,9 +36,10 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.completion;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.hibernate.completion.CompletionContext.CompletionType;
@@ -74,30 +75,43 @@ public class HibernateCfgCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-        
+        List<HibernateCompletionItem> completionItems = new ArrayList<HibernateCompletionItem>();
+
+        int anchorOffset = getCompletionItems(doc, caretOffset, completionItems);
+
+        resultSet.addAllItems(completionItems);
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(anchorOffset);
+        }
+
+        resultSet.finish();
+    }
+
+    // This method is here for Unit testing purpose
+    int getCompletionItems(Document doc, int caretOffset, List<HibernateCompletionItem> completionItems) {
+
+        int anchorOffset = -1;
         CompletionContext context = new CompletionContext(doc, caretOffset);
-        
+
         if (context.getCompletionType() == CompletionType.NONE) {
-            resultSet.finish();
-            return;
+            return anchorOffset;
         }
 
         switch (context.getCompletionType()) {
             case ATTRIBUTE_VALUE:
-                HibernateCfgCompletionManager.getDefault().completeAttributeValues(resultSet, context);
+                anchorOffset = HibernateCfgCompletionManager.getDefault().completeAttributeValues(context, completionItems);
                 break;
             case ATTRIBUTE:
-                HibernateCfgCompletionManager.getDefault().completeAttributes(resultSet, context);
+                anchorOffset = HibernateCfgCompletionManager.getDefault().completeAttributes(context, completionItems);
                 break;
             case TAG:
-                HibernateCfgCompletionManager.getDefault().completeElements(resultSet, context);
+                anchorOffset = HibernateCfgCompletionManager.getDefault().completeElements(context, completionItems);
                 break;
             case VALUE:
-                HibernateCfgCompletionManager.getDefault().completeValues(resultSet, context);
+                anchorOffset = HibernateCfgCompletionManager.getDefault().completeValues(context, completionItems);
                 break;
-            }
+        }
 
-        
-        resultSet.finish();
+        return anchorOffset;
     }
 }

@@ -259,6 +259,14 @@ made subject to such option by the copyright holder.
    		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateMappingFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
+            <file name="Hibernate.reveng.xml" url="HibernateReveng.xml">
+                <attr name="position" intvalue="300"/>
+                <attr name="template" boolvalue="true"/>
+                <!--attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateMappingWizard.create"/-->
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateRevengFile.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>         
+            </file>
             <file name="HibernateUtil.java" url="HibernateUtil.javax">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
@@ -267,14 +275,8 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateUtilFile.html"/>
-                <attr name="position" intvalue="300"/>
-            </file>
-        </folder>
-        <folder name="Other">
-            <file name="HibernateRevengTemplate.xml" url="HibernateRevengTemplate.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
+                <attr name="position" intvalue="400"/>
+            </file>            
         </folder>
     </folder>
        <folder name="Editors">

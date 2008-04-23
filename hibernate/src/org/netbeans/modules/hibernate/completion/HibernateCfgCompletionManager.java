@@ -44,6 +44,7 @@ import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import org.netbeans.modules.hibernate.editor.DocumentContext;
 import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.hibernate.cfg.Environment;
 import org.netbeans.editor.TokenItem;
@@ -52,7 +53,6 @@ import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Text;
 
@@ -169,9 +169,11 @@ public final class HibernateCfgCompletionManager {
         return INSTANCE;
     }
 
-    public void completeAttributeValues(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeAttributeValues(CompletionContext context, List<HibernateCompletionItem> valueItems) {
+        int anchorOffset = -1;
+        
         if(context.getTag() == null)
-            return;
+            return anchorOffset;
         
         String tagName = context.getTag().getNodeName();
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
@@ -179,14 +181,17 @@ public final class HibernateCfgCompletionManager {
 
         Completor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
-            resultSet.addAllItems(completor.doCompletion(context));
-            if (completor.getAnchorOffset() != -1) {
-                resultSet.setAnchorOffset(completor.getAnchorOffset());
+            valueItems.addAll(completor.doCompletion(context));
+             if (completor.getAnchorOffset() != -1) {
+                anchorOffset = completor.getAnchorOffset();
             }
         }
+        
+        return anchorOffset;
     }
 
-    public void completeValues(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeValues(CompletionContext context, List<HibernateCompletionItem> valueItems) {
+        int anchorOffset = -1;         
         DocumentContext docContext = context.getDocumentContext();
         SyntaxElement curElem = docContext.getCurrentElement();
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
@@ -201,7 +206,7 @@ public final class HibernateCfgCompletionManager {
                 ((StartTag) prevElem).getTagName().equalsIgnoreCase(HibernateCfgXmlConstants.PROPERTY_TAG)) {
             propTag = (StartTag) prevElem;
         } else {
-            return;
+            return anchorOffset;
         }
         
         String propName = HibernateEditorUtil.getHbPropertyName(propTag);
@@ -220,18 +225,22 @@ public final class HibernateCfgCompletionManager {
                         || values[i].startsWith( "org.hibernate.dialect." + typedChars.trim()) ) { // NOI18N
                     HibernateCompletionItem item = 
                             HibernateCompletionItem.createHbPropertyValueItem(caretOffset-typedChars.length(), values[i]);
-                    resultSet.addItem(item);
+                    valueItems.add(item);
                 }
             }
 
-            resultSet.setAnchorOffset(context.getCurrentToken().getPrevious().getOffset() + 1);
-        } 
+            anchorOffset = context.getCurrentToken().getPrevious().getOffset() + 1;
+        }
+        
+        return anchorOffset;
     }
 
-    public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeAttributes(CompletionContext context, List<HibernateCompletionItem> attributeItems) {
+        return -1;
     }
 
-    public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
+    public int completeElements(CompletionContext context, List<HibernateCompletionItem> elementItems) {
+        return -1;
     }
 
     
