@@ -65,14 +65,14 @@ public interface TransformMap extends TMapComponent {
      * @param impt new import element.
      * @param position position for new element.
      */
-    void addImport(Import impt, int position);
-    
+    void addImport(Import impt);
+
     /**
      * Append new import element.
      * @param impt new import child element for appending.
      */
-    void appendImport(Import impt);
-    
+    void addImport(Import impt, int position);
+      
     /**
      * Removes existing <code>impt</code> import child element.
      * @param impt import child element.

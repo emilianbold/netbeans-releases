@@ -67,6 +67,7 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xslt.tmap.util.ImportRegistrationHelper;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
@@ -79,6 +80,7 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.model.spi.NameGenerator;
@@ -639,6 +641,14 @@ public final class Iterator implements TemplateWizard.Iterator {
         return tMapOp;
     }
 
+    private void registerImport(TMapModel tMapModel, WSDLModel wsdlModel) {
+        if (tMapModel == null || wsdlModel == null) {
+            return;
+        }
+        ImportRegistrationHelper importHelper = new ImportRegistrationHelper(tMapModel);
+        importHelper.addImport(wsdlModel);
+    }
+
     private Service createTMapService(TMapComponentFactory componentFactory, 
             TMapModel tMapModel, PortType wizardInPortType) 
     {
@@ -654,6 +664,8 @@ public final class Iterator implements TemplateWizard.Iterator {
         if (root == null) {
             return null;
         }
+        registerImport(root.getModel(), wizardInPortType.getModel());
+
         tMapService = componentFactory.createService();
         tMapService.setPortType(
                 tMapService.createWSDLReference(wizardInPortType, PortType.class));
@@ -786,6 +798,8 @@ public final class Iterator implements TemplateWizard.Iterator {
                 (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
         PortType wizardOutputPortType = 
                 (PortType) wizard.getProperty(Panel.OUTPUT_PORT_TYPE);
+
+        registerImport(tMapOp.getModel(), wizardOutputPortType.getModel());
 
         if (wizardOutputPortType != null && wizardOutputOperation != null) {
           invoke = componentFactory.createInvoke();

@@ -492,11 +492,12 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                     toolbar.addSeparator();
                     categoryPane.populateToolbar(toolbar);
                 }
-                // vlv: search
                 toolbar.addSeparator();
-                toolbar.add(SearchManager.getDefault().getSearchAction());
 
+                // vlv: search
+                toolbar.add(SearchManager.getDefault().getSearchAction());
                 toolbar.addSeparator();
+
                 validateAction = new ValidateAction(model);
                 JButton validateButton = toolbar.add(validateAction);
                 validateButton.getAccessibleContext().setAccessibleName(""+

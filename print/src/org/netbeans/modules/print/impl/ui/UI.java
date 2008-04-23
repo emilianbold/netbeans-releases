@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.util;
+package org.netbeans.modules.print.impl.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -328,7 +328,7 @@ public final class UI {
 
   public static Node [] getSelectedNodes() {
 //out();
-    TopComponent top = getActivateTopComponent();
+    TopComponent top = getActiveTopComponent();
 //out("top: " + top);
     if (top == null) {
       return null;
@@ -342,7 +342,7 @@ public final class UI {
     return nodes;
   }
 
-  public static TopComponent getActivateTopComponent() {
+  public static TopComponent getActiveTopComponent() {
     return TopComponent.getRegistry().getActivated();
   }
   
@@ -411,11 +411,11 @@ public final class UI {
     }
   }
 
-  public static DataObject getDataObject(Node node) {
-    if (node == null) {
+  public static DataObject getDataObject(Object object) {
+    if ( !(object instanceof Node)) {
       return null;
     }
-    return (DataObject) node.getLookup().lookup(DataObject.class);
+    return (DataObject) ((Node) object).getLookup().lookup(DataObject.class);
   }
 
   private static void setButtonSize(JButton button) {

@@ -48,8 +48,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 
+import javax.swing.text.JTextComponent;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.LazyCompletionItem;
 
 /**
 * @author Miloslav Metelka, Dusan Balek
@@ -66,12 +68,14 @@ public class CompletionJList extends JList {
 
     private int fixedItemHeight;
     private int maxVisibleRowCount;
+    private JTextComponent editorComponent;
     private int smartIndex;
     
-    public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener, Font font) {
+    public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener, JTextComponent editorComponent) {
         this.maxVisibleRowCount = maxVisibleRowCount;
+        this.editorComponent = editorComponent;
         addMouseListener(mouseListener);
-        setFont(font);
+        setFont(editorComponent.getFont());
         setLayoutOrientation(JList.VERTICAL);
         setFixedCellHeight(fixedItemHeight = Math.max(CompletionLayout.COMPLETION_ITEM_HEIGHT, getFontMetrics(getFont()).getHeight()));
         setModel(new Model(Collections.EMPTY_LIST));
@@ -151,8 +155,11 @@ public class CompletionJList extends JList {
             boolean stop = false;
             for(int index = 0; index < lmSize; index++) {
                 Object value = lm.getElementAt(index);
+                Dimension cellSize;
+                if (value instanceof LazyCompletionItem)
+                    maxWidth = (int)(ScreenBoundsProvider.getScreenBounds(editorComponent).width * ScreenBoundsProvider.MAX_COMPL_COVERAGE);
                 Component c = renderer.getListCellRendererComponent(this, value, index, false, false);
-                Dimension cellSize = c.getPreferredSize();
+                cellSize = c.getPreferredSize();
                 if (cellSize.width > width) {
                     width = cellSize.width;
                     if (width >= maxWidth)

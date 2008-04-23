@@ -393,7 +393,11 @@ public class Util {
     public static String pluralize(String name) {
         return Inflector.getInstance().pluralize(singularize(name));
     }
-
+    
+    public static String camelize(String name, boolean lower) {
+        return Inflector.getInstance().camelize(name.replace('-', '_'), lower);
+    }
+ 
     public static String[] ensureTypes(String[] types) {
         if (types == null || types.length == 0 || types[0].length() == 0) {
             types = new String[]{String.class.getName()                    };
@@ -1658,7 +1662,7 @@ public class Util {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
-            String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
+            String resultClass = pkg + "." + Util.camelize(serviceName, false);
             methodBody += indent + resultClass + " resultObj = " +
                     "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
         }

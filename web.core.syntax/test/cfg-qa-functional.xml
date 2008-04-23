@@ -60,10 +60,10 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="tokens" executor="ide" name="Tokens Test">
+    <testbag testattribs="stable, tokens" executor="ide" name="Tokens Test">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="**/TokensTest.class"/>   
+<!--                <include name="**/TokensTest.class"/>    -->
                 <include name="**/OpenFileTest.class"/>
             </patternset>
         </testset>

@@ -55,7 +55,6 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.TaskModel;
-import org.openide.util.Exceptions;
 
 /**
  * Measure application server Startup time via NetBeans TaskModel API.
@@ -88,9 +87,20 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
         expectedTime = 45000; //TODO: Adjust expectedTime value
         WAIT_AFTER_OPEN=4000;
     }
-    
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        log(":: initialize");
+        stopServer();
+    }
+
     public void prepare() {
         log(":: prepare");
+        obtainNode();
+    }
+    
+    private void obtainNode() {
         rto = RuntimeTabOperator.invoke();
         TreePath path = null;
         
@@ -122,14 +132,25 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
         boolean startEnabled = popup.showMenuItem("Start").isEnabled(); // NOI18N
         if(startEnabled) {
             popup.pushMenuNoBlock("Start"); // NOI18N
+            waitForAppServerTask("Starting", serverIDEName);
+        } else {
+            fail("Server already started");
         }
         
-        waitForAppServerTask("Starting", serverIDEName);
         return null;
     }
     
+    @Override
     public void close(){
         log("::close");
+        stopServer();
+        new EventTool().waitNoEvent(3000);
+    }
+    
+    private void stopServer() {
+        if (asNode == null) {
+            obtainNode();
+        }
         if (asNode != null) {
             String serverIDEName = asNode.getText();
 
@@ -157,7 +178,9 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
         long end = System.currentTimeMillis() + WAIT_FOR_APP_SERVER_TASK;
         while(System.currentTimeMillis() < end) {
             int state = task.getState();
-            if(state == task.STATE_FINISHED) { return; }
+            if (state == InternalHandle.STATE_FINISHED) { 
+                return; 
+            }
             try {                
                 Thread.sleep(50);
             } catch (InterruptedException exc) {

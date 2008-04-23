@@ -61,7 +61,7 @@ import org.netbeans.modules.print.impl.provider.ComponentProvider;
 import org.netbeans.modules.print.impl.provider.TextProvider;
 import org.netbeans.modules.print.impl.ui.Preview;
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -125,7 +125,7 @@ public class PrintPreviewMenu extends IconAction {
   }
 
   private PrintProvider getComponentProvider() {
-    TopComponent top = getActivateTopComponent();
+    TopComponent top = getActiveTopComponent();
 
     if (top == null) {
       return null;

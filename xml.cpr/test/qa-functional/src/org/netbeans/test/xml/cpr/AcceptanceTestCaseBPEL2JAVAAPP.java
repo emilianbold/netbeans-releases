@@ -84,6 +84,7 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
         "ValidateAndBuild",
 
         // Move, fix
@@ -248,7 +249,26 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          5
+        );
 
       endTest( );
     }

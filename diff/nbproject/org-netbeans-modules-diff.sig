@@ -6,7 +6,7 @@ fld  public static final org.netbeans.api.diff.DiffController$DiffPane org.netbe
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected final void java.lang.Enum.finalize()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()
@@ -31,7 +31,7 @@ fld  public static final org.netbeans.api.diff.DiffController$LocationType org.n
 intf java.io.Serializable
 intf java.lang.Comparable
 meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected final void java.lang.Enum.finalize()
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public final boolean java.lang.Enum.equals(java.lang.Object)
 meth public final int java.lang.Enum.compareTo(java.lang.Enum)
 meth public final int java.lang.Enum.hashCode()

@@ -22,9 +22,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
@@ -49,12 +47,12 @@ public final class Decorator extends DecorationProvider implements DecorationPro
   }
 
   @Override
-  public Decoration getDecoration(BpelEntity component)
+  public Decoration getDecoration(BpelEntity entity)
   {
-    if ( !myIsClearSelection && mySelectedEntity == component) {
+    if ( !myIsClearSelection && mySelectedEntity == entity) {
       return GREEN_DECORATION; // glow
     }
-    if ( !myIsClearHighlighting && myHighlightedEntities.contains(component)) {
+    if ( !myIsClearHighlighting && myHighlightedEntities.contains(entity)) {
       return YELLOW_DECORATION; // highlight
     }
     return null;
@@ -67,12 +65,7 @@ public final class Decorator extends DecorationProvider implements DecorationPro
     myHighlightedEntities = null;
   }
 
-  void select(Component component) {
-    if ( !(component instanceof BpelEntity)) {
-      return;
-    }
-    BpelEntity entity = (BpelEntity) component;
-
+  void select(BpelEntity entity) {
     if (mySelectedEntity != null) {
       myIsClearSelection = true;
     }
@@ -92,12 +85,7 @@ public final class Decorator extends DecorationProvider implements DecorationPro
     myIsClearSelection = false;
   }
 
-  void doHighlight(Component component, boolean highlighted) {
-    if ( !(component instanceof BpelEntity)) {
-      return;
-    }
-    BpelEntity entity = (BpelEntity) component;
-
+  void doHighlight(BpelEntity entity, boolean highlighted) {
     if (highlighted) {
       myHighlightedEntities.add(entity);
     }

@@ -18,6 +18,10 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
@@ -64,5 +68,10 @@ public class ImportImpl extends TMapComponentContainerImpl
 
     public void setLocation(String value) throws VetoException {
         setAttribute(Import.LOCATION, TMapAttributes.LOCATION, value);
+    }
+
+    public WSDLModel getImportModel() throws CatalogModelException {
+        ModelSource ms = resolveModel( getLocation() );
+        return WSDLModelFactory.getDefault().getModel( ms );
     }
 }

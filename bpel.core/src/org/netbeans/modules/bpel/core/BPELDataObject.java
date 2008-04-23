@@ -155,6 +155,7 @@ public class BPELDataObject extends MultiDataObject {
                     super.getLookup(), 
                     this ,
                     getEditorSupport(),
+                    new SearchProvider(this),
                     new BusinessProcessHelperImpl(this),
                     XmlFileEncodingQueryImpl.singleton()
                   }));
