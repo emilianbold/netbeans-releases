@@ -51,10 +51,12 @@ import org.openide.filesystems.FileObject;
 public class AstRootElement extends AstElement {
 
     private final FileObject fileObject;
+    private final ModuleNode moduleNode;
 
     public AstRootElement(FileObject fo, ModuleNode moduleNode) {
         super(moduleNode);
         this.fileObject = fo;
+        this.moduleNode = moduleNode;
     }
 
     @Override
@@ -62,4 +64,8 @@ public class AstRootElement extends AstElement {
         return fileObject.getNameExt();
     }
 
+    public ModuleNode getModuleNode() {
+        return moduleNode;
+    }
+    
 }
