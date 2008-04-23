@@ -110,18 +110,11 @@ public class HibernateEnvironmentTest extends NbTestCase {
         Util.prepareDB();
         HibernateConfiguration[] configurations = new HibernateConfiguration[1];
         configurations[0] = hibernateConfiguration;
-<<<<<<< /export/home/workspace/NB-HG4/main/contrib/hibernate/test/unit/src/org/netbeans/modules/hibernate/service/HibernateEnvironmentTest.java.orig.
         HibernateEnvironment instance = new HibernateEnvironment(
                 Util.getProject(
                     new java.io.File(getDataDir().getAbsolutePath() + java.io.File.separator + "WebApplication1")
                 )
                 );
-||||||| /tmp/vd151364/HibernateEnvironmentTest.java~base.bzg53n
-        HibernateEnvironment instance = new HibernateEnvironment();
-=======
-        // TODO: pass in null so that it can compile
-        HibernateEnvironment instance = new HibernateEnvironment(null);
->>>>>>> /tmp/vd151364/HibernateEnvironmentTest.java~other.1st8r_
         ArrayList<String> expResult = Util.getAllDatabaseTables();
 
         ArrayList<String> result = instance.getAllDatabaseTables(configurations);
@@ -171,18 +164,11 @@ public class HibernateEnvironmentTest extends NbTestCase {
     @Test
     public void testGetAllHibernateMappingsFromConfiguration() {
         System.out.println("getAllHibernateMappings");
-<<<<<<< /export/home/workspace/NB-HG4/main/contrib/hibernate/test/unit/src/org/netbeans/modules/hibernate/service/HibernateEnvironmentTest.java.orig.
         HibernateEnvironment instance = new HibernateEnvironment(
                 Util.getProject(
                     new java.io.File(getDataDir().getAbsolutePath() + java.io.File.separator + "WebApplication1")
                 )
                 );
-||||||| /tmp/vd151364/HibernateEnvironmentTest.java~base.bzg53n
-        HibernateEnvironment instance = new HibernateEnvironment();
-=======
-        // TODO: pass in null so that it can compile
-        HibernateEnvironment instance = new HibernateEnvironment(null);
->>>>>>> /tmp/vd151364/HibernateEnvironmentTest.java~other.1st8r_
         ArrayList<String> expResult = new ArrayList<String>();
         //TODO now hardcoded. Need to be retrieved from config.
         expResult.add("map1.xml"); expResult.add("map2.xml"); expResult.add("map3.xml");
