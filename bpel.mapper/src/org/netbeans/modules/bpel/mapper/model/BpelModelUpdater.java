@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.model.FromProcessor.FromForm;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -69,12 +70,14 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.XPathStringLiteral;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 
 /**
  * Looks on the current state of the BPEL Mapper and modifies 
@@ -436,7 +439,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
                     createReference(tpInfo.varDecl, VariableDeclaration.class);
             from.setVariable(varRef);
             //
-            populateFromQuery(from, xPathModel, tpInfo, typeCastCollector);
+            SchemaComponent sComp = EditorUtil.getVariableSchemaType(tpInfo.varDecl);
+            assert sComp != null;
+            SchemaModelsStack sms = new SchemaModelsStack();
+            sms.appendSchemaComponent(sComp);
+            //
+            populateFromQuery(from, xPathModel, tpInfo, typeCastCollector, sms);
             //
             // from.removeVariable();
             from.removePart();
@@ -460,7 +468,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
                     createWSDLReference(tpInfo.part, Part.class);
             from.setPart(partRef);
             //
-            populateFromQuery(from, xPathModel, tpInfo, typeCastCollector);
+            SchemaComponent sComp = EditorUtil.getPartType(tpInfo.part);
+            assert sComp != null;
+            SchemaModelsStack sms = new SchemaModelsStack();
+            sms.appendSchemaComponent(sComp);
+            //
+            populateFromQuery(from, xPathModel, tpInfo, typeCastCollector, sms);
             //
             // from.removeVariable();
             // from.removePart();
@@ -523,9 +536,10 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     }
 
     private void populateFromQuery(From from, XPathModel xPathModel, 
-            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector) {
+            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector, 
+            SchemaModelsStack sms) {
         List<LocationStep> stepList = constructLSteps(
-                xPathModel, tpInfo.schemaCompList, typeCastCollector);
+                xPathModel, tpInfo.schemaCompList, typeCastCollector, sms);
         if (stepList != null && !(stepList.isEmpty())) {
             XPathLocationPath locationPath = xPathModel.getFactory().
                     newXPathLocationPath(
@@ -600,7 +614,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
                     createReference(tpInfo.varDecl, VariableDeclaration.class);
             to.setVariable(varRef);
             //
-            populateToQuery(to, xPathModel, tpInfo, typeCastCollector);
+            SchemaComponent sComp = EditorUtil.getVariableSchemaType(tpInfo.varDecl);
+            assert sComp != null;
+            SchemaModelsStack sms = new SchemaModelsStack();
+            sms.appendSchemaComponent(sComp);
+            //
+            populateToQuery(to, xPathModel, tpInfo, typeCastCollector, sms);
             //
             // to.removeVariable();
             to.removePart();
@@ -623,7 +642,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
                     createWSDLReference(tpInfo.part, Part.class);
             to.setPart(partRef);
             //
-            populateToQuery(to, xPathModel, tpInfo, typeCastCollector);
+            SchemaComponent sComp = EditorUtil.getPartType(tpInfo.part);
+            assert sComp != null;
+            SchemaModelsStack sms = new SchemaModelsStack();
+            sms.appendSchemaComponent(sComp);
+            //
+            populateToQuery(to, xPathModel, tpInfo, typeCastCollector, sms);
             //
             // to.removeVariable();
             // to.removePart();
@@ -679,9 +703,10 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     }
 
     private void populateToQuery(To to, XPathModel xPathModel, 
-            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector) {
+            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector, 
+            SchemaModelsStack sms) {
         List<LocationStep> stepList = constructLSteps(
-                xPathModel, tpInfo.schemaCompList, typeCastCollector);
+                xPathModel, tpInfo.schemaCompList, typeCastCollector, sms);
         if (stepList != null && !(stepList.isEmpty())) {
             XPathLocationPath locationPath = xPathModel.getFactory().
                     newXPathLocationPath(

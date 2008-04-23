@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
 import org.netbeans.modules.xml.schema.model.ComplexExtension;
@@ -50,6 +51,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
@@ -66,6 +68,7 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
     // Maps the Namespace URI to a list of Schema models.
     private HashMap<String, ArrayList<SchemaModel>> mModelsCache;
     
+    private XPathSchemaContext mParentContext;
     private String mySoughtName;
     private String mySoughtNamespace;
     private boolean isAttribute;
@@ -86,11 +89,13 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
         return myFound.size() > 0;
     }
 
-    public void lookForSubcomponent(SchemaComponent parent, String soughtName,
+    public void lookForSubcomponent(XPathSchemaContext parentContext, 
+            SchemaComponent parent, String soughtName,
             String soughtNamespace, boolean isAttribute) {
         assert soughtName != null : "At least sought name has to be specified!"; // NOI18N
         //
         myFound.clear();
+        mParentContext = parentContext;
         mySoughtName = soughtName;
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
@@ -274,29 +279,32 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
             nsPrefix = splitRefString[0];
         }
         //
+        ArrayList<SchemaModel> schemaModelList = null;
         String nsUri = getNamespaceUri(refOwnerComp, nsPrefix);
-        if (preCheckName && mySoughtNamespace != null && 
-                !mySoughtNamespace.equals(nsUri)) {
-            // The sought global element(attribute) has the same name 
-            // But it is located at another namespace.
-            return null;
-        }
-        //
-        // Try looking the referent in the cache first
-        ArrayList<SchemaModel> schemaModelList = mModelsCache.get(nsUri);
-        if (schemaModelList != null) {
-            for (int index = 0; index < schemaModelList.size(); index++) {
-                SchemaModel schemaModel = schemaModelList.get(index);
-                Schema schema = schemaModel.getSchema();
-                if (schema == null) {
-                    continue;
-                }
-                List<SchemaComponent> sCompList = schema.getChildren();
-                for (SchemaComponent sComp : sCompList) {
-                    if (soughtClass.isInstance(sComp) && sComp instanceof Named) {
-                        String compName = ((Named)sComp).getName();
-                        if (soughtName.equals(compName)) {
-                            return soughtClass.cast(sComp);
+        if (nsUri != null) {
+            if (preCheckName && mySoughtNamespace != null && 
+                    !mySoughtNamespace.equals(nsUri)) {
+                // The sought global element(attribute) has the same name 
+                // But it is located at another namespace.
+                return null;
+            }
+            //
+            // Try looking the referent in the cache first
+            schemaModelList = mModelsCache.get(nsUri);
+            if (schemaModelList != null) {
+                for (int index = 0; index < schemaModelList.size(); index++) {
+                    SchemaModel schemaModel = schemaModelList.get(index);
+                    Schema schema = schemaModel.getSchema();
+                    if (schema == null) {
+                        continue;
+                    }
+                    List<SchemaComponent> sCompList = schema.getChildren();
+                    for (SchemaComponent sComp : sCompList) {
+                        if (soughtClass.isInstance(sComp) && sComp instanceof Named) {
+                            String compName = ((Named)sComp).getName();
+                            if (soughtName.equals(compName)) {
+                                return soughtClass.cast(sComp);
+                            }
                         }
                     }
                 }
@@ -474,13 +482,16 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
             }
         }
         if (sc instanceof Named) {
-            String namespace = sc.getModel().getEffectiveNamespace(sc);
             String name = ((Named) sc).getName();
             if (mySoughtName.equals(name)) {
                 if (mySoughtNamespace == null || mySoughtNamespace.length() == 0) {
                     myFound.add(sc);
-                } else if (mySoughtNamespace.equals(namespace)) {
-                    myFound.add(sc);
+                } else { 
+                    Set<String> namespacesSet = XPathSchemaContext.Utilities.
+                    getEffectiveNamespaces(sc, mParentContext);
+                    if (namespacesSet.contains(mySoughtNamespace)) {
+                        myFound.add(sc);
+                    }
                 }
             }
         }
