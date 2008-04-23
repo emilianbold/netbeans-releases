@@ -54,9 +54,8 @@ public class ScreenBoundsProvider {
     
     private static Rectangle screenBounds;
     
-    static Rectangle getScreenBounds(CompletionLayout layout) {
+    static Rectangle getScreenBounds(JTextComponent editorComponent) {
         if (screenBounds == null) {
-	    JTextComponent editorComponent = layout.getEditorComponent();
             GraphicsConfiguration configuration = editorComponent != null
                     ? editorComponent.getGraphicsConfiguration() : null;
             screenBounds = configuration != null
