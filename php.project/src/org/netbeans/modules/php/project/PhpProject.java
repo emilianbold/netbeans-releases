@@ -53,7 +53,6 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -87,6 +86,22 @@ public class PhpProject implements Project, AntProjectListener {
 
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation()
             + ResourceMarker.PROJECT_ICON));
+
+    // XXX maybe move to PhpProjectConstants class
+    /**
+     * <p>Specific php sources type.
+     * <p>Should be used in <pre>Sources_instance.getSourceGroups(String)</pre> 
+     * to retrieve php project source folders. 
+     * General {@link  org.netbeans.api.project.Sources#TYPE_GENERIC} 
+     * will not return php source folders.
+     * <pre>
+     * Sources sources = ProjectUtils.getSources(phpProject);
+     *  //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+     *  SourceGroup[] groups = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
+     * </pre>
+     * <p>is now used in "PHP Runtime Explorer" and in "PHP Project "modules
+     */
+    public static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
 
     PhpProject( AntProjectHelper helper ) {
         myHelper = helper;
@@ -151,7 +166,7 @@ public class PhpProject implements Project, AntProjectListener {
                     public String run() {
                         Element data = getHelper().getPrimaryConfigurationData(true);
                         NodeList nl = data.getElementsByTagNameNS(
-                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectSharedConstants.PHP_PROJECT_NAME);
+                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                         if (nl.getLength() == 1) {
                             nl = nl.item(0).getChildNodes();
                             if (nl.getLength() == 1
@@ -174,7 +189,7 @@ public class PhpProject implements Project, AntProjectListener {
             public Object run() {
                 Element data = getHelper().getPrimaryConfigurationData(true);
                 NodeList nl = data.getElementsByTagNameNS(
-                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectSharedConstants.PHP_PROJECT_NAME); 
+                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -185,8 +200,7 @@ public class PhpProject implements Project, AntProjectListener {
                 }
                 else {
                     nameEl = data.getOwnerDocument().createElementNS(
-                            PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                            PhpProjectSharedConstants.PHP_PROJECT_NAME); 
+                            PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                     data.insertBefore(nameEl, /* OK if null */data
                             .getChildNodes().item(0));
                 }

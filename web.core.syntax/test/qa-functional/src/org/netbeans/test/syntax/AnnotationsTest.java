@@ -114,6 +114,10 @@ public class AnnotationsTest extends BasicOpenFileTest {
         runTest("unknownCSSProperty.html", 1);
     }
 
+    public void testIssue130745() throws Exception {
+        runTest("issue130745.jsp");
+    }
+  
     private void runTest(String fileName) throws Exception {
         runTest(fileName, 0);
     }

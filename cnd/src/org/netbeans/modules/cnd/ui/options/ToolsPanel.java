@@ -442,7 +442,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
     
     private void validateMakePathField() {
-        setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath));
+        setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath) && supportedMake(tfMakePath));
         dataValid();
     }
     
@@ -481,6 +481,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         setPathFieldValid(tfFortranPath, isPathFieldValid(tfFortranPath));
         dataValid();
     }
+    
+    public static boolean supportedMake(String name) {
+        name = IpeUtils.getBaseName(name);
+        return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
+    }
+    
+    private boolean supportedMake(JTextField field) {
+        String txt = field.getText();
+        if (txt.length() == 0) {
+            return false;
+        }
+        return supportedMake(txt);
+    }
+    
     
     private boolean isPathFieldValid(JTextField field) {
         String txt = field.getText();
@@ -970,7 +984,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             return true;
         } else {
             boolean csmValid = csm.getCompilerSets().size() > 0;
-            boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) : true;
+            boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) && supportedMake(tfMakePath) : true;
             boolean gdbValid = cbGdbRequired.isSelected() ? isPathFieldValid(tfGdbPath) : true;
             boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
             boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
@@ -991,7 +1005,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (cbMakeRequired.isSelected() && !makeValid) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
+                    if (!isPathFieldValid(tfMakePath)) {
+                        errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
+                    }
+                    else {
+                        errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
+                    }
                 }
                 if (cbCRequired.isSelected() && !cValid) {
                     errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCCompiler"));

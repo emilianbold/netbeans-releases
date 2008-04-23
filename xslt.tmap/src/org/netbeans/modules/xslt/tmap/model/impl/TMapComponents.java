@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
@@ -79,6 +80,7 @@ public enum TMapComponents {
         
         private static Collection<Class<? extends TMapComponent>> createTransformMap() {
             Collection<Class<? extends TMapComponent>> children  = new ArrayList<Class<? extends TMapComponent>>(1);
+            children.add(Import.class);
             children.add(Service.class);
             return children;
         }

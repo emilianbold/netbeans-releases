@@ -89,8 +89,9 @@ public class TransformMapImpl extends TMapComponentContainerImpl
         insertAtIndex( Import.TYPE.getTagName() , impt, position );
     }
 
-    public void appendImport(Import impt) {
-        addAfter( Import.TYPE.getTagName(), impt , TYPE.getChildTypes());
+    public void addImport(Import impt) {
+        addBefore( Import.TYPE.getTagName(), impt , TYPE.getChildTypes());
+        System.out.println("try to add import before");
     }
 
     public void removeImport(Import impt) {
