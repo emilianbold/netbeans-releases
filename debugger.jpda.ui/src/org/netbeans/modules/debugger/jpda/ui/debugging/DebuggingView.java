@@ -119,25 +119,27 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         treeView = new DebugTreeView();
         treeView.setRootVisible(false);
-        treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         mainPanel.add(treeView, BorderLayout.CENTER);
         
         tapPanel = new TapPanel();
         tapPanel.setOrientation(TapPanel.DOWN);
-        tapPanel.setExpanded(false);
+        tapPanel.setExpanded(true);
         // tooltip
         KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()); // [TODO]
         String keyText = Utilities.keyToString(toggleKey);
+        
         tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
-        // add(tapPanel, BorderLayout.SOUTH);
         infoPanel = new InfoPanel(tapPanel);
         tapPanel.add(infoPanel);
         add(tapPanel, BorderLayout.SOUTH);
         
-        remove(scrollBarPanel);
-        scrollBarPanel.setVisible(false);
+        treeView.setHorizontalScrollBar(treeScrollBar);
+        
+//        remove(scrollBarPanel);
+//        scrollBarPanel.setVisible(false);
 
         manager.addPropertyChangeListener(this);
         treeView.addTreeExpansionListener(this);
@@ -158,7 +160,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         sessionComboBox = new javax.swing.JComboBox();
         mainScrollPane = new javax.swing.JScrollPane();
@@ -203,12 +204,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         scrollBarPanel.add(treeScrollBar, java.awt.BorderLayout.CENTER);
 
-        leftPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
+        leftPanel1.setBackground(new java.awt.Color(255, 102, 255));
         leftPanel1.setPreferredSize(new java.awt.Dimension(8, 0));
         leftPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         scrollBarPanel.add(leftPanel1, java.awt.BorderLayout.WEST);
 
-        rightPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
+        rightPanel1.setBackground(new java.awt.Color(255, 102, 255));
         rightPanel1.setPreferredSize(new java.awt.Dimension(24, 0));
         rightPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         scrollBarPanel.add(rightPanel1, java.awt.BorderLayout.EAST);
@@ -435,7 +436,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     
                     JTree tree = treeView.getTree();
                     Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
-                    int height = (int)Math.round(rect.getHeight());
+                    int height = rect != null ? (int)Math.round(rect.getHeight()) : 0; // [TODO] NPE
                     mainPanelHeight += height;
                     treeViewWidth = Math.max(treeViewWidth, (int)Math.round(rect.getX() + rect.getWidth()));
                     
@@ -467,9 +468,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 leftPanel.repaint();
                 rightPanel.revalidate();
                 rightPanel.repaint();
-//                treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, treeView.getHeight()));
-//                treeView.getTree().revalidate();
+                treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 10)); // [TODO] 10
                 mainPanel.setPreferredSize(new Dimension(10, mainPanelHeight)); // [TODO] 10
+                treeView.getTree().revalidate(); // [TODO] reduce revalidate calls
+                treeView.revalidate();
+                mainScrollPane.revalidate();
                 mainPanel.revalidate();
                 
                 sessionComboBox.removeAllItems();

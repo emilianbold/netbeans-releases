@@ -42,6 +42,7 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -96,7 +97,11 @@ public class InfoPanel extends javax.swing.JPanel {
 //        deadlocksSeparator.setVisible(false);
         
         arrowButton = createArrowButton();
-        hitsInnerPanel.add(arrowButton);
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        hitsInnerPanel.add(arrowButton, gridBagConstraints);
         
         hideHitsPanel();
         hideDeadlocksPanel();
@@ -153,6 +158,18 @@ public class InfoPanel extends javax.swing.JPanel {
     // [TODO]
     boolean isBreakpointHit(JPDAThread thread) {
         return threadToMenuItem.containsKey(thread);
+    }
+
+    void setShowDeadlock(final boolean visible) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (visible) {
+                    showDeadlocksPanel();
+                } else {
+                    hideDeadlocksPanel();
+                }
+            }
+        });
     }
     
     // **************************************************************************
@@ -213,6 +230,7 @@ public class InfoPanel extends javax.swing.JPanel {
         deadlocksPanel.setVisible(true);
         deadlocksSeparator.setVisible(true);
         tapPanel.setBackground(hitsPanelColor);
+        deadlocksPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
         filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
         hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
     }
@@ -221,7 +239,8 @@ public class InfoPanel extends javax.swing.JPanel {
         arrowMenu = new JPopupMenu();
         JButton button = DropDownButtonFactory.createDropDownButton(
             new ImageIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png")), arrowMenu);
-        button.setPreferredSize(new Dimension(48, button.getPreferredSize().height)); // [TODO]
+        button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
+        button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setFocusable(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -296,6 +315,7 @@ public class InfoPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         deadlocksPanel = new javax.swing.JPanel();
         deadlocksBottomSpacePanel = new javax.swing.JPanel();
@@ -309,7 +329,7 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsInnerPanel = new javax.swing.JPanel();
         infoIcon = new javax.swing.JLabel();
         hitsLabel = new javax.swing.JLabel();
-        hitsEmptyLabel = new javax.swing.JLabel();
+        emptyPanel = new javax.swing.JPanel();
         hitsSeparator = new javax.swing.JPanel();
         filterPanel = new javax.swing.JPanel();
         filterTopSpacePanel = new javax.swing.JPanel();
@@ -328,14 +348,21 @@ public class InfoPanel extends javax.swing.JPanel {
 
         deadlocksInnerPanel.setOpaque(false);
         deadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
-        deadlocksInnerPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 8, 0));
+        deadlocksInnerPanel.setLayout(new java.awt.GridBagLayout());
 
         infoIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
         infoIcon1.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon1.text")); // NOI18N
-        deadlocksInnerPanel.add(infoIcon1);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        deadlocksInnerPanel.add(infoIcon1, gridBagConstraints);
 
         deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.deadlocksLabel.text")); // NOI18N
-        deadlocksInnerPanel.add(deadlocksLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        deadlocksInnerPanel.add(deadlocksLabel, gridBagConstraints);
 
         deadlocksPanel.add(deadlocksInnerPanel, java.awt.BorderLayout.CENTER);
 
@@ -362,17 +389,29 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsPanel.add(hitsBottomSpacePanel, java.awt.BorderLayout.SOUTH);
 
         hitsInnerPanel.setOpaque(false);
-        hitsInnerPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 8, 0));
+        hitsInnerPanel.setLayout(new java.awt.GridBagLayout());
 
         infoIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
         infoIcon.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon.text")); // NOI18N
-        hitsInnerPanel.add(infoIcon);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 5);
+        hitsInnerPanel.add(infoIcon, gridBagConstraints);
 
         hitsLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsLabel.text")); // NOI18N
-        hitsInnerPanel.add(hitsLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        hitsInnerPanel.add(hitsLabel, gridBagConstraints);
 
-        hitsEmptyLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsEmptyLabel.text")); // NOI18N
-        hitsInnerPanel.add(hitsEmptyLabel);
+        emptyPanel.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        hitsInnerPanel.add(emptyPanel, gridBagConstraints);
 
         hitsPanel.add(hitsInnerPanel, java.awt.BorderLayout.CENTER);
 
@@ -407,11 +446,11 @@ public class InfoPanel extends javax.swing.JPanel {
     private javax.swing.JLabel deadlocksLabel;
     private javax.swing.JPanel deadlocksPanel;
     private javax.swing.JPanel deadlocksSeparator;
+    private javax.swing.JPanel emptyPanel;
     private javax.swing.JPanel filterBottomSpacePanel;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JPanel filterTopSpacePanel;
     private javax.swing.JPanel hitsBottomSpacePanel;
-    private javax.swing.JLabel hitsEmptyLabel;
     private javax.swing.JPanel hitsInnerPanel;
     private javax.swing.JLabel hitsLabel;
     private javax.swing.JPanel hitsPanel;
