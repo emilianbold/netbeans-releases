@@ -819,11 +819,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         private String displayName;
         private PropertyType propertyType;
+        private String typeName;
         private static EnumMap<PropertyType, ImageIcon> type2Icon = new EnumMap<PropertyType, ImageIcon>(PropertyType.class);
         
         public PropertyItem(int substitutionOffset, Property property) {
             super(substitutionOffset);
             this.displayName = property.getName();
+            this.typeName = escape(getTypeName(property.getImplementationType(), false).toString());
             this.propertyType = property.getType();
         }
         
@@ -842,6 +844,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return displayName;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return typeName;
         }
         
         @Override
