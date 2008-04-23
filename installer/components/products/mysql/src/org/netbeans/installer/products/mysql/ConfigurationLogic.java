@@ -94,6 +94,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     // configuration logic implementation ///////////////////////////////////////////
     public void install(
             final Progress progress) throws InstallationException {
+        LogManager.log("Starting MySQL installation...");
         if (SystemUtils.isWindows()) {
             installWindows(progress);
         } else {
@@ -179,8 +180,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY));
                 }
                 SystemUtils.sleep(3000);//wait for 3 seconds so that mysql really starts
-                fixSecuritySettingsWindows(location);
-
+                if(Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+                    fixSecuritySettingsWindows(location);
+                }
             //createWindowsShortcuts(location);
 
             }
@@ -238,8 +240,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             } catch (InterruptedException e) {
                 LogManager.log(e);
             }
-            LogManager.log("... query output: " + StreamUtils.readStream(p.getInputStream()));
-            LogManager.log("... query errorcode: " + p.exitValue());
+            LogManager.logIndent("... query output: ");
+            LogManager.log(StreamUtils.readStream(p.getInputStream()));           
+            LogManager.logUnindent("... query errorcode: " + p.exitValue());
             p.destroy();
         } catch (IOException e) {
             LogManager.log(e);
@@ -268,6 +271,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
             if(!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
                 SystemUtils.setEnvironmentVariable("REMOVE_ANONYMOUS", "true", EnvironmentScope.PROCESS, false);
+            }
+            if(Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+                SystemUtils.setEnvironmentVariable("MODIFY_SECURITY", "true", EnvironmentScope.PROCESS, false);
             }
             SystemUtils.executeCommand(location, commandsList.toArray(new String[0]));
         } catch (NativeException e) {

@@ -89,7 +89,7 @@ remove_anonymous() {
 }
 
 #Modify my.cnf with settings
-#PORT_NUMBER, SKIP_NETWORKING, REMOVE_ANONYMOUS should be passed via env variables
+#PORT_NUMBER, SKIP_NETWORKING, REMOVE_ANONYMOUS, MODIFY_SECURITY should be passed via env variables
 if [ -n "$PORT_NUMBER" ] ; then
     sed  -e "s/3306/$PORT_NUMBER/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 fi
@@ -194,5 +194,7 @@ if [ -n "$PASSWORD" ] ; then
     echo "Result : $?"
 fi
 
-remove_anonymous
-remove_remote_root
+if [ -n "$MODIFY_SECURITY" ] ; then
+    remove_anonymous
+    remove_remote_root
+fi
