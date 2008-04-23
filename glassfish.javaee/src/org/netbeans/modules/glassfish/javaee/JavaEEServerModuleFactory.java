@@ -151,7 +151,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 String libPath = libUrl.getFile();
                 if(!new File(libPath).exists()) {
                     Logger.getLogger("glassfish-javaee").log(Level.FINE, 
-                            "libPath does not exists.  Updating " + ECLIPSE_LINK_LIB);
+                            "libPath does not exist.  Updating " + ECLIPSE_LINK_LIB);
                     try {
                         lmgr.removeLibrary(eclipseLinkLib);
                     } catch (IOException ex) {
@@ -217,7 +217,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 String libPath = libUrl.getFile();
                 if(!new File(libPath).exists()) {
                     Logger.getLogger("glassfish-javaee").log(Level.FINE, 
-                            "libPath does not exists.  Updating " + COMET_LIB);
+                            "libPath does not exist.  Updating " + COMET_LIB);
                     try {
                         lmgr.removeLibrary(cometLib);
                     } catch (IOException ex) {
