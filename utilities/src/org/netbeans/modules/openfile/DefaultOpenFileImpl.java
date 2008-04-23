@@ -71,10 +71,12 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOperation;
 import org.openide.text.NbDocument;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -551,9 +553,26 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                            + action.getClass().getName()
                            + ") for opening the file");                 //NOI18N
             }
+
+            final Action theAction;
+            if (action instanceof ContextAwareAction) {
+                theAction = ((ContextAwareAction) action)
+                              .createContextAwareInstance(
+                                      Lookups.singleton(dataNode));
+                if (log.isLoggable(FINEST)) {
+                    log.finest("    - it is a ContextAwareAction");
+                    log.finest("    - using a context-aware instance instead (\"" //NOI18N
+                                      + theAction.getValue(Action.NAME)
+                                      + "\" - "                         //NOI18N
+                                      + theAction.getClass().getName() + ')');
+                }
+            } else {
+                theAction = action;
+            }
+
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
+                    theAction.actionPerformed(new ActionEvent(dataNode, 0, ""));                                 
                 }
             });            
             log.finest("   - call of action.actionPerformed(...) was scheduled to the EDT using invokeLater(...)");//NOI18N
