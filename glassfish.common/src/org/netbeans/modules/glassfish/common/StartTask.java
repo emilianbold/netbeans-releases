@@ -164,7 +164,7 @@ public class StartTask extends BasicTask<OperationState> {
         if(jdkHome == null || jdkHome.length() == 0) {
             String javaHome = System.getProperty("java.home");
             if(javaHome.endsWith(File.separatorChar + "jre")) {
-                result = javaHome.substring(javaHome.length()-4);
+                result = javaHome.substring(javaHome.length() - 4);
             }
         } else {
             result = jdkHome;
@@ -173,13 +173,13 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private NbProcessDescriptor createProcessDescriptor() {
-        String startScript = System.getProperty("java.home") + "/bin/java" ; 
+        String startScript = System.getProperty("java.home") + 
+                File.separatorChar + "bin" + File.separatorChar + "java";
         String serverHome = ip.get(GlassfishModule.HOME_FOLDER_ATTR);
         File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
-        if (jar==null){
-                 fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
-                return null;
-           
+        if(jar == null) {
+            fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
+            return null;
         }
         String jarLocation = jar.getAbsolutePath();
         
@@ -211,29 +211,28 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private StringBuilder appendSystemVars(StringBuilder argumentBuf) {
-        String jrubyHome = ip.get(GlassfishModule.JRUBY_HOME);
-        if(jrubyHome != null) {
-            argumentBuf.append(" -D");
-            argumentBuf.append(GlassfishModule.JRUBY_HOME);
-            argumentBuf.append("=\"");
-            argumentBuf.append(jrubyHome);
-            argumentBuf.append("\"");
-        }
-
-        String cometEnabled = ip.get(GlassfishModule.COMET_FLAG);
-        // !PW FIXME remove when persistence for flags is enabled.
-        if(cometEnabled == null) {
-            cometEnabled = System.getProperty(GlassfishModule.COMET_FLAG);
-        }
-        if(cometEnabled != null && cometEnabled.length() > 0) {
-            argumentBuf.append(" -D");
-            argumentBuf.append(GlassfishModule.COMET_FLAG);
-            argumentBuf.append("=");
-            argumentBuf.append(cometEnabled);
-        }
-         
+        appendSystemVar(argumentBuf, GlassfishModule.JRUBY_HOME, ip.get(GlassfishModule.JRUBY_HOME));
+        appendSystemVar(argumentBuf, GlassfishModule.COMET_FLAG, ip.get(GlassfishModule.COMET_FLAG));
+        
+//        <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
+//        <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
+//        String domain = ip.get(GlassfishModule.HOME_FOLDER_ATTR)
+//                + File.separatorChar + "domains" + File.separatorChar + "domain1";
+//        appendSystemVar(argumentBuf, "javax.net.ssl.keyStore", domain + "/config/keystore.jks");
+//        appendSystemVar(argumentBuf, "javax.net.ssl.trustStore", domain + "/config/cacerts.jks");
+        
         return argumentBuf;
     }    
+    
+    private StringBuilder appendSystemVar(StringBuilder argumentBuf, String key, String value) {
+        if(value != null && value.length() > 0) {
+            argumentBuf.append(" -D");
+            argumentBuf.append(key);
+            argumentBuf.append("=");
+            argumentBuf.append(quote(value));
+        }
+        return argumentBuf;
+    }
     
     private Process createProcess() {
         Process process = null;
