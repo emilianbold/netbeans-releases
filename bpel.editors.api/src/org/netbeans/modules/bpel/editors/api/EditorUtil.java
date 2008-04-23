@@ -453,7 +453,7 @@ public class EditorUtil {
         return getBasicNodeType(bpelEntity.getElementType());
     }
 
-    public static void goToSource(BpelEntity component) {
+    public static void goToSource(Component component) {
         if ( !(component instanceof DocumentComponent)) {
             return;
         }
