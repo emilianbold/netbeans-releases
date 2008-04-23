@@ -58,6 +58,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
 /**
@@ -252,9 +253,13 @@ public class SQLDBSynchronizationValidationVisitor {
 
         // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
         } else {
+            boolean createIfNotExists = false;
+            if (ct instanceof TargetTable) {
+                createIfNotExists = ((TargetTable) ct).isCreateTargetTable();
+            }
             String nbBundle3 = mLoc.t("BUND299: Table {0} is removed or renamed in Database", collabTable.getName());
             String desc = nbBundle3.substring(15) + " " + meta.getDBName();
-            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
+            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, createIfNotExists ? ValidationInfo.VALIDATION_WARNING : ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(vInfo);
             return;
         }
