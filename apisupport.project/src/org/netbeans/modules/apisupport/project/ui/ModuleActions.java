@@ -258,6 +258,8 @@ public final class ModuleActions implements ActionProvider {
         final String testType;
         final FileObject sourceDirectory;
         public TestSources(FileObject[] sources, String testType, FileObject sourceDirectory) {
+            assert sources != null;
+            assert sourceDirectory != null;
             this.sources = sources;
             this.testType = testType;
             this.sourceDirectory = sourceDirectory;
@@ -305,7 +307,12 @@ public final class ModuleActions implements ActionProvider {
             return null;
         }
         FileObject srcDir = project.getSourceDirectory();
-        return new TestSources(ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true), testType, testSrcDir);
+        FileObject[] matches = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
+        if (matches != null) {
+            return new TestSources(matches, testType,testSrcDir);
+        } else {
+            return null;
+        }
     }
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
