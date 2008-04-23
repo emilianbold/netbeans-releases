@@ -51,14 +51,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  *
  * @author Dongmei Cao
  */
-public class HibernateCfgCompletionManagerTest  extends NbTestCase{
+public class HibernateCfgCompletionManagerTest  extends HibernateCompletionTestBase{
     
     private static final String[] hbPropNames = new String[] {
             Environment.AUTOCOMMIT, 
@@ -133,41 +132,8 @@ public class HibernateCfgCompletionManagerTest  extends NbTestCase{
             Environment.WRAP_RESULT_SETS
     };
    
-    protected String instanceResourcePath;
-    protected FileObject instanceFileObject;
-    protected Document instanceDocument;
-    
     public HibernateCfgCompletionManagerTest(String name) {
         super(name);
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    @Override
-    public void setUp() {
-       
-    }
-
-    @After
-    @Override
-    public void tearDown() {
-    }
-    
-    protected void setupCompletion(String path, StringBuffer buffer) throws Exception {
-        this.instanceResourcePath = path;
-        this.instanceDocument = Util.getResourceAsDocument(path);
-        if(buffer != null) {
-            instanceDocument.remove(0, instanceDocument.getLength());
-            instanceDocument.insertString(0, buffer.toString(), null);
-        }
-        instanceDocument.putProperty(Language.class, XMLTokenId.language());        
     }
 
     /**
@@ -221,28 +187,5 @@ public class HibernateCfgCompletionManagerTest  extends NbTestCase{
                 caretOffset);
         instance.getCompletionItems(instanceDocument, caretOffset, completionItems);
         return completionItems;
-    }
-    
-    private void assertResult(List<HibernateCompletionItem> result,
-            String[] expectedResult) {
-        
-        assertNotNull(result);
-        assertNotNull(expectedResult);
-            
-        assert(result.size() == expectedResult.length);
-        
-        List<String> resultItemNames = new ArrayList<String>();
-        for(HibernateCompletionItem item : result) {
-            //System.out.println( "-----" + item.getDisplayText());
-            resultItemNames.add(item.getDisplayText());
-        }
-        
-        for(int i = 0; i < expectedResult.length; i ++) {
-            boolean found = true;
-            if(!resultItemNames.contains(expectedResult[i])) {
-                found = false;
-            }
-            assertTrue("Not found " + expectedResult[i], found);
-        }
     }
 }
