@@ -165,7 +165,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                         if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
                             panel.updateMessageText(NbBundle.getMessage(
                                     AddServerLocationPanel.class, "LBL_InstallDirWillBeUsed", locationStr));
-                            wizard.putProperty(PROP_ERROR_MESSAGE, "");
+                            wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                             return false;
                         } else {
                             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(

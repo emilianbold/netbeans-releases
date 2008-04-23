@@ -105,7 +105,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     public DownloadState getDownloadState() {
         return downloadState;
     }
-    
+
     /**
      * 
      * @return 
@@ -379,6 +379,7 @@ private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 
 private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if(retriever == null) {
+            updateStatusText("");
             retriever = new Retriever(new File(hk2HomeTextField.getText()), 
                     V3_LOCATION_REFERENCE_URL, V3_DOWNLOAD_PREFIX, V3_DEFAULT_DOWNLOAD_URL, this);
             new Thread(retriever).start();

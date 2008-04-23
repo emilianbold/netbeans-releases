@@ -182,6 +182,7 @@ public class Retriever implements Runnable {
 
             Logger.getLogger("glassfish").fine("Downloading V3 from " + targetUrl);
             connection = targetUrl.openConnection();
+            connection.setConnectTimeout(ZIP_DOWNLOAD_TIMEOUT);
             connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
             in = connection.getInputStream();
             setDownloadState(STATUS_DOWNLOADING);
@@ -199,12 +200,16 @@ public class Retriever implements Runnable {
                 updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"));
             }
         } catch(ConnectException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
             setDownloadState(STATUS_FAILED, "Connection Exception", ex); // NOI18N
         } catch(MalformedURLException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
             setDownloadState(STATUS_FAILED, "Badly formed URL", ex); // NOI18N
         } catch(IOException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
             setDownloadState(STATUS_FAILED, "I/O Exception", ex); // NOI18N
         } catch(RuntimeException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
             setDownloadState(STATUS_FAILED, "Runtime Exception", ex); // NOI18N
         } finally {
             if(shutdown || status != STATUS_COMPLETE) {
@@ -230,6 +235,7 @@ public class Retriever implements Runnable {
                     URL url = new URL(locationUrl);
                     Logger.getLogger("glassfish").fine("Attempt " + tries + " to get V3 download URL suffix from " + url);
                     conn = url.openConnection();
+                    conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
                     while((result = is.readLine()) != null) {
