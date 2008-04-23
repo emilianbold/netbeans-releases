@@ -101,29 +101,35 @@ public class NbModuleSuite {
         final String moduleRegExp;
         final ClassLoader parentClassLoader;
         final LinkedHashSet<String> tests;
+        final boolean gui;
 
-        private Configuration(Class<?> clazz, String clusterRegExp, String moduleRegExp, ClassLoader parent, LinkedHashSet<String> tests) {
+        private Configuration(
+            Class<?> clazz, String clusterRegExp, 
+            String moduleRegExp, ClassLoader parent, 
+            LinkedHashSet<String> tests, boolean gui
+        ) {
             this.clazz = clazz;
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
             this.parentClassLoader = parent;
             this.tests = tests;
+            this.gui = gui;
         }
 
         static Configuration create(Class<? extends Test> clazz) {
-            return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null);
+            return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null, true);
         }
         
         public Configuration clusters(String regExp) {
-            return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader, tests);
+            return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader, tests, gui);
         }
 
         public Configuration enableModules(String regExp) {
-            return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests);
+            return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests, gui);
         }
 
         Configuration classLoader(ClassLoader parent) {
-            return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests);
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests, gui);
         }
 
         public Configuration addTest(String name) {
@@ -132,7 +138,11 @@ public class NbModuleSuite {
                 tmp.addAll(tests);
             }
             tmp.add(name);
-            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tmp);
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tmp, gui);
+        }
+        
+        public Configuration gui(boolean gui) {
+            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tests, gui);
         }
     }
 
@@ -269,6 +279,9 @@ public class NbModuleSuite {
             
             List<String> args = new ArrayList<String>();
             args.add("--nosplash");
+            if (!config.gui) {
+                args.add("--nogui");
+            }
             m.invoke(null, (Object)args.toArray(new String[0]));
 
             ClassLoader global = Thread.currentThread().getContextClassLoader();

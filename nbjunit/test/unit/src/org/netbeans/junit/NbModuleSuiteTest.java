@@ -75,7 +75,7 @@ public class NbModuleSuiteTest extends TestCase {
     }
 
     public void testRun() {
-        Test instance = NbModuleSuite.create(T.class, null, null);
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(T.class).gui(false));
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
@@ -99,7 +99,7 @@ public class NbModuleSuiteTest extends TestCase {
     }
 
     public void testAccessToInsane() {
-        Test instance = NbModuleSuite.create(Ins.class, null, null);
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(Ins.class).gui(false));
         junit.textui.TestRunner.run(instance);
         
         assertProperty("ins.one", "OK");
@@ -114,7 +114,8 @@ public class NbModuleSuiteTest extends TestCase {
         
         
         Test instance = NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(Ins.class).addTest("testOne").addTest("testThree")
+            NbModuleSuite.createConfiguration(Ins.class).addTest("testOne").
+            addTest("testThree").gui(false)
         );
         junit.textui.TestRunner.run(instance);
         
@@ -131,7 +132,7 @@ public class NbModuleSuiteTest extends TestCase {
     public void testAccessExtraDefinedAutoload() {
         NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
         NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
-        Test instance = NbModuleSuite.create(addEnum);
+        Test instance = NbModuleSuite.create(addEnum.gui(false));
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("en.one"));

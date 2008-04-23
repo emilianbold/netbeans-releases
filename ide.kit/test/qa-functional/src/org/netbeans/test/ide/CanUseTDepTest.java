@@ -55,7 +55,7 @@ public class CanUseTDepTest extends NbTestCase {
     
     public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CanUseTDepTest.class).clusters("ide.*|java.*")
+            NbModuleSuite.createConfiguration(CanUseTDepTest.class).clusters("ide.*|java.*").gui(false)
         );
     }
 
