@@ -121,30 +121,22 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     
     private void updateModuleSupport() {
         // !PW FIXME this is unstable
-        Properties asenvProps = null;
+        Properties asenvProps = new Properties();
         String homeFolder = commonSupport.getHomeFolder();
         File asenvConf = new File(homeFolder, "config/asenv.conf");
         InputStream is = null;
         try {
             is = new BufferedInputStream(new FileInputStream(asenvConf));
-            asenvProps = new Properties();
             asenvProps.load(is);
         } catch(FileNotFoundException ex) {
             Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-            asenvProps = null;
         } catch(IOException ex) {
             Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-            asenvProps = null;
+            asenvProps = new Properties();
         } finally {
             if(is != null) {
                 try { is.close(); } catch (IOException ex) { }
             }
-        }
-        
-        // No asenv properties, or unreadable ==> no module specific server
-        // support for now.
-        if(asenvProps == null) {
-            return;
         }
         
         // Find all modules that have NetBeans support, add them to lookup if server
