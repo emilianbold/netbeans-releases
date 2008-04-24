@@ -52,6 +52,11 @@ import org.netbeans.test.xml.schema.lib.util.Helpers;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.EditorOperator;
+import java.awt.event.KeyEvent;
+import java.awt.Point;
+import java.awt.event.InputEvent;
 
 
 
@@ -71,12 +76,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "ImportReferencedSchema",
         "ImportReferencedSchema2",
         "DeleteReferencedSchema",
-        "FindUsages", // TODO : How to find find usages output?
+        "FindUsages",
         "ValidateAndBuild",
         "AddAttribute",
         "ExploreAttribute",
-        "DeleteAttribute",
-        "UndoRedoAttribute",
+        "ManipulateAttribute",
         "AddComplex",
         "ExploreComplex",
         "DeleteComplex",
@@ -87,14 +91,14 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "UndoRedoElement",
         "AddSimple",
         "ExploreSimple",
-        "DeleteSimple",
-        "UndoRedoSimple",
+        "ManipulateSimple",
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
         "ValidateAndBuild",
 
-        // Move, fix
+        // Move, fix : TODO
 
         "ValidateAndBuild",
         "BuildCompositeApplication",
@@ -262,7 +266,26 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          5
+        );
 
       endTest( );
     }
@@ -348,7 +371,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Attribute",
           null, 
           "Referenced Schemas|import|Simple Types|StateType",
-          "newAttribute"
+          ATTRIBUTES_NAMES[ 0 ]
         );
 
       endTest( );
@@ -359,7 +382,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreSimpleInternal(
-          "newAttribute",
+          ATTRIBUTES_NAMES[ 0 ],
           "StateType",
           "attribute",
           "ns2:"
@@ -368,20 +391,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void DeleteAttribute( )
+    public void ManipulateAttribute( )
     {
       startTest( );
 
-
-
-      endTest( );
-    }
-
-    public void UndoRedoAttribute( )
-    {
-      startTest( );
-
-
+      ManipulateAttributeInternal( SAMPLE_NAME );
 
       endTest( );
     }
@@ -395,7 +409,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Complex Type",
           "Use Existing Definition", 
           "Referenced Schemas|import|Complex Types|CarType",
-          "newComplexType"
+          COMPLEX_NAMES[ 0 ]
         );
 
       endTest( );
@@ -405,7 +419,12 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      ExploreComplexInternal(
+          "Complex Types",
+          COMPLEX_NAMES[ 0 ],
+          "CarType",
+          "<xs:complexType name=\"" + COMPLEX_NAMES[ 0 ] + "\">"
+        );
 
       endTest( );
     }
@@ -437,7 +456,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Element",
           "Use Existing Type",
           "Referenced Schemas|import|Complex Types|AddressType",
-          "newElement"
+          ELEMENT_NAMES[ 0 ]
         );
 
       endTest( );
@@ -447,7 +466,12 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      ExploreComplexInternal(
+          "Elements",
+          ELEMENT_NAMES[ 0 ],
+          "AddressType",
+          "<xs:element name=\"" + ELEMENT_NAMES[ 0 ] + "\" type=\"ns2:AddressType\"></xs:element>"
+        );
 
       endTest( );
     }
@@ -479,7 +503,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
           "Add Simple Type",
           null, 
           "Referenced Schemas|import|Simple Types|LoanType",
-          "newSimpleType"
+          SIMPLE_NAMES[ 0 ]
         );
 
       endTest( );
@@ -490,7 +514,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       ExploreSimpleInternal(
-          "newSimpleType",
+          SIMPLE_NAMES[ 0 ],
           "LoanType",
           "simpleType",
           null
@@ -499,20 +523,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void DeleteSimple( )
+    public void ManipulateSimple( )
     {
       startTest( );
 
-
-
-      endTest( );
-    }
-
-    public void UndoRedoSimple( )
-    {
-      startTest( );
-
-
+      ManipulateSimpleInternal( SAMPLE_NAME );
 
       endTest( );
     }
@@ -557,6 +572,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
+      fail( "OHH" );
       DeployCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
       
       endTest( );

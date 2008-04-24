@@ -66,7 +66,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
     public WsFromWsdlGUIPanel1(WsFromWsdlPanel1 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("Code Generator Options");
+        setName("Code Generator Options"); // NOI18N
         jComboBox3.setModel(new javax.swing.DefaultComboBoxModel(WizardProperties.DATA_BINDING));
         ItemListener cbListener = new CBListener();
         jComboBox1.addItemListener(cbListener);
@@ -78,21 +78,21 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
             public void insertUpdate(DocumentEvent e) {
                 Document doc = e.getDocument();
                 try {
-                    changeOption("-p", doc.getText(0, doc.getLength()));
+                    changeOption("-p", doc.getText(0, doc.getLength())); // NOI18N
                 } catch (BadLocationException ex){}
             }
 
             public void removeUpdate(DocumentEvent e) {
                 Document doc = e.getDocument();
                 try {
-                    changeOption("-p", doc.getText(0, doc.getLength()));
+                    changeOption("-p", doc.getText(0, doc.getLength())); // NOI18N
                 } catch (BadLocationException ex){}
             }
 
             public void changedUpdate(DocumentEvent e) {
                 Document doc = e.getDocument();
                 try {
-                    changeOption("-p", doc.getText(0, doc.getLength()));
+                    changeOption("-p", doc.getText(0, doc.getLength())); // NOI18N
                 } catch (BadLocationException ex){}
             }
             
@@ -163,15 +163,15 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
-                    .add(jCheckBox1)
-                    .add(optionsLabel)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
-                    .add(moreOptionsLabel)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jCheckBox1)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, optionsLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, moreOptionsLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
                             .add(jLabel2)
@@ -215,7 +215,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(moreOptionsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -312,7 +312,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         boolean first=true;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            buf.append(first ? token : " "+token);
+            buf.append(first ? token : " "+token); // NOI18N
             if (first) first = false;
         }
         return buf.toString();
@@ -344,7 +344,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
                     jCheckBox1.setEnabled(true);
                     jTextArea2.setOpaque(true);
                     jTextArea2.setEditable(true);
-                    changeOption("-d", db);
+                    changeOption("-d", db); // NOI18N
                 }
                 wizardPanel.fireChange();
             } else if (jCheckBox1 == source) {
@@ -364,15 +364,15 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         boolean foundOption = false;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            if ("-p".equals(token)) buf.append("\n");
-            else buf.append(" ");
+            if ("-p".equals(token)) buf.append("\n"); // NOI18N
+            else buf.append(" "); // NOI18N
             if (option.equals(token)) {
                 // string options
                 if (value instanceof String) {
                     buf.append(token);
                     // skip next token
                     token = tokens.nextToken();
-                    buf.append(" "+(String)value);
+                    buf.append(" "+(String)value); // NOI18N
                 }
                 // boolean option
                 else if (value instanceof Boolean) {
@@ -387,7 +387,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         }
         if ((value instanceof Boolean) && !foundOption) {
             if (((Boolean)value).booleanValue()) {
-                buf.append(" "+option);
+                buf.append(" "+option); // NOI18N
             }
         }
         jTextArea1.setText(buf.toString());

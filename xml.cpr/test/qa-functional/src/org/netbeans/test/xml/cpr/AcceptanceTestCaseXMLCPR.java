@@ -67,6 +67,14 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
+import org.netbeans.test.xml.cpr.lib.FindUsagesOperator;
+
+import org.netbeans.jellytools.TopComponentOperator;
+
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -82,7 +90,39 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     
     static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
     static final String BUILD_FAILED = "BUILD FAILED";
+
+    protected final String ATTRIBUTES_NAMES[] =
+    {
+      "newAttributeA", "newAttributeB", "newAttributeC"
+    };
     
+    protected final String SIMPLE_NAMES[] =
+    {
+      "newSimpleTypeA", "newSimpleTypeB", "newSimpleTypeC"
+    };
+    
+    protected final String COMPLEX_NAMES[] =
+    {
+      "newComplexTypeA", "newComplexTypeB", "newComplexTypeC"
+    };
+    
+    protected final String ELEMENT_NAMES[] =
+    {
+      "newElementA", "newElementB", "newElementC"
+    };
+    
+    // Ideal code lines
+    protected final String[] asIdealAttributeLines =
+    {
+      "<xs:attribute name=\"" + ATTRIBUTES_NAMES[ 0 ] + "\" type=\"ns2:StateType\"/>",
+      "<xs:attribute name=\"" + ATTRIBUTES_NAMES[ 1 ] + "\" type=\"ns2:StateType\"/>"
+    };
+
+    protected final String[] asIdealSimpleLines =
+    {
+      "<xs:simpleType name=\"newSimpleTypeA\">",
+      "<xs:simpleType name=\"newSimpleTypeB\">",
+    };
 
     class CFulltextStringComparator implements Operator.StringComparator
     {
@@ -305,11 +345,51 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         String error
       )
     {
+      // Normal version
+      // just click
       table.clickOnCell( row, col, count );
-       int iRows = table.getRowCount( );
-       if( result != iRows )
-         fail( error + iRows );
+      table.pushKey( KeyEvent.VK_RIGHT );
+
+      // HaCk version
+      /*
+      Point pt = table.getPointToClick( row, col );
+      //table.enterMouse( );
+      //try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.pressMouse( pt.x, pt.y );
+      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.releaseMouse( pt.x, pt.y );
+      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.pressMouse( pt.x, pt.y );
+      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.releaseMouse( pt.x, pt.y );
+      */
+
+      try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
+      int iRows = table.getRowCount( );
+      if( result != iRows )
+        fail( error + iRows );
+
       return;
+    }
+
+    protected SchemaMultiView WaitSchemaMultiView( String sName )
+    {
+      for( int i = 0 ; i < 5; i++ )
+      {
+        try
+        {
+          SchemaMultiView result = new SchemaMultiView( sName );
+          if( null != result )
+            return result;
+        }
+        catch( Exception ex )
+        {
+          // TODO : report
+          System.out.println( "*** Schema exception ***\n" + ex.getMessage( ) );
+        }
+        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
+      }
+      return null;
     }
 
     protected void ImportReferencedSchemaInternal(
@@ -341,10 +421,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Switch to schema view
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
       // ^ - remove???
 
       // Select first column
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      SchemaMultiView opMultiView = WaitSchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -375,6 +456,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       for( CImportClickData cli : aimpData )
       {
+        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         if( cli.inshort || !bShort )
           ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
         // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
@@ -418,6 +500,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
            "<xs:import schemaLocation=\"" + sModule + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
             "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
           };
+
           EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
           int iLineNumber = eoXMLSource.getLineNumber( );
           String sChoosenLine = eoXMLSource.getText( iLineNumber );
@@ -473,18 +556,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
         if( null != cli.checker )
           new JLabelOperator( jImport, cli.checker );
-        // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
-        // ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
-        // ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
-        // ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
-        // ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
-
-        // ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // JLabelOperator jl = new JLabelOperator( jImport, "Selected document is already referenced." );
-        // ExpandByClicks( jto, 4, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // jl = new JLabelOperator( jImport, "Document cannot reference itself." );
-        // ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // jl = new JLabelOperator( jImport, "Selected document is already referenced." );
       }
 
       // Close
@@ -495,18 +566,23 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       jCancel.push( );
     }
 
-    public void FindUsagesInternal( String sModule, String sPath )
+    public void FindUsagesInternal(
+        String sModule,
+        String sPath,
+        String sFileName,
+        int iRows
+      )
     {
       // Select schema
-      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
+          sModule + "|" + sPath + "|" + sFileName
         );
       prn.select( );
 
       // Refactor rename
-      prn.performPopupAction( "Find Usages" );
+      prn.performPopupActionNoBlock( "Find Usages" );
 
       // Wait window
       JDialogOperator opFindProgress = null;
@@ -521,13 +597,26 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       if( null != opFindProgress )
       {
         System.out.println( "****** USAGES HERE" );
-        opFindProgress.waitClosed( );
+        WaitDialogClosed( opFindProgress );
+        //opFindProgress.waitClosed( );
       }
 
       // Check result
       //FindUsagesOperator fuop = new FindUsagesOperator( );
-      
-      //System.out.println( "******" + ( null == fuop ) );
+      TopComponentOperator top = new TopComponentOperator( "Usages" );
+      JTreeOperator jt = new JTreeOperator( top );
+      int rows = jt.getRowCount( );
+      if( iRows != rows )
+      {
+        fail(
+            "Find usages shows incorrect tree: "
+            + rows + " found, "
+            + iRows + " required."
+          );
+      }
+
+      top.close( );
+      //System.out.println( "******" + jt.getRowCount( ) + "/" + jt.getVisibleRowCount( ) );
     }
 
     protected void AddItInternal(
@@ -560,6 +649,10 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Get dialog
       JDialogOperator jadd = new JDialogOperator( sMenuToAdd );
 
+      // Set unique name
+      JTextFieldOperator txt = new JTextFieldOperator( jadd, 0 );
+      txt.setText( sAddedName );
+
       // Use existing definition
       if( null != sRadioName )
       {
@@ -587,24 +680,16 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     }
 
-    protected void ExploreSimpleInternal(
+    protected void CheckSchemaViewDefinition(
+        JListOperator opListOriginal,
         String sName,
-        String sType,
-        String sIncode,
-        String sNamespace
+        String sType
       )
     {
-      // Explore added with Go to <> menus
-
-      // Select newAttribute
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      JListOperator opList = opMultiView.getColumnListOperator( 1 );
-      opList.selectItem( sName );
-
-      // Right click on Reference Schemas
-      int iIndex = opList.findItemIndex( sName );
-      Point pt = opList.getClickPoint( iIndex );
-      opList.clickForPopup( pt.x, pt.y );
+      // Right click on item
+      int iIndex = opListOriginal.findItemIndex( sName );
+      Point pt = opListOriginal.getClickPoint( iIndex );
+      opListOriginal.clickForPopup( pt.x, pt.y );
 
       // Click go to definition
       JPopupMenuOperator popup = new JPopupMenuOperator( );
@@ -622,26 +707,17 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Close definition
       opMultiViewDef.close( );
+    }
 
-      // Click go to code
-      opList.clickForPopup( pt.x, pt.y );
-      popup = new JPopupMenuOperator( );
-      popup.pushMenu( "Go To|Source" );
-
-      // Check selected code line
-      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
-      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
-
-      String sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\">";
-      if( null != sNamespace )
-        sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>";
-
-      if( -1 == sSelectedText.indexOf( sRequiredText ) )
-        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+    protected void CheckSourceViewDefinition(
+        String sIdealCode
+      )
+    {
+      EditorOperator eoXsdCodeOriginal = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
 
       // Click go to definition
-      ClickForTextPopup( eoXsdCode );
-      popup = new JPopupMenuOperator( );
+      ClickForTextPopup( eoXsdCodeOriginal );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenu( "Go To|Definition" );
 
       // Check opened view
@@ -650,29 +726,416 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Check selected code line
       EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
-      sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
-      if( -1 == sSelectedText.indexOf( "<xs:simpleType name=\"" + sType + "\">" ) )
+      String sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
+      if( -1 == sSelectedText.indexOf( sIdealCode ) )
         fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
 
       // Close definition
       eoXsdCodeDef.close( );
+    }
 
-      // Click go to schema
+    protected void GotoSchemaSource(
+        //JListOperator opListOriginal,
+        String sSection,
+        String sName,
+        String sRequiredText
+      )
+    {
+      System.out.println( "***" + sSection + "***" + sName + "***" );
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sSection );
+      opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      int iIndex = opList.findItemIndex( sName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+
+    }
+
+    protected void GotoSchemaSource(
+        JListOperator opListOriginal,
+        String sName,
+        String sRequiredText
+      )
+    {
+      int iIndex = opListOriginal.findItemIndex( sName );
+      Point pt = opListOriginal.getClickPoint( iIndex );
+      opListOriginal.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+
+    }
+
+    protected void GotoSchemaDesign(
+        JListOperator opListOriginal,
+        String sName
+      )
+    {
+      int iIndex = opListOriginal.findItemIndex( sName );
+      Point pt = opListOriginal.getClickPoint( iIndex );
+      opListOriginal.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Design" );
+    }
+
+    protected void GotoSourceSchema(
+        String sName
+      )
+    {
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+
       ClickForTextPopup( eoXsdCode );
-      popup = new JPopupMenuOperator( );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenu( "Go To|Schema" );
-      //try { Thread.sleep( 2000 ); } catch( InterruptedException ex ) { }
 
-      // Check sche,a view opened
+      // Check schema view opened
       if( !CheckSchemaView( "Schema" ) )
         fail( "Go To Schema option for Source view opened not on source view." );
 
       // Check selected schema item
-      opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
-      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      if( null == opList )
         fail( "Incorrect (no) selection after Go To Schema option." );
       if( !opList.getSelectedValue( ).toString( ).startsWith( sName ) )
         fail( sName + " did not selected with Go To Schema option." );
+    }
+
+    protected void ExploreSimpleInternal(
+        String sName,
+        String sType,
+        String sIncode,
+        String sNamespace
+      )
+    {
+      // Explore added with Go to <> menus
+
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      // Check definition
+      CheckSchemaViewDefinition( opList, sName, sType );
+
+      // Click go to code
+      String sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\">";
+      if( null != sNamespace )
+        sRequiredText = "<xs:" + sIncode + " name=\"" + sName + "\" type=\"" + sNamespace + sType+ "\"/>";
+
+      GotoSchemaSource( opList, sName, sRequiredText );
+
+      // Click go to definition
+      CheckSourceViewDefinition(
+          "<xs:simpleType name=\"" + sType + "\">"
+        );
+
+      // Click go to schema
+      GotoSourceSchema( sName );
+    }
+
+    protected void WaitDialogClosed( JDialogOperator jd )
+    {
+      for( int i = 0; i < 3; i++ )
+      {
+        try
+        {
+          jd.waitClosed( );
+          return;
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( ex.getMessage( ) );
+        }
+      }
+    }
+
+    public void ManipulateAttributeInternal( String sSample )
+    {
+      // Add one more attribute
+      AddItInternal(
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          ATTRIBUTES_NAMES[ 1 ]
+        );
+
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+
+      // Check both attributes present in code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      EditorOperator eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 == sCompleteText.indexOf( asIdealAttributeLines[ 0 ] )
+          || -1 == sCompleteText.indexOf( asIdealAttributeLines[ 1 ] )
+        )
+      {
+        fail( "Attributes code was not added into schema." );
+      }
+
+      // Remove code line for first attribute
+      eoXMLCode.setCaretPosition(
+          asIdealAttributeLines[ 0 ],
+          0,
+          true
+        );
+      JEditorPaneOperator editor = eoXMLCode.txtEditorPane( );
+      editor.pushKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+      editor.releaseKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+
+      // Check attribute deleted from schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Attributes" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( 1 != opList.getModel( ).getSize( ) )
+        fail( "Invalid number of attribute items in schema view." );
+      if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
+        fail( "Atribute was not removed from schema view" );
+      int iIndex = opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] );
+      if( -1 == iIndex )
+        fail( "Wrong attribute removed from schema view." );
+
+      // Delete attribute from schema view
+      opList.selectItem( iIndex );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Delete" );
+      JDialogOperator jsafe = new JDialogOperator( "Safe Delete" );
+      JButtonOperator jbut = new JButtonOperator( jsafe, "Refactor" );
+      jbut.push( );
+      // Set longer timeout for window closing
+      WaitDialogClosed( jsafe );
+      //jsafe.waitClosed( );
+
+      // Check number of remained items
+      int iSize = opList.getModel( ).getSize( );
+      if( 0 != iSize )
+        fail( "Invalid number of attribute items in schema view: " + iSize );
+
+      // Check attribute deleted from code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealAttributeLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealAttributeLines[ 1 ] )
+        )
+      {
+        fail( "Attributes code was not removed into schema." );
+      }
+
+      ////////////////////////////////////////////////////////////////
+      // Undo delete from schema
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Undo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+
+      // Check schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      //SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Attributes" );
+      if( null == ( opList = opMultiView.getColumnListOperator( 1 ) ) )
+        System.out.println( "*** NULL LIST ***" );
+      if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
+        fail( "Wrong attribute restored after deletion." );
+      if( -1 == opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] ) )
+        fail( "Correct attribute did not restor after deletion." );
+
+      // Check code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if( -1 != sCompleteText.indexOf( asIdealAttributeLines[ 0 ] ) )
+        fail( "Wrong attribute source restored after deletion." );
+      if( -1 == sCompleteText.indexOf( asIdealAttributeLines[ 1 ] ) )
+        fail( "Correct attribute source did not restor after deletion." );
+
+      // Redo delete
+      pto = new ProjectsTabOperator( );
+      prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]" );
+      try { Thread.sleep( 1500 ); } catch( InterruptedException ex ) { }
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+
+      // Check source
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealAttributeLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealAttributeLines[ 1 ] )
+        )
+        fail( "Redo attribute deletion failed for source code." );
+
+      // Check schema
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      if(
+          -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] )
+          || -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 1 ] )
+        )
+        fail( "Redo attribute deletion failed for schema view." );
+    }
+
+    protected void ManipulateSimpleInternal( String sSample )
+    {
+      // Add one more attribute
+      AddItInternal(
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          SIMPLE_NAMES[ 1 ]
+        );
+
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+
+      // Check both attributes present in code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      EditorOperator eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 == sCompleteText.indexOf( asIdealSimpleLines[ 0 ] )
+          || -1 == sCompleteText.indexOf( asIdealSimpleLines[ 1 ] )
+        )
+      {
+        fail( "Simple type code was not added into schema." );
+      }
+
+      // Remove code line for first attribute
+      eoXMLCode.setCaretPosition(
+          asIdealSimpleLines[ 0 ],
+          0,
+          true
+        );
+      JEditorPaneOperator editor = eoXMLCode.txtEditorPane( );
+      for( int ip = 0; ip < 3; ip++ )
+      {
+        editor.pushKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+        editor.releaseKey( KeyEvent.VK_E, InputEvent.CTRL_MASK );
+      }
+
+      // Check attribute deleted from schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Simple Types" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( 1 != opList.getModel( ).getSize( ) )
+        fail( "Invalid number of simple type items in schema view." );
+      if( -1 != opList.findItemIndex( ATTRIBUTES_NAMES[ 0 ] ) )
+        fail( "Simple type was not removed from schema view" );
+      int iIndex = opList.findItemIndex( SIMPLE_NAMES[ 1 ] );
+      if( -1 == iIndex )
+        fail( "Wrong simple type removed from schema view." );
+
+      // Delete attribute from schema view
+      opList.selectItem( iIndex );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Delete" );
+      JDialogOperator jsafe = new JDialogOperator( "Safe Delete" );
+      JButtonOperator jbut = new JButtonOperator( jsafe, "Refactor" );
+      jbut.push( );
+      WaitDialogClosed( jsafe );
+      //jsafe.waitClosed( );
+
+      // Check number of remained items
+      int iSize = opList.getModel( ).getSize( );
+      if( 0 != iSize )
+        fail( "Invalid number of simple type items in schema view: " + iSize );
+
+      // Check attribute deleted from code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealSimpleLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealSimpleLines[ 1 ] )
+        )
+      {
+        fail( "Simple type code was not removed into schema." );
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      // Undo delete from schema
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Undo [Delete " + SIMPLE_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [Delete " + SIMPLE_NAMES[ 1 ] + "]");
+
+      // Check schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      //SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Simple Types" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      if( -1 != opList.findItemIndex( SIMPLE_NAMES[ 0 ] ) )
+        fail( "Wrong simple type restored after deletion." );
+      if( -1 == opList.findItemIndex( SIMPLE_NAMES[ 1 ] ) )
+        fail( "Correct simple type did not restor after deletion." );
+
+      // Check code view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      eoXMLCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      sCompleteText = eoXMLCode.getText( );
+      if( -1 != sCompleteText.indexOf( asIdealSimpleLines[ 0 ] ) )
+        fail( "Wrong simple type source restored after deletion." );
+      if( -1 == sCompleteText.indexOf( asIdealSimpleLines[ 1 ] ) )
+        fail( "Correct simple typesource did not restor after deletion." );
+
+      // Redo delete
+      pto = new ProjectsTabOperator( );
+      prn = pto.getProjectRootNode(
+          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      prn.performPopupAction( "Refactor|Redo [Delete " + SIMPLE_NAMES[ 1 ] + "]" );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [Delete " + ATTRIBUTES_NAMES[ 1 ] + "]");
+      try { Thread.sleep( 1500 ); } catch( InterruptedException ex ) { }
+
+      // Check source
+      sCompleteText = eoXMLCode.getText( );
+      if(
+          -1 != sCompleteText.indexOf( asIdealSimpleLines[ 0 ] )
+          || -1 != sCompleteText.indexOf( asIdealSimpleLines[ 1 ] )
+        )
+        fail( "Redo simple type deletion failed for source code." );
+
+      // Check schema
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      if(
+          -1 != opList.findItemIndex( SIMPLE_NAMES[ 0 ] )
+          || -1 != opList.findItemIndex( SIMPLE_NAMES[ 1 ] )
+        )
+        fail( "Redo simple type deletion failed for schema view." );
     }
 
     protected boolean CheckSchemaView( String sView )
@@ -706,6 +1169,69 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       return;
     }
 
+    public void ExploreComplexInternal(
+        String sSection,
+        String sName,
+        String sType,
+        String sIncode
+      )
+    {
+      // Select in schema
+      // Select newAttribute
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( sSection );
+      opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( sName );
+
+      // Go to : schema -> definition
+      // Check definition view
+      // Check definition selection
+      // Close definition
+      CheckSchemaViewDefinition( opList, sName, sType );
+
+      // Go to : Schema -> Design
+      GotoSchemaDesign( opList, sName );
+
+      // Check selected element
+
+      // Go to : Design -> Source
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+
+      // Check selected code line
+
+      // Go to : source -> definition
+      // Check definition view
+      // Check definition selection
+      // Close definition
+      /*
+      CheckSourceViewDefinition(
+          "<xs:complexType name=\"" + sName + "\">"
+        );
+      */
+
+      // Go to : Source -> Schema
+      // Check selected element
+      //GotoSourceSchema( COMPLEX_NAMES[ 0 ] );
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Go to : Schema -> Source
+      // Check selected element
+      GotoSchemaSource(
+          sSection,//opList,
+          sName,
+          sIncode
+        );
+
+      // Go to : Source -> Design
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
+
+      // Check selected element
+
+      // Go to : Design -> Schema
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+    }
+
     public void RenameSampleSchemaInternal( String sModule, String sPath )
     {
       // Select schema
@@ -728,7 +1254,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       JButtonOperator jbRef = new JButtonOperator( jdRefactor, "Refactor" );
       jbRef.push( );
 
-      jdRefactor.waitClosed( );
+      WaitDialogClosed( jdRefactor );
+      //jdRefactor.waitClosed( );
 
       // Check result
       pto = new ProjectsTabOperator( );
@@ -781,6 +1308,15 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     protected void ValidateAndBuildInternal( String sSample )
     {
+      ValidateAndBuildInternal( sSample, false, "dist_se" );
+    }
+
+    protected void ValidateAndBuildInternal(
+        String sSample,
+        boolean bWarnings,
+        String sBuildName
+      )
+    {
       // Set focus to file for validation to ensure Validate menu enabled
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
       
@@ -810,6 +1346,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
 
       // Build
+      BuildCompositeApplicationInternal( sSample, bWarnings, sBuildName );
+      /*
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
@@ -823,8 +1361,29 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       prn.performPopupActionNoBlock( "Build" );
 
-      // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (dist_se)." );
+      if( bWarnings )
+      {
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
+      }
+
+      for( int i = 0; i < 3; i++ )
+      {
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
+      }
       stt.stop( );
 
       // Get output
@@ -833,10 +1392,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
         fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( BUILD_FAILED ) )
-        fail( "BUILD FAILED mark fopund:\n" + sText + "\n" );
+        fail( "BUILD FAILED mark found:\n" + sText + "\n" );
 
       // Close output
       out.close( );
+      */
     }
 
     protected void DeployCompositeApplicationInternal( String sName )
@@ -884,6 +1444,15 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     public void BuildCompositeApplicationInternal( String sName )
     {
+      BuildCompositeApplicationInternal( sName, false, "dist_se" );
+    }
+
+    public void BuildCompositeApplicationInternal(
+        String sName,
+        boolean bWarnings,
+        String sBuildName
+      )
+    {
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -896,18 +1465,41 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       prn.performPopupActionNoBlock( "Build" );
 
-      // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (jbi-build)." );
+      if( bWarnings )
+      {
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
+      }
+
+      for( int i = 0; i < 3; i++ )
+      {
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
+      }
       stt.stop( );
 
-      // Check output for BUILD SUCCESSFUL
       // Get output
       OutputOperator out = OutputOperator.invoke( );
       String sText = out.getText( );
       if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
-        fail( "Unable to build composite application.\n" + sText + "\n" );
+        fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( BUILD_FAILED ) )
-        fail( "BUILD FAILED mark found for build CA:\n" + sText + "\n" );
+        fail( "BUILD FAILED mark found:\n" + sText + "\n" );
+
+      // Close output
+      out.close( );
     }
 
     public void tearDown() {

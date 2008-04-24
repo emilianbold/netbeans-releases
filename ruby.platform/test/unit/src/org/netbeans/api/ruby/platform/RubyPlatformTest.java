@@ -136,6 +136,9 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testHasFastDebuggerInstalledExactness() throws IOException {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
         installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
         installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
         assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());

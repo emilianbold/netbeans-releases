@@ -118,6 +118,10 @@ public class PropertiesFlushTest extends NbTestCase {
     
     
     public void testNullChangePerformedAndReflectedInPropertySheet() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         System.err.println(".testNullChangePerformedAndReflectedInPropertySheet");
         int count = ps.table.getRowCount();
         assertTrue("Property sheet should contain three rows ", count==3);
@@ -143,6 +147,10 @@ public class PropertiesFlushTest extends NbTestCase {
     
     private Exception throwMe = null;
     public void testSetSheetChangesPropertySheetContents() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         System.err.println(".testSetSheetChangesPropertySheetContents");
         final TNode2 tnd = new TNode2();
         throwMe = null;
@@ -354,6 +362,10 @@ public class PropertiesFlushTest extends NbTestCase {
     
     private Exception throwMe2 = null;
     public void testSetNodesToNullReleasesOldNode() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         System.err.println(".testSetNodesToNullReleasesOldNode");
         TNode2 tnd = new TNode2();
         Reference oldNode = new WeakReference(tnd);

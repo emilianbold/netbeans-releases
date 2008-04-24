@@ -174,9 +174,9 @@ class ToDoCustomizer extends javax.swing.JPanel {
         checkScanCommentsOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkScanCommentsOnly.setMargin(new java.awt.Insets(0, 0, 0, 0));
         checkScanCommentsOnly.setOpaque(false);
-        checkScanCommentsOnly.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                checkScanCommentsOnlyStateChanged(evt);
+        checkScanCommentsOnly.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                scanCommentsOnlyChanged(evt);
             }
         });
 
@@ -221,15 +221,6 @@ class ToDoCustomizer extends javax.swing.JPanel {
                 .add(checkScanCommentsOnly))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-private void checkScanCommentsOnlyStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_checkScanCommentsOnlyStateChanged
-    if( isUpdating )
-        return;
-    boolean wasChanged = changed;
-    changed = true;
-    firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
-
-}//GEN-LAST:event_checkScanCommentsOnlyStateChanged
 
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
     TableCellEditor editor = table.getCellEditor();
@@ -294,6 +285,14 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             }
         });
 }//GEN-LAST:event_btnAddActionPerformed
+
+private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_scanCommentsOnlyChanged
+    if( isUpdating )
+        return;
+    boolean wasChanged = changed;
+    changed = true;
+    firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
+}//GEN-LAST:event_scanCommentsOnlyChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

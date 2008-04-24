@@ -45,14 +45,17 @@ import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -80,22 +83,19 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         descriptor = wizard;
         index = 0;
         panels = createPanels();
-
-        // wizard title
-        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, "TXT_PhpProject");
-        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
     }
 
     public void uninitialize(WizardDescriptor wizard) {
         wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
         wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
-        wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
+        //wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null); // "setAsMain" has to remain!
         wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
         wizard.putProperty(ConfigureProjectPanel.URL, null);
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
+        wizard.putProperty(ConfigureProjectPanel.ROOTS, null);
         wizard.putProperty(ConfigureServerPanel.COPY_FILES, null);
         wizard.putProperty(ConfigureServerPanel.COPY_TARGET, null);
         wizard.putProperty(ConfigureServerPanel.COPY_TARGETS, null);
@@ -127,6 +127,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // sources
         FileObject sourceDir = createSourceRoot(helper);
         resultSet.add(sourceDir);
+
+        // UI Logging
+        logUI(helper.getProjectDirectory(), sourceDir, isCopyFiles());
 
         // index file
         Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
@@ -173,6 +176,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public WizardDescriptor.Panel current() {
+        // wizard title
+        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, "TXT_PhpProject");
+        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
         return panels[index];
     }
 
@@ -202,8 +208,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // configure
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                PhpProjectSharedConstants.PHP_PROJECT_NAME);
+        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         helper.putPrimaryConfigurationData(data, true);
@@ -211,8 +216,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
         configureSources(helper, properties);
+        configureIndexFile(properties);
         configureEncoding(properties);
         configureCopyFiles(properties);
+        configureIncludePath(properties);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -235,13 +242,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         File srcDir = getSources(helper);
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        if (srcPath.startsWith("../")) { // NOI18N
+        // # 132319
+        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-        properties.setProperty(PhpProjectProperties.SRC, srcPath);
-
+        properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
         properties.setProperty(PhpProjectProperties.URL, (String) descriptor.getProperty(ConfigureProjectPanel.URL));
+    }
+
+    private void configureIndexFile(EditableProperties properties) {
+        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
     private void configureEncoding(EditableProperties properties) {
@@ -251,15 +263,21 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private void configureCopyFiles(EditableProperties properties) {
         String copyFilesString = Boolean.FALSE.toString();
-        String copyTargetString = ""; // NOI18N
-        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        Boolean copyFiles = isCopyFiles();
         if (copyFiles != null && copyFiles) {
             copyFilesString = Boolean.TRUE.toString();
-            LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        }
+        String copyTargetString = ""; // NOI18N
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        if (localServer != null && localServer.getSrcRoot().length() > 0) {
             copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, copyFilesString);
         properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyTargetString);
+    }
+
+    private void configureIncludePath(EditableProperties properties) {
+        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
     private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {
@@ -274,6 +292,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return dataTemplate.createFromTemplate(dataFolder, indexFileName);
     }
 
+    private Boolean isCopyFiles() {
+        return (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+    }
+
     private String getIndexFileName(String plannedExt) {
         String name = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
         String ext = "." + plannedExt; // NOI18N
@@ -281,5 +303,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return name.substring(0, name.length() - ext.length());
         }
         return name;
+    }
+
+    // http://wiki.netbeans.org/UILoggingInPHP
+    private void logUI(FileObject projectDir, FileObject sourceDir, Boolean copyFiles) {
+        LogRecord logRecord = new LogRecord(Level.INFO, "UI_NEW_PHP_PROJECT"); //NOI18N
+        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+        logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
+        logRecord.setParameters(new Object[] {
+            FileUtil.isParentOf(projectDir, sourceDir),
+            copyFiles != null && copyFiles
+        });
+        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
     }
 }

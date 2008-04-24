@@ -41,18 +41,12 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.File;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.Completable.QueryType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.Completable;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -68,56 +62,6 @@ public class JsCodeCompletionTest extends JsTestBase {
     protected Completable getCodeCompleter() {
         return new JsCodeCompletion();
     }
-    
-    @Override
-    public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
-        String jsDir = System.getProperty("xtest.js.home");
-        if (jsDir == null) {
-            throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
-        }
-        File clusterDir = new File(jsDir);
-        if (clusterDir.exists()) {
-            FileObject preindexed = FileUtil.toFileObject(clusterDir).getFileObject("preindexed");
-            if (preindexed != null) {
-                JsIndexer.setPreindexedDb(preindexed);
-            }
-        }
-        
-        initializeRegistry();
-        // Force classpath initialization
-        LanguageRegistry.getInstance().getLibraryUrls();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-        
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
-        
-        super.checkCompletion(file, caretLine, includeModifiers);
-    }   
-    
-    @Override
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
-        String jsDir = System.getProperty("xtest.js.home");
-        if (jsDir == null) {
-            throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
-        }
-        File clusterDir = new File(jsDir);
-        if (clusterDir.exists()) {
-            FileObject preindexed = FileUtil.toFileObject(clusterDir).getFileObject("preindexed");
-            if (preindexed != null) {
-                JsIndexer.setPreindexedDb(preindexed);
-            }
-        }
-        
-        initializeRegistry();
-        // Force classpath initialization
-        LanguageRegistry.getInstance().getLibraryUrls();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
-        
-        super.checkComputeMethodCall(file, caretLine, fqn, param, expectSuccess);
-    }        
     
     @Override
     protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String param, boolean expectSuccess) {
@@ -329,15 +273,34 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testYahoo() throws Exception {
         checkCompletion("testfiles/completion/lib/yahoo.js", "e^ // complete on editor members etc", true);
     }
-//
-//    public void testCompletion6() throws Exception {
-//        checkCompletion("testfiles/completion/lib/test2.js", "class My^Test");
-//    }
-//    
-//    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
+    
+    public void testParameterCompletion1() throws Exception {
+        checkCompletion("testfiles/completion/lib/configcalls.js", "somefunction({}, {^}, {});", false);
+    }
 
+    public void testParameterCompletion2() throws Exception {
+        checkCompletion("testfiles/completion/lib/configcalls.js", "somefunction({}, {}, {^});", false);
+    }
+
+    // This test is unstable for some reason
+    //    public void testParameterCompletion3() throws Exception {
+    //        checkCompletion("testfiles/completion/lib/configcalls.js", "somefunction({^}, {}, {});", false);
+    //    }
+
+    public void testParameterCompletion4() throws Exception {
+        checkCompletion("testfiles/completion/lib/configcalls.js", "somefunctio^n({}, {}, {});", false);
+    }
+
+    public void testParameterCompletion5() throws Exception {
+        checkCompletion("testfiles/completion/lib/configcalls.js", "somefunction({}, {f^:1}, {});", false);
+    }
     
-    
+    public void testDeprecatedProperties() throws Exception {
+        checkCompletion("testfiles/completion/lib/domproperties.js", ".s^", true);
+    }
+
+    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
+
 // The call tests don't work yet because I don't have a preindexed database for jsstubs
 // (and the test infrastructure refuses to update the index for test files themselves)
 //    public void testCall1() throws Exception {

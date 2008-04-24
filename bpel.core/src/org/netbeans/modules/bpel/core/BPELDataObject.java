@@ -29,12 +29,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
-import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 
+import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.bpel.core.util.BadgedIconCache;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
@@ -156,6 +155,7 @@ public class BPELDataObject extends MultiDataObject {
                     super.getLookup(), 
                     this ,
                     getEditorSupport(),
+                    new SearchProvider(this),
                     new BusinessProcessHelperImpl(this),
                     XmlFileEncodingQueryImpl.singleton()
                   }));
@@ -163,19 +163,16 @@ public class BPELDataObject extends MultiDataObject {
             list.add(getCookieSet().getLookup());// 125540
             
             // add lazy initialization
-            InstanceContent.Convertor<Class, Object> conv =
-                    new InstanceContent.Convertor<Class, Object>() {
-                private AtomicReference<BPELValidationController> valControllerRef = 
-                        new AtomicReference<BPELValidationController>();
+            InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
+                private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
                 
                 public Object convert(Class obj) {
                     if (obj == BpelModel.class) {
                         return getEditorSupport().getBpelModel();
                     }
                     
-                    if (obj == BPELValidationController.class) {
-                        valControllerRef.compareAndSet(null, 
-                                new BPELValidationController(getEditorSupport().getBpelModel()));
+                    if (obj == Controller.class) {
+                        valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getBpelModel()));
                         return valControllerRef.get();
                     }
                     return null;
@@ -193,7 +190,7 @@ public class BPELDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            list.add(Lookups.fixed(new Class[] {BpelModel.class, BPELValidationController.class}, conv));
+            list.add(Lookups.fixed(new Class[] {BpelModel.class, Controller.class}, conv));
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);

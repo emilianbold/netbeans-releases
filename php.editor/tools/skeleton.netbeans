@@ -205,7 +205,7 @@
       zzScanError(ZZ_PUSHBACK_2BIG);
 
     input.backup(number);
-    zzMarkedPos -= number;
+    //zzMarkedPos -= number;
   }
 
 
@@ -243,7 +243,15 @@
 
       zzForAction: {
         while (true) {
-    
+            zzInput = input.read();
+            
+            if(zzInput == LexerInput.EOF) {
+                //end of input reached
+                zzInput = YYEOF;
+                break zzForAction;
+                //notice: currently LexerInput.EOF == YYEOF
+            }
+
 --- line, col, char count, next transition, isFinal action
             zzAction = zzState;
             tokenLength = input.readLength();
@@ -261,10 +269,10 @@
 
 --- actions
         default: 
-          if (zzInput == YYEOF) {
-            zzAtEOF = true;
+          if (zzInput == YYEOF) 
+            //zzAtEOF = true;
 --- eofvalue
-          } 
+          
           else {
 --- no match
           }

@@ -106,8 +106,14 @@ public final class GemManager {
      */
     private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
 
-    /** Map&lt;gemName, Map&lt;version, specFile&gt;&gt; */
-    private Map<String, Map<String, File>> gemFiles;
+    /** 
+     * Contains the locally installed gems. All installed versions are included.
+     * <p>
+     * Maps <i>gem name</i> to <i>sorted-by-version list of {@link GemInfo}s</i>
+     * </p>
+     */
+    private Map<String, List<GemInfo>> localGems;
+    
     private Map<String, String> gemVersions;
     private Map<String, URL> gemUrls;
     private Set<URL> nonGemUrls;
@@ -342,7 +348,7 @@ public final class GemManager {
      * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
      */
     public boolean isGemInstalled(final String gemName) {
-        return getVersion(gemName) != null;
+        return !getVersions(gemName).isEmpty();
     }
     
     /**
@@ -355,7 +361,7 @@ public final class GemManager {
      * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
      */
     public boolean isGemInstalled(final String gemName, final String version) {
-        String currVersion = getVersion(gemName);
+        String currVersion = getLatestVersion(gemName);
         return isRightVersion(currVersion, version, false);
     }
 
@@ -369,57 +375,13 @@ public final class GemManager {
      * @return whether the installed version matches
      */
     public boolean isGemInstalledForPlatform(final String gemName, final String version, final boolean exact) {
-        String currVersion = getVersionForPlatform(gemName);
-        return isRightVersion(currVersion, version, exact);
-    }
-    
-    private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
-        boolean isInstalled = false;
-        if (currVersion != null) {
-            int result = GemManager.compareGemVersions(version, currVersion);
-            isInstalled = exact ? result == 0 : result <= 0;
-        }
-        return isInstalled;
-    }
-    
-    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
-        return isGemInstalledForPlatform(gemName, version, false);
-    }
-    
-    public String getVersion(String gemName) {
         // TODO - use gemVersions map instead!
         initGemList();
-
-        if (gemFiles == null) {
-            return null;
-        }
-
-        Map<String, File> highestVersion = gemFiles.get(gemName);
-
-        if (highestVersion == null || highestVersion.isEmpty()) {
-            return null;
-        }
-
-        return highestVersion.keySet().iterator().next();
-    }
-
-    public String getVersionForPlatform(String gemName) {
-        // TODO - use gemVersions map instead!
-        initGemList();
-
-        if (gemFiles == null) {
-            return null;
-        }
-
-        Map<String, File> versionsToSpecs = gemFiles.get(gemName);
-
-        if (versionsToSpecs == null || versionsToSpecs.isEmpty()) {
-            return null;
-        }
 
         // filtering
-        for (Map.Entry<String, File> versionToSpec : versionsToSpecs.entrySet()) {
-            String specName = versionToSpec.getValue().getName();
+        for (GemInfo gemInfo : getVersions(gemName)) {
+            // TODO: the platform info should rather be encapsulated in GemInfo
+            String specName = gemInfo.getSpecFile().getName();
             // filter out all java gems for non-java platforms
             // hack until we support proper .gemspec parsing
             if (!platform.isJRuby() && specName.endsWith("-java.gemspec")) { // NOI18N
@@ -436,12 +398,60 @@ public final class GemManager {
                     continue;
                 }
             }
-            return versionToSpec.getKey();
+            if (isRightVersion(gemInfo.getVersion(), version, exact)) {
+                return true;
+            }
         }
-
-        return null;
+        return false;
+    }
+    
+    private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
+        boolean isInstalled = false;
+        if (currVersion != null) {
+            int result = GemManager.compareGemVersions(version, currVersion);
+            isInstalled = exact ? result == 0 : result <= 0;
+        }
+        return isInstalled;
+    }
+    
+    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+        return isGemInstalledForPlatform(gemName, version, false);
+    }
+    
+    /**
+     * Gets the newest locally installed version of the given <code>gemName</code>.
+     * 
+     * @param gemName the name of the gem to check.
+     * @return the version number of the newest version or <code>null</code> if 
+     * no version of the given gem was installed.
+     */
+    public String getLatestVersion(String gemName) {
+        initGemList();
+        List<GemInfo> versions = getVersions(gemName);
+        return versions.isEmpty() ? null : versions.get(0).getVersion();
     }
 
+    
+    /**
+     * Gets all locally installed versions of the given <code>gemName</code>.
+     * 
+     * @param gemName
+     * @return the versions, an empty list if there are no versions
+     * of the given <code>gemName</code>.
+     */
+    public List<GemInfo> getVersions(String gemName) {
+        initGemList();
+
+        List<GemInfo> versions = localGems.get(gemName);
+
+        if (versions == null || versions.isEmpty()) {
+            return Collections.<GemInfo>emptyList();
+        }
+
+        return versions;
+        
+    }
+    
     /**
      * Logs the installed gems using the given logging level.
      */ 
@@ -450,26 +460,26 @@ public final class GemManager {
             return;
         }
         
-        if (gemFiles == null) {
+        if (localGems == null) {
             LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
         
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
-        for (String key : gemFiles.keySet()) {
-            Map<String, File> value = gemFiles.get(key);
-            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):"); // NOI18N
-            for (String version : value.keySet()) {
-                LOGGER.log(level, version + " at " + value.get(version)); // NOI18N
+        LOGGER.log(level, "Found " + localGems.size() + " gems."); // NOI18N
+        for (String key : localGems.keySet()) {
+            List<GemInfo> versions = getVersions(key);
+            LOGGER.log(level, key + " has " + versions.size() + " version(s):"); // NOI18N
+            for (GemInfo version : versions) {
+                LOGGER.log(level, version + " at " + version.getSpecFile()); // NOI18N
             }
         }
     }
     
     private void initGemList() {
-        if (gemFiles == null) {
+        if (localGems == null) {
             // Initialize lazily
             assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
-            gemFiles = new HashMap<String, Map<String, File>>();
+            localGems = new HashMap<String, List<GemInfo>>();
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
@@ -477,7 +487,7 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        chooseGems(specFiles, gemFiles);
+                        localGems.putAll(GemFilesParser.getGemInfos(specFiles));
                     }
                 } else {
                     LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
@@ -487,25 +497,9 @@ public final class GemManager {
         }
     }
 
-    /** 
-     * Given a list of files that may represent gems, choose the most recent
-     * version of each.
-     */
-    private static File[] chooseGems(final  File[] specFiles, final Map<String, Map<String, File>> gemFiles) {
-        GemFilesParser gemFilesParser = new GemFilesParser(specFiles);
-        gemFilesParser.chooseGems();
-        gemFiles.putAll(gemFilesParser.getGemMap());
-        return gemFilesParser.getFiles();
-    }
-
     public Set<String> getInstalledGemsFiles() {
         initGemList();
-
-        if (gemFiles == null) {
-            return Collections.emptySet();
-        }
-
-        return gemFiles.keySet();
+        return localGems.keySet();
     }
 
     public void reset() {
@@ -520,7 +514,7 @@ public final class GemManager {
     
     public void resetLocal() {
         installed = null;
-        gemFiles = null;
+        localGems = null;
         platform.fireGemsChanged();
     }
     
@@ -896,7 +890,7 @@ public final class GemManager {
         if (rake == null) {
             rake = platform.findExecutable("rake"); // NOI18N
 
-            if (rake != null && !(new File(rake).exists()) && getVersion("rake") != null) { // NOI18N
+            if (rake != null && !(new File(rake).exists()) && getLatestVersion("rake") != null) { // NOI18N
                 // On Windows, rake does funny things - you may only get a rake.bat
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 File f =
@@ -1054,12 +1048,14 @@ public final class GemManager {
                             }
                         }
                     }
-                } else if (gemFiles != null) {
-                    Set<String> gems = gemFiles.keySet();
+                } else if (localGems != null) {
+                    Set<String> gems = localGems.keySet();
                     for (String name : gems) {
-                        Map<String, File> m = gemFiles.get(name);
-                        assert m.keySet().size() == 1;
-                        File f = m.values().iterator().next();
+                        List<GemInfo> versions = localGems.get(name);
+//                        Map<String, File> m = gemFiles.get(name);
+                        assert !versions.isEmpty();
+                        GemInfo newestVersion = versions.get(0);
+                        File f = newestVersion.getSpecFile();
                         // Points to the specification file
                         assert f.getName().endsWith(DOT_GEM_SPEC);
                         String filename = f.getName().substring(0,
@@ -1070,7 +1066,7 @@ public final class GemManager {
                         if (lib.exists() && lib.isDirectory()) {
                             URL url = lib.toURI().toURL();
                             gemUrls.put(name, url);
-                            String version = m.keySet().iterator().next();
+                            String version = newestVersion.getVersion();
                             gemVersions.put(name, version);
                         }
                     }

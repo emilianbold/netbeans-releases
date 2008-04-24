@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -36,6 +37,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xslt.tmap.model.api.MappedReference;
 import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.PortTypeReference;
@@ -79,9 +81,9 @@ public class WSDLReferenceBuilder {
     {
         WSDLReference<T> ref = build( clazz , entity , entity.getAttribute( attr ) );
 // TODO m | r        
-//        if ( ref instanceof MappedReference ){
-//            ((MappedReference)ref).setAttribute( attr );
-//        }
+        if ( ref instanceof MappedReference ){
+            ((MappedReference)ref).setAttribute( attr );
+        }
         return ref;
     }
     
@@ -198,7 +200,7 @@ interface WSDLReferenceFactory extends WSDLReferenceBuilder.WSDLResolver {
 
 }
 
-abstract class AbstractGlobalReferenceFactory implements WSDLReferenceFactory {
+abstract class AbstractGlobalReferenceFactory implements WSDLReferenceFactory { 
 
     public <T extends ReferenceableWSDLComponent> WSDLReference<T>
             createUnresolvedReference( Class<T> clazz,
@@ -291,13 +293,23 @@ class PortTypeResolver extends AbstractGlobalReferenceFactory {
         Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, 
                 splited[0] );
         for (WSDLModel model : models) {
-            List<PartnerLinkType> list = model.getDefinitions()
-                .getExtensibilityElements(PartnerLinkType.class);
-            for (PartnerLinkType  partnerLink : list) {
-                if ( splited[1].equals( partnerLink.getName()) ){
-                    return clazz.cast(partnerLink);
+            Definitions defs = model.getDefinitions();
+            if (defs == null) {
+                break;
+            }
+            Collection<PortType> portTypes = defs.getPortTypes();
+            for (PortType portType : portTypes) {
+                if ( splited[1].equals( portType.getName()) ){
+                    return clazz.cast(portType);
                 }
             }
+//            List<PartnerLinkType> list = model.getDefinitions()
+//                .getExtensibilityElements(PartnerLinkType.class);
+//            for (PartnerLinkType  partnerLink : list) {
+//                if ( splited[1].equals( partnerLink.getName()) ){
+//                    return clazz.cast(partnerLink);
+//                }
+//            }
         }
         return null;
     }
@@ -440,10 +452,10 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         }
         
         assert parent instanceof AbstractDocumentComponent;
-        return resolveByPartnerLink((AbstractDocumentComponent)parent);
+        return resolveByPortType((AbstractDocumentComponent)parent);
     }
     
-    private Collection<Operation> resolveByPartnerLink( 
+    private Collection<Operation> resolveByPortType( 
             AbstractDocumentComponent entity ) 
     {
         if ( ! (entity instanceof PortTypeReference) ){

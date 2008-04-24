@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Enumeration;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
@@ -62,7 +61,6 @@ import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Task;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -72,8 +70,6 @@ import com.sun.sql.framework.exception.BaseException;
 
 import java.util.List;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.openide.awt.StatusDisplayer;
@@ -85,6 +81,7 @@ import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
+
 
 /**
  *
@@ -102,8 +99,8 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
         PRJ_PATH = sobj.getFolder().getPrimaryFile().getParent().getPath();
         PRJ_PATH = PRJ_PATH.replace('/', '\\');
         PRJ_NAME = sobj.getFolder().getPrimaryFile().getParent().getName();
-        Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
-        java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
+        //Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
+        //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
     }
 
     /*public static void getPath() {
@@ -248,7 +245,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
             openDocument();
             String defnContent = getDocument().getText(0, getDocument().getLength());
-            java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** defnContent in syncModel *************** " + defnContent);
+            //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** defnContent in syncModel *************** " + defnContent);
             collabModel.reLoad(defnContent);
             // is below required? 
             collabModel.setReloaded(true);
@@ -299,7 +296,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
             Document doc = getDocument();
             //String testing = doc.getText(0, getDocument().getLength());
             //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** testing *************** " + testing);
-            java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("********************* content in synchDocument *********** " + content);
+            //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("********************* content in synchDocument *********** " + content);
             if (doc != null) {
                 doc.remove(0, getDocument().getLength());
                 doc.insertString(0, content, null);

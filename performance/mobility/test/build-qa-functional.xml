@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
     
     <!-- Copy and unzip project MobilityProject from close source path, will be used for Performance tests -->
     <target name="copy_unzip_mp_projects">
-<!--        <unzip src="${nbextra.dir}/qa/projectized/MobileApplicationSwitchConfiguration.zip" dest="${xtest.tmpdir}/"/>-->
+        <unzip src="${nbextra.dir}/qa/projectized/MobileApplicationSwitchConfiguration.zip" dest="${xtest.tmpdir}/"/>
         <unzip src="${nbextra.dir}/qa/projectized/MobileApplicationVisualMIDlet.zip" dest="${xtest.tmpdir}/"/>
     </target>
     

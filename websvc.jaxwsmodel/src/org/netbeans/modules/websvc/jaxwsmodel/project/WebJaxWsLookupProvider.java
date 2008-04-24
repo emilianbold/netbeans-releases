@@ -66,6 +66,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -356,10 +357,14 @@ public class WebJaxWsLookupProvider implements LookupProvider {
     
     private void removeJaxWsExtension(
                         FileObject jaxws_build, 
-                        AntBuildExtender ext) throws IOException {
+                        final AntBuildExtender ext) throws IOException {
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
         if (extension!=null) {
-            ext.removeExtension(JAXWS_EXTENSION);
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    ext.removeExtension(JAXWS_EXTENSION);
+                }
+            });           
         }
         if (jaxws_build!=null) {
             FileLock fileLock = jaxws_build.lock();

@@ -157,7 +157,7 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
             SystemAction.get(DeleteAction.class),
             null,
             SystemAction.get(PropertiesAction.class)));
-        addFromLayers(actions, "WebServices/Services/Actions");
+        addFromLayers(actions, "WebServices/Services/Actions"); // NOI18N
         return actions.toArray(new Action[actions.size()]);
     }
     
@@ -214,10 +214,10 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
             
             // call clean targets
             if (service.getGenerateWsdl() != null) {
-                String targets[] = new String[] {"java2wsdl-clean-"+serviceName};
+                String targets[] = new String[] {"java2wsdl-clean-"+serviceName}; // NOI18N
                 AxisUtils.runTargets(prj.getProjectDirectory(), targets);
             } else if (service.getWsdlUrl() != null) {
-                String targets[] = new String[] {"wsdl2java-clean-"+serviceName};
+                String targets[] = new String[] {"wsdl2java-clean-"+serviceName}; // NOI18N
                 AxisUtils.runTargets(prj.getProjectDirectory(), targets);
             }
             

@@ -99,10 +99,10 @@ public class AutoCompletionTest extends CompletionTest {
             caret.setDot(step.getOffset() + 1);
             EditorOperator eo = new EditorOperator(testFileObj.getNameExt());
             eo.insert(step.getPrefix());
-            waitTypingFinished(doc);
 
             caret.setDot(step.getCursorPos());
             eo.save();
+            waitTypingFinished(doc);
             final Object lock = new Object();
             synchronized (lock) {
                 doc.addDocumentListener(new DocumentListener() {
@@ -123,6 +123,8 @@ public class AutoCompletionTest extends CompletionTest {
                 eo.txtEditorPane().pressKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_MASK);
                 lock.wait(10000);
             }
+            waitTypingFinished(doc);
+            waitTypingFinished(doc);
             doc.atomicLock();
             int rowStart = Utilities.getRowStart(doc, step.getOffset() + 1);
             int rowEnd = Utilities.getRowEnd(doc, step.getOffset() + 1);

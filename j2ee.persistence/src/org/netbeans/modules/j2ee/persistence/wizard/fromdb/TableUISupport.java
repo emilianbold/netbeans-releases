@@ -151,7 +151,8 @@ public class TableUISupport {
             int oldSize = getSize();
             displayTables = new ArrayList<Table>(tableClosure.getAvailableTables());
             Collections.sort(displayTables);
-            fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
+            fireIntervalRemoved(this, 0, oldSize);
+            fireIntervalAdded(this, 0, getSize());
         }
     }
 
@@ -183,7 +184,8 @@ public class TableUISupport {
             int oldSize = getSize();
             displayTables = new ArrayList<Table>(tableClosure.getSelectedTables());
             Collections.sort(displayTables);
-            fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
+            fireIntervalRemoved(this, 0, oldSize);
+            fireIntervalAdded(this, 0, getSize());
         }
 
         public TableClosure getTableClosure() {

@@ -41,7 +41,7 @@ import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.VirtualVariableContainer;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.ChooserLifeCycle;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.openide.util.Lookup;
@@ -97,7 +97,7 @@ public class NewMessageVarChooser extends JPanel
             }
         });
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     public boolean initControls() {

@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -709,13 +710,14 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                String serverType = null;
                 if (platform != null) {
                     // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
                     AppClientProjectProperties.setServerInstance(AppClientProject.this, AppClientProject.this.helper, servInstID);
                 } else {
                     // if there is some server instance of the type which was used
                     // previously do not ask and use it
-                    String serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
+                    serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
                         String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                         if (servInstIDs.length > 0) {
@@ -727,6 +729,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
                         BrokenServerSupport.showAlert();
                     }
                 }
+                // UI Logging
+                Utils.logUI(NbBundle.getBundle(AppClientProject.class), "UI_APP_CLIENT_PROJECT_OPENED", // NOI18N
+                        new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});                
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }

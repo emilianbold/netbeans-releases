@@ -279,7 +279,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     Servlet[] servlets = ddRoot.getServlet();
                     for (int i = 0; i < servlets.length; i++) {
                         servlet = servlets[i];
-                        if (FACES_SERVLET_CLASS.equals(servlet.getServletClass().trim())) {
+                        if (servlet == null) {
+                            continue;
+                        }
+
+                        String servletClass = servlet.getServletClass();
+                        if (servletClass == null) {
+                            continue;
+                        }
+
+                        if (FACES_SERVLET_CLASS.equals(servletClass.trim())) {
                             servletDefined = true;
                             break;
                         }

@@ -166,7 +166,7 @@ var _globalScope = this;
                             _obj = <_jmaki.findObject>_jmaki.<_jmaki.findObject>findObject</_jmaki.findObject>(<_listener.target.object>_listener.<_listener.target>target</_listener.target>.object</_listener.target.object>)</_jmaki.findObject>;
                             // create an instance of the object if needed.
                             if (<Boolean>typeof _obj == <String>'function'</String></Boolean>) {
-                                <_obj>myo</_obj> = new <_obj>_obj</_obj>;
+                                <_obj>myo</_obj> = <_obj>new _obj</_obj>;
                             } else if (_obj) {
                                 myo = _obj;
                             } else {
@@ -229,9 +229,9 @@ var _globalScope = this;
             }
         }
         if (<Boolean>typeof _inprocess == <String>'undefined'</String></Boolean>) {
-            <_jmaki.Map>_inprocess</_jmaki.Map> = new <_jmaki.Map><_jmaki.Map>_jmaki.Map</_jmaki.Map>()</_jmaki.Map>;
+            <_jmaki.Map>_inprocess</_jmaki.Map> = <_jmaki.Map>new <_jmaki.Map>_jmaki.Map</_jmaki.Map>()</_jmaki.Map>;
         }
-        var _uuid = new <Date.getMilliseconds><Date>Date</Date>().<Date.getMilliseconds>getMilliseconds</Date.getMilliseconds>()</Date.getMilliseconds>;
+        var _uuid = <Date.getMilliseconds><Date>new Date</Date>().<Date.getMilliseconds>getMilliseconds</Date.getMilliseconds>()</Date.getMilliseconds>;
         var _lib = _libs[<_libs.length>_libs.length</_libs.length>-<Number>1</Number>];
         var _s_uuid = <String>"c_script_"</String> + <_libs.length>_libs.length</_libs.length> + <String>"_"</String> + _uuid;
         var head = <HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementsByTagName><HTMLDocument.getElementsByTagName>getElementsByTagName</HTMLDocument.getElementsByTagName>(<String>"head"</String></HTMLDocument.getElementsByTagName>)[<Number>0</Number>];
@@ -289,7 +289,7 @@ var _globalScope = this;
                  }
                    }</Function>, <Number>250</Number>)</setInterval>;
                 }</Function></Function>
-              se.<String>timeoutHandler</String> = new <loader><Function>loader</Function>(_s_uuid)</loader>;
+              se.<String>timeoutHandler</String> = <loader>new <Function>loader</Function>(_s_uuid)</loader>;
               <se.addEventListener>se.<se.addEventListener>addEventListener</se.addEventListener>(<String>"load"</String>, <Function>function(){var _id = _s_uuid;<loadHandler>loadHandler(_id)</loadHandler>}</Function>, <Boolean>true</Boolean>)</se.addEventListener>;
             }
             <setTimeout>setTimeout(<Function>function(){<HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById><HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(_s_uuid</HTMLDocument.getElementById>).<String>src</String> = _lib;}</Function>, <Number>0</Number>)</setTimeout>;
@@ -304,9 +304,9 @@ var _globalScope = this;
      */
     this.<String>getXHR</String> = <Function>function () {
         if (<Window.XMLHttpRequest><Window>window</Window>.XMLHttpRequest</Window.XMLHttpRequest>) {
-            return new <XMLHttpRequest>XMLHttpRequest()</XMLHttpRequest>;
+            return <XMLHttpRequest>new XMLHttpRequest()</XMLHttpRequest>;
         } else if (<Window.ActiveXObject><Window>window</Window>.ActiveXObject</Window.ActiveXObject>) {
-            return new <ActiveXObject>ActiveXObject(<String>"Microsoft.XMLHTTP"</String>)</ActiveXObject>;
+            return <ActiveXObject>new ActiveXObject(<String>"Microsoft.XMLHTTP"</String>)</ActiveXObject>;
         }
     }</Function>
     
@@ -541,7 +541,7 @@ var _globalScope = this;
         // bind the value using a @{foo.obj} notation       
         if ((typeof <Boolean><_jmw.value>_jmw.value</_jmw.value> == <String>'string'</String>)</Boolean> &amp;&amp; <Boolean><_jmw.value.indexOf>_jmw.<_jmw.value>value</_jmw.value>.<_jmw.value.indexOf>indexOf</_jmw.value.indexOf>(<String>"@{"</String>)</_jmw.value.indexOf> == <Number>0</Number></Boolean>) {      
             var _vw = <RegExp.exec><RegExp>/[^@{].*[^}]/</RegExp>.<RegExp.exec>exec</RegExp.exec>(<_jmw.value>_jmw.value</_jmw.value>)</RegExp.exec>;
-            _jmw.<String>value</String> = <_jmaki.findObject>_jmaki.<_jmaki.findObject>findObject</_jmaki.findObject>(new <String>String(_vw)</String>)</_jmaki.findObject>;
+            _jmw.<String>value</String> = <_jmaki.findObject>_jmaki.<_jmaki.findObject>findObject</_jmaki.findObject>(<String>new String(_vw)</String>)</_jmaki.findObject>;
         }
         // do not wrap IE with exception handler
         // because we cant' get the right line number
@@ -557,14 +557,14 @@ var _globalScope = this;
                 <logWidgetError>logWidgetError(targetName, _puuid,url, line, message, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(_puuid)</HTMLDocument.getElementById>)</logWidgetError>;
             }</Function></Function>
             <Window>window</Window>.<String>onerror</String> = <Function>eh</Function>;
-            <con>wimpl</con> = new <con>con(_jmw)</con>;          
+            <con>wimpl</con> = <con>new con(_jmw)</con>;          
             <Window>window</Window>.<String>onerror</String> = null;
             if (<Window.onerror>oldError</Window.onerror>) {
                 <Window>window</Window>.<String>onerror</String> = <Window.onerror>oldError</Window.onerror>;
             }              
         } else if (<Boolean>typeof con == <String>'function'</String></Boolean>){
             try {
-                <con>wimpl</con> = new <con>con(_jmw)</con>;
+                <con>wimpl</con> = <con>new con(_jmw)</con>;
             } catch (e){
                 var <String>line = <String>"unknown"</String></String>;
                 var description = null;
@@ -661,12 +661,12 @@ var _globalScope = this;
         // handle key word arguments
         if (typeof <Boolean>l == <String>'object'</String></Boolean> &amp;&amp; !(l instanceof RegExp)) {          
             if (<l.topic>l.topic</l.topic>) l.<String>topic</String> = <l.topic.replace>l.<l.topic>topic</l.topic>.<l.topic.replace>replace</l.topic.replace>(<RegExp>/^\s+|\s+$/g</RegExp>, <String>""</String>)</l.topic.replace>;
-            if (<l.topicRegExp>l.topicRegExp</l.topicRegExp>) l.<String>topic</String> = new <RegExp>RegExp(<l.topicRegExp>l.topicRegExp</l.topicRegExp>)</RegExp>;
+            if (<l.topicRegExp>l.topicRegExp</l.topicRegExp>) l.<String>topic</String> = <RegExp>new RegExp(<l.topicRegExp>l.topicRegExp</l.topicRegExp>)</RegExp>;
             lis = l;
         // function binding
         } else if (<Boolean>typeof t == <String>'string'</String></Boolean>){
           lis = {};     
-          if (<l.topicRegExp>l.topicRegExp</l.topicRegExp>) lis.<String>topic</String> = new <RegExp>RegExp(<l.topicRegExp>l.topicRegExp</l.topicRegExp>)</RegExp>;
+          if (<l.topicRegExp>l.topicRegExp</l.topicRegExp>) lis.<String>topic</String> = <RegExp>new RegExp(<l.topicRegExp>l.topicRegExp</l.topicRegExp>)</RegExp>;
           else lis.<String>topic</String> = l;
           lis.<String>target</String> = {};
           var _is = <t.split>t.<t.split>split</t.split>(<String>'.'</String>)</t.split>;
@@ -676,7 +676,7 @@ var _globalScope = this;
         // inline function
         } else if (<Boolean>typeof t == <String>'function'</String></Boolean>) {
           lis = {};
-          if (<l.topicRegExp>l.topicRegExp</l.topicRegExp>) lis.<String>topic</String> =  new <RegExp>RegExp(<l.topicRegExp>l.topicRegExp</l.topicRegExp>)</RegExp>;
+          if (<l.topicRegExp>l.topicRegExp</l.topicRegExp>) lis.<String>topic</String> =  <RegExp>new RegExp(<l.topicRegExp>l.topicRegExp</l.topicRegExp>)</RegExp>;
           else lis.<String>topic</String> = l;          
           lis.<String>target</String> = {};
           lis.<String>action</String> = <String>"call"</String>;
@@ -692,7 +692,7 @@ var _globalScope = this;
      * @param _par is the class to extend
      */
     this.<String>extend</String> = <Function>function(_src, _par) {
-        _src.<String>prototype</String> = new <_par>_par()</_par>;
+        _src.<String>prototype</String> = <_par>new _par()</_par>;
         _src.<_src.prototype>prototype</_src.prototype>.<String>constructor</String> = _src;
         _src.<String>superclass</String> = <_par.prototype>_par.prototype</_par.prototype>;
         for (i in _par) {
@@ -831,7 +831,7 @@ var _globalScope = this;
             if (!_target) {
              var  _obj = <_jmaki.findObject>_jmaki.<_jmaki.findObject>findObject</_jmaki.findObject>(<args.on>args.on</args.on>)</_jmaki.findObject>;
                 if (<Boolean>typeof _obj == <String>'function'</String></Boolean>){
-                    <_obj>_target</_obj> = new <_obj>_obj()</_obj>;
+                    <_obj>_target</_obj> = <_obj>new _obj()</_obj>;
                 } else if (<Boolean>typeof _obj == <String>'object'</String></Boolean>){
                     _target = _obj;
                 }
@@ -874,7 +874,7 @@ var _globalScope = this;
                     fn: <_timer.target.functionName>_timer.<_timer.target>target</_timer.target>.functionName</_timer.target.functionName>,
                     to: <_timer.timeout>_timer.timeout</_timer.timeout>
                     }
-                    var <_jmaki.Timer>timer = new <_jmaki.Timer><_jmaki.Timer>_jmaki.Timer</_jmaki.Timer>(args,<Boolean>true</Boolean>)</_jmaki.Timer></_jmaki.Timer>;
+                    var <_jmaki.Timer>timer = <_jmaki.Timer>new <_jmaki.Timer>_jmaki.Timer</_jmaki.Timer>(args,<Boolean>true</Boolean>)</_jmaki.Timer></_jmaki.Timer>;
                     <timers.push>timers.<timers.push>push</timers.push>(<_jmaki.Timer>timer</_jmaki.Timer>)</timers.push>;
                     <_jmaki.Timer.run><_jmaki.Timer>timer</_jmaki.Timer>.<_jmaki.Timer.run>run</_jmaki.Timer.run>()</_jmaki.Timer.run>;
                     
@@ -882,7 +882,7 @@ var _globalScope = this;
                     var args = {topics: _timers[<Number>_l</Number>].topics,
                     to: <_timer.timeout>_timer.timeout</_timer.timeout>
                     }
-                    var <_jmaki.Timer>timer = new <_jmaki.Timer><_jmaki.Timer>_jmaki.Timer</_jmaki.Timer>(args,<Boolean>false</Boolean>)</_jmaki.Timer></_jmaki.Timer>;
+                    var <_jmaki.Timer>timer = <_jmaki.Timer>new <_jmaki.Timer>_jmaki.Timer</_jmaki.Timer>(args,<Boolean>false</Boolean>)</_jmaki.Timer></_jmaki.Timer>;
                     <timers.push>timers.<timers.push>push</timers.push>(<_jmaki.Timer>timer</_jmaki.Timer>)</timers.push>;
                     <_jmaki.Timer.run><_jmaki.Timer>timer</_jmaki.Timer>.<_jmaki.Timer.run>run</_jmaki.Timer.run>()</_jmaki.Timer.run>;
                 }
@@ -1134,7 +1134,7 @@ var _globalScope = this;
     
 this.<String>Injector</String> = <Function>function() {
  
-  var _uuid = new <Date.getMilliseconds><Date>Date</Date>().<Date.getMilliseconds>getMilliseconds</Date.getMilliseconds>()</Date.getMilliseconds>;
+  var _uuid = <Date.getMilliseconds><Date>new Date</Date>().<Date.getMilliseconds>getMilliseconds</Date.getMilliseconds>()</Date.getMilliseconds>;
   var _injector = this;
   var <Boolean>_processing = <Boolean>false</Boolean></Boolean>;
 
@@ -1408,7 +1408,7 @@ this.<String>Injector</String> = <Function>function() {
 }</Function>
 
 if (!jmaki) {
-    var <Jmaki>jmaki = new <Jmaki>Jmaki()</Jmaki></Jmaki>;  
+    var <Jmaki>jmaki = <Jmaki>new Jmaki()</Jmaki></Jmaki>;  
     <Jmaki>jmaki</Jmaki>.<String>widgets</String> = {};
 
     var <Window.onload>oldLoad  = <Window.onload><Window>window</Window>.onload</Window.onload></Window.onload>;

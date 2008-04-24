@@ -370,7 +370,7 @@ public class XPathModelImpl implements XPathModel {
 //                        parentComponent = castType;
 //                    }
                     //
-                    List<SchemaComponent> found = getChildrent(
+                    List<SchemaComponent> found = getChildren(parentContext, 
                                 parentComponent, nodeName, nsUri, isAttribute);
                     //
                     if (found != null) {
@@ -392,7 +392,7 @@ public class XPathModelImpl implements XPathModel {
                 // Multiple parent components is implied here
                 for (SchemaCompPair parentCPair : parentCompPairs) {
                     SchemaComponent parentComp = parentCPair.getComp();
-                    List<SchemaComponent> found = getChildrent(
+                    List<SchemaComponent> found = getChildren(parentContext, 
                             parentComp, nodeName, nsUri, isAttribute);
                     for (SchemaComponent sComp : found) {
                         SchemaCompPair newPair = new SchemaCompPair(sComp, parentComp);
@@ -420,7 +420,7 @@ public class XPathModelImpl implements XPathModel {
                 //
                 for (SchemaModel model : models) {
                     Schema schema = model.getSchema();
-                    List<SchemaComponent> foundComps = getChildrent(
+                    List<SchemaComponent> foundComps = getChildren(parentContext, 
                             schema, nodeName, nsUri, isAttribute);
                     for (SchemaComponent foundComp : foundComps) {
                         assert foundComp instanceof GlobalElement ||
@@ -464,19 +464,19 @@ public class XPathModelImpl implements XPathModel {
         return foundCompPairSet;
     }
     
-    private List<SchemaComponent> getChildrent(
+    private List<SchemaComponent> getChildren(
+            XPathSchemaContext parentContext,
             SchemaComponent parent, String soughtName, 
             String soughtNamespace, boolean isAttribute) {
         List<SchemaComponent> found = null;
 
-        // if (false) {
         if (mCachingSchemaSearchVisitor != null) {
-            mCachingSchemaSearchVisitor.lookForSubcomponent(
+            mCachingSchemaSearchVisitor.lookForSubcomponent(parentContext,
                     parent, soughtName, soughtNamespace, isAttribute);
             found = mCachingSchemaSearchVisitor.getFound();
         } else {
             FindChildrenSchemaVisitor visitor = 
-                    new FindChildrenSchemaVisitor(
+                    new FindChildrenSchemaVisitor(parentContext, 
                     soughtName, soughtNamespace, isAttribute);
             visitor.lookForSubcomponent(parent);
             found = visitor.getFound();
@@ -648,7 +648,7 @@ public class XPathModelImpl implements XPathModel {
             if (compPairSet.size() == 1) {
                 SchemaCompPair compPair = compPairSet.iterator().next();
                 checkNsPrefixes(compPair.getComp(), stepQName.getPrefix(), 
-                        resourceCollector);
+                        resourceCollector, schemaContext);
             } else {
                 // more then one schema components are found
                 //
@@ -661,7 +661,8 @@ public class XPathModelImpl implements XPathModel {
                             XPathProblem.AMBIGUOUS_ABSOLUTE_PATH_BEGINNING, 
                             stepQName.getLocalPart());
                 } else {
-                    checkMultiNsPrefixes(compPairSet, stepQName, isAttribute);
+                    checkMultiNsPrefixes(compPairSet, stepQName, isAttribute, 
+                            schemaContext);
                 }
             }
         }
@@ -674,7 +675,8 @@ public class XPathModelImpl implements XPathModel {
      *  -- if the external schema is imported and prefix is defined.
      */
     private void checkNsPrefixes(SchemaComponent sComp, 
-            String nsPrefix, ResourceCollector resourceCollector) {
+            String nsPrefix, ResourceCollector resourceCollector, 
+            XPathSchemaContext schemaContext) {
         assert mValidationContext != null;
         //
         Form form = null;
@@ -687,7 +689,16 @@ public class XPathModelImpl implements XPathModel {
             form = Form.QUALIFIED; // by default for global components
             isGlobal = true;
         }
-        String nsUri = sComp.getModel().getEffectiveNamespace(sComp);
+        //
+        String nsUri = null;
+        Set<String> nsSet = XPathSchemaContext.Utilities.
+                getEffectiveNamespaces(sComp, schemaContext.getParentContext());
+        if (nsSet.size() == 1) {
+            nsUri = nsSet.iterator().next();
+        } else {
+            // Something is wrong
+            return;
+        }
         //
         if (Form.UNQUALIFIED.equals(form) && 
                 nsPrefix != null && nsPrefix.length() != 0) {
@@ -796,7 +807,7 @@ public class XPathModelImpl implements XPathModel {
      *     prefix is redundant.
      */ 
     private void checkMultiNsPrefixes(Set<SchemaCompPair> compPairSet, 
-            QName qName, boolean isAttribute) {
+            QName qName, boolean isAttribute, XPathSchemaContext schemaContext) {
         //
         boolean hasGlobalComponents = false;
         boolean hasQualifiedComponents = false;
@@ -828,15 +839,18 @@ public class XPathModelImpl implements XPathModel {
             }
             //
             // Collect used namespaces
-            String namespace = sComp.getModel().getEffectiveNamespace(sComp);
-            String prefix = mNamespaceContext.getPrefix(namespace);
-            QName newQName = null;
-            if (prefix == null || prefix.length() == 0) {
-                newQName = new QName(namespace, "aaa"); // NOI18N
-            } else {
-                newQName = new QName(namespace, "aaa", prefix); // NOI18N
+            Set<String> nsSet = XPathSchemaContext.Utilities.
+                    getEffectiveNamespaces(sComp, schemaContext.getParentContext());
+            for (String namespace : nsSet) {
+                String prefix = mNamespaceContext.getPrefix(namespace);
+                QName newQName = null;
+                if (prefix == null || prefix.length() == 0) {
+                    newQName = new QName(namespace, "aaa"); // NOI18N
+                } else {
+                    newQName = new QName(namespace, "aaa", prefix); // NOI18N
+                }
+                usedNamespaces.add(newQName);
             }
-            usedNamespaces.add(newQName);
         }
         //
         String nsPrefix = qName.getPrefix();

@@ -53,7 +53,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class MobilityToolsDialogs  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private NbDialogOperator manager;
-    protected String cmdName;
+    protected String cmdName, wzdName;
     private String toolsMenuPath;
     
     /**
@@ -62,7 +62,7 @@ public class MobilityToolsDialogs  extends org.netbeans.performance.test.utiliti
      */    
     public MobilityToolsDialogs(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = WINDOW_OPEN;  
     }
     /**
      * Creates a new instance of MobilityToolsDialogs
@@ -76,6 +76,7 @@ public class MobilityToolsDialogs  extends org.netbeans.performance.test.utiliti
     public void initialize() {
         log(":: initialize");
         toolsMenuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|";               
+        if (wzdName == null) wzdName = cmdName;
     }    
     public void prepare() {
         log(":: prepare");
@@ -84,13 +85,15 @@ public class MobilityToolsDialogs  extends org.netbeans.performance.test.utiliti
     public ComponentOperator open() {
         log(":: open");
         new ActionNoBlock(toolsMenuPath+cmdName,null).performMenu();
-        manager = new NbDialogOperator(cmdName);
+        manager = new NbDialogOperator(wzdName);
         return null;
     }
     
     public void close() {
         log(":: close");
-        manager.close();
+        if (manager != null ) {
+            manager.close();
+        }
     }
 
     public void shutdown() {

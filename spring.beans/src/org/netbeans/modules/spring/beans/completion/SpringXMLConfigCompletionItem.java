@@ -89,9 +89,9 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyType;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyType;
 import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -819,11 +819,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         private String displayName;
         private PropertyType propertyType;
+        private String typeName;
         private static EnumMap<PropertyType, ImageIcon> type2Icon = new EnumMap<PropertyType, ImageIcon>(PropertyType.class);
         
         public PropertyItem(int substitutionOffset, Property property) {
             super(substitutionOffset);
             this.displayName = property.getName();
+            this.typeName = escape(getTypeName(property.getImplementationType(), false).toString());
             this.propertyType = property.getType();
         }
         
@@ -842,6 +844,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return displayName;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return typeName;
         }
         
         @Override
@@ -906,6 +913,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             super.substituteText(c, offset, len, toAdd);
             int newCaretPos = c.getCaretPosition() - 1; // for achieving p:something-ref="|" on completion
             c.setCaretPosition(newCaretPos);
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
         }
     }
     
@@ -1116,7 +1128,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                JavaSource js = JavaUtils.getJavaSource(doc);
                 if (js == null) {
                     return;
                 }

@@ -51,6 +51,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
+import org.netbeans.modules.diff.DiffModuleConfig;
 
 /**
  *
@@ -58,13 +59,10 @@ import org.netbeans.spi.diff.DiffProvider;
  */
 public class BuiltInDiffProvider extends DiffProvider implements java.io.Serializable {
 
-    /**
-     * Holds value of property trimLines.
-     */
-    private boolean trimLines = true;
-
-    static final long serialVersionUID = 1L;
+    private Options options = DiffModuleConfig.getDefault().getOptions();
     
+    static final long serialVersionUID = 1L;
+
     /** Creates a new instance of BuiltInDiffProvider */
     public BuiltInDiffProvider() {
     }
@@ -91,7 +89,7 @@ public class BuiltInDiffProvider extends DiffProvider implements java.io.Seriali
      *        or <code>null</code> when some error occured.
      */
     public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
-        return HuntDiff.diff(getLines(r1), getLines(r2), trimLines);   
+        return HuntDiff.diff(getLines(r1), getLines(r2), options);   
     }
     
     private String[] getLines(Reader r) throws IOException {
@@ -101,23 +99,32 @@ public class BuiltInDiffProvider extends DiffProvider implements java.io.Seriali
         while ((line = br.readLine()) != null) {
             lines.add(line);
         }
-        return lines.toArray(new String[0]);
+        return lines.toArray(new String[lines.size()]);
     }
 
-
-    /** On true all lines are trimmed before passing to diff engine. */
-    public boolean isTrimLines() {
-        return this.trimLines;
-    }
 
     /**
-     * Setter for property trimLines.
-     * @param trimLines New value of property trimLines.
+     * @param options a new set of diff options
      */
-    public void setTrimLines(boolean trimLines) {
-        this.trimLines = trimLines;
+    public void setOptions(Options options) {
+        this.options = options;
     }
 
+    public static class Options {
+        /**
+         * True to ignore leading and trailing whitespace when computing diff, false otherwise.
+         */
+        public boolean ignoreLeadingAndtrailingWhitespace;
 
+        /**
+         * True to ignore inner (not leading or trailing) whitespace when computing diff, false otherwise.
+         */
+        public boolean ignoreInnerWhitespace;
+
+        /**
+         * True to ignore changes in case.
+         */
+        public boolean ignoreCase;
+    }
     
 }

@@ -769,15 +769,15 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object[] paramTypes = new Object[] { getItemConverterName(bean) };
         
         String bodyText = "{" +
-                "PersistenceService service = PersistenceService.getInstance();" +
+                "PersistenceService persistenceSvc = PersistenceService.getInstance();" +
                 "try {" +
-                "service.beginTx();" +
+                "persistenceSvc.beginTx();" +
                 "$CLASS$ entity = data.getEntity();" +
                 "createEntity(entity);" +
-                "service.commitTx();" +
+                "persistenceSvc.commitTx();" +
                 "return Response.created(context.getAbsolutePath().resolve($ID_TO_URI$ + \"/\")).build();" +
                 "} finally {" +
-                "service.close();" +
+                "persistenceSvc.close();" +
                 "}" +
                 "}";
         
@@ -962,13 +962,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object[] paramTypes = new String[] {getConverterType(bean)};
         
         String bodyText = "{ " +
-                "PersistenceService service = PersistenceService.getInstance();" +
+                "PersistenceService persistenceSvc = PersistenceService.getInstance();" +
                 "try {" +
-                "service.beginTx();" +
+                "persistenceSvc.beginTx();" +
                 "updateEntity(getEntity(), data.getEntity());" +
-                "service.commitTx();" +
+                "persistenceSvc.commitTx();" +
                 "} finally {" +
-                "service.close();" +
+                "persistenceSvc.close();" +
                 "}" +
                 "}";
       
@@ -997,14 +997,14 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object[] annotationAttrs = new Object[] { null };
       
         String bodyText = "{" +
-                "PersistenceService service = PersistenceService.getInstance();" +
+                "PersistenceService persistenceSvc = PersistenceService.getInstance();" +
                 "try {" +
-                "service.beginTx();" +
+                "persistenceSvc.beginTx();" +
                 "$CLASS$ entity = getEntity();" +
-                "service.removeEntity(entity);" +
-                "service.commitTx();" +
+                "persistenceSvc.removeEntity(entity);" +
+                "persistenceSvc.commitTx();" +
                 "} finally {" +
-                "service.close();" +
+                "persistenceSvc.close();" +
                 "}" +
                 "}";
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean));

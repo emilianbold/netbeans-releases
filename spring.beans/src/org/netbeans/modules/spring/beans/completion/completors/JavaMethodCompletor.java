@@ -56,9 +56,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 import org.openide.util.Exceptions;
 
 /**
@@ -80,7 +80,7 @@ public abstract class JavaMethodCompletor extends Completor {
                 return Collections.emptyList();
             }
 
-            final JavaSource javaSource = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
+            final JavaSource javaSource = JavaUtils.getJavaSource(context.getFileObject());
             if (javaSource == null) {
                 return Collections.emptyList();
             }
@@ -89,7 +89,7 @@ public abstract class JavaMethodCompletor extends Completor {
 
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement classElem = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, controller);
+                    TypeElement classElem = JavaUtils.findClassElementByBinaryName(classBinaryName, controller);
                     if (classElem == null) {
                         return;
                     }

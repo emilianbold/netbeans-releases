@@ -64,7 +64,7 @@ public class MemoryFileManager implements JavaFileManager {
     
     //Todo: Can be mem optimzed by converting to packed UTF.
     private final Map<String,List<Integer>> packages = new HashMap<String, List<Integer>>();
-    private final Map<Integer,Info> content = new HashMap<Integer,Info>(); 
+    private final Map<Integer,FileObjects.InferableJavaFileObject> content = new HashMap<Integer,FileObjects.InferableJavaFileObject>(); 
     private final AtomicInteger currentId = new AtomicInteger ();
 
     public MemoryFileManager () {        
@@ -85,10 +85,10 @@ public class MemoryFileManager implements JavaFileManager {
             final List<Integer> pkglst = packages.get(packageName);
             if (pkglst != null) {
                 for (Integer foid : pkglst) {
-                    Info data = content.get(foid);
-                    assert data != null;
-                    if (kinds.contains(FileObjects.getKind(FileObjects.getExtension((data.name instanceof String) ? (String) data.name : data.name.toString())))) {
-                        result.add(FileObjects.memoryFileObject(packageName, data.name, data.mtime, data.content));
+                    FileObjects.InferableJavaFileObject jfo = content.get(foid);
+                    assert jfo != null;
+                    if (kinds.contains(jfo.getKind())) {
+                        result.add(jfo);
                     }
                 }
             }
@@ -123,12 +123,11 @@ public class MemoryFileManager implements JavaFileManager {
             if (namePair != null) {
                 final List<Integer> pkglst = this.packages.get(namePair[0]);
                 if (pkglst != null) {
-                    final String relativeName = namePair[1] + kind.extension;
                     for (Integer id : pkglst) {
-                        final Info info = this.content.get (id);
-                        assert info != null;
-                        if (relativeName.equals(info.name)) {
-                            return FileObjects.memoryFileObject(namePair[0], info.name, info.mtime, info.content);
+                        final FileObjects.InferableJavaFileObject jfo = this.content.get (id);
+                        assert jfo != null;
+                        if (className.equals(jfo.inferBinaryName())) {
+                            return jfo;
                         }
                     }
                 }
@@ -146,10 +145,10 @@ public class MemoryFileManager implements JavaFileManager {
             final List<Integer> pkglst = packages.get(packageName);
             if (pkglst != null) {
                 for (Integer id : pkglst) {
-                    final Info info = this.content.get (id);
-                    assert info != null;
-                    if (relativeName.equals(info.name)) {
-                        return FileObjects.memoryFileObject(packageName, info.name, info.mtime, info.content);
+                    final FileObjects.InferableJavaFileObject jfo = this.content.get (id);
+                    assert jfo != null;
+                    if (relativeName.equals(jfo.getName())) {   //Todo: Rely on the file instanceof FileObjects.Base 
+                        return jfo;
                     }
                 }
             }
@@ -173,84 +172,48 @@ public class MemoryFileManager implements JavaFileManager {
         return -1;
     }
     
-    public boolean register (final String pkg, final String name,
-            final JavaFileObject.Kind kind,
-            final long mtime,
-            final CharSequence content) {
-        Parameters.notNull("pkg", pkg);     //NOI18N
-        Parameters.notNull("name", name);   //NOI18N
-        Parameters.notNull("kind", kind);
-        Parameters.notNull("content", content); //NOI18N
-        Parameters.notEmpty("name", name);  //NOI18N
-        List<Integer> ids = this.packages.get(pkg);
+    
+    public boolean register (final FileObjects.InferableJavaFileObject jfo) {
+        Parameters.notNull("jfo", jfo);
+        final String inferedName = jfo.inferBinaryName();
+        final String[] pkgName = FileObjects.getPackageAndName (inferedName);
+        List<Integer> ids = this.packages.get(pkgName[0]);
         if (ids == null) {
             ids = new LinkedList<Integer>();
-            this.packages.put(pkg, ids);
+            this.packages.put(pkgName[0], ids);
         }
-        final String nameExt = name + kind.extension;
         //Check for duplicate
         for (Iterator<Integer> it = ids.iterator(); it.hasNext();) {
             final Integer id = it.next();
-            final Info info = this.content.get(id);
-            assert info != null;
-            if (nameExt.equals(info.name)) {
-                this.content.put(id, new Info(nameExt, mtime, content));
+            final FileObjects.InferableJavaFileObject rfo = this.content.get(id);
+            assert rfo != null;
+            if (inferedName.equals(rfo.inferBinaryName())) {
+                this.content.put(id, jfo);
                 return true;
             }
         }        
         //Todo: add
         final Integer id = currentId.getAndIncrement();
-        this.content.put(id, new Info(nameExt, mtime, content));
+        this.content.put(id, jfo);
         ids.add(id);
-        return false;        
-    }
-    
-    public boolean register (final String fqn, final long mtime, final CharSequence content) {
-        Parameters.notNull("fqn", fqn);
-        final String[] pkgName = FileObjects.getPackageAndName (fqn);
-        return this.register(pkgName[0], pkgName[1], JavaFileObject.Kind.SOURCE, mtime, content);
-    }
-    
-    public boolean unregister (final String pkg, final String name,
-            final JavaFileObject.Kind kind) {
-        Parameters.notNull("pkg", pkg);     //NOI18N
-        Parameters.notNull("name", name);   //NOI18N
-        Parameters.notNull("kind", kind);   //NOI18N
-        Parameters.notEmpty("name", name);  //NOI18N
-        final List<Integer> ids = this.packages.get(pkg);
-        final String nameExt = name + kind.extension;
-        for (Iterator<Integer> it = ids.iterator(); it.hasNext();) {
-            final Integer id = it.next();
-            final Info info = this.content.get(id);
-            assert info != null;
-            if (nameExt.equals(info.name)) {
-                it.remove();
-                this.content.remove(id);
-                return true;
-            }
-        }        
         return false;
     }
     
     public boolean unregister (final String fqn) {
         Parameters.notNull("fqn", fqn);
         final String[] pkgName = FileObjects.getPackageAndName (fqn);
-        return this.unregister(pkgName[0], pkgName[1], JavaFileObject.Kind.SOURCE);
-    }
-    
-    //Todo: Move to FileObjects?
-    
-    
-    
-    private static final class Info {
-        public final String name;
-        public final long mtime;
-        public final CharSequence content;
-        
-        public Info (String name, long mtime, CharSequence content) {
-            this.name = name;
-            this.mtime = mtime;
-            this.content = content;
+        final List<Integer> ids = this.packages.get(pkgName[0]);
+        for (Iterator<Integer> it = ids.iterator(); it.hasNext();) {
+            final Integer id = it.next();
+            final FileObjects.InferableJavaFileObject jfo = this.content.get(id);
+            assert jfo != null;
+            if (fqn.equals(jfo.inferBinaryName())) {
+                it.remove();
+                this.content.remove(id);
+                return true;
+            }
         }
+        return false;
     }
+    
 }

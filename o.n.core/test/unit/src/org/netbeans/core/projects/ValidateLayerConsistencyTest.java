@@ -94,6 +94,14 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public ValidateLayerConsistencyTest(String name) {
         super (name);
     }
+
+    @Override
+    protected int timeOut() {
+        // sometimes can deadlock and then we need to see the thread dump
+        return 1000 * 60 * 10;
+    }
+    
+    
     
     public @Override void setUp() throws Exception {
         clearWorkDir();

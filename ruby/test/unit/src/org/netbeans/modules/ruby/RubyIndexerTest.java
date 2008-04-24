@@ -62,11 +62,6 @@ public class RubyIndexerTest extends RubyTestBase {
     }
     
     @Override
-    protected void setUp() throws Exception {
-        RubyIndex.setClusterUrl("file:/bogus"); // No translation
-    }
-
-    @Override
     protected String prettyPrintValue(String key, String value) {
         if (value == null) {
             return value;

@@ -76,7 +76,7 @@ public class AddWebServiceOperator extends NbDialogOperator{
     private String STR_OK = "OK";
     private String STR_OPTIONS = "Options";
     private String STR_FILE = "Local File:";
-    private String STR_URL = "WSDL URL:";
+    private String STR_URL = "URL:";
     private String STR_SYSTEM_PROXY = "Use System Proxy Settings";
     private String STR_MANUAL_PROXY = "Manual Proxy Settings";
     private String wsLabel = "Services tab web services compiling script";
@@ -146,7 +146,7 @@ public class AddWebServiceOperator extends NbDialogOperator{
     
     public JTextFieldOperator txtURL() {
         if (_txtURL == null) {
-            _txtURL = new JTextFieldOperator(this, 2);
+            _txtURL = new JTextFieldOperator(this, 0);
         }
         return _txtURL;
     }
@@ -177,7 +177,7 @@ public class AddWebServiceOperator extends NbDialogOperator{
     
     public JTextFieldOperator txtWSPackageName() {
         if (_txtWSPackageName == null) {
-            _txtWSPackageName = new JTextFieldOperator(this, 0);
+            _txtWSPackageName = new JTextFieldOperator(this, 2);
         }
         return _txtWSPackageName;
     }
@@ -241,6 +241,10 @@ public class AddWebServiceOperator extends NbDialogOperator{
     }
     
     public String addWebService(String url) {
+        return addWebService(url, "websvc");
+    }
+    
+    public String addWebService(String url, String packageName) {
         JRadioButtonOperator wsType = rbtURL();
         wsType.requestFocus();
         wsType.setSelected(true);
@@ -250,18 +254,12 @@ public class AddWebServiceOperator extends NbDialogOperator{
         wsdlUrl.clearText();
         wsdlUrl.setText(url);
         TestUtils.wait(1000);
-        //wsdlUrl.pushKey(KeyEvent.VK_ENTER);
-        //wsdlUrl.pushKey(KeyEvent.VK_ENTER);
-        //TestUtils.wait(6000);
-        //TODO hardcoded?
-        //if ((new JTextComponentOperator(this, 2)).getText().indexOf("error occurred")!= -1) return null;
-        //String wsName = "empty";
-        //JTextFieldOperator wsNameOper = txtWSName();
-        //if (wsNameOper!=null ) {wsName = wsNameOper.getText();}
-        //        btAdd().pushNoBlock();
+        JTextFieldOperator pkgName = txtWSPackageName();
+        pkgName.clearText();
+        pkgName.setText(packageName);
+        TestUtils.wait(1000);
         btAdd().pushNoBlock();;
         isWebServiceClientGenerated();
-        //return wsName;
         return null;
     }
     

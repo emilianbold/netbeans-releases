@@ -43,12 +43,13 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import com.sun.source.tree.Tree;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,16 +62,21 @@ import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 
 /** Manages rules read from the system filesystem.
  *
  * @author Petr Hrebejk
  */
-public class RulesManager {
+public class RulesManager implements FileChangeListener {
 
     // The logger
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.java.hints"); // NOI18N
@@ -87,22 +93,19 @@ public class RulesManager {
     private static final String SUGGESTIONS = "suggestions"; // NOI18N
 
     // Maps of registered rules
-    private static Map<String,List<ErrorRule>> errors = new HashMap<String, List<ErrorRule>>();
-    private static Map<Tree.Kind,List<TreeRule>> hints = new HashMap<Tree.Kind,List<TreeRule>>();
-    private static Map<Tree.Kind,List<TreeRule>> suggestions = new HashMap<Tree.Kind, List<TreeRule>>();
+    private final Map<String,List<ErrorRule>> errors = new HashMap<String, List<ErrorRule>>();
+    private final Map<Tree.Kind,List<TreeRule>> hints = new HashMap<Tree.Kind,List<TreeRule>>();
+    private final Map<Tree.Kind,List<TreeRule>> suggestions = new HashMap<Tree.Kind, List<TreeRule>>();
 
     // Tree models for the settings GUI
-    private static TreeModel errorsTreeModel;
-    private static TreeModel hintsTreeModel;
-    private static TreeModel suggestionsTreeModel;
+    private TreeModel errorsTreeModel;
+    private TreeModel hintsTreeModel;
+    private TreeModel suggestionsTreeModel;
 
     private static RulesManager INSTANCE;
 
     private RulesManager() {
-        // XXX Start listening on the rules forder. To handle module set changes.
-        initErrors();
-        initHints();
-        initSuggestions();
+        doInit();
     }
 
     public static synchronized RulesManager getInstance() {
@@ -112,15 +115,15 @@ public class RulesManager {
         return INSTANCE;
     }
 
-    public Map<String,List<ErrorRule>> getErrors() {
+    public synchronized Map<String,List<ErrorRule>> getErrors() {
         return errors;
     }
 
-    public Map<Tree.Kind,List<TreeRule>> getHints() {
+    public synchronized Map<Tree.Kind,List<TreeRule>> getHints() {
         return hints;
     }
 
-    public Map<Tree.Kind,List<TreeRule>> getHints(boolean onLine) {
+    public synchronized Map<Tree.Kind,List<TreeRule>> getHints(boolean onLine) {
         Map<Tree.Kind, List<TreeRule>> result = new HashMap<Tree.Kind, List<TreeRule>>();
         
         for (Entry<Tree.Kind, List<TreeRule>> e : getHints().entrySet()) {
@@ -160,25 +163,31 @@ public class RulesManager {
         return result;
     }
     
-    public Map<Tree.Kind,List<TreeRule>> getSuggestions() {
+    public synchronized Map<Tree.Kind,List<TreeRule>> getSuggestions() {
         return suggestions;
     }
 
-    public TreeModel getErrorsTreeModel() {
+    public synchronized TreeModel getErrorsTreeModel() {
         return errorsTreeModel;
     }
 
-    public TreeModel getHintsTreeModel() {
+    public synchronized TreeModel getHintsTreeModel() {
         return hintsTreeModel;
     }
 
-    public TreeModel getSuggestionsTreeModel() {
+    public synchronized TreeModel getSuggestionsTreeModel() {
         return suggestionsTreeModel;
+    }
+
+    private synchronized void doInit() {
+        initErrors();
+        initHints();
+        initSuggestions();
     }
 
     // Private methods ---------------------------------------------------------
 
-    private static void initErrors() {
+    private void initErrors() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         errorsTreeModel = new DefaultTreeModel( rootNode );
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -187,7 +196,7 @@ public class RulesManager {
         categorizeErrorRules(rules, errors, folder, rootNode);
     }
 
-    private static void initHints() {
+    private void initHints() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         hintsTreeModel = new DefaultTreeModel( rootNode );
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -197,7 +206,7 @@ public class RulesManager {
     }
 
 
-    private static void initSuggestions() {
+    private void initSuggestions() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         suggestionsTreeModel = new DefaultTreeModel( rootNode );
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -207,20 +216,32 @@ public class RulesManager {
     }
 
     /** Read rules from system filesystem */
-    private static List<Pair<Rule,FileObject>> readRules( FileObject folder ) {
-
+    private List<Pair<Rule,FileObject>> readRules( FileObject folder ) {
         List<Pair<Rule,FileObject>> rules = new LinkedList<Pair<Rule,FileObject>>();
         
         if (folder == null) {
             return rules;
         }
 
-        HashMap<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject,DefaultMutableTreeNode>();
-
-        // XXX Probably not he best order
-        Enumeration e = folder.getData( true );
-        while( e.hasMoreElements() ) {
-            FileObject o = (FileObject)e.nextElement();
+        Queue<FileObject> q = new LinkedList<FileObject>();
+        
+        q.offer(folder);
+        
+        while(!q.isEmpty()) {
+            FileObject o = q.poll();
+            
+            o.removeFileChangeListener(this);
+            o.addFileChangeListener(this);
+            
+            if (o.isFolder()) {
+                q.addAll(Arrays.asList(o.getChildren()));
+                continue;
+            }
+            
+            if (!o.isData()) {
+                continue;
+            }
+            
             String name = o.getNameExt().toLowerCase();
 
             if ( o.canRead() ) {
@@ -240,7 +261,7 @@ public class RulesManager {
                                              Map<String,List<ErrorRule>> dest,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
-
+        dest.clear();
         Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
         dir2node.put(rootFolder, rootNode);
 
@@ -269,7 +290,7 @@ public class RulesManager {
                                              Map<Tree.Kind,List<TreeRule>> dest,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
-
+        dest.clear();
         Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
         dir2node.put(rootFolder, rootNode);
 
@@ -354,6 +375,40 @@ public class RulesManager {
         return null;
     }
 
+    public void fileFolderCreated(FileEvent fe) {
+        hintsChanged();
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        hintsChanged();
+    }
+
+    public void fileChanged(FileEvent fe) {
+        hintsChanged();
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        hintsChanged();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        hintsChanged();
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        hintsChanged();
+    }
+
+    private void hintsChanged() {
+        refreshHints.cancel();
+        refreshHints.schedule(50);
+    }
+    
+    private final RequestProcessor.Task refreshHints = new RequestProcessor(RulesManager.class.getName()).create(new Runnable() {
+        public void run() {
+            doInit();
+        }
+    });
 
     // Unused code -------------------------------------------------------------
 

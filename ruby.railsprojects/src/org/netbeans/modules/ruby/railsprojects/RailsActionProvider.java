@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
@@ -72,6 +73,7 @@ import org.netbeans.modules.ruby.rubyproject.ScriptDescProvider;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -85,13 +87,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** 
  * Action provider of the Ruby project. This is the place where to do
  * strange things to Ruby actions. E.g. compile-single.
  */
 public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
-    
+
     /**
      * Standard command for running rdoc on a project.
      * @see org.netbeans.spi.project.ActionProvider
@@ -139,6 +143,8 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
+    
+    private static final Logger LOGGER = Logger.getLogger(RailsActionProvider.class.getName());
     
     public RailsActionProvider( RailsProject project, UpdateHelper updateHelper ) {
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
@@ -540,6 +546,14 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String script = "script" + File.separator + "console"; // NOI18N
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String noreadlineArg = "--irb=irb --noreadline"; //NOI18N
+        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+        String[] additionalArgs = null;
+        if (railsEnv != null && !"".equals(railsEnv.trim())) {
+            additionalArgs = new String[]{noreadlineArg, railsEnv};
+        } else {
+            additionalArgs = new String[]{noreadlineArg};
+        }
 
         new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
@@ -547,12 +561,23 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 classPath(classPath).
                 allowInput().
                 // see #130264
-                additionalArgs("--irb=irb --noreadline"). //NOI18N
+                additionalArgs(additionalArgs). //NOI18N
                 fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                 ).
                 run();
+                
+        // request focus for the output window - see #133519
+        final String outputWindowId = "output"; //NOI18N
+        TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
+        // outputWindow should not be null as the output window id is not likely to change, but 
+        // checking for null anyway since we are not relying on an API.
+        if (outputWindow != null) {
+            outputWindow.requestActive();
+        } else {
+            LOGGER.info("Could not find the output window using id " + outputWindowId);
+        }
     }
     
     private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,

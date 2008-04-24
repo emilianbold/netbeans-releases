@@ -49,32 +49,26 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
-/* 
+/**
  * Wizard panel that collects deployment data for Servlets and Filters
  * @author Ana von Klopp 
  */
-
 class DeployDataPanel extends BaseWizardPanel implements ItemListener { 
 
     private TargetEvaluator evaluator = null; 
-
     private ServletData deployData; 
     private FileType fileType; 
     private boolean edited = false;
-
-    private static final boolean debug = false; 
 
     public DeployDataPanel(TargetEvaluator e) { 
 	    
@@ -89,8 +83,6 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
     }
 
     private void initComponents () {
-
-	if(debug) log("::initComponents()"); //NOI18N
 	// Layout description
         setPreferredSize(new java.awt.Dimension(450, 250));
 	setLayout(new java.awt.GridBagLayout());
@@ -202,8 +194,8 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
 	jTFname.unregisterKeyboardAction
 	    (KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
 	jTFname.addFocusListener(new FocusAdapter() {
+                @Override
 		public void focusGained(FocusEvent evt) {
-		    if(debug) log("\tjTFname got focus");  //NOI18N
 		    jTFname.selectAll(); 
 		}
 	    }); 
@@ -244,12 +236,12 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
 	    jTFmapping.unregisterKeyboardAction
 		(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
 	    jTFmapping.addFocusListener(new FocusAdapter() {
+                    @Override
 		    public void focusGained(FocusEvent evt) {
-			if(debug) log("\tjTFmapping got focus");  //NOI18N
 			jTFmapping.selectAll(); 
 		    }
+                    @Override
 		    public void focusLost(FocusEvent evt) {
-			if(debug) log("\tjTFmapping lost focus");  //NOI18N
 			deployData.parseUrlMappingString(jTFmapping.getText().trim()); 
 			fireChangeEvent(); 
 		    }
@@ -282,17 +274,14 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
     }
 
     void setData() { 
-	if(debug) log("::setData()"); //NOi18N
-
 	deployData.setClassName(evaluator.getClassName()); 
 	jTFclassname.setText(deployData.getClassName());
 		
 	if(!edited) { 
-	    if(debug) log("\tUser has not edited dd data yet"); //NOi18N
-
+	    // User has not edited dd data yet
 	    deployData.setName(evaluator.getFileName()); 
 	    if(fileType == FileType.SERVLET) { 
-		if(debug) log("\tData type is servlet"); //NOi18N
+		// Data type is servlet
 		deployData.parseUrlMappingString("/" + ServletData.getRFC2396URI(evaluator.getFileName())); // NOI18N
 	    } 
 	}
@@ -320,9 +309,6 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
     }
 
     private void enableInput(boolean enable) { 
-
-	if(debug) log("::enableInput()"); 
-
 	jTFname.setEnabled(enable);
 	jLinstruction.setEnabled(enable);
 	jLclassname.setEnabled(enable);
@@ -352,11 +338,6 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
 		jTFmapping.setBackground(this.getBackground()); 
 	} 
     } 
-
-    public void log(String s) { 
-	System.out.println("DeployDataPanel" + s); //NOI18N
-    } 
-
 
     public HelpCtx getHelp() {
         return new HelpCtx(this.getClass().getName()+"."+evaluator.getFileType().toString()); //NOI18N
