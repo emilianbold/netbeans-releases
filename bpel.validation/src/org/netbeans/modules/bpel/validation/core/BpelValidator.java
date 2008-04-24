@@ -51,12 +51,13 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
+import org.netbeans.modules.soa.validation.core.Validator;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
+import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -64,7 +65,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.15
  */
-public abstract class BpelValidator extends CoreValidator {
+public abstract class BpelValidator extends Validator {
+
+  public abstract BpelModelVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
     if ( !(model instanceof BpelModel)) {
@@ -83,20 +86,13 @@ public abstract class BpelValidator extends CoreValidator {
         Process process = bpelModel.getProcess();
 
         if (process != null) {
-          process.accept(BpelValidator.this);
+          process.accept(getVisitor());
         }
         endTime(getDisplayName());
       }
     };
     bpelModel.invoke(run);
-//if (getName().contains("custom")) {
-//out();
-//out();
-//out("!!! ERRORS: " + getResultItems().size());
-//out();
-//out();
-//}
-    return new ValidationResult(getResultItems(), Collections.singleton(model));
+    return new ValidationResult(getValidationResult(), Collections.singleton(model));
   }
 
   protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {

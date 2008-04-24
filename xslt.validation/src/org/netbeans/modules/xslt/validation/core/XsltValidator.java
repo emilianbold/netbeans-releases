@@ -38,68 +38,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+package org.netbeans.modules.xslt.validation.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+//import java.util.ArrayList;
+//import java.util.Collections;
+//import java.util.HashSet;
+//import java.util.List;
+//import java.util.Set;
 
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
-
 import org.netbeans.modules.soa.validation.core.Validator;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Process;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.02.15
+ * @version 2008.04.24
  */
-public abstract class WsdlValidator extends Validator {
+public abstract class XsltValidator extends Validator {
 
-  public abstract WSDLVisitor getVisitor();
+//  public abstract BpelModelVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    if ( !(model instanceof WSDLModel)) {
+//    if ( !(model instanceof BpelModel)) {
+      return null;
+//    }
+/*
+    final BpelModel bpelModel = (BpelModel) model;
+    
+    if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
-//out();
-//out("VALIDATE WSDL");
-    WSDLModel wsdlModel = (WSDLModel) model;
-
-    if (wsdlModel.getState() == Model.State.NOT_WELL_FORMED) {
-//out("11");
-      return null;
-    }
-//out("22");
     init(validation, type);
 
-    if ( !isValidationComplete()) {
-//out("33");
-      return null;
-    }
-    Definitions definitions = wsdlModel.getDefinitions();
-//out("44");
+    Runnable run = new Runnable() {
+      public void run() {
+        startTime();
+        Process process = bpelModel.getProcess();
 
-    if (definitions == null) {
-//out("55");
-      return null;
-    }
-//out("66");
-    startTime();
-    definitions.accept(getVisitor());
-    endTime(getDisplayName());
-
+        if (process != null) {
+          process.accept(getVisitor());
+        }
+        endTime(getDisplayName());
+      }
+    };
+    bpelModel.invoke(run);
     return new ValidationResult(getValidationResult(), Collections.singleton(model));
+*/
   }
 }
