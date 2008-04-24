@@ -57,6 +57,8 @@ public class DatabaseTableWizardConstants {
     
     public static final String PROP_POLLING_INTERVAL_TIME_UNIT = "PROP_POLLING_INTERVAL_TIME_UNIT";
     
+    public static final String PROP_POLLING_RECORD_SIZE = "PROP_POLLING_RECORD_SIZE";
+    
     public static final String PROP_JNDI_NAME = "PROP_JNDI_NAME";
     
     
