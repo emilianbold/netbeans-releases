@@ -622,13 +622,14 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private void refreshDebugger() {
         RubyPlatform platform = getSelectedPlatform();
-        boolean isJRuby = platform.isJRuby();
+        boolean supportFastDebuggerInstallation = !platform.isJRuby() && !platform.isRubinius();
         boolean fdInstalled = platform.hasFastDebuggerInstalled();
-        installFastDebugger.setEnabled(!isJRuby && platform.hasRubyGemsInstalled());
-        installFastDebugger.setVisible(!isJRuby && !fdInstalled);
-        String key = platform.hasFastDebuggerInstalled()
-                ? "RubyPlatformCustomizer.rubyDebugEngine.text" // NOI18N
-                : "RubyPlatformCustomizer.classicDebuggerEngine.text"; // NOI18N
+        installFastDebugger.setEnabled(supportFastDebuggerInstallation && platform.hasRubyGemsInstalled());
+        installFastDebugger.setVisible(supportFastDebuggerInstallation && !fdInstalled);
+        String key = platform.isRubinius() 
+                ? "RubyPlatformCustomizer.noFastDebuggerForRubiniusYet.text" // NOI18N
+                : (platform.hasFastDebuggerInstalled() ? "RubyPlatformCustomizer.rubyDebugEngine.text" // NOI18N
+                                                       : "RubyPlatformCustomizer.classicDebuggerEngine.text"); // NOI18N
         engineType.setText(getMessage(key));
     }
 

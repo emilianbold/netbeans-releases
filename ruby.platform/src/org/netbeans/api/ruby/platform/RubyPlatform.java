@@ -617,7 +617,8 @@ public final class RubyPlatform {
      * @return whether everything needed for fast debugging is installed
      */
     public boolean hasFastDebuggerInstalled() {
-        return gemManager != null && getFastDebuggerProblemsInHTML() == null;
+        // no usable version of Fast Debugger for Rubinius is available yet
+        return gemManager != null && !isRubinius() && getFastDebuggerProblemsInHTML() == null;
     }
 
     /**
