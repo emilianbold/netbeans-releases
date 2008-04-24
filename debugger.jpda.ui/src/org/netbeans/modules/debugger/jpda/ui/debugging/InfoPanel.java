@@ -60,6 +60,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.Utilities;
 
@@ -139,7 +141,13 @@ public class InfoPanel extends javax.swing.JPanel {
                 if (threadToMenuItem.get(thread) != null) {
                     return;
                 }
-                JMenuItem item = new JMenuItem(thread.getName());
+                String displayName;
+                try {
+                    displayName = DebuggingNodeModel.getDisplayName(thread, false);
+                } catch (UnknownTypeException e) {
+                    displayName = thread.getName();
+                }
+                JMenuItem item = new JMenuItem(displayName);
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         thread.makeCurrent();
@@ -322,6 +330,7 @@ public class InfoPanel extends javax.swing.JPanel {
         deadlocksInnerPanel = new javax.swing.JPanel();
         infoIcon1 = new javax.swing.JLabel();
         deadlocksLabel = new javax.swing.JLabel();
+        emptyPanel1 = new javax.swing.JPanel();
         deadlocksSeparator = new javax.swing.JPanel();
         hitsPanel = new javax.swing.JPanel();
         hitsTopSpacePanel = new javax.swing.JPanel();
@@ -355,14 +364,25 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 8);
         deadlocksInnerPanel.add(infoIcon1, gridBagConstraints);
 
+        deadlocksLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.deadlocksLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         deadlocksInnerPanel.add(deadlocksLabel, gridBagConstraints);
+
+        emptyPanel1.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        deadlocksInnerPanel.add(emptyPanel1, gridBagConstraints);
 
         deadlocksPanel.add(deadlocksInnerPanel, java.awt.BorderLayout.CENTER);
 
@@ -396,7 +416,7 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 8);
         hitsInnerPanel.add(infoIcon, gridBagConstraints);
 
         hitsLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsLabel.text")); // NOI18N
@@ -447,6 +467,7 @@ public class InfoPanel extends javax.swing.JPanel {
     private javax.swing.JPanel deadlocksPanel;
     private javax.swing.JPanel deadlocksSeparator;
     private javax.swing.JPanel emptyPanel;
+    private javax.swing.JPanel emptyPanel1;
     private javax.swing.JPanel filterBottomSpacePanel;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JPanel filterTopSpacePanel;

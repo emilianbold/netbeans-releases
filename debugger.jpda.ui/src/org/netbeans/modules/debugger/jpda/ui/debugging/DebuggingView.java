@@ -13,7 +13,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
@@ -204,12 +203,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         scrollBarPanel.add(treeScrollBar, java.awt.BorderLayout.CENTER);
 
-        leftPanel1.setBackground(new java.awt.Color(255, 102, 255));
+        leftPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         leftPanel1.setPreferredSize(new java.awt.Dimension(8, 0));
         leftPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         scrollBarPanel.add(leftPanel1, java.awt.BorderLayout.WEST);
 
-        rightPanel1.setBackground(new java.awt.Color(255, 102, 255));
+        rightPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         rightPanel1.setPreferredSize(new java.awt.Dimension(24, 0));
         rightPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         scrollBarPanel.add(rightPanel1, java.awt.BorderLayout.EAST);
@@ -424,14 +423,21 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
                 int mainPanelHeight = 0;
                 int treeViewWidth = 0;
+                int leftBarHeight = 0;
                 boolean isCurrent = false;
                 boolean isAtBreakpoint = false;
                 for (TreePath path : treeView.getVisiblePaths()) {
                     Node node = Visualizer.findNode(path.getLastPathComponent());
                     JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
                     if (jpdaThread != null) {
+                        if (leftBarHeight > 0) {
+                            addLeftBarPart(isCurrent, isAtBreakpoint, leftBarHeight);
+                        }
+                        leftBarHeight = 0;
                         isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
                         isAtBreakpoint = infoPanel.isBreakpointHit(jpdaThread);
+                    } else {
+                        
                     }
                     
                     JTree tree = treeView.getTree();
@@ -439,18 +445,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     int height = rect != null ? (int)Math.round(rect.getHeight()) : 0; // [TODO] NPE
                     mainPanelHeight += height;
                     treeViewWidth = Math.max(treeViewWidth, (int)Math.round(rect.getX() + rect.getWidth()));
-                    
-                    JComponent label = new JPanel();
-                    label.setPreferredSize(new Dimension(BAR_WIDTH, height));
-                    if (isCurrent) {
-                        label.setBackground(greenBarColor);
-                    } else if (isAtBreakpoint) {
-                        label.setBackground(hitsPanelColor);
-                    } else {
-                        label.setBackground(treeBackgroundColor);
-                        label.setOpaque(false);
-                    }
-                    leftPanel.add(label);
+                    leftBarHeight += height;
                     
                     JLabel icon = jpdaThread != null ?
                         new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
@@ -463,7 +458,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                         ((ClickableIcon)icon).initializeState(sx, sy, ICON_WIDTH, height);
                     }
                     sy += height;
+                } // for
+                if (leftBarHeight > 0) {
+                    addLeftBarPart(isCurrent, isAtBreakpoint, leftBarHeight);
                 }
+                
                 leftPanel.revalidate();
                 leftPanel.repaint();
                 rightPanel.revalidate();
@@ -487,6 +486,26 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
                         comboItemText : "Java Project"); // NOI18N [TODO]
                 }
+            }
+
+            private void addLeftBarPart(boolean isCurrent, boolean isAtBreakpoint, int height) {
+                JComponent label = new JPanel();
+                String toolTipText = null;
+                label.setPreferredSize(new Dimension(BAR_WIDTH, height));
+                if (isCurrent) {
+                    label.setBackground(greenBarColor);
+                    toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
+                } else if (isAtBreakpoint) {
+                    label.setBackground(hitsPanelColor);
+                    toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
+                } else {
+                    label.setBackground(treeBackgroundColor);
+                    label.setOpaque(false);
+                }
+                if (toolTipText != null) {
+                    label.setToolTipText(toolTipText);
+                }
+                leftPanel.add(label);
             }
         });
     }
