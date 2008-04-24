@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -80,10 +81,12 @@ public final class ThreadsListener implements PropertyChangeListener {
             clearAllHits();
             setShowDeadlock(false);
             debugger.removePropertyChangeListener(this);
+            debugger.getDeadlockDetector().removePropertyChangeListener(this);
         }
         this.debugger = deb;
         if (deb != null) {
             deb.addPropertyChangeListener(this);
+            deb.getDeadlockDetector().addPropertyChangeListener(this);
             List<JPDAThread> allThreads = deb.getAllThreads();
             for (JPDAThread thread : allThreads) {
                 threads.add(thread);
@@ -148,19 +151,15 @@ public final class ThreadsListener implements PropertyChangeListener {
                         } else {
                             removeBreakpointHit(thread); // [TODO]
                         }
-                        
-                        // detect deadlocks
-                        if (DeadlockChecker.detectDeadlock(threads)) {
-                            setShowDeadlock(true);
-                        } else {
-                            setShowDeadlock(false); // [TODO]
-                        }
-                        
                     }
                 });
                 task.schedule(100);
                 
             } // if
+        } else if (source instanceof DeadlockDetector) {
+            if (DeadlockDetector.PROP_DEADLOCK.equals(propName)) {
+                setShowDeadlock(true);
+            }
         }
     }
     
@@ -207,129 +206,6 @@ public final class ThreadsListener implements PropertyChangeListener {
 
     private void setShowDeadlock(boolean detected) {
         debuggingView.getInfoPanel().setShowDeadlock(detected);
-    }
-    
-    
-    // **************************************************************************
-    
-    static class DeadlockChecker {
-
-        private Map<Long, Node> monitorToNode;
-        
-        private void build(Set<JPDAThread> threads) {
-            monitorToNode = new HashMap<Long, Node>();
-            for (JPDAThread thread : threads) {
-                ObjectVariable contendedMonitor = thread.getContendedMonitor();
-                ObjectVariable[] ownedMonitors = thread.getOwnedMonitors();
-                if (contendedMonitor == null || ownedMonitors.length == 0) {
-                    continue;
-                } // if
-                Node contNode = monitorToNode.get(contendedMonitor.getUniqueID());
-                if (contNode == null) {
-                    contNode = new Node(null, contendedMonitor);
-                    monitorToNode.put(contendedMonitor.getUniqueID(), contNode);
-                }
-                for (int x = 0; x < ownedMonitors.length; x++) {
-                    Node node = monitorToNode.get(ownedMonitors[x].getUniqueID());
-                    if (node == null) {
-                        node = new Node(thread, ownedMonitors[x]);
-                        monitorToNode.put(ownedMonitors[x].getUniqueID(), node);
-                    } else if (node.thread == null) {
-                        node.thread = thread;
-                    } else {
-                        continue;
-                    }
-                    node.setOutgoing(contNode);
-                    contNode.addIncomming(node);
-                } // for
-            } // for
-        }
-
-        private boolean detectDeadlock() {
-            Set<Node> simpleNodesSet = new HashSet<Node>();
-            LinkedList<Node> simpleNodesList = new LinkedList<Node>();
-            for (Entry<Long, Node> entry : monitorToNode.entrySet()) {
-                Node node = entry.getValue();
-                if (node.isSimple()) {
-                    simpleNodesSet.add(node);
-                    simpleNodesList.add(node);
-                }
-            } // for
-            while (simpleNodesList.size() > 0) {
-                Node currNode = simpleNodesList.removeFirst();
-                simpleNodesSet.remove(currNode);
-                
-                if (currNode.outgoing != null) {
-                    currNode.outgoing.removeIncomming(currNode);
-                    if (currNode.outgoing.isSimple() && !simpleNodesSet.contains(currNode.outgoing)) {
-                        simpleNodesSet.add(currNode.outgoing);
-                        simpleNodesList.add(currNode.outgoing);
-                    }
-                }
-                for (Node node : currNode.incomming) {
-                    node.setOutgoing(null);
-                    if (node.isSimple() && !simpleNodesSet.contains(node)) {
-                        simpleNodesSet.add(node);
-                        simpleNodesList.add(node);
-                    }
-                }
-                monitorToNode.remove(currNode.ownedMonitor.getUniqueID());
-            } // while
-            
-            
-            //***************************************
-//            if (!monitorToNode.isEmpty()) {
-//                System.out.println("DEADLOCK:");
-//                Set<JPDAThread> threads = new HashSet<JPDAThread>();
-//                for (Entry<Long, Node> entry : monitorToNode.entrySet()) {
-//                    Node node = entry.getValue();
-//                    if (node.thread != null) {
-//                        System.out.println("\t" + node.thread.getName());
-//                    }
-//                } // for
-//            }
-            //***************************************
-            
-            
-            return !monitorToNode.isEmpty();
-        }
-        
-        public static boolean detectDeadlock(Set<JPDAThread> threads) {
-            DeadlockChecker checker = new DeadlockChecker();
-            checker.build(threads);
-            return checker.detectDeadlock();
-        }
-        
-        // **********************************************************************
-        
-        static class Node {
-            JPDAThread thread;
-            ObjectVariable ownedMonitor;
-            Collection<Node> incomming = new HashSet<Node>();
-            Node outgoing = null;
-            
-            Node (JPDAThread thread, ObjectVariable ownedMonitor) {
-                this.thread = thread;
-                this.ownedMonitor = ownedMonitor;
-            }
-            
-            public void setOutgoing(Node node) {
-                outgoing = node;
-            }
-            
-            public void addIncomming(Node node) {
-                incomming.add(node);
-            }
-            
-            public void removeIncomming(Node node) {
-                incomming.remove(node);
-            }
-            
-            public boolean isSimple() {
-                return outgoing == null || incomming.size() == 0;
-            }
-        }
-        
     }
     
 }

@@ -65,7 +65,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private static final int ICON_WIDTH = 16;
     private static final int BAR_WIDTH = 8;
     
-    static final Color hitsPanelColor = new Color(255, 255, 153); // [TODO]
+    static final Color hitsColor = new Color(255, 255, 178); // [TODO]
+    static final Color deadlockColor = javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"); // [TODO]
+    
     private transient Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
@@ -496,7 +498,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     label.setBackground(greenBarColor);
                     toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
                 } else if (isAtBreakpoint) {
-                    label.setBackground(hitsPanelColor);
+                    label.setBackground(hitsColor);
                     toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
                 } else {
                     label.setBackground(treeBackgroundColor);

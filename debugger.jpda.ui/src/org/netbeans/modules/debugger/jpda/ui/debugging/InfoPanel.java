@@ -74,6 +74,7 @@ public class InfoPanel extends javax.swing.JPanel {
     private static final int PANEL_HEIGHT = 40;
     
     private Color hitsPanelColor;
+    private Color deadlockPanelColor;
     private Color filterPanelColor;
     private int tapPanelMinimumHeight;
     private TapPanel tapPanel;
@@ -86,7 +87,8 @@ public class InfoPanel extends javax.swing.JPanel {
     public InfoPanel(TapPanel tapPanel) {
         this.tapPanel = tapPanel;
         filterPanelColor = tapPanel.getBackground(); // [TODO]
-        hitsPanelColor = DebuggingView.hitsPanelColor; // [TODO]
+        hitsPanelColor = DebuggingView.hitsColor; // [TODO]
+        deadlockPanelColor = hitsPanelColor; // DebuggingView.deadlockColor; // [TODO]
         tapPanelMinimumHeight = tapPanel.getMinimumHeight(); // 8 pixels [TODO]
         
         initComponents();
@@ -210,7 +212,9 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsPanel.setVisible(true);
         hitsSeparator.setVisible(true);
         filterTopSpacePanel.setVisible(true);
-        tapPanel.setBackground(hitsPanelColor);
+        if (!deadlocksPanel.isVisible()) {
+            tapPanel.setBackground(hitsPanelColor);
+        }
     }
     
     private void hideDeadlocksPanel() {
@@ -222,6 +226,7 @@ public class InfoPanel extends javax.swing.JPanel {
         if (hitsPanel.isVisible()) {
             hitsTopSpacePanel.setVisible(false);
             hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
+            tapPanel.setBackground(hitsPanelColor);
         } else {
             filterTopSpacePanel.setVisible(false);
             tapPanel.setBackground(filterPanelColor);
@@ -237,7 +242,7 @@ public class InfoPanel extends javax.swing.JPanel {
         filterTopSpacePanel.setVisible(true);
         deadlocksPanel.setVisible(true);
         deadlocksSeparator.setVisible(true);
-        tapPanel.setBackground(hitsPanelColor);
+        tapPanel.setBackground(deadlockPanelColor);
         deadlocksPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
         filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
         hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
@@ -346,7 +351,7 @@ public class InfoPanel extends javax.swing.JPanel {
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
-        deadlocksPanel.setBackground(hitsPanelColor);
+        deadlocksPanel.setBackground(deadlockPanelColor);
         deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         deadlocksPanel.setLayout(new java.awt.BorderLayout());
 
@@ -359,13 +364,13 @@ public class InfoPanel extends javax.swing.JPanel {
         deadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
         deadlocksInnerPanel.setLayout(new java.awt.GridBagLayout());
 
-        infoIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        infoIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/wrong_pass.png"))); // NOI18N
         infoIcon1.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         deadlocksInnerPanel.add(infoIcon1, gridBagConstraints);
 
         deadlocksLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
@@ -416,7 +421,7 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         hitsInnerPanel.add(infoIcon, gridBagConstraints);
 
         hitsLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.hitsLabel.text")); // NOI18N

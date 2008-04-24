@@ -39,17 +39,22 @@
 
 package org.netbeans.modules.debugger.jpda;
 
-import com.sun.jdi.ThreadReference;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -61,6 +66,8 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
     
     private JPDADebugger debugger;
     private Set<JPDAThread> suspendedThreads = new WeakSet<JPDAThread>();
+    
+    private Map<Long, Node> monitorToNode;
 
     DeadlockDetectorImpl(JPDADebugger debugger) {
         this.debugger = debugger;
@@ -74,11 +81,6 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
                 }
             }
         }
-    }
-    
-    private Set<Deadlock> findDeadlockedThreads(Collection<JPDAThread> threads) {
-        // TODO: Implement this
-        return null;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -101,6 +103,110 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
             if (deadlocks != null) {
                 setDeadlocks(deadlocks);
             }
+        }
+    }
+    
+    private Set<Deadlock> findDeadlockedThreads(Collection<JPDAThread> threads) {
+        buildGraph(threads);
+        Set<Node> simpleNodesSet = new HashSet<Node>();
+        LinkedList<Node> simpleNodesList = new LinkedList<Node>();
+        for (Entry<Long, Node> entry : monitorToNode.entrySet()) {
+            Node node = entry.getValue();
+            if (node.isSimple()) {
+                simpleNodesSet.add(node);
+                simpleNodesList.add(node);
+            }
+        } // for
+        while (simpleNodesList.size() > 0) {
+            Node currNode = simpleNodesList.removeFirst();
+            simpleNodesSet.remove(currNode);
+
+            if (currNode.outgoing != null) {
+                currNode.outgoing.removeIncomming(currNode);
+                if (currNode.outgoing.isSimple() && !simpleNodesSet.contains(currNode.outgoing)) {
+                    simpleNodesSet.add(currNode.outgoing);
+                    simpleNodesList.add(currNode.outgoing);
+                }
+            }
+            for (Node node : currNode.incomming) {
+                node.setOutgoing(null);
+                if (node.isSimple() && !simpleNodesSet.contains(node)) {
+                    simpleNodesSet.add(node);
+                    simpleNodesList.add(node);
+                }
+            }
+            monitorToNode.remove(currNode.ownedMonitor.getUniqueID());
+        } // while
+
+        Set<Deadlock> result = null;
+        if (!monitorToNode.isEmpty()) {
+            Collection<JPDAThread> deadlockedThreads = new ArrayList(monitorToNode.size());
+            for (Entry<Long, Node> entry : monitorToNode.entrySet()) {
+                Node node = entry.getValue();
+                deadlockedThreads.add(node.thread);
+            }
+            result = new HashSet<Deadlock>();
+            result.add(createDeadlock(deadlockedThreads));
+        }
+        return result;
+    }
+
+    private void buildGraph(Collection<JPDAThread> threads) {
+        monitorToNode = new HashMap<Long, Node>();
+        for (JPDAThread thread : threads) {
+            ObjectVariable contendedMonitor = thread.getContendedMonitor();
+            ObjectVariable[] ownedMonitors = thread.getOwnedMonitors();
+            if (contendedMonitor == null || ownedMonitors.length == 0) {
+                continue;
+            } // if
+            Node contNode = monitorToNode.get(contendedMonitor.getUniqueID());
+            if (contNode == null) {
+                contNode = new Node(null, contendedMonitor);
+                monitorToNode.put(contendedMonitor.getUniqueID(), contNode);
+            }
+            for (int x = 0; x < ownedMonitors.length; x++) {
+                Node node = monitorToNode.get(ownedMonitors[x].getUniqueID());
+                if (node == null) {
+                    node = new Node(thread, ownedMonitors[x]);
+                    monitorToNode.put(ownedMonitors[x].getUniqueID(), node);
+                } else if (node.thread == null) {
+                    node.thread = thread;
+                } else {
+                    continue;
+                }
+                node.setOutgoing(contNode);
+                contNode.addIncomming(node);
+            } // for
+        } // for
+    }
+    
+    // **************************************************************************
+    
+    private static class Node {
+        JPDAThread thread;
+        ObjectVariable ownedMonitor;
+        Collection<Node> incomming = new HashSet<Node>();
+        Node outgoing = null;
+
+        Node (JPDAThread thread, ObjectVariable ownedMonitor) {
+            this.thread = thread;
+            this.ownedMonitor = ownedMonitor;
+        }
+
+        void setOutgoing(Node node) {
+            outgoing = node;
+        }
+
+        void addIncomming(Node node) {
+            incomming.add(node);
+        }
+
+        void removeIncomming(Node node) {
+            incomming.remove(node);
+        }
+
+        boolean isSimple() {
+            return outgoing == null || incomming.size() == 0;
         }
     }
 
