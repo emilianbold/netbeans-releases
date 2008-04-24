@@ -54,6 +54,8 @@ import org.openide.filesystems.FileObject;
  */
 public class HibernateMappingRenameTransaction extends RenameTransaction {
 
+    private final String rescrName = "Resource"; // NOI18N
+    
     public HibernateMappingRenameTransaction(java.util.Set<FileObject> files, String origName, String newName) {
         super(files, origName, newName);
     }
@@ -73,16 +75,15 @@ public class HibernateMappingRenameTransaction extends RenameTransaction {
                 SessionFactory sfactory = configuration.getSessionFactory();
                 if(sfactory != null) {
                     for(int i = 0; i < sfactory.sizeMapping(); i ++ ) {
-                        String resourceName = sfactory.getAttributeValue(SessionFactory.MAPPING, i, "Resource"); // NOI18N
+                        String resourceName = sfactory.getAttributeValue(SessionFactory.MAPPING, i, rescrName);
                         if(resourceName.equals(origName)) {
-                            sfactory.setAttributeValue(SessionFactory.MAPPING, i, "Resource", newName);
+                            sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newName);
                         }
                     }
                 }
 
                 outs = file.getOutputStream();
                 configuration.write(outs);
-
             } catch (FileAlreadyLockedException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } catch (IOException ex) {

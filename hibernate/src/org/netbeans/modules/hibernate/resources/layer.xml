@@ -135,17 +135,26 @@ made subject to such option by the copyright holder.
                     <file name="org-openide-actions-DeleteAction.instance">
                         <attr name="position" intvalue="900"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.instance">
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="sep-3.instance">
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1050"/>
+                    </file>
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="org-openide-actions-SaveAsTemplateAction.instance">
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    <file name="sep-4.instance">
+                    <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
@@ -155,7 +164,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    <file name="sep-5.instance">
+                    <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1700"/>
                     </file> 
@@ -337,4 +346,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+   
 </filesystem>

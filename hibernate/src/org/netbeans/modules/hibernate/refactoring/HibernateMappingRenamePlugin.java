@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.openide.util.NbBundle;
 
 /**
  * This plugin modifies the Hibernate configuration files accordingly when the referenced
@@ -79,20 +80,26 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
 
     public Problem fastCheckParameters() {
         // TODO: verify the new name here. Make sure it is valid and unique
-        // - must end with .hbm (not .xml)
         
         Problem fastCheckProblem = null;
     
         String oldName = fo.getName();
         String newName = refactoring.getNewName();
-        if (oldName.equals(newName)) {
-            fastCheckProblem = createProblem(fastCheckProblem, true, "Name not changed");
+        if(oldName.equals(newName)) {
+            fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem, 
+                    true,  NbBundle.getMessage(HibernateMappingRenamePlugin.class,"MSG_NameNotChanged"));
             return fastCheckProblem;
         }
         
-         if (!isValidMappingFileName(newName)) {
-             fastCheckProblem = createProblem(fastCheckProblem, true, "Invalid mapping filename");
+         if(!HibernateRefactoringUtil.isValidMappingFileName(newName)) {
+             fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem, 
+                     true, NbBundle.getMessage(HibernateMappingRenamePlugin.class,"MSG_Invalid_Name"));
          }
+        
+        if(HibernateRefactoringUtil.nameNotUnique(newName)){
+            fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem, 
+                    true, NbBundle.getMessage(HibernateMappingRenamePlugin.class, "MSG_NameNotUnique"));
+        }
 
         return fastCheckProblem;
     }
@@ -158,41 +165,5 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
         names[1] = pkgPath + refactoring.getNewName() + ".xml"; // NOI18N
 
         return names;
-    }
-    
-    protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
-        Problem problem = new Problem(isFatal, message);
-        if (result == null) {
-            return problem;
-        } else if (isFatal) {
-            problem.setNext(result);
-            return problem;
-        } else {
-            //problem.setNext(result.getNext());
-            //result.setNext(problem);
-            
-            // [TODO] performance
-            Problem p = result;
-            while (p.getNext() != null)
-                p = p.getNext();
-            p.setNext(problem);
-            return result;
-        }
-    }
-    
-    public static final boolean isValidMappingFileName(String name) {
-        if (name == null) {
-            return false;
-        }
-
-        if (name.equals("")) {
-            return false;
-        }
-
-        if (!name.endsWith(".hbm")) {
-            return false;
-        }
-
-        return true;
     }
 }

@@ -69,9 +69,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
 import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
@@ -266,7 +268,7 @@ public class HibernateRefactoringUtil {
         }
         return occurrences;
     }
-    
+
     public static Map<FileObject, List<OccurrenceItem>> getJavaPackageOccurrences(List<FileObject> allMappingFiles, String origPkgName) {
         Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
         for (FileObject mFileObj : allMappingFiles) {
@@ -275,15 +277,15 @@ public class HibernateRefactoringUtil {
 
         return occurrences;
     }
-    
+
     public static Map<FileObject, List<OccurrenceItem>> getJavaFieldOccurrences(List<FileObject> allMappingFiles, String className, String fieldName) {
         Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
         for (FileObject mFileObj : allMappingFiles) {
-            occurrences.put( mFileObj, getJavaFieldOccurPlaces(mFileObj, className, fieldName));
+            occurrences.put(mFileObj, getJavaFieldOccurPlaces(mFileObj, className, fieldName));
         }
         return occurrences;
     }
-    
+
     private static List<OccurrenceItem> getOccurPlaces(FileObject mappingFile, String searchingForName, boolean searchingPackageName) {
         List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
         try {
@@ -293,7 +295,7 @@ public class HibernateRefactoringUtil {
             if (result == null) {
                 throw new IllegalStateException("File " + mappingFile + " does not have an EditorCookie.");
             }
-            
+
             CloneableEditorSupport editor = (CloneableEditorSupport) result;
             BaseDocument document = (BaseDocument) editor.openDocument();
             XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
@@ -317,35 +319,34 @@ public class HibernateRefactoringUtil {
                         Node theNode = (Node) element;
                         String nodeName = theNode.getNodeName();
                         String itemImage = item.getImage();
-                        
+
                         if (searchingPackageName && nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MAPPING_TAG) &&
-                                    itemImage.contains(HibernateMappingXmlConstants.MAPPING_TAG)) {
-                                // <class> element
-                                attributeValues = new String[1];
-                                attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.PACKAGE_ATTRIB);
-                                pkgValue = true;
-                        }
-                        // Search the element/attrubutes that take class names
+                                itemImage.contains(HibernateMappingXmlConstants.MAPPING_TAG)) {
+                            // <class> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.PACKAGE_ATTRIB);
+                            pkgValue = true;
+                        } // Search the element/attrubutes that take class names
                         else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.CLASS_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.CLASS_TAG)) {
                             // <class> element
                             attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ONE_TO_MANY_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.ONE_TO_MANY_TAG)) {
                             // <one-to-many> element
                             attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPOSITE_ID_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.COMPOSITE_ID_TAG)) {
                             // <composite-id> element
                             attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG)) {
                             // <key-many-to-one> element
                             attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MANY_TO_ONE_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.MANY_TO_ONE_TAG)) {
                             // <many-to-one> element
@@ -355,30 +356,30 @@ public class HibernateRefactoringUtil {
                                 itemImage.contains(HibernateMappingXmlConstants.ONE_TO_ONE_TAG)) {
                             // <one-to-one> element
                             attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPONENT_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.COMPONENT_TAG)) {
                             // <component> element
                             attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.SUBCLASS_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.SUBCLASS_TAG)) {
                             // <subclass> element
                             attributeValues = new String[2];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB);
                             attributeValues[1] = getAttributeValue(theNode, HibernateMappingXmlConstants.EXTENDS_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG)) {
                             // <joined-subclass> element
                             attributeValues = new String[3];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB);
                             attributeValues[1] = getAttributeValue(theNode, HibernateMappingXmlConstants.EXTENDS_ATTRIB);
                             attributeValues[2] = getAttributeValue(theNode, HibernateMappingXmlConstants.PERSISTER_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG)) {
                             // <union-subclass> element
                             attributeValues = new String[3];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB);
                             attributeValues[1] = getAttributeValue(theNode, HibernateMappingXmlConstants.EXTENDS_ATTRIB);
                             attributeValues[2] = getAttributeValue(theNode, HibernateMappingXmlConstants.PERSISTER_ATTRIB);
                         } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.IMPORT_TAG) &&
@@ -391,23 +392,23 @@ public class HibernateRefactoringUtil {
                             // <many-to-many> element
                             attributeValues = new String[1];
                             attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
-                        } 
-                        
-                        if (attributeValues != null ) {
-                            for( int i = 0; i < attributeValues.length; i ++ ) {
+                        }
+
+                        if (attributeValues != null) {
+                            for (int i = 0; i < attributeValues.length; i++) {
 
                                 String text = document.getText(item.getOffset(), element.getElementLength());
-                                
+
                                 String value = attributeValues[i];
-                                if(searchingPackageName && !pkgValue) {
+                                if (searchingPackageName && !pkgValue) {
                                     value = getPackageName(value);
                                 }
 
-                                if (value != null && value.equals(searchingForName)){
-                                    
+                                if (value != null && value.equals(searchingForName)) {
+
                                     // TODO: can not just do indexof. It does not work correctly if there are multiple
                                     // attributes have the same class searchingForName. Though, it does not make sense to have such case.
-                            
+
                                     if (text.indexOf(searchingForName) != -1) {
                                         int startOffset = item.getOffset() + text.indexOf(searchingForName);
                                         int endOffset = startOffset + searchingForName.length();
@@ -432,7 +433,7 @@ public class HibernateRefactoringUtil {
 
         return foundPlaces;
     }
-    
+
     private static List<OccurrenceItem> getJavaFieldOccurPlaces(FileObject mappingFile, String className, String fieldName) {
         List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
         try {
@@ -470,50 +471,37 @@ public class HibernateRefactoringUtil {
 
                         if ((nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.PROPERTY_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.PROPERTY_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ID_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.ID_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.SET_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.SET_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPOSITE_ID_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.COMPOSITE_ID_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.KEY_PROPERTY_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.KEY_PROPERTY_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.VERSION_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.VERSION_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.TIMESTAMP_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.TIMESTAMP_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MANY_TO_ONE_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.MANY_TO_ONE_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ONE_TO_ONE_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.ONE_TO_ONE_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPONENT_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.COMPONENT_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ANY_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.ANY_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MAP_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.MAP_TAG)) ||
-                                
                                 (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.LIST_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.LIST_TAG))) {
-                            
+
                             nameAttribValue = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB);
-                            
+
                             if (nameAttribValue != null && nameAttribValue.equals(fieldName)) {
-                                
+
                                 // Check class name
                                 if (HibernateEditorUtil.getClassName(theNode).equals(className)) {
                                     text = document.getText(item.getOffset(), element.getElementLength());
@@ -525,8 +513,83 @@ public class HibernateRefactoringUtil {
                                     PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                             editor.createPositionRef(endOffset, Bias.Forward));
 
-                                    foundPlaces.add( new OccurrenceItem(loc, text) );
+                                    foundPlaces.add(new OccurrenceItem(loc, text));
                                 }
+                            }
+                        }
+                    }
+                }
+                item = item.getNext();
+            }
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        } catch (BadLocationException ex) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
+
+        return foundPlaces;
+    }
+
+    public static Map<FileObject, List<OccurrenceItem>> getMappingResourceOccurrences(List<FileObject> configFiles, String origName) {
+        Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
+        for (FileObject file : configFiles) {
+            occurrences.put(file, getMappingResourceOccurPlaces(file,origName));
+        }
+        return occurrences;
+    }
+    
+    private static List<OccurrenceItem> getMappingResourceOccurPlaces(FileObject configFile, String resourceName) {
+        List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
+        try {
+            // Get the document for this file
+            DataObject dataObject = DataObject.find(configFile);
+            EditorCookie result = dataObject.getCookie(EditorCookie.class);
+            if (result == null) {
+                throw new IllegalStateException("File " + configFile + " does not have an EditorCookie.");
+            }
+
+            CloneableEditorSupport editor = (CloneableEditorSupport) result;
+            BaseDocument document = (BaseDocument) editor.openDocument();
+            XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
+
+            int start = document.getStartPosition().getOffset();
+            TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, document.getLength()));
+            if (item == null) {
+                return null;
+            }
+
+            String text = null;
+            while (item != null) {
+                TokenID tokenId = item.getTokenID();
+
+                if (tokenId == XMLDefaultTokenContext.TAG) {
+                    // Did we find the <class> element
+
+                    SyntaxElement element = syntaxSupport.getElementChain(item.getOffset() + 1);
+                    String mappingResourceAttribValue = null;
+                    if (element instanceof StartTag || element instanceof EmptyTag) {
+
+                        Node theNode = (Node) element;
+                        String nodeName = theNode.getNodeName();
+                        String itemImage = item.getImage();
+
+                        if(nodeName.equalsIgnoreCase(HibernateCfgXmlConstants.MAPPING_TAG) && 
+                                itemImage.contains(HibernateCfgXmlConstants.MAPPING_TAG)){ 
+
+                            mappingResourceAttribValue = getAttributeValue(theNode, HibernateCfgXmlConstants.RESOURCE_ATTRIB);
+
+                            if (mappingResourceAttribValue != null && mappingResourceAttribValue.equals(resourceName)) {
+
+                                text = document.getText(item.getOffset(), element.getElementLength());
+
+                                // find the offset for the field name
+                                int index = text.indexOf(resourceName);
+                                int startOffset = item.getOffset() + index;
+                                int endOffset = startOffset + resourceName.length();
+                                PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
+                                        editor.createPositionRef(endOffset, Bias.Forward));
+
+                                foundPlaces.add(new OccurrenceItem(loc, text));
                             }
                         }
                     }
@@ -585,12 +648,50 @@ public class HibernateRefactoringUtil {
 
         return null;
     }
-    
+
     public static String getPackageName(String binaryClassName) {
-        if(binaryClassName == null)
+        if (binaryClassName == null) {
             return null;
-        
+        }
+
         int lastDot = binaryClassName.lastIndexOf(".");
         return binaryClassName.substring(0, lastDot);
+    }
+    
+    public static final Problem createProblem(Problem result, boolean isFatal, String message) {
+        Problem problem = new Problem(isFatal, message);
+        if (result == null) {
+            return problem;
+        } else if (isFatal) {
+            problem.setNext(result);
+            return problem;
+        } else {
+            Problem p = result;
+            while (p.getNext() != null)
+                p = p.getNext();
+            p.setNext(problem);
+            return result;
+        }
+    }
+    
+    public static final boolean isValidMappingFileName(String name) {
+        if (name == null) {
+            return false;
+        }
+
+        if (name.equals("")) {
+            return false;
+        }
+
+        if (!name.endsWith(".hbm")) { // NOI18N
+            return false;
+        }
+
+        return true;
+    }
+    
+    public static boolean nameNotUnique(String name) {
+        //TODO: checking here
+        return false;
     }
 }

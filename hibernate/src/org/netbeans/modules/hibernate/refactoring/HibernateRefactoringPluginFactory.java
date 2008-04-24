@@ -38,15 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.hibernate.refactoring;
 
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Refactoring plugin factory for refactoring Hibernate mapping files
@@ -60,11 +62,30 @@ public class HibernateRefactoringPluginFactory implements RefactoringPluginFacto
         if (refactoring instanceof WhereUsedQuery) {
             return new HibernateFindUsagesPlugin((WhereUsedQuery) refactoring);
         } else if (refactoring instanceof RenameRefactoring) {
-            return new HibernateRenamePlugin((RenameRefactoring)refactoring);
+            if (isMappingFile(refactoring)) {
+                return new HibernateMappingRenamePlugin((RenameRefactoring) refactoring);
+            } else {
+                return new HibernateRenamePlugin((RenameRefactoring) refactoring);
+            }
         } else if (refactoring instanceof MoveRefactoring) {
-            return new HibernateMovePlugin((MoveRefactoring)refactoring);
-        } 
-        
+            if (isMappingFile(refactoring)) {
+                System.err.println("!!!!!!!!!!MOVING Hibernate mapping file. TBD");
+                
+            } else {
+                return new HibernateMovePlugin((MoveRefactoring) refactoring);
+            }
+        }
+
         return null;
+    }
+
+    public static boolean isMappingFile(AbstractRefactoring refactoring) {
+        Lookup refactoringSource = refactoring.getRefactoringSource();
+        FileObject fileObject = refactoringSource.lookup(FileObject.class);
+        if (fileObject != null &&
+                fileObject.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
+            return true;
+        }
+        return false;
     }
 }
