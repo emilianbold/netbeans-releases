@@ -542,8 +542,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             }
             boolean s1 = ((JPDAThread) o1).isSuspended();
             boolean s2 = ((JPDAThread) o2).isSuspended();
-            if (s1 && !s2) return +1;
-            if (!s1 && s2) return -1;
+            if (s1 && !s2) return -1;
+            if (!s1 && s2) return +1;
             return 0;
         }
         
