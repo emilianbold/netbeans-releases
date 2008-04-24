@@ -132,7 +132,7 @@ public class ModuleListParserTest extends TestCase {
         }), Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.modules.masterfs");
         assertNotNull(e);
-        String testDeps[] = e.getTestDependencies();
+        String testDeps[] = e.getTestDependencies().get("unit");
         assertNotNull(testDeps);
         assertEquals("depends on one test entry",1,testDeps.length);
         assertEquals("org.openide.filesystems",testDeps[0]);
