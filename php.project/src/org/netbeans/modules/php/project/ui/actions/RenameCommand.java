@@ -25,35 +25,28 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.rt.spi.providers.Command;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.awt.Actions;
-import org.openide.util.NbBundle;
 
 /**
- *
- * @author avk
+ * @author Radek Matous
  */
-public class DeleteCommand extends AbstractCommand{
+public class RenameCommand extends GlobalCommand {
 
-    public DeleteCommand(Project project){
+    public RenameCommand(PhpProject project){
         super(project);
     }
-    
-    public String getId() {
-        return ActionProvider.COMMAND_DELETE;
+
+    @Override
+    protected void invokeAction() {
+        DefaultProjectOperations.performDefaultRenameOperation(getProject(), null);
     }
 
-    public String getLabel() {
-        return NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name");
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_RENAME;
     }
-
-    public void run() {
-        DefaultProjectOperations.performDefaultDeleteOperation(getProject());
-    }
-
 }

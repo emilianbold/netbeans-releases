@@ -25,35 +25,27 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.rt.spi.providers.Command;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.awt.Actions;
-import org.openide.util.NbBundle;
 
 /**
- *
- * @author avk
+ * @author Radek Matous
  */
-public class MoveCommand extends AbstractCommand {
-
-    public MoveCommand(Project project) {
+public class MoveCommand extends GlobalCommand {
+    public MoveCommand(PhpProject project) {
         super(project);
     }
 
-    public String getId() {
-        return ActionProvider.COMMAND_MOVE;
-    }
-
-    public String getLabel() {
-        return NbBundle.getMessage(Actions.class, "LBL_MoveProjectAction_Name");
-    }
-
-    public void run() {
+    @Override
+    protected void invokeAction() {
         DefaultProjectOperations.performDefaultMoveOperation(getProject());
     }
 
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_MOVE;
+    }
 }

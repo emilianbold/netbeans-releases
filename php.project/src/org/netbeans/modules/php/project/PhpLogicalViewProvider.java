@@ -44,11 +44,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -61,30 +61,28 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.project.ui.actions.Command;
+import org.netbeans.modules.php.project.ui.actions.DebugLocalCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.RunLocalCommand;
+import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.spi.providers.Command;
-import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
-import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
-import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.netbeans.spi.viewmodel.Models;
-import org.netbeans.spi.viewmodel.Models.ActionPerformer;
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
-import org.openide.actions.OpenAction;
 import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.actions.RenameAction;
-import org.openide.actions.SaveAsTemplateAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -193,7 +191,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
     public void propertiesChanged( AntProjectEvent arg0 ) {
         myActionsByCommand.clear();
     }
-    
+
     private boolean hasObject(Node node, Object obj) {
         if (obj == null) {
             return false;
@@ -225,7 +223,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
     }
 
     private class PhpLogicalViewRootNode extends AbstractNode {
-
         private PhpLogicalViewRootNode() {
             super(new LogicalViewChildren(), Lookups.fixed(new Object[]{getProject()}));
             
@@ -237,83 +234,44 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
         @Override
         public Action[] getActions(boolean context) {
-            if (context) {
-                return super.getActions(context);
-            } else {
-                return getAdditionalActions();
-            }
-        }
-
-        private Action[] getAdditionalActions() {
-            List<Action> list = new LinkedList<Action>();
-
-            list.add(0, CommonProjectActions.newFileAction());
-
-            // actions from provider
-            for (Action action : getProviderActions()){
-                list.add(action);
-            }
-
-            // get our project actions
-            /* removed run.script from project root node
-             for (Action action : getProjectActions()){
-                list.add(action);
-            }*/
-                
-            // get standard project actions
-            for (Action action : getStandardProjectActions()){
-                list.add(action);
-            }
-	    
-	    //Custom Actions for Project Nodes - #57874
+            PhpActionProvider provider = getProject().getLookup().lookup(PhpActionProvider.class);
+            assert provider != null;
+            List<Action> actions = new ArrayList<Action>();            
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);            
+            actions.add(provider.getAction(ActionProvider.COMMAND_RUN)); 
+            actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG)); 
+            actions.add(null);            
+            actions.add(CommonProjectActions.setProjectConfigurationAction());
+            actions.add(null);
+            actions.add(CommonProjectActions.setAsMainProjectAction());
+            actions.add(CommonProjectActions.openSubprojectsAction());
+            actions.add(CommonProjectActions.closeProjectAction());
+            actions.add(null);
+            actions.add(CommonProjectActions.renameProjectAction());
+            actions.add(CommonProjectActions.moveProjectAction());
+            actions.add(CommonProjectActions.copyProjectAction());
+            actions.add(CommonProjectActions.deleteProjectAction());
+            actions.add(null);
+            actions.add(SystemAction.get(FindAction.class));
+            // honor 57874 contact
+            
             Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
             if (!res.isEmpty()) {
-                list.add(null);
+                actions.add(null);
                 for (Object next : res) {
                     if (next instanceof Action) {
-                        list.add((Action) next);
+                        actions.add((Action) next);
                     } else if (next instanceof JSeparator) {
-                        list.add(null);
+                        actions.add(null);
                     }
                 }
             }
-            list.add(null);
-            list.add(CommonProjectActions.customizeProjectAction());            
-            return list.toArray(new Action[list.size()]);
+            actions.add(null);
+            actions.add(CommonProjectActions.customizeProjectAction());            
+            return actions.toArray(new Action[actions.size()]);
         }
 
-        private Action[] getProjectActions(){
-            List<Action> list = new LinkedList<Action>();
-            
-            PhpActionProvider actionProvider 
-                    = getProject().getLookup().lookup(PhpActionProvider.class);
-            for (Command command : actionProvider.getProjectCommands()) {
-                String id = command.getId();
-                String label = command.getLabel();
-                list.add(ProjectSensitiveActions.projectCommandAction(id, label, null));
-            }
-            
-            return list.toArray(new Action[]{});
-        }
-        
-        private Action[] getStandardProjectActions(){
-            // do not get keysList from actionProvider.getStandardProjectCommands()
-            // because it will give only keysList of commands that we support outselves
-            // and will not allow desired formatting
-            return new Action[]{
-                        null, 
-                        CommonProjectActions.setAsMainProjectAction(), 
-                        CommonProjectActions.openSubprojectsAction(), 
-                        CommonProjectActions.closeProjectAction(), 
-                        null, 
-                        CommonProjectActions.renameProjectAction(), 
-                        CommonProjectActions.moveProjectAction(), 
-                        CommonProjectActions.copyProjectAction(), 
-                        CommonProjectActions.deleteProjectAction()
-            };
-            
-        }
-        
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(PhpLogicalViewProvider.class);
@@ -444,12 +402,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          * @see org.openide.filesystems.FileStatusListener#annotationChanged(org.openide.filesystems.FileStatusEvent)
          * file system change
          */
-        /*
-        public void annotationChanged(FileStatusEvent ev) {
-            createNodes();
-        }
-         */
-
         private void createNodes() {
             // update Sources listeners
             Sources sources = ProjectUtils.getSources(myProject);
@@ -507,44 +459,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                 group.addPropertyChangeListener(pcl);
             }
         }
-
-        /*
-        private void updateSourceRootsListeners(Set<FileObject> files) {
-            if (fileSystemListeners != null) {
-                Iterator it = fileSystemListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    FileSystem fs = (FileSystem) it.next();
-                    FileStatusListener fsl = fileSystemListeners.get(fs);
-                    fs.removeFileStatusListener(fsl);
-                }
-            }
-            
-            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
-            if (files == null) {
-                return;
-            }
-            
-            Iterator it = files.iterator();
-            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
-                try {
-                    FileSystem fs = fo.getFileSystem();
-                    if (hookedFileSystems.contains(fs)) {
-                        continue;
-                    }
-                    hookedFileSystems.add(fs);
-                    FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
-                    fs.addFileStatusListener(fsl);
-                    fileSystemListeners.put(fs, fsl);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NOI18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-        }
-         */
         
         private DataFolder getFolder(String propName) {
             String propertyValue = getProject().getEvaluator().getProperty(propName);
@@ -622,57 +536,19 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
         @Override
         public Action[] getActions(boolean context) {
-            if (context) {
-                return super.getActions(context);
-            } else {
-                return getAdditionalActions();
-            }
-        }
-
-        private Action[] getAdditionalActions() {
-            List<Action> list = new LinkedList<Action>();
-
-            list.add(0, CommonProjectActions.newFileAction());
-
-            // the same provider actions as for project
-            /* removed run, debug actions from src node
-             for (Action action : getProviderActions()){
-                list.add(action);
-            }
-
-            //removed  run.script from src node
-            for (Action action : getSrcActions()){
-                list.add(action);
-            }*/
-
-            for (Action action : getStandardSrcActions()){
-                list.add(action);
-            }
-
-            return list.toArray(new Action[list.size()]);
-        }
-        
-        private Action[] getSrcActions(){
-            //ImportCommand importComm = new ImportCommand(getProject());
-            RunLocalCommand runLocalComm = new RunLocalCommand(getProject());
-
-            Action[] actions = new Action[]{
-                //ProjectSensitiveActions.projectCommandAction(importComm.getId(), importComm.getLabel(), null),
-                ProjectSensitiveActions.projectCommandAction(runLocalComm.getId(), runLocalComm.getLabel(), null)
-            };
-            return actions;
-        }
-        
-        private Action[] getStandardSrcActions(){
-            Action[] actions = new Action[]{
+            Action[] actions = new Action[] {
+                CommonProjectActions.newFileAction(),
+                null,
+                SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(FindAction.class),
                 null,
                 SystemAction.get(PasteAction.class),
                 null,
-                SystemAction.get(FileSystemAction.class),
                 SystemAction.get(ToolsAction.class),
-            };
+                null,
+                CommonProjectActions.customizeProjectAction()
+            };            
             return actions;
         }
     }
@@ -709,206 +585,42 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
         @Override
         public Action[] getActions(boolean context) {
-            if (context) {
-                return super.getActions(context);
-            } else {
-                return getAdditionalActions();
-            }
-
-        }
-        
-        private Action[] getAdditionalActions(){
-            List<Action> actions = new LinkedList<Action>();
-
-            for (Action action : super.getActions(false)) {
-                actions.add(action);
-            }
-
-            // want to add recent after 'NewFile' action.
-            // use fixed index not to search for 'NewFile' 
-            // in seper actions each time (this wuill need to create 
-            // CommonProjectActions.newFileAction() and check equals() )
-            
-	    /* no run, debug, run.script actions on any node representing folder anymore
-	     int pos = 2;
-            for (Action action : getProviderActions()) {
-                actions.add(pos++, action);
-            }
-
-            for (Action action : getFolderActions()) {
-                actions.add(pos++, action);
-            }
-	     */ 
-
-            return actions.toArray(new Action[]{});
-        }
-
-        private Action[] getFolderActions() {
-            RunLocalCommand runCommand = new RunLocalCommand(getProject());
-            Action runAction = getWrapperAction(runCommand);
-            
-            Action[] actions = new Action[]{
-                runAction,
-                null,
-                SystemAction.get(FileSystemAction.class)};
-            return actions;
-        }                
+            return getOriginal().getActions(context);
+        }        
     }
 
-    private boolean isInvokedForProject(){
-        return PhpCommandUtils.isInvokedForProject();
-    }
-
-    private boolean isInvokedForSrcRoot(){
-        return PhpCommandUtils.isInvokedForSrcRoot();
-    }
-    
-    
-    /**
-     * creates Action object for given Command.
-     * Uses ProjectSensitiveActions.projectCommandAction() 
-     * if Project is among selected nodes, 
-     * Creates AbstractAction otherwise.
-     */
-    private Action getWrapperAction(Command command) {
-        Action action = null;
-        if (isInvokedForProject() || isInvokedForSrcRoot()){
-            action = ProjectSensitiveActions.projectCommandAction( 
-                        command.getId(), command.getLabel(), null);
-        } 
-        else {
-            action = myActionsByCommand.get(command);
-            if (action == null){
-                action = createWrapperAction(command);
-                myActionsByCommand.put(command, action);
-            }
-        }
-        return action;
-    }
-    
-    private Action createWrapperAction(final Command command) {
-        Action action = Models.createAction(
-                command.getLabel(),
-                new ActionPerformer() {
-
-                    public boolean isEnabled(Object node) {
-                        return command.isEnabled();
-                    }
-
-                    public void perform(Object[] nodes) {
-                        PhpActionProvider.PhpCommandRunner
-                                .runCommand(command,getProject());
-                    }
-                },
-                Models.MULTISELECTION_TYPE_ANY);
-        return action;
-    }
-    
+           
     private final class ObjectNode extends FilterNode {
-
         public ObjectNode(final Node originalNode) {
             super(originalNode);
         }
 
         @Override
         public Action[] getActions(boolean context) {
-            if (context) {
-                return super.getActions(context);
-            } else {
-                return getAdditionalActions();
-            }
-        }
-        
-        private Action[] getAdditionalActions() {
-            List<Action> actions = new LinkedList<Action>();
-
-            actions.add(SystemAction.get(OpenAction.class));
-            actions.add(null);
-
-            for (Action action : getProviderActions()) {
-                actions.add(action);
-            }
-
-            for (Action action : getObjectActions()) {
-                actions.add(action);
-            }
-
-            for (Action action : super.getActions(false)) {
-                actions.add(action);
-            }
-            
-            return actions.toArray(new Action[]{});
-        }
-        
-        private Action[] getObjectActions(){
-            RunLocalCommand runCommand = new RunLocalCommand(getProject());
-            Action runAction = getWrapperAction(runCommand);
-            
-            Action[] actions = new Action[]{
-                runAction,
+            PhpActionProvider provider = getProject().getLookup().lookup(PhpActionProvider.class);
+            assert provider != null;
+            List<Action> actions = new ArrayList<Action>();            
+            actions.addAll(Arrays.asList(getOriginal().getActions(context)));
+            Action[] toAdd = new Action[] {
                 null,
-                SystemAction.get(CutAction.class), 
-                SystemAction.get(CopyAction.class), 
-                SystemAction.get(PasteAction.class), 
-                null, 
-                SystemAction.get(DeleteAction.class), 
-                SystemAction.get(RenameAction.class), 
-                null, 
-                SystemAction.get(SaveAsTemplateAction.class), 
-                SystemAction.get(FileSystemAction.class)
+                provider.getAction(RunSingleCommand.ID),
+                provider.getAction(DebugSingleCommand.ID),
+                null,
+                provider.getAction(RunLocalCommand.ID),
+                provider.getAction(DebugLocalCommand.ID)
             };
-            return actions;
-        }        
-
-    }
-
-    /** returns provider actions for specified DataObject or for Project if null.
-     * 
-     * @param dataObject for which actions keysList should be provided.
-     * It can be DataObject for file, 
-     * DataFolder for forlder
-     * or null for Project and SrcRoot Node.
-     * 
-     * @returns Folder menu items for given DataFolder,
-     * File menu items for DataObject,
-     * Project menu items for null
-     */
-    private Action[] getProviderActions() {
-        Action[] actions = new Action[]{};
-        List<Action> list = new LinkedList<Action>();
-
-        Command[] commands = getProviderCommands();
-        if (commands.length > 0 ){
-            list.add(null);
-
-            for (Command command : commands) {
-                if (command == null) {
-                    list.add(null);
-                    continue;
+            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            for (int i = 0; i < toAdd.length; i++) {
+                if (idx >= 0 && idx+toAdd.length < actions.size()) {
+                    //put on the proper place after paste
+                    actions.add(idx+i+1, toAdd[i]);                    
+                } else {
+                    //else put at the tail
+                    actions.add(toAdd[i]);
                 }
-                list.add(getWrapperAction(command));
-            }
-
-            list.add(null);
-            actions = list.toArray(actions);
-        }
-
-        return actions;
-    }
-
-    private Command[] getProviderCommands() {
-        Command[] commands = null;
-
-        WebServerProvider provider = Utils.getProvider(getProject());
-        if (provider != null) {
-            CommandProvider commandProvider = provider.getCommandProvider();
-            
-            commands = commandProvider.getEnabledCommands(getProject());
-        }
-        if (commands == null){
-            commands = new Command[]{};
-        }
-        return commands;
+            }            
+            return actions.toArray(new Action[actions.size()]);
+        }        
     }
     
     private class PhpSourcesFilter implements DataFilter {

@@ -25,49 +25,37 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.ui.actions.*;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ProjectOperations;
-import org.openide.awt.Actions;
+import org.netbeans.modules.php.project.PhpProject;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
 /**
- *
- * @author avk
+ * @author Radek Matous
  */
-public class CopyCommand extends AbstractCommand{
-
-    public CopyCommand(Project project){
+public class DebugLocalCommand  extends Command implements Displayable {    
+    public static final String ID = "debug.local";//NOI18N
+    public DebugLocalCommand(PhpProject project) {
         super(project);
     }
+
+    @Override
+    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    }
+
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        FileObject fos[] = new CommandUtils(getProject()).phpFilesForContext(context);
+        return (fos != null && fos.length == 1);
+    }
+
+    @Override
+    public String getCommandId() {
+        return ID;
+    }
     
-    public String getId() {
-        return ActionProvider.COMMAND_COPY;
+    public String getDisplayName() {
+        return NbBundle.getMessage(RunCommand.class, "LBL_DebugLocalCommand");//NOI18N
     }
-
-    public String getLabel() {
-        return NbBundle.getMessage(Actions.class, "LBL_CopyProjectAction_Name");
-    }
-
-    public void run() {
-//        DefaultProjectOperations.performDefaultCopyOperation(myProject);
-        // checks are copied from DefaultProjectOperations.performDefaultCopyOperation
-        // DefaultProjectOperationsImplementation.copyProject 
-        // is replaced by our implementation.
-        if (getProject() == null) {
-            throw new IllegalArgumentException("Project is null");
-        }
-        
-        if (!ProjectOperations.isCopyOperationSupported(getProject())) {
-            throw new IllegalStateException(
-                    "Attempt to copy project that does not support copy.");
-        }
-        
-        PhpProjectOperationsImplementation.copyProject(getProject());
-        
-    }
-
 }

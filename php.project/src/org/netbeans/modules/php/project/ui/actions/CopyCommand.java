@@ -25,35 +25,31 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.rt.spi.providers.Command;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.awt.Actions;
-import org.openide.util.NbBundle;
 
 /**
- *
- * @author avk
+ * @author Radek Matous
  */
-public class RenameCommand extends AbstractCommand{
-
-    public RenameCommand(Project project){
+public class CopyCommand extends GlobalCommand {
+    public CopyCommand(PhpProject project){
         super(project);
     }
     
-    public String getId() {
-        return ActionProvider.COMMAND_RENAME;
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_COPY;
     }
 
-    public String getLabel() {
-        return NbBundle.getMessage(Actions.class, "LBL_RenameProjectAction_Name");
+    @Override
+    public void invokeAction()  {
+        //TODO: check this comment - why?
+        //        DefaultProjectOperations.performDefaultCopyOperation(myProject);
+        // checks are copied from DefaultProjectOperations.performDefaultCopyOperation
+        // DefaultProjectOperationsImplementation.copyProject 
+        // is replaced by our implementation.                
+        PhpProjectOperationsImplementation.copyProject(getProject());
     }
-
-    public void run() {
-        DefaultProjectOperations.performDefaultRenameOperation(getProject(), null);
-    }
-
 }
