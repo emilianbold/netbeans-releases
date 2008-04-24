@@ -323,6 +323,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         setLoading();
                     }
                 }
+                gdb.data_list_register_names("");
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
@@ -350,6 +351,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
                     gdb.break_insert(GDB_TMP_BREAKPOINT, "WinMain"); // NOI18N
                 }
+                gdb.data_list_register_names("");
                 try {
                     gdb.exec_run(pae.getProfile().getArgsFlat());
                 } catch (Exception ex) {
@@ -374,7 +376,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.info_proc(); // we get the PID from this...
                 }
             }
-            gdb.data_list_register_names("");
         } catch (Exception ex) {
             if (startupTimer != null) {
                 startupTimer.cancel();

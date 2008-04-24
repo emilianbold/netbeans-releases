@@ -53,6 +53,8 @@ public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
 
     TransformMap createTransformMap();
     
+    Import createImport();
+
     Service createService();
     
     Operation createOperation();

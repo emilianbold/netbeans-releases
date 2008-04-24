@@ -5,7 +5,7 @@
     <xsd:element name="rsp">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="stream_count" type="xsd:integer"/>
+                <xsd:element name="stream_count" type="xsd:int"/>
                 <xsd:element name="venue" maxOccurs="unbounded" minOccurs="0" type="venueType"/>
                 <xsd:element name="event" type="eventType" minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:element name="category" maxOccurs="unbounded" type="categoryType" minOccurs="0"/>
@@ -25,7 +25,7 @@
             <xsd:element name="url" type="xsd:anyURI"/>
             <xsd:element name="phone" type="xsd:string"/>
             <xsd:element name="link" type="xsd:anyURI"/>
-            <xsd:element name="creator_id" type="xsd:integer"/>
+            <xsd:element name="creator_id" type="xsd:int"/>
             <xsd:element name="address" type="xsd:string"/>
             <xsd:element name="city" type="xsd:string"/>
             <xsd:element name="zipcode" type="xsd:string"/>
@@ -42,19 +42,19 @@
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:integer"/>
+        <xsd:attribute name="id" type="xsd:int"/>
     </xsd:complexType>
     <xsd:complexType name="eventType">
         <xsd:sequence>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="description" type="xsd:string" nillable="true" minOccurs="1"/>
             <xsd:element name="url" type="xsd:anyURI" minOccurs="1"/>
-            <xsd:element name="starttime" type="xsd:integer"/>
-            <xsd:element name="endtime" type="xsd:integer" minOccurs="1"/>
-            <xsd:element name="creator_id" type="xsd:integer"/>
+            <xsd:element name="starttime" type="xsd:int"/>
+            <xsd:element name="endtime" type="xsd:int" minOccurs="1"/>
+            <xsd:element name="creator_id" type="xsd:int"/>
             <xsd:element name="price" type="xsd:string" minOccurs="1"/>
-            <xsd:element name="venue_id" type="xsd:integer"/>
-            <xsd:element name="parent_id" type="xsd:integer"/>
+            <xsd:element name="venue_id" type="xsd:int"/>
+            <xsd:element name="parent_id" type="xsd:int"/>
             <xsd:element name="summary" type="xsd:string" nillable="false" minOccurs="1"/>
             <xsd:element name="link" type="xsd:anyURI"/>
             <xsd:element name="external_urls">
@@ -89,7 +89,7 @@
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:integer"/>
+        <xsd:attribute name="id" type="xsd:int"/>
     </xsd:complexType>
     <xsd:complexType name="groupType">
         <xsd:sequence>
@@ -97,18 +97,18 @@
             <xsd:element name="description" type="xsd:string"/>
             <xsd:element name="url" type="xsd:anyURI"/>
             <xsd:element name="private" type="xsd:boolean"/>
-            <xsd:element name="creator_id" type="xsd:integer"/>
-            <xsd:element name="restrict_event_addition" type="xsd:integer"/>
+            <xsd:element name="creator_id" type="xsd:int"/>
+            <xsd:element name="restrict_event_addition" type="xsd:int"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:integer"/>
+        <xsd:attribute name="id" type="xsd:int"/>
     </xsd:complexType>
     <xsd:complexType name="categoryType">
         <xsd:sequence>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="description" type="xsd:string"/>
-            <xsd:element name="parent_id" type="xsd:integer"/>
-            <xsd:element name="depth" type="xsd:integer"/>
-            <xsd:element name="id" type="xsd:integer"/>
+            <xsd:element name="parent_id" type="xsd:int"/>
+            <xsd:element name="depth" type="xsd:int"/>
+            <xsd:element name="id" type="xsd:int"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="userType">
@@ -121,20 +121,20 @@
         <xsd:sequence>
             <xsd:element name="name" type="xsd:string"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:integer"/>
+        <xsd:attribute name="id" type="xsd:int"/>
     </xsd:complexType>
     <xsd:complexType name="searchInfoType">
         <xsd:sequence>
-            <xsd:element name="sst" type="xsd:integer" nillable="true"/>
-            <xsd:element name="set" type="xsd:integer" nillable="true"/>
-            <xsd:element name="srss" type="xsd:integer" nillable="true"/>
+            <xsd:element name="sst" type="xsd:int" nillable="true"/>
+            <xsd:element name="set" type="xsd:int" nillable="true"/>
+            <xsd:element name="srss" type="xsd:int" nillable="true"/>
             <xsd:element name="what" type="xsd:string"/>
             <xsd:element name="when" type="xsd:string"/>
             <xsd:element name="where" type="xsd:string"/>
             <xsd:element name="radius" type="xsd:float"/>
             <xsd:element name="st" type="xsd:string"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:integer"/>
+        <xsd:attribute name="id" type="xsd:int"/>
     </xsd:complexType>
     <xsd:complexType name="imageType">
         <xsd:sequence>
@@ -143,7 +143,7 @@
     </xsd:complexType>
     <xsd:complexType name="venueTypeType">
         <xsd:sequence>
-            <xsd:element name="id" type="xsd:integer"/>
+            <xsd:element name="id" type="xsd:int"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="venue_type"/>
         </xsd:sequence>
@@ -158,7 +158,7 @@
     </xsd:complexType>
     <xsd:complexType name="performerType">
         <xsd:sequence>
-            <xsd:element name="id" type="xsd:integer"/>
+            <xsd:element name="id" type="xsd:int"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="link" type="xsd:anyURI"/>
         </xsd:sequence>

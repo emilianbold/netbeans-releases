@@ -41,7 +41,7 @@
 package org.netbeans.modules.print.impl.action;
 
 import javax.swing.Action;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

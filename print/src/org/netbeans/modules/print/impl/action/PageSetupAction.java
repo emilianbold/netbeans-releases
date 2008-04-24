@@ -44,7 +44,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -276,6 +276,7 @@ short
 static
 super
 switch
+switch switch ( v ) {
 synchronized
 End cursor position = 148
 [my|, testJS.js myfunction () : void, myfunction(), 206]

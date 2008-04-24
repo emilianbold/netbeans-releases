@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.18.1
+#Version 1.19.0
 CLSS public static final org.netbeans.api.diff.DiffController$DiffPane
 fld  public static final org.netbeans.api.diff.DiffController$DiffPane org.netbeans.api.diff.DiffController$DiffPane.Base
 fld  public static final org.netbeans.api.diff.DiffController$DiffPane org.netbeans.api.diff.DiffController$DiffPane.Modified

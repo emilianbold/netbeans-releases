@@ -121,6 +121,7 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
         "ValidateAndBuild",
 
         // Move, fix
@@ -285,7 +286,26 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          5
+        );
 
       endTest( );
     }
@@ -294,7 +314,7 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      ValidateAndBuildInternal( SAMPLE_NAME );
+      ValidateAndBuildInternal( SAMPLE_NAME, true, "dist_se" );
 
       endTest( );
     }
@@ -499,7 +519,11 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          true,
+          "jbi-build"
+        );
 
       endTest( );
     }

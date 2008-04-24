@@ -47,7 +47,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     String nbBundle20 = mLoc.t("BUND089: new");
     String nbBundle28 = mLoc.t("BUND090: Browse...");
-    String nbBundle30 = mLoc.t("BUND867: NewETL");
+    String nbBundle30 = mLoc.t("BUND867: Collaboration");
     private String NEW_FILE_NAME = nbBundle30.substring(15); // NOI18N
 
     private final String NEW_FILE_PREFIX = nbBundle20.substring(15); // NOI18N
@@ -170,9 +170,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         putClientProperty("NewEtlWizard_Title", displayName); // NOI18N
 
         if (template != null) {
-            documentNameTextField.setText(NEW_FILE_NAME);
-            documentNameTextField.selectAll();
-            //documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());
+            documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());
+            documentNameTextField.selectAll();           
         }
         
         String nbBundle2 = mLoc.t("BUND092: Folder Name:");

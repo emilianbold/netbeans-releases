@@ -157,7 +157,7 @@ public class PHPCodeCompletion implements Completable {
     private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
-    private NameKind prefixNameKind;
+    private NameKind nameKind;
     
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         try {
@@ -242,7 +242,7 @@ public class PHPCodeCompletion implements Completable {
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
-        this.prefixNameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
         
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
@@ -296,7 +296,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
@@ -366,8 +366,8 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (typeName != null){
                     Collection<IndexedFunction> methods = includeInherited ?
-                        request.index.getAllMethods(request.result, typeName, request.prefix, prefixNameKind) :
-                        request.index.getMethods(request.result, typeName, request.prefix, prefixNameKind);
+                        request.index.getAllMethods(request.result, typeName, request.prefix, nameKind) :
+                        request.index.getMethods(request.result, typeName, request.prefix, nameKind);
                     
                     for (IndexedFunction method : methods){
                         if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
@@ -376,8 +376,8 @@ public class PHPCodeCompletion implements Completable {
                     }
                     
                     Collection<IndexedConstant> properties = includeInherited ?
-                        request.index.getAllProperties(request.result, typeName, request.prefix, prefixNameKind) :
-                        request.index.getProperties(request.result, typeName, request.prefix, prefixNameKind);
+                        request.index.getAllProperties(request.result, typeName, request.prefix, nameKind) :
+                        request.index.getProperties(request.result, typeName, request.prefix, nameKind);
                     
                     for (IndexedConstant prop : properties){
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
@@ -393,7 +393,7 @@ public class PHPCodeCompletion implements Completable {
                     
                     if (staticContext) {
                         Collection<IndexedConstant> classConstants = request.index.getClassConstants(
-                                request.result, typeName, request.prefix, prefixNameKind);
+                                request.result, typeName, request.prefix, nameKind);
                         
                         for (IndexedConstant constant : classConstants) {
                             proposals.add(new VariableItem(constant, request));
@@ -427,12 +427,12 @@ public class PHPCodeCompletion implements Completable {
         // FUNCTIONS
         PHPIndex index = request.index;
 
-        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
             proposals.add(new FunctionItem(function, request));
         }
 
         // CONSTANTS
-        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
             proposals.add(new ConstantItem(constant, request));
         }
 
@@ -483,13 +483,16 @@ public class PHPCodeCompletion implements Completable {
             
             if (statement instanceof ExpressionStatement){
                 String varName = extractVariableNameFromExpression(statement);
+                String varType = extractVariableTypeFromExpression(statement);
                 
-                if (varName != null && varName.startsWith(namePrefix)) {
+                if (varName != null 
+                        && (varName.startsWith(namePrefix) 
+                        || nameKind == NameKind.CASE_INSENSITIVE_PREFIX 
+                        && varName.toLowerCase().startsWith(namePrefix.toLowerCase()))) {
                     IndexedConstant ic = new IndexedConstant(varName, null,
-                            null, localFileURL, null, 0, -1);
+                            null, localFileURL, -1, 0, varType);
 
-                    String varType = extractVariableTypeFromExpression(statement);
-                    ic.setTypeName(varType);
+                    
                     localVars.put(varName, ic);
                 }
             } else if (!offsetWithinStatement(position, statement)){
@@ -532,13 +535,10 @@ public class PHPCodeCompletion implements Completable {
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
+                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
                         IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, null, 0, -1);
+                                null, localFileURL, -1, 0, type);
                         
-                        if (param.getParameterType() != null) {
-                            ic.setTypeName(param.getParameterType().getName());
-                        }
-
                         localVars.put(varName, ic);
                     }
                 }
