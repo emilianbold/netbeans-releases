@@ -457,6 +457,7 @@ public class BindingDesignSupport {
         Class clazz = (type.getType() == null) ? binarySuperClass : FormUtils.typeToClass(type);
         if ((clazz != null) && !clazz.getName().startsWith("java.lang.") // NOI18N
                 && !Collection.class.isAssignableFrom(clazz)
+                && !java.util.Date.class.isAssignableFrom(clazz)
                 && !clazz.isArray()) {
             try {
                 BeanInfo beanInfo = FormUtils.getBeanInfo(clazz);
