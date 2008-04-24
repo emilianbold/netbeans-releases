@@ -17,9 +17,7 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
- <antlib>
-        <typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/>
-        <!-- typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/ -->
-        <!-- typedef name="XsltProjectValidate" classname="org.netbeans.modules.xslt.project.anttasks.IDEValidateXSLTProject"/ -->
-        
- </antlib>
+<antlib>
+    <typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/>
+    <!-- typedef name="XsltProjectValidate" classname="org.netbeans.modules.xslt.project.anttasks.IDEValidateXSLTProject"/ -->
+</antlib>

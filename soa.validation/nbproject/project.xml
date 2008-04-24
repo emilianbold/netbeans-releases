@@ -140,6 +140,7 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
+                <friend>org.netbeans.modules.xslt.core</friend>
                 <package>org.netbeans.modules.soa.validation</package>
             </friend-packages>
         </data>
