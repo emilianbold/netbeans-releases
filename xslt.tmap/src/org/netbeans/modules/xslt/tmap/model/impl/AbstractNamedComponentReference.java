@@ -21,6 +21,8 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xslt.tmap.model.api.MappedReference;
 
 /**
  * @author ads
@@ -30,23 +32,78 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
  */
 abstract class AbstractNamedComponentReference<T extends NamedReferenceable> extends
         org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference<T>
-        implements Reference<T>
+        implements Reference<T>, MappedReference
 {
 
-    AbstractNamedComponentReference( T referenced, Class<T> referencedType, 
+    private Attribute myAttribute;
+    private boolean isResolved;
+
+    public AbstractNamedComponentReference( T referenced, Class<T> referencedType, 
             AbstractDocumentComponent parent )
     {
         super(referenced ,referencedType, parent);
+        if ( referenced!= null ){
+            setResolved();
+        }
     }
 
-    AbstractNamedComponentReference( Class<T> referencedType, 
+    public AbstractNamedComponentReference( Class<T> referencedType, 
             AbstractDocumentComponent parent, String ref )
     {
         super(referencedType, parent , ref);
     }
 
-    protected AbstractDocumentComponent getParent(){
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference#getRefString()
+     */
+    @Override
+    public String getRefString()
+    {
+        if ( (prefix == null || prefix.length()==0 ) 
+                && ( isResolved()) )
+        {
+            refString=null;
+        }
+        return super.getRefString();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.bpel.model.api.references.Reference#isResolved()
+     */
+    public boolean isResolved(){
+        return isResolved;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.bpel.model.impl.references.MappedReference#getAttribute()
+     */
+    public Attribute getAttribute() {
+        return myAttribute;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.bpel.model.impl.references.MappedReference#setAttribute(org.netbeans.modules.xml.xam.dom.Attribute)
+     */
+    public void setAttribute( Attribute attr ){
+        myAttribute = attr;
+    }
+    
+    protected void setResolved(){
+        isResolved = true;
+    }
+    
+    @Override
+    public AbstractDocumentComponent getParent(){
         return super.getParent();
+    }
+    
+    @Override
+    protected void setReferenced(T referenced) {
+        super.setReferenced( referenced );
+        if ( referenced != null ){
+            setResolved();
+        }
     }
 }
 

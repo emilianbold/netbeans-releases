@@ -238,7 +238,7 @@ public class HgCommand {
     private static final String HG_MERGE_UNAVAILABLE_ERR = "is not recognized as an internal or external command";
 
     private static final String HG_NO_CHANGES_ERR = "no changes found"; // NOI18N
-    private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote branches!"; // NOI18N
+    private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote "; // NOI18N
     private final static String HG_HEADS_CREATED_ERR = "(+1 heads)"; // NOI18N
     private final static String HG_NO_HG_CMD_FOUND_ERR = "hg: not found";
     private final static String HG_ARG_LIST_TOO_LONG_ERR = "Arg list too long";
@@ -256,7 +256,8 @@ public class HgCommand {
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_CANNOT_RUN_ERR = "Cannot run program"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
-    private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote branches!"; // NOI18N
+    //#132984: range of issues with upgrade to Hg 1.0, error string changed from branches to heads, just removed ending 
+    private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote "; // NOI18N
     private static final String HG_ABORT_NO_FILES_TO_COPY_ERR = "abort: no files to copy"; // NOI18N
     private static final String HG_ABORT_NO_DEFAULT_PUSH_ERR = "abort: repository default-push not found!"; // NOI18N
     private static final String HG_ABORT_NO_DEFAULT_ERR = "abort: repository default not found!"; // NOI18N
@@ -264,6 +265,7 @@ public class HgCommand {
     private static final String HG_ABORT_UNCOMMITTED_CHANGES_ERR = "abort: outstanding uncommitted changes"; // NOI18N
     private static final String HG_BACKOUT_MERGE_NEEDED_ERR = "(use \"backout --merge\" if you want to auto-merge)";    
     private static final String HG_ABORT_BACKOUT_MERGE_CSET_ERR = "abort: cannot back out a merge changeset without --parent"; // NOI18N"
+    private static final String HG_COMMIT_AFTER_MERGE_ERR = "abort: cannot partially commit a merge (do not specify files or patterns)"; // NOI18N"    
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -1699,6 +1701,9 @@ public class HgCommand {
             if(Utilities.isWindows()) {
                 saveCommand = new ArrayList<String>(command);
             }
+            List<String> commitAfterMergeCommand = null;
+            commitAfterMergeCommand = new ArrayList<String>(command);
+
             for(File f: commitFiles){
                 command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
             }
@@ -1724,6 +1729,10 @@ public class HgCommand {
                 }
             }
             List<String> list = exec(command);
+            //#132984: range of issues with upgrade to Hg 1.0, new restriction whereby you cannot commit using explicit file names after a merge.
+            if (!list.isEmpty() && isCommitAfterMerge(list.get(list.size() -1))){
+                list = exec(commitAfterMergeCommand); //#132984: Rerun Commit without specifying files to commit after merge               
+            }
             
             if (!list.isEmpty()
                     && (isErrorNotTracked(list.get(0)) || isErrorCannotReadCommitMsg(list.get(0))))
@@ -2999,6 +3008,10 @@ public class HgCommand {
 
     public static boolean isErrorAbortNoFilesToCopy(String msg) {
         return msg.indexOf(HG_ABORT_NO_FILES_TO_COPY_ERR) > -1; // NOI18N
+    }
+
+    public static boolean isCommitAfterMerge(String msg) {
+        return msg.indexOf(HG_COMMIT_AFTER_MERGE_ERR) > -1;                                   // NOI18N
     }
 
     private static boolean isErrorNoChangeNeeded(String msg) {
