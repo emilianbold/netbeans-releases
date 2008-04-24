@@ -165,7 +165,9 @@ public class InplaceEditableLabel extends JLabel{
         if(mouseOverMe && altKeyPressed && (ctrlClickHandler != null) ){
             //draw diff color and underline
             Color origC = getForeground();
-            Font origF = getFont();
+            //Font font = getFont();
+            //Font font = origF.deriveFont((origF.getStyle() | java.awt.Font.PLAIN), origF.getSize()+2);
+            Font font = new Font(getFont().getFontName(), Font.BOLD, getFont().getSize() + 2);
             setForeground(getMouseOverColor());
             //g.setFont(new Font(origF.getName(), Font.BOLD, origF.getSize()));
             Rectangle bounds = g.getClipBounds();
@@ -175,7 +177,7 @@ public class InplaceEditableLabel extends JLabel{
             g.drawLine(bounds.x, bounds.y + bounds.height -1,
                     bounds.x + width,  bounds.y + bounds.height -1);
             setForeground(origC);
-            setFont(origF);
+            setFont(font);
             drewLine = true;
         }else{
             super.paintComponent(g);

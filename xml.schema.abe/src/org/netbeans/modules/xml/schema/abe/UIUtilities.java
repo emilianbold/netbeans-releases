@@ -444,7 +444,8 @@ public class UIUtilities {
             infoLabel = new TranslucentLabel(" ",SwingConstants.LEFT);
         
         Font font = infoLabel.getFont();
-        font = new Font(font.getName(), Font.BOLD, font.getSize());
+        //font = new Font(font.getName(), Font.BOLD, font.getSize());
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
         if(foreGroundColor != null)
             infoLabel.setForeground(foreGroundColor);
         else
