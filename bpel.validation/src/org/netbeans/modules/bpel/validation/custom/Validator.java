@@ -98,6 +98,8 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -110,8 +112,11 @@ public final class Validator extends BpelValidator {
     myErrored = new ArrayList<Component>();
   }
 
+  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
   @Override
-  public void visit(ForEach forEach) {
+  public void visit(ForEach forEach)
+  {
 //out();
     // # 124918
     checkCounters(forEach);
@@ -1009,6 +1014,8 @@ public final class Validator extends BpelValidator {
     myErrored.add(component);
     addError(key, component, name1, name2);
   }
+  
+  };}
 
   private List<Component> myErrored;
 }

@@ -68,8 +68,11 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
 /**
 * Provides UI-related facilities.
 *
@@ -157,6 +160,7 @@ public abstract class UIUtil {
    public static String getColumnToolTip(SQLDBColumn column) {
        boolean pk = column.isPrimaryKey();
        boolean fk = column.isForeignKey();
+       boolean isNullable = column.isNullable();
        boolean indexed = column.isIndexed();
 
        StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
@@ -193,6 +197,9 @@ public abstract class UIUtil {
 
        if (indexed) {
            strBuf.append("<tr> <td>&nbsp; Indexed </td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
+       }
+       if(!isNullable){
+           strBuf.append("<tr> <td>&nbsp; Nullable </td> <td> &nbsp; : &nbsp; <b> No </b> </td> </tr>");
        }
 
        strBuf.append("</table> </html>");
@@ -301,10 +308,18 @@ public abstract class UIUtil {
            }
            strBuf.append("</b> </td> </tr>");
        }
+       DBConnectionDefinition conDef = ((SQLDBModel)table.getParent()).getConnectionDefinition();
+       strBuf.append("<tr> <td>&nbsp; ConnectionName </td> <td> &nbsp; : &nbsp; <b>");
+       String name = conDef.getName();
+       if (name.length() > 40) {
+           strBuf.append("...").append(name.substring(name.length() - 40));
+       } else {
+           strBuf.append(name).append("</b> </td> </tr>");
+       }
 
        strBuf.append("<tr> <td>&nbsp; ConnectionURL </td> <td> &nbsp; : &nbsp; <b>");
        
-       String URL = table.getParent().getModelName();
+       String URL = conDef.getConnectionURL();
        if (URL.length() > 40) {
            strBuf.append("...").append(URL.substring(URL.length() - 40));
        } else {

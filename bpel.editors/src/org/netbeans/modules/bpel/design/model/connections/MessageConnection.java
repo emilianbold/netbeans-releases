@@ -175,9 +175,9 @@ public class MessageConnection extends Connection {
                 == PartnerRole.PROVIDER)
         {
             tmp.x = viewVisibleRect.x + viewVisibleRect.width 
-                    - scrollPane.getRightPreferredWidth();
+                    - scrollPane.getRightPreferredWidth() + 1;
         } else {
-            tmp.x = viewVisibleRect.x + scrollPane.getLeftPreferredWidth();
+            tmp.x = viewVisibleRect.x + scrollPane.getLeftPreferredWidth() - 1;
         }
            
         FPoint left = process_view.convertScreenToDiagram(tmp);

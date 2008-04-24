@@ -110,6 +110,7 @@ public class MapperMultiViewElement extends TopComponent
         myActiveNodeChangeListener = null;
     }
     
+    @SuppressWarnings("unchecked")
     private void initActiveNodeChangeListener() {
         if (myActiveNodeChangeListener == null) {
             myActiveNodeChangeListener = new PropertyChangeListener() {

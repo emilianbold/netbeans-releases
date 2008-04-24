@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.xslt.core;
 
@@ -25,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.xml.transform.Source;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.xslt.core.multiview.XsltDesignViewOpenAction;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
@@ -49,34 +72,30 @@ import org.xml.sax.InputSource;
 
 /**
  * @author Vitaly Bychkov
- * @version 1.0
  */
 public class XSLTDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 1L;
     private static final String FILE_DESC = "LBL_FileNode_desc";      // NOI18N
-    private transient AtomicReference<Lookup> myLookup =
-            new AtomicReference<Lookup>();
+    private transient AtomicReference<Lookup> myLookup = new AtomicReference<Lookup>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
     private XSLTDataEditorSupport myDataEditorSupport;
     
-    
-    public XSLTDataObject( final FileObject pf, final MultiFileLoader loader )
-    throws DataObjectExistsException {
-        super(pf, loader);
+    public XSLTDataObject(final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {
+        super(obj, loader);
         myDataEditorSupport = new XSLTDataEditorSupport(this);
         
         CookieSet cookies = getCookieSet();
-        cookies.add( getEditorSupport() );
+        cookies.add(getEditorSupport());
         
         InputSource is = DataObjectAdapters.inputSource(this);
         cookies.add(new CheckXMLSupport(is));
-        cookies.add(new ValidateXSLSupport(is));
         
         Source source = DataObjectAdapters.source(this);
         cookies.add(new TransformableSupport(source));
     }
     
+    @SuppressWarnings("unchecked")
     public Lookup getLookup() {
         Lookup lookup;
         List<Lookup> list = new LinkedList<Lookup>();
@@ -89,20 +108,21 @@ public class XSLTDataObject extends MultiDataObject {
             
             list.add(getCookieSet().getLookup());
 
-            //
-            // add lazy initialization elements
-            InstanceContent.Convertor<Class, Object> conv =
-                    new InstanceContent.Convertor<Class, Object>() {
+            // add lazy initialization
+            InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
+                private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
                 
                 public Object convert(Class obj) {
                     if (obj == XslModel.class) {
                         return getEditorSupport().getXslModel();
                     }
-                    //
+                    if (obj == Controller.class) {
+                        valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getXslModel()));
+                        return valControllerRef.get();
+                    }
                     if (obj == MapperContext.class) {
                         return getEditorSupport().getMapperContext();
                     }
-                    //
                     if (obj == XSLTDataEditorSupport.class) {
                         return getEditorSupport();
                     }
@@ -121,22 +141,13 @@ public class XSLTDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            
             list.add(Lookups.fixed(
-                    new Class[] {XslModel.class, 
+                    new Class[] { XslModel.class,
+                    Controller.class,
                     MapperContext.class, 
                     XSLTDataEditorSupport.class}, conv));
-            //
-            // WARNING
-            // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
-            // overflow
-            // WARNING
-            //
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
             
-            // Lookup is now available from this Lookup.Provider but only from this
-            // same thread which has the lock on Lookup
-            //
             myLookup.compareAndSet(null, lookup);
             isLookupInit.compareAndSet( false, true );
         }
