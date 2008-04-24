@@ -714,7 +714,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
         }
         if (or == null) return null;
-        return new ThisVariable (debugger, or, "");
+        return new ThisVariable (debugger, or, "" + or.uniqueID());
     }
     
     public MonitorInfo getContendedMonitorAndOwner() {
