@@ -209,7 +209,7 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private static final class GemPathsListModel extends AbstractListModel {
 
-        private RubyPlatform platform;
+        private final RubyPlatform platform;
 
         GemPathsListModel(final RubyPlatform platform) {
             this.platform = platform;
@@ -547,7 +547,7 @@ public class RubyPlatformCustomizer extends JPanel {
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
-                return f.isDirectory() || (f.isFile() && f.getName().toLowerCase(Locale.US).contains("ruby")); // NOI18N
+                return f.isDirectory() || isRuby(f); // NOI18N
             }
             public String getDescription() {
                 return getMessage("RubyPlatformCustomizer.rubyPlatform");
@@ -567,6 +567,11 @@ public class RubyPlatformCustomizer extends JPanel {
         }
     }//GEN-LAST:event_addButtonaddPlatform
 
+    private boolean isRuby(final File f) {
+        String fName = f.getName().toLowerCase(Locale.US);
+        return f.isFile() && (fName.contains("ruby") || fName.contains("rubinius"));
+    }
+    
     private void removeButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonremovePlatform
         RubyPlatform plaf = getSelectedPlatform();
         if (plaf != null) {
@@ -578,7 +583,7 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private void autoDetectButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoDetectButtonremovePlatform
         performPlatformDetection();
-}//GEN-LAST:event_autoDetectButtonremovePlatform
+    }//GEN-LAST:event_autoDetectButtonremovePlatform
 
     private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
         if (getSelectedPlatform().installFastDebugger()) {

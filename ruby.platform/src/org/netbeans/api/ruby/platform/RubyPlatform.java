@@ -241,6 +241,7 @@ public final class RubyPlatform {
 
     /** Return the lib directory for this interprerter. */
     public String getLib() {
+        assert !isRubinius() : "RubyPlatform#getLib must not be called for Rubinius";
         File home = getHome();
         if (home == null) {
             return null;
@@ -280,6 +281,10 @@ public final class RubyPlatform {
             File home = getHome();
             assert home != null : "home not null";
 
+            if (isRubinius()) {
+                File lib = new File(home, "lib"); // NOI18N
+                return lib.exists() ? lib.getAbsolutePath() : null;
+            }
             File lib = new File(home, "lib" + File.separator + "ruby"); // NOI18N
 
             if (!lib.exists()) {
@@ -444,6 +449,10 @@ public final class RubyPlatform {
 
     public boolean isJRuby() {
         return info.isJRuby();
+    }
+
+    public boolean isRubinius() {
+        return info.isRubinius();
     }
 
     public boolean isValid() {
@@ -644,7 +653,7 @@ public final class RubyPlatform {
      */
     public FileObject getSystemRoot(FileObject file) {
         // See if the file is under the Ruby libraries
-        FileObject rubyLibFo = getLibFO();
+        FileObject rubyLibFo = isRubinius() ? null : getLibFO();
         FileObject rubyStubs = getRubyStubs();
         FileObject gemHome = gemManager != null ? gemManager.getGemHomeFO() : null;
 
@@ -849,6 +858,10 @@ public final class RubyPlatform {
 
         public boolean isJRuby() {
             return "JRuby".equals(kind); // NOI18N
+        }
+
+        public boolean isRubinius() {
+            return "Rubinius".equals(kind); // NOI18N
         }
 
         public final void setGemHome(String gemHome) {
