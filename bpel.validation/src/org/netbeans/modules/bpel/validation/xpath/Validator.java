@@ -40,6 +40,20 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+
+import org.netbeans.modules.soa.validation.util.Duration;
+import org.netbeans.modules.soa.validation.util.DurationUtil;
+
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.Condition;
@@ -57,26 +71,14 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.bpel.model.api.support.Utils;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
+import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
-import org.netbeans.modules.soa.validation.Duration;
-import org.netbeans.modules.soa.validation.DurationUtil;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**

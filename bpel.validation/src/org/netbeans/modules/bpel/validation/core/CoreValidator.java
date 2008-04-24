@@ -69,6 +69,8 @@ import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import java.util.Collection;
 
+import org.netbeans.modules.soa.validation.core.QuickFix;
+import org.netbeans.modules.soa.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;

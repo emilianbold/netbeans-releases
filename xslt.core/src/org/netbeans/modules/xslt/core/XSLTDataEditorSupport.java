@@ -51,8 +51,8 @@ import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.modules.soa.validation.Controller;
-import org.netbeans.modules.soa.validation.LineUtil;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
