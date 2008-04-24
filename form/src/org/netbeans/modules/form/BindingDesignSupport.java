@@ -225,6 +225,12 @@ public class BindingDesignSupport {
                 PropertyDescriptor desc = new PropertyDescriptor("value", JSpinner.class); // NOI18N
                 descs.add(desc);                
             } else if (JFormattedTextField.class.isAssignableFrom(clazz)) {
+                for (PropertyDescriptor pd : descs) {
+                    if ("text".equals(pd.getName())) { // NOI18N
+                        descs.remove(pd);
+                        break;
+                    }
+                }
                 PropertyDescriptor desc = new PropertyDescriptor("value", JFormattedTextField.class); // NOI18N
                 descs.add(desc);
             }
