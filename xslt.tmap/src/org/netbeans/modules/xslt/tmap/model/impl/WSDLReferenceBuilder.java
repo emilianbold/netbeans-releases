@@ -37,6 +37,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xslt.tmap.model.api.MappedReference;
 import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.PortTypeReference;
@@ -80,9 +81,9 @@ public class WSDLReferenceBuilder {
     {
         WSDLReference<T> ref = build( clazz , entity , entity.getAttribute( attr ) );
 // TODO m | r        
-//        if ( ref instanceof MappedReference ){
-//            ((MappedReference)ref).setAttribute( attr );
-//        }
+        if ( ref instanceof MappedReference ){
+            ((MappedReference)ref).setAttribute( attr );
+        }
         return ref;
     }
     
@@ -199,7 +200,7 @@ interface WSDLReferenceFactory extends WSDLReferenceBuilder.WSDLResolver {
 
 }
 
-abstract class AbstractGlobalReferenceFactory implements WSDLReferenceFactory {
+abstract class AbstractGlobalReferenceFactory implements WSDLReferenceFactory { 
 
     public <T extends ReferenceableWSDLComponent> WSDLReference<T>
             createUnresolvedReference( Class<T> clazz,

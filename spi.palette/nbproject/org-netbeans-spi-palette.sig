@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.11.1
+#Version 1.13
 CLSS public abstract org.netbeans.spi.palette.DragAndDropHandler
 cons public DragAndDropHandler()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

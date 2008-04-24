@@ -82,5 +82,9 @@ public class GemInfo implements Comparable<GemInfo> {
                 ? GemManager.compareGemVersions(o.getVersion(), getVersion())
                 : nameComparison;
     }
+
+    public @Override String toString() {
+        return "GemInfo[name: " + name + ", version: " + version + ", spec: " + specFile + "]"; // NOI18N
+    }
     
 }

@@ -51,9 +51,10 @@ import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
  */
 final class DocumentRootsWindows {
 
+    private static final String XAMPP = "xampp"; // NOI18N
     private static final FilenameFilter XAMPP_FILENAME_FILTER = new FilenameFilter() {
         public boolean accept(File dir, String name) {
-            return name.toLowerCase().startsWith("xampp"); // NOI18N
+            return name.toLowerCase().startsWith(XAMPP);
         }
     };
 
@@ -73,17 +74,20 @@ final class DocumentRootsWindows {
             if (isFloppy(root)) {
                 continue;
             }
-            File programFiles = new File(root, "Program Files"); // NOI18N
-            if (!programFiles.isDirectory()) {
-                continue;
-            }
             // standard apache installation
+            File programFiles = new File(root, "Program Files"); // NOI18N
             htDocs = DocumentRoots.findHtDocsDirectory(programFiles, DocumentRoots.APACHE_FILENAME_FILTER);
             if (htDocs != null) {
                 // one htdocs is enough
                 break;
             }
+
             // xampp
+            htDocs = new File(new File(root, XAMPP), DocumentRoots.HTDOCS);
+            if (htDocs.isDirectory()) {
+                // one htdocs is enough
+                break;
+            }
             htDocs = DocumentRoots.findHtDocsDirectory(programFiles, XAMPP_FILENAME_FILTER);
             if (htDocs != null) {
                 // one htdocs is enough

@@ -52,7 +52,7 @@ attributes:
      the platform is default.
     default = yes|<missing>
 -->
-<!ELEMENT platform (jdkhome?,properties?,sysproperties?,sourcepath?,javadoc?)>
+<!ELEMENT platform (jdkhome?,properties?,sysproperties?,sources?,javadoc?)>
 <!ATTLIST platform
     name CDATA #IMPLIED
     default CDATA #IMPLIED

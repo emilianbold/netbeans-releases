@@ -113,7 +113,6 @@ public class DiscoveryProjectGenerator {
     
     private Set<String> getSourceFolders(){
         Set<String> used = new HashSet<String>();
-        Set<String> folders = new HashSet<String>();
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         for (ProjectConfiguration conf : projectConfigurations) {
             for (FileConfiguration file : conf.getFiles()){
@@ -532,19 +531,19 @@ public class DiscoveryProjectGenerator {
                         prefferedFolder = prefferedFolder.substring(0,i);
                         folder = preffered.get(prefferedFolder);
                     }
-                    if (folder == null) {
+                    //if (folder == null) {
                         list.add(pair);
-                    }
+                    //}
                 }
             }
             if (folder != null) {
                 for(Pair pair : list){
                     String relPath = projectBridge.getRelativepath(pair.fileConfiguration.getFilePath());
-                    Item item = projectBridge.getProjectItem(path);
+                    Item item = projectBridge.getProjectItem(relPath);
                     if (item == null){
                         item = projectBridge.createItem(pair.fileConfiguration.getFilePath());
-                        folder.addItem(item);
                         pair.item = item;
+                        folder.addItem(item);
                     }
                     setupFile(pair.fileConfiguration, item, isCPP);
                 }

@@ -53,6 +53,7 @@
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.xslt.mapper</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.validation</friend>
                 <package>org.netbeans.modules.xslt.model</package>
                 <package>org.netbeans.modules.xslt.model.enums</package>
                 <package>org.netbeans.modules.xslt.model.spi</package>

@@ -169,7 +169,7 @@ public class FileStatusCache {
                         File fileRoot = hg.getTopmostManagedParent(file);
                         File rootRoot = hg.getTopmostManagedParent(root);
                         // Make sure that file is in same repository as root
-                        if (rootRoot.equals(fileRoot)) {
+                        if (rootRoot != null && rootRoot.equals(fileRoot)) {
                             bContainsFile = true;
                             break;
                         }
@@ -224,7 +224,7 @@ public class FileStatusCache {
                         File fileRoot = hg.getTopmostManagedParent(file);
                         File rootRoot = hg.getTopmostManagedParent(root);
                         // Make sure that file is in same repository as root
-                        if (rootRoot.equals(fileRoot)) {
+                        if (rootRoot != null && rootRoot.equals(fileRoot)) {
                             set.add(file);
                             break;
                         }

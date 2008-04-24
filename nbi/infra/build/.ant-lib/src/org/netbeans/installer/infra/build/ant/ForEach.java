@@ -159,7 +159,7 @@ public class ForEach extends Task implements TaskContainer {
         try {
             this.from = Integer.parseInt(from);
         } catch (NumberFormatException e) {
-            log("Wrong value for parameter 'from'."); // NOI18N
+            log("Wrong value for parameter 'from' : " + from); // NOI18N
             wrongArgs = true;
         }
     }
@@ -173,7 +173,7 @@ public class ForEach extends Task implements TaskContainer {
         try {
             this.to = Integer.parseInt(to);
         } catch (NumberFormatException e) {
-            log("Wrong value for parameter 'to'."); // NOI18N
+            log("Wrong value for parameter 'to' : " + to); // NOI18N
             wrongArgs = true;
         }
     }
@@ -187,7 +187,7 @@ public class ForEach extends Task implements TaskContainer {
         try {
             this.increment = Integer.parseInt(increment);
         } catch (NumberFormatException e) {
-            log("Wrong value for parameter 'increment'."); // NOI18N
+            log("Wrong value for parameter 'increment' : " + increment); // NOI18N
             wrongArgs = true;
         }
     }

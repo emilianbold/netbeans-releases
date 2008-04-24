@@ -293,9 +293,8 @@ public class PHPIndex {
 
         for (SearchResult classMap : classSearchResult) {
             String[] classSignatures = classMap.getValues(PHPIndexer.FIELD_CLASS);
-            String[] rawSignatures = classMap.getValues(fieldName);
-
-            if (classSignatures == null  || rawSignatures == null) {
+            
+            if (classSignatures == null) {
                 continue;
             }
             
@@ -388,7 +387,8 @@ public class PHPIndex {
                     IndexedFunction func = new IndexedFunction(funcName, null,
                             this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
 
-                    functions.add(func);
+                        functions.add(func);
+                    }
                 }
             }
         }
@@ -426,7 +426,8 @@ public class PHPIndex {
                     IndexedConstant constant = new IndexedConstant(constName, null,
                             this, map.getPersistentUrl(), offset, 0, null);
 
-                    constants.add(constant);
+                        constants.add(constant);
+                    }
                 }
             }
         }
@@ -471,6 +472,7 @@ public class PHPIndex {
                             this, map.getPersistentUrl(), superClass, offset, 0);
 
                     classes.add(clazz);
+                    }
                 }
             }
         }

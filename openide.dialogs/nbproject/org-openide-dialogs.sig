@@ -1,5 +1,5 @@
 #API master signature file
-#Version 7.5.1
+#Version 7.6
 CLSS protected abstract java.awt.Component$AccessibleAWTComponent
 cons protected AccessibleAWTComponent(java.awt.Component)
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
