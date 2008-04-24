@@ -467,20 +467,20 @@ public final class Iterator implements TemplateWizard.Iterator {
                     (String)wizard.getProperty(Panel.INPUT_FILE), 
                     tMapOp);
 
+            if (inTransform != null) {
+                tMapOp.addTransform(inTransform);
+            }
             invoke = createInvoke(tMapOp, inputInvokeVar, outputInvokeVar,
                       wizard, componentFactory);
 
+            if (invoke != null) {
+                tMapOp.addInvoke(invoke);
+            }
             Transform outTransform = null;
             outTransform = createTransform(componentFactory, 
                     (String)wizard.getProperty(Panel.OUTPUT_FILE), 
                     tMapOp);
 
-            if (inTransform != null) {
-                tMapOp.addTransform(inTransform);
-            }
-            if (invoke != null) {
-                tMapOp.addInvoke(invoke);
-            }
             if (outTransform != null) {
                 tMapOp.addTransform(outTransform);
                 String source = getTMapVarRef(invoke.getOutputVariable());

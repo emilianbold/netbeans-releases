@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.xslt.tmap.nodes;
 
-import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
@@ -32,14 +32,14 @@ import org.openide.util.Lookup;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class InvokeNode extends  TMapComponentNode<DecoratedInvoke> {
+public class ImportNode extends  TMapComponentNode<DecoratedImport> {
 
-    public InvokeNode(Invoke ref, Lookup lookup) {
+    public ImportNode(Import ref, Lookup lookup) {
         this(ref, Children.LEAF, lookup);
     }
 
-    public InvokeNode(Invoke ref, Children children, Lookup lookup) {
-        super(new DecoratedInvoke(ref), children, lookup);
+    public ImportNode(Import ref, Children children, Lookup lookup) {
+        super(new DecoratedImport(ref), children, lookup);
     }
     
 
@@ -55,18 +55,13 @@ public class InvokeNode extends  TMapComponentNode<DecoratedInvoke> {
         //
         Node.Property prop;
         prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.NAME,
-                "getName", "setName"); // NOI18N
+                PropertyType.NAMESPACE,
+                "getNamespace", "setNamespace"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
         prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.PORT_TYPE,
-                "getPortType", "setPortType"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        //
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.OPERATION,
-                "getOperation", "setOperation"); // NOI18N
+                PropertyType.LOCATION,
+                "getLocation", "setLocation"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
         return sheet;
