@@ -141,7 +141,11 @@ public class StartTask extends BasicTask<OperationState> {
         
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
+        Logger.getLogger("glassfish").log(Level.FINE, 
+                "V3 Failed to start, killing process: " + serverProcess);
         serverProcess.destroy();
+        fireOperationStateChanged(OperationState.FAILED, 
+                "MSG_START_SERVER_FAILED", instanceName);
         return OperationState.FAILED;
     }
     
