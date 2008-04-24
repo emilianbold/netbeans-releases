@@ -415,5 +415,51 @@ public class Commands {
         }
         
     }
+    
+    /**
+     * Command to get version information from the server.
+     */
+    public static final class LocationCommand extends ServerCommand {
+
+        private Manifest info;
+        private String installRoot;
+        private String domainRoot;
+        
+        public LocationCommand() {
+        }
+        
+        public String getInstallRoot() {
+            return installRoot;
+        }
+
+        public String getDomainRoot() {
+            return domainRoot;
+        }
+
+        @Override
+        public String getCommand() {
+            return "__locations";
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(info == null) {
+                return false;
+            }
+            
+            Attributes mainAttrs = info.getMainAttributes();
+            if(mainAttrs != null) {
+                installRoot = mainAttrs.getValue("Base-Root_value");
+                domainRoot = mainAttrs.getValue("Domain-Root_value");
+            }
+            
+            return true;
+        }
+    }
 }
 

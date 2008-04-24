@@ -66,6 +66,7 @@ import org.netbeans.spi.glassfish.OperationStateListener;
 import org.netbeans.spi.glassfish.ServerCommand;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
@@ -387,10 +388,26 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public boolean isReallyRunning() {
         boolean isRunning = isRunning(getHostName(), getHttpPortNumber());
         if(isRunning) {
-            Future<OperationState> result = execute(new Commands.VersionCommand());
+            Commands.LocationCommand command = new Commands.LocationCommand();
+            Future<OperationState> result = execute(command);
             try {
-                if(result.get(3, TimeUnit.SECONDS) != OperationState.COMPLETED) {
-                    isRunning = false;
+                if(result.get(3, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                    String installRoot = getHomeFolder();
+                    String targetInstallRoot = command.getInstallRoot();
+                    if(installRoot != null && targetInstallRoot != null) {
+                        File installDir = FileUtil.normalizeFile(new File(installRoot));
+                        File targetInstallDir = FileUtil.normalizeFile(new File(targetInstallRoot));
+                        isRunning = installDir.equals(targetInstallDir);
+                    } else {
+                        isRunning = false;
+                    } 
+                } else {
+//                    isRunning = false;
+                    // !PW temporary while some server versions support __locations
+                    // and some do not but are still V3 and might the ones the user
+                    // is using.
+                    result = execute(new Commands.VersionCommand());
+                    isRunning = result.get(3, TimeUnit.SECONDS) == OperationState.COMPLETED;
                 }
             } catch(Exception ex) {
                 isRunning = false;
