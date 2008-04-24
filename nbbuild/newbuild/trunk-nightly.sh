@@ -5,7 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=6.1
+export BUILD_DESC=6.1_fixes
 source init.sh
 
 rm -rf $DIST
@@ -65,13 +65,6 @@ if [ -n $BUILD_ID ]; then
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash build-nbi.sh
-ERROR_CODE=$?
-
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - NBI installers build failed"
-    exit $ERROR_CODE;
-fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
