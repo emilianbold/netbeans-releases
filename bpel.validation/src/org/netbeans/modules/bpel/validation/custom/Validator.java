@@ -1013,7 +1013,9 @@ public final class Validator extends BpelValidator {
     }
     myErrored.add(component);
     addError(key, component, name1, name2);
-  }};}
+  }
+  
+  };}
 
   private List<Component> myErrored;
 }

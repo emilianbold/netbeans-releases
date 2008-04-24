@@ -187,5 +187,6 @@ public final class Validator extends BpelValidator {
 
       addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference));
     }
-  }};}
-}
+  }
+
+};}}

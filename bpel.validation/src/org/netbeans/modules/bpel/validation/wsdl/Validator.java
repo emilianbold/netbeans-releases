@@ -256,7 +256,9 @@ public final class Validator extends WsdlValidator {
 //out("WARNING: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
     }
 //out();
-  }};}
+  }
+
+  };}
 
   private Component getType(CorrelationProperty property) {
     NamedComponentReference<GlobalType> ref1 = property.getType();

@@ -148,5 +148,6 @@ public final class Validator extends BpelValidator {
     if (parts.size() != 0) {
       addError("FIX_WSDL_message_variable", (Component) variableReference);
     }
-  }};}
-}
+  }
+
+};}}

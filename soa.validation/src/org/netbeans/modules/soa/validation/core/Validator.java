@@ -95,6 +95,10 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
     return getClass().getName();
   }
 
+  protected final ValidationResult createValidationResult(Model model) {
+    return new ValidationResult(getValidationResult(), Collections.singleton(model));
+  }
+
   protected final Set<ResultItem> getValidationResult() {
     return myValidationResult;
   }

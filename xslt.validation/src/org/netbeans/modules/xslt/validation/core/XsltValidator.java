@@ -40,16 +40,14 @@
  */
 package org.netbeans.modules.xslt.validation.core;
 
-//import java.util.ArrayList;
-//import java.util.Collections;
-//import java.util.HashSet;
-//import java.util.List;
-//import java.util.Set;
-
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
+
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.model.Stylesheet;
+import org.netbeans.modules.xslt.model.XslVisitor;
 
 import org.netbeans.modules.soa.validation.core.Validator;
 import static org.netbeans.modules.xml.ui.UI.*;
@@ -60,33 +58,28 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class XsltValidator extends Validator {
 
-//  public abstract BpelModelVisitor getVisitor();
+  public abstract XslVisitor getVisitor();
 
-  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-//    if ( !(model instanceof BpelModel)) {
+  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+    if ( !(m instanceof XslModel)) {
       return null;
-//    }
-/*
-    final BpelModel bpelModel = (BpelModel) model;
+    }
+    XslModel model = (XslModel) m;
     
-    if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
+    if (model.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
     init(validation, type);
 
-    Runnable run = new Runnable() {
-      public void run() {
-        startTime();
-        Process process = bpelModel.getProcess();
+    Stylesheet stylesheet = model.getStylesheet();
 
-        if (process != null) {
-          process.accept(getVisitor());
-        }
-        endTime(getDisplayName());
-      }
-    };
-    bpelModel.invoke(run);
-    return new ValidationResult(getValidationResult(), Collections.singleton(model));
-*/
+    if (stylesheet == null) {
+      return null;
+    }
+    startTime();
+    stylesheet.accept(getVisitor());
+    endTime(getDisplayName());
+
+    return createValidationResult(model);
   }
 }

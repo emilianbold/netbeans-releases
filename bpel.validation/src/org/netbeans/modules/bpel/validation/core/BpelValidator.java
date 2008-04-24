@@ -69,13 +69,13 @@ public abstract class BpelValidator extends Validator {
 
   public abstract SimpleBpelModelVisitor getVisitor();
 
-  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    if ( !(model instanceof BpelModel)) {
+  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+    if ( !(m instanceof BpelModel)) {
       return null;
     }
-    final BpelModel bpelModel = (BpelModel) model;
+    final BpelModel model = (BpelModel) m;
     
-    if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
+    if (model.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
     init(validation, type);
@@ -83,7 +83,7 @@ public abstract class BpelValidator extends Validator {
     Runnable run = new Runnable() {
       public void run() {
         startTime();
-        Process process = bpelModel.getProcess();
+        Process process = model.getProcess();
 
         if (process != null) {
           process.accept(getVisitor());
@@ -91,8 +91,9 @@ public abstract class BpelValidator extends Validator {
         endTime(getDisplayName());
       }
     };
-    bpelModel.invoke(run);
-    return new ValidationResult(getValidationResult(), Collections.singleton(model));
+    model.invoke(run);
+
+    return createValidationResult(model);
   }
 
   protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {

@@ -384,5 +384,6 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     catch (IllegalArgumentException e) {
       addError("FIX_Duration", duration, e.getMessage()); // NOI18N
     }
-  }};}
-}
+  }
+
+};}}

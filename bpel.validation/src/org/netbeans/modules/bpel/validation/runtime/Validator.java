@@ -481,8 +481,8 @@ public final class Validator extends BpelValidator {
           parent = parent.getParent();
       }
       return null;
-  }};}
-  
+  }
+
   private static final String FIX_ATTRIBUTE = "FIX_Attribute";    // NOI18N
   private static final String FIX_ELEMENT = "FIX_Element";        // NOI18N
   private static final String FIX_ELEMENT_IN_PARENT = "FIX_ElementInParent"; // NOI18N
@@ -490,4 +490,5 @@ public final class Validator extends BpelValidator {
   private static final String FROM_PARTS = "<fromParts>";  // NOI18N
   private static final String TO_PARTS = "<toParts>";
   private static final String FIX_INVALID_URI = "FIX_INVALID_URI"; // NOI18N
-}
+
+};}}
