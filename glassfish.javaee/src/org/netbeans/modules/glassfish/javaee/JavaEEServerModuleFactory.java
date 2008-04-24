@@ -140,7 +140,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String PERSISTENCE_API_LIB_PREFIX = "javax.javaee-10.0"; // NOI18N
     private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
     
-    public boolean ensureEclipseLinkSupport(String installRoot) {
+    public synchronized boolean ensureEclipseLinkSupport(String installRoot) {
         LibraryManager lmgr = LibraryManager.getDefault();
         Library eclipseLinkLib = lmgr.getLibrary(ECLIPSE_LINK_LIB);
         
@@ -206,7 +206,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String COMET_JAR_LIB_PREFIX = "grizzly-module"; // NOI18N
     private static final String GRIZZLY_OPTIONAL_JAR_LIB_PREFIX = "grizzly-optional"; // NOI18N
     
-    public boolean ensureCometSupport(String installRoot) {
+    public synchronized boolean ensureCometSupport(String installRoot) {
         LibraryManager lmgr = LibraryManager.getDefault();
         Library cometLib = lmgr.getLibrary(COMET_LIB);
         
