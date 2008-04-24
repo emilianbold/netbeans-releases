@@ -68,11 +68,9 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 
 import com.sun.sql.framework.utils.StringUtil;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
-import org.netbeans.modules.sql.framework.model.SQLDBModel;
 /**
 * Provides UI-related facilities.
 *
@@ -308,26 +306,33 @@ public abstract class UIUtil {
            }
            strBuf.append("</b> </td> </tr>");
        }
-       DBConnectionDefinition conDef = ((SQLDBModel)table.getParent()).getConnectionDefinition();
-       strBuf.append("<tr> <td>&nbsp; ConnectionName </td> <td> &nbsp; : &nbsp; <b>");
+       DBConnectionDefinition conDef = table.getParent().getConnectionDefinition();
+       
        String name = conDef.getName();
+       if(!StringUtil.isNullString(name)) {
+           strBuf.append("<tr> <td>&nbsp; ConnectionName </td> <td> &nbsp; : &nbsp; <b>");
        if (name.length() > 40) {
            strBuf.append("...").append(name.substring(name.length() - 40));
        } else {
            strBuf.append(name).append("</b> </td> </tr>");
        }
+       }
 
-       strBuf.append("<tr> <td>&nbsp; ConnectionURL </td> <td> &nbsp; : &nbsp; <b>");
-       
        String URL = conDef.getConnectionURL();
-       if (URL.length() > 40) {
+       if(!StringUtil.isNullString(URL)) {
+           strBuf.append("<tr> <td>&nbsp; ConnectionURL </td> <td> &nbsp; : &nbsp; <b>");
+           if (URL.length() > 40) {
            strBuf.append("...").append(URL.substring(URL.length() - 40));
        } else {
            strBuf.append(URL).append("</b> </td> </tr>");
+           }
        }
        
+       String dbType = conDef.getDBType();
+       if(!StringUtil.isNullString(dbType)) {
        strBuf.append("<tr> <td>&nbsp; DB Type </td> <td> &nbsp; : &nbsp; <b>");
-       strBuf.append(table.getParent().getConnectionDefinition().getDBType()).append("</b> </td> </tr>");
+            strBuf.append(conDef.getDBType()).append("</b> </td> </tr>");
+       }
 
        SQLObject tableObj = table;
        if (tableObj.getObjectType() == SQLConstants.TARGET_TABLE) {

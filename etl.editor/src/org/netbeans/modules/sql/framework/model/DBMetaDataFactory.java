@@ -88,6 +88,7 @@ public class DBMetaDataFactory {
     public static final String PostgreSQL = "PostgreSQL"; // NOI18N
     public static final String MYSQL = "MYSQL"; // NOI18N
     public static final String SQLSERVER = "SQLSERVER"; // NOI18N
+    public static final String SYBASE = "SYBASE"; // NOI18N
     public static final String JDBC = "JDBC"; // NOI18N
     public static final String VSAM_ADABAS_IAM = "LEGACY"; // NOI18N
     public static final String JDBC_ODBC = "JDBC"; // NOI18N
@@ -254,6 +255,9 @@ public class DBMetaDataFactory {
      */
     public String getDBType() throws Exception {
         // get the database type based on the product name converted to lowercase
+        if(dbmeta.getURL() != null) {
+            return getDBTypeFromURL(dbmeta.getURL());
+        }
         return getDBTypeFromURL(getDBName());
     }
 
@@ -262,7 +266,10 @@ public class DBMetaDataFactory {
 
         // get the database type based on the product name converted to lowercase
         url = url.toLowerCase();
-        if (url.equals("microsoft sql server") || (url.equals("sql server"))) {
+        if (url.indexOf("sybase") > -1) {
+            // sybase
+            dbtype = SYBASE;
+        }  else if (url.equals("microsoft sql server") || (url.equals("sql server"))) {
             // Microsoft SQL Server
             dbtype = SQLSERVER;
         } else if ((url.indexOf("db2") > -1) || (url.equals("as"))) {
