@@ -803,7 +803,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         int i, k = l.size ();
         ObjectVariable[] vs = new ObjectVariable [k];
         for (i = 0; i < k; i++) {
-            vs [i] = new ThisVariable (debugger, (ObjectReference) l.get (i), "");
+            ObjectReference var = (ObjectReference) l.get (i);
+            vs [i] = new ThisVariable (debugger, var, ""+var.uniqueID());
         }
         return vs;
     }
@@ -891,7 +892,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     mi.getClass().getMethod("monitor"); // NOTICES
             ObjectReference or = (ObjectReference) monitorMethod.invoke(mi);
             //ObjectReference or = _mi.monitor();
-            ObjectVariable monitor = new ThisVariable (debugger, or, "");
+            ObjectVariable monitor = new ThisVariable (debugger, or, "" + or.uniqueID());
             return new MonitorInfoImpl(this, frame, monitor);
         } catch (IllegalAccessException ex) {
             org.openide.ErrorManager.getDefault().notify(ex);

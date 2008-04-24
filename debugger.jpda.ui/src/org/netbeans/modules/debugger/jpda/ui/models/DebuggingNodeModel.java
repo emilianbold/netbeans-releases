@@ -40,6 +40,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
+import java.awt.Color;
 import java.awt.datatransfer.Transferable;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
@@ -49,12 +50,16 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.DeadlockDetector;
+import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -114,12 +119,23 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     
     private Map<JPDAThread, ThreadStateUpdater> threadStateUpdaters = new WeakHashMap<JPDAThread, ThreadStateUpdater>();
     private CurrentThreadListener currentThreadListener;
+    private DeadlockDetector deadlockDetector;
+    private Set nodesInDeadlock = new HashSet();
+    private static final Map<JPDADebugger, Set> nodesInDeadlockByDebugger = new WeakHashMap<JPDADebugger, Set>();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         currentThreadListener = new CurrentThreadListener();
         debugger.addPropertyChangeListener(WeakListeners.propertyChange(currentThreadListener, debugger));
+        deadlockDetector = debugger.getDeadlockDetector();
+        deadlockDetector.addPropertyChangeListener(new DeadlockListener());
+    }
+    
+    public static Set getNodesInDeadlock(JPDADebugger debugger) {
+        synchronized (nodesInDeadlockByDebugger) {
+            return nodesInDeadlockByDebugger.get(debugger);
+        }
     }
 
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -127,6 +143,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             return ""; // NOI18N
         }
         boolean showPackageNames = preferences.getBoolean(SHOW_PACKAGE_NAMES, false);
+        Color c = null;
+        synchronized (nodesInDeadlock) {
+            if (nodesInDeadlock.contains(node)) {
+                c = Color.RED;
+            }
+        }
         if (node instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) node;
             watch(t);
@@ -134,9 +156,15 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             if (t == currentThread && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
                         getDisplayName(t, showPackageNames),
-                        true, false, null);
+                        true, false, c);
             } else {
-                return getDisplayName(t, showPackageNames);
+                if (c != null) {
+                    return BoldVariablesTableModelFilterFirst.toHTML(
+                        getDisplayName(t, showPackageNames),
+                        false, false, c);
+                } else {
+                    return getDisplayName(t, showPackageNames);
+                }
             }
         }
         if (node instanceof CallStackFrame) {
@@ -145,9 +173,15 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             if (f.equals(currentFrame)) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
                         CallStackNodeModel.getCSFName(null, f, showPackageNames),
-                        true, false, null);
+                        true, false, c);
             } else {
-                return CallStackNodeModel.getCSFName(null, f, showPackageNames);
+                if (c != null) {
+                    return BoldVariablesTableModelFilterFirst.toHTML(
+                            CallStackNodeModel.getCSFName(null, f, showPackageNames),
+                            false, false, c);
+                } else {
+                    return CallStackNodeModel.getCSFName(null, f, showPackageNames);
+                }
             }
         }
         throw new UnknownTypeException(node.toString());
@@ -392,6 +426,18 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
     }
     
+    private void fireDisplayNameChanged (Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.DISPLAY_NAME_MASK);
+        for (ModelListener ml : ls) {
+            ml.modelChanged (event);
+        }
+    }
+    
     private void watch(JPDAThread t) {
         synchronized (threadStateUpdaters) {
             if (!threadStateUpdaters.containsKey(t)) {
@@ -470,6 +516,35 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                     fireNodeChanged(currentFrame);
                 }
             }
+        }
+        
+    }
+    
+    private class DeadlockListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            Set<Deadlock> deadlocks = deadlockDetector.getDeadlocks();
+            Set deadlockedElements = new HashSet();
+            for (Deadlock deadlock : deadlocks) {
+                for (JPDAThread t : deadlock.getThreads()) {
+                    deadlockedElements.add(t);
+                    deadlockedElements.add(t.getContendedMonitor());
+                }
+            }
+            if (deadlockedElements.isEmpty()) {
+                return ;
+            }
+            synchronized (nodesInDeadlock) {
+                nodesInDeadlock.addAll(deadlockedElements);
+            }
+            synchronized (nodesInDeadlockByDebugger) {
+                nodesInDeadlockByDebugger.put(debugger, nodesInDeadlock);
+            }
+            for (Object node : deadlockedElements) {
+                fireDisplayNameChanged(node);
+                DebuggingTreeExpansionModelFilter.expand(debugger, node);
+            }
+            //fireNodeChanged(TreeModel.ROOT);
         }
         
     }

@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
+import java.awt.Color;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,9 +61,11 @@ import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
@@ -104,8 +107,10 @@ NodeActionsProviderFilter, TableModel, Constants {
     private PreferenceChangeListener prefListener;
     private Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
     private Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
+    private JPDADebugger debugger;
     
-    public DebuggingMonitorModel() {
+    public DebuggingMonitorModel(ContextProvider lookupProvider) {
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         prefListener = new MonitorPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
@@ -290,16 +295,38 @@ NodeActionsProviderFilter, TableModel, Constants {
     UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
-            return java.text.MessageFormat.format(NbBundle.getBundle(DebuggingMonitorModel.class).getString(
+            String monitorText = java.text.MessageFormat.format(NbBundle.getBundle(DebuggingMonitorModel.class).getString(
                     "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { v.getType(), v.getValue() });
+            Set nodesInDeadlock = DebuggingNodeModel.getNodesInDeadlock(debugger);
+            if (nodesInDeadlock != null) {
+                synchronized (nodesInDeadlock) {
+                    if (nodesInDeadlock.contains(v)) {
+                        monitorText = BoldVariablesTableModelFilterFirst.toHTML(
+                                monitorText,
+                                false, false, Color.RED);
+                    }
+                }
+            }
+            return monitorText;
         } else
         if (o instanceof OwnedMonitors) {
             return NbBundle.getBundle(DebuggingMonitorModel.class).getString("CTL_MonitorModel_Column_OwnedMonitors");
         } else
         if (o instanceof ObjectVariable) {
             ObjectVariable v = (ObjectVariable) o;
-            return java.text.MessageFormat.format(NbBundle.getBundle(DebuggingMonitorModel.class).getString(
+            String monitorText = java.text.MessageFormat.format(NbBundle.getBundle(DebuggingMonitorModel.class).getString(
                     "CTL_MonitorModel_Column_Monitor"), new Object [] { v.getType(), v.getValue() });
+            Set nodesInDeadlock = DebuggingNodeModel.getNodesInDeadlock(debugger);
+            if (nodesInDeadlock != null) {
+                synchronized (nodesInDeadlock) {
+                    if (nodesInDeadlock.contains(o)) {
+                        monitorText = BoldVariablesTableModelFilterFirst.toHTML(
+                                monitorText,
+                                false, false, Color.RED);
+                    }
+                }
+            }
+            return monitorText;
         } else
         return model.getDisplayName (o);
     }

@@ -70,10 +70,11 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     
     private Set<Object> expandedNodes = new WeakSet<Object>();
     private List<ModelListener> listeners = new ArrayList<ModelListener>();
+    private JPDADebugger debugger;
     
     
     public DebuggingTreeExpansionModelFilter(ContextProvider lookupProvider) {
-        JPDADebugger debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         synchronized (FILTERS) {
             FILTERS.put(debugger, this);
         }
@@ -88,6 +89,17 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
         return filter.isExpanded(node);
     }
     
+    static void expand(JPDADebugger debugger, Object node) {
+        DebuggingTreeExpansionModelFilter filter;
+        synchronized (FILTERS) {
+            filter = FILTERS.get(debugger);
+        }
+        if (filter != null) {
+            filter.nodeExpanded(node);
+            filter.fireNodeExpanded(node);
+        }
+    }
+
     private boolean isExpanded(Object node) {
         synchronized (this) {
             return expandedNodes.contains(node);
@@ -101,6 +113,14 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
      * @return default state (collapsed, expanded) of given node
      */
     public boolean isExpanded (TreeExpansionModel original, Object node) throws UnknownTypeException {
+        Set nodesInDeadlock = DebuggingNodeModel.getNodesInDeadlock(debugger);
+        if (nodesInDeadlock != null) {
+            synchronized (nodesInDeadlock) {
+                if (nodesInDeadlock.contains(node)) {
+                    return true;
+                }
+            }
+        }
         if (node instanceof CallStackFrame) {
             return true;
         }
@@ -157,6 +177,18 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
         }
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
                 ModelEvent.NodeChanged.DISPLAY_NAME_MASK);
+        for (ModelListener ml : ls) {
+            ml.modelChanged (event);
+        }
+    }
+    
+    private void fireNodeExpanded(Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.EXPANSION_MASK);
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }

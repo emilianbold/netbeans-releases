@@ -363,6 +363,13 @@ public class TreeModelNode extends AbstractNode {
             });
             refreshed = true;
         }
+        if ((ModelEvent.NodeChanged.EXPANSION_MASK & changeMask) != 0) {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    expandIfSetToExpanded();
+                }
+            });
+        }
         if (!refreshed) {
             refresh();
         }
@@ -656,6 +663,35 @@ public class TreeModelNode extends AbstractNode {
     }
      */
     
+    private final void expandIfSetToExpanded() {
+        try {
+            DefaultTreeExpansionManager.get(model).setChildrenToActOn(getTreeDepth());
+            if (model.isExpanded (object)) {
+                TreeFeatures treeTable = treeModelRoot.getTreeFeatures ();
+                if (treeTable != null) {
+                    treeTable.expandNode (object);
+                }
+            }
+        } catch (UnknownTypeException ex) {
+        }
+    }
+
+    private Integer depth;
+
+    private Integer getTreeDepth() {
+        Node p = getParentNode();
+        if (p == null) {
+            return 0;
+        } else if (depth != null) {
+            return depth;
+        } else {
+            int d = 1;
+            while ((p = p.getParentNode()) != null) d++;
+            depth = new Integer(d);
+            return depth;
+        }
+    }
+
     // innerclasses ............................................................
     
     /** Special locals subnodes (children) */
@@ -812,19 +848,23 @@ public class TreeModelNode extends AbstractNode {
                 public void run () {
                     int i, k = ch.length;
                     for (i = 0; i < k; i++)
-                        try {
-                            DefaultTreeExpansionManager.get(model).setChildrenToActOn(getTreeDepth());
-                            if (model.isExpanded (ch [i])) {
-                                TreeFeatures treeTable = treeModelRoot.getTreeFeatures ();
-                                if (treeTable != null && treeTable.isExpanded(object)) {
-                                    // Expand the child only if the parent is expanded
-                                    treeTable.expandNode (ch [i]);
-                                }
-                            }
-                        } catch (UnknownTypeException ex) {
-                        }
+                        expandIfSetToExpanded(ch[i]);
                 }
             });
+        }
+        
+        private final void expandIfSetToExpanded(Object child) {
+            try {
+                DefaultTreeExpansionManager.get(model).setChildrenToActOn(getTreeDepth());
+                if (model.isExpanded (child)) {
+                    TreeFeatures treeTable = treeModelRoot.getTreeFeatures ();
+                    if (treeTable != null && treeTable.isExpanded(object)) {
+                        // Expand the child only if the parent is expanded
+                        treeTable.expandNode (child);
+                    }
+                }
+            } catch (UnknownTypeException ex) {
+            }
         }
         
         private Integer depth;
