@@ -430,7 +430,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     Node node = Visualizer.findNode(path.getLastPathComponent());
                     JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
                     if (jpdaThread != null) {
-                        isCurrent = jpdaThread == currentThread;
+                        isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
                         isAtBreakpoint = infoPanel.isBreakpointHit(jpdaThread);
                     }
                     
