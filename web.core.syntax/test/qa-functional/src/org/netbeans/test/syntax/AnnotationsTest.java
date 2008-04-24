@@ -102,6 +102,18 @@ public class AnnotationsTest extends BasicOpenFileTest {
         runTest("issue99526.html");
     }
 
+    public void testIssue130745() throws Exception {
+        runTest("issue130745.jsp");
+    }
+
+    public void testIssue133760() throws Exception {
+        runTest("issue133760.jsp");
+    }
+
+    public void testIssue133841() throws Exception {
+        runTest("issue133841.html");
+    }
+
     public void testMissingEndTag() throws Exception {
         runTest("missingEndTag.html", 1);
     }
@@ -112,10 +124,6 @@ public class AnnotationsTest extends BasicOpenFileTest {
 
     public void testUnknownCSSProperty() throws Exception {
         runTest("unknownCSSProperty.html", 1);
-    }
-
-    public void testIssue130745() throws Exception {
-        runTest("issue130745.jsp");
     }
   
     private void runTest(String fileName) throws Exception {
