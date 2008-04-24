@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,23 +39,61 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.modules.gsf.api.ElementKind;
-
 /**
  *
- * @author tomslot
+ * @author Marek Fukala
  */
-public class IndexedConstant extends IndexedElement {
-    private String typeName;
-    
-    public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
-            int offset, int flags, String typeName){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.GLOBAL);
-        this.typeName = typeName;
+public class Signature {
+        //shared array for better performance, 
+        //access is supposed from one thread so perf
+        //shouldn't degrade due to synchronization
+        private static int[] SHARED;
+        static {
+            SHARED = new int[50]; //hopefully noone will use more items in the signature
+            SHARED[0] = 0;
+        }
+        private String signature;
+        private int[] positions;
+
+        static Signature get(String signature) {
+            return new Signature(signature);
+        }
+        
+        private Signature(String signature) {
+            this.signature = signature;
+            this.positions = parseSignature(signature);
+        }
+
+        public String string(int index) {
+            assert index >= 0 && index < positions.length;
+
+            return signature.substring(positions[index], index == positions.length - 1 ? signature.length() : positions[index + 1] - 1);
+        }
+        
+        public int integer(int index) {
+            String item = string(index);
+            if(item != null) {
+                return Integer.parseInt(item);
+            } else {
+                return -1;
+            }
+                    
+        }
+
+        private static int[] parseSignature(String signature) {
+            synchronized(SHARED) {
+                int count = 0;
+                for (int i = 0; i < signature.length(); i++) {
+                    if(signature.charAt(i) == ';') {
+                        SHARED[++count] = i + 1;
+                    }
+                }
+                count++; //include the first zero
+                int[] a = new int[count];
+                System.arraycopy(SHARED, 0, a, 0, count); 
+                return a;
+            }
+        }
+        
     }
 
-    public String getTypeName() {
-        return typeName;
-    }
-
-}
