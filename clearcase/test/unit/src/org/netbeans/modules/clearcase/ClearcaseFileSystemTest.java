@@ -95,11 +95,16 @@ public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();        
+        
         suite.addTestSuite(FileSystemTestHid.class);
-        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);        
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                
-        suite.addTestSuite(BaseFileObjectTestHid.class);            
+        suite.addTestSuite(BaseFileObjectTestHid.class);                                
+
+//      XXX failing        
+//        suite.addTest(new BaseFileObjectTestHid("testLockFileAfterCrash"));                                
+//        suite.addTest(new FileObjectTestHid("testFireFileDeletedEvent2"));        
         return new ClearcaseFileSystemTest(suite);
     }
     
