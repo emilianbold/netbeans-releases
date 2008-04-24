@@ -98,11 +98,6 @@ public class InteceptorTest extends NbTestCase {
         cleanUpWC();
         initRepo();      
         
-        try {
-            CmdLineClientAdapterFactory.setup13(null);                        
-        } catch (SVNClientException ex) {
-            Exceptions.printStackTrace(ex);
-        }                        
         wc.mkdirs();        
         svnimport();                   
     }
@@ -1902,32 +1897,12 @@ public class InteceptorTest extends NbTestCase {
         assertFalse(fromFolder.exists());
     }    
     
-    private void commit(File folder) throws SVNClientException {
-        add(folder);
-        try {
-            getClient().commit(new File[]{ folder }, "commit", true);
-        } catch (SVNClientException e) {
-            fail("commit was supposed to work");
-        }    
-        assertStatus(SVNStatusKind.NORMAL, folder);
+    protected void commit(File folder) throws SVNClientException {
+        TestKit.commit(folder);
     }
 
-    private void add(File file) throws SVNClientException {
-        ISVNStatus status = getSVNStatus(file);
-        if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-            getClient().addFile(file);
-        }
-        if(file.isFile()) {
-            return; 
-        }
-        File[] files = file.listFiles();
-        if(files != null) {
-            for (File f : files) {
-                if(!isMetadata(f)) {
-                    add(f);
-                }
-            }            
-        }
+    protected void add(File file) throws SVNClientException {
+        TestKit.add(file);
     }
     
     private void cleanUpRepo() throws SVNClientException {
@@ -1964,11 +1939,11 @@ public class InteceptorTest extends NbTestCase {
     }
  
     private ISVNStatus getSVNStatus(File file) throws SVNClientException {
-        return getClient().getSingleStatus(file);        
+        return TestKit.getSVNStatus(file);
     }
     
-    private ISVNClientAdapter getClient() {
-        return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+    private ISVNClientAdapter getClient() throws SVNClientException  {
+        return TestKit.getClient();
     }   
     
     private void assertCachedStatus(File file, int expectedStatus) throws Exception {
@@ -2001,37 +1976,11 @@ public class InteceptorTest extends NbTestCase {
     }
     
     private void initRepo() throws MalformedURLException, IOException, InterruptedException, SVNClientException {        
-        ISVNDirEntry[] list;
-        if(!repoDir.exists()) {
-            repoDir.mkdirs();            
-            String[] cmd = {"svnadmin", "create", repoDir.getAbsolutePath()};
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();   
-        } else {
-            list = getClient().getList(repoUrl, SVNRevision.HEAD, false);            
-            if(list != null) {
-                for (ISVNDirEntry entry : list) {
-                    if(entry.getPath().equals(wc.getName())) {
-                        getClient().remove(new SVNUrl[] {repoUrl.appendPath(wc.getName())}, "remove");
-                    }
-                }
-            }
-        }
+        TestKit.initRepo(repoDir, wc);
     }
     
-    private void svnimport() throws SVNClientException {
-        ISVNClientAdapter client = getClient();        
-        client.mkdir(repoUrl.appendPath(wc.getName()), "msg");        
-        client.checkout(repoUrl.appendPath(wc.getName()), wc, SVNRevision.HEAD, true);        
-        File[] files = wc.listFiles();
-        if(files != null) {
-            for (File file : files) {
-                if(!isMetadata(file)) {
-                    client.addFile(new File[] {file}, true);   
-                }                
-            }
-            client.commit(new File[] {wc}, "commit", true);                    
-        }        
+    private void svnimport() throws SVNClientException, MalformedURLException {
+        TestKit.svnimport(repoDir, wc);
     }        
     
     private void delete(File file) throws IOException {
@@ -2048,7 +1997,7 @@ public class InteceptorTest extends NbTestCase {
     }
 
     private boolean isMetadata(File file) {
-        return SvnUtils.isAdministrative(file) || SvnUtils.isPartOfSubversionMetadata(file);
+        return TestKit.isMetadata(file);
     }
     
     private void renameDO(File from, File to) throws DataObjectNotFoundException, IOException {
