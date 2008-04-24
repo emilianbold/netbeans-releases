@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -70,6 +71,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
@@ -103,6 +105,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/threadsView/thread_running_16.png";
     public static final String CALL_STACK2 =
             "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
+    
+    public static final String SHOW_PACKAGE_NAMES = "show.packageNames";
 
     private JPDADebugger debugger;
     
@@ -110,6 +114,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     
     private Map<JPDAThread, ThreadStateUpdater> threadStateUpdaters = new WeakHashMap<JPDAThread, ThreadStateUpdater>();
     private CurrentThreadListener currentThreadListener;
+    private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -121,16 +126,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (TreeModel.ROOT.equals(node)) {
             return ""; // NOI18N
         }
+        boolean showPackageNames = preferences.getBoolean(SHOW_PACKAGE_NAMES, false);
         if (node instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) node;
             watch(t);
             JPDAThread currentThread = debugger.getCurrentThread();
             if (t == currentThread && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
-                        getDisplayName(t),
+                        getDisplayName(t, showPackageNames),
                         true, false, null);
             } else {
-                return getDisplayName(t);
+                return getDisplayName(t, showPackageNames);
             }
         }
         if (node instanceof CallStackFrame) {
@@ -138,21 +144,21 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
             if (f.equals(currentFrame)) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
-                        CallStackNodeModel.getCSFName(null, f, false),
+                        CallStackNodeModel.getCSFName(null, f, showPackageNames),
                         true, false, null);
             } else {
-                return CallStackNodeModel.getCSFName(null, f, false);
+                return CallStackNodeModel.getCSFName(null, f, showPackageNames);
             }
         }
         throw new UnknownTypeException(node.toString());
     }
     
-    private String getDisplayName(JPDAThread t) throws UnknownTypeException {
+    public static String getDisplayName(JPDAThread t, boolean showPackageNames) throws UnknownTypeException {
         String frame = null;
         if (t.isSuspended () && (t.getStackDepth () > 0)) {
             try { 
                 CallStackFrame sf = t.getCallStack (0, 1) [0];
-                frame = CallStackNodeModel.getCSFName (null, sf, false);
+                frame = CallStackNodeModel.getCSFName (null, sf, showPackageNames);
             } catch (AbsentInformationException e) {
             }
         }
