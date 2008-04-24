@@ -67,33 +67,37 @@ public abstract class IndexedElement extends PHPElement {
     protected Document document;
     protected FileObject fileObject;
     protected int flags;
-    protected String attributes;
-    protected String signature;
+    protected String textSignature;
     protected boolean smart;
     protected boolean inherited = true;
+    protected int offset;
 
-    IndexedElement(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+    IndexedElement(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
         this.name = name;
         this.in = in;
         this.index = index;
         this.fileUrl = fileUrl;
-        this.attributes = attributes;
+        this.offset = offset;
         this.flags = flags;
         this.kind = kind;
     }
     
+    public int getOffset() {
+        return offset;
+    }
+    
     public String getSignature() {
-        if (signature == null) {
+        if (textSignature == null) {
             StringBuilder sb = new StringBuilder();
             if (in != null) {
                 sb.append(in);
                 sb.append('.');
             }
             sb.append(name);
-            signature = sb.toString();
+            textSignature = sb.toString();
         }
 
-        return signature;
+        return textSignature;
     }
     
     public PHPIndex getIndex() {
@@ -171,17 +175,6 @@ public abstract class IndexedElement extends PHPElement {
 
         return fileObject;
     }
-
-    protected int getAttributeSection(int section) {
-        assert section != 0; // Obtain directly, and logic below (+1) is wrong
-        int attributeIndex = 0;
-        for (int i = 0; i < section; i++) {
-            attributeIndex = attributes.indexOf(';', attributeIndex+1);
-        }
-        
-        assert attributeIndex != -1;
-        return attributeIndex + 1;
-    }
     
     public void setSmart(boolean smart) {
         this.smart = smart;
@@ -199,19 +192,6 @@ public abstract class IndexedElement extends PHPElement {
         return inherited;
     }
 
-    protected static final int NAME_INDEX = 0;
-//    protected static final int IN_INDEX = 1;
-//    protected static final int CASE_SENSITIVE_INDEX = 2;
-//    protected static final int FLAG_INDEX = 3;
-    protected static final int ARG_INDEX = 1;
-    protected static final int OFFSET_INDEX = 2;
-//    protected static final int NODE_INDEX = 5;
-//    protected static final int DOC_INDEX = 6;
-//    protected static final int BROWSER_INDEX = 7;
-//    protected static final int TYPE_INDEX = 8;
-    
-    
-    
     // ------------- Flags/attributes -----------------
 
     // This should go into IndexedElement
@@ -293,7 +273,4 @@ public abstract class IndexedElement extends PHPElement {
         return hash;
     }
     
-    public int getOffset(){
-        return -1;
-    }
 }

@@ -511,7 +511,7 @@ public final class Option {
   private static final String HEADER_RIGHT_TEXT = EMPTY;
 
   private static final String FOOTER_LEFT_TEXT = getPageOfCount(
-    getRowColumn(Macro.ROW.getName(),Macro.COLUMN.getName()),Macro.COUNT.getName());
+    getRowColumn(Macro.ROW.getName(), Macro.COLUMN.getName()), Macro.COUNT.getName());
   private static final String FOOTER_CENTER_TEXT = EMPTY;
   private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() +
     "  " + Macro.MODIFIED_TIME.getName(); // NOI18N

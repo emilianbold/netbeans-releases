@@ -38,12 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+package org.netbeans.modules.soa.validation.core;
 
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -51,7 +51,7 @@ import org.netbeans.modules.bpel.validation.core.QuickFix;
  */
 public final class QuickFixable extends ResultItem {
 
-  public QuickFixable(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+  public QuickFixable(Validator validator, ResultType type, Component component, String description, QuickFix quickFix) {
     super(validator, type, component, description);
     myQuickFix = quickFix;
   }         

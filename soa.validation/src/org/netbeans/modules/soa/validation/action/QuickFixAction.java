@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.action;
+package org.netbeans.modules.soa.validation.action;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -56,11 +56,9 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
-import org.netbeans.modules.soa.validation.Controller;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
-import org.netbeans.modules.bpel.validation.core.QuickFixable;
-import org.netbeans.modules.bpel.validation.core.Util;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.core.QuickFix;
+import org.netbeans.modules.soa.validation.core.QuickFixable;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -73,7 +71,7 @@ public final class QuickFixAction extends IconAction {
     super(
       i18n(QuickFixAction.class, "CTL_Quick_Fix_Action"), // NOI18N
       i18n(QuickFixAction.class, "TLT_Quick_Fix_Action"), // NOI18N
-      icon(Util.class, "quickfix") // NOI18N
+      icon(QuickFixAction.class, "quickfix") // NOI18N
     );
   }
 

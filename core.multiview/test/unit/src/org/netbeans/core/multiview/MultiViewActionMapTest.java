@@ -445,7 +445,7 @@ public class MultiViewActionMapTest extends NbTestCase {
     }
     
     
-    private class TestAction extends  AbstractAction {
+    static class TestAction extends AbstractAction {
         public TestAction(String name) {
             super(name);
         }

@@ -51,11 +51,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -78,6 +79,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -104,6 +106,7 @@ public class ProjectCreator {
     private String makefilePath;
     private String projectFolder;
     private String baseDir;
+    private String buildScript;
     private Folder rootFolder;
     private DiscoveryDescriptor discovery;
 
@@ -119,10 +122,11 @@ public class ProjectCreator {
      * @param newWorkingDir working directory (for build and clean commands)
      * @param newMakefilePath path to existing makefile
      */
-    public void init(String newProjectFolder, String newWorkingDir, String newMakefilePath) {
-        projectFolder = newProjectFolder;
-        workingDir = newWorkingDir;
-        makefilePath = newMakefilePath;
+    public void init(String newProjectFolder, String newWorkingDir, String newMakefilePath, String buildScript) {
+        this.projectFolder = newProjectFolder;
+        this.workingDir = newWorkingDir;
+        this.makefilePath = newMakefilePath;
+        this.buildScript = buildScript;
     }
 
     /**
@@ -175,7 +179,7 @@ public class ProjectCreator {
      * @return the helper object permitting it to be further customized
      * @throws java.io.IOException see createProject(File, String, String, Configuration[], Iterator, Iterator)
      */
-    public AntProjectHelper createProject(String name, String displayName, Map<String,String> folders) throws IOException {
+    public AntProjectHelper createProject(String name, String displayName, Set<String> folders) throws IOException {
         File dirF = new File(projectFolder);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
@@ -187,11 +191,11 @@ public class ProjectCreator {
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
-            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../opensolaris.sh 'dmake all'"); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../../opensolaris.sh 'dmake clean'"); // NOI18N
+            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake clean'"); // NOI18N
         } else {
-            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../opensolaris.sh 'dmake all'"); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../opensolaris.sh 'dmake clean'"); // NOI18N
+            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake all'"); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake clean'"); // NOI18N
         }
         extConf.getMakefileConfiguration().getOutput().setValue(output);
         
@@ -210,7 +214,13 @@ public class ProjectCreator {
                         )));
             }
         }
-
+        
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, CompilerSetManager.Sun));
+        } else {
+            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, CompilerSetManager.GNU));
+        }
+        
         extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(getProjectLevelInludes());
         extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(getProjectLevelInludes());
         extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(getProjectLevelMacros());
@@ -243,7 +253,7 @@ public class ProjectCreator {
      * @throws IOException in case something went wrong
      */
     public AntProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
-                                          Iterator sourceFiles, Iterator importantItems, Map<String,String> folders) throws IOException {
+                                          Iterator sourceFiles, Iterator importantItems, Set<String> folders) throws IOException {
         FileObject dirFO = createProjectDir(dir);
         AntProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
         Project p = ProjectManager.getDefault().findProject(dirFO);
@@ -253,11 +263,13 @@ public class ProjectCreator {
             removeProjectDir(dir);
             return null;
         }
+        ProjectManager.getDefault().clearNonProjectCache();
         return h;
     }
 
     //Create a project with specified project folder, makefile, name, source files and important items
-    private AntProjectHelper createProject(FileObject dirFO, String displayName, String makefileName, Configuration[] confs, Iterator sourceFiles, Iterator importantItems) throws IOException {
+    private AntProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
+            Configuration[] confs, Iterator sourceFiles, Iterator importantItems) throws IOException {
         //Create a helper object
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -282,17 +294,17 @@ public class ProjectCreator {
         projectDescriptor.initLogicalFolders(null, false, importantItems);
         rootFolder = projectDescriptor.getLogicalFolders();
         projectDescriptor.addSourceRootRaw(workingDir);
-
+        
         addFiles(sourceFiles);
         
         projectDescriptor.save();
-
+        
         // create Makefile
-        copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName()); // NOI18N
+        copyURLFile("/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName()); // NOI18N
         return h;
     }
 
-    private boolean applyDiscovery(Project project, String displayName, Map<String,String> folders) throws IOException{
+    private boolean applyDiscovery(Project project, String displayName, Set<String> folders) throws IOException{
         discovery.setProject(project);
         new DiscoveryProjectGenerator(discovery).process();
         createAdditionalRequiredProjects(project, displayName, folders);
@@ -346,13 +358,14 @@ public class ProjectCreator {
     }
 
     //copy from one file with specified URL to another
-    private void copyURLFile(String fromURL, String toFile) throws IOException {
+    private void copyURLFile(String resource, String toFile) throws IOException {
+        String fromURL = "nbresloc:"+resource;
         InputStream is = null;
         try {
             URL url = new URL(fromURL);
             is = url.openStream();
         } catch (Exception e) {
-            //
+            is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
         if (is != null) {
             FileOutputStream os = new FileOutputStream(toFile);
@@ -362,9 +375,9 @@ public class ProjectCreator {
 
     //create project directory
     //return FileObject created with specified File dir
-    private FileObject createProjectDir(File dir) throws IOException {
-        FileObject dirFO;
-        if (!dir.exists()) {
+    /*package-local*/ static FileObject createProjectDir(File dir) throws IOException {
+        FileObject dirFO = FileUtil.toFileObject(dir);
+        if (dirFO == null && !dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem(dir);
             if (!dir.mkdirs()) {
@@ -379,7 +392,7 @@ public class ProjectCreator {
     }
 
     //refresh file system
-    private void refreshFileSystem(final File dir) throws FileStateInvalidException {
+    /*package-local*/ static void refreshFileSystem(final File dir) throws FileStateInvalidException {
         File rootF = dir;
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
@@ -411,7 +424,7 @@ public class ProjectCreator {
         return paths;
     }
     
-    private void createAdditionalRequiredProjects(Project project, String displayName, Map<String,String> folders){
+    private void createAdditionalRequiredProjects(Project project, String displayName, Set<String> folders){
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         MakeConfiguration conf = (MakeConfiguration) makeConfigurationDescriptor.getConfs().getActive();
@@ -471,16 +484,16 @@ public class ProjectCreator {
                 int i = sub.lastIndexOf("../"); // NOI18N
                 String f = sub.substring(i+3);
                 if (f.startsWith("cmd") || f.startsWith("lib")) { // NOI18N
-                    if (!folders.containsKey(f)){
+                    if (!folders.contains(f)){
                         continue;
                     }
                 } else {
                    if (displayName.indexOf(".cmd.")>0) { // NOI18N
-                        if (!folders.containsKey("cmd/"+f)){ // NOI18N
+                        if (!folders.contains("cmd/"+f)){ // NOI18N
                             continue;
                         }
                    } else {
-                        if (!folders.containsKey("lib/"+f)){ // NOI18N
+                        if (!folders.contains("lib/"+f)){ // NOI18N
                             continue;
                         }
                    }

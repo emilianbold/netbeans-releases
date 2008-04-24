@@ -38,19 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+package org.netbeans.modules.xslt.validation.reference;
+
+import org.netbeans.modules.xslt.model.Stylesheet;
+import org.netbeans.modules.xslt.model.Template;
+import org.netbeans.modules.xslt.model.XslVisitor;
+import org.netbeans.modules.xslt.model.XslVisitorAdapter;
+import org.netbeans.modules.xslt.validation.core.XsltValidator;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.12.06
+ * @version 2007.05.03
  */
-public interface QuickFix {
+public final class Validator extends XsltValidator {
 
-  boolean canFix();
-  void doFix();
-  String getDescription();
+  public XslVisitor getVisitor() { return new XslVisitorAdapter() {
 
-  // ------------------------------------------------
-  public abstract class Adapter implements QuickFix {
+  @Override
+  public void visit(Template template)
+  {
+//out();
+//out("TEMPLATE: " + template);
+//    addError("FIX_", template);
   }
-}
+
+};}}

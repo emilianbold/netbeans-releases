@@ -53,9 +53,18 @@ class StylesheetImpl extends XslComponentImpl implements Stylesheet {
      * @see org.netbeans.modules.xslt.model.impl.XslComponentImpl#accept(org.netbeans.modules.xslt.model.XslVisitor)
      */
     @Override
-    public void accept( XslVisitor visitor )
+    public void accept(XslVisitor visitor)
     {
-        visitor.visit( this );
+        visitor.visit(this);
+        acceptChildren(visitor);
+    }
+
+    protected void acceptChildren(XslVisitor visitor) {
+        List<XslComponent> children = getChildren();
+
+        for (XslComponent component : children) {
+            component.accept(visitor);
+        }
     }
 
     /* (non-Javadoc)

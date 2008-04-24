@@ -38,18 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.validation;
+package org.netbeans.modules.soa.validation.action;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.soa.validation.core.Controller;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.04.15
  */
-public final class Action extends ValidateAction {
+public final class ValidationAction extends ValidateAction {
 
-  public Action(Controller controller) {
+  public ValidationAction(Controller controller) {
     super(null);
     myController = controller;
   }
