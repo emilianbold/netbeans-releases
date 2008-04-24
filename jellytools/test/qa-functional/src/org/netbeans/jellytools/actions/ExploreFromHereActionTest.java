@@ -54,7 +54,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test org.netbeans.jellytools.actions.ExploreFromHereAction
  *
@@ -100,7 +99,7 @@ public class ExploreFromHereActionTest extends JellyTestCase {
     }
     
     /** Test performPopup */
-    public void testPerformPopup() {
+    public void testPerformPopup() throws Exception {
         // create new web application project
         
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
@@ -120,7 +119,12 @@ public class ExploreFromHereActionTest extends JellyTestCase {
         // wait index.jsp is opened in editor
         EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        try {
+            Class.forName("org.netbeans.api.java.source.SourceUtils", true, Thread.currentThread().getContextClassLoader()).
+                    getMethod("waitScanFinished").invoke(null);
+        } catch (ClassNotFoundException x) {
+            System.err.println("Warning: org.netbeans.api.java.source.SourceUtils could not be found, will not wait for scan to finish");
+        }
         
         // create a web service
 

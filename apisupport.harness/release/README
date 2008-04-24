@@ -755,6 +755,9 @@ src.dir - "src", module source directory. Avoid overriding.
 test.timeout [since 6.1] - timeout (in msec) for unit tests, default 600000 (10
 minutes). A test running longer than this will be halted.
 
+test.run.args [since 6.5] - general VM arguments to pass when running tests.
+Defaults to just "-ea".
+
 test.unit.cp.extra - any additional classpath you might need to compile your
 unit tests. If left empty, you can compile against JUnit; the NB test extensions
 in nbjunit.jar; your module; and anything your module compiled against (since
@@ -776,6 +779,8 @@ junit.jar, nbjunit.jar, and insanelib.jar. Not needed for netbeans.org modules.
 For external modules, may be needed if you do not have the junit and testtools
 modules installed in the target platform *or* the developing IDE, and the target
 platform is not inside a netbeans.org build tree (in nbbuild/netbeans).
+DEPRECATED as of 6.5; even basic libraries should instead be declared as regular
+test dependencies (they are now included in the harness cluster).
 
 test.unit.src.dir - "test/unit/src"; avoid overriding.
 
