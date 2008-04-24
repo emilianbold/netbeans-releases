@@ -4,7 +4,7 @@
 
 
 public class NewJApplet extends javax.swing.JApplet {
-    
+
     /** Initializes the applet NewJApplet */
     public void init() {
         try {
@@ -17,7 +17,7 @@ public class NewJApplet extends javax.swing.JApplet {
             ex.printStackTrace();
         }
     }
-    
+
     /** This method is called from within the init() method to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -38,9 +38,9 @@ public class NewJApplet extends javax.swing.JApplet {
             .add(0, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-    
+
 }
