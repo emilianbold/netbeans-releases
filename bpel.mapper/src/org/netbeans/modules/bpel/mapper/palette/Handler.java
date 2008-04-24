@@ -53,7 +53,7 @@ import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
 import org.netbeans.modules.bpel.mapper.model.VertexFactory;
-import org.netbeans.modules.soa.validation.DurationDialog;
+import org.netbeans.modules.soa.validation.util.DurationDialog;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**

@@ -55,7 +55,7 @@ import javax.swing.JToolBar;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
-//import org.netbeans.modules.soa.validation.Controller;
+//import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;

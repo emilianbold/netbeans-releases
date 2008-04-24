@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.xml.transform.Source;
-import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.xslt.core.multiview.XsltDesignViewOpenAction;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;

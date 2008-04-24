@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,19 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+package org.netbeans.modules.soa.validation.action;
+
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.soa.validation.core.Controller;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.12.06
+ * @version 2008.04.15
  */
-public interface QuickFix {
+public final class ValidationAction extends ValidateAction {
 
-  boolean canFix();
-  void doFix();
-  String getDescription();
-
-  // ------------------------------------------------
-  public abstract class Adapter implements QuickFix {
+  public ValidationAction(Controller controller) {
+    super(null);
+    myController = controller;
   }
+
+  @Override
+  public void actionPerformed(ActionEvent event) {
+    myController.startValidation();
+  }
+
+  private Controller myController;
 }

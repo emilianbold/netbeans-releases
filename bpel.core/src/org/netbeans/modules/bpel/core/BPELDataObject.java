@@ -52,7 +52,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
 
-import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;

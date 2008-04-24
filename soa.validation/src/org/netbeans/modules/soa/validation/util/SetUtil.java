@@ -38,30 +38,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+package org.netbeans.modules.soa.validation.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bpel.model.api.NamedElement;
+import org.netbeans.modules.xml.xam.Named;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.07
  */
-public final class Util {
+public final class SetUtil {
 
-  public static List<NamedElement> getAppropriate(NamedElement [] elements, String typed) {
+  private SetUtil() {}
+
+  public static List<Named> getAppropriate(List<? extends Named> elements, String typed) {
 //out();
-    List<NamedElement> appropriate = new ArrayList<NamedElement>();
+    List<Named> appropriate = new ArrayList<Named>();
 
-    if (elements.length == 0) {
+    if (elements.size() == 0) {
       return appropriate;
     }
-    Chars [] elementsChars = new Chars [elements.length];
+    Chars [] elementsChars = new Chars [elements.size()];
 
-    for (int i=0; i < elements.length; i++) {
-      elementsChars [i] = new Chars(elements [i]);
+    for (int i=0; i < elements.size(); i++) {
+      elementsChars [i] = new Chars(elements.get(i));
     }
     Chars typedChars = new Chars(typed);
 
@@ -89,7 +91,7 @@ public final class Util {
   // -------------------------
   private static class Chars {
 
-    public Chars(NamedElement element) {
+    public Chars(Named element) {
       this(element, null);
     }
 
@@ -97,7 +99,7 @@ public final class Util {
       this(null, value);
     }
 
-    private Chars(NamedElement element, String value) {
+    private Chars(Named element, String value) {
       myElement = element;
 
       if (element == null) {
@@ -114,7 +116,7 @@ public final class Util {
       }
     }
 
-    public NamedElement getElement() {
+    public Named getElement() {
       return myElement;
     }
 
@@ -159,6 +161,6 @@ public final class Util {
     private String myValue;
     private String myString;
     private byte [] myChars;
-    private NamedElement myElement;
+    private Named myElement;
   }
 }

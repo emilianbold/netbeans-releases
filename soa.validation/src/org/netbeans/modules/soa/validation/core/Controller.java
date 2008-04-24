@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.validation;
+package org.netbeans.modules.soa.validation.core;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -60,6 +60,7 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**

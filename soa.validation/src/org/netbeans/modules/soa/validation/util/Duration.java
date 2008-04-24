@@ -38,48 +38,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.validation;
+package org.netbeans.modules.soa.validation.util;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import org.openide.text.Annotatable;
-import org.openide.text.Line;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.02.01
+ * @version 2007.11.27
  */
-final class Annotation extends org.openide.text.Annotation implements PropertyChangeListener {
-    
-  public Annotation(Annotatable annotatable, String message) {
-    myMessage = message;
-
-    if (annotatable != null) {
-      attach(annotatable);
-      annotatable.addPropertyChangeListener(this);
-    }
+public class Duration {
+  public Duration(
+    boolean hasMinus,
+    int years,
+    int months,
+    int days,
+    int hours,
+    int minutes,
+    double seconds
+  ) {
+    myHasMinus = hasMinus;
+    myYears = years;
+    myMonths = months;
+    myDays = days;
+    myHours = hours;
+    myMinutes = minutes;
+    mySeconds = seconds;
   }
 
-  public String getAnnotationType() {
-    return "validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    if (Annotatable.PROP_ANNOTATION_COUNT.equals(propertyChangeEvent.getPropertyName())) {
-      return;
-    }
-    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
-
-    if (annotatable != null) {
-      annotatable.removePropertyChangeListener(this);
-      detach();
-    }
+  public boolean hasMinus() {
+    return myHasMinus;
   }
 
-  private String myMessage;
+  public int getYears() {
+    return myYears;
+  }
+
+  public int getMonths() {
+    return myMonths;
+  }
+
+  public int getDays() {
+    return myDays;
+  }
+
+  public int getHours() {
+    return myHours;
+  }
+
+  public int getMinutes() {
+    return myMinutes;
+  }
+
+  public double getSeconds() {
+    return mySeconds;
+  }
+
+  @Override
+  public String toString() {
+    return myYears + " " + myMonths + " " + myDays + " " + myHours + " " + myMinutes + " " + mySeconds; // NOI18N
+  }
+
+  private boolean myHasMinus;
+  private int myYears;
+  private int myMonths;
+  private int myDays;
+  private int myHours;
+  private int myMinutes;
+  private double mySeconds;
 }

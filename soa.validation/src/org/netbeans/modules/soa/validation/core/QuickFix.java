@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,16 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.soa.validation;
-
-import java.util.List;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+package org.netbeans.modules.soa.validation.core;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.04.14
+ * @version 2007.12.06
  */
-public interface Listener {
+public interface QuickFix {
 
-  void validationUpdated(List<ResultItem> result);
+  boolean canFix();
+  void doFix();
+  String getDescription();
+
+  // ------------------------------------------------
+  public abstract class Adapter implements QuickFix {
+  }
 }
