@@ -1200,27 +1200,27 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
         setUsingFullyQualifiedName(true);
         setStagingTableName("");
     }
-    public String getResolvedCatalogName() {
+    public static String getResolvedCatalogName(SQLDBTable t) {
         // Ensure order of precedence for catalog name is followed.
-        String resolvedCatalogName = getUserDefinedCatalogName();
+        String resolvedCatalogName = t.getUserDefinedCatalogName();
         if (StringUtil.isNullString(resolvedCatalogName)) {
-            resolvedCatalogName = getCatalog();
+            resolvedCatalogName = t.getCatalog();
         }
         return resolvedCatalogName;
     }
-    public String getResolvedSchemaName() {
+    public static String getResolvedSchemaName(SQLDBTable t) {
         // Ensure order of precedence for schema name is followed.
-        String resolvedSchemaName = getUserDefinedSchemaName();
+        String resolvedSchemaName = t.getUserDefinedSchemaName();
         if (StringUtil.isNullString(resolvedSchemaName)) {
-            resolvedSchemaName = getSchema();
+            resolvedSchemaName = t.getSchema();
         }
         return resolvedSchemaName;
     }
-    public String getResolvedTableName() {
+    public static String getResolvedTableName(SQLDBTable t) {
         // Ensure order of precedence for schema name is followed.
-        String resolvedTableName = getUserDefinedTableName();
+        String resolvedTableName = t.getUserDefinedTableName();
         if (StringUtil.isNullString(resolvedTableName)) {
-            resolvedTableName = getName();
+            resolvedTableName = t.getName();
         }
         return resolvedTableName;
     }
