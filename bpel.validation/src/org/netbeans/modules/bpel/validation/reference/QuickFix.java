@@ -40,10 +40,14 @@
  */
 package org.netbeans.modules.bpel.validation.reference;
 
+import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 
+import org.netbeans.modules.soa.validation.core.QuickFix.Adapter;
+import org.netbeans.modules.soa.validation.util.SetUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.NamedElement;
@@ -53,8 +57,6 @@ import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
-import org.netbeans.modules.bpel.validation.core.QuickFix.Adapter;
-import org.netbeans.modules.bpel.validation.core.Util;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -134,13 +136,22 @@ class QuickFix {
       if (variables == null) {
         return null;
       }
-      List<NamedElement> named = Util.getAppropriate(variables, myName);
+      List<Named> named = SetUtil.getAppropriate(toList(variables), myName);
       Variable [] appropriate = new Variable [named.size()];
 
       for (int i=0; i < named.size(); i++) {
         appropriate [i] = (Variable) named.get(i);
       }
       return appropriate;
+    }
+
+    private List<Named> toList(Variable [] elements) {
+      List<Named> list = new LinkedList<Named>();
+
+      for (NamedElement element : elements) {
+        list.add(element);
+      }
+      return list;
     }
 
     private String myName;
