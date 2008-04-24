@@ -88,11 +88,7 @@ public class ClearcaseInterceptor extends VCSInterceptor {
     @Override
     public void doDelete(final File file) throws IOException {
         Clearcase.LOG.finer("doDelete " + file);        
-        Clearcase.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {                         
-                fileDeletedImpl(file);
-            }
-        });        
+        fileDeletedImpl(file);
     }
 
     @Override
