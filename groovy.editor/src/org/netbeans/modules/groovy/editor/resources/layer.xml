@@ -223,5 +223,11 @@
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="groovy-all.xml" url="groovy-all.xml"/>
+        </folder>
+    </folder>
+
 </filesystem>
