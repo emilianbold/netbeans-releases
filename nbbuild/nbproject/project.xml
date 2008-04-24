@@ -85,17 +85,17 @@ made subject to such option by the copyright holder.
                     <target>localclean</target>
                 </action>
                 <action name="test">
-                    <target>localtest-nb</target>
+                    <target>localtest</target>
                 </action>
                 <action name="run.single">
-                    <target>localtest-single-nb</target>
+                    <target>localtest</target>
                     <context>
                         <property>includes</property>
                         <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
-                        <format>absolute-path</format>
+                        <format>relative-path-noext</format>
                         <arity>
-                            <separated-files>:</separated-files>
+                            <one-file-only/>
                         </arity>
                     </context>
                 </action>
@@ -105,9 +105,9 @@ made subject to such option by the copyright holder.
                         <property>includes</property>
                         <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
-                        <format>absolute-path</format>
+                        <format>relative-path-noext</format>
                         <arity>
-                            <separated-files>:</separated-files>
+                            <one-file-only/>
                         </arity>
                     </context>
                 </action>
