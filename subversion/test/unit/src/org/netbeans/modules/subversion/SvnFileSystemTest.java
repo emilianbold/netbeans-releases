@@ -176,13 +176,13 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             List<File> filesToAdd = new ArrayList<File>();
             for (File file : files) {
                 
-                ISVNStatus status = getSVNStatus(file);
+                ISVNStatus status = getStatus(file);
                 if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {                   
                     filesToAdd.add(file);
 
                     File parent = file.getParentFile();
                     while (!getWorkDir().equals(parent)) {
-                        status = getSVNStatus(parent);
+                        status = getStatus(parent);
                         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                             filesToAdd.add(0, parent);
                             parent = parent.getParentFile();
@@ -222,14 +222,14 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     }
     private void assertStatus(File f) throws IOException {
         try {
-            ISVNStatus status = getSVNStatus(f);
+            ISVNStatus status = getStatus(f);
             assertEquals(SVNStatusKind.NORMAL, status.getTextStatus());
         } catch (SVNClientException ex) {
             throw new IOException(ex.getMessage());
         }
     }    
 
-    private ISVNStatus getSVNStatus(File f) throws SVNClientException, MalformedURLException {
+    private ISVNStatus getStatus(File f) throws SVNClientException, MalformedURLException {
         return getClient(getRepoUrl()).getSingleStatus(f);
     }
     
