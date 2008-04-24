@@ -53,6 +53,12 @@ public class TestDistFilterTest extends NbTestCase {
     public TestDistFilterTest(java.lang.String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
     
     public void testDistFilter() throws IOException {
         TestDistFilter filter = new TestDistFilter();
