@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.core;
 
@@ -63,28 +85,22 @@ import org.xml.sax.InputSource;
 public class BPELDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 1L;
+    private static final String ICON_BASE = "org/netbeans/modules/bpel/core/resources/bp_file.gif"; // NOI18N
+    private static final String FILE_DESC = "LBL_FileNode_desc"; // NOI18N
     
-    private static final String ICON_BASE =
-        "org/netbeans/modules/bpel/core/resources/bp_file.gif";         // NOI18N
-    
-    private static final String FILE_DESC = "LBL_FileNode_desc";        // NOI18N
-    
-    public BPELDataObject( final FileObject obj, final MultiFileLoader loader )
-            throws DataObjectExistsException 
-    {
+    public BPELDataObject(final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {
         super(obj, loader);
+        myEditorSupport = new BPELDataEditorSupport(this);
         
-        myEditorSupport = new BPELDataEditorSupport (this);
+        CookieSet cookies = getCookieSet();
+        cookies.add(getEditorSupport());
         
-        CookieSet set = getCookieSet();
-        set.add(getEditorSupport());
-        
-        InputSource in = DataObjectAdapters.inputSource(this);
-        set.add(new CheckXMLSupport(in));
+        InputSource is = DataObjectAdapters.inputSource(this);
+        cookies.add(new CheckXMLSupport(is));
 
-        Source source = DataObjectAdapters.source (this);
-        set.add (new TransformableSupport (source));
-        set.add(new AnnotationManagerProvider(this));
+        Source source = DataObjectAdapters.source(this);
+        cookies.add(new TransformableSupport(source));
+        cookies.add(new AnnotationManagerProvider(this));
     }
  
     public HelpCtx getHelpCtx() {
@@ -160,7 +176,7 @@ public class BPELDataObject extends MultiDataObject {
                     XmlFileEncodingQueryImpl.singleton()
                   }));
 
-            list.add(getCookieSet().getLookup());// 125540
+            list.add(getCookieSet().getLookup());
             
             // add lazy initialization
             InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
@@ -170,11 +186,16 @@ public class BPELDataObject extends MultiDataObject {
                     if (obj == BpelModel.class) {
                         return getEditorSupport().getBpelModel();
                     }
-                    
                     if (obj == Controller.class) {
                         valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getBpelModel()));
                         return valControllerRef.get();
                     }
+
+                    
+                    
+                    
+                    
+                    
                     return null;
                 }
 
@@ -190,7 +211,11 @@ public class BPELDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            list.add(Lookups.fixed(new Class[] {BpelModel.class, Controller.class}, conv));
+            list.add(Lookups.fixed(
+                    new Class[] { BpelModel.class,
+                    Controller.class
+
+                                               }, conv));
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);

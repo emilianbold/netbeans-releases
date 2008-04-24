@@ -57,18 +57,18 @@
             <xsd:element name="profile_image_url" type="xsd:anyURI"/>
             <xsd:element name="url" type="xsd:anyURI"/>
             <xsd:element name="protected" type="xsd:boolean"/>
-            <xsd:element name="followers_count" type="xsd:integer"/>
+            <xsd:element name="followers_count" type="xsd:int"/>
             <xsd:element name="profile_background_color" minOccurs="0" type="xsd:hexBinary"/>
             <xsd:element name="profile_text_color" minOccurs="0" type="xsd:hexBinary"/>
             <xsd:element name="profile_link_color" minOccurs="0" type="xsd:hexBinary"/>
             <xsd:element name="profile_sidebar_fill_color" minOccurs="0" type="xsd:hexBinary"/>
             <xsd:element name="profile_sidebar_border_color" minOccurs="0" type="xsd:hexBinary"/>
-            <xsd:element name="friends_count" minOccurs="0" type="xsd:integer"/>
-            <xsd:element name="favourites_count" minOccurs="0" type="xsd:integer"/>
-            <xsd:element name="utc_offset" minOccurs="0" type="xsd:integer"/>
+            <xsd:element name="friends_count" minOccurs="0" type="xsd:int"/>
+            <xsd:element name="favourites_count" minOccurs="0" type="xsd:int"/>
+            <xsd:element name="utc_offset" minOccurs="0" type="xsd:int"/>
             <xsd:element name="time_zone" minOccurs="0" type="xsd:string"/>
             <xsd:element name="following" minOccurs="0" type="xsd:boolean"/>
-            <xsd:element name="statuses_count" minOccurs="0" type="xsd:integer"/>
+            <xsd:element name="statuses_count" minOccurs="0" type="xsd:int"/>
             <xsd:element name="status" minOccurs="0" type="statusType"/>
             <xsd:element name="created_at" minOccurs="0" type="xsd:string"/>
         </xsd:sequence>
