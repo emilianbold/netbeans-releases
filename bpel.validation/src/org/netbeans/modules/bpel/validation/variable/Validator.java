@@ -66,7 +66,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -76,7 +76,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends BpelValidator {
 
-  public BpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(OnMessage onMessage)

@@ -96,9 +96,8 @@ import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -108,7 +107,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends BpelValidator {
     
-  public BpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
   
   @Override
   public void visit(Process process) {

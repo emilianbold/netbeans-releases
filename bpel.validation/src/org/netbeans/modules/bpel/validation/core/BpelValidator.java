@@ -57,7 +57,7 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
-import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -67,7 +67,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class BpelValidator extends Validator {
 
-  public abstract BpelModelVisitor getVisitor();
+  public abstract SimpleBpelModelVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
     if ( !(model instanceof BpelModel)) {
