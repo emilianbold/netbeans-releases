@@ -494,6 +494,12 @@ public class Evaluator extends javax.swing.JPanel {
             } catch (InvalidExpressionException ieex) {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(ieex.getLocalizedMessage()));
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        evalDialog.requestFocus();
+                        expressionComboBox.getEditor().getEditorComponent().requestFocusInWindow();
+                    }
+                });
             }
         }
     }
@@ -518,6 +524,13 @@ public class Evaluator extends javax.swing.JPanel {
             editor.addFocusListener(new FocusListener() {
                 public void focusGained(FocusEvent e) {
                     setupContext();
+                }
+                public void focusLost(FocusEvent e) {
+                }
+            });
+            component.addFocusListener(new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    editor.requestFocusInWindow();
                 }
                 public void focusLost(FocusEvent e) {
                 }
