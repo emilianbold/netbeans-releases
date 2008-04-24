@@ -90,9 +90,12 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);        
         suite.addTestSuite(URLMapperTestHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(FileUtilTestHidden.class);                        
         suite.addTestSuite(BaseFileObjectTestHid.class);                                
        
+        // XXX fails
+//        suite.addTest(new FileUtilTestHidden("testIsParentOf"));                
+//        suite.addTest(new BaseFileObjectTestHid("testRootToFileObject"));                                
         return new MercurialFileSystemTest(suite);
     }
     
@@ -162,9 +165,16 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
             }    
         }            
             
-        HgCommand.doAdd(getWorkDir(), files, null);
-        HgCommand.doCommit(getWorkDir(), files, "commit", null);
+        HgCommand.doAdd(getWorkDir(), filesToAdd, null);
+        List<File> filesToCommit = new ArrayList<File>();
         for (File file : files) {
+            if(file.isFile()) {
+                filesToCommit.add(file);
+            }
+        }
+        
+        HgCommand.doCommit(getWorkDir(), filesToCommit, "commit", null);
+        for (File file : filesToCommit) {
             assertStatus(file);
         }
     }
