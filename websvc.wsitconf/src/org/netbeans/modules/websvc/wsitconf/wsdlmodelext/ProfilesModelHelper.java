@@ -128,7 +128,7 @@ public class ProfilesModelHelper {
             }
         }
         
-        return ComboConstants.PROF_GENERIC;
+        return ComboConstants.PROF_NOTRECOGNIZED;
     }
 
     /** 
@@ -239,6 +239,16 @@ public class ProfilesModelHelper {
                             return ComboConstants.PROF_ENDORSCERT;
                         }
                         if (tokenType == null) {    // profile 4
+                            if (secConv) {
+                                Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+                                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SUPPORTING);
+                            } else {
+                                tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SUPPORTING);
+                            }
+                            tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+                            if (ComboConstants.ISSUED.equals(tokenType)) { // profile 13
+                                return ComboConstants.PROF_STSISSUEDSUPPORTING;
+                            }
                             return ComboConstants.PROF_USERNAME;
                         }
                     }
@@ -293,7 +303,7 @@ public class ProfilesModelHelper {
             }
         }
         
-        return ComboConstants.PROF_GENERIC;
+        return ComboConstants.PROF_NOTRECOGNIZED;
     }
 
     private static void updateServiceUrl(WSDLComponent c, boolean toHttps) {
@@ -649,6 +659,29 @@ public class ProfilesModelHelper {
                 //endorsing supporting token
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 tokenType = SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.ISSUED, SecurityTokensModelHelper.ENDORSING);
+            } else if (ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile)) {  //#13
+                WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
+                WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.X509);
+                SecurityTokensModelHelper.setTokenInclusionLevel(tokenType, ComboConstants.ALWAYS);
+//                SecurityPolicyModelHelper.enableRequireThumbprintReference(tokenType, true);
+                SecurityPolicyModelHelper.setLayout(bt, ComboConstants.LAX);
+                SecurityPolicyModelHelper.enableIncludeTimestamp(bt, true);
+                SecurityPolicyModelHelper.enableSignEntireHeadersAndBody(bt, true);
+                AlgoSuiteModelHelper.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                //wss
+                WssElement wss = SecurityPolicyModelHelper.enableWss(c, true);
+                SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
+                SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
+                SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
+                SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
+                //trust10
+                TrustElement trust = SecurityPolicyModelHelper.enableTrust10(c);
+                SecurityPolicyModelHelper.enableMustSupportIssuedTokens(trust, true);
+                SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
+                SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
+                //endorsing supporting token
+                SecurityTokensModelHelper.removeSupportingTokens(c);
+                tokenType = SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.ISSUED, SecurityTokensModelHelper.SUPPORTING);
             }
             setMessageLevelSecurityProfilePolicies(c, profile);
             if (updateServiceUrl) {

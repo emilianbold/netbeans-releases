@@ -59,7 +59,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  *
  * @author  Martin Grebac
  */
-public class STSIssuedEndorsing extends javax.swing.JPanel {
+public class STSIssuedSupportingToken extends javax.swing.JPanel {
 
     private boolean inSync = false;
 
@@ -67,9 +67,9 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
     private SecurityProfile secProfile = null;
     
     /**
-     * Creates new form STSIssuedEndorsing
+     * Creates new form STSIssuedSupporting
      */
-    public STSIssuedEndorsing(WSDLComponent comp, SecurityProfile secProfile) {
+    public STSIssuedSupportingToken(WSDLComponent comp, SecurityProfile secProfile) {
         super();
         initComponents();
         this.comp = comp;
@@ -156,9 +156,9 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
 
         if (secConv) {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), SecurityTokensModelHelper.ENDORSING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), SecurityTokensModelHelper.SUPPORTING);
         } else {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SUPPORTING);
         }
         token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
         
@@ -242,7 +242,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             return;
         }
 
-        tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), SecurityTokensModelHelper.ENDORSING);
+        tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), SecurityTokensModelHelper.SUPPORTING);
         token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
 
         if (source.equals(reqDerivedKeysIssued)) {
@@ -316,7 +316,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         keySizeCombo = new javax.swing.JComboBox();
         reqDerivedKeys = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(secConvChBox, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_SecConvLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(secConvChBox, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_SecConvLabel")); // NOI18N
         secConvChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         secConvChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         secConvChBox.addActionListener(new java.awt.event.ActionListener() {
@@ -325,7 +325,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(reqSigConfChBox, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RequireSigConfirmation")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reqSigConfChBox, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RequireSigConfirmation")); // NOI18N
         reqSigConfChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reqSigConfChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         reqSigConfChBox.addActionListener(new java.awt.event.ActionListener() {
@@ -334,7 +334,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(derivedKeysChBox, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RequireDerivedKeysForSecConv")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(derivedKeysChBox, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RequireDerivedKeysForSecConv")); // NOI18N
         derivedKeysChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         derivedKeysChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         derivedKeysChBox.addActionListener(new java.awt.event.ActionListener() {
@@ -344,7 +344,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         });
 
         algoSuiteLabel.setLabelFor(algoSuiteCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(algoSuiteLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_AlgoSuiteLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(algoSuiteLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_AlgoSuiteLabel")); // NOI18N
 
         algoSuiteCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -353,7 +353,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         });
 
         layoutLabel.setLabelFor(layoutCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(layoutLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_LayoutLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(layoutLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_LayoutLabel")); // NOI18N
 
         layoutCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -361,7 +361,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(encryptSignatureChBox, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_EncryptSignatureLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(encryptSignatureChBox, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_EncryptSignatureLabel")); // NOI18N
         encryptSignatureChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptSignatureChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptSignatureChBox.addActionListener(new java.awt.event.ActionListener() {
@@ -370,7 +370,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeysIssued, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RequireDerivedKeysIssued")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeysIssued, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RequireDerivedKeysIssued")); // NOI18N
         reqDerivedKeysIssued.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reqDerivedKeysIssued.setMargin(new java.awt.Insets(0, 0, 0, 0));
         reqDerivedKeysIssued.addActionListener(new java.awt.event.ActionListener() {
@@ -379,7 +379,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(encryptOrderChBox, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_EncryptOrderLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(encryptOrderChBox, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_EncryptOrderLabel")); // NOI18N
         encryptOrderChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptOrderChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptOrderChBox.addActionListener(new java.awt.event.ActionListener() {
@@ -389,7 +389,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         });
 
         issuerAddressLabel.setLabelFor(issuerAddressField);
-        org.openide.awt.Mnemonics.setLocalizedText(issuerAddressLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_IssuerAddress")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(issuerAddressLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_IssuerAddress")); // NOI18N
 
         issuerAddressField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -398,7 +398,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         });
 
         issuerMetadataLabel.setLabelFor(issuerMetadataField);
-        org.openide.awt.Mnemonics.setLocalizedText(issuerMetadataLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_IssuerMetadataAddress")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(issuerMetadataLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_IssuerMetadataAddress")); // NOI18N
 
         issuerMetadataField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -407,13 +407,13 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
         });
 
         tokenTypeLabel.setLabelFor(tokenTypeCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(tokenTypeLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RSTTokenType")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tokenTypeLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RSTTokenType")); // NOI18N
 
         keyTypeLabel.setLabelFor(keyTypeCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(keyTypeLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RSTKeyType")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keyTypeLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RSTKeyType")); // NOI18N
 
         keySizeLabel.setLabelFor(keySizeCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(keySizeLabel, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RSTKeySize")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keySizeLabel, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RSTKeySize")); // NOI18N
 
         tokenTypeCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -433,7 +433,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeys, org.openide.util.NbBundle.getMessage(STSIssuedEndorsing.class, "LBL_RequireDerivedKeysX509")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeys, org.openide.util.NbBundle.getMessage(STSIssuedSupportingToken.class, "LBL_RequireDerivedKeysX509")); // NOI18N
         reqDerivedKeys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reqDerivedKeys.setMargin(new java.awt.Insets(0, 0, 0, 0));
         reqDerivedKeys.addActionListener(new java.awt.event.ActionListener() {
