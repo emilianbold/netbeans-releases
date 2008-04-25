@@ -321,12 +321,19 @@ public class CallbackPanel extends SectionInnerPanel {
             keyStoreButton.setEnabled(keyStoreConfigRequired && !defaults);
             trustStoreButton.setEnabled(trustStoreConfigRequired && !defaults);
 
-            if (ComboConstants.PROF_USERNAME.equals(profile) || ComboConstants.PROF_STSISSUED.equals(profile) || ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) || ComboConstants.PROF_STSISSUEDCERT.equals(profile) || ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
-                samlRequired = false;
+            if (ComboConstants.PROF_USERNAME.equals(profile) || 
+                ComboConstants.PROF_STSISSUED.equals(profile) || 
+                ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) || 
+                ComboConstants.PROF_STSISSUEDCERT.equals(profile) || 
+                ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) || 
+                ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
+                    samlRequired = false;
             }
 
-            if (ComboConstants.PROF_SAMLSSL.equals(profile) || ComboConstants.PROF_SAMLHOLDER.equals(profile) || ComboConstants.PROF_SAMLSENDER.equals(profile)) {
-                authRequired = false;
+            if (ComboConstants.PROF_SAMLSSL.equals(profile) || 
+                ComboConstants.PROF_SAMLHOLDER.equals(profile) || 
+                ComboConstants.PROF_SAMLSENDER.equals(profile)) {
+                    authRequired = false;
             }
 
             credTypeLabel.setEnabled(authRequired && !defaults);

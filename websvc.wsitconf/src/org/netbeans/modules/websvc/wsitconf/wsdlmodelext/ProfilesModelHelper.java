@@ -954,6 +954,12 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.setDefaultTargets(output, wss11, rm);
                 return;
             }
+            // Profile #13
+            if (ComboConstants.PROF_STSISSUEDENDORSE.equals(profile)) {
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11, rm);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11, rm);
+                return;
+            }
         } finally {
             if (!isTransaction) {
                 model.endTransaction();
