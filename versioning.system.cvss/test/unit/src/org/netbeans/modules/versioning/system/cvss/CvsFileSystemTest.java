@@ -98,16 +98,16 @@ public class CvsFileSystemTest extends FileSystemFactoryHid {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();        
-//        suite.addTestSuite(FileSystemTestHid.class);
-//        suite.addTestSuite(FileObjectTestHid.class);
-//        suite.addTestSuite(URLMapperTestHidden.class);
-//        suite.addTestSuite(FileUtilTestHidden.class);                
-//        suite.addTestSuite(BaseFileObjectTestHid.class);            
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(BaseFileObjectTestHid.class);            
         
         // XXX fails
-        suite.addTest(new FileObjectTestHid("testGetFolders3"));
-        suite.addTest(new FileObjectTestHid("testGetData1"));
-        suite.addTest(new FileObjectTestHid("testRefresh3"));
+//        suite.addTest(new FileObjectTestHid("testGetFolders3"));
+//        suite.addTest(new FileObjectTestHid("testGetData1"));
+//        suite.addTest(new FileObjectTestHid("testRefresh3"));
                 
         return new CvsFileSystemTest(suite);
     }   
