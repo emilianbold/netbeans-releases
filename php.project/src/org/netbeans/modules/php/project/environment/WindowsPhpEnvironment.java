@@ -50,6 +50,7 @@ import java.util.List;
  */
 final class WindowsPhpEnvironment extends PhpEnvironment {
 
+    private static final String PHP = "php.exe"; // NOI18N
     private static final String XAMPP = "xampp"; // NOI18N
     private static final FilenameFilter XAMPP_FILENAME_FILTER = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -102,7 +103,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
 
     @Override
     public List<String> getAllPhpInterpreters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getAllPhpInterpreters(PHP);
     }
 
     private static boolean isFloppy(File root) {

@@ -41,7 +41,12 @@ package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.openide.util.Utilities;
 
 /**
@@ -228,5 +233,26 @@ public abstract class PhpEnvironment {
             docRoot = new DocumentRoot(documentRoot, url, userDir.canWrite());
         }
         return docRoot;
+    }
+
+    // suitable for *nix as well as windows
+    static List<String> getAllPhpInterpreters(String phpFilename) {
+        String path = System.getenv("PATH"); // NOI18N
+        if (path == null) {
+            return Collections.<String>emptyList();
+        }
+        // on linux there are usually duplicities in PATH
+        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
+        List<String> clis = new ArrayList<String>(dirs.size());
+        for (String p : dirs) {
+            File php = new File(p, phpFilename);
+            if (php.exists()) {
+                clis.add(php.getAbsolutePath());
+            }
+        }
+        if (clis.isEmpty()) {
+            return Collections.<String>emptyList();
+        }
+        return clis;
     }
 }

@@ -48,6 +48,7 @@ import java.util.List;
  * @author Tomas Mysik
  */
 final class UnixPhpEnvironment extends PhpEnvironment {
+    private static final String PHP = "php"; // NOI18N
 
     UnixPhpEnvironment() {
     }
@@ -86,6 +87,6 @@ final class UnixPhpEnvironment extends PhpEnvironment {
 
     @Override
     public List<String> getAllPhpInterpreters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getAllPhpInterpreters(PHP);
     }
 }

@@ -66,6 +66,11 @@ final class MacPhpEnvironment extends PhpEnvironment {
 
     @Override
     public List<String> getAllPhpInterpreters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // MAMP
+        File php = new File("/Applications/MAMP/bin/php5/bin/php"); // NOI18N
+        if (!php.exists()) {
+            return Collections.<String>emptyList();
+        }
+        return Arrays.asList(php.getAbsolutePath());
     }
 }

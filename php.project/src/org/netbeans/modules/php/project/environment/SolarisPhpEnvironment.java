@@ -48,6 +48,7 @@ import java.util.List;
  * @author Tomas Mysik
  */
 final class SolarisPhpEnvironment extends PhpEnvironment {
+    private static final String PHP = "php"; // NOI18N
 
     SolarisPhpEnvironment() {
     }
@@ -90,6 +91,6 @@ final class SolarisPhpEnvironment extends PhpEnvironment {
 
     @Override
     public List<String> getAllPhpInterpreters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getAllPhpInterpreters(PHP);
     }
 }
