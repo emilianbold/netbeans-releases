@@ -216,7 +216,7 @@ public class DiscoveryUtils {
     /**
      * parse compilee line
      */
-    public static String gatherComlilerLine(String line, List<String> userIncludes, Map<String, String> userMacros){
+    public static String gatherComlilerLine(String line, boolean isScriptOutput, List<String> userIncludes, Map<String, String> userMacros){
         boolean TRACE = false;
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
@@ -240,7 +240,7 @@ public class DiscoveryUtils {
                         }
                         i = j;
                     }
-                    newList.add(s+"'"+longString+"'");  //NOI18N
+                    newList.add(s+"`"+longString+"`");  //NOI18N
                 } else {
                     newList.add(s);
                 }
@@ -259,6 +259,14 @@ public class DiscoveryUtils {
         }
         while(st.hasNext()){
             option = st.next();
+            boolean isQuote = false;
+            if (isScriptOutput) {
+                if (option.startsWith("'") && option.endsWith("'") ||
+                    option.startsWith("\"") && option.endsWith("\"")){
+                    option = option.substring(1,option.length()-1);
+                    isQuote = true;
+                }
+            }
             if (option.startsWith("-D")){ // NOI18N
                 if (option.equals("-D") && st.hasNext()){  //NOI18N
                     option = st.next();
@@ -267,10 +275,13 @@ public class DiscoveryUtils {
                 int i = macro.indexOf('=');
                 if (i>0){
                     String value = macro.substring(i+1).trim();
-                    if (value.length() >= 2 &&
-                       (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
-                        value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
-                        value = value.substring(1,value.length()-1);
+                    if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){
+                        value = value.substring(1,value.length()-1);  // NOI18N
+                    } else {
+                        if (isScriptOutput && !isQuote && value.length() >= 2 &&
+                           (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
+                            value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                        }
                     }
                     userMacros.put(macro.substring(0,i), value);
                 } else {

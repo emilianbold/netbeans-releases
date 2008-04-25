@@ -59,6 +59,7 @@ import java.io.FileReader;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.clearcase.Clearcase;
 import org.netbeans.modules.clearcase.util.ProgressSupport;
@@ -72,6 +73,8 @@ import org.openide.util.NbBundle;
  */
 public class ClearcaseClient {
 
+    private static boolean notifiedUnavailable;
+            
     private Cleartool ct;
 
     private List<Pattern> suppressedMessages;
@@ -209,7 +212,10 @@ public class ClearcaseClient {
                     }
                 }
             } catch (Exception e) {
-                Utils.logError(this, e);
+                // let the first command fail
+                ClearcaseCommand firstCommand = eu.iterator().next();
+                firstCommand.setException(e);
+                eu.setFailedCommand(firstCommand);
             } 
             if (eu.getFailedCommand() != null) {
                 handleCommandError(notifyErrors);
@@ -226,6 +232,13 @@ public class ClearcaseClient {
             
             Exception exception = eu.getFailedCommand().getThrownException();
             if (exception != null) {
+                if (exception instanceof ClearcaseUnavailableException) {
+                    if (!notifiedUnavailable) {
+                        Logger.getLogger(ClearcaseClient.class.getName()).log(Level.INFO, "Clearcase module cannot be initialized: 'cleartool' executable not found.", exception);
+                        notifiedUnavailable = true;
+                    }
+                    return;
+                }
                 errors.add(exception.getMessage());
                 Utils.logWarn(this, exception);
             }
@@ -260,6 +273,7 @@ public class ClearcaseClient {
                 return messages;
             }
             if(suppressedMessages == null) {
+                suppressedMessages = new ArrayList<Pattern>(1);
                 BufferedReader fr = null;
                 try {
                     File f = new File(suppressedFile);
