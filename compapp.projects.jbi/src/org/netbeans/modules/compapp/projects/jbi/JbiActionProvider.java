@@ -255,6 +255,22 @@ public class JbiActionProvider implements ActionProvider {
                     } else if (!JbiManager.isSelectedServer(project)) {
                         return;
                     }
+
+                    // IZ#133733 Missing WSIT call back project when deploying CompApp                    
+                    if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
+                        command.equals(JbiProjectConstants.COMMAND_REDEPLOY)) {
+                        saveCasaChanges(project);
+
+                        // call WSIT Java Callback Project...
+                        String cbProjects = callWSITJavaCallbackProject(project);
+                        if (cbProjects != null) {
+                            if (p == null) {
+                                p = new Properties();
+                            }
+                            p.setProperty("WsitCallbackProjects", cbProjects);
+                        }
+                    }
+
                     if (!validateSubProjects()) {
                         return;
                     }
