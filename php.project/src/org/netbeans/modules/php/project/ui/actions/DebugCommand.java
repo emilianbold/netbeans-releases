@@ -40,24 +40,39 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
-
+import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.rt.WebServerRegistry;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
 
 /**
  * @author Radek Matous
  */
 public class DebugCommand extends Command implements Displayable {
+
     public static final String ID = ActionProvider.COMMAND_DEBUG;
+
     public DebugCommand(PhpProject project) {
         super(project);
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    showURLForDebugProjectFile();
+                } catch (MalformedURLException ex) {
+                    //TODO: improve error handling
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        //temporary; after narrowing deps. will be changed
+        WebServerRegistry.startDebugger(getProject(), runnable, fileForProject());
     }
 
     @Override
@@ -69,8 +84,9 @@ public class DebugCommand extends Command implements Displayable {
     public String getCommandId() {
         return ID;
     }
-    
+
     public String getDisplayName() {
         return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");//NOI18N
-    }    
+
+    }
 }

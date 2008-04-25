@@ -47,6 +47,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -54,6 +56,7 @@ import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
@@ -103,6 +106,14 @@ public abstract class Command {
         HtmlBrowser.URLDisplayer.getDefault().showURL(urlForProjectFile());
     }
     
+    protected final void showURLForDebugProjectFile() throws MalformedURLException {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugProjectFile());
+    }
+    
+    protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugContext(context));
+    }
+        
     protected final String getProperty(String propertyName) {
         return getPropertyEvaluator().getProperty(propertyName);
     }
@@ -115,6 +126,28 @@ public abstract class Command {
         return new URL(baseURLPath);
     }
 
+    protected final URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
+        URI retval;
+        try {
+            retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(), 
+                    originalURL.getHost(), originalURL.getPort(), originalURL.getPath(), 
+                    queryWithoutQMark, originalURL.getRef());//NOI18N
+            return retval.toURL();
+        } catch (URISyntaxException ex) {
+            MalformedURLException mex = new MalformedURLException(ex.getLocalizedMessage());
+            mex.initCause(ex);
+            throw mex;
+        }        
+    }
+    
+    protected final URL urlForDebugProjectFile() throws MalformedURLException {
+        return appendQuery(urlForProjectFile(), "XDEBUG_SESSION_START="+PhpSourcePath.DEBUG_SESSION);//NOI18N
+    }
+
+    protected final URL urlForDebugContext(Lookup context) throws MalformedURLException {
+        return appendQuery(urlForContext(context), "XDEBUG_SESSION_START="+PhpSourcePath.DEBUG_SESSION);//NOI18N
+    }
+    
     protected final URL urlForProjectFile() throws MalformedURLException {
         String relativePath = relativePathForProject();
         if (relativePath == null) {
@@ -225,8 +258,7 @@ public abstract class Command {
     public interface StringConvertor {
         String convert(String text);
     }
-    
-    
+        
     private final PropertyEvaluator getPropertyEvaluator() {
         return getProject().getEvaluator();
     }

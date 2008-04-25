@@ -97,7 +97,7 @@ public class DbgpSessionProvider extends SessionProvider {
     @Override
     public String getTypeID()
     {
-        return Debugger.SESSION_ID;
+        return DebuggerImpl.SESSION_ID;
     }
     
     private ContextProvider getContextProvider() {

@@ -41,9 +41,11 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 
+import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.rt.WebServerRegistry;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -57,18 +59,28 @@ public class DebugSingleCommand extends DebugCommand {
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
-        super.invokeAction(context);
+    public void invokeAction(final Lookup context) throws IllegalArgumentException {        
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    showURLForDebugContext(context);
+                } catch (MalformedURLException ex) {
+                    //TODO: improve error handling
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        //temporary; after narrowing deps. will be changed
+        WebServerRegistry.startDebugger(getProject(), runnable, fileForContext(context));
     }
     
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        FileObject fos[] = new CommandUtils(getProject()).phpFilesForContext(context);
-        return (fos != null && fos.length == 1);
+        return fileForContext(context) != null;
     }    
 
     @Override
     public String getCommandId() {
         return ID;
-    }    
+    }            
 }

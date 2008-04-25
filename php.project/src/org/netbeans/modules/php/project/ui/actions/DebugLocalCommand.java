@@ -28,26 +28,33 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.rt.WebServerRegistry;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class DebugLocalCommand  extends Command implements Displayable {    
+public class DebugLocalCommand  extends RunLocalCommand {    
     public static final String ID = "debug.local";//NOI18N
     public DebugLocalCommand(PhpProject project) {
         super(project);
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                DebugLocalCommand.super.invokeAction(context);
+            }
+        };
+        //temporary; after narrowing deps. will be changed
+        WebServerRegistry.startDebugger(getProject(), runnable, fileForContext(context));
     }
-
+        
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        FileObject fos[] = new CommandUtils(getProject()).phpFilesForContext(context);
-        return (fos != null && fos.length == 1);
+        return fileForContext(context) != null;
     }
 
     @Override
@@ -58,4 +65,10 @@ public class DebugLocalCommand  extends Command implements Displayable {
     public String getDisplayName() {
         return NbBundle.getMessage(RunCommand.class, "LBL_DebugLocalCommand");//NOI18N
     }
+
+    @Override
+    protected void initProcessBuilder(ProcessBuilder processBuilder) {
+        super.initProcessBuilder(processBuilder);
+        processBuilder.environment().put("XDEBUG_CONFIG", "idekey="+PhpSourcePath.DEBUG_SESSION); //NOI18N        
+    }        
 }

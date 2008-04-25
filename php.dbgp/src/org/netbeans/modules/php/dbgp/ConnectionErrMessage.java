@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.dbgp;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -76,10 +76,10 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
     }
 
     private static String createMessage(int seconds) {
-        final String reason1 = "<li>"+NbBundle.getMessage(DebugCommand.class, "MSG_ErrDebugSessionReason1")+"</li>";//NOI18N
-        final String reason2 = "<li>"+NbBundle.getMessage(DebugCommand.class, "MSG_ErrDebugSessionReason2")+"</li>";//NOI18N
+        final String reason1 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionReason1")+"</li>";//NOI18N
+        final String reason2 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionReason2")+"</li>";//NOI18N
         final String reasons = "<ul>"+reason1+reason2+"</ul>";       
-        return "<html>"+NbBundle.getMessage(DebugCommand.class, "MSG_ErrDebugSession", seconds,reasons)+"</html>";//NOI18N
+        return "<html>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSession", seconds,reasons)+"</html>";//NOI18N
     }
     
     private static JLabel createIconLabel() {

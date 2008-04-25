@@ -45,8 +45,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.dbgp.api.DebuggerFactory;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -66,6 +69,11 @@ public class WebServerRegistry {
     // avoid external instantiation
     private WebServerRegistry() {
         myListener = new CopyOnWriteArrayList<HostListener>();
+    }
+
+    //just temporary - will be changed afte module dependency will be narrowed
+    public static void startDebugger(Project project, Runnable run, FileObject startFile) {
+        DebuggerFactory.getDebugger().debug(project, run, startFile);
     }
     
     public void addHost( Host host ) {

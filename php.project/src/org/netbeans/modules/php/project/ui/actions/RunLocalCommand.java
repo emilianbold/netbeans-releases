@@ -58,7 +58,7 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     @Override
-    public final void invokeAction(final Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final Lookup context) throws IllegalArgumentException {
         String command = getPhpInterpreter();
         FileObject scriptFo = fileForContext(context);
         File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
@@ -119,9 +119,9 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     //designed to set env.variables for debugger to resuse this code
-    private void initProcessBuilder(ProcessBuilder processBuilder) {
+    protected  void initProcessBuilder(ProcessBuilder processBuilder) {
     }
-
+    
     private void processError(Process process, File scriptFile, Charset encoding) throws IOException {
         BufferedReader errorReader = reader(process.getErrorStream(), encoding);
         BufferedWriter outputWriter = outputTabWriter(scriptFile);

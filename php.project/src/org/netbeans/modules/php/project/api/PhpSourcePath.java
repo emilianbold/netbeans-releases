@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
  */
 public interface PhpSourcePath {
     public final static String  MIME_TYPE = "text/x-php5"; //NOI18N
+    public final static String  DEBUG_SESSION =  "netbeans-xdebug";
 
     /**
      * Possible types of a file.
