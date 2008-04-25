@@ -87,6 +87,7 @@ public class DataNodeTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
+        clearWorkDir();
     }
     
     /** Test that for all examples to be found in the system file system,
