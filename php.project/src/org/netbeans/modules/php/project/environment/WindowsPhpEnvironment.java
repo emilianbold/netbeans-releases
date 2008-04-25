@@ -37,44 +37,78 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui;
+package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 
 /**
  * @author Tomas Mysik
- * @see DocumentRoots
  */
-final class DocumentRootsSolaris {
+final class WindowsPhpEnvironment extends PhpEnvironment {
 
-    private DocumentRootsSolaris() {
+    private static final String PHP = "php.exe"; // NOI18N
+    private static final String XAMPP = "xampp"; // NOI18N
+    private static final FilenameFilter XAMPP_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().startsWith(XAMPP);
+        }
+    };
+
+    WindowsPhpEnvironment() {
     }
 
-    static List<Root> getDocumentRoots(String projectName) {
-        List<Root> roots = new ArrayList<Root>(2);
-
-        // /var/apache*/*/htdocs
-        File varDir = new File("/var/"); // NOI18N
-        if (!varDir.isDirectory()) {
-            return roots;
+    @Override
+    public List<DocumentRoot> getDocumentRoots(String projectName) {
+        File[] fsRoots = File.listRoots();
+        if (fsRoots == null) {
+            // should not happen
+            return Collections.<DocumentRoot>emptyList();
         }
-        String[] apaches = varDir.list(DocumentRoots.APACHE_FILENAME_FILTER);
-        if (apaches == null || apaches.length == 0) {
-            return roots;
-        }
-        for (String apache : apaches) {
-            File htDocs = DocumentRoots.findHtDocsDirectory(new File(varDir, apache), null);
+        File htDocs = null;
+        for (File root : fsRoots) {
+            if (isFloppy(root)) {
+                continue;
+            }
+            // standard apache installation
+            File programFiles = new File(root, "Program Files"); // NOI18N
+            htDocs = findHtDocsDirectory(programFiles, APACHE_FILENAME_FILTER);
             if (htDocs != null) {
-                String documentRoot = DocumentRoots.getFolderName(htDocs, projectName);
-                String url = DocumentRoots.getDefaultUrl(projectName);
-                roots.add(new Root(documentRoot, url, htDocs.canWrite()));
+                // one htdocs is enough
+                break;
+            }
+
+            // xampp
+            htDocs = new File(new File(root, XAMPP), HTDOCS);
+            if (htDocs.isDirectory()) {
+                // one htdocs is enough
+                break;
+            }
+            htDocs = findHtDocsDirectory(programFiles, XAMPP_FILENAME_FILTER);
+            if (htDocs != null) {
                 // one htdocs is enough
                 break;
             }
         }
-        return roots;
+        if (htDocs != null) {
+            String documentRoot = getFolderName(htDocs, projectName);
+            String url = getDefaultUrl(projectName);
+            return Arrays.asList(new DocumentRoot(documentRoot, url, htDocs.canWrite()));
+        }
+        return Collections.<DocumentRoot>emptyList();
     }
+
+    @Override
+    public List<String> getAllPhpInterpreters() {
+        return getAllPhpInterpreters(PHP);
+    }
+
+    private static boolean isFloppy(File root) {
+        return root.getName().toLowerCase().startsWith("a:") // NOI18N
+                || root.getName().toLowerCase().startsWith("b:"); // NOI18N
+    }
+
 }

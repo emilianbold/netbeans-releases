@@ -478,6 +478,7 @@ public class ServicePanel extends SectionInnerPanel {
                         ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
                         ComboConstants.PROF_STSISSUED.equals(secProfile) ||
                         ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
                         ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)
                         ) {
                             trustStoreConfigRequired = false;
@@ -486,6 +487,7 @@ public class ServicePanel extends SectionInnerPanel {
                     if (!(ComboConstants.PROF_STSISSUED.equals(secProfile) || 
                           ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
                           ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile) ||
+                          ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
                           ComboConstants.PROF_SAMLSSL.equals(secProfile) ||
                           ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
                           ComboConstants.PROF_SAMLSENDER.equals(secProfile))) {
