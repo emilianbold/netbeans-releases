@@ -43,7 +43,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
 
 /**
- * A refactoring element for refactoring the mapped the class name
+ * A refactoring element for renaming Java class or mapping file names
  * 
  * @author Dongmei Cao
  */
@@ -64,5 +64,14 @@ public class HibernateRenameRefactoringElement extends HibernateRefactoringEleme
     @Override
     public void performChange() {
         // Do nothing here. The changes are performed in RenameTransaction
+    }
+    
+    /*
+     * Return String representation of whole file after refactoring
+     * */
+    @Override
+    public String getNewFileContent() {
+        // TODO: implment this method so that the user can preview the diffs
+        return null;
     }
 }

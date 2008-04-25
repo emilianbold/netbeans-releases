@@ -132,10 +132,10 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
         Map<FileObject, List<OccurrenceItem>> occurrences =
                 HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, names[0]);
 
-        for (FileObject configFile : occurrences.keySet()) {
-            List<OccurrenceItem> foundPlaces = occurrences.get(configFile);
+        for (FileObject mappingFile : occurrences.keySet()) {
+            List<OccurrenceItem> foundPlaces = occurrences.get(mappingFile);
             for (OccurrenceItem foundPlace : foundPlaces) {
-                HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(configFile,
+                HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mappingFile,
                         names[0],
                         names[1],
                         foundPlace.getLocation(),
