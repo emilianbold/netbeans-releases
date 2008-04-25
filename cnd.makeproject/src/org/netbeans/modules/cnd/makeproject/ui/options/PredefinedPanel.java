@@ -170,7 +170,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
             updatePanels();
             validate();
             repaint();
-            parserSettingsPanel.fireFilesPropertiesChanged();
+            //parserSettingsPanel.fireFilesPropertiesChanged();
+            parserSettingsPanel.setModified(true);
         }
     }//GEN-LAST:event_resetButtonActionPerformed
     
