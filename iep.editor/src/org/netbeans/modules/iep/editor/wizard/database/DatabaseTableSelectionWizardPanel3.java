@@ -88,11 +88,14 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
         String timeUnit = component.getPollingTimeUnit();
         String pollingRecordSize = component.getPollingRecordSize();
         String jndiName = component.getJNDIName();
+        boolean isDeleteRecords = component.isDeleteRecords();
+        String isDeleteRecordsString = Boolean.toString(isDeleteRecords);
         
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL, pollingInterval);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT, timeUnit);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE, pollingRecordSize);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME, jndiName);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS, isDeleteRecordsString);
         
     }
 }

@@ -163,6 +163,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
                 mInputPanel = createInputSchemaTreePanel(model, mComponent);
                 if(mInputPanel != null) {
+                	 mInputPanel.setPreferredSize(new Dimension(200, 400));
                     ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
                 }
             }
@@ -257,8 +258,6 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     
     protected InputSchemaTreePanel createInputSchemaTreePanel(IEPModel model, OperatorComponent component) {
         mInputPanel = new InputSchemaTreePanel(model, mComponent);
-        mInputPanel.setPreferredSize(new Dimension(200, 400));
-        
         return mInputPanel;
     }
     
