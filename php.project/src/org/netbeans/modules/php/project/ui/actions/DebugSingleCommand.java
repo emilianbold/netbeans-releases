@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,38 +37,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.ui.actions;
 
-package org.netbeans.modules.php.project.ui;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
+import java.net.MalformedURLException;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
- * @author Tomas Mysik
- * @see DocumentRoots
+ * @author Radek Matous
  */
-final class DocumentRootsMac {
-
-    private DocumentRootsMac() {
+public class DebugSingleCommand extends DebugCommand {
+    public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
+    
+    public DebugSingleCommand(PhpProject project) {
+        super(project);
     }
 
-    static List<Root> getDocumentRoots(String projectName) {
-        List<Root> roots = new ArrayList<Root>(1);
-
-        // MAMP
-        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
-        if (mamp.isDirectory()) {
-            String documentRoot = DocumentRoots.getFolderName(mamp, projectName);
-            String url = DocumentRoots.getDefaultUrl(projectName, 8888);
-            roots.add(new Root(documentRoot, url, true));
+    @Override
+    public void invokeAction(final Lookup context) throws IllegalArgumentException {        
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    showURLForDebugContext(context);
+                } catch (MalformedURLException ex) {
+                    //TODO: improve error handling
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+        if (dbgStarter != null) {        
+            dbgStarter.start(getProject(), runnable, fileForContext(context));
         }
-        return roots;
     }
+    
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
+    }    
+
+    @Override
+    public String getCommandId() {
+        return ID;
+    }            
 }

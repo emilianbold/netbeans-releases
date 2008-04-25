@@ -60,4 +60,8 @@ public class InputSchemaTreePanel extends JPanel {
         mTree = new InputSchemaTree(model, treeModel);
         scrollPane.getViewport().add(mTree);
     }
+    
+    public void setInputSchemaTreeModel(TreeModel model) {
+        mTree.setModel(model);
+    }
 }

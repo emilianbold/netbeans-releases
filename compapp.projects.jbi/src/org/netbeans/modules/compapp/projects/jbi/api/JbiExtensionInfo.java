@@ -68,7 +68,8 @@ public class JbiExtensionInfo implements Serializable {
     private String type;
 
     /**
-     * Name of the target component, e.x., "sun-http-binding", "all"
+     * Name of the target component in regular expression, 
+     * e.x., "sun-http-binding", ".*".
      */
     private String target;
 
@@ -102,7 +103,8 @@ public class JbiExtensionInfo implements Serializable {
      *
      * @param name      extension name, e.x., "ConfigExtension"
      * @param type      extension type, e.x., "endpoint", "connection"
-     * @param target    extension target, e.x., "sun-http-binding", "all".
+     * @param target    extension target component name in regular expression, 
+     *                  e.x., "sun-http-binding", ".*".
      * @param file      schema file
      * @param ns        extension namespace
      * @param description   extension description
@@ -151,9 +153,9 @@ public class JbiExtensionInfo implements Serializable {
     }
 
     /**
-     * DOCUMENT ME!
+     * Gets the regular expression of the extension target component name.
      *
-     * @return the description
+     * @return the extension target component name in regular expression
      */
     public String getTarget() {
         return this.target;

@@ -85,6 +85,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.model.spi.NameGenerator;
 import org.netbeans.modules.xslt.tmap.util.ImportRegistrationHelper;
+import org.openide.util.NbBundle;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -408,6 +409,7 @@ public final class Iterator implements TemplateWizard.Iterator {
 
             if (foTransform != null) {
                 tMapOp.addTransform(foTransform);
+                foTransform = getTransform(tMapOp, foTransform.getName());
             }
             if (invoke != null) {
                 tMapOp.addInvoke(invoke);
@@ -417,27 +419,13 @@ public final class Iterator implements TemplateWizard.Iterator {
                 }
             }
             
-            if (tMapOp != null) {
-                List<Transform> children =  tMapOp.getTransforms();
-                if (children != null) {
-                    for (Transform child : children) {
-                        if (child.equals(foTransform)) {
-                            foTransform = child;
-                            break;
-                        }
-                    }
-                }
-                
-               List<Invoke> invokes = tMapOp.getInvokes();
-               invoke = invokes == null || invokes.size() < 1 ? invoke : invokes.get(invokes.size()-1);
-                
-            }
-            
             if (foTransform != null) {
                 String result = getTMapVarRef(invoke.getInputVariable());
-                if (result != null) {
-                    foTransform.setResult(result);
+                if (result == null) {
+                    LOGGGER.log(Level.WARNING, NbBundle.getMessage(
+                            Iterator.class, "MSG_Warning_VariableReferenceNull", "result"));// NOI18N
                 }
+                foTransform.setResult(result);
             }
             
         } finally {
@@ -473,6 +461,7 @@ public final class Iterator implements TemplateWizard.Iterator {
 
             if (inTransform != null) {
                 tMapOp.addTransform(inTransform);
+                inTransform = getTransform(tMapOp, inTransform.getName());
             }
             invoke = createInvoke(tMapOp, inputInvokeVar, outputInvokeVar,
                       wizard, componentFactory);
@@ -492,17 +481,23 @@ public final class Iterator implements TemplateWizard.Iterator {
 
             if (outTransform != null) {
                 tMapOp.addTransform(outTransform);
+                outTransform = getTransform(tMapOp, outTransform.getName());
+
                 String source = getTMapVarRef(invoke.getOutputVariable());
-                if (source != null) {
-                    outTransform.setSource(source);
+                if (source == null) {
+                    LOGGGER.log(Level.WARNING, NbBundle.getMessage(
+                            Iterator.class, "MSG_Warning_VariableReferenceNull", "source"));// NOI18N
                 }
+                outTransform.setSource(source);
             }
             
             if (inTransform != null) {
                 String result = getTMapVarRef(invoke.getInputVariable());
-                if (result != null) {
-                    inTransform.setResult(result);
+                if (result == null) {
+                    LOGGGER.log(Level.WARNING, NbBundle.getMessage(
+                            Iterator.class, "MSG_Warning_VariableReferenceNull", "result"));// NOI18N
                 }
+                inTransform.setResult(result);
             }
             
         } finally {
@@ -717,6 +712,26 @@ public final class Iterator implements TemplateWizard.Iterator {
         return null;
     }
     
+    private Transform getTransform(org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
+            String name) 
+    {
+        if (tMapOp == null || name == null) {
+            return null;
+        }
+        
+        List<Transform> transforms = tMapOp.getTransforms();
+        if (transforms == null) {
+            return null;
+        }
+        
+        for (Transform transform : transforms) {
+            if (transform != null && name.equals(transform.getName())) {
+                return transform;
+            }
+        }
+        return null;
+    }
+
     private Invoke getInvoke(org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
             String name) 
     {

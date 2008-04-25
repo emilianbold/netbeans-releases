@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentFactory;
@@ -73,7 +74,7 @@ public class ExtensionPropertyHelper {
     private static Logger logger = Logger.getLogger(
             "org.netbeans.modules.compapp.casaeditor.nodes.ExtensionPropertyHelper"); // NOI18N
 
-    private static String EXTENSION_TARGET_ALL = "all"; // NOI18N
+//    private static String EXTENSION_TARGET_ALL = "all"; // NOI18N
 
 
     /**
@@ -86,8 +87,8 @@ public class ExtensionPropertyHelper {
      * @param sheet             the overall property sheet
      * @param extensionType     the type of the extension, 
      *                          e.x., "endpoint" or "connection"
-     * @param extensionTarget   target of the extension, 
-     *                          e.x., "sun-http-binding" or "all"
+     * @param extensionTarget   target component of the extension,
+     *                          e.x., "sun-http-binding" or ".*"
      */
     public static void setupExtensionPropertySheet(CasaNode node,
             CasaComponent casaExtPoint,
@@ -99,7 +100,7 @@ public class ExtensionPropertyHelper {
                 JbiInstalledExtensionInfo.getInstalledExtensionInfo();
 
         Document document = casaExtPoint.getPeer().getOwnerDocument();
-
+        
         // Assumptions: 
         // * Each extension (subtree) in the CASA model is either complete or
         //   doesn't exist at all.
@@ -131,8 +132,9 @@ public class ExtensionPropertyHelper {
                 }
 
                 String extInfoTarget = extInfo.getTarget();
-                if (!(extensionTarget.equals(extInfoTarget)) &&
-                        !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
+                if (!Pattern.matches(extInfoTarget, extensionTarget)) {
+//                if (!(extensionTarget.equals(extInfoTarget)) &&
+//                        !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
                     continue;
                 }
 
@@ -161,8 +163,9 @@ public class ExtensionPropertyHelper {
             }
 
             String extInfoTarget = extInfo.getTarget();
-            if (!(extensionTarget.equals(extInfoTarget)) &&
-                    !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
+            if (!Pattern.matches(extInfoTarget, extensionTarget)) {
+//            if (!(extensionTarget.equals(extInfoTarget)) &&
+//                    !(EXTENSION_TARGET_ALL.equals(extInfoTarget))) {
                 continue;
             }
 

@@ -225,6 +225,14 @@ public class ExecutionService {
     }
 
     public Task run() {
+        if (descriptor.debug) {
+            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+            debugger.describeProcess(descriptor);
+            if (debugger == null || !debugger.canDebug()) {
+                return null;
+            }
+        }
+
         if (!rerun) {
             // try to find free output windows
             synchronized (this) {
@@ -278,8 +286,9 @@ public class ExecutionService {
                         Process process = null;
                         if (descriptor.debug) {
                             RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
-                            if (debugger != null) {
-                                process = debugger.debug(descriptor);
+                            debugger.describeProcess(descriptor);
+                            if (debugger != null && debugger.canDebug()) {
+                                process = debugger.debug();
                             }
                             if (process == null) { 
                                 return; 
