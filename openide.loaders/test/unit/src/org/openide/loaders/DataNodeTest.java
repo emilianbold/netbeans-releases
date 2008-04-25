@@ -43,22 +43,22 @@ package org.openide.loaders;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Enumeration;
 import java.util.Set;
 import java.util.logging.Level;
-import junit.textui.TestRunner;
+import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
-import java.util.Enumeration;
-import java.util.logging.Logger;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
-import org.netbeans.junit.*;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /** Test things about node delegates.
  * Note: if you mess with file status changes in this test, you may effectively
@@ -73,21 +73,16 @@ public class DataNodeTest extends NbTestCase {
         super(name);
     }
 
-    static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataNodeTest$Lkp");
-    }
-
     @Override
     protected Level logLevel() {
         return Level.FINE;
     }
-    
-    
 
     @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
         clearWorkDir();
+        MockLookup.setInstances(new Pool());
     }
     
     /** Test that for all examples to be found in the system file system,
@@ -112,7 +107,7 @@ public class DataNodeTest extends NbTestCase {
             }
             LOG.fine("Testing " + o.getPrimaryFile());
             Node n = o.getNodeDelegate();
-            DataObject o2 = (DataObject)n.getCookie(DataObject.class);
+            DataObject o2 = n.getCookie(DataObject.class);
             assertEquals("Correct cookie from node delegate", o, o2);
         }
     }
@@ -210,9 +205,8 @@ public class DataNodeTest extends NbTestCase {
         Node n = obj.getNodeDelegate ();
         fs.fireStatusChange(new FileStatusEvent(fs, fo, true, true));
         
-        Thread.sleep(100); // let some async processing in DataNode
-        WeakReference refN = new WeakReference(n);
-        WeakReference refD = new WeakReference(obj);
+        WeakReference refN = new WeakReference<Object>(n);
+        WeakReference refD = new WeakReference<Object>(obj);
         n = null;
         obj = null;
         
@@ -225,6 +219,7 @@ public class DataNodeTest extends NbTestCase {
         public Set lastFiles;
         
         
+        @Override
         public FileSystem.Status getStatus () {
             return this;
         }
@@ -254,22 +249,9 @@ public class DataNodeTest extends NbTestCase {
         }
     } // end of FSWithStatus
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            
-            ic.add (new Pool ());
-        }
-        
-    } // end of Lkp
-    
     private static final class Pool extends DataLoaderPool {
-        protected Enumeration loaders () {
-            return org.openide.util.Enumerations.singleton(TwoPartLoader.get ());
+        protected Enumeration<? extends DataLoader> loaders() {
+            return Enumerations.singleton(TwoPartLoader.get());
         }
     }
     
@@ -279,7 +261,7 @@ public class DataNodeTest extends NbTestCase {
         public Throwable whoCreatedSecondary;
         
         public static TwoPartLoader get () {
-            return (TwoPartLoader)TwoPartLoader.findObject (TwoPartLoader.class, true);
+            return TwoPartLoader.findObject(TwoPartLoader.class, true);
         }
         
         public TwoPartLoader() {
@@ -309,6 +291,7 @@ public class DataNodeTest extends NbTestCase {
             super(folder, l);
         }
 
+        @Override
         protected Node createNodeDelegate() {
             return new DN(this);
         }
@@ -319,6 +302,7 @@ public class DataNodeTest extends NbTestCase {
             super(obj, Children.LEAF);
         }
         
+        @Override
         public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
             if (clazz.isAssignableFrom(OpenCookie.class)) {
                 return clazz.cast(new OpenCookie () {
