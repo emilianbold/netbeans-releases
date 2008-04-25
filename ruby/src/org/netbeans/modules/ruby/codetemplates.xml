@@ -5,7 +5,7 @@
 <code><![CDATA[=> ]]></code>
     </codetemplate>
     <codetemplate abbreviation="jc" descriptionId="ct_jc" contexts="ruby">
-<code><![CDATA[require 'java'
+<code><![CDATA[include Java
 import ${0 default="package.class"}]]></code>
     </codetemplate>
     <codetemplate abbreviation="do" descriptionId="ct_do" contexts="ruby" uuid="4B72C5C3-6CA7-41AC-B2F9-51DEA25D469E">

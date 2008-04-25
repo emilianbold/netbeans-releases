@@ -104,6 +104,16 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
+    <!-- Validation suite for Permanent UI specifications -->
+    <testbag testattribs="permui" executor="ide" name="Permanent UI">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/permanentUI/MainMenuTest.class"/>
+                <include name="org/netbeans/test/permanentUI/NewProjectTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-appserver" antfile="build-qa-functional.xml" target="runidetest-with-appserver"/> 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>

@@ -63,16 +63,14 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-final class Element
-  extends SimpleRefactoringElementImplementation implements TreeElement
-{
+final class Element extends SimpleRefactoringElementImplementation implements TreeElement {
+
   Element(Component component) {
     myComponent = component;
   }
@@ -115,8 +113,10 @@ final class Element
     }
     DocumentModelAccess access =
       ((AbstractDocumentModel) myComponent.getModel()).getAccess();
+
     String text = access.getXmlFragmentInclusive(
       ((DocumentComponent) myComponent).getPeer());
+    
     int startPos = ((DocumentComponent) myComponent).findPosition();
     int endPos = startPos + text.length();
     DataObject data = null;

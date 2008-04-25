@@ -64,7 +64,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
     public WsFromJavaGUIPanel0(WsFromJavaPanel0 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("Service Type Selection");
+        setName("Service Type Selection"); // NOI18N
         jRadioButton1.addItemListener(this);
         jRadioButton2.addItemListener(this);
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
@@ -180,7 +180,8 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         SelectClassPanel panel = new SelectClassPanel(wizardPanel.getProject());
-        DialogDescriptor dd = new DialogDescriptor(panel, "Select class");
+        DialogDescriptor dd = new DialogDescriptor(panel, 
+                org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "TTL_SelectClass"));
         DialogDisplayer.getDefault().notify(dd);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Node[] nodes = panel.getSelectedNodes();

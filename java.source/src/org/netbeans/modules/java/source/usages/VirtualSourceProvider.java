@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -49,6 +48,10 @@ import java.util.Set;
  * @author Tomas Zezula
  */
 public interface VirtualSourceProvider {
+    
+    public interface Result {
+        public void add (File source, String packageName, String relativeName, CharSequence content);
+    }
     
     /**
      * Returns a set of extensions supported by this {@link VirtualSourceProvider}
@@ -61,7 +64,7 @@ public interface VirtualSourceProvider {
      * transformation of given files.
      * @param files to be transformed
      * @param sourceRoot containing the sources
-     * @return  result of transformation
+     * @param  result of transformation
      */
-    public List<Pair<String,CharSequence>> translate (Iterable<File> files, File sourceRoot);
+    public void translate (Iterable<File> files, File sourceRoot, Result result);
 }

@@ -57,15 +57,19 @@ import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -213,46 +217,42 @@ public final class AstUtilities {
         return result.getRootNode();
     }
 
-    public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
+    public static Node getForeignNode(final IndexedElement o, CompilationInfo[] compilationInfoRet) {
         ParserFile file = o.getFile();
 
         if (file == null) {
             return null;
         }
+        
+        FileObject fo = file.getFileObject();
+        if (fo == null) {
+            return null;
+        }
 
-        List<ParserFile> files = Collections.singletonList(file);
-        SourceFileReader reader =
-            new SourceFileReader() {
-                public CharSequence read(ParserFile file)
-                    throws IOException {
-                    Document doc = o.getDocument();
-
-                    if (doc == null) {
-                        return "";
-                    }
-
-                    try {
-                        return doc.getText(0, doc.getLength());
-                    } catch (BadLocationException ble) {
-                        IOException ioe = new IOException();
-                        ioe.initCause(ble);
-                        throw ioe;
-                    }
+        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (model == null) {
+            return null;
+        }
+        final CompilationInfo[] infoHolder = new CompilationInfo[1];
+        try {
+            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                public void cancel() {
                 }
 
-                public int getCaretOffset(ParserFile fileObject) {
-                    return -1;
+                public void run(CompilationInfo info) throws Exception {
+                    infoHolder[0] = info;
                 }
-            };
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
 
-        DefaultParseListener listener = new DefaultParseListener();
-
-        // TODO - embedding model?
-TranslatedSource translatedSource = null; // TODO - determine this here?                
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
-        new JsParser().parseFiles(job);
-
-        ParserResult result = listener.getParserResult();
+        CompilationInfo info = infoHolder[0];
+        if (compilationInfoRet != null) {
+            compilationInfoRet[0] = info;
+        }
+        ParserResult result = AstUtilities.getParseResult(info);
 
         if (result == null) {
             return null;
@@ -262,8 +262,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         if (root == null) {
             return null;
-        } else if (foreignRootRet != null) {
-            foreignRootRet[0] = root;
         }
 
         String signature = o.getSignature();

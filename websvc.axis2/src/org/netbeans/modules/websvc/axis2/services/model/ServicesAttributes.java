@@ -43,12 +43,12 @@ package org.netbeans.modules.websvc.axis2.services.model;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
 public enum ServicesAttributes implements Attribute {
-    attrName("name"),
-    attrScope("scope"),
-    attrTargetNamespace("targetNamespace"),
-    attrSchemaNamespace("schemaNamespace"),
-    attrClass("class"),
-    attrMep("mep");
+    attrName("name"), // NOI18N
+    attrScope("scope"), // NOI18N
+    attrTargetNamespace("targetNamespace"), // NOI18N
+    attrSchemaNamespace("schemaNamespace"), // NOI18N
+    attrClass("class"), // NOI18N
+    attrMep("mep"); // NOI18N
 
     private String name;
     private Class type;

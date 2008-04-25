@@ -154,6 +154,10 @@ public class AnnotationProviderTest extends NbTestCase {
     }
 
     public void testContextLookupIsConsistentAfterMove() throws Exception {              
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         ConsistencyCheckProvider.setCalled(0);
         // Prepare the data object (to initialize the lookup)
         FileObject fo = fs.getRoot().createData("test2", "txt");
@@ -178,6 +182,10 @@ public class AnnotationProviderTest extends NbTestCase {
     }
     
     public void testContextLookupFiresDuringMove() throws Exception {              
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         // Prepare the data object (to initialize the lookup)
         FileObject fo = fs.getRoot().createData("test3", "txt");
         DataObject data = DataObject.find(fo);

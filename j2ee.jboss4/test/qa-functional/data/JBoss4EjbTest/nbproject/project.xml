@@ -4,7 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2ee-ejbjarproject/3">
             <name>JBoss4EjbTest</name>
-            <minimum-ant-version>1.6.5</minimum-ant-version>
+            <minimum-ant-version>1.6</minimum-ant-version>
             <source-roots>
                 <root id="src.dir" name="Source Packages"/>
             </source-roots>

@@ -51,19 +51,30 @@ public class DatabaseTableWizardConstants {
     
     public static final String PROP_SELECTED_DB_CONNECTION = "PROP_SELECTED_DB_CONNECTION";
     
-    public static final String MILLISECOND = "millisecond";
+    public static final String PROP_JOIN_CONDITION = "PROP_JOIN_CONDITION";
     
-    public static final String SECOND = "second";
+    public static final String PROP_POLLING_INTERVAL = "PROP_POLLING_INTERVAL";
     
-    public static final String MINUTE = "minute";
+    public static final String PROP_POLLING_INTERVAL_TIME_UNIT = "PROP_POLLING_INTERVAL_TIME_UNIT";
     
-    public static final String HOUR = "hour";
+    public static final String PROP_POLLING_RECORD_SIZE = "PROP_POLLING_RECORD_SIZE";
     
-    public static final String DAY = "day";
+    public static final String PROP_JNDI_NAME = "PROP_JNDI_NAME";
     
-    public static final String WEEK = "week";
     
-    public static final String MONTH = "month";
+    public static final String MILLISECOND = "millisecond"; //NO I18N
     
-    public static final String YEAR = "year";
+    public static final String SECOND = "second"; //NO I18N
+    
+    public static final String MINUTE = "minute"; //NO I18N
+    
+    public static final String HOUR = "hour"; //NO I18N
+    
+    public static final String DAY = "day"; //NO I18N
+    
+    public static final String WEEK = "week"; //NO I18N
+    
+    public static final String MONTH = "month"; //NO I18N
+    
+    public static final String YEAR = "year"; //NO I18N
 }

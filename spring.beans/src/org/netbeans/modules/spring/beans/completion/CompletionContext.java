@@ -234,7 +234,8 @@ public class CompletionContext {
                     prev = prev.getPrevious();
                 }
                 
-                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
+                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID
+                        && prev.getOffset() + prev.getImage().length() == caretOffset) {
                     typedChars = prev.getImage();
                     completionType = CompletionType.ATTRIBUTE;
                 } else if (((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||

@@ -61,7 +61,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -305,12 +307,16 @@ public class JsTypeSearcher implements TypeSearcher {
         }
 
         public void open() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            CompilationInfo[] infoRet = new CompilationInfo[1];
+            Node node = AstUtilities.getForeignNode(element, infoRet);
             
             if (node != null) {
-                // TODO - embedding context?
-                int offset = AstUtilities.getRange(node).getStart();
-                NbUtilities.open(element.getFileObject(), offset, element.getName());
+                int astOffset = AstUtilities.getRange(node).getStart();
+                int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
+                if (lexOffset == -1) {
+                    lexOffset = 0;
+                }
+                NbUtilities.open(element.getFileObject(), lexOffset, element.getName());
                 return;
             }
             

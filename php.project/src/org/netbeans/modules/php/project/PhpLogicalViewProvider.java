@@ -112,9 +112,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
     static final String SOURCE_ROOT_NODE_NAME = "LBL_PhpFiles";
 
-    PhpLogicalViewProvider(PhpProject project, SubprojectProvider provider) {
+    PhpLogicalViewProvider(PhpProject project) {
         myProject = project;
-        mySubProjectProvider = provider;
         myActionsByCommand = new HashMap<Command, Action>();
         getProject().getHelper().addAntProjectListener(this);
     }
@@ -216,10 +215,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
 
     private PhpProject getProject() {
         return myProject;
-    }
-
-    private SubprojectProvider getSubProjectProvider() {
-        return mySubProjectProvider;
     }
 
     private class PhpLogicalViewRootNode extends AbstractNode {
@@ -665,5 +660,4 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
     private final Map<Command, Action> myActionsByCommand;
 
     private final PhpProject myProject;
-    private final SubprojectProvider mySubProjectProvider;
 }

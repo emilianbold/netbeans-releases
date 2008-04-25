@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.0.1
+#Version 1.1
 CLSS public static final org.netbeans.spi.tasklist.FileTaskScanner$Callback
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable

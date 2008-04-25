@@ -46,12 +46,12 @@ made subject to such option by the copyright holder.
 
     <target name="jar" depends="zip-examples,projectized-common.jar"/>
 
-    <target name="zip-examples">
+    <target name="zip-examples" depends="build-init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/web/examples"/>
         <mkdir dir="${examples}"/>
-        <zip basedir="jstl" excludes="CVS" destfile="${examples}/jstl.zip"/>
-        <zip basedir="servlets" excludes="CVS" destfile="${examples}/servlets.zip"/>
-        <zip basedir="jsp" excludes="CVS" destfile="${examples}/jsp.zip"/>
+        <zip basedir="jstl" destfile="${examples}/jstl.zip"/>
+        <zip basedir="servlets" destfile="${examples}/servlets.zip"/>
+        <zip basedir="jsp" destfile="${examples}/jsp.zip"/>
     </target>    
     
 </project>

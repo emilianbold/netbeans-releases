@@ -315,7 +315,6 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public boolean canGenerateJAXBUnmarshaller() {
-        return getHttpMethod() == HttpMethodType.GET &&
-                    !findRepresentationTypes(getMethod()).isEmpty();
+        return !findRepresentationTypes(getMethod()).isEmpty();
     }
 }

@@ -710,6 +710,22 @@ public class SelectPanel extends JPanel implements SharedConstants {
         return expList;
     }
     
+    public void setExpressions(List<String> expressions) {
+        if (!mHasExpressionColumn) {
+            return;
+        }
+        
+        
+        Vector r = mTableModel.getDataVector();
+        if(r.size() != expressions.size()) {
+            return;
+        }
+        for (int i = 0, I = r.size(); i < I; i++) {
+            Vector c = (Vector) r.elementAt(i);
+            c.set(0, expressions.get(i));
+        }
+    }
+    
     public List getToColumnList() {
         List<String> toList = new ArrayList<String>();
         if (!mHasExpressionColumn) {
@@ -923,7 +939,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         }
     }
     
-    private String generateUniqueAttributeName(String baseName) {
+    public String generateUniqueAttributeName(String baseName) {
     	int rowCount = mTableModel.getRowCount();
     	
     	String newAttrName = baseName;

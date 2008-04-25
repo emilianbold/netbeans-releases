@@ -516,9 +516,6 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (bean.getObjectType() == SQLConstants.RUNTIME_OUTPUT) {
                 pBean = new RuntimeOutputProperties((RuntimeOutputImpl) bean, sqlModel.getSQLDefinition(), this);
                 template = "RuntimeOutput";
-            } else if (bean.getObjectType() == SQLConstants.JOIN_VIEW) {
-                pBean = new SQLJoinProperties(((SQLJoinViewImpl) bean).getRootJoin(), this);
-                template = "Join";
             }
         }
 

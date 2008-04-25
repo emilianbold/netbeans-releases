@@ -251,6 +251,42 @@ public class TableInfo implements Comparable {
         return str.toString();
     }
 
+    public String getQualifiedName() {
+    	StringBuffer str = new StringBuffer();
+        String catalogName = getCatalogName();
+        String schemaName = getSchemaName();
+        String tableName = getTableName();
+        
+        boolean hasCatalog = false;
+        boolean hasSchema = false;
+                
+        if(catalogName != null && !catalogName.equals("")) {
+            hasCatalog = true;
+            str.append("\"");
+            str.append(catalogName);
+            str.append("\"");
+        }
+        
+        if(schemaName != null && !schemaName.equals("")) {
+            if(hasCatalog) {
+                str.append(".");
+            }
+            hasSchema = true;
+            str.append("\"");
+            str.append(schemaName);
+            str.append("\"");
+        }
+        
+        if(hasCatalog || hasSchema) {
+            str.append(".");
+        }
+        
+        str.append(tableName);
+        
+    	
+    	return str.toString();
+    }
+    
     public int compareTo(Object o) {
         int result = this.toString().compareTo(o.toString());
         

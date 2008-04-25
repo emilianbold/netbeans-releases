@@ -1,5 +1,5 @@
 #API master signature file
-#Version 7.3.1
+#Version 7.6
 CLSS public final org.openide.modules.Dependency
 fld  constant public static final int org.openide.modules.Dependency.COMPARE_ANY
 fld  constant public static final int org.openide.modules.Dependency.COMPARE_IMPL

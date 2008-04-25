@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Enumeration;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -60,6 +61,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Task;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -68,8 +70,6 @@ import com.sun.sql.framework.exception.BaseException;
 
 import java.util.List;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.openide.awt.StatusDisplayer;
@@ -82,8 +82,6 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 
-import javax.swing.text.Document;
-import org.openide.util.Task;
 
 /**
  *
@@ -101,7 +99,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
         PRJ_PATH = sobj.getFolder().getPrimaryFile().getParent().getPath();
         PRJ_PATH = PRJ_PATH.replace('/', '\\');
         PRJ_NAME = sobj.getFolder().getPrimaryFile().getParent().getName();
-        Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
+        //Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
         //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
     }
 
