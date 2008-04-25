@@ -112,7 +112,9 @@ public final class Validator extends BpelValidator {
     myErrored = new ArrayList<Component>();
   }
 
-  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  @Override
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
+  {
 
   @Override
   public void visit(ForEach forEach)

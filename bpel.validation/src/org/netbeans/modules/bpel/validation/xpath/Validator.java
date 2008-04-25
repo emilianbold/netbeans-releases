@@ -95,7 +95,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     return getValidationResult();
   }
 
-  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  @Override
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
+  {
 
   @Override
   public void visit(Copy copy)
