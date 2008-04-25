@@ -38,17 +38,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp.api;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+
+import java.net.MalformedURLException;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.rt.WebServerRegistry;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * @author Radek Matous
- *
  */
-//this class will be moved to php.project and php.project will lookup its impl.
-public interface Debugger {
-    public void debug( SessionId id );
-    public void debug(Project project, Runnable run, FileObject startFile);    
+public class DebugSingleCommand extends DebugCommand {
+    public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
+    
+    public DebugSingleCommand(PhpProject project) {
+        super(project);
+    }
+
+    @Override
+    public void invokeAction(final Lookup context) throws IllegalArgumentException {        
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    showURLForDebugContext(context);
+                } catch (MalformedURLException ex) {
+                    //TODO: improve error handling
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        //temporary; after narrowing deps. will be changed
+        WebServerRegistry.startDebugger(getProject(), runnable, fileForContext(context));
+    }
+    
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        return fileForContext(context) != null;
+    }    
+
+    @Override
+    public String getCommandId() {
+        return ID;
+    }            
 }
