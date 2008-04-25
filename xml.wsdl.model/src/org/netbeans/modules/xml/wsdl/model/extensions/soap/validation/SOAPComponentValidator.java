@@ -17,13 +17,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  *
  * @author afung
  */
-public class SOAPComponentValidator
-        implements Validator {
-    
-    @SuppressWarnings("unchecked")
-    public static final ValidationResult EMPTY_RESULT = 
-        new ValidationResult( Collections.EMPTY_SET, 
-                Collections.EMPTY_SET);
+public class SOAPComponentValidator implements Validator {
     
     /** Creates a new instance of SOAPComponentValidator */
     public SOAPComponentValidator() {}
@@ -51,7 +45,7 @@ public class SOAPComponentValidator
             WSDLModel wsdlModel = (WSDLModel)model;
             
             if (model.getState() == State.NOT_WELL_FORMED) {
-                return EMPTY_RESULT;
+                return null;
             }
             SOAPComponentVisitor visitor = new SOAPComponentVisitor(this, validation);
             visitor.visit(wsdlModel);
@@ -60,6 +54,6 @@ public class SOAPComponentValidator
             models.add(model);
             return new ValidationResult(resultItems, models);
         }
-        return EMPTY_RESULT;
+        return null;
     }
 }
