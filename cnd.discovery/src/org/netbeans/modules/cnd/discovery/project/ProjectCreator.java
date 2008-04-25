@@ -293,7 +293,8 @@ public class ProjectCreator {
         baseDir = projectDescriptor.getBaseDir();
         projectDescriptor.initLogicalFolders(null, false, importantItems);
         rootFolder = projectDescriptor.getLogicalFolders();
-        projectDescriptor.addSourceRootRaw(workingDir);
+        //projectDescriptor.addSourceRootRaw(workingDir);
+        projectDescriptor.addSourceRootRaw(IpeUtils.toRelativePath(baseDir, workingDir));
         
         addFiles(sourceFiles);
         
