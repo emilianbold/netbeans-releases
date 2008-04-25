@@ -133,6 +133,14 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
     }
+    
+    public void setModified(boolean val) {
+        modified = val;
+    }
+    
+    public boolean isModified() {
+        return modified;
+    }
 
     public void fireFilesPropertiesChanged() {
         if (CodeAssistancePanelController.TRACE_CODEASSIST) {

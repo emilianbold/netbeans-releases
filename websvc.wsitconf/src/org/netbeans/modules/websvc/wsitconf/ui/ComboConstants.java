@@ -70,7 +70,9 @@ public interface ComboConstants {
     String PROF_STSISSUED = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssued");    //NOI18N
     String PROF_STSISSUEDCERT = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssuedCert");    //NOI18N
     String PROF_STSISSUEDENDORSE = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssuedEndorse");    //NOI18N
+    String PROF_STSISSUEDSUPPORTING = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssuedSupporting");    //NOI18N
     String PROF_GENERIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Generic");    //NOI18N
+    String PROF_NOTRECOGNIZED = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_NotRecognized");    //NOI18N
 
     String PROF_TRANSPORT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Transport_Info");    //NOI18N
     String PROF_MSGAUTHSSL_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MsgAuthSSL_Info");    //NOI18N
@@ -84,7 +86,9 @@ public interface ComboConstants {
     String PROF_STSISSUED_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssued_Info");    //NOI18N
     String PROF_STSISSUEDCERT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssuedCert_Info");    //NOI18N
     String PROF_STSISSUEDENDORSE_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssuedEndorse_Info");    //NOI18N
+    String PROF_STSISSUEDSUPPORTING_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_STSIssuedSupporting_Info");    //NOI18N
     String PROF_GENERIC_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Generic_Info");    //NOI18N
+    String PROF_NOTRECOGNIZED_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_NotRecognized_Info");    //NOI18N
 
     String ASYMMETRIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Asymmetric");    //NOI18N
     String NOSECURITY = NbBundle.getMessage(ComboConstants.class, "COMBO_NoSecurity");  //NOI18N
@@ -179,6 +183,8 @@ public interface ComboConstants {
     String ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_Symmetric_PolicyStr");         //NOI18N
     String ISSUED_KEYTYPE_PUBLIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_Public");         //NOI18N
     String ISSUED_KEYTYPE_PUBLIC_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_Public_PolicyStr");         //NOI18N
+    String ISSUED_KEYTYPE_NOPROOF = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof");         //NOI18N
+    String ISSUED_KEYTYPE_NOPROOF_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof_PolicyStr");         //NOI18N
 
     String ISSUED_KEYSIZE_128 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_128");         //NOI18N
     String ISSUED_KEYSIZE_192 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_192");         //NOI18N

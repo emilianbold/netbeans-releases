@@ -5,6 +5,7 @@ org.netbeans.modules.websvc.wsitconf.ui.service.profiles.SAMLAuthorizationOverSS
 org.netbeans.modules.websvc.wsitconf.ui.service.profiles.SAMLHolderOfKeyProfile
 org.netbeans.modules.websvc.wsitconf.ui.service.profiles.STSIssuedProfile
 org.netbeans.modules.websvc.wsitconf.ui.service.profiles.STSIssuedEndorsingProfile
+org.netbeans.modules.websvc.wsitconf.ui.service.profiles.STSIssuedSupportingTokenProfile
 org.netbeans.modules.websvc.wsitconf.ui.service.profiles.STSIssuedCertProfile
 org.netbeans.modules.websvc.wsitconf.ui.service.profiles.SenderVouchesProfile
 org.netbeans.modules.websvc.wsitconf.ui.service.profiles.TransportSecurityProfile

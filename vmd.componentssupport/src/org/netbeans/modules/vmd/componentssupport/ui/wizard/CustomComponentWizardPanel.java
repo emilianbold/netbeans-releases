@@ -18,7 +18,8 @@ import org.openide.util.NbBundle;
  * Panel just asking for basic info.
  */
 public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+        WizardDescriptor.ValidatingPanel 
+{
 
     private WizardDescriptor wizardDescriptor;
     private CustomComponentPanelVisual component;
@@ -78,10 +79,6 @@ public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
-    }
-
-    public boolean isFinishPanel() {
-        return true;
     }
 
     public void validate() throws WizardValidationException {

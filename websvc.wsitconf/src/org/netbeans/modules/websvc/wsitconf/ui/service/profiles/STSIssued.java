@@ -90,6 +90,7 @@ public class STSIssued extends javax.swing.JPanel {
         keyTypeCombo.removeAllItems();
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC);
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_PUBLIC);
+        keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_NOPROOF);
        
         keySizeCombo.removeAllItems();
         keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_128);
