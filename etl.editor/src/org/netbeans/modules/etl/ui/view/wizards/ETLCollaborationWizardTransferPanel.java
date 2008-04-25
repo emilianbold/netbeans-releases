@@ -244,17 +244,17 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
         }
 
-        public String getConnectionNameForTable(String tableDisplayString, String schemaName) {
-            String connName = null;
+        public String getConnectionURLForTable(String tableDisplayString, String schemaName) {
+            String connURL = null;
             String key = schemaName + "." + tableDisplayString;
             for (int i = 0; i < selectedTableModel.getRowCount(); i++) {
                 String rowKey = (String) selectedTableModel.getValueAt(i, 1) + "." + (String) selectedTableModel.getValueAt(i, 0);
                 if (rowKey.equals(key)) {
-                    connName = (String) selectedTableModel.getValueAt(i, 3);
+                    connURL = (String) selectedTableModel.getValueAt(i, 3);
                     break;
                 }
             }
-            return connName;
+            return connURL;
         }
 
         public void removeFromSelectedTables(int rowIndex) {
@@ -839,15 +839,15 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
     private List getSelectedDBModels(boolean isSource) throws Exception {
         AbstractDBTable newTable = null;
-        String connName = null;
-        HashMap<String, SQLDBModel> nameToDBModelMap = new HashMap<String, SQLDBModel>();
+        String connURL = null;
+        HashMap<String, SQLDBModel> connURLToDBModelMap = new HashMap<String, SQLDBModel>();
         List<SQLDBModel> dbModels = new ArrayList<SQLDBModel>();
         List tableList = this.listModel.getSelectedTablesList();
         if (tableList != null) {
             for (int i = 0; i < tableList.size(); i++) {
                 newTable = (AbstractDBTable) tableList.get(i);
-                connName = this.listModel.getConnectionNameForTable(newTable.getQualifiedName(), newTable.getSchema());
-                DatabaseConnection conn = this.nameToConnMap.get(connName);
+                connURL = this.listModel.getConnectionURLForTable(newTable.getQualifiedName(), newTable.getSchema());
+                DatabaseConnection conn = this.nameToConnMap.get(connURL);
                 if (conn != null) {
 
                     // Add all tables to database
@@ -856,15 +856,16 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         meta.connectDB(DBExplorerUtil.createConnection(conn));
 
                         // we are now using SQLDBModel and SQLTable etc
-                        SQLDBModel model = nameToDBModelMap.get(connName);
+                        SQLDBModel model = connURLToDBModelMap.get(connURL);
                         if (model == null) {
                             int type = SQLConstants.TARGET_DBMODEL;
                             if (isSource) {
                                 type = SQLConstants.SOURCE_DBMODEL;
                             }
                             model = SQLModelObjectFactory.getInstance().createDBModel(type);
-                            populateModel(model, conn, meta);
-                            nameToDBModelMap.put(connName, model);
+                              String modelName = generateDBModelName(isSource,connURLToDBModelMap);
+                            populateModel(model, conn, meta,modelName);
+                            connURLToDBModelMap.put(connURL, model);
                         }
 
                         meta.populateColumns(newTable);
@@ -879,7 +880,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        Iterator iter = nameToDBModelMap.values().iterator();
+        
+        Iterator iter = connURLToDBModelMap.values().iterator();
         while (iter.hasNext()) {
             SQLDBModel model = (SQLDBModel) iter.next();
             dbModels.add(model);
@@ -887,16 +889,17 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         return dbModels;
     }
 
-    private SQLDBModel populateModel(SQLDBModel model, DatabaseConnection conn, DBMetaDataFactory meta) {
+    private SQLDBModel populateModel(SQLDBModel model, DatabaseConnection conn, DBMetaDataFactory meta, String modelName) {
         DBConnectionDefinition def = null;
         try {
-            def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(conn.getDisplayName(),
+          
+            def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(modelName,
                     meta.getDBType(), conn.getDriverClass(), conn.getDatabaseURL(), conn.getUser(),
                     conn.getPassword(), "Descriptive info here");
         } catch (Exception ex) {
         }
 
-        model.setModelName(conn.getDisplayName());
+        model.setModelName(modelName);
         model.setConnectionDefinition(def);
         return model;
     }
@@ -979,7 +982,34 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
         return aName;
     }
+    
+    private String generateDBModelName(boolean isSource, HashMap<String, SQLDBModel> connURLToDBModelMap) {
+        int cnt = 1;
+        String connNamePrefix = isSource ? "SourceConnection" : "TargetConnection";
+        String aName = connNamePrefix + cnt;
+        while (isDBModelNameExist(aName, connURLToDBModelMap)) {
+            cnt++;
+            aName = connNamePrefix + cnt;
+        }
 
+        return aName;
+    }
+    
+     private boolean isDBModelNameExist(String aName, HashMap<String, SQLDBModel> connURLToDBModelMap) {
+    
+        Iterator<SQLDBModel> it = connURLToDBModelMap.values().iterator();
+
+        while (it.hasNext()) {
+            SQLDBModel dbModel = it.next();
+            String dbName = dbModel.getModelName();
+            if (dbName != null && dbName.equals(aName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     private boolean isTableAliasNameExist(String aName) {
         List sTables = this.listModel.getSelectedTablesList();
         Iterator it = sTables.iterator();
@@ -1031,8 +1061,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         tablesList[i][1] = ((TargetTableImpl) clonedTables[i]).getSchema();
                         tablesList[i][2] = ((TargetTableImpl) clonedTables[i]).getCatalog();
                     }
-                    tablesList[i][3] = selectedConnection.getName();
-                    this.nameToConnMap.put(selectedConnection.getName(), selectedConnection);
+                    tablesList[i][3] = selectedConnection.getDatabaseURL();
+                    this.nameToConnMap.put(selectedConnection.getDatabaseURL(), selectedConnection);
                     listModel.addToSelectedTables(tablesList[i], (SQLDBTable) clonedTables[i]);
                 }
             }
