@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,58 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.model;
+package org.netbeans.modules.spring.api.beans.model;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.spring.api.beans.model.FileSpringBeans;
-import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.api.beans.model.SpringBeans;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
- * The {@link SpringBeans} implementation for multiple config files.
+ * Encapsulates the Spring beans in a file. All beans obtained through
+ * this interface are guaranteed to return a non-null value from
+ * {@link SpringBean#getLocation}, and the location is guaranteed to
+ * provide a valid start offset.
  *
  * @author Andrei Badea
  */
-public class ConfigModelSpringBeans implements SpringBeans {
+public interface FileSpringBeans {
 
-    private final Map<File, SpringBeanSource> file2BeanSource;
+    /**
+     * Finds a bean by its id or name.
+     *
+     * @param  idOrName the bean id or name; never null.
+     * @return the bean with the specified id or name; {@code null} if no such
+     *         bean was found.
+     */
+    SpringBean findBean(String idOrName);
 
-    public ConfigModelSpringBeans(Map<File, SpringBeanSource> file2BeanSource) {
-        this.file2BeanSource = file2BeanSource;
-    }
+    /**
+     * Finds a bean by its id.
+     *
+     * @param  name the bean id or name; never null.
+     * @return the bean with the specified id or name; {@code null} if no such
+     *         bean was found.
+     */
+    SpringBean findBeanByID(String id);
 
-    public SpringBean findBean(String name) {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
-        for (SpringBeanSource beanSource : file2BeanSource.values()) {
-            SpringBean bean = beanSource.findBean(name);
-            if (bean != null) {
-                return bean;
-            }
-        }
-        return null;
-    }
-
-    public FileSpringBeans getFileBeans(FileObject fo) {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
-        File file = FileUtil.toFile(fo);
-        if (file != null) {
-            return file2BeanSource.get(file);
-        }
-        return null;
-    }
-
-    public List<SpringBean> getBeans() {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
-        List<SpringBean> result = new ArrayList<SpringBean>(file2BeanSource.size() * 20);
-        for (SpringBeanSource beanSource : file2BeanSource.values()) {
-            result.addAll(beanSource.getBeans());
-        }
-        return Collections.unmodifiableList(result);
-    }
+    /**
+     * Returns the list of beans in this beans config file.
+     *
+     * @param  file the beans config file.
+     * @return the list of beans; never null.
+     */
+    List<SpringBean> getBeans();
 }
