@@ -44,12 +44,10 @@ package org.netbeans.modules.php.project.ui.options;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -206,15 +204,10 @@ public class SelectPhpInterpreterPanel extends JPanel {
             } catch (InterruptedException ex) {
                 return;
             }
-            String[] allPhps = SystemPackageFinder.getAllPhpInterpreters();
-            if (allPhps == null) {
-                allPhps = new String[0];
-            }
-            final List<String> sorted = Arrays.asList(allPhps);
-            Collections.sort(sorted);
+            final List<String> allPhps = PhpEnvironment.get().getAllPhpInterpreters();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    updateAvailablePhpInterpreters(sorted);
+                    updateAvailablePhpInterpreters(allPhps);
                 }
             });
         }
