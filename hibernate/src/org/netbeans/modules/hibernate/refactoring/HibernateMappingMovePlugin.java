@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.hibernate.refactoring;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +53,6 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**

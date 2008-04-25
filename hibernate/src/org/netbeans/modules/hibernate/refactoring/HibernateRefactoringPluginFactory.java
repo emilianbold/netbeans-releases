@@ -69,7 +69,7 @@ public class HibernateRefactoringPluginFactory implements RefactoringPluginFacto
             }
         } else if (refactoring instanceof MoveRefactoring) {
             if (isMappingFile(refactoring)) {
-                System.err.println("!!!!!!!!!!MOVING Hibernate mapping file. TBD");
+                return new HibernateMappingMovePlugin((MoveRefactoring)refactoring);
                 
             } else {
                 return new HibernateMovePlugin((MoveRefactoring) refactoring);
