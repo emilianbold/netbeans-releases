@@ -381,9 +381,9 @@ is divided into following sections:
                     <outputproperty name="indent" value="yes"/>
                 </xslt-->
                 
-                <xsl:comment> run the validation task here. </xsl:comment>
+                <xsl:comment>validation</xsl:comment>
                 <!--
-                <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" />
+                <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles"/>
                 -->
 
                 <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.24.1
+#Version 1.25.0
 CLSS public static final org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Column
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -104,6 +104,7 @@ meth public static synchronized org.netbeans.api.db.explorer.ConnectionManager o
 meth public void org.netbeans.api.db.explorer.ConnectionManager.addConnection(org.netbeans.api.db.explorer.DatabaseConnection) throws org.netbeans.api.db.explorer.DatabaseException
 meth public void org.netbeans.api.db.explorer.ConnectionManager.addConnectionListener(org.netbeans.api.db.explorer.ConnectionListener)
 meth public void org.netbeans.api.db.explorer.ConnectionManager.disconnect(org.netbeans.api.db.explorer.DatabaseConnection)
+meth public void org.netbeans.api.db.explorer.ConnectionManager.removeConnection(org.netbeans.api.db.explorer.DatabaseConnection) throws org.netbeans.api.db.explorer.DatabaseException
 meth public void org.netbeans.api.db.explorer.ConnectionManager.removeConnectionListener(org.netbeans.api.db.explorer.ConnectionListener)
 meth public void org.netbeans.api.db.explorer.ConnectionManager.selectConnectionInExplorer(org.netbeans.api.db.explorer.DatabaseConnection)
 meth public void org.netbeans.api.db.explorer.ConnectionManager.showAddConnectionDialog(org.netbeans.api.db.explorer.JDBCDriver)

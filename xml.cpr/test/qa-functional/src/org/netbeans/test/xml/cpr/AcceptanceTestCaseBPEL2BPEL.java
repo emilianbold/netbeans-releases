@@ -76,7 +76,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "ImportReferencedSchema",
         "ImportReferencedSchema2",
         "DeleteReferencedSchema",
-        "FindUsages", // TODO : How to find find usages output?
+        "FindUsages",
         "ValidateAndBuild",
         "AddAttribute",
         "ExploreAttribute",
@@ -95,15 +95,16 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
         "ValidateAndBuild",
 
-        // Move, fix
+        // Move, fix : TODO
 
         "ValidateAndBuild",
         "BuildCompositeApplication",
-        //"DeployCompositeApplication", // This will failed, followed skipped
-        //"CreateNewTest",
-        //"RunNewTest",
+        "DeployCompositeApplication", // This will failed, followed skipped
+        "CreateNewTest",
+        "RunNewTest",
     };
 
     static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
@@ -265,7 +266,26 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          5
+        );
 
       endTest( );
     }
@@ -543,7 +563,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
 
       endTest( );
     }
@@ -561,7 +585,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      CreateNewTestInternal( SAMPLE_NAME, COMPOSITE_APPLICATION_NAME );
 
       endTest( );
     }
@@ -570,7 +594,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      RunNewTestInternal( COMPOSITE_APPLICATION_NAME );
 
       endTest( );
     }

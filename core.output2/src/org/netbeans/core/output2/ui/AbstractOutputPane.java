@@ -71,6 +71,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     private int fontWidth = -1;
     protected JEditorPane textView;
     int lastCaretLine = 0;
+    int caretBlinkRate = 500;
     boolean hadSelection = false;
     boolean recentlyReset = false;
 
@@ -212,8 +213,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         oc.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         textView.setCaret (oc);
         
-        getCaret().setBlinkRate(500);
-        getCaret().setVisible(true);
         getCaret().setSelectionVisible(true);
         
         getVerticalScrollBar().getModel().addChangeListener(this);
@@ -290,8 +289,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.setEditorKit(kit);
         textView.setDocument(doc);
         updateKeyBindings();
-        getCaret().setBlinkRate(500);
-        getCaret().setVisible(true);
     }
     
     /**
@@ -761,12 +758,13 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
         @Override
         public void focusGained(FocusEvent e) {
-            // do not change caret or selection visibility
+            getCaret().setBlinkRate(caretBlinkRate);
+            getCaret().setVisible(true);
         }
 
         @Override
         public void focusLost(FocusEvent e) {
-            // do not change caret or selection visibility
+            getCaret().setVisible(false);
         }
     }
 }

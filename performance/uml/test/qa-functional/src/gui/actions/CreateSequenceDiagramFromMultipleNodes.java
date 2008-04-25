@@ -94,6 +94,7 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
 
     public void prepare() {
         log(":: prepare");
+        new EventTool().waitNoEvent(1000);
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         Node diag1 = new Node(pNode, "Model|org|gjt|sp|jedit|gui|AbbrevEditor");
         Node diag2 = new Node(pNode, "Model|org|gjt|sp|jedit|gui|IOProgressMonitor");
@@ -109,6 +110,11 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
         projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
 
         log(projectTree.getSelectionCount() + " elements selected");
+        if (projectTree.getSelectionCount() != 30) {
+            for(TreePath tp : projectTree.getSelectionPaths()) {
+                log(tp.toString());
+            }
+        }
 
         JPopupMenuOperator selectMenu = new JPopupMenuOperator();
         selectMenu.pushMenu("Create Diagram From Selected Elements");

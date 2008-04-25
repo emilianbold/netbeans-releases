@@ -54,8 +54,8 @@ made subject to such option by the copyright holder.
                 <binary-origin>release/modules/ext/cdc-pp-awt-layout.jar</binary-origin>
             </class-path-extension>
             <extra-compilation-unit>
-                <classpath/>
                 <package-root>layoutsrc</package-root>
+                <classpath/>
                 <built-to>build/layoutclasses</built-to>
                 <built-to>release/modules/ext/cdc-pp-awt-layout.jar</built-to>
             </extra-compilation-unit>

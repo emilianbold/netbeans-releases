@@ -46,23 +46,17 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author tomslot
  */
 public class IndexedClass extends IndexedElement {
-    private int offset;
-    
+    private String superClass;
+
     public IndexedClass(String name, String in, PHPIndex index, String fileUrl,
-            String attributes, int flags, int offset){
-        super(name, in, index, fileUrl, attributes, flags, ElementKind.GLOBAL);
-        this.offset = offset;
+            String superClass, int offset,  int flags){
+        super(name, in, index, fileUrl, offset, flags, ElementKind.GLOBAL);
+        this.superClass = superClass;
     }
     
     public String getSuperClass(){
-        String superClass = PHPIndex.extractStringValueFromIndexSignature(attributes, 2);
-        
-        return superClass.length() == 0 ? null : superClass;
+        return superClass;
     }
 
-    @Override
-    public int getOffset() {
-        return offset;
-    }
     
 }

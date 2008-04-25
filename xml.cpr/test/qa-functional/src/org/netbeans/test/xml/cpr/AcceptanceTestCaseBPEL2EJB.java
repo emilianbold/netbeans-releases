@@ -120,6 +120,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
         "ValidateAndBuild",
 
         // Move, fix
@@ -255,7 +256,26 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          9
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          9
+        );
 
       endTest( );
     }
@@ -532,7 +552,11 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
 
       endTest( );
     }

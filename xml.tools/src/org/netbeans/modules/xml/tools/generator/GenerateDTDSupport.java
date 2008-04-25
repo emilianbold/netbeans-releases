@@ -58,6 +58,7 @@ import java.util.Stack;
 import java.util.Vector;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.XMLDataObject;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.lib.GuiUtil;
 import org.netbeans.tax.TreeUtilities;
 import org.openide.cookies.SaveCookie;
@@ -130,7 +131,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             name = generFile.getName();
 
             // IANA encoding name
-            String encoding = "UTF-8";
+            String encoding = EncodingUtil.getProjectEncoding(generFile);
             String dtd = xml2dtd(name, encoding);
             if (dtd == null) {
                 String msg = NbBundle.getMessage(GenerateDTDSupport.class, "BK0009");

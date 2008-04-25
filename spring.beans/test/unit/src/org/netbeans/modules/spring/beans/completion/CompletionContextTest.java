@@ -67,7 +67,7 @@ public class CompletionContextTest extends TestCase {
 
     public void testAttributeCompletion() throws Exception {
         String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
-                "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore'/>");
+                "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore' p:ag   ='29'/>");
         BaseDocument doc = TestUtils.createSpringXMLConfigDocument(config);
         CompletionContext ctx = new CompletionContext(doc, config.indexOf("id='petStore"));
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
@@ -75,6 +75,8 @@ public class CompletionContextTest extends TestCase {
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
         ctx = new CompletionContext(doc, config.indexOf("lass='org."));
         assertContext(ctx, CompletionType.ATTRIBUTE, "c", "bean");
+        ctx = new CompletionContext(doc, config.indexOf(" ='29'"));
+        assertContext(ctx, CompletionType.NONE, "", "bean");
     }
     
     // test for IZ#129020

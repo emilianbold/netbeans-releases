@@ -104,7 +104,7 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
         new BuildProjectAction().performPopup(projectNode);
         Timeouts temp = JemmyProperties.getProperties().getTimeouts().cloneThis();
         JemmyProperties.getProperties().getTimeouts().setTimeout("Waiter.WaitingTime", expectedTime * 5);
-        MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
+        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (jbi-build)"); // NOI18N
         JemmyProperties.setCurrentTimeouts(temp);
         return null;
     }

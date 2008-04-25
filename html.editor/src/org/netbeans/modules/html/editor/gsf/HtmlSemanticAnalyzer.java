@@ -69,6 +69,8 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
 
     public void run(CompilationInfo ci) throws Exception {
 
+        cancelled = false; //resume
+        
         if (cancelled) {
             return;
         }
@@ -79,6 +81,10 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
         final TranslatedSource source = presult.getTranslatedSource();
         
         HtmlParserResult htmlResult = (HtmlParserResult) presult;
+        
+        if (cancelled) {
+            return;
+        }
         
         //just a test - highlight all tags' ids
         Set<TagAttribute> ids = htmlResult.elementsIds();

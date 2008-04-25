@@ -87,7 +87,6 @@ made subject to such option by the copyright holder.
                 <project>../../bpel.project</project>
                 <project>../../bpel.refactoring</project>
                 <project>../../bpel.samples</project>
-                <project>../../bpel.search</project>
                 <project>../../bpel.validation</project>
                 <project>../../classfile</project>
                 <project>../../cnd</project>
@@ -316,6 +315,7 @@ made subject to such option by the copyright holder.
                 <project>../../libs.jxpath</project>
                 <project>../../libs.lucene</project>
                 <project>../../libs.ppawtlayout</project>
+                <project>../../libs.springframework</project>
                 <project>../../libs.svnClientAdapter</project>
                 <project>../../libs.xerces</project>
                 <project>../../localhistory</project>
@@ -347,6 +347,7 @@ made subject to such option by the copyright holder.
                 <project>../../mvd</project>
                 <project>../../o.apache.tools.ant.module</project>
                 <project>../../o.apache.xml.resolver</project>
+                <project>../../o.jdesktop.beansbinding</project>
                 <project>../../o.jdesktop.layout</project>
                 <project>../../o.jruby</project>
                 <project>../../o.jruby.distro</project>
@@ -393,6 +394,7 @@ made subject to such option by the copyright holder.
                 <project>../../php.kit</project>
                 <project>../../php.project</project>
                 <project>../../php.rt</project>
+                <project>../../php.samples</project>
                 <project>../../print</project>
                 <project>../../profiler</project>
                 <project>../../profiler.attach</project>
@@ -446,6 +448,7 @@ made subject to such option by the copyright holder.
                 <project>../../soa.mappercore</project>
                 <project>../../soa.reportgenerator</project>
                 <project>../../soa.ui</project>
+                <project>../../soa.validation</project>
                 <project>../../spi.debugger.ui</project>
                 <project>../../spi.editor.hints</project>
                 <project>../../spi.navigator</project>
@@ -556,6 +559,7 @@ made subject to such option by the copyright holder.
                 <project>../../vmd.components.midp.pda</project>
                 <project>../../vmd.components.midp.wma</project>
                 <project>../../vmd.components.svg</project>
+                <project>../../vmd.componentssupport</project>
                 <project>../../vmd.flow</project>
                 <project>../../vmd.game</project>
                 <project>../../vmd.inspector</project>
@@ -616,7 +620,6 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.saas.services.twitter</project>
                 <project>../../websvc.saas.services.weatherbug</project>
                 <project>../../websvc.saas.services.yahoo</project>
-                <project>../../websvc.saas.services.youtube</project>
                 <project>../../websvc.saas.services.zillow</project>
                 <project>../../websvc.saas.services.zvents</project>
                 <project>../../websvc.saas.ui</project>
@@ -646,6 +649,7 @@ made subject to such option by the copyright holder.
                 <project>../../xml.schema.model</project>
                 <project>../../xml.schema.refactoring</project>
                 <project>../../xml.schema.ui.basic</project>
+                <project>../../xml.search</project>
                 <project>../../xml.tax</project>
                 <project>../../xml.text</project>
                 <project>../../xml.tools</project>
