@@ -54,14 +54,11 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
@@ -77,15 +74,14 @@ import org.w3c.dom.Text;
 
 
 /**
- * @author ads
- *
+ * @author ads, Tomas Mysik
  */
 public class PhpProject implements Project, AntProjectListener {
 
     public static final String UI_LOGGER_NAME = "org.netbeans.ui.php.project"; //NOI18N
 
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation()
-            + ResourceMarker.PROJECT_ICON));
+    private static final Icon PROJECT_ICON = new ImageIcon(
+            Utilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
     // XXX maybe move to PhpProjectConstants class
     /**

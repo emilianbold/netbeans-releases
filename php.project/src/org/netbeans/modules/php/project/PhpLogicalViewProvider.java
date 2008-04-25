@@ -221,8 +221,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         private PhpLogicalViewRootNode() {
             super(new LogicalViewChildren(), Lookups.fixed(new Object[]{getProject()}));
             
-            setIconBaseWithExtension(
-                    ResourceMarker.getLocation() + ResourceMarker.PROJECT_ICON);
+            setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png"); // NOI18N
             
             setName(ProjectUtils.getInformation(myProject).getDisplayName());
         }
