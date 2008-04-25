@@ -38,38 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.openide.util.Lookup;
+import org.openide.util.Union2;
 
 
 /**
- * @author ads
+ * @author Radek Matous
  *
  */
-public final class Utils {
-
-    // avoid instantiation
-    private Utils() {
-    }
-
-    public static SourceGroup[] getSourceGroups(Project phpProject) {
-        Sources sources = ProjectUtils.getSources(phpProject);
-        //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        SourceGroup[] groups = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
-        return groups;
-    }
-    public static FileObject[] getSourceObjects(Project phpProject) {
-        SourceGroup[] groups = getSourceGroups(phpProject);
-
-        FileObject[] fileObjects = new FileObject[groups.length];
-        for (int i = 0; i < groups.length; i++) {
-            fileObjects[i] = groups[i].getRootFolder();
+public class XDebugStarterFactory {
+    private static Union2<XDebugStarter, Boolean> INSTANCE;
+    
+    public static XDebugStarter getInstance() {
+        boolean init;
+        synchronized(XDebugStarterFactory.class) {
+            init = (INSTANCE == null);
         }
-        return fileObjects;
+        if (init) {
+            //TODO: add lookup listener
+            XDebugStarter debugStarter = Lookup.getDefault().lookup( XDebugStarter.class );
+            if (debugStarter != null) {
+                INSTANCE = Union2.createFirst(debugStarter);
+            } else {
+                INSTANCE = Union2.createSecond(Boolean.FALSE);
+            }
+        }
+        return INSTANCE.hasFirst() ? INSTANCE.first() : null;
     }
 }

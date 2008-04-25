@@ -38,38 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.spi;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 
-
 /**
- * @author ads
- *
+ * @author Radek Matous
  */
-public final class Utils {
-
-    // avoid instantiation
-    private Utils() {
-    }
-
-    public static SourceGroup[] getSourceGroups(Project phpProject) {
-        Sources sources = ProjectUtils.getSources(phpProject);
-        //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        SourceGroup[] groups = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
-        return groups;
-    }
-    public static FileObject[] getSourceObjects(Project phpProject) {
-        SourceGroup[] groups = getSourceGroups(phpProject);
-
-        FileObject[] fileObjects = new FileObject[groups.length];
-        for (int i = 0; i < groups.length; i++) {
-            fileObjects[i] = groups[i].getRootFolder();
-        }
-        return fileObjects;
-    }
+public interface  XDebugStarter {
+    /**
+     * @param project
+     * @param run code that should initiate connection. Is called after listening 
+     * on defined port(typically 9000) started.
+     * should be initiated.
+     * @param startFile file to debug
+     */
+    public void start(Project project, Runnable run, FileObject startFile);
 }
