@@ -165,19 +165,21 @@ public class PHPIndex {
         return clusterUrl;
     }
     
+    /** returns all methods of a class. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
         
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
-                methods.addAll(getMethods(context, clazz.getName(), "", NameKind.PREFIX)); //NOI18N
+                methods.addAll(getMethods(context, clazz.getName(), "", kind)); //NOI18N
             }
         }
         
         return methods;
     }
     
+    /** returns all fields of a class. */
     public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String className, String name, NameKind kind) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
         List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
@@ -191,6 +193,7 @@ public class PHPIndex {
         return properties;
     }
     
+    /** return a list of all superclasses of the given class. */
     public List<IndexedClass>getClassInheritanceLine(PHPParseResult context, String className){
         List<IndexedClass>classLine = new LinkedList<IndexedClass>();
         Collection<String> processedClasses = new TreeSet<String>();
@@ -217,16 +220,19 @@ public class PHPIndex {
         return classLine;
     }
     
+    /** returns local constnats of a class. */
     public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String className, String name, NameKind kind) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_CLASS_CONST, name, kind);
         
         for (String signature : signaturesMap.keySet()) {
-            String propName = extractStringValueFromIndexSignature(signature, 0);
-            int offset = extractIntValueFromIndexSignature(signature, 1);
+            //items are not indexed, no case insensitive search key user
+            Signature sig = Signature.get(signature);
+            String propName = sig.string(0);
+            int offset = sig.integer(1);
             
             IndexedConstant prop = new IndexedConstant(propName, className,
-                    this, signaturesMap.get(signature), null, 0, offset);
+                    this, signaturesMap.get(signature), offset, offset, null);
 
             properties.add(prop);
 
@@ -235,16 +241,21 @@ public class PHPIndex {
         return properties;
     }
     
+    /** returns methods of a class. */
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_METHOD, name, kind);
         
         for (String signature : signaturesMap.keySet()) {
-            String funcName = extractStringValueFromIndexSignature(signature, 0);
-            int modifiers = extractIntValueFromIndexSignature(signature, 3);
+            //items are not indexed, no case insensitive search key user
+            Signature sig = Signature.get(signature);
+            String funcName = sig.string(0);
+            String args = sig.string(1);
+            int offset = sig.integer(2);
+            int flags = sig.integer(3);
 
             IndexedFunction func = new IndexedFunction(funcName, className,
-                    this, signaturesMap.get(signature), signature, modifiers, ElementKind.METHOD);
+                    this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
 
             methods.add(func);
 
@@ -253,17 +264,20 @@ public class PHPIndex {
         return methods;
     }
     
+    /** returns fields of a class. */
     public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_FIELD, name, kind);
         
         for (String signature : signaturesMap.keySet()) {
-            String propName = "$" + extractStringValueFromIndexSignature(signature, 0); //NOI18N
-            int offset = extractIntValueFromIndexSignature(signature, 1);
-            int modifiers = extractIntValueFromIndexSignature(signature, 2);
+            Signature sig = Signature.get(signature);
+            
+            String propName = "$" + sig.string(0);
+            int offset = sig.integer(1);
+            int modifiers = sig.integer(2);
 
             IndexedConstant prop = new IndexedConstant(propName, className,
-                    this, signaturesMap.get(signature), null, modifiers, offset);
+                    this, signaturesMap.get(signature), offset, modifiers, null);
 
             properties.add(prop);
 
@@ -275,75 +289,78 @@ public class PHPIndex {
     private Map<String, String> getClassSpecificSignatures(PHPParseResult context, String className, String fieldName, String name, NameKind kind) {
         final Set<SearchResult> classSearchResult = new HashSet<SearchResult>();
         Map<String, String> signatures = new HashMap<String, String>();
-        search(PHPIndexer.FIELD_CLASS, className, NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_CLASS, className.toLowerCase(), NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult classMap : classSearchResult) {
             String[] classSignatures = classMap.getValues(PHPIndexer.FIELD_CLASS);
+            String[] rawSignatures = classMap.getValues(fieldName);
             
-            if (classSignatures == null) {
+            if (classSignatures == null  || rawSignatures == null) {
                 continue;
             }
             
             assert classSignatures.length == 1; 
-            String foundClassName = extractStringValueFromIndexSignature(classSignatures[0], 0);
+            String foundClassName = getSignatureItem(classSignatures[0], 1);
             String persistentURL = classMap.getPersistentUrl();
             
             if (!className.equals(foundClassName) || (context != null && !isReachable(context, persistentURL))) {
                 continue;
             }
-
-            String[] rawSignatures = classMap.getValues(fieldName);
             
-            if (rawSignatures != null) {
-                for (String signature : rawSignatures) {
-                    String elemName = extractStringValueFromIndexSignature(signature, 0);
-
-                    if (nameMatches(name, elemName, kind)) {
-                        signatures.put(signature, persistentURL);
-                    }
+            if(kind == NameKind.PREFIX) {
+                //case sensitive
+                if(!foundClassName.startsWith(className)) {
+                    continue;
                 }
+            }
+
+            for (String signature : rawSignatures) {
+                String elemName = getSignatureItem(signature, 0);
+                
+                // TODO: now doing IC prefix search only, handle other search types 
+                // according to 'kind'
+                if((kind == NameKind.CASE_INSENSITIVE_PREFIX 
+                        && elemName.toLowerCase().startsWith(name.toLowerCase()))
+                        || (kind == NameKind.PREFIX 
+                        && elemName.startsWith(name))) {
+                        signatures.put(signature, persistentURL);
+                }
+                
             }
         }
         
         return signatures;
     }
     
-    static int extractIntValueFromIndexSignature(String signature, int offsetSection) {
-        String stringValue = extractStringValueFromIndexSignature(signature, offsetSection);
-        
-        if (stringValue != null){
-            return Integer.parseInt(stringValue);
-        }
-        
-        return -1;
-    }
-    
-    static String extractStringValueFromIndexSignature(String signature, int offsetSection) {
-        int startIndex = 0;
-        
-        if (offsetSection > 0) {
-            for (int i = 0; i < offsetSection; i++) {
-                startIndex = signature.indexOf(';', startIndex + 1);
+    //faster parsing of signatures.
+    //use Signature class if you need to search in the same signature
+    //multiple times
+    static String getSignatureItem(String signature, int index) {
+        int searchIndex = 0;
+        for(int i = 0; i < signature.length(); i++) {
+            char c = signature.charAt(i);
+            
+            if(searchIndex == index) {
+                for(int j = i ; j < signature.length(); j++) {
+                    c = signature.charAt(j);
+                    if(c == ';') {
+                        return signature.substring(i, j);
+                    }
+                }
             }
             
-            assert startIndex != -1;
-            startIndex++;
+            if(c == ';') {
+                searchIndex++;
+            }
         }
-
-        int endIndex = signature.indexOf(';', startIndex);
-        
-        if (endIndex >= startIndex){
-            String offsetStr = signature.substring(startIndex, endIndex);
-            return offsetStr;
-        }
-        
         return null;
     }
-    
+
+    /** returns GLOBAL functions. */
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(PHPIndexer.FIELD_BASE, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_BASE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
@@ -354,25 +371,36 @@ public class PHPIndex {
                 }
 
                 for (String signature : signatures) {
-                    int firstSemicolon = signature.indexOf(";");
-                    String funcName = signature.substring(0, firstSemicolon);
+                    Signature sig = Signature.get(signature);
+                    //sig.string(0) is the case insensitive search key
+                    String funcName = sig.string(1);
+                    
+                    if(kind == NameKind.PREFIX) {
+                        //case sensitive
+                        if(!funcName.startsWith(name)) {
+                            continue;
+                        }
+                    }
+                    
+                    int offset = sig.integer(3);
+                    String arguments = sig.string(2);
 
-                    if (nameMatches(name, funcName, kind)) {
-                        IndexedFunction func = new IndexedFunction(funcName, null,
-                                this, map.getPersistentUrl(), signature, 0, ElementKind.METHOD);
+                    IndexedFunction func = new IndexedFunction(funcName, null,
+                            this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
 
                         functions.add(func);
-                    }
+                    
                 }
             }
         }
         return functions;
     }
     
+    /** returns GLOBAL constants. */
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CONST, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_CONST);
+        search(PHPIndexer.FIELD_CONST, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_CONST);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
@@ -383,16 +411,24 @@ public class PHPIndex {
                 }
 
                 for (String signature : signatures) {
-                    String constName = signature.substring(0, signature.indexOf(';'));
-
-                    if (nameMatches(name, constName, kind)) {
-                        int offset = extractIntValueFromIndexSignature(signature, 1);
-
-                        IndexedConstant constant = new IndexedConstant(constName, null,
-                                this, map.getPersistentUrl(), null, 0, offset);
+                    Signature sig = Signature.get(signature);
+                    //sig.string(0) is the case insensitive search key
+                    String constName = sig.string(1);
+                    
+                    if(kind == NameKind.PREFIX) {
+                        //case sensitive
+                        if(!constName.startsWith(name)) {
+                            continue;
+                        }
+                    }
+                    
+                    int offset = sig.integer(2);
+                    
+                    IndexedConstant constant = new IndexedConstant(constName, null,
+                            this, map.getPersistentUrl(), offset, 0, null);
 
                         constants.add(constant);
-                    }
+                    
                 }
             }
         }
@@ -403,7 +439,7 @@ public class PHPIndex {
     public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
-        search(PHPIndexer.FIELD_CLASS, name, NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
        
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
@@ -414,17 +450,30 @@ public class PHPIndex {
                 }
 
                 for (String signature : signatures) {
-                    int firstSemicolon = signature.indexOf(";");
-                    String className = signature.substring(0, firstSemicolon);
-               
-                    if (nameMatches(name, className, kind)){
-                    int offset = extractIntValueFromIndexSignature(signature, 1);
+                    Signature sig = Signature.get(signature);
+                    String className = sig.string(1);
+                    
+                    if(kind == NameKind.PREFIX) {
+                        //case sensitive
+                        if(!className.startsWith(name)) {
+                            continue;
+                        }
+                    } else if(kind == NameKind.EXACT_NAME) {
+                        if(!className.equals(name)) {
+                            continue;
+                        }
+                    }
+                    
+                    //TODO: handle search kind
+                    
+                    int offset = sig.integer(2);
+                    String superClass = sig.string(3);
 
                     IndexedClass clazz = new IndexedClass(className, null,
-                            this, map.getPersistentUrl(), signature, 0, offset);
+                            this, map.getPersistentUrl(), superClass, offset, 0);
 
                     classes.add(clazz);
-                    }
+                    
                 }
             }
         }
@@ -556,30 +605,6 @@ public class PHPIndex {
         return false;
     }
     
-    private boolean nameMatches(String testedName, String name, NameKind kind){
-        switch (kind) {
-            case CASE_INSENSITIVE_PREFIX:
-                return name.toLowerCase().startsWith(testedName.toLowerCase());
-            case EXACT_NAME:
-                return testedName.equals(name);
-            case PREFIX:
-                return name.startsWith(testedName);
-                
-            // kinds that are not currently supported
-                
-            case CAMEL_CASE:
-                break;
-            case CASE_INSENSITIVE_REGEXP:
-                break;
-            case REGEXP:
-                break;
-        }
-        
-        // TODO use logger to warn about unsupported search kind
-        
-        return true;
-    }
-    
     private static String fileURLToAbsPath(String url){
         assert url.startsWith("file:") : url + " doesn't start with 'file:'"; //NOI18N
         return url.substring("file:".length()); //NOI18N
@@ -649,4 +674,5 @@ public class PHPIndex {
         //System.out.println("- resolved to " + result);
         return result;
     }
+
 }

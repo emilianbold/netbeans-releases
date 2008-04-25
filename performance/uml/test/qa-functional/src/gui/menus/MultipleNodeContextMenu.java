@@ -51,6 +51,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 import javax.swing.tree.TreePath;
+import gui.UMLUtilities;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -79,10 +80,11 @@ public class MultipleNodeContextMenu extends org.netbeans.performance.test.utili
         WAIT_AFTER_OPEN = 4000;
     }
 
+    @Override
     public void initialize() {
         log(":: initialize");
 
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
 
@@ -111,12 +113,14 @@ public class MultipleNodeContextMenu extends org.netbeans.performance.test.utili
         return null;
     }
 
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
 
+    @Override
     public void close() {
         log("::close");
         new CloseAllDocumentsAction().performAPI();

@@ -171,4 +171,16 @@ public class RubyPlatformTest extends RubyTestBase {
         assertEquals("correct info for bundled JRuby", computed, info);
         assertEquals("correct info for bundled JRuby", computed.getJVersion(), info.getJVersion());
     }
+    
+    public void testRubinius() throws IOException {
+        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        assertNotNull("rubinius supported", rubinius);
+        assertTrue("is Rubinius", rubinius.isRubinius());
+        assertNotNull("has label", rubinius.getLabel());
+        assertTrue("is valid", rubinius.isValid());
+        assertFalse("is default", rubinius.isDefault());
+        assertEquals("right version", "0.1", rubinius.getVersion());
+        assertEquals("right ruby lib", new File(rubinius.getHome(), "lib").getAbsolutePath(), rubinius.getLibDir());
+        assertNull("does not throw AssertionError", rubinius.getSystemRoot(FileUtil.toFileObject(new File(rubinius.getHome(), "lib"))));
+    }
 }

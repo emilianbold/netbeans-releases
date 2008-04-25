@@ -38,9 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+package org.netbeans.modules.soa.validation.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,12 +51,13 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -66,23 +68,17 @@ import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import java.util.Collection;
 
-import org.netbeans.modules.soa.validation.core.QuickFix;
-import org.netbeans.modules.soa.validation.core.QuickFixable;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implements Validator {
+public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Validator {
 
   public abstract ValidationResult validate(Model model, Validation validation, ValidationType type);
+
   protected void init() {}
 
   protected final String getDisplayName() {
@@ -99,8 +95,12 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     return getClass().getName();
   }
 
-  public Set<ResultItem> getResultItems() {
-    return myResultItems;
+  protected final ValidationResult createValidationResult(Model model) {
+    return new ValidationResult(getValidationResult(), Collections.singleton(model));
+  }
+
+  protected final Set<ResultItem> getValidationResult() {
+    return myValidationResult;
   }
 
   protected final void validate(Model model) {
@@ -110,7 +110,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   protected final void init(Validation validation, ValidationType type) {
     myType = type;
     myValidation = validation;
-    myResultItems = new HashSet<ResultItem>();
+    myValidationResult = new HashSet<ResultItem>();
     init();
   }
 
@@ -150,7 +150,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   }
 
   private void addQuickFixable(Component component, ResultType type, String message, QuickFix quickFix) {
-    myResultItems.add(new QuickFixable(this, type, component, message, quickFix));
+    myValidationResult.add(new QuickFixable(this, type, component, message, quickFix));
   }
 
   protected final boolean isValidationComplete() {
@@ -289,5 +289,5 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   private ValidationType myType;
   private Validation myValidation;
   private GlobalType myGlobalType;
-  private Set<ResultItem> myResultItems;
+  private Set<ResultItem> myValidationResult;
 }
