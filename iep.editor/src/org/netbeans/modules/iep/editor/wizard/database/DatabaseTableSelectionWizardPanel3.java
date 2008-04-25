@@ -86,10 +86,12 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
         
         String pollingInterval = component.getPollingInterval();
         String timeUnit = component.getPollingTimeUnit();
+        String pollingRecordSize = component.getPollingRecordSize();
         String jndiName = component.getJNDIName();
         
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL, pollingInterval);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT, timeUnit);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE, pollingRecordSize);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME, jndiName);
         
     }
