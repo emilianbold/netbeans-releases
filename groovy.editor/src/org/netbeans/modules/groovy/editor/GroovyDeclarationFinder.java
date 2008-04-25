@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
@@ -52,6 +55,11 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.groovy.editor.elements.IndexedClass;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.Index.SearchScope;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -62,17 +70,95 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
     private final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
     Token<GroovyTokenId> tok;
     
+    Document lastDoc = null;
+    int lastOffset = -1;
+    OffsetRange lastRange = OffsetRange.NONE;
+    
     public GroovyDeclarationFinder() {
         // LOG.setLevel(Level.FINEST);
     }
 
-    public DeclarationLocation findDeclaration(CompilationInfo info, int caretOffset) {
+    public DeclarationLocation findDeclaration(CompilationInfo info, int offset) {
         LOG.log(Level.FINEST, "findDeclaration()");
+        
+        assert info != null;
+        assert offset >= 0;
+        
+        Set<IndexedClass> idxClasses;
+        String text = "";
+
+        Index ix = info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE);
+        
+        if (ix == null) {
+            LOG.log(Level.FINEST, "Could not retrieve Index from CompilationInfo");
+            return DeclarationLocation.NONE;
+        }
+        
+        GroovyIndex index = new GroovyIndex(ix);
+        
+        // is the caret inbetween the last Range?
+        
+        if(offset < lastRange.getStart() || offset > lastRange.getEnd())
+            return DeclarationLocation.NONE;
+        
+        // get the text from the last range ...
+        try {
+            text = lastDoc.getText(lastRange.getStart(), lastRange.getLength());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        if(text == null || text.length() < 1)
+            return DeclarationLocation.NONE;
+        
+        LOG.log(Level.FINEST, "We are looking for: " + text);
+        
+        Set<SearchScope> searchScope = new HashSet();
+        
+        searchScope.add(SearchScope.SOURCE);
+        searchScope.add(SearchScope.DEPENDENCIES);
+                
+        idxClasses = index.getClasses(text, NameKind.EXACT_NAME, 
+                false, false, false, searchScope, null);
+        
+        if (idxClasses == null || idxClasses.isEmpty()) {
+            LOG.log(Level.FINEST, "Found nothing");
+            return DeclarationLocation.NONE;
+        }        
+        
+        for (IndexedClass icl : idxClasses) {
+            LOG.log(Level.FINEST, "Found : " + icl.getName());
+            return new DeclarationLocation(icl.getFileObject(), 1);
+        }
+        
         return DeclarationLocation.NONE;
     }
 
     public OffsetRange getReferenceSpan(Document doc, int offset) {
         LOG.log(Level.FINEST, "getReferenceSpan()");
+        
+        assert doc != null;
+        assert offset >= 0;
+
+        /*
+        Don't calculate this range over and over again!
+        We might need to register ourselves as DocumentListener
+        for the document to figure out wether the document
+        was changed inbetween calls. But this is unlikely.
+        Therefore this trivial approach should do the trick
+        as well.
+         */
+        
+//        if (doc == lastDoc && offset == lastOffset) {
+//            return lastRange;
+//        } else {
+//            lastDoc = doc;
+//            lastOffset = offset;
+//        }
+        
+        
+        lastDoc = doc;
+        lastOffset = offset;
         
         JTextComponent target = EditorRegistry.lastFocusedComponent();
         final StyledDocument styledDoc = (StyledDocument) target.getDocument();
@@ -99,7 +185,9 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 LOG.log(Level.FINEST, "GroovyTokenId.IDENTIFIER");
                 int startOffset = ts.offset();
                 int endOffset = startOffset + tok.text().length();
-                return new OffsetRange(startOffset, endOffset);
+                
+                lastRange = new OffsetRange(startOffset, endOffset);
+                return lastRange;
             }
         }
         LOG.log(Level.FINEST, "Token was null");
