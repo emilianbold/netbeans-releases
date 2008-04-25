@@ -391,7 +391,9 @@ public class InstallSupportImpl {
                                     if (rerunWaitCount == 100) {
                                         err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
                                         th.interrupt();
-                                        break;
+                                        throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
+                                                NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_TurnOnTimeout", // NOI18N
+                                                impl.getUpdateElement ()));
                                     }
                                 }
                             } catch(InterruptedException ie) {
@@ -418,9 +420,13 @@ public class InstallSupportImpl {
         try {
             retval = getExecutionService ().submit (installCallable).get ();
         } catch(InterruptedException iex) {
-            Exceptions.printStackTrace(iex);
+            err.log (Level.INFO, iex.getLocalizedMessage (), iex);
         } catch(ExecutionException iex) {
-            Exceptions.printStackTrace(iex);
+            if (iex.getCause () instanceof OperationException) {
+                throw (OperationException) iex.getCause ();
+            } else {
+                err.log (Level.INFO, iex.getLocalizedMessage (), iex);
+            }
         } finally {
             if (! retval) {
                 getElement2Clusters ().clear ();
