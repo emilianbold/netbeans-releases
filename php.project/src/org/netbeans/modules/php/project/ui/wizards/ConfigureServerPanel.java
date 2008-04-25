@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
@@ -47,8 +48,7 @@ import java.util.List;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.DocumentRoots;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -175,8 +175,8 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
         }
         model = new LocalServer.ComboBoxModel();
 
-        List<Root> roots = DocumentRoots.getRoots(webFolderNameProvider.getWebFolderName());
-        for (Root root : roots) {
+        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(webFolderNameProvider.getWebFolderName());
+        for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot());
             model.addElement(ls);
         }
