@@ -170,7 +170,6 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     }
     
     private void commit(List<File> files) throws IOException {       
-        System.out.println(" ++++ commit start " + System.currentTimeMillis());
         try {   
             ISVNClientAdapter client = getClient(getRepoUrl());            
             List<File> filesToAdd = new ArrayList<File>();
@@ -201,7 +200,6 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
         } catch (SVNClientException ex) {
             throw new IOException(ex.getMessage());
         }
-        System.out.println(" ++++ commit   end " + System.currentTimeMillis());
     }
 
     private File getTopmostWCParent(String res) {
