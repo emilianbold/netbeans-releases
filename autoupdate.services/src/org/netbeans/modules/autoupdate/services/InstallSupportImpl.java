@@ -391,6 +391,8 @@ public class InstallSupportImpl {
                                     if (rerunWaitCount == 100) {
                                         err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
                                         th.interrupt();
+                                        afterInstall ();
+                                        downloadedFiles = null;
                                         throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
                                                 NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_TurnOnTimeout", // NOI18N
                                                 impl.getUpdateElement ()));
