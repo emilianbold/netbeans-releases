@@ -330,8 +330,8 @@ final class Tree extends JTree {
 
     // go to visual
     item = createItem("LBL_Go_to_Visual"); // NOI18N
-    item.setEnabled( !node.isRoot());
     item.setIcon(EMPTY);
+    item.setEnabled( !node.isRoot() && !getUserObject(node).isDeleted());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         getUserObject(node).gotoVisual();
@@ -341,8 +341,8 @@ final class Tree extends JTree {
 
     // go to source
     item = createItem("LBL_Go_to_Source"); // NOI18N
-    item.setEnabled( !node.isRoot());
     item.setIcon(EMPTY);
+    item.setEnabled( !node.isRoot() && !getUserObject(node).isDeleted());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         getUserObject(node).gotoSource();

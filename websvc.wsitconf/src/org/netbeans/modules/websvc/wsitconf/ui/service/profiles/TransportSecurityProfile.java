@@ -127,9 +127,6 @@ public class TransportSecurityProfile extends ProfileBase
     }
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
-        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
-            return false;
-        }
         return true;
     }
  

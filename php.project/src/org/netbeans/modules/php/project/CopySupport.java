@@ -76,7 +76,7 @@ public abstract class CopySupport {
 
     abstract void projectOpened(PhpProject project);
     abstract void projectClosed(PhpProject project);
-    abstract void waitFinished();
+    public abstract void waitFinished();
 
     private static final class CopyImpl extends CopySupport implements PropertyChangeListener, FileChangeListener {
 
@@ -174,7 +174,6 @@ public abstract class CopySupport {
 	    if (propertyName.equals(PhpProjectProperties.COPY_SRC_TARGET) ||
 		    propertyName.equals(PhpProjectProperties.SRC_DIR) ||
 		    propertyName.equals(PhpProjectProperties.COPY_SRC_FILES)) {
-                assert !propertyChangeEvent.getNewValue().equals(propertyChangeEvent.getOldValue());
 		ProjectManager.mutex().readAccess(new Runnable() {
 		    public void run() {
 			setConfig(new ConfigurationFactory(project).getConfiguration());
@@ -418,7 +417,7 @@ public abstract class CopySupport {
         }
 
         @Override
-        void waitFinished() {
+        public void waitFinished() {
             task.schedule(0);
             task.waitFinished();
         }

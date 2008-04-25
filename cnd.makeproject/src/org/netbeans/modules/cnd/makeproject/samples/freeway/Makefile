@@ -40,9 +40,14 @@
 #
  
 INCLUDES = `pkg-config --cflags gtk+-2.0`
-CCFLAGS = -g3 -gdwarf-2 $(INCLUDES)
-CXXFLAGS = $(CCFLAGS)
 LINKFLAGS = `pkg-config --libs gtk+-2.0`
+
+# The following lines make this work with both GNU and Solaris make, as
+# well as Sun Studio's CC and g++
+DEBUG_=-g3 -gdwarf-2
+DEBUG_CC=-g
+CCFLAGS = $(DEBUG_$(CCC)) $(INCLUDES)
+CXXFLAGS = $(CCFLAGS)
 
 PROGRAM = Freeway
 SOURCES.cc = main.cc FreewayWindow.cc callbacks.cc traffic.cc \

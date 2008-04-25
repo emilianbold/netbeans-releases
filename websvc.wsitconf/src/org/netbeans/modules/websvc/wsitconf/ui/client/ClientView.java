@@ -193,6 +193,7 @@ public class ClientView extends SectionView {
         String profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
         if (ComboConstants.PROF_STSISSUED.equals(profile) ||
             ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) ||
             ComboConstants.PROF_STSISSUEDCERT.equals(profile)) {
                 return true;
         }

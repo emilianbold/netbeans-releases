@@ -424,9 +424,9 @@ class OperationResolver extends AbstractNamedReferenceFactory {
 ////            ((PartnerLinkTypeReference)entity)
 //        }
         
-//        if (entity instanceof PortTypeReference) {
-//            collection = resolveByPortType(entity);
-//        }
+        if (entity instanceof PortTypeReference) {
+            collection = resolveByPortType(entity);
+        }
 
 ////        if ( collection == null || collection.size()==0 ) {
 ////            collection = resolveByPartnerLink(entity);

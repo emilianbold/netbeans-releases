@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.util.NbPreferences;
 
 /**
  * Support class for executing SQL statements.
@@ -64,6 +65,8 @@ public final class SQLExecuteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final String PROP_MAXROWS = "maxrows";
+    private static final int MAXROWS = 200000;
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -105,6 +108,12 @@ public final class SQLExecuteHelper {
                 } else {
                     stmt = conn.createStatement();
                 }
+                
+                // Issue 133814 - Set max rows to a reasonably large size,
+                // to avoid getting out-of-memory errors if the driver
+                // (e.g. MySQL) tries to load all the rows of a Very Big
+                // Table before returning
+                stmt.setMaxRows(getMaxRows());
                 
                 boolean isResultSet = false;
                 long startTime = System.currentTimeMillis();
@@ -160,7 +169,12 @@ public final class SQLExecuteHelper {
             return null;
         }
     }
-    
+
+    private static int getMaxRows() {
+        return NbPreferences.forModule(SQLExecuteHelper.class).
+                getInt(PROP_MAXROWS, MAXROWS);
+    }
+
     private static int[] getSupportedResultSetTypeConcurrency(Connection conn) throws SQLException {
         // XXX some drivers don't implement the DMD.supportsResultSetConcurrency() method
         // for example the MSSQL WebLogic driver 4v70rel510 always throws AbstractMethodError
