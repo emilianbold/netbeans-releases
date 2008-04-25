@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,57 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.settings.storage;
+package org.netbeans.modules.editor.settings.storage.spi;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
-import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
-import org.openide.filesystems.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimePath;
 
 /**
  *
- * @author Vita Stejskal
+ * @author vita
  */
-public abstract class SpiPackageAccessor {
+public abstract class StorageFilter<K extends Object, V extends Object> {
 
-    private static SpiPackageAccessor ACCESSOR = null;
-    
-    public static synchronized void register(SpiPackageAccessor accessor) {
-        assert ACCESSOR == null : "Can't register two SPI package accessors!";
-        ACCESSOR = accessor;
+    protected StorageFilter(String storageDescriptionId) {
+        this.storageDescriptionId = storageDescriptionId;
     }
     
-    public static synchronized SpiPackageAccessor get() {
-        // Trying to wake up HighlightsLayer ...
+    public abstract void afterLoad(Map<K, V> map, MimePath mimePath, String profile, boolean defaults) throws IOException;
+    public abstract void beforeSave(Map<K, V> map, MimePath mimePath, String profile, boolean defaults) throws IOException;
+    
+    protected final void notifyChanges() {
+        assert notificationCallback != null;
         try {
-            Class clazz = Class.forName(StorageReader.class.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
+            notificationCallback.call();
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, null, ex);
         }
-        
-        assert ACCESSOR != null : "There is no SPI package accessor available!";
-        return ACCESSOR;
     }
     
-    /** Creates a new instance of SpiPackageAccessor */
-    protected SpiPackageAccessor() {
+    // ----------------------------------------------------------------------
+    // Package private implementation
+    // ----------------------------------------------------------------------
+
+    /* package */ final void initialize(Callable<?> notificationCallback) {
+        this.notificationCallback = notificationCallback;
     }
     
-    public abstract void storageReaderSetProcessedFile(StorageReader r, FileObject f);
-    public abstract String storageFilterGetStorageDescriptionId(StorageFilter f);
-    public abstract void storageFilterInitialize(StorageFilter f, Callable<Void> notificationCallback);
+    /* package */ final String getStorageDescriptionId() {
+        return storageDescriptionId;
+    }
+    
+    // ----------------------------------------------------------------------
+    // Private implementation
+    // ----------------------------------------------------------------------
+    
+    private static final Logger LOG = Logger.getLogger(StorageFilter.class.getName());
+    private final String storageDescriptionId;
+    private Callable<?> notificationCallback;
 }

@@ -40,22 +40,33 @@
 package org.netbeans.modules.editor.settings.storage;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
+import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -95,6 +106,8 @@ public final class StorageImpl <K extends Object, V extends Object> {
 
             if (data == null) {
                 data = _load(mimePath, profile, defaults);
+                filterAfterLoad(data, mimePath, profile, defaults);
+                data = Collections.unmodifiableMap(data);
                 profilesData.put(cacheKey, data);
             }
             
@@ -117,9 +130,11 @@ public final class StorageImpl <K extends Object, V extends Object> {
                 profilesCache.put(mimePath, profilesData);
             }
 
-            boolean resetCache = _save(mimePath, profile, defaults, data);
+            Map<K, V> dataForSave = new HashMap<K, V>(data);
+            filterBeforeSave(dataForSave, mimePath, profile, defaults);
+            boolean resetCache = _save(mimePath, profile, defaults, dataForSave);
             if (!resetCache) {
-                profilesData.put(cacheKey(profile, defaults), data);
+                profilesData.put(cacheKey(profile, defaults), Collections.unmodifiableMap(new HashMap<K, V>(data)));
             } else {
                 profilesData.remove(cacheKey(profile, defaults));
             }
@@ -143,6 +158,14 @@ public final class StorageImpl <K extends Object, V extends Object> {
         }
     }
 
+    public void refresh() {
+        synchronized (lock) {
+            profilesCache.clear();
+        }
+        
+        // XXX: fire changes somehow
+    }
+    
     public static interface Operations<K extends Object, V extends Object> {
         public Map<K, V> load(MimePath mimePath, String profile, boolean defaults) throws IOException;
         public boolean save(MimePath mimePath, String profile, boolean defaults, Map<K, V> data, Map<K, V> defaultData) throws IOException;
@@ -227,7 +250,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
                 }
             }
 
-            return Collections.unmodifiableMap(map);
+            return map;
         }
     }
     
@@ -307,6 +330,20 @@ public final class StorageImpl <K extends Object, V extends Object> {
         }
     }
 
+    private void filterAfterLoad(Map<K, V> data, MimePath mimePath, String profile, boolean defaults) throws IOException {
+        List<StorageFilter> filters = Filters.getFilters(storageDescription.getId());
+        for(StorageFilter filter : filters) {
+            filter.afterLoad(data, mimePath, profile, defaults);
+        }
+    }
+    
+    private void filterBeforeSave(Map<K, V> data, MimePath mimePath, String profile, boolean defaults) throws IOException {
+        List<StorageFilter> filters = Filters.getFilters(storageDescription.getId());
+        for(int i = filters.size() - 1; i >= 0; i--) {
+            filters.get(i).beforeSave(data, mimePath, profile, defaults);
+        }
+    }
+    
     private static CacheKey cacheKey(String profile, boolean defaults) {
         return new CacheKey(profile, defaults);
     }
@@ -345,4 +382,86 @@ public final class StorageImpl <K extends Object, V extends Object> {
         }
         
     } // End of CacheKey class
+    
+    private static final class Filters implements Callable<Void> {
+        
+        public static List<StorageFilter> getFilters(String storageDescriptionId) {
+            synchronized (filters) {
+                if (allFilters == null) {
+                    allFilters = Lookup.getDefault().lookupResult(StorageFilter.class);
+                    allFilters.addLookupListener(WeakListeners.create(LookupListener.class, allFiltersTracker, allFilters));
+                    rebuild();
+                }
+                
+                Filters filtersForId = filters.get(storageDescriptionId);
+                return filtersForId == null ? Collections.<StorageFilter>emptyList() : filtersForId.filtersForId;
+            }
+        }
+
+        public static void registerCallback(StorageImpl storageImpl) {
+            callbacks.put(storageImpl.storageDescription.getId(), new WeakReference<StorageImpl>(storageImpl));
+        }
+        
+        public Void call() {
+            resetCaches(Collections.singleton(storageDescriptionId));
+            return null;
+        }
+        
+        // ------------------------------------------
+        // private implementation
+        // ------------------------------------------
+
+        private static final Map<String, Filters> filters = new HashMap<String, Filters>();
+        private static Lookup.Result<StorageFilter> allFilters = null;
+        private static final LookupListener allFiltersTracker = new LookupListener() {
+            public void resultChanged(LookupEvent ev) {
+                Set<String> changedIds;
+                
+                synchronized (filters) {
+                    changedIds = rebuild();
+                }
+                
+                resetCaches(changedIds);
+            }
+        };
+        private static final Map<String, Reference<StorageImpl>> callbacks = new HashMap<String, Reference<StorageImpl>>();
+        
+        private final String storageDescriptionId;
+        private final List<StorageFilter> filtersForId = new ArrayList<StorageFilter>();
+        
+        private static Set<String> rebuild() {
+            filters.clear();
+
+            Collection<? extends StorageFilter> all = allFilters.allInstances();
+            for(StorageFilter f : all) {
+                String id = SpiPackageAccessor.get().storageFilterGetStorageDescriptionId(f);
+                Filters filterForId = filters.get(id);
+                if (filterForId == null) {
+                    filterForId = new Filters(id);
+                    filters.put(id, filterForId);
+                }
+
+                SpiPackageAccessor.get().storageFilterInitialize(f, filterForId);
+                filterForId.filtersForId.add(f);
+            }
+            
+            Set<String> changedIds = new HashSet<String>(filters.keySet());
+            return changedIds;
+        }
+        
+        private static void resetCaches(Set<String> storageDescriptionIds) {
+            for(String id : storageDescriptionIds) {
+                Reference<StorageImpl> ref = callbacks.get(id);
+                StorageImpl storageImpl = ref == null ? null : ref.get();
+                if (storageImpl != null) {
+                    storageImpl.refresh();
+                }
+            }
+        }
+        
+        private Filters(String storageDescriptionId) {
+            this.storageDescriptionId = storageDescriptionId;
+        }
+
+    } // End of Filters class
 }
