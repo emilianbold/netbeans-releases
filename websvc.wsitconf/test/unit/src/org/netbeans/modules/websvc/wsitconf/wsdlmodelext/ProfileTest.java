@@ -97,6 +97,7 @@ public class ProfileTest extends NbTestCase {
             ComboConstants.PROF_STSISSUED,
             ComboConstants.PROF_STSISSUEDCERT,
             ComboConstants.PROF_STSISSUEDENDORSE
+            ComboConstants.PROF_STSISSUEDSUPPORTING
         };
         
         for (int i=1; i<profiles.length; i++) {

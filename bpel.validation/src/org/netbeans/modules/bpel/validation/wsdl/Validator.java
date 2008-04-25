@@ -69,7 +69,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends WsdlValidator {
 
-  public WSDLVisitor getVisitor() { return new DefaultVisitor() {
+  @Override
+  protected final WSDLVisitor getVisitor() { return new DefaultVisitor()
+  {
   
   @Override
   public void visit(Definitions definitions)
