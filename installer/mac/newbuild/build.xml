@@ -255,6 +255,16 @@ Microsystems, Inc. All Rights Reserved.
                             ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
         </exec>          
 
+        <get src="${mysql_prefPane.location}" 
+             dest="${basedir}/build/${mysql_prefPane.name}.zip"
+             usetimestamp="true"/>    
+                           
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip ${basedir}/build/${mysql_prefPane.name}.zip -d ${basedir}/build;
+                        rm -f ${basedir}/build/${mysql_prefPane.name}.zip"/>
+        </exec>        
+        
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.5.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
@@ -272,6 +282,7 @@ Microsystems, Inc. All Rights Reserved.
                             ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
         </exec>         
         <delete file="${basedir}/build/${mysql_connector.name}.jar"/> 
+        <delete file="${basedir}/build/${mysql_prefPane.name}"/> 
         <delete file="${basedir}/build/sizes.pro"/>        
     </target>    
 
@@ -295,7 +306,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="hdiutil mount -mountpoint ${mysql.dir} ${mysql.dir}/mysql.dmg;
                         cp -RPfv ${mysql.dir}/${mysql.pkg.name}.pkg  ${basedir}/build/mysql.pkg;
                         cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;
-                        cp -RPfv ${mysql.dir}/${mysql_prefPane.name} ${basedir}/dist_dmg/${mysql_prefPane.name};
+                        cp -RPfv ${basedir}/build/${mysql_prefPane.name} ${basedir}/dist_dmg/${mysql_prefPane.name};                        
                         hdiutil detach ${mysql.dir};"/>            
         </exec>                                            
         <delete dir="${mysql.dir}"/>       
@@ -319,13 +330,17 @@ Microsystems, Inc. All Rights Reserved.
               todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>             
              
         <echo message="script_dir=`dirname &quot;$$0&quot;` ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/${mysql_license.name}&quot; ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/${mysql_readme.name}&quot; ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/mysql/${mysql_license.name}&quot; ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/mysql/${mysql_readme.name}&quot; ${line.separator}
 if [ -d &quot;${glassfish.install.dir}&quot; ] ; then ${line.separator}
     cp -RPf &quot;$$script_dir&quot;/${mysql_connector.name}.jar &quot;${glassfish.install.dir}/lib/&quot;${line.separator}
 fi"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
-              append="true"/>                                          
+              append="true"/>  
+                     
+        <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
+              todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
+        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/postflight" perm="ugo+x"/>          
               
         <ant target="build-dmg">             
              <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
