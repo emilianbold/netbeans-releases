@@ -170,7 +170,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends BpelValidator {
     
-  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  @Override
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
+  {
 
   @Override 
   public void visit(PartnerLink p) {

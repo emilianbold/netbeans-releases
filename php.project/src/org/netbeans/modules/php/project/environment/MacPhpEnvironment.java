@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
+package org.netbeans.modules.php.project.environment;
 
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.AbstractValidator;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationVisitor;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
- *
- * @author nk160297
+ * @author Tomas Mysik
  */
-public class BPELExtensionXpathValidator extends AbstractValidator {
-    
-    /**
-     * Returns name of this validation service.
-     */
-    public String getName() {
-        return getClass().getName();
+final class MacPhpEnvironment extends PhpEnvironment {
+
+    MacPhpEnvironment() {
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.bpel.model.validation.AbstractValidator#getVisitor()
-     */
     @Override
-    protected ValidationVisitor getVisitor()
-    {
-        return new BPELExtensionXpathVisitor(this);
+    public List<DocumentRoot> getDocumentRoots(String projectName) {
+        // MAMP
+        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
+        if (mamp.isDirectory()) {
+            String documentRoot = getFolderName(mamp, projectName);
+            String url = getDefaultUrl(projectName, 8888);
+            return Arrays.asList(new DocumentRoot(documentRoot, url, true));
+        }
+        return Collections.<DocumentRoot>emptyList();
+    }
+
+    @Override
+    public List<String> getAllPhpInterpreters() {
+        // MAMP
+        File php = new File("/Applications/MAMP/bin/php5/bin/php"); // NOI18N
+        if (!php.exists()) {
+            return Collections.<String>emptyList();
+        }
+        return Arrays.asList(php.getAbsolutePath());
     }
 }

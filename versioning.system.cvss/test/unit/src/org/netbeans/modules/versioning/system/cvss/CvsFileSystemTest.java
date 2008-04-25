@@ -39,20 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.versioning.system.cvss;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.lib.cvsclient.admin.Entry;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
+import org.netbeans.lib.cvsclient.command.add.AddCommand;
+import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
+import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitExecutor;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
@@ -61,19 +70,16 @@ import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtilTestHidden;
 import org.openide.filesystems.URLMapperTestHidden;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+
 
 /**
  * @author Tomas Stupka
  */
-public class SvnFileSystemTest extends FileSystemFactoryHid {
+public class CvsFileSystemTest extends FileSystemFactoryHid {
 
-    public SvnFileSystemTest(Test test) {
+    private Method createFileInformationMethod;
+
+    public CvsFileSystemTest(Test test) {
         super(test);
     }
     
@@ -97,8 +103,14 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                
         suite.addTestSuite(BaseFileObjectTestHid.class);            
-        return new SvnFileSystemTest(suite);
-    }
+        
+        // XXX fails
+//        suite.addTest(new FileObjectTestHid("testGetFolders3"));
+//        suite.addTest(new FileObjectTestHid("testGetData1"));
+//        suite.addTest(new FileObjectTestHid("testRefresh3"));
+                
+        return new CvsFileSystemTest(suite);
+    }   
     
     private File getWorkDir() {
         String workDirProperty = System.getProperty("workdir");//NOI18N
@@ -107,7 +119,7 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     }
 
     private File getRepoDir() {
-        return new File(new File(System.getProperty("data.root.dir")), "repo");
+        return new File(new File(System.getProperty("work.root.dir")), "repo");
     }
 
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
@@ -134,15 +146,15 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             files.add(FileUtil.toFile(fo));            
         }
         commit(files);               
-//            for (File file : files) {
-//                assertStatus(file);    
-//            }        
-        
+        for (File f : files) {
+            assertStatus(f);
+        }
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
     protected void destroyFileSystem(String testName) throws IOException {}    
 
+    @Override
     protected String getResourcePrefix(String testName, String[] resources) {
         return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }
@@ -150,73 +162,94 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     private void repoinit() throws IOException {                        
         try {
             File repoDir = getRepoDir();
-            File wc = getWorkDir();
             
             if (!repoDir.exists()) {
                 repoDir.mkdirs();                
-                String[] cmd = {"svnadmin", "create", repoDir.getAbsolutePath()};
+                String[] cmd = {"cvs", "-d", repoDir.getAbsolutePath(), "init"};
                 Process p = Runtime.getRuntime().exec(cmd);
                 p.waitFor();                
             }            
             
-            ISVNClientAdapter client = getClient(getRepoUrl());
-            SVNUrl url = getRepoUrl().appendPath(getWorkDir().getName());
-            client.mkdir(url, "mkdir");            
-            client.checkout(url, wc, SVNRevision.HEAD, true);
-        } catch (Exception ex) {
-            throw new IOException(ex.getMessage());
+            ExecutorGroup group = new ExecutorGroup("tamaryokucha");            
+            GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+            gtx.setCVSRoot(getRepoDir().getAbsolutePath());
+            ImportCommand importCommand = new ImportCommand();
+            importCommand.setModule(getWorkDir().getName());
+            importCommand.setLogMessage("sencha");            
+            importCommand.setImportDirectory(getWorkDir().getAbsolutePath());
+            importCommand.setVendorTag("aracha");
+            importCommand.setReleaseTag("bancha");
+            
+            createImportExecutor(importCommand, gtx, group);
+            group.execute();        
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
         } 
     }
     
     private void commit(List<File> files) throws IOException {       
-        try {   
-            ISVNClientAdapter client = getClient(getRepoUrl());            
-            List<File> filesToAdd = new ArrayList<File>();
-            for (File file : files) {
-                
-                ISVNStatus status = getStatus(file);
-                if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {                   
-                    filesToAdd.add(file);
-
-                    File parent = file.getParentFile();
-                    while (!getWorkDir().equals(parent)) {
-                        status = getStatus(parent);
-                        if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-                            filesToAdd.add(0, parent);
-                            parent = parent.getParentFile();
-                        } else {
-                            break;
-                        }
-                    }                                    
-                }    
-            }            
-            client.addFile(filesToAdd.toArray(new File[filesToAdd.size()]), true);                                                      
-            client.commit(new File[] {getWorkDir()}, "commit", true);
-            
-        } catch (SVNClientException ex) {
-            throw new IOException(ex.getMessage());
-        }
-    }
-    
-    private ISVNClientAdapter getClient(SVNUrl url) throws SVNClientException {
-        return Subversion.getInstance().getClient(url);
-    }
-
-    private void assertStatus(File f) throws IOException {
         try {
-            ISVNStatus status = getStatus(f);
-            assertEquals(SVNStatusKind.NORMAL, status.getTextStatus());
-        } catch (SVNClientException ex) {
-            throw new IOException(ex.getMessage());
-        }
+            File[] fileArray = files.toArray(new File[files.size()]);
+            AddFiles(fileArray);
+            commitFiles(fileArray);                       
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }         
     }    
 
-    private ISVNStatus getStatus(File f) throws SVNClientException, MalformedURLException {
-        return getClient(getRepoUrl()).getSingleStatus(f);
+    private void commitFiles(File[] fileArray) {       
+        CommitCommand commit = new CommitCommand();
+        commit.setFiles(fileArray);
+        commit.setMessage("matcha");
+        
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+        gtx.setCVSRoot(getRepoDir().getAbsolutePath());            
+        ExecutorSupport[] executors = CommitExecutor.splitCommand(commit, CvsVersioningSystem.getInstance(), gtx);
+        for (ExecutorSupport e : executors) {
+            e.execute();
+        }
+        ExecutorSupport.wait(executors);
     }
     
-    private SVNUrl getRepoUrl() throws MalformedURLException {
-        return new SVNUrl("file:///" + getRepoDir().getAbsolutePath());
+    private void AddFiles(File[] fileArray) {
+        AddCommand add = new AddCommand();                    
+        add.setFiles(fileArray);        
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+        gtx.setCVSRoot(getRepoDir().getAbsolutePath());            
+        ExecutorSupport[] executors = AddExecutor.splitCommand(add, CvsVersioningSystem.getInstance(), gtx);
+        for (ExecutorSupport e : executors) e.execute();
+        ExecutorSupport.wait(executors);
+    }
+    
+    private void assertStatus(File f) throws IOException {        
+        try {
+            Entry entry = null;
+            CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
+            try {                
+                entry = cvs.getAdminHandler().getEntry(f);
+            } catch (IOException e) {
+                fail("No entry for " + f);
+            }            
+            FileInformation fi = createFileInformation(cvs, f, entry);
+            assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, fi.getStatus());
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        } 
+    }
+
+    private FileInformation createFileInformation(CvsVersioningSystem cvs, File f, Entry entry) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if(createFileInformationMethod == null) {
+            createFileInformationMethod = FileStatusCache.class.getDeclaredMethod("createFileInformation", new Class[]{File.class, Entry.class, int.class});
+            createFileInformationMethod.setAccessible(true);
+        }
+        return (FileInformation) createFileInformationMethod.invoke(cvs.getStatusCache(), new Object[] {f, entry, FileStatusCache.REPOSITORY_STATUS_UPTODATE});
+    }
+
+    private void createImportExecutor(ImportCommand importCommand, GlobalOptions gtx, ExecutorGroup group) throws IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InstantiationException, SecurityException, ClassNotFoundException, InvocationTargetException {
+        Class iec = Class.forName("org.netbeans.modules.versioning.system.cvss.ui.actions.project.ImportExecutor");
+        Constructor c = iec.getConstructor(new Class[]{ImportCommand.class, GlobalOptions.class, boolean.class, String.class, ExecutorGroup.class});
+        c.setAccessible(true);
+        c.newInstance(new Object[]{importCommand, gtx, true, getWorkDir().getAbsolutePath(), group});
     }
 
 }
