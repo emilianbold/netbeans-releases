@@ -261,20 +261,21 @@ Microsystems, Inc. All Rights Reserved.
                            
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip ${basedir}/build/${mysql_prefPane.name}.zip -d ${basedir}/build;
+            <arg value="unzip -o ${basedir}/build/${mysql_prefPane.name}.zip -d ${basedir}/build;
                         rm -f ${basedir}/build/${mysql_prefPane.name}.zip"/>
         </exec>        
         
-        <ant target="build-mysql-dmg">
-            <property name="mysql.location" value="${mysql_10.5.location}"/>
-            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
-            <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>             
-        </ant> 
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.4.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.4.pkg.name}"/>
             <property name="dmg.name" value="${mysql_10.4.dmg.name}"/>                        
         </ant>
+        <ant target="build-mysql-dmg">
+            <property name="mysql.location" value="${mysql_10.5.location}"/>
+            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
+            <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>
+            <property name="mysql_prefPane.path" value="${basedir}/build/${mysql_prefPane.name}"/>           
+        </ant> 
         <!-- return "NB" in baseide.pkg-->         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
@@ -299,16 +300,20 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${mysql.dir}"/>              
         <echo message="Downloading MySQL from ${mysql.location}"/>         
         <get src="${mysql.location}" dest="${mysql.dir}/mysql.dmg" usetimestamp="true"/>        
+                         
+        <condition property="prefPane.path" value="${mysql_prefPane.path}" else="${mysql.dir}/${mysql_prefPane.name}">            
+            <isset property="mysql_prefPane.path"/>                            
+        </condition>
         
-        <echo message="Mounting ${mysql.dir}/mysql.dmg"/>                  
+        <echo message="Mounting ${mysql.dir}/mysql.dmg"/>         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="hdiutil mount -mountpoint ${mysql.dir} ${mysql.dir}/mysql.dmg;
                         cp -RPfv ${mysql.dir}/${mysql.pkg.name}.pkg  ${basedir}/build/mysql.pkg;
-                        cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;
-                        cp -RPfv ${basedir}/build/${mysql_prefPane.name} ${basedir}/dist_dmg/${mysql_prefPane.name};                        
+                        cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;                                            
+                        cp -RPfv ${prefPane.path} ${basedir}/dist_dmg/${mysql_prefPane.name};                      
                         hdiutil detach ${mysql.dir};"/>            
-        </exec>                                            
+        </exec>                                       
         <delete dir="${mysql.dir}"/>       
         
         <ant target="size-package">
