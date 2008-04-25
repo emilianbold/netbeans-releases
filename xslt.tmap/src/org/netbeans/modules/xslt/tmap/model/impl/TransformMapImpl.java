@@ -91,7 +91,6 @@ public class TransformMapImpl extends TMapComponentContainerImpl
 
     public void addImport(Import impt) {
         addBefore( Import.TYPE.getTagName(), impt , TYPE.getChildTypes());
-        System.out.println("try to add import before");
     }
 
     public void removeImport(Import impt) {

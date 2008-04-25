@@ -77,9 +77,11 @@ public class OpenSolaris extends KnownProject {
     private static final boolean TRACE = true;
     public static final String PROJECT_NAME = "OpenSolaris"; // NOI18N
     public static final String LOG_FILE = "NightlyLog"; // NOI18N
+    public static final String BUILD_SCRIPT = "BuildScript"; // NOI18N
     private String root;
     private String nb_root;
     private String nightly_log;
+    private String buildScript;
 
     private List<SourceFileProperties> sources;
     private List<InstallLine> copyHeader;
@@ -111,6 +113,10 @@ public class OpenSolaris extends KnownProject {
             if (!log.exists() || log.isDirectory()){
                 return false;
             }
+        }
+        buildScript = parameters.get(OpenSolaris.BUILD_SCRIPT);
+        if (buildScript == null) {
+            buildScript = "opensolaris.sh";
         }
         return true;
     }
@@ -145,7 +151,7 @@ public class OpenSolaris extends KnownProject {
                 String fn = st.nextToken();
                 boolean find = false;
                 for (FileObject ff : f.getChildren()) {
-                    if (fn.equals(ff.getName())) {
+                    if (fn.equals(ff.getNameExt())) {
                         f = ff;
                         find = true;
                         break;
@@ -209,30 +215,34 @@ public class OpenSolaris extends KnownProject {
         }
         createFolders(folders);
         Set<String> projectList = folders.keySet();
-        for (Map.Entry<String,ProjectSources> entry:folders.entrySet()){
-            String r = srcRoot+entry.getKey();
-            String n = nb_root+"/"+entry.getKey(); // NOI18N
-            String name = entry.getValue().name;
-            String display = entry.getValue().name;
-            if (entry.getKey().startsWith("cmd/")){ // NOI18N
-                display = "os.cmd."+display;
-            } else if (entry.getKey().startsWith("lib/gss_mechs/")){ // NOI18N
-                display = "os.lib.gss_mechs."+display; // NOI18N
-            } else if (entry.getKey().startsWith("lib/")){ // NOI18N
-                display = "os.lib."+display; // NOI18N
-            } else {
-                display = "os."+display; // NOI18N
+        if (false) {
+            createImpl(srcRoot+"lib/libnisdb", "/tmp/libnisdb", "libnisdb", "os.libraries", projectList, sources); // NOI18N
+        } else {
+            for (Map.Entry<String,ProjectSources> entry:folders.entrySet()){
+                String r = srcRoot+entry.getKey();
+                String n = nb_root+"/"+entry.getKey(); // NOI18N
+                String name = entry.getValue().name;
+                String display = entry.getValue().name;
+                if (entry.getKey().startsWith("cmd/")){ // NOI18N
+                    display = "os.cmd."+display;
+                } else if (entry.getKey().startsWith("lib/gss_mechs/")){ // NOI18N
+                    display = "os.lib.gss_mechs."+display; // NOI18N
+                } else if (entry.getKey().startsWith("lib/")){ // NOI18N
+                    display = "os.lib."+display; // NOI18N
+                } else {
+                    display = "os."+display; // NOI18N
+                }
+                if (TRACE) System.out.println("Creating "+n+"..."); //NOI18N
+                createImpl(r, n, name, display, projectList, entry.getValue().myFileProperties);
             }
-            if (TRACE) System.out.println("Creating "+n+"..."); //NOI18N
-            createImpl(r, n, name, display, projectList, entry.getValue().myFileProperties);
+            // and super projects
+            if (TRACE) System.out.println("Creating "+nb_root+"/commands..."); //NOI18N
+            createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", projectList, sources); // NOI18N
+            if (TRACE)  System.out.println("Creating "+nb_root+"/libraries..."); //NOI18N
+            createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources); // NOI18N
+            if (TRACE)  System.out.println("Creating "+nb_root+"/sources..."); //NOI18N
+            createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", projectList, sources); // NOI18N
         }
-        // and super projects
-        if (TRACE) System.out.println("Creating "+nb_root+"/commands..."); //NOI18N
-        createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", projectList, sources); // NOI18N
-        if (TRACE)  System.out.println("Creating "+nb_root+"/libraries..."); //NOI18N
-        createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources); // NOI18N
-        if (TRACE)  System.out.println("Creating "+nb_root+"/sources..."); //NOI18N
-        createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", projectList, sources); // NOI18N
         return true;
     }
 
@@ -250,7 +260,7 @@ public class OpenSolaris extends KnownProject {
         DiscoveryProviderImpl provider = new DiscoveryProviderImpl(list, sourceRoot);
         DiscoveryDescriptorImpl discovery = new DiscoveryDescriptorImpl(null, provider, sourceRoot);
         ProjectCreator creator = new ProjectCreator(discovery);
-        creator.init(nbRoot, sourceRoot, sourceRoot+"/Makefile"); // NOI18N
+        creator.init(nbRoot, sourceRoot, sourceRoot+"/Makefile", buildScript); // NOI18N
         try {
             creator.createProject(name, displayName, folders);
         } catch (IOException ex) {
@@ -280,8 +290,8 @@ public class OpenSolaris extends KnownProject {
                             if (latest == null) {
                                 latest = current;
                             } else {
-                                String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log"));
-                                String folder2 = current.substring(0, current.lastIndexOf("/nightly.log"));
+                                String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
                                 if (folder1.compareTo(folder2) < 0) {
                                     latest = current;
                                 }

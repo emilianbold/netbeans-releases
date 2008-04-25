@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
@@ -70,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -77,6 +79,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -103,6 +106,7 @@ public class ProjectCreator {
     private String makefilePath;
     private String projectFolder;
     private String baseDir;
+    private String buildScript;
     private Folder rootFolder;
     private DiscoveryDescriptor discovery;
 
@@ -118,10 +122,11 @@ public class ProjectCreator {
      * @param newWorkingDir working directory (for build and clean commands)
      * @param newMakefilePath path to existing makefile
      */
-    public void init(String newProjectFolder, String newWorkingDir, String newMakefilePath) {
-        projectFolder = newProjectFolder;
-        workingDir = newWorkingDir;
-        makefilePath = newMakefilePath;
+    public void init(String newProjectFolder, String newWorkingDir, String newMakefilePath, String buildScript) {
+        this.projectFolder = newProjectFolder;
+        this.workingDir = newWorkingDir;
+        this.makefilePath = newMakefilePath;
+        this.buildScript = buildScript;
     }
 
     /**
@@ -186,11 +191,11 @@ public class ProjectCreator {
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
-            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../opensolaris.sh 'dmake all'"); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../../opensolaris.sh 'dmake clean'"); // NOI18N
+            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake clean'"); // NOI18N
         } else {
-            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../opensolaris.sh 'dmake all'"); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../opensolaris.sh 'dmake clean'"); // NOI18N
+            extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake all'"); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake clean'"); // NOI18N
         }
         extConf.getMakefileConfiguration().getOutput().setValue(output);
         
@@ -209,7 +214,13 @@ public class ProjectCreator {
                         )));
             }
         }
-
+        
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, CompilerSetManager.Sun));
+        } else {
+            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, CompilerSetManager.GNU));
+        }
+        
         extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(getProjectLevelInludes());
         extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(getProjectLevelInludes());
         extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(getProjectLevelMacros());
@@ -282,14 +293,15 @@ public class ProjectCreator {
         baseDir = projectDescriptor.getBaseDir();
         projectDescriptor.initLogicalFolders(null, false, importantItems);
         rootFolder = projectDescriptor.getLogicalFolders();
-        projectDescriptor.addSourceRootRaw(workingDir);
+        //projectDescriptor.addSourceRootRaw(workingDir);
+        projectDescriptor.addSourceRootRaw(IpeUtils.toRelativePath(baseDir, workingDir));
         
         addFiles(sourceFiles);
         
         projectDescriptor.save();
         
         // create Makefile
-        copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName()); // NOI18N
+        copyURLFile("/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName()); // NOI18N
         return h;
     }
 
@@ -347,13 +359,14 @@ public class ProjectCreator {
     }
 
     //copy from one file with specified URL to another
-    private void copyURLFile(String fromURL, String toFile) throws IOException {
+    private void copyURLFile(String resource, String toFile) throws IOException {
+        String fromURL = "nbresloc:"+resource;
         InputStream is = null;
         try {
             URL url = new URL(fromURL);
             is = url.openStream();
         } catch (Exception e) {
-            //
+            is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
         if (is != null) {
             FileOutputStream os = new FileOutputStream(toFile);

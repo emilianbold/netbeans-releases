@@ -110,8 +110,12 @@ public class RestResponse {
         return os;
     }
 
-    public <T> T getDataAsJaxbObject(Class<T> jaxbClass) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(jaxbClass.getPackage().getName());
+     public <T> T getDataAsObject(Class<T> jaxbClass) throws JAXBException {
+        return getDataAsObject(jaxbClass, jaxbClass.getPackage().getName());
+    }
+ 
+    public <T> T getDataAsObject(Class<T> clazz, String packageName) throws JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(packageName);
         Unmarshaller u = jc.createUnmarshaller();
         Object obj = u.unmarshal(new StreamSource(new StringReader(getDataAsString())));
         
@@ -119,6 +123,6 @@ public class RestResponse {
             return (T) ((JAXBElement) obj).getValue();
         } else {
             return (T) obj;
-        }
+        } 
     }
 }

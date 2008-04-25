@@ -17,7 +17,7 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class CustomComponentPanelVisual extends JPanel implements DocumentListener {
+class CustomComponentPanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
     public static final String BROWSE = "BROWSE";

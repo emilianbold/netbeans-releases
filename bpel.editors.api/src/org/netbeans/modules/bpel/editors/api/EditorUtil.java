@@ -454,6 +454,9 @@ public class EditorUtil {
     }
 
     public static void goToSource(Component component) {
+        if (component.getModel() == null) { // deleted
+          return;
+        }
         if ( !(component instanceof DocumentComponent)) {
             return;
         }
@@ -562,6 +565,9 @@ public class EditorUtil {
     }
 
     public static void goToDesign(final BpelEntity bpelEntity) {
+        if (bpelEntity.getModel() == null) { // deleted
+          return;
+        }
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
 
         if (fo == null) {
@@ -587,7 +593,7 @@ public class EditorUtil {
                         } else if (NodeType.UNKNOWN_TYPE.equals(nodeType)) {
                             nodeType = NodeType.DEFAULT_BPEL_ENTITY_NODE;
                         }
-                        Node bpelNode = FactoryAccess.getPropertyNodeFactory().createNode(nodeType,bpelEntity, lookup);
+                        Node bpelNode = FactoryAccess.getPropertyNodeFactory().createNode(nodeType, bpelEntity, lookup);
                         TopComponent designTc = WindowManager.getDefault().getRegistry().getActivated();
 
                         if (designTc != null) {

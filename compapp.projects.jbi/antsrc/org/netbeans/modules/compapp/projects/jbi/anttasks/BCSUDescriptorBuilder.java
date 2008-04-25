@@ -54,11 +54,8 @@ import javax.xml.transform.*;
 import java.util.*;
 import java.io.File;
 import java.io.Serializable;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import static org.netbeans.modules.compapp.projects.jbi.JbiConstants.*;
-import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
 
 /**
  * Creates a Binding Component Service Unit's deployment descriptor (jbi.xml).
@@ -157,68 +154,8 @@ public class BCSUDescriptorBuilder implements Serializable {
      * Decorates consumes/provides endpoint using extension elements in CASA.
      */
     public void decorateEndpoints(Document casaDocument) {
-        NodeList consumesNodeList = document.getElementsByTagName(JBI_CONSUMES_ELEM_NAME);
-        for (int i = 0; i < consumesNodeList.getLength(); i++) {
-            Element consumes = (Element) consumesNodeList.item(i);
-            decorateEndpointElement(consumes, casaDocument);
-        }
-        
-        NodeList providesNodeList = document.getElementsByTagName(JBI_PROVIDES_ELEM_NAME);
-        for (int i = 0; i < providesNodeList.getLength(); i++) {
-            Element provides = (Element) providesNodeList.item(i);
-            decorateEndpointElement(provides, casaDocument);
-        }
-    }
-    
-    /**
-     * Adds CASA extension elements to a Consumes/Provides endpoint into JBI.
-     * 
-     * @param jbiEndpointElement a JBI consumes/provides element
-     * @param casaDocument       CASA document
-     */
-    private void decorateEndpointElement(Element jbiEndpointElement, 
-            Document casaDocument) {
-        if (casaDocument == null) {
-            return;
-        }
-        
-        boolean isConsumes = 
-                jbiEndpointElement.getNodeName().equals(JBI_CONSUMES_ELEM_NAME);
-        
-        // 1. Find corresponding CASA consumes/provides element
-        
-        Endpoint endpoint = getEndpointInJBI(jbiEndpointElement);
-        
-        Element casaEndpointRefElement = CasaBuilder.getEndpointRefElement(
-                casaDocument, endpoint, false, isConsumes);
-        
-        // 2. Copy child extension elements over from CASA to JBI
-        if (casaEndpointRefElement != null) {
-            NodeList casaEndpointChildren = casaEndpointRefElement.getChildNodes();
-            for (int k = 0; k < casaEndpointChildren.getLength(); k++) {
-                Node casaEndpointChild = casaEndpointChildren.item(k);
-                if (casaEndpointChild instanceof Element) {
-                    Node clonedNode = CasaBuilder.deepCloneCasaNode(
-                                    casaEndpointChild, document);
-                    jbiEndpointElement.appendChild(clonedNode);
-                }
-            }
-        }
-    }
-           
-    /**
-     * Gets an Endpoint object from an endpoint element in JBI DOM.
-     */
-    static Endpoint getEndpointInJBI(Element jbiEndpointElement) {
-        String endpointName = 
-                jbiEndpointElement.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
-        QName serviceQName = XmlUtil.getAttributeNSName(
-                jbiEndpointElement, JBI_SERVICE_NAME_ATTR_NAME);
-        QName interfaceQName = XmlUtil.getAttributeNSName(
-                jbiEndpointElement, JBI_INTERFACE_NAME_ATTR_NAME);
-        
-        return new Endpoint(endpointName, serviceQName, interfaceQName); 
-    }
+        ServiceUnitDescriptorEnhancer.decorateEndpoints(document, casaDocument);
+    }    
     
     private void setEndpointElementAttributes(Element endpointElement, 
             Endpoint endpoint,
