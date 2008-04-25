@@ -69,7 +69,7 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * @author rmatous
+ * @author Tomas Stupka
  */
 public class SvnFileSystemTest extends FileSystemFactoryHid {
 
@@ -112,7 +112,7 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
 
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         try {                                 
-            svninit();            
+            repoinit();            
         } catch (Exception ex) {
             throw new IOException(ex.getMessage());
         } 
@@ -134,6 +134,9 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             files.add(FileUtil.toFile(fo));            
         }
         commit(files);               
+//            for (File file : files) {
+//                assertStatus(file);    
+//            }        
         
         return new FileSystem[]{workFo.getFileSystem()};
     }
@@ -144,7 +147,7 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
         return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }
 
-    private void svninit() throws IOException {                        
+    private void repoinit() throws IOException {                        
         try {
             File repoDir = getRepoDir();
             File wc = getWorkDir();
@@ -160,13 +163,9 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             SVNUrl url = getRepoUrl().appendPath(getWorkDir().getName());
             client.mkdir(url, "mkdir");            
             client.checkout(url, wc, SVNRevision.HEAD, true);
-        } catch (SVNClientException ex) {
+        } catch (Exception ex) {
             throw new IOException(ex.getMessage());
-        } catch (InterruptedException ex) {
-            throw new IOException(ex.getMessage());
-        } catch (MalformedURLException ex) {
-            throw new IOException(ex.getMessage());
-        }
+        } 
     }
     
     private void commit(List<File> files) throws IOException {       
@@ -193,31 +192,16 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             }            
             client.addFile(filesToAdd.toArray(new File[filesToAdd.size()]), true);                                                      
             client.commit(new File[] {getWorkDir()}, "commit", true);
-//            for (File file : files) {
-//                assertStatus(file);    
-//            }
             
         } catch (SVNClientException ex) {
             throw new IOException(ex.getMessage());
         }
     }
-
-    private File getTopmostWCParent(String res) {
-        String[] paths = res.split("/");
-        if(paths[0].equals("")) {
-            return new File(getWorkDir(), paths[1]);
-        } else {
-            return new File(getWorkDir(), paths[0]);
-        }
-    }
-
-    private void assertStatus(FileObject fo) throws IOException {
-        assertStatus(FileUtil.toFile(fo));
-    }    
     
     private ISVNClientAdapter getClient(SVNUrl url) throws SVNClientException {
         return Subversion.getInstance().getClient(url);
     }
+
     private void assertStatus(File f) throws IOException {
         try {
             ISVNStatus status = getStatus(f);
