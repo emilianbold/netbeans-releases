@@ -60,7 +60,7 @@ public final class Validator extends XsltValidator {
   {
 //out();
 //out("TEMPLATE: " + template);
-    addError("FIX_", template);
+//    addError("FIX_", template);
   }
 
 };}}

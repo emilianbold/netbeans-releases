@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.support.UniqueId;
 
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
@@ -87,7 +86,7 @@ public final class DocumentationDecorator extends DecorationProvider
 //out("entity: " + entity);
 //out(" docum: " + documentation);
 
-    if (entity.getUID() != mySelectedElementID && documentation == null) {
+    if (entity != mySelectedElement && documentation == null) {
       entity.removeCookie(myDecorationKey);
       return null;
     }
@@ -111,10 +110,10 @@ public final class DocumentationDecorator extends DecorationProvider
   public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
 //out("selection changed");
     if (newSelection instanceof ExtensibleElements) {
-      mySelectedElementID = newSelection.getUID();
+      mySelectedElement = (ExtensibleElements) newSelection;
     }
     else {
-      mySelectedElementID = null;
+      mySelectedElement = null;
     }
     fireDecorationChanged();
   }
@@ -122,7 +121,7 @@ public final class DocumentationDecorator extends DecorationProvider
   @Override
   public void release() {
     myDecorationKey = null;
-    mySelectedElementID = null;
+    mySelectedElement = null;
     getDesignView().getSelectionModel().removeSelectionListener(this);
   }
 
@@ -134,5 +133,5 @@ public final class DocumentationDecorator extends DecorationProvider
   }
 
   private Object myDecorationKey;
-  private UniqueId mySelectedElementID;
+  private ExtensibleElements mySelectedElement;
 }

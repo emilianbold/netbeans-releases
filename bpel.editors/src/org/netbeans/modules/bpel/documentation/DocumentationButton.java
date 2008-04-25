@@ -48,7 +48,6 @@ import javax.swing.ToolTipManager;
 
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-import org.netbeans.modules.bpel.model.api.support.UniqueId;
 
 import org.netbeans.modules.bpel.design.decoration.components.AbstractGlassPaneButton;
 import static org.netbeans.modules.xml.ui.UI.*;
@@ -80,7 +79,7 @@ public final class DocumentationButton extends AbstractGlassPaneButton {
         }
       }
     });
-    myElementID = element.getUID();
+    myElement = element;
     addTitle(ICON, TITLE, Color.BLUE);
     ToolTipManager.sharedInstance().registerComponent(this);
   }
@@ -88,8 +87,7 @@ public final class DocumentationButton extends AbstractGlassPaneButton {
   @Override
   public String getToolTipText()
   {
-    String text =
-      ((ExtensibleElements) myElementID.getModel().getEntity(myElementID)).getDocumentation();
+    String text = myElement.getDocumentation();
 
     if (text != null) {
       return "<html>" + text + "</html>"; // NOI18N
@@ -97,7 +95,7 @@ public final class DocumentationButton extends AbstractGlassPaneButton {
     return null;
   }
 
-  private UniqueId myElementID;
+  private ExtensibleElements myElement;
 
   private static final String TITLE =
     i18n(DocumentationButton.class, "LBL_Documentation"); // NOI18N
