@@ -37,32 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui;
+package org.netbeans.modules.php.project.environment;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 
 /**
+ * Class for unknown PHP environment, that means unsupported OS.
  * @author Tomas Mysik
- * @see DocumentRoots
  */
-final class DocumentRootsMac {
+final class UnknownPhpEnvironment extends PhpEnvironment {
 
-    private DocumentRootsMac() {
+    protected UnknownPhpEnvironment() {
     }
 
-    static List<Root> getDocumentRoots(String projectName) {
-        List<Root> roots = new ArrayList<Root>(1);
-
-        // MAMP
-        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
-        if (mamp.isDirectory()) {
-            String documentRoot = DocumentRoots.getFolderName(mamp, projectName);
-            String url = DocumentRoots.getDefaultUrl(projectName, 8888);
-            roots.add(new Root(documentRoot, url, true));
-        }
-        return roots;
+    @Override
+    public List<DocumentRoot> getDocumentRoots(String projectName) {
+        return Collections.<DocumentRoot>emptyList();
     }
+
+    @Override
+    public List<String> getAllPhpInterpreters() {
+        return Collections.<String>emptyList();
+    }
+
+    @Override
+    public String getAnyPhpInterpreter() {
+        return null;
+    }
+
 }
