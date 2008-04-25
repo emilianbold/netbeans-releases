@@ -70,11 +70,6 @@ public class WebServerRegistry {
     private WebServerRegistry() {
         myListener = new CopyOnWriteArrayList<HostListener>();
     }
-
-    //just temporary - will be changed afte module dependency will be narrowed
-    public static void startDebugger(Project project, Runnable run, FileObject startFile) {
-        DebuggerFactory.getDebugger().debug(project, run, startFile);
-    }
     
     public void addHost( Host host ) {
         /*

@@ -37,20 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui;
+package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.openide.util.Utilities;
 
 /**
- * Helper class for getting all the possible document roots, OS dependent.
- * It is e.g. "/var/www" for Linux, "C:\Program Files\Apache\htdocs" for Windows etc.
+ * Class for getting all the possible PHP environment, e.g. document roots, PHP interpreters.
+ * This class is OS dependent.
+ * <p>
+ * Documents roots could be "/var/www" for Linux, "C:\Program Files\Apache\htdocs" for Windows etc.
  * @author Tomas Mysik
  */
-public final class DocumentRoots {
+public abstract class PhpEnvironment {
 
     static final String HTDOCS = "htdocs"; //NOI18N
     static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
@@ -58,44 +64,74 @@ public final class DocumentRoots {
             return name.toLowerCase().startsWith("apache"); // NOI18N
         }
     };
+    private static final PhpEnvironment UNKNOWN_PHP_ENVIRONMENT = new UnknownPhpEnvironment();
 
-    private DocumentRoots() {
+    PhpEnvironment() {
     }
 
     /**
-     * Get the OS dependent {@link Root roots} of document roots and its URLs for the given project name.
+     * Get the OS dependent PHP environment.
+     * @return the OS dependent PHP environment.
+     */
+    public static PhpEnvironment get() {
+        if (isSolaris()) {
+            return new SolarisPhpEnvironment();
+        } else if (Utilities.isWindows()) {
+            return new WindowsPhpEnvironment();
+        } else if (Utilities.isMac()) {
+            return new MacPhpEnvironment();
+        } else if (Utilities.isUnix()) {
+            return new UnixPhpEnvironment();
+        }
+        return UNKNOWN_PHP_ENVIRONMENT;
+    }
+
+    /**
+     * Get the OS dependent {@link DocumentRoot roots} of document roots and their URLs for the given project name.
      * @param projectName project name for which the directory in the document root is searched.
      *                    Can be <code>null</code> if it is not needed.
-     * @return list of {@link Root roots} (can be empty).
+     * @return list of {@link DocumentRoot roots} (can be empty).
      */
-    public static List<Root> getRoots(String projectName) {
-        if (isSolaris()) {
-            return DocumentRootsSolaris.getDocumentRoots(projectName);
-        } else if (Utilities.isWindows()) {
-            return DocumentRootsWindows.getDocumentRoots(projectName);
-        } else if (Utilities.isMac()) {
-            return DocumentRootsMac.getDocumentRoots(projectName);
-        } else if (Utilities.isUnix()) {
-            return DocumentRootsUnix.getDocumentRoots(projectName);
-        }
-        return Collections.<Root>emptyList();
-    }
+    public abstract List<DocumentRoot> getDocumentRoots(String projectName);
 
-    private static boolean isSolaris() {
-        return (Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0
-                || (Utilities.getOperatingSystem() & Utilities.OS_SUNOS) != 0;
+    /**
+     * Get the OS dependent {@link DocumentRoot roots} of document roots and their URLs.
+     * @return list of {@link DocumentRoot roots} (can be empty).
+     */
+    public List<DocumentRoot> getDocumentRoots() {
+        return getDocumentRoots(null);
     }
 
     /**
-     * Holder for pair: document root - its URL. It also contains flag whether this pair is preferred or not
+     * Get the list of all found PHP command line interpreters. The list can be empty.
+     * @return list of all found PHP CLIs, never <code>null</code>.
+     * @see #getAnyPhpInterpreter()
+     */
+    public abstract List<String> getAllPhpInterpreters();
+
+    /**
+     * Get any PHP command line interpreter.
+     * @return PHP CLI or <code>null</code> if none found.
+     */
+    public String getAnyPhpInterpreter() {
+        List<String> allPhpInterpreters = getAllPhpInterpreters();
+        if (allPhpInterpreters.isEmpty()) {
+            return null;
+        }
+        // return the first one
+        return allPhpInterpreters.get(0);
+    }
+
+    /**
+     * Document root and its URL. It also contains flag whether this pair is preferred or not
      * (e.g. "~/public_html" is preferred to "/var/www" on Linux). Only writable directories can be preferred.
      */
-    public static final class Root {
+    public static final class DocumentRoot {
         private final String documentRoot;
         private final String url;
         private final boolean preferred;
 
-        public Root(String documentRoot, String url, boolean preferred) {
+        public DocumentRoot(String documentRoot, String url, boolean preferred) {
             this.documentRoot = documentRoot;
             this.url = url;
             this.preferred = preferred;
@@ -117,15 +153,20 @@ public final class DocumentRoots {
         public String toString() {
             StringBuilder sb = new StringBuilder(200);
             sb.append(getClass().getName());
-            sb.append(" { documentRoot : ");
+            sb.append(" { documentRoot : "); // NOI18N
             sb.append(documentRoot);
-            sb.append(" , url : ");
+            sb.append(" , url : "); // NOI18N
             sb.append(url);
-            sb.append(" , preferred : ");
+            sb.append(" , preferred : "); // NOI18N
             sb.append(preferred);
-            sb.append(" }");
+            sb.append(" }"); // NOI18N
             return sb.toString();
         }
+    }
+
+    static boolean isSolaris() {
+        return (Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0
+                || (Utilities.getOperatingSystem() & Utilities.OS_SUNOS) != 0;
     }
 
     static String getFolderName(File location, String name) {
@@ -171,5 +212,47 @@ public final class DocumentRoots {
             return findHtDocsDirectory(subDir, filenameFilter);
         }
         return null;
+    }
+
+    /**
+     * Return {@link DocumentRoot document root} for ~/public_html or <code>null</code>.
+     * @param projectName project name for which the directory in the document root is searched.
+     *                    Can be <code>null</code> if it is not needed.
+     * @return {@link DocumentRoot document root} for ~/public_html or <code>null</code>.
+     * @see #getDocumentRoots(java.lang.String)
+     */
+    static DocumentRoot getUserPublicHtmlDocumentRoot(String projectName) {
+        DocumentRoot docRoot = null;
+        // ~/public_html
+        File userDir = new File(System.getProperty("user.home"), "public_html"); // NOI18N
+        if (userDir.isDirectory()) {
+            String documentRoot = getFolderName(userDir, projectName);
+            String user = System.getProperty("user.name"); // NOI18N
+            String urlSuffix = projectName != null ? "/" + projectName : ""; // NOI18N
+            String url = getDefaultUrl("~" + user + urlSuffix); // NOI18N
+            docRoot = new DocumentRoot(documentRoot, url, userDir.canWrite());
+        }
+        return docRoot;
+    }
+
+    // suitable for *nix as well as windows
+    static List<String> getAllPhpInterpreters(String phpFilename) {
+        String path = System.getenv("PATH"); // NOI18N
+        if (path == null) {
+            return Collections.<String>emptyList();
+        }
+        // on linux there are usually duplicities in PATH
+        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
+        List<String> clis = new ArrayList<String>(dirs.size());
+        for (String p : dirs) {
+            File php = new File(p, phpFilename);
+            if (php.exists()) {
+                clis.add(php.getAbsolutePath());
+            }
+        }
+        if (clis.isEmpty()) {
+            return Collections.<String>emptyList();
+        }
+        return clis;
     }
 }

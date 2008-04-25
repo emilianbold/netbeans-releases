@@ -43,6 +43,7 @@ import java.io.IOException;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -63,6 +64,16 @@ public class GeneratingBracketCompleterTest extends TestBase {
         super(testName);
     }            
 
+    public static TestSuite suite() {
+        TestSuite ts = new TestSuite();
+        
+        ts.addTest(new GeneratingBracketCompleterTest("testFoo"));
+        
+        return ts;
+    }
+    
+    public void testFoo() throws Exception {}
+    
     public void testFunctionDocumentationParam() throws Exception {
         performInsertBreak( "<?php\n" +
                             "/**^\n" +

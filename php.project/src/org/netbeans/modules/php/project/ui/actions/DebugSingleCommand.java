@@ -43,7 +43,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.rt.WebServerRegistry;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -70,13 +70,15 @@ public class DebugSingleCommand extends DebugCommand {
                 }
             }
         };
-        //temporary; after narrowing deps. will be changed
-        WebServerRegistry.startDebugger(getProject(), runnable, fileForContext(context));
+        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+        if (dbgStarter != null) {        
+            dbgStarter.start(getProject(), runnable, fileForContext(context));
+        }
     }
     
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null;
+        return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
     }    
 
     @Override

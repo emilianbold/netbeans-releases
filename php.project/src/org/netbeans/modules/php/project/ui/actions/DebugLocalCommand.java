@@ -29,7 +29,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.rt.WebServerRegistry;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
@@ -49,12 +49,15 @@ public class DebugLocalCommand  extends RunLocalCommand {
             }
         };
         //temporary; after narrowing deps. will be changed
-        WebServerRegistry.startDebugger(getProject(), runnable, fileForContext(context));
+        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+        if (dbgStarter != null) {
+            dbgStarter.start(getProject(), runnable, fileForContext(context));
+        }
     }
         
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null;
+        return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override
