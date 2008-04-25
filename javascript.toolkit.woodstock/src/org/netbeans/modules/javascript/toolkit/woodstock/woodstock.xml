@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/javascript/toolkit/woodstock/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-	<resource>jar:nbinst:///modules/ext/javascript/stub-woodstock.jar!/</resource>
+	<resource/>
     </volume>
     <volume>
         <type>scriptpath</type>
