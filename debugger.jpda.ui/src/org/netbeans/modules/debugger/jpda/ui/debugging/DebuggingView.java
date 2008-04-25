@@ -9,7 +9,6 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -17,6 +16,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -37,6 +39,7 @@ import javax.swing.tree.TreePath;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
@@ -66,7 +69,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private static final int BAR_WIDTH = 8;
     
     static final Color hitsColor = new Color(255, 255, 178); // [TODO]
-    static final Color deadlockColor = javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"); // [TODO]
+    static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // [TODO]
     
     private transient Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
@@ -409,109 +412,17 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
     
     // **************************************************************************
-    // **************************************************************************
     
     InfoPanel getInfoPanel() {
         return infoPanel;
     }
     
     void refreshView() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                leftPanel.removeAll();
-                rightPanel.removeAll();
-                int sy = 0;
-                int sx = (rightPanel.getWidth() - ICON_WIDTH) / 2;
-                JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
-                int mainPanelHeight = 0;
-                int treeViewWidth = 0;
-                int leftBarHeight = 0;
-                boolean isCurrent = false;
-                boolean isAtBreakpoint = false;
-                for (TreePath path : treeView.getVisiblePaths()) {
-                    Node node = Visualizer.findNode(path.getLastPathComponent());
-                    JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
-                    if (jpdaThread != null) {
-                        if (leftBarHeight > 0) {
-                            addLeftBarPart(isCurrent, isAtBreakpoint, leftBarHeight);
-                        }
-                        leftBarHeight = 0;
-                        isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
-                        isAtBreakpoint = infoPanel.isBreakpointHit(jpdaThread);
-                    } else {
-                        
-                    }
-                    
-                    JTree tree = treeView.getTree();
-                    Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
-                    int height = rect != null ? (int)Math.round(rect.getHeight()) : 0; // [TODO] NPE
-                    mainPanelHeight += height;
-                    treeViewWidth = Math.max(treeViewWidth, (int)Math.round(rect.getX() + rect.getWidth()));
-                    leftBarHeight += height;
-                    
-                    JLabel icon = jpdaThread != null ?
-                        new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
-                        suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
-                    icon.setPreferredSize(new Dimension(ICON_WIDTH, height));
-                    icon.setBackground(treeBackgroundColor);
-                    icon.setOpaque(false);
-                    rightPanel.add(icon);
-                    if (icon instanceof ClickableIcon) {
-                        ((ClickableIcon)icon).initializeState(sx, sy, ICON_WIDTH, height);
-                    }
-                    sy += height;
-                } // for
-                if (leftBarHeight > 0) {
-                    addLeftBarPart(isCurrent, isAtBreakpoint, leftBarHeight);
-                }
-                
-                leftPanel.revalidate();
-                leftPanel.repaint();
-                rightPanel.revalidate();
-                rightPanel.repaint();
-                treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 10)); // [TODO] 10
-                mainPanel.setPreferredSize(new Dimension(10, mainPanelHeight)); // [TODO] 10
-                treeView.getTree().revalidate(); // [TODO] reduce revalidate calls
-                treeView.revalidate();
-                mainScrollPane.revalidate();
-                mainPanel.revalidate();
-                
-                sessionComboBox.removeAllItems();
-                Node root = manager.getRootContext();
-                if (root != null) {
-                    String comboItemText = root.getDisplayName();
-                    synchronized (DebuggingView.this) {
-                        if ((comboItemText == null || comboItemText.length() == 0) && session != null) {
-                            comboItemText = session.getName();
-                        }
-                    }
-                    sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
-                        comboItemText : "Java Project"); // NOI18N [TODO]
-                }
-            }
-
-            private void addLeftBarPart(boolean isCurrent, boolean isAtBreakpoint, int height) {
-                JComponent label = new JPanel();
-                String toolTipText = null;
-                label.setPreferredSize(new Dimension(BAR_WIDTH, height));
-                if (isCurrent) {
-                    label.setBackground(greenBarColor);
-                    toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
-                } else if (isAtBreakpoint) {
-                    label.setBackground(hitsColor);
-                    toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
-                } else {
-                    label.setBackground(treeBackgroundColor);
-                    label.setOpaque(false);
-                }
-                if (toolTipText != null) {
-                    label.setToolTipText(toolTipText);
-                }
-                leftPanel.add(label);
-            }
-        });
+        SwingUtilities.invokeLater(new ViewRefresher());
     }
 
+    // **************************************************************************
+    // inner classes
     // **************************************************************************
     
     private final class DebuggingPreferenceChangeListener implements PreferenceChangeListener {
@@ -523,6 +434,116 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
         }
 
+    }
+
+    private final class ViewRefresher implements Runnable {
+
+        public void run() {
+            // remove components in both panels, they will be recreated
+            leftPanel.removeAll();
+            rightPanel.removeAll();
+            int sy = 0;
+            int sx = (rightPanel.getWidth() - ICON_WIDTH) / 2;
+
+            JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
+            // collect all deadlocked threads
+            Set<Deadlock> deadlocks = debugger != null ? debugger.getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
+            if (deadlocks == null) {
+                deadlocks = Collections.EMPTY_SET;
+            }
+            Set<JPDAThread> deadlockedThreads = new HashSet<JPDAThread>();
+            for (Deadlock deadlock : deadlocks) {
+                deadlockedThreads.addAll(deadlock.getThreads());
+            }
+
+            int mainPanelHeight = 0;
+            int treeViewWidth = 0;
+            int leftBarHeight = 0;
+            boolean isCurrent = false;
+            boolean isAtBreakpoint = false;
+            boolean isInDeadlock = false;
+
+            for (TreePath path : treeView.getVisiblePaths()) {
+                Node node = Visualizer.findNode(path.getLastPathComponent());
+                JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
+                if (jpdaThread != null) {
+                    if (leftBarHeight > 0) {
+                        addLeftBarPart(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight);
+                    }
+                    leftBarHeight = 0;
+                    isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
+                    isAtBreakpoint = infoPanel.isBreakpointHit(jpdaThread); // [TODO] breakpoint hits should be stored elsewhere
+                    isInDeadlock = deadlockedThreads.contains(jpdaThread);
+                } else {
+                }
+
+                JTree tree = treeView.getTree();
+                Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
+                int height = rect != null ? (int) Math.round(rect.getHeight()) : 0; // [TODO] NPE
+                mainPanelHeight += height;
+                treeViewWidth = rect != null ? Math.max(treeViewWidth, (int) Math.round(rect.getX() + rect.getWidth())) : treeViewWidth;
+                leftBarHeight += height;
+
+                JLabel icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon, suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
+                icon.setPreferredSize(new Dimension(ICON_WIDTH, height));
+                icon.setBackground(treeBackgroundColor);
+                icon.setOpaque(false);
+                rightPanel.add(icon);
+                if (icon instanceof ClickableIcon) {
+                    ((ClickableIcon) icon).initializeState(sx, sy, ICON_WIDTH, height);
+                }
+                sy += height;
+            } // for
+            if (leftBarHeight > 0) {
+                addLeftBarPart(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight);
+            }
+
+            leftPanel.revalidate();
+            leftPanel.repaint();
+            rightPanel.revalidate();
+            rightPanel.repaint();
+            treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 10)); // [TODO] 10
+            mainPanel.setPreferredSize(new Dimension(10, mainPanelHeight)); // [TODO] 10
+            treeView.getTree().revalidate(); // [TODO] reduce revalidate calls
+            treeView.revalidate();
+            mainScrollPane.revalidate();
+            mainPanel.revalidate();
+
+            sessionComboBox.removeAllItems();
+            Node root = manager.getRootContext();
+            if (root != null) {
+                String comboItemText = root.getDisplayName();
+                synchronized (DebuggingView.this) {
+                    if ((comboItemText == null || comboItemText.length() == 0) && session != null) {
+                        comboItemText = session.getName();
+                    }
+                }
+                sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ? comboItemText : "Java Project"); // NOI18N [TODO]
+            }
+        }
+
+        private void addLeftBarPart(boolean isCurrent, boolean isAtBreakpoint, boolean isInDeadlock, int height) {
+            JComponent label = new JPanel();
+            String toolTipText = null;
+            label.setPreferredSize(new Dimension(BAR_WIDTH, height));
+            if (isInDeadlock) {
+                label.setBackground(deadlockColor);
+                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_DEADLOCKED_THREAD_TIP");
+            } else if (isCurrent) {
+                label.setBackground(greenBarColor);
+                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
+            } else if (isAtBreakpoint) {
+                label.setBackground(hitsColor);
+                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
+            } else {
+                label.setBackground(treeBackgroundColor);
+                label.setOpaque(false);
+            }
+            if (toolTipText != null) {
+                label.setToolTipText(toolTipText);
+            }
+            leftPanel.add(label);
+        }
     }
     
 }

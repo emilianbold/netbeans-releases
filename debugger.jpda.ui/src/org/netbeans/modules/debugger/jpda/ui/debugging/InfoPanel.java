@@ -96,10 +96,6 @@ public class InfoPanel extends javax.swing.JPanel {
         filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
         
         initFilterPanel(filterPanel);
-        
-//        deadlocksPanel.setVisible(false);
-//        deadlocksSeparator.setVisible(false);
-        
         arrowButton = createArrowButton();
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;

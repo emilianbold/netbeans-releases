@@ -44,26 +44,20 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.openide.util.RequestProcessor;
 
 public final class ThreadsListener implements PropertyChangeListener {
 
     private JPDADebugger debugger = null;
     private Set<JPDAThread> threads = new HashSet<JPDAThread>();
-    private Set<JPDAThread> stoppedThreadsSet = new HashSet<JPDAThread>();
-    private LinkedList<JPDAThread> stoppedThreads = new LinkedList<JPDAThread>();
+    private BreakpointHits hits = new BreakpointHits();
     private DebuggingView debuggingView;
     
     public ThreadsListener(DebuggingView debuggingView) {
@@ -71,27 +65,26 @@ public final class ThreadsListener implements PropertyChangeListener {
     }
 
     public synchronized void changeDebugger(JPDADebugger deb) {
-        if (debugger == deb) {
+        if (debugger == deb || deb == null) {
             return;
         }
         if (debugger != null) {
-            for (JPDAThread thread : threads) {
-                ((Customizer)thread).removePropertyChangeListener(this);
-            }
-            clearAllHits();
-            setShowDeadlock(false);
-            debugger.removePropertyChangeListener(this);
-            debugger.getDeadlockDetector().removePropertyChangeListener(this);
+            unregisterListeners();
         }
         this.debugger = deb;
         if (deb != null) {
             deb.addPropertyChangeListener(this);
-            deb.getDeadlockDetector().addPropertyChangeListener(this);
+            DeadlockDetector detector = deb.getDeadlockDetector();
+            detector.addPropertyChangeListener(this);
+            if (detector.getDeadlocks() != null) {
+                setShowDeadlock(true);
+            }
             List<JPDAThread> allThreads = deb.getAllThreads();
             for (JPDAThread thread : allThreads) {
                 threads.add(thread);
                 ((Customizer)thread).addPropertyChangeListener(this);
             }
+            
         }
     }
     
@@ -133,6 +126,8 @@ public final class ThreadsListener implements PropertyChangeListener {
                 }
             } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propName)) {
                 removeBreakpointHit(debugger.getCurrentThread());
+            } else if (JPDADebugger.PROP_STATE.equals(propName) && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                unregisterListeners();
             }
         } else if (source instanceof JPDAThread) {
             final JPDAThread thread = (JPDAThread)source;
@@ -164,7 +159,7 @@ public final class ThreadsListener implements PropertyChangeListener {
     }
     
     public synchronized int getHitsCount() {
-        return stoppedThreads.size();
+        return hits.size();
     }
     
     private boolean isCurrent(JPDAThread thread) {
@@ -176,36 +171,80 @@ public final class ThreadsListener implements PropertyChangeListener {
     }
     
     private void addBreakpointHit(JPDAThread thread) {
-        if (thread != null && !stoppedThreadsSet.contains(thread)) {
+        if (thread != null && !hits.contains(thread)) {
             
             // System.out.println("Hit added: " + thread.getName());
             
-            stoppedThreadsSet.add(thread);
-            stoppedThreads.addFirst(thread);
-            debuggingView.getInfoPanel().addBreakpointHit(thread, stoppedThreadsSet.size());
+            hits.add(thread);
+            debuggingView.getInfoPanel().addBreakpointHit(thread, hits.size());
         }
     }
     
     private void removeBreakpointHit(JPDAThread thread) {
-        if (thread != null && stoppedThreadsSet.contains(thread)) {
+        if (thread != null && hits.contains(thread)) {
             
             // System.out.println("Hit removed: " + thread.getName());
             
-            stoppedThreadsSet.remove(thread);
-            stoppedThreads.remove(thread);
-            debuggingView.getInfoPanel().removeBreakpointHit(thread, stoppedThreadsSet.size());
+            hits.remove(thread);
+            debuggingView.getInfoPanel().removeBreakpointHit(thread, hits.size());
         }
     }
     
     private void clearAllHits() {
-        threads.clear();
-        stoppedThreadsSet.clear();
-        stoppedThreads.clear();
+        hits.clear();
         debuggingView.getInfoPanel().clearBreakpointHits();
     }
 
     private void setShowDeadlock(boolean detected) {
         debuggingView.getInfoPanel().setShowDeadlock(detected);
+    }
+
+    private void unregisterListeners() {
+        for (JPDAThread thread : threads) {
+            ((Customizer) thread).removePropertyChangeListener(this);
+        }
+        threads.clear();
+        clearAllHits();
+        setShowDeadlock(false);
+        debugger.removePropertyChangeListener(this);
+        debugger.getDeadlockDetector().removePropertyChangeListener(this);
+    }
+    
+    // **************************************************************************
+    
+    class BreakpointHits {
+        private Set<JPDAThread> stoppedThreadsSet = new HashSet<JPDAThread>();
+        private LinkedList<JPDAThread> stoppedThreads = new LinkedList<JPDAThread>();
+        
+        public boolean contains(JPDAThread thread) {
+            return stoppedThreadsSet.contains(thread);
+        }
+        
+        public boolean add(JPDAThread thread) {
+            if (stoppedThreadsSet.add(thread)) {
+                stoppedThreads.addFirst(thread);
+                return true;
+            }
+            return false;
+        }
+        
+        public boolean remove(JPDAThread thread) {
+            if (stoppedThreadsSet.remove(thread)) {
+                stoppedThreads.remove(thread);
+                return true;
+            }
+            return false;
+        }
+        
+        public void clear() {
+            stoppedThreadsSet.clear();
+            stoppedThreads.clear();
+        }
+        
+        public int size() {
+            return stoppedThreads.size();
+        }
+        
     }
     
 }
