@@ -450,7 +450,7 @@ public class BindingDesignSupport {
                 } catch (IOException ioex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
                 }
-            } while (!Object.class.equals(superClass[0]));
+            } while (!Object.class.getName().equals(superClass[0]));
             typesFromSource = types;
         }
         List<BindingDescriptor>[] list = new List[] {Collections.emptyList(), typesFromSource, Collections.emptyList()};
