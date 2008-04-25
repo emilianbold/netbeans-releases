@@ -99,21 +99,29 @@ public class ConfigurationMakefileWriter {
     }
     
     private void writeMakefileImpl() {
+        String resource = "/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile-impl.mk"; // NOI18N
         InputStream is = null;
         FileOutputStream os = null;
         try {
-            URL url = new URL("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile-impl.mk"); // NOI18N
+            URL url = new URL("nbresloc:" + resource); // NOI18N
             is = url.openStream();
-            String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
-            os = new FileOutputStream(outputFileName);
         } catch (Exception e) {
-            // FIXUP
+            is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
+        
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
+        try {
+            os = new FileOutputStream(outputFileName);
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        
         if (is == null || os == null) {
             // FIXUP: ERROR
             return;
         }
-        
+
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         

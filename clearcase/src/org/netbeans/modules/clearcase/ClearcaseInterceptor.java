@@ -88,11 +88,7 @@ public class ClearcaseInterceptor extends VCSInterceptor {
     @Override
     public void doDelete(final File file) throws IOException {
         Clearcase.LOG.finer("doDelete " + file);        
-        Clearcase.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {                         
-                fileDeletedImpl(file);
-            }
-        });        
+        fileDeletedImpl(file);
     }
 
     @Override
@@ -117,11 +113,11 @@ public class ClearcaseInterceptor extends VCSInterceptor {
         // 3. remove the file
         exec(new DeleteCommand(new File[]{ file }),false);
                 
-        // the file stays on the filessytem if it was checkedout eventually
+        // XXX the file stays on the filessytem if it was checkedout eventually
         if (file.exists()) {
             file.delete();
         }        
-        ClearcaseUtils.afterCommandRefresh(new File[] { file }, false);
+        ClearcaseUtils.afterCommandRefresh(new File[] { file }, false, false);
     }
     
     private void fileDeletedImpl(File file) {       
@@ -216,7 +212,7 @@ public class ClearcaseInterceptor extends VCSInterceptor {
                 deleteFile(from);
             }
         }            
-        ClearcaseUtils.afterCommandRefresh(refreshFiles.toArray(new File[refreshFiles.size()]), true);
+        ClearcaseUtils.afterCommandRefresh(refreshFiles.toArray(new File[refreshFiles.size()]), true, false);
     }
     
     @Override

@@ -116,6 +116,10 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         return pollingIntervalTextField.getText();
     }
     
+    public String getPollingRecordSize() {
+        return recordsToPollTextField.getText();
+    }
+    
     public String getPollingTimeUnit() {
         String selectedUnit = (String) pollingTimeUnitComboBox.getSelectedItem();
         String unit = mDisplayTimeUnitToIdentifierMap.get(selectedUnit);

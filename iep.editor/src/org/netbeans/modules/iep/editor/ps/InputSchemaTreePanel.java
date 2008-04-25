@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.tree.TreeModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,4 +51,13 @@ public class InputSchemaTreePanel extends JPanel {
         scrollPane.getViewport().add(mTree);
     }
     
+    public InputSchemaTreePanel(IEPModel model, TreeModel treeModel) {
+        String msg = NbBundle.getMessage(InputSchemaTreePanel.class, "InputSchemaTreePanel.INPUTS");
+        setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
+        setLayout(new BorderLayout(5, 5));
+        JScrollPane scrollPane = new JScrollPane();
+        add(scrollPane, BorderLayout.CENTER);
+        mTree = new InputSchemaTree(model, treeModel);
+        scrollPane.getViewport().add(mTree);
+    }
 }

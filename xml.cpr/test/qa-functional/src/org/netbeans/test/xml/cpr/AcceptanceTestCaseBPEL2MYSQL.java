@@ -519,7 +519,7 @@ public class AcceptanceTestCaseBPEL2MYSQL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal(
+      BuildInternal(
           COMPOSITE_APPLICATION_NAME,
           true,
           "jbi-build"

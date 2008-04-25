@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
+import java.util.Set;
+
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -79,6 +81,8 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -86,6 +90,12 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @version 2008.02.08
  */
 public final class Validator extends BpelValidator implements ValidationVisitor {
+
+  public Set<ResultItem> getResultItems() {
+    return getValidationResult();
+  }
+
+  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(Copy copy)
@@ -361,7 +371,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   private SchemaComponent checkXPath(ContentElement element) {
-    return Utils.checkXPathExpression(element, new PathValidationContext(this, this, element));
+    return Utils.checkXPathExpression(element, new PathValidationContext(Validator.this, Validator.this, element));
   }
 
   // # 117689
@@ -375,12 +385,5 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       addError("FIX_Duration", duration, e.getMessage()); // NOI18N
     }
   }
-  
-  private static void out() {
-    System.out.println();
-  }
 
-  private void out(Object object) {
-    System.out.println("*** " + object); // NOI18N
-  }
-}
+};}}
