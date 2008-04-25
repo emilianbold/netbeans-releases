@@ -83,22 +83,6 @@ public class PhpProject implements Project, AntProjectListener {
     private static final Icon PROJECT_ICON = new ImageIcon(
             Utilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
-    // XXX maybe move to PhpProjectConstants class
-    /**
-     * <p>Specific php sources type.
-     * <p>Should be used in <pre>Sources_instance.getSourceGroups(String)</pre> 
-     * to retrieve php project source folders. 
-     * General {@link  org.netbeans.api.project.Sources#TYPE_GENERIC} 
-     * will not return php source folders.
-     * <pre>
-     * Sources sources = ProjectUtils.getSources(phpProject);
-     *  //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-     *  SourceGroup[] groups = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
-     * </pre>
-     * <p>is now used in "PHP Runtime Explorer" and in "PHP Project "modules
-     */
-    public static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
-
     PhpProject( AntProjectHelper helper ) {
         myHelper = helper;
         AuxiliaryConfiguration configuration = 
