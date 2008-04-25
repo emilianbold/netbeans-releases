@@ -1,6 +1,7 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,7 +10,11 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
@@ -21,31 +26,55 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableSelectionWizardAction;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
+import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
+import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
+import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
 import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor {
     private static final Logger mLog = Logger.getLogger(ExternalTablePollingStreamCustomEditor.class.getName());
     
     private boolean mValidOperatorSelection = false;
     
+    private MyInputTableTreeModel mInputTableTreeTable;
+    
+    private String mFromClause;
+    
+    private String mWhereClause;
+    
+    private String mPollingInterval;
+    
+    private String mPollingIntervalUnit;
+    
+    private String mPollingRecordSize;
+    
+    private String mDatabaseJNDIName;
+           
     /** Creates a new instance of InvokeStreamCustomEditor */
     public ExternalTablePollingStreamCustomEditor() {
         super();
@@ -182,8 +211,8 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            
             
             JButton selectIEPProcessButton = new JButton("...");
-            //selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
-            selectIEPProcessButton.setAction(new DatabaseTableSelectionWizardAction());
+            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
+            //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
             gbc.gridx = 5;
             gbc.gridy = 0;
             gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -241,6 +270,17 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         }
 
         @Override
+        protected InputSchemaTreePanel createInputSchemaTreePanel(IEPModel model, OperatorComponent component) {
+            if(mInputTableTreeTable == null) {
+                mInputTableTreeTable = new MyInputTableTreeModel(new DefaultMutableTreeNode("root"), model, component);
+            }
+            
+            InputSchemaTreePanel panel = new InputSchemaTreePanel(model, mInputTableTreeTable);
+            return panel;
+        }
+
+        
+        @Override
         protected boolean isShowFromClause() {
             return false;
         }
@@ -267,49 +307,124 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             mAttributePanel.store();
             mSizePanel.store();
             
-//            //store from clause
-//            List<OperatorComponent> inputs = mComponent.getInputOperatorList();
-//            if(inputs.size() == 1) {
-//                OperatorComponent comp = inputs.get(0);
-//                String displayName = comp.getDisplayName();
-//                if(displayName != null) {
-//                    Property fromProp = mComponent.getProperty(FROM_CLAUSE_KEY);
-//                    if(fromProp != null) {
-//                        mComponent.getModel().startTransaction();
-//                        fromProp.setValue(displayName);
-//                        mComponent.getModel().endTransaction();
-//                    }
-//                }
-//            }
+            //store from clause
+            
+            if(mFromClause != null) {
+                Property fromProp = mComponent.getProperty(FROM_CLAUSE_KEY);
+                if(fromProp != null) {
+                    mComponent.getModel().startTransaction();
+                    fromProp.setValue(mFromClause);
+                    mComponent.getModel().endTransaction();
+                }
+            }
+            
+            //store where clause
+            if(mWhereClause != null) {
+                Property whereClause = mComponent.getProperty(WHERE_CLAUSE_KEY);
+                if(whereClause != null) {
+                    mComponent.getModel().startTransaction();
+                    whereClause.setValue(mWhereClause);
+                    mComponent.getModel().endTransaction();
+                }
+            }
+            //store polling interval
+            if(mPollingInterval != null) {
+                Property pollingInterval = mComponent.getProperty("pollingInterval");
+                if(pollingInterval != null) {
+                    mComponent.getModel().startTransaction();
+                    pollingInterval.setValue(mWhereClause);
+                    mComponent.getModel().endTransaction();
+                }
+            }
+                    
+            //store polling interval time unit
+            if(mPollingIntervalUnit != null) {
+                Property pollingIntervalUnit = mComponent.getProperty("pollingIntervalTimeUnit");
+                if(pollingIntervalUnit != null) {
+                    mComponent.getModel().startTransaction();
+                    pollingIntervalUnit.setValue(mPollingIntervalUnit);
+                    mComponent.getModel().endTransaction();
+                }
+            }
+            
+            //store polling record size
+             if(mPollingRecordSize != null) {
+                Property pollingRecordSize = mComponent.getProperty("pollingRecordSize");
+                if(pollingRecordSize != null) {
+                    mComponent.getModel().startTransaction();
+                    pollingRecordSize.setValue(mPollingRecordSize);
+                    mComponent.getModel().endTransaction();
+                }
+            }
+            
+            //store database jndi name
+            if(mDatabaseJNDIName != null) {
+                Property databaseJNDIName = mComponent.getProperty("databaseJndiName");
+                if(databaseJNDIName != null) {
+                    mComponent.getModel().startTransaction();
+                    databaseJNDIName.setValue(mDatabaseJNDIName);
+                    mComponent.getModel().endTransaction();
+                }
+            }
         }
         
         class SelectIEPProcessOperatorActionListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
                 IEPModel model = getOperatorComponent().getModel();
-                FileObject fileObj = model.getModelSource().getLookup().lookup(FileObject.class);
-                if(fileObj != null) {
-                    Project project = FileOwnerQuery.getOwner(fileObj);
-                    StreamInputChooserPanel panel = new StreamInputChooserPanel(project);
-                    DialogDescriptor dd = new DialogDescriptor(panel, "Select Stream Input", true, null);
-                    panel.addPropertyChangeListener(new StreamInputChooserPanelPropertyListener(dd));
-
-                    DialogDisplayer dDisplayer = DialogDisplayer.getDefault();
-                    if(dDisplayer.notify(dd) == DialogDescriptor.OK_OPTION) {
-                        InputOperatorComponent inComp = panel.getSelectedInputOperatorComponent();
-                        if(inComp != null) {
-                            String displayName = inComp.getDisplayName();
-                            String iepQualifiedName = inComp.getModel().getQualifiedName();
-                            mAttributePanel.setStringValue(iepQualifiedName);
-                            mSizePanel.setStringValue(displayName);
-                            SchemaComponent sc = inComp.getOutputSchemaId();
-                            if(sc != null) {
-                            	mSelectPanel.clearTable();
-                            	mSelectPanel.setAttributes(sc.getSchemaAttributes());
-                            }
+                
+                TablePollingStreamWizardHelper helper = new TablePollingStreamWizardHelper();
+                WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
+                
+                Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+                dialog.setVisible(true);
+                dialog.toFront();
+                boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+                if (!cancelled) {
+                    List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
+                    List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
+                    mWhereClause = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION);
+                    mPollingInterval = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL);
+                    mPollingIntervalUnit = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT);
+                    mPollingIntervalUnit = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE);
+                    mDatabaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
+                    
+                    StringBuffer fromClause = new StringBuffer();
+                    Iterator<TableInfo> tableIt = tables.iterator();
+                    while(tableIt.hasNext()) {
+                        TableInfo table = tableIt.next();
+                        String tableQName = table.getQualifiedName();
+                        fromClause.append(tableQName);
+                        if(tableIt.hasNext()) {
+                            fromClause.append(",");
                         }
-                        
                     }
+                    mFromClause = fromClause.toString();
+                    
+                    List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
+                    List<String> expressionList = new ArrayList<String>();
+                    
+                    Iterator<ColumnInfo> it = columns.iterator();
+                    while(it.hasNext()) {
+                        ColumnInfo column = it.next();
+                        IEPComponentFactory factory = model.getFactory();
+                        SchemaAttribute sa = factory.createSchemaAttribute(model);
+                        String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
+                        sa.setAttributeName(attrName);
+                        sa.setAttributeType(column.getColumnDataType());
+                        sa.setAttributeSize(""+column.getPrecision());
+                        sa.setAttributeScale(""+column.getScale());
+                        
+                        
+                        attrs.add(sa);
+                        expressionList.add(column.getQualifiedName());
+                    }
+                    
+                    mSelectPanel.clearTable();
+                    mSelectPanel.setAttributes(attrs);
+                    mSelectPanel.setExpressions(expressionList);
+                    
+                    mInputTableTreeTable.refreshModel(tables);
                 }
             }
         }
@@ -317,28 +432,33 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
     }
     
     
+    class MyInputTableTreeModel extends DefaultTreeModel {
+        
+        private final Logger mLog = Logger.getLogger(MyInputTableTreeModel.class.getName());
     
-    class StreamInputChooserPanelPropertyListener implements PropertyChangeListener {
+        private DefaultMutableTreeNode mRoot;
         
-        private DialogDescriptor mDD;
-        
-        StreamInputChooserPanelPropertyListener(DialogDescriptor dd) {
-            this.mDD = dd;
+        public MyInputTableTreeModel(DefaultMutableTreeNode root, IEPModel model, OperatorComponent component) {
+            super(root);
+            this.mRoot = root;
+            try {
+                
+            } catch(Exception e) {
+                mLog.log(Level.SEVERE, NbBundle.getMessage(InputSchemaTreeModel.class, 
+                        "InputSchemaTreeModel.FAIL_TO_BUILD_TREE_MODEL_FOR", component.getTitle()), e);
+            }
         }
         
-        public void propertyChange(PropertyChangeEvent evt) {
-            if(StreamInputChooserPanel.PROP_SELECTED_INPUT_OPERATOR_COMPONENT.equals(evt.getPropertyName())){
-                if(evt.getNewValue() != null) {
-                    mValidOperatorSelection = true;
-                } else {
-                    mValidOperatorSelection = false;
+        public void refreshModel(Collection<TableInfo> tables) {
+            if(tables != null) {
+                Iterator<TableInfo> it = tables.iterator();
+                while(it.hasNext()) {
+                    TableInfo table = it.next();
+                    String tableQualifedName = table.getQualifiedName();
+                    DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(tableQualifedName);
+                    this.mRoot.add(inputNode);
                 }
-            } else {
-                mValidOperatorSelection = false;
             }
-            
-            this.mDD.setValid(mValidOperatorSelection);
-            
         }
         
     }

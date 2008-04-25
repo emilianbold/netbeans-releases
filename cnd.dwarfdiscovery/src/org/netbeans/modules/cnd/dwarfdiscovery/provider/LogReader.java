@@ -283,7 +283,7 @@ public class LogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, li.compilerType == CompilerType.CPP);
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
            return true;
        }
        return false;
@@ -308,7 +308,7 @@ public class LogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
@@ -317,7 +317,7 @@ public class LogReader {
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, userIncludes, userMacros);
+        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros);
         if (what == null){
             return false;
         }
@@ -326,6 +326,18 @@ public class LogReader {
             file = what;
         } else {
             file = workingDir+"/"+what;  //NOI18N
+        }
+        List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
+        for(String s : userIncludes){
+            userIncludesCached.add(PathCache.getString(s));
+        }
+        Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
+        for(Map.Entry<String,String> e : userMacros.entrySet()){
+            if (e.getValue() == null) {
+                userMacrosCached.put(PathCache.getString(e.getKey()), null);
+            } else {
+                userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
+            }
         }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
@@ -360,18 +372,6 @@ public class LogReader {
             return false;
         } else if (TRACE) {
             if (TRACE) System.err.println("**** Gotcha: " + file);
-        }
-        List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
-        for(String s : userIncludes){
-            userIncludesCached.add(PathCache.getString(s));
-        }
-        Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
-        for(Map.Entry<String,String> e : userMacros.entrySet()){
-            if (e.getValue() == null) {
-                userMacrosCached.put(PathCache.getString(e.getKey()), null);
-            } else {
-                userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
-            }
         }
         result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
         return true;

@@ -42,11 +42,15 @@ package org.netbeans.modules.cnd.discovery.project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +60,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -63,11 +68,21 @@ import org.openide.util.Exceptions;
  */
 public class SolarisLogReader {
     private static boolean TRACE = false;
+    // environment variable  path to prototype
+    // ROOT=/export/opensolaris/testws80/proto/root_i386
+    private static final String ENV_ROOT = "ROOT=";
+    // environment variable path to sources
+    // SRC=/export/opensolaris/testws80/usr/src
+    private static final String ENV_SRC = "SRC=";
     
     private String workingDir;
     private final String root;
     private final String fileName;
     private List<SourceFileProperties> result;
+    private List<InstallLine> copyHeader;
+    private Map<String,List<String>> findBase;
+    private String buidMashinePrototype;
+    private String buidMashineSources;
     
     public SolarisLogReader(String fileName, String root){
         this.root = root;
@@ -81,6 +96,7 @@ public class SolarisLogReader {
         if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
+        copyHeader = new ArrayList<InstallLine>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
@@ -92,6 +108,22 @@ public class SolarisLogReader {
                         break;
                     }
                     line = line.trim();
+                    if (buidMashinePrototype == null || buidMashineSources == null){
+                        if (line.startsWith(ENV_ROOT)){
+                            buidMashinePrototype = line.substring(ENV_ROOT.length());
+                            if (TRACE) {
+                                System.out.println("Environment variable path to prototype: " + buidMashinePrototype); //NOI18N
+                            }
+                            continue;
+                        }
+                        if (line.startsWith(ENV_SRC)){
+                            buidMashineSources = line.substring(ENV_SRC.length());
+                            if (TRACE) {
+                                System.out.println("Environment variable path to sources: " + buidMashineSources); //NOI18N
+                            }
+                            continue;
+                        }
+                    }
                     while (line.endsWith("\\")) { // NOI18N
                         String oneMoreLine = in.readLine();
                         if (oneMoreLine == null) {
@@ -105,6 +137,16 @@ public class SolarisLogReader {
                     for (int i = 0; i < cmds.length; i++) {
                         if (parseLine(cmds[i])){
                             nFoundFiles++;
+                        } else {
+                            InstallLine copy = testInstall(cmds[i]);
+                            if (copy != null) {
+                                copy.destination = relocate(copy.destination);
+                                copy.source = relocate(copy.source);
+                                File source = new File(copy.source);
+                                if (source.exists() && !source.isDirectory()){
+                                    copyHeader.add(copy);
+                                }
+                            }
                         }
                     }
 
@@ -123,8 +165,14 @@ public class SolarisLogReader {
     public List<SourceFileProperties> getResults() {
         if (result == null) {
             run();
+            findBase.clear();
+            findBase = null;
         }
         return result;
+    }
+
+    /*package-local*/ List<InstallLine> getInstalls() {
+        return copyHeader;
     }
     
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
@@ -152,13 +200,14 @@ public class SolarisLogReader {
         if (workDir == null) {
             return false;
         }
-
+        workDir = relocate(workDir);
+        
         if (new File(workDir).exists()) {
             if (TRACE) System.err.print(message);
             setWorkingDir(workDir);
             return true;
         } else {
-            workDir = workingDir + File.separator + workDir;
+            workDir = getWorkingDir() + File.separator + workDir;
             if (new File(workDir).exists()) {
                 if (TRACE) System.err.print(message);
                 setWorkingDir(workDir);
@@ -166,6 +215,127 @@ public class SolarisLogReader {
             }
         }
         return false;
+    }
+
+    private String relocate(String path){
+        String res = path;
+        if (buidMashineSources != null && root.length() > 0 && res.startsWith(buidMashineSources)){
+            // buidMashineSources=/export/opensolaris/testws80/usr/src
+            // root=/export/opensolaris/testws80
+            int i = buidMashineSources.lastIndexOf("/usr/src"); //NOI18N
+            if (i > 0) {
+                res = root+path.substring(i); //NOI18N
+            }
+        } else if (buidMashinePrototype != null && root.length() > 0 && res.startsWith(buidMashinePrototype)){
+            // buidMashinePrototype=/export/opensolaris/testws80/proto/root_i386
+            // root=/export/opensolaris/testws80
+            int i = buidMashinePrototype.lastIndexOf("/proto/"); //NOI18N
+            if (i > 0) {
+                res = root+path.substring(i); //NOI18N
+            }
+        }
+        if (TRACE && !path.equals(res)) {
+            System.out.println("Relocate path from: "+path+" to "+res); //NOI18N
+        }
+        return res;
+    }
+    
+    public String getWorkingDir() {
+        return workingDir;
+    }
+
+    //  /usr/bin/rm -f /export/opensolaris/testws80/proto/root_i386/usr/include/stdio.h; 
+    //  install -s -m 644 -f /export/opensolaris/testws80/proto/root_i386/usr/include stdio.h
+    private InstallLine testInstall(String line) {
+        line = line.trim();
+        if (line.startsWith("install ") && line.indexOf("/proto/") > 0 && // NOI18N
+            (line.indexOf("/usr/include") > 0 || // NOI18N
+             line.indexOf("/usr/ucbinclude") > 0 || // NOI18N
+             line.indexOf("/usr/sfw/include") > 0)) { // NOI18N
+            return parseInstall(line.substring(line.indexOf(' ')+1)); // NOI18N
+        }
+        return null;
+    }
+    private InstallLine parseInstall(String line){
+        Iterator<String> st = DiscoveryUtils.scanCommandLine(line).iterator();
+        String path = "";
+        String name = null;
+        while(st.hasNext()){
+            String option = st.next();
+            if (option.equals("-c")){ // NOI18N
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+            } else if (option.equals("-f")){ // NOI18N
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+            } else if (option.equals("-n")){ // NOI18N
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+            } else if (option.equals("-m")){ // NOI18N
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.equals("-u")){ // NOI18N
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.equals("-g")){ // NOI18N
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.startsWith("-d")){ // NOI18N
+            } else if (option.startsWith("-i")){ // NOI18N
+            } else if (option.startsWith("-d")){ // NOI18N
+            } else if (option.startsWith("-o")){ // NOI18N
+            } else if (option.startsWith("-s")){ // NOI18N
+            } else {
+                if (name == null) {
+                    name = option;
+                    if (name.startsWith("\"") && name.endsWith("\"")){ // NOI18N
+                        name = name.substring(1,name.length()-1);
+                    }
+                } else {
+                    if (TRACE) System.err.println("What is "+option+" in line "+line); // NOI18N
+                }
+            }
+        }
+        if (path.length()>0 && name != null && getWorkingDir() != null){
+            String source = getWorkingDir();
+            if (getWorkingDir().endsWith("/usr/src/uts/common/sys/lvm")) { // NOI18N
+                // It is an opensolaris bug?
+                source = source.substring(0, source.lastIndexOf("/lvm")); // NOI18N
+            }
+            if (name.startsWith("/")){ // NOI18N
+                source = name;
+            } else {
+                source = source+"/"+name; // NOI18N
+            }
+            int j = name.lastIndexOf('/'); // NOI18N
+            if (j >0){
+                name = name.substring(j+1);
+            }
+            String destination = path+"/"+name; // NOI18N
+            if (TRACE) {
+                File fileTo = new File(destination);
+                if (fileTo.exists() && !fileTo.isDirectory()){
+                    File fileFrom = new File(source);
+                    if (fileFrom.exists() && !fileFrom.isDirectory()){
+                        System.err.println("Ok "+source+"->"+destination); // NOI18N
+                    } else {
+                        System.err.println("No source "+source+"->"+destination); // NOI18N
+                    }
+                } else {
+                    System.err.println("No destination "+source+"->"+destination); // NOI18N
+                }
+            }
+            return new InstallLine(source, destination);
+        } else {
+            // It is an install of a folder
+        }
+        return null;
     }
     
     private enum CompilerType {
@@ -274,16 +444,16 @@ public class SolarisLogReader {
 //           workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
 //           return false;
 //       }
-       if (workingDir == null) {
+       if (getWorkingDir() == null) {
            return false;
        }
-       if (!workingDir.startsWith(root)){
+       if (!getWorkingDir().startsWith(root)){
            return false;
        }
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, li.compilerType == CompilerType.CPP);
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
            return true;
        }
        return false;
@@ -308,7 +478,7 @@ public class SolarisLogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
@@ -317,52 +487,20 @@ public class SolarisLogReader {
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, userIncludes, userMacros);
+        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros);
         if (what == null){
             return false;
         }
         String file = null;
         if (what.startsWith("/")){  //NOI18N
-            file = what;
+            file = relocate(what);
+            what = file;
         } else {
-            file = workingDir+"/"+what;  //NOI18N
-        }
-        File f = new File(file);
-        if (!f.exists() || !f.isFile()) {
-            if (TRACE)  {
-                System.err.println("**** Not found "+file); //NOI18N
-            }
-            
-            if (!what.startsWith("/")){  //NOI18N
-                try {
-                    //NOI18N
-                    String[] out = new String[1];
-                    boolean areThereOnlyOne = findFiles(new File(root), what, out);
-                    if (out[0] == null) {
-                        if (TRACE) System.err.println("** And there is no such file under root"); 
-                    } else {
-                        if (areThereOnlyOne) {
-                            result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
-                            if (TRACE) System.err.println("** Gotcha: " + out[0] + File.separator + what);
-                            // kinda adventure but it works
-                            setWorkingDir(out[0]);
-                            return true;
-                        } else {
-                            if (TRACE) System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");
-                        }
-                    }
-                } catch (IOException ex) {
-                    if (TRACE) Exceptions.printStackTrace(ex);
-                }
-            } 
-            
-            if (TRACE) System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]"); //NOI18N
-            return false;
-        } else if (TRACE) {
-            if (TRACE) System.err.println("**** Gotcha: " + file);
+            file = getWorkingDir()+"/"+what;  //NOI18N
         }
         List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
         for(String s : userIncludes){
+            s = relocate(s);
             userIncludesCached.add(PathCache.getString(s));
         }
         Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
@@ -373,10 +511,109 @@ public class SolarisLogReader {
                 userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
             }
         }
-        result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
+        File f = new File(file);
+        if (!f.exists() || !f.isFile()) {
+            if (TRACE)  {
+                System.err.println("**** Not found "+file); //NOI18N
+            }
+            
+            if (!what.startsWith("/")){  //NOI18N
+                String search = findFiles(what);
+                if (search != null) {
+                    addToResult(new CommandLineSource(isCPP, search, what, userIncludesCached, userMacrosCached));
+                    if (TRACE) System.err.println("** Gotcha: " + search + File.separator + what);
+                    // kinda adventure but it works
+                    setWorkingDir(search);
+                }
+            } 
+            
+            if (TRACE) System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]"); //NOI18N
+            return false;
+        } else if (TRACE) {
+            if (TRACE) System.err.println("**** Gotcha: " + file);
+        }
+        addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
         return true;
     }
     
+    private void addToResult(CommandLineSource source){
+        if (result.size()>0) {
+            CommandLineSource prev = (CommandLineSource) result.get(result.size()-1);
+            if (prev.getItemPath().equals(source.getItemPath())) {
+                // first compilation is GNU, second is SUN
+                if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                    // Rplace GNU compilation on SUN
+                    result.set(result.size()-1, source);
+                } else {
+                    // Skip SUN compilation
+                }
+                return;
+            }
+        }
+        result.add(source);
+    }
+    
+    private String findFiles(String name) {
+        if (findBase == null) {
+            findBase = initSearchMap();
+        }
+        int i = name.lastIndexOf('/'); //NOI18N
+        if (i > 0) {
+            name = name.substring(i+1);
+        }
+        List<String> res = findBase.get(name);
+        if (res != null && res.size()==1) {
+            return res.get(0);
+        } else if (TRACE) {
+            if (res != null) {
+                System.out.println("More then one "+name); //NOI18N
+            } else {
+                System.out.println("Not found "+name); //NOI18N
+            }
+        }
+        return null;
+    }
+        
+    private Map<String,List<String>> initSearchMap(){
+        HashSet<String> set = new HashSet<String>();
+        File f = new File(root);
+        gatherSubFolders(f, set);
+        HashMap<String,List<String>> map = new HashMap<String,List<String>>();
+        for (Iterator it = set.iterator(); it.hasNext();){
+            File d = new File((String)it.next());
+            if (d.isDirectory()){
+                File[] ff = d.listFiles();
+                for (int i = 0; i < ff.length; i++) {
+                    if (ff[i].isFile()) {
+                        List<String> l = map.get(ff[i].getName());
+                        if (l==null){
+                            l = new ArrayList<String>();
+                            map.put(ff[i].getName(),l);
+                        }
+                        l.add(d.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        return map;
+    }
+    
+    private void gatherSubFolders(File d, HashSet<String> set){
+        if (d.isDirectory()){
+            if (DiscoveryUtils.ignoreFolder(d)){
+                return;
+            }
+            String path = d.getAbsolutePath();
+            if (!set.contains(path)){
+                set.add(d.getAbsolutePath());
+                File[] ff = d.listFiles();
+                for (int i = 0; i < ff.length; i++) {
+                    gatherSubFolders(ff[i], set);
+                }
+            }
+        }
+    }
+        
     private static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;
@@ -448,49 +685,48 @@ public class SolarisLogReader {
         }
     }
 
-    // java -cp main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform8/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform8/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Not enough parameters. Format: bla-bla-bla filename root");
-            return;
+    /*package-local*/ static class InstallLine {
+        private String source;
+        private String destination;
+        private InstallLine(String source, String destination){
+            this.source = source;
+            this.destination = destination;
         }
-        String objFileName = args[0];
-        String root = args[1];
-        SolarisLogReader.TRACE = true;
-        SolarisLogReader clrf = new SolarisLogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults();
-        System.err.print("\n*** Results: ");
-        for (SourceFileProperties sourceFileProperties : list) {
-            String fileName = sourceFileProperties.getItemName();
-            while (fileName.indexOf("../") == 0) { //NOI18N
-                fileName = fileName.substring(3);
+        /*package-local*/ void install(){
+            // copy resource
+            File from = new File(source);
+            if (from.exists() && from.canRead() && !from.isDirectory()) {
+                File to = new File(destination);
+                if (to.exists()) {
+                    return;
+                }
+                FileOutputStream out = null;
+                FileInputStream in = null;
+                try {
+                    FileUtil.createFolder(to.getParentFile());
+                    out = new FileOutputStream(to);
+                    in = new FileInputStream(from);
+                    FileUtil.copy(in, out);
+                    if (TRACE) System.err.println("Installed "+source+"->"+destination); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    if (out != null) {
+                        try {
+                            out.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if (in != null) {
+                        try {
+                            in.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
             }
-            System.err.print(fileName + " ");
         }
-        System.err.println();
     }
-    
-    private static boolean findFiles(File file, String relativePath, String[] out) throws IOException {
-        File f = new File(file.getAbsolutePath() + File.separator + relativePath);
-        //System.err.println("# " + file.getAbsolutePath());
-        if (f.exists() && f.isFile()) {
-            if (out[0] != null && !new File(out[0] + File.separator + relativePath).getCanonicalPath().equals(f.getCanonicalPath()) ) {
-                return false;
-            }
-            out[0] = file.getAbsolutePath();
-        }
-        for (File subs : file.listFiles(dirFilter)) {
-            if (!findFiles(subs, relativePath, out)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    private final static FileFilter dirFilter = new FileFilter() {
-
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
-            }
-        };
 }

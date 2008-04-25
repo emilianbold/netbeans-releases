@@ -40,18 +40,14 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
-
-
-
 
 /**
  *
@@ -71,11 +67,9 @@ public class ForEachCustomizer extends javax.swing.JPanel {
         this.target = target;
         
         initComponents();
-
     }
     
     public boolean showDialog() {
-        
         dialogOK = false;
         
         String displayName = "";
@@ -106,8 +100,6 @@ public class ForEachCustomizer extends javax.swing.JPanel {
     }
     
     private void evaluateInput() {
-        
-        
         String collection = jTextField1.getText();
         forEach.setCollection(collection);
         
@@ -124,7 +116,6 @@ public class ForEachCustomizer extends javax.swing.JPanel {
         
         String step = jTextField5.getText();
         forEach.setStep(step);
-        
     }
     
     /** This method is called from within the constructor to

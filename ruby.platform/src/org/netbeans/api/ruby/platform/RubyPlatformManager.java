@@ -78,7 +78,7 @@ public final class RubyPlatformManager {
     
     public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
-    private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
+    private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby", "rubinius" }; // NOI18N
     
     /** For unit tests. */
     static Properties TEST_RUBY_PROPS;

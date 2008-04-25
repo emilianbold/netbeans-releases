@@ -233,7 +233,6 @@ public class XsltproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
-// todo r
         ep.setProperty(VALIDATION_FLAG, "false");
 
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");

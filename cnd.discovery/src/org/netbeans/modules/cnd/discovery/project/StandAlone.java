@@ -49,9 +49,21 @@ import org.netbeans.modules.cnd.discovery.api.KnownProject;
 public class StandAlone {
 
     public static void main(String[] args) {
+        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
         Map<String,String> res = processArguments(args);
         if (KnownProject.getDefault().canCreate(res)){
             KnownProject.getDefault().create(res);
+        } else {
+            System.err.println("Provider not found"); //NOI18N
+            if (!res.containsKey(KnownProject.PROJECT)) {
+                System.err.println("Input parameter "+KnownProject.PROJECT+" missing"); //NOI18N
+            }
+            if (!res.containsKey(KnownProject.ROOT)) {
+                System.err.println("Input parameter "+KnownProject.ROOT+" missing"); //NOI18N
+            }
+            if (!res.containsKey(KnownProject.NB_ROOT)) {
+                System.err.println("Input parameter "+KnownProject.NB_ROOT+" missing"); //NOI18N
+            }
         }
     }
 
@@ -59,9 +71,9 @@ public class StandAlone {
         Map<String,String> res = new HashMap<String, String>();
         int i = 0;
         while (i < args.length){
-	    if (args[i].startsWith("-")){
+	    if (args[i].startsWith("-")){ //NOI18N
                 String s = args[i].substring(1);
-                int e = s.indexOf("=");
+                int e = s.indexOf("="); //NOI18N
                 if (e>0){
                     res.put(s.substring(0,e),s.substring(e+1));
                 } else {

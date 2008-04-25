@@ -52,6 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -110,7 +111,9 @@ public final class ElementUtilities {
             }
         }
         
-        Node node = getNode(info, element);
+        CompilationInfo[] infoRet = new CompilationInfo[1];
+        Node node = getNode(info, element, infoRet);
+        info = infoRet[0];
         if (node == null) {
             return null;
         }
@@ -310,7 +313,8 @@ public final class ElementUtilities {
         return sb.toString();
     }
 
-    private static Node getNode(CompilationInfo info, Element element) {
+    private static Node getNode(CompilationInfo info, Element element, @NonNull CompilationInfo[] infoRet) {
+        infoRet[0] = info;
         Node node = null;
 
         if (element instanceof AstElement) {
@@ -328,7 +332,7 @@ public final class ElementUtilities {
                 indexedElement = match;
             }
 
-            node = AstUtilities.getForeignNode(indexedElement, null);
+            node = AstUtilities.getForeignNode(indexedElement, infoRet);
         } else {
             assert false : element;
         }

@@ -131,6 +131,8 @@ public class TargetDBSchemaGenerator {
             mLogger.infoNoloc(mLoc.t("PRJS001: Creating Table [ {0}", NormtableName));
             Statement stmt = conn.createStatement();
             stmt.execute(createSQL(NormtableName, ModelTableName));
+            stmt.close();
+            addForeignKeys(NormtableName, ModelTableName);
         } catch (SQLException ex) {
             mLogger.errorNoloc(mLoc.t("PRJS802: global"), ex);
         }
@@ -176,7 +178,7 @@ public class TargetDBSchemaGenerator {
         }
 
         columns.append(createPrimaryKeyConstraint(defaultCol));
-        columns.append(createForeignKeyConstraint(modeltablename));
+        //columns.append(createForeignKeyConstraint(modeltablename));
 
         return columns.toString();
     }
@@ -192,6 +194,19 @@ public class TargetDBSchemaGenerator {
             return ", CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id" + ") REFERENCES " + normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")";
         }
         return "";
+    }
+    private void addForeignKeys(String normtablename, String modeltablename) {
+        String tablename = modeltablename.substring(modeltablename.lastIndexOf(".") + 1);
+        if (!tablename.equals(lookup.getRootName())) {
+            try {
+                Statement stmt1 = conn.createStatement();
+		mLogger.infoNoloc(mLoc.t("PRJS020: Creating Foreign Key [ {0} ] on table [ {1} ]. Reference table is [ {2} ]", "fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase(), normtablename, normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")"));
+                stmt1.execute("ALTER TABLE " + normtablename + " ADD CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id" + ") REFERENCES " + normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")");
+                stmt1.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     private String createOrganizationString(String normtablename) {

@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -77,8 +77,8 @@ import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.soa.validation.Action;
-import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.action.ValidationAction;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -348,7 +348,7 @@ public class DesignerMultiViewElement extends TopComponent
 
             // vlv: valdiation
             toolbar.addSeparator();
-            toolbar.add(new Action(getValidationController()));
+            toolbar.add(new ValidationAction(getValidationController()));
             
             // ksorokin: breakpoints
             toolbar.addSeparator();
@@ -589,7 +589,6 @@ public class DesignerMultiViewElement extends TopComponent
         Node delegate = myDataObject.getNodeDelegate();
         myNodesMediator = new ActivatedNodesMediator(delegate);
         myNodesMediator.setExplorerManager(this);
-        
         
 /**
 new ProxyLookup(new Lookup[] {

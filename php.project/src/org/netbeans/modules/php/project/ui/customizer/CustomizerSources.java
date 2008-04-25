@@ -52,9 +52,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
+import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
-import org.netbeans.modules.php.project.ui.DocumentRoots;
-import org.netbeans.modules.php.project.ui.DocumentRoots.Root;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -173,12 +173,12 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     }
 
     private LocalServer[] getCopyTargets(LocalServer initialLocalServer) {
-        List<Root> roots = DocumentRoots.getRoots(getWebFolderName());
+        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(getWebFolderName());
 
         int size = roots.size() + 1;
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         localServers.add(initialLocalServer);
-        for (Root root : roots) {
+        for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot());
             localServers.add(ls);
         }

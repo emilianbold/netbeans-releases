@@ -393,7 +393,11 @@ public class Util {
     public static String pluralize(String name) {
         return Inflector.getInstance().pluralize(singularize(name));
     }
-
+    
+    public static String camelize(String name, boolean lower) {
+        return Inflector.getInstance().camelize(name.replace('-', '_'), lower);
+    }
+ 
     public static String[] ensureTypes(String[] types) {
         if (types == null || types.length == 0 || types[0].length() == 0) {
             types = new String[]{String.class.getName()                    };
@@ -1652,15 +1656,21 @@ public class Util {
         DialogDisplayer.getDefault().notify(desc);
     }
 
-    public static String createPrintStatement(String pkg, String serviceName,
+    public static String createPrintStatement(String pkg, String typeName,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String indent) {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
-            String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
-            methodBody += indent + resultClass + " resultObj = " +
-                    "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
+            if (!isPrimitive(typeName)) {
+                String resultClass = pkg + "." + Util.camelize(typeName, false);
+                methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsObject(" + resultClass + ".class);\n";
+            } else {
+                String resultClass = Util.camelize(typeName, false);
+                methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
+            }
         }
         methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
         methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
@@ -1669,6 +1679,11 @@ public class Util {
         return methodBody;
     }
 
+    private static boolean isPrimitive(String typeName) {
+        return typeName.equals("integer") || typeName.equals("string") || typeName.equals("boolean") ||
+                typeName.equals("float") || typeName.equals("long");  //NOI18N
+    }
+    
     public static void addInputParamField(JavaSource source,
             final ParameterInfo p, final String[] annotations, final Object[] annotationAttrs) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {

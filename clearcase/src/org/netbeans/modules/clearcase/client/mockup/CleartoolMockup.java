@@ -181,7 +181,7 @@ public class CleartoolMockup extends Process implements Runnable {
              processMkElem(args);            
         } else if(ctCommand.equals("uncheckout")) {
              processUNCO(args);            
-        } else if(ctCommand.equals("rm")) {
+        } else if(ctCommand.equals("rmname")) {
              processRM(args);            
         } else if(ctCommand.equals("get")) {
              processGET(args);            
@@ -563,6 +563,7 @@ public class CleartoolMockup extends Process implements Runnable {
             }
         }                
         for (File file : files) {
+            file.delete();
             Repository.getInstance().removeEntry(file);
         }
     }

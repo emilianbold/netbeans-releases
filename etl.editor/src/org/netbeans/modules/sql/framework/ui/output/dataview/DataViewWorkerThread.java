@@ -80,6 +80,7 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.util.Exceptions;
 
 /**
  * @author Ahimanikya Satapathy
@@ -123,7 +124,7 @@ class DataViewWorkerThread extends SwingWorker {
         }
         dataOutputPanel.refreshButton.setEnabled(true);
         dataOutputPanel.refreshField.setEnabled(true);
-        if (this.dbTable instanceof SQLDBTable) {
+        if (this.dbTable instanceof SQLDBTable){
             if (((dataOutputPanel.nowCount - dataOutputPanel.maxRows) > 0) && (dataOutputPanel.totalCount != 0)) {
                 dataOutputPanel.first.setEnabled(true);
                 dataOutputPanel.previous.setEnabled(true);
@@ -151,10 +152,10 @@ class DataViewWorkerThread extends SwingWorker {
             }
             dataOutputPanel.insert.setEnabled(true);
         } else {
-            dataOutputPanel.first.setEnabled(false);
-            dataOutputPanel.next.setEnabled(false);
-            dataOutputPanel.last.setEnabled(false);
-            dataOutputPanel.previous.setEnabled(false);
+            dataOutputPanel.first.setEnabled(true);
+            dataOutputPanel.next.setEnabled(true);
+            dataOutputPanel.last.setEnabled(true);
+            dataOutputPanel.previous.setEnabled(true);
             dataOutputPanel.commit.setEnabled(false);
             dataOutputPanel.deleteRow.setEnabled(false);
             dataOutputPanel.insert.setEnabled(false);
@@ -178,6 +179,18 @@ class DataViewWorkerThread extends SwingWorker {
         }
     }
 
+    private void shutdownConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                if(conn.getMetaData().getDriverName().contains("Axion")) {
+                    conn.createStatement().execute("shutdown");
+                }
+                conn.close();
+            } catch (SQLException e) {
+                conn = null;
+            }
+        }
+    }
     private void showDataForDBTable() {
         Statement stmt = null;
         Connection conn = null;
@@ -186,7 +199,7 @@ class DataViewWorkerThread extends SwingWorker {
             DBTableMetadata meta = dataOutputPanel.meta;
             DB db = DBFactory.getInstance().getDatabase(meta.getDBType());
             conn = meta.createConnection();
-
+            if (conn != null) {
             String resetFetchSizeSQL = null;
             if (meta.isDBType(DBConstants.SYBASE)) {
                 conn.setAutoCommit(false);
@@ -226,7 +239,7 @@ class DataViewWorkerThread extends SwingWorker {
             ResultSet rs = pstmt.executeQuery();
 
             dataOutputPanel.queryView.setEditable(true);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount+1);
+            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount-1);
 
             rs.close();
             pstmt.close();
@@ -248,7 +261,7 @@ class DataViewWorkerThread extends SwingWorker {
             if (resetFetchSizeSQL != null) {
                 stmt.execute(resetFetchSizeSQL);
             }
-
+            }
         } catch (Exception e) {
             this.errMsg = e.getMessage();
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
@@ -269,6 +282,7 @@ class DataViewWorkerThread extends SwingWorker {
         ResultSet rs = null;
         Statement stmt = null;
         Connection conn = null;
+        int dbType;
 
         try {
             SQLJoinOperator joinOperator = (SQLJoinOperator) dbTable;
@@ -358,7 +372,7 @@ class DataViewWorkerThread extends SwingWorker {
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {
-            closeConnection(conn);
+            shutdownConnection(conn);
         }
     }
 
@@ -400,7 +414,7 @@ class DataViewWorkerThread extends SwingWorker {
                 } catch (ClassNotFoundException e) {
                 }
                 conn = DBExplorerUtil.createConnection("org.axiondb.jdbc.AxionDriver", "jdbc:axiondb:joinview", "sa", "sa");
-                stmt = conn.createStatement();
+                stmt = conn.createStatement();        
                 it = joinView.getSourceTables().iterator();
                 StatementContext joinContext = new StatementContext();
                 while (it.hasNext()) {
@@ -436,7 +450,7 @@ class DataViewWorkerThread extends SwingWorker {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(buf.toString().trim());
             dataOutputPanel.queryView.setEditable(false);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.recordToRefresh, 0);
+            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows,dataOutputPanel.nowCount-1);
             rs.close();
             stmt.close();
             try {
@@ -450,7 +464,8 @@ class DataViewWorkerThread extends SwingWorker {
             dataOutputPanel.queryView.clearView();
             dataOutputPanel.totalRowsLabel.setText("0");
         } finally {
-            closeConnection(conn);
+            shutdownConnection(conn);
         }
+        
     }
 }

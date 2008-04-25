@@ -72,7 +72,10 @@ public class TMapComponentBuildVisitor implements TMapVisitor {
     public void visit(TransformMap transformMap) {
         if (isAcceptable(TMapComponents.SERVICE)) {
             setResult(new ServiceImpl(getModel(), getElement()));
+        } else if (isAcceptable(TMapComponents.IMPORT)) {
+            setResult(new ImportImpl(getModel(), getElement()));
         }
+
     }
 
     public void visit(Import imprt) {

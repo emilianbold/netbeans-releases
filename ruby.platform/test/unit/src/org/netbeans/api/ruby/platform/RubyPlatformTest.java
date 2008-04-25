@@ -136,6 +136,9 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testHasFastDebuggerInstalledExactness() throws IOException {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
         installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
         installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
         assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());
@@ -167,5 +170,17 @@ public class RubyPlatformTest extends RubyTestBase {
         RubyPlatform.Info computed = RubyPlatformManager.computeInfo(platform.getInterpreterFile());
         assertEquals("correct info for bundled JRuby", computed, info);
         assertEquals("correct info for bundled JRuby", computed.getJVersion(), info.getJVersion());
+    }
+    
+    public void testRubinius() throws IOException {
+        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        assertNotNull("rubinius supported", rubinius);
+        assertTrue("is Rubinius", rubinius.isRubinius());
+        assertNotNull("has label", rubinius.getLabel());
+        assertTrue("is valid", rubinius.isValid());
+        assertFalse("is default", rubinius.isDefault());
+        assertEquals("right version", "0.1", rubinius.getVersion());
+        assertEquals("right ruby lib", new File(rubinius.getHome(), "lib").getAbsolutePath(), rubinius.getLibDir());
+        assertNull("does not throw AssertionError", rubinius.getSystemRoot(FileUtil.toFileObject(new File(rubinius.getHome(), "lib"))));
     }
 }

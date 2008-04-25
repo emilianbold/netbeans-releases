@@ -50,8 +50,6 @@ import javax.swing.ListCellRenderer;
 
 class ToolTipCombo extends JComboBox {
 
-    private final static boolean debug = false;
-
     private static final long serialVersionUID = 1189442122448524856L;
 
     ToolTipCombo(Object[] o) {
@@ -68,10 +66,6 @@ class ToolTipCombo extends JComboBox {
 	    setToolTipText(o[0].toString()); 
     }
 	    
-    private void log(String s) { 
-	System.out.println("ToolTipCombo" + s);
-    }
-
     class PathRenderer extends JLabel implements ListCellRenderer { 
 
         private static final long serialVersionUID = 1323260132420573174L;
@@ -81,13 +75,8 @@ class ToolTipCombo extends JComboBox {
 	}
 
 	public Component getListCellRendererComponent(JList list,
-						      Object value,
-						      int index,
-						      boolean isSelected,
-						      boolean cellHasFocus) {
-	    
-	    if(debug) log("::getListCellRendererComponent()"); //NOI18N
-	    if(debug) log("\t" + value.toString()); //NOI18N
+                Object value, int index, boolean isSelected, boolean cellHasFocus)
+        {
 	    setText(value.toString());
 	    setToolTipText(value.toString()); 
 	    return this;

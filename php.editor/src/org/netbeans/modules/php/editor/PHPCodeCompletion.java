@@ -157,7 +157,7 @@ public class PHPCodeCompletion implements Completable {
     private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
-    private NameKind prefixNameKind;
+    private NameKind nameKind;
     
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         try {
@@ -242,7 +242,7 @@ public class PHPCodeCompletion implements Completable {
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
-        this.prefixNameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
         
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
@@ -296,7 +296,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
@@ -321,6 +321,7 @@ public class PHPCodeCompletion implements Completable {
                 
                 String varName = tokenSequence.token().text().toString();
                 String typeName = null;
+                boolean completeDollarPrefix = true;
 
                 if (varName.equals("self")) { //NOI18N
                     ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -344,6 +345,7 @@ public class PHPCodeCompletion implements Completable {
                         typeName = classDecl.getName().getName();
                         staticContext = false;
                         instanceContext = true;
+                        completeDollarPrefix = false;
                     }
                 } else {
                     if (staticContext) {
@@ -364,8 +366,8 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (typeName != null){
                     Collection<IndexedFunction> methods = includeInherited ?
-                        request.index.getAllMethods(request.result, typeName, request.prefix, prefixNameKind) :
-                        request.index.getMethods(request.result, typeName, request.prefix, prefixNameKind);
+                        request.index.getAllMethods(request.result, typeName, request.prefix, nameKind) :
+                        request.index.getMethods(request.result, typeName, request.prefix, nameKind);
                     
                     for (IndexedFunction method : methods){
                         if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
@@ -374,18 +376,24 @@ public class PHPCodeCompletion implements Completable {
                     }
                     
                     Collection<IndexedConstant> properties = includeInherited ?
-                        request.index.getAllProperties(request.result, typeName, request.prefix, prefixNameKind) :
-                        request.index.getProperties(request.result, typeName, request.prefix, prefixNameKind);
+                        request.index.getAllProperties(request.result, typeName, request.prefix, nameKind) :
+                        request.index.getProperties(request.result, typeName, request.prefix, nameKind);
                     
                     for (IndexedConstant prop : properties){
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
-                            proposals.add(new VariableItem(prop, request));
+                            VariableItem item = new VariableItem(prop, request);
+                            
+                            if (!completeDollarPrefix) {
+                                item.doNotInsertDollarPrefix();
+                            }
+                            
+                            proposals.add(item);
                         }
                     }
                     
                     if (staticContext) {
                         Collection<IndexedConstant> classConstants = request.index.getClassConstants(
-                                request.result, typeName, request.prefix, prefixNameKind);
+                                request.result, typeName, request.prefix, nameKind);
                         
                         for (IndexedConstant constant : classConstants) {
                             proposals.add(new VariableItem(constant, request));
@@ -419,12 +427,12 @@ public class PHPCodeCompletion implements Completable {
         // FUNCTIONS
         PHPIndex index = request.index;
 
-        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
             proposals.add(new FunctionItem(function, request));
         }
 
         // CONSTANTS
-        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
             proposals.add(new ConstantItem(constant, request));
         }
 
@@ -475,13 +483,16 @@ public class PHPCodeCompletion implements Completable {
             
             if (statement instanceof ExpressionStatement){
                 String varName = extractVariableNameFromExpression(statement);
+                String varType = extractVariableTypeFromExpression(statement);
                 
-                if (varName != null && varName.startsWith(namePrefix)) {
+                if (varName != null 
+                        && (varName.startsWith(namePrefix) 
+                        || nameKind == NameKind.CASE_INSENSITIVE_PREFIX 
+                        && varName.toLowerCase().startsWith(namePrefix.toLowerCase()))) {
                     IndexedConstant ic = new IndexedConstant(varName, null,
-                            null, localFileURL, null, 0, -1);
+                            null, localFileURL, -1, 0, varType);
 
-                    String varType = extractVariableTypeFromExpression(statement);
-                    ic.setTypeName(varType);
+                    
                     localVars.put(varName, ic);
                 }
             } else if (!offsetWithinStatement(position, statement)){
@@ -524,13 +535,10 @@ public class PHPCodeCompletion implements Completable {
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
+                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
                         IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, null, 0, -1);
+                                null, localFileURL, -1, 0, type);
                         
-                        if (param.getParameterType() != null) {
-                            ic.setTypeName(param.getParameterType().getName());
-                        }
-
                         localVars.put(varName, ic);
                     }
                 }
@@ -915,20 +923,21 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private class VariableItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
+        private boolean insertDollarPrefix = true;
 
         VariableItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);
-            this.constant = constant;
         }
         
         @Override public String getLhsHtml() {
             HtmlFormatter formatter = request.formatter;
-            String typeName = constant.getTypeName();
+            String typeName = ((IndexedConstant)getElement()).getTypeName();
             formatter.reset();
+            
             if (typeName == null) {
                 typeName = "?"; //NOI18N
             }
+            
             formatter.type(true);
             formatter.appendText(typeName);
             formatter.type(false);
@@ -943,6 +952,21 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            
+            if (!insertDollarPrefix && name.startsWith("$")){ //NOI18N
+                return name.substring(1);
+            }
+            
+            return name;
+        }
+        
+        void doNotInsertDollarPrefix(){
+            insertDollarPrefix = false;
         }
     }
     

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -167,7 +168,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         isAfter = false;
         
         Caret caret = target.getCaret();
-        BaseDocument doc = (BaseDocument)document;
+        final BaseDocument doc = (BaseDocument)document;
 
         boolean insertMatching = isInsertMatchingEnabled(doc);
         
@@ -439,16 +440,20 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Bracket
         }
 
         if (id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END) {
-            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
+            final Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
                 PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
             boolean isEmptyComment = (Boolean) ret[1];
             
             if (isEmptyComment) {
-                int indent = LexUtilities.getLineIndent(doc, ts.offset());
-                GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                final int indent = LexUtilities.getLineIndent(doc, ts.offset());
+                
+                //XXX: workaround for issue #133210:
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                    }
+                });
             }
-            
-            // XXX: hook up the doc fields auto-generation here, if isEmptyComment == true
             
             return (Integer) ret[0];
         }
