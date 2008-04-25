@@ -593,17 +593,18 @@ public final class Utils {
         else {
             roleRef = partnerLink.getMyRole();
         }
-        if ( roleRef == null ){
+        if (roleRef == null) {
             return null;
         }
         Role role = roleRef.get();
-        if ( role == null ){
+
+        if (role == null) {
             return null; 
         }
         return role.getPortType();
     }
     
-    public static boolean equals( QName name1 , QName name2 ) {
+    public static boolean equals(QName name1, QName name2) {
         if ( name1 == null ) {
             return name2 == null;
         }

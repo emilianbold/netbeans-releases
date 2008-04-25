@@ -38,17 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp.api;
+package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+import java.net.MalformedURLException;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.LifecycleManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * @author Radek Matous
- *
  */
-//this class will be moved to php.project and php.project will lookup its impl.
-public interface Debugger {
-    public void debug( SessionId id );
-    public void debug(Project project, Runnable run, FileObject startFile);    
+public class RunSingleCommand extends RunCommand {
+    public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
+    /**
+     * @param project
+     */
+    public RunSingleCommand(PhpProject project) {
+        super(project);
+    }
+    
+    @Override
+    public void invokeAction(Lookup context) throws IllegalArgumentException {
+        LifecycleManager.getDefault().saveAll ();
+        try {
+            showURLForContext(context);
+        } catch (MalformedURLException ex) {
+            //TODO: improve error handling
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        return fileForContext(context) != null;
+    }
+    
+    @Override
+    public String getCommandId() {
+        return ID;
+    }    
 }

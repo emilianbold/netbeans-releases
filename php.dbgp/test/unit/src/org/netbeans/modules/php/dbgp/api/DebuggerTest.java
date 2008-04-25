@@ -94,20 +94,20 @@ public class DebuggerTest extends NbTestCase {
         assertNotNull(scriptFile);
         assertTrue(scriptFile.exists());
         final TestWrapper testWrapper = new TestWrapper(getTestForSuspendState(sessionId));
-        addBreakpoint(scriptFo, 7, testWrapper, new RunStatement(sessionId));
+        addBreakpoint(scriptFo, 7, testWrapper, new RunContinuation(sessionId));
         ProcessBuilder processBuilder = startDebugging(sessionId, scriptFile);
         Process process = processBuilder.start();
         process.waitFor();        
         testWrapper.assertTested();//sometimes, randomly fails 
     }
 
-    protected static Breakpoint addBreakpoint(final FileObject fo, final int line, final TestWrapper testObj, final MoveStatement move) {
+    protected static Breakpoint addBreakpoint(final FileObject fo, final int line, final TestWrapper testObj, final Continuation move) {
         Breakpoint breakpoint = new TestLineBreakpoint(createDummyLine(fo, line - 1, testObj, move));
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
         return breakpoint;
     }
 
-    static Line createDummyLine(final FileObject fo, final int editorLineNum, final TestWrapper testObj, final MoveStatement move) {
+    static Line createDummyLine(final FileObject fo, final int editorLineNum, final TestWrapper testObj, final Continuation move) {
         return new Line(Lookups.singleton(fo)) {
 
             public int getLineNumber() {
@@ -231,17 +231,16 @@ public class DebuggerTest extends NbTestCase {
         }
     }
 
-    private abstract static class MoveStatement extends BasedOnSession {
-        MoveStatement(SessionId sessionId) {
+    private abstract static class Continuation extends BasedOnSession {
+        Continuation(SessionId sessionId) {
             super(sessionId);
         }
 
         abstract void goAhead();
     }
 
-    private static class RunStatement extends MoveStatement {
-
-        RunStatement(SessionId sessionId) {
+    private static class RunContinuation extends Continuation {
+        RunContinuation(SessionId sessionId) {
             super(sessionId);
         }
 
