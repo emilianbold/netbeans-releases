@@ -53,14 +53,14 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
-                <folder name="HyperlinkProviders">
+                <!-- folder name="HyperlinkProviders">
                     <file name="GroovyHyperlinkProvider.instance">
                         <attr name="instanceClass" 
                               stringvalue="org.netbeans.modules.groovy.editor.GroovyHyperlinkProvider"/>
                         <attr name="instanceOf" 
                               stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
-                </folder>
+                </folder -->
 
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
@@ -143,6 +143,11 @@
                 <file name="hints.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider"/>
+                </file>
+                
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyDeclarationFinder"/>
                 </file>
                 
             </folder>
