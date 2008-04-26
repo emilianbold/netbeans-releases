@@ -204,8 +204,9 @@ public class Commands {
             int bias = -1;
             for(int i = 0; i < engines.length; i++) {
                 if(!skipContainer(engines[i])) {
+                    engines[i] = engines[i].trim();
                     int newBias = engineBias.indexOf(engines[i]);
-                    if(newBias >= 0 && newBias < bias) {
+                    if(newBias >= 0 && (bias == -1 || newBias < bias)) {
                         bias = newBias;
                     }
                     if(engine == null) {
