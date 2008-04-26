@@ -50,7 +50,7 @@ import javax.swing.JRadioButton;
 
 import javax.swing.JTextArea;
 import org.netbeans.api.project.Project;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

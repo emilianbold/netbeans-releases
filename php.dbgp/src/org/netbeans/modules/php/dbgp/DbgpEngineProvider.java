@@ -42,7 +42,6 @@ package org.netbeans.modules.php.dbgp;
 
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
 import org.netbeans.modules.php.dbgp.api.Debugger;
-import org.netbeans.modules.php.dbgp.api.StartActionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
@@ -65,9 +64,8 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
      * @see org.netbeans.spi.debugger.DebuggerEngineProvider#getEngineTypeID()
      */
     @Override
-    public String getEngineTypeID()
-    {
-        return Debugger.ENGINE_ID;
+    public String getEngineTypeID() {
+        return DebuggerImpl.ENGINE_ID;
     }
 
     /* (non-Javadoc)
@@ -109,7 +107,7 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
     
     private ContextProvider myContext;
     
-    private StartActionProvider myProvider;
+    private StartActionProviderImpl myProvider;
     
     private Object[] myServices;
 

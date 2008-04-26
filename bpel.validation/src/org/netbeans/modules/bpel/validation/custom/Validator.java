@@ -98,7 +98,9 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import static org.netbeans.modules.soa.ui.UI.*;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -111,7 +113,12 @@ public final class Validator extends BpelValidator {
   }
 
   @Override
-  public void visit(ForEach forEach) {
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
+  {
+
+  @Override
+  public void visit(ForEach forEach)
+  {
 //out();
     // # 124918
     checkCounters(forEach);
@@ -1009,6 +1016,8 @@ public final class Validator extends BpelValidator {
     myErrored.add(component);
     addError(key, component, name1, name2);
   }
+  
+  };}
 
   private List<Component> myErrored;
 }

@@ -52,12 +52,10 @@ import java.util.Date;
 import java.util.EventListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
-
 import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
 import org.openide.filesystems.FileChangeAdapter;

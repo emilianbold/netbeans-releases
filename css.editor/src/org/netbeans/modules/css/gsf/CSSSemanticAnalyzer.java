@@ -69,7 +69,8 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
     }
 
     public void run(CompilationInfo ci) throws Exception {
-
+        cancelled = false;
+        
         if (cancelled) {
             return;
         }
@@ -106,6 +107,13 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
                     if (!range.isEmpty()) { //filter virtual nodes
 
                         String propertyName = node.image().trim();
+                        //filter out generated code coloring
+                        if("EXPRESSION_LANGUAGE".equals(propertyName) 
+                                ||  "JAVA_CODE".equals(propertyName)
+                                || "PHP_CODE".equals(propertyName)) {
+                            return;
+                        }
+                        
                         if (CssAnalyser.isVendorSpecificProperty(propertyName)) {
                             //special highlight for vend. spec. properties
                             highlights.put(range, ColoringAttributes.PARAMETER_USE);

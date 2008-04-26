@@ -79,10 +79,12 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  */
 public class OpenTempl_defaultPack extends JellyTestCase {
 
-    public String DATA_PROJECT_NAME = "Sample";
+    public String DATA_PROJECT_NAME = "SampleProject";
     public String PACKAGE_NAME = "Source Package";
     public String PROJECT_NAME = "Java";
     public String workdirpath;
+    public String jdkVersion = ExtJellyTestCase.getJDKVersionCode();
+    public String pokus;
     MainWindowOperator mainWindow;
     ProjectsTabOperator pto;
     ComponentInspectorOperator cio;
@@ -126,11 +128,10 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     }
 
     // Add test methods here, they have to start with 'test' name.
-    
     //method create new project in parent dir to workdir
     public void begin() throws InterruptedException {
         DeleteDir.delDir(workdirpath + System.getProperty("file.separator") + DATA_PROJECT_NAME);
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         mainWindow = MainWindowOperator.getDefault();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         npwo.selectCategory(PROJECT_NAME);
@@ -147,7 +148,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         bo.push();
 
         log("Project " + DATA_PROJECT_NAME + " was created");
-        Thread.sleep(5000);
+        Thread.sleep(10000);
 
     }
 
@@ -180,12 +181,13 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     public void openTemplate(String templateName) throws InterruptedException {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DATA_PROJECT_NAME);
+        Thread.sleep(10000);
         nfwo.selectCategory("Swing GUI Forms");
         nfwo.selectFileType(templateName);
         nfwo.next();
         JComboBoxOperator jcb_package = new JComboBoxOperator(nfwo, 1);
         jcb_package.clearText();
-        Thread.sleep(2000);
+        Thread.sleep(5000);
 
         if ((templateName == "Bean Form")) {
             nfwo.next();
@@ -205,8 +207,8 @@ public class OpenTempl_defaultPack extends JellyTestCase {
      */
     public void testApplet() throws InterruptedException, IOException {
 
-        Thread.sleep(1000);
-        begin();
+        Thread.sleep(2000);
+//        begin();
 
         openTemplate("JApplet Form");
         Thread.sleep(10000);
@@ -248,7 +250,6 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         openTemplate("JInternalFrame Form");
 
         //check if template is generated correctly
-        System.out.println(getWorkDir().getAbsolutePath());
         //testFormFile("NewJInternalFrame");
         testJavaFile("NewJInternalFrame");
     }
@@ -298,9 +299,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         //Bug in generating of new Bean Form template 95403
         //testJavaFile("NewBeanForm");
         Thread.sleep(1000);
-        deleteProject();
-        //Timeout needed
-        Thread.sleep(1000);
+    //Timeout needed
     }
 
     public void testFormFile(String formfile) throws IOException {
@@ -308,7 +307,6 @@ public class OpenTempl_defaultPack extends JellyTestCase {
 
             getRef().print(VisualDevelopmentUtil.readFromFile(
                     getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form"));
-        // System.out.println("reffile: " + this.getName()+".ref");
 
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
@@ -322,26 +320,33 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     }
 
     public void testJavaFile(String javafile) throws IOException {
-        try {
-            String pokus = VisualDevelopmentUtil.readFromFile(
-                    getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
-            int start = pokus.indexOf("/*");
-            int end = pokus.indexOf("*/");
-            pokus = pokus.substring(0, start) + pokus.substring(end + 2);
 
-            start = pokus.indexOf("/**");
-            end = pokus.indexOf("*/");
-            pokus = pokus.substring(0, start) + pokus.substring(end + 2);
-            getRef().print(pokus);
-            // System.out.println("reffile: " + this.getName()+".ref");
+        try {
+            pokus = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath() +
+                    File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
+
+            getRef().print(createRefFile(pokus));
             log("Java reference file was created");
 
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
+        if (jdkVersion == "jdk15") {
+            assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile15.pass"), new File(getWorkDir(), javafile + ".diff"));
+        } else {
+            assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile.pass"), new File(getWorkDir(), javafile + ".diff"));
+        }
 
-        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile.pass"), new File(getWorkDir(), javafile + ".diff"));
+    }
 
+    public String createRefFile(String test) {
+        int start = test.indexOf("/*");
+        int end = test.indexOf("*/");
+        test = test.substring(0, start) + test.substring(end + 2);
 
+        start = test.indexOf("/**");
+        end = test.indexOf("*/");
+        test = test.substring(0, start) + test.substring(end + 2);
+        return test;
     }
 }

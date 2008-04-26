@@ -51,7 +51,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -65,11 +64,10 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final LocalServerController localServerComponent;
 
-    public LocationPanelVisual(WebFolderNameProvider webFolderNameProvider) {
+    public LocationPanelVisual() {
         initComponents();
-        localServerComponent = new LocalServerController(localServerComboBox, localServerButton, webFolderNameProvider,
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"),
-                ConfigureProjectPanel.DEFAULT_LOCAL_SERVER);
+        localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         init();
     }
 
@@ -163,17 +161,17 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(localServerComboBox, 0, 425, Short.MAX_VALUE)
+                        .add(localServerComboBox, 0, 269, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(localServerButton))
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
                     .add(urlInfoLabel)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -182,7 +180,7 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectNameLabel)
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -205,27 +203,25 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
                     .add(urlLabel)
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(urlInfoLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(urlInfoLabel))
         );
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/wizards/Bundle"); // NOI18N
-        projectNameLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Name")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleName("Project Name");
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectName_A11YDesc")); // NOI18N
-        projectLocationLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Location")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription("null");
         projectLocationTextField.getAccessibleContext().setAccessibleName("Project Location");
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectLocation_A11YDesc")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription("null");
         browseButton.getAccessibleContext().setAccessibleName("Browse Project Location");
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_BrowseLocation_A11YDesc")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription("null");
         createdFolderTextField.getAccessibleContext().setAccessibleName("Project Folder");
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_CreatedProjectFolder_A11YDesc")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
                 NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
-        setProjectLocation(newLocation);
+        if (newLocation != null) {
+            setProjectLocation(newLocation);
+        }
     }//GEN-LAST:event_browseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -45,6 +45,7 @@ import java.io.File;
 
 import javax.swing.tree.TreePath;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -87,10 +88,13 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
     public void initialize() {
         log(":: initialize");
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        MainWindowOperator.getDefault().maximize();        
+        new EventTool().waitNoEvent(500);
     }
 
     public void prepare() {
         log(":: prepare");
+        new EventTool().waitNoEvent(1000);
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         Node diag1 = new Node(pNode, "Model|org|gjt|sp|jedit|gui|AbbrevEditor");
         Node diag2 = new Node(pNode, "Model|org|gjt|sp|jedit|gui|IOProgressMonitor");
@@ -102,10 +106,15 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
         projectTree.clickOnPath(path1, 1, InputEvent.BUTTON1_MASK);
         new EventTool().waitNoEvent(500);
         projectTree.clickOnPath(path2, 1, InputEvent.BUTTON1_MASK, InputEvent.SHIFT_MASK);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(2000);
         projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
 
         log(projectTree.getSelectionCount() + " elements selected");
+        if (projectTree.getSelectionCount() != 30) {
+            for(TreePath tp : projectTree.getSelectionPaths()) {
+                log(tp.toString());
+            }
+        }
 
         JPopupMenuOperator selectMenu = new JPopupMenuOperator();
         selectMenu.pushMenu("Create Diagram From Selected Elements");

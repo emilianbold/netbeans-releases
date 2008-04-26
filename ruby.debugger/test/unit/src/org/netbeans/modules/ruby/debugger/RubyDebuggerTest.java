@@ -53,6 +53,7 @@ import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -396,6 +397,16 @@ public final class RubyDebuggerTest extends TestBase {
         p.waitFor();
     }
 
+    public void testRubiniusDebugging() throws IOException {
+        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        ExecutionDescriptor descriptor = new ExecutionDescriptor(rubinius);
+        // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
+        RubyDebuggerImplementation rdi = new RubyDebugger();
+        rdi.describeProcess(descriptor);
+        assertFalse("Rubinius debuggin is not supported yet", rdi.canDebug());
+        assertFalse("Rubinius debuggin is not supported yet", RubyDebugger.checkAndTuneSettings(descriptor));
+    }
+    
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }

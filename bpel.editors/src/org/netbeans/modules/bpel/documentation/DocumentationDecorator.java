@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
+import org.netbeans.modules.bpel.model.api.support.UniqueId;
 
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
@@ -52,7 +53,7 @@ import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.Descriptor;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -82,24 +83,30 @@ public final class DocumentationDecorator extends DecorationProvider
   @Override
   public Decoration getDecoration(BpelEntity entity) {
     String documentation = getDocumentation(entity);
+    UniqueId id = entity.getUID();
 //out();
 //out("entity: " + entity);
 //out(" docum: " + documentation);
 
-    if (entity != mySelectedElement && documentation == null) {
+    if ( !id.equals(mySelectedID) && documentation == null) {
       entity.removeCookie(myDecorationKey);
       return null;
     }
+//out();
+//out("entity: " + entity);
     Decoration decoration = (Decoration) entity.getCookie(myDecorationKey);
 
     if (decoration == null) {
-      DocumentationButton button =
-        new DocumentationButton((ExtensibleElements) entity, documentation);
+//out("  create deco");
+      DocumentationButton button = new DocumentationButton(id, documentation);
       ComponentsDescriptor descriptor = new ComponentsDescriptor();
       descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
       decoration = new Decoration(descriptor);
       entity.setCookie(myDecorationKey, decoration);
     }
+//    else {
+//out("  found in cookie");
+//    }
     ComponentsDescriptor descriptor = (ComponentsDescriptor) decoration.getDescriptor();
     DocumentationButton button = (DocumentationButton) descriptor.getComponent();
     button.updateText(documentation);
@@ -110,18 +117,18 @@ public final class DocumentationDecorator extends DecorationProvider
   public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
 //out("selection changed");
     if (newSelection instanceof ExtensibleElements) {
-      mySelectedElement = (ExtensibleElements) newSelection;
+      mySelectedID = newSelection.getUID();
     }
     else {
-      mySelectedElement = null;
+      mySelectedID = null;
     }
     fireDecorationChanged();
   }
 
   @Override
   public void release() {
+    mySelectedID = null;
     myDecorationKey = null;
-    mySelectedElement = null;
     getDesignView().getSelectionModel().removeSelectionListener(this);
   }
 
@@ -132,6 +139,6 @@ public final class DocumentationDecorator extends DecorationProvider
     return ((ExtensibleElements) entity).getDocumentation();
   }
 
+  private UniqueId mySelectedID;
   private Object myDecorationKey;
-  private ExtensibleElements mySelectedElement;
 }

@@ -1330,6 +1330,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <zip destfile="${l10n.kit}">
         <fileset dir="${nb_all}" includesfile="${nb_all}/installer/l10n.list"/>
         <fileset dir="${nb_all}" includesfile="${nb_all}/nbi/l10n.list"/>
+        <fileset dir="${nb_all}" includesfile="${nb_all}/ide.branding/l10n.list"/>
     </zip>
   </target>
 
@@ -1398,7 +1399,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="-hg-check-can-clean">
+  <target name="-hg-check-can-clean" unless="no.hg.clean">
     <available property="can.hg.clean" type="dir" file="../.hg"/>
   </target>
   <target name="-hg-clean-alternative" depends="-hg-check-can-clean" unless="can.hg.clean">
@@ -1774,7 +1775,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${generated.files.dir}" />
   </target>
   <target name="generate-golden-files" depends="generate-golden-files-init" >
-    <property name="deps.max.friends" value="25"/> <!-- so high because of org.netbeans.modules.xml.wsdl.bindingsupport.api (21) -->
+    <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     

@@ -346,13 +346,11 @@ public class AcceptanceTestCase extends JellyTestCase {
           "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(obj2BMarshalled.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(cr.getClass().getPackage().getName());",
           "javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();",
           "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, \"UTF-8\"); //NOI18N",
-          "",
           "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);",
           "marshaller.marshal(args, System.out);|marshaller.marshal(obj2BMarshalled, System.out);|marshaller.marshal(cr, System.out);",
           "} catch (javax.xml.bind.JAXBException ex) {",
           "// XXXTODO Handle exception",
           "java.util.logging.Logger.getLogger(\"global\").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N",
-          "",
           "}",
           "}"
         };
@@ -360,6 +358,11 @@ public class AcceptanceTestCase extends JellyTestCase {
         for( String sIdealCodeLine : asIdealCodeLines )
         {
           String sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+          while( sCodeLine.matches( "^[ \t\n]*$" ) )
+          {
+            eoJavaCode.pushDownArrowKey( );
+            sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+          }
           String[] asIdealVersions = sIdealCodeLine.split( "\\|" );
           boolean bFound = false;
           for( String sIdealVersion : asIdealVersions )

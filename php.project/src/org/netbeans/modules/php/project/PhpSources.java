@@ -44,6 +44,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -66,7 +67,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
      * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots}
      **/
     private boolean externalRootsRegistered;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.myHelper = helper;
@@ -95,15 +96,11 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
-        }
+        changeSupport.addChangeListener(changeListener);
     }
 
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
-        }
+        changeSupport.removeChangeListener(changeListener);
     }
 
     private Sources initSources() {
@@ -111,15 +108,15 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         /*
          * Main source root config.
          */
-        String label = NbBundle.getMessage(PhpProject.class, PhpProjectProperties.SOURCE_LBL);
-        sourcesHelper.addPrincipalSourceRoot(PhpProjectProperties.SRC_DIR, label, null, null);
+        String label = NbBundle.getMessage(PhpProject.class, "LBL_Node_Sources");
+        sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.SRC_DIR + "}", label, null, null); // NOI18N
 
         List<String> labels = new ArrayList<String>();
         List<String> roots = new ArrayList<String>();
         readSources(labels, roots);
         for (int i = 0; i < labels.size(); i++) {
             sourcesHelper.addPrincipalSourceRoot(roots.get(i), labels.get(i), null, null);
-            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProjectProperties.SOURCES_TYPE_PHP, labels.get(i), null, null);
+            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProject.SOURCES_TYPE_PHP, labels.get(i), null, null);
         }
 
 
@@ -145,12 +142,11 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                 for (Entry<String, String> entry : props.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
-                    if (key.equals(PhpProjectProperties.SRC_DIR)) {
+                    if (key.equals("${" + PhpProjectProperties.SRC_DIR + "}")) { // NOI18N
                         continue;
                     }
-                    if (key.startsWith(PhpProjectProperties.SRC_) && key.endsWith(PhpProjectProperties._DIR)) {
-                        String lbl = key.substring(PhpProjectProperties.SRC_.length()).substring(0, PhpProjectProperties._DIR.length());
-                        labels.add(lbl);
+                    if (PhpProjectProperties.SRC_DIR.equals(key)) {
+                        labels.add("dir"); // NOI18N
                         roots.add(value);
                     }
                     continue;
@@ -175,7 +171,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
      */
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
-        if (property.startsWith(PhpProjectProperties.SRC_) && property.endsWith(PhpProjectProperties._DIR)) {
+        if (PhpProjectProperties.SRC_DIR.equals(property)) {
            this.fireChange();
         }
     }
@@ -190,23 +186,13 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private void fireChange() {
-        ChangeListener[] _listeners;
         synchronized (this) {
             if (delegate != null) {
                 delegate.removeChangeListener(this);
                 delegate = null;
             }
         }
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : _listeners) {
-            l.stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
 
 }

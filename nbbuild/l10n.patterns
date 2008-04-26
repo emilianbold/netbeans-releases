@@ -9,14 +9,16 @@
 **/docs/*.jar:**/*.jpg
 **/docs/*.jar:**/*.toc
 **/docs/*.jar:**/*.xml
+**/docs/*.jar:**/*.png
 **/org-netbeans-modules-javahelp.jar:org/netbeans/modules/javahelp/resources/masterHelpSet.xml
 **/*.jar:**/*.url
 **/defaulttheme*.jar:**/messages.properties
 **/org-netbeans-modules-deployment-deviceanywhere.jar:org/netbeans/modules/deployment/deviceanywhere/messages.properties
 **/org-netbeans-modules-uml-tomsawyer.jar:org/netbeans/modules/uml/tomsawyer/LabelBundle.properties
-#**/docs/syntaxref20.zip:
+**/docs/syntaxref20.zip:
 **/docs/GUIExamplesDescription.html:
 **/docs/quickstart_jump.html:
+**/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
 profiler*/**/config/Services/filtersets-default.xml:
 profiler*/**/config/Services/filters-default.xml:
 exclude **/*.jar:**/Bundle_noi18n.properties

@@ -118,7 +118,7 @@ made subject to such option by the copyright holder.
                         </file>
                         
                         <file name="freeway.zip" url="samples/freeway.zip">
-                            <attr name="position" intvalue="200"/>
+                            <attr name="position" intvalue="300"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/freeway.html"/>

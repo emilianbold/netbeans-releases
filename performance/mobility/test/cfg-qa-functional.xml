@@ -61,6 +61,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MPMeasureActions.class"/>
+                <include name="gui/MPMeasureActions.class/Create Mobile Application" expectedFail="133218"/>
             </patternset>
         </testset>
     </testbag>
@@ -88,6 +89,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MPMeasureActions.class"/>
+                <include name="gui/MPMeasureActions.class/Create Mobile Application" expectedFail="133218"/>
             </patternset>
         </testset>
     </testbag>
@@ -115,6 +117,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MPMeasureActions.class"/>
+                <include name="gui/MPMeasureActions.class/Create Mobile Application" expectedFail="133218"/>
             </patternset>
         </testset>
     </testbag>

@@ -42,7 +42,7 @@ package org.netbeans.modules.compapp.casaeditor.properties.extension;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
@@ -58,11 +58,17 @@ import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
  */
 public class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
-    private List<String> choices;
+//    private List<String> choices;
     private String defaultChoice;
     // a map of possible child extensibility elements keyed by the element names
     private Map<String, CasaExtensibilityElement> choiceMap;
     private CasaNode node;
+    
+    // a map mapping choice element name to display name
+    private Map<String, String> choiceElement2DisplayName;
+    
+    // a map mapping choice display name to element name
+    private Map<String, String> choiceDisplay2ElementName;
 
     public ChoiceExtensionProperty(
             CasaNode node,
@@ -74,6 +80,7 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
             String displayName,
             String description,
             Map<String, CasaExtensibilityElement> choiceMap,
+            Map<String, String> choiceElement2DisplayName,
             String defaultChoice) {
 
         super(node, extensionPointComponent, firstEE, lastEE, propertyType,
@@ -83,15 +90,23 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
         this.choiceMap = choiceMap;
         this.defaultChoice = defaultChoice;
 
-        choices = new ArrayList<String>();
-        choices.addAll(choiceMap.keySet());
-        Collections.sort(choices);
+//        choices = new ArrayList<String>();
+//        choices.addAll(choiceMap.keySet());
+        
+        this.choiceElement2DisplayName = choiceElement2DisplayName;
+        
+        choiceDisplay2ElementName = new LinkedHashMap<String, String>();
+        for (String choiceElementName : choiceElement2DisplayName.keySet()) {
+            String choiceDisplayName = choiceElement2DisplayName.get(choiceElementName);
+            choiceDisplay2ElementName.put(choiceDisplayName, choiceElementName);
+        }
+        
     }
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ComboBoxEditor<String> ret = 
-                new ComboBoxEditor<String>(choices.toArray(new String[]{}));
+        ComboBoxEditor<String> ret = new ComboBoxEditor<String>(
+                choiceDisplay2ElementName.keySet().toArray(new String[]{}));
 //        ret.setValue(defaultChoice);
         return ret;
     }
@@ -105,7 +120,8 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
         List<CasaExtensibilityElement> children =
                 casaEE.getChildren(CasaExtensibilityElement.class);
         if (children != null && children.size() == 1) {
-            return children.get(0).getQName().getLocalPart();
+            String elementName = children.get(0).getQName().getLocalPart();
+            return choiceElement2DisplayName.get(elementName);
         } else {
             return ""; // NOI18N
         }
@@ -117,6 +133,8 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
             InvocationTargetException {
         CasaExtensibilityElement lastEE =
                 (CasaExtensibilityElement) getComponent(); // e.x., redelivery:on-failure
+        
+        value = choiceDisplay2ElementName.get(value);
 
         if (firstEE.getParent() == null) { // e.x., firstEE: redelivery:redelivery
             // Purge the non-choice elements from the pre-built 

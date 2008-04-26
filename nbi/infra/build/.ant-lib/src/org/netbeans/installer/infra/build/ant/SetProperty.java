@@ -101,7 +101,9 @@ public class SetProperty extends Task {
      */
     public void execute() {        
         final Project project = getProject();
-        final String string = (source != null) ? project.getProperty(source): value;
+        final String string = (source != null) ? 
+            project.getProperty(Utils.resolveProperty(source, project)) : 
+            value;
         final String resolved = Utils.resolveProperty(string, project);
         log("Setting " + property + " to " + resolved);
         project.setProperty(property, resolved);

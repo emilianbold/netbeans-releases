@@ -43,7 +43,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
@@ -57,7 +56,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -151,7 +149,7 @@ public class WizardUtils {
         Service newService = (Service)service.copy(serviceGroup);
         List<Parameter> params = newService.getParameters();
         for (Parameter param:newService.getParameters()) {
-            if ("ServiceClass".equals(param.getNameAttr())) {
+            if ("ServiceClass".equals(param.getNameAttr())) { // NOI18N
                 param.setValue(serviceClass);
                 break;
             }
@@ -216,7 +214,7 @@ public class WizardUtils {
                 GenerateWsdl genWsdl = factory.createGenerateWsdl();
                 String defaultNs = AxisUtils.getNamespaceFromClassName(serviceClass);
                 genWsdl.setTargetNamespaceAttr(defaultNs);
-                genWsdl.setSchemaNamespaceAttr(defaultNs+"xsd");
+                genWsdl.setSchemaNamespaceAttr(defaultNs+"xsd"); // NOI18N
                 service.setGenerateWsdl(genWsdl);
             }
             axis2.addService(service);
@@ -291,7 +289,7 @@ public class WizardUtils {
                     ClassTree modifiedClass = null;
                     // add implementation clause
                     TypeElement exceptionElement = workingCopy.getElements().getTypeElement("javax.xml.stream.XMLStreamException"); //NOI18N
-                    TypeElement OMElement = workingCopy.getElements().getTypeElement("org.apache.axiom.om.OMElement"); //NOPI18N
+                    TypeElement OMElement = workingCopy.getElements().getTypeElement("org.apache.axiom.om.OMElement"); //NOI18N
                     
                     TypeMirror exceptionMirror = exceptionElement.asType();
                     TypeMirror OMMirror = OMElement.asType();
@@ -334,10 +332,10 @@ public class WizardUtils {
     }
     
     private static String createMethodBody(WsdlBindingInfo.WsdlOperationInfo wsdlOperation, Name className) {
-        return wsdlOperation.isInOnly()?"{}":"{"+
+        return wsdlOperation.isInOnly()?"{}":"{"+ // NOI18N
         "// TODO: to generate response, the following code can be customized:\n"+
-        "OMNode response = omFactory.createOMText(\"response text\");\n"+
-        "return createResponse(\""+wsdlOperation.getOperationName()+"Response\",\"return\", response); }";                
+        "OMNode response = omFactory.createOMText(\"response text\");\n"+ // NOI18N
+        "return createResponse(\""+wsdlOperation.getOperationName()+"Response\",\"return\", response); }"; // NOI18N
     }
     
     static void generateSkeletonMethods(FileObject targetFile, final String sourceElement, final String interfaceName) 

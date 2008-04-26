@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
  *
  */
 public class DebuggerFactory {
-
     public static Debugger getDebugger() {
         return Lookup.getDefault().lookup( Debugger.class );
     }

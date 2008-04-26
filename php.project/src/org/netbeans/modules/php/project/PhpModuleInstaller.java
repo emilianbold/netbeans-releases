@@ -27,8 +27,8 @@
  */
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.options.*;
-import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
+import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -45,14 +45,11 @@ public class PhpModuleInstaller extends ModuleInstall {
     }
 
     private void setPhpInterpreter() {
-        CommandLinePreferences properties 
-                = CommandLinePreferences.getInstance();
-        if (properties.getPhpInterpreter() == null) {
-            
-            String interpreter = SystemPackageFinder.getPhpInterpreterAny();
-            
+        PhpOptions.getInstance().getPhpInterpreter();
+        if (PhpOptions.getInstance().getPhpInterpreter() == null) {
+            String interpreter = PhpEnvironment.get().getAnyPhpInterpreter();
             if (interpreter != null) {
-                properties.setPhpInterpreter(interpreter);
+                PhpOptions.getInstance().setPhpInterpreter(interpreter);
             }
         }
     }

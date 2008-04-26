@@ -351,7 +351,7 @@ public final class GenerationUtils {
     public ClassTree ensureNoArgConstructor(ClassTree classTree) {
         TypeElement typeElement = SourceUtils.classTree2TypeElement(copy, classTree);
         if (typeElement == null) {
-            throw new IllegalArgumentException("No TypeElement for ClassTree " + classTree.getSimpleName());
+            throw new IllegalArgumentException("No TypeElement for ClassTree " + classTree.getSimpleName()); // NOI18N
         }
         ExecutableElement constructor = SourceUtils.getNoArgConstructor(copy, typeElement);
         MethodTree constructorTree = constructor != null ? copy.getTrees().getTree(constructor) : null;

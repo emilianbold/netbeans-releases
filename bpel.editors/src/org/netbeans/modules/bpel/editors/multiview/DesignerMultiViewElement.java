@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -60,7 +60,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
-import org.netbeans.modules.bpel.diagram.DiagramImpl;
+import org.netbeans.modules.bpel.search.Diagram;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
@@ -77,8 +77,8 @@ import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.soa.validation.Action;
-import org.netbeans.modules.soa.validation.Controller;
+import org.netbeans.modules.soa.validation.action.ValidationAction;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -155,7 +155,7 @@ import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
-import org.netbeans.modules.bpel.search.api.SearchManager;
+import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.bpel.documentation.DocumentationGenerator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -343,15 +343,12 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManager.getDefault();
+            toolbar.addSeparator();
+            toolbar.add(SearchManager.getDefault().getSearchAction());
 
-            if (manager != null) {
-              toolbar.addSeparator();
-              toolbar.add(manager.getSearchAction());
-            }
             // vlv: valdiation
             toolbar.addSeparator();
-            toolbar.add(new Action(getValidationController()));
+            toolbar.add(new ValidationAction(getValidationController()));
             
             // ksorokin: breakpoints
             toolbar.addSeparator();
@@ -459,20 +456,15 @@ public class DesignerMultiViewElement extends TopComponent
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        SearchManager manager = SearchManager.getDefault();
-        
-        if (manager != null) {
-          myFind = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
-          myFind.setVisible(false);
-          add(myFind, BorderLayout.SOUTH);
-        }
+        myFind = SearchManager.getDefault().createFind(new Diagram(getDesignView()), getDesignView());
+        myFind.setVisible(false);
+        add(myFind, BorderLayout.SOUTH);
+
         initActiveNodeContext();
         setVisible(true);
         
-        getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
-        getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
     }
 
     private Component myFind;
@@ -598,7 +590,6 @@ public class DesignerMultiViewElement extends TopComponent
         myNodesMediator = new ActivatedNodesMediator(delegate);
         myNodesMediator.setExplorerManager(this);
         
-        
 /**
 new ProxyLookup(new Lookup[] {
             //
@@ -663,30 +654,6 @@ new ProxyLookup(new Lookup[] {
         }
         removeAll();
     }
-    
-//    private void initializeLookup() {
-//        associateLookup(createAssociateLookup());
-//        initActiveNodeChangeListener();
-////        addPropertyChangeListener( new PropertyChangeListener() {        
-////                /**
-////                 * TODO: may not be needed at some point when parenting
-////                 * MultiViewTopComponent delegates properly to its peer's
-////                 * activatedNodes. see
-////                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
-////                 * TopComponent.setActivatedNodes is final
-////                 */
-////                public void propertyChange(PropertyChangeEvent event) {
-////                    // no constant in TopComponent...lame
-////                    if(event.getPropertyName().equals("activatedNodes")) {
-////                        // if(DEBUG)
-////                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
-////                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
-////                    }
-////                };
-////         });
-////        
-////        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
-//    }
     
     private Lookup createAssociateLookup() {
         

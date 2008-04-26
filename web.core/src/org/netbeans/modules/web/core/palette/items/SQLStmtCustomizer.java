@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,11 +49,6 @@ import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
-
-
-
-
 
 /**
  *
@@ -100,7 +96,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     }
     
     public boolean showDialog() {
-        
         dialogOK = false;
         
         descriptor = new DialogDescriptor
@@ -125,7 +120,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     }
     
     private void evaluateInput() {
-        
         String variable = jTextField1.getText();
         stmt.setVariable(variable);
         
@@ -137,7 +131,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         
         String stmtString = jTextArea1.getText();
         stmt.setStmt(stmtString);
-        
     }
     
     /** This method is called from within the constructor to

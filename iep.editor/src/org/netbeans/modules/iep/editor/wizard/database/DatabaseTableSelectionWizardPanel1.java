@@ -5,6 +5,8 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.awt.Component;
+import java.sql.Connection;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -15,7 +17,7 @@ public class DatabaseTableSelectionWizardPanel1 implements WizardDescriptor.Pane
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private DatabaseTableSelectionVisualPanel1 component;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -82,6 +84,11 @@ public class DatabaseTableSelectionWizardPanel1 implements WizardDescriptor.Pane
     }
 
     public void storeSettings(Object settings) {
+        WizardDescriptor wiz = (WizardDescriptor) settings;
+        List<TableInfo> selectedTables = component.getSelectedTables();
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES, selectedTables);
+        Connection connection = component.getSelectedConnection();
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_DB_CONNECTION, connection);
     }
 }
 

@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.openide.ErrorManager;
 
 /**
@@ -46,8 +47,9 @@ public class StepNodeNameTest extends StepNodeTest {
         super();
         mNodeName = nodeName;
     }
-    
-    public StepNodeNameTest(XPathModel xPathModel, SchemaComponent sComp) {
+
+    public StepNodeNameTest(XPathModel xPathModel, SchemaComponent sComp, 
+            SchemaModelsStack sms) {
         super();
         assert (sComp instanceof Named);
         String componentName = ((Named)sComp).getName();
@@ -56,7 +58,14 @@ public class StepNodeNameTest extends StepNodeTest {
         if (XPathUtils.isPrefixRequired(sComp)) {
             //
             String nsPrefix = null;
-            String namespaceURI = sComp.getModel().getEffectiveNamespace(sComp);
+            String namespaceURI = null;
+            if (sms == null) {
+                namespaceURI = sComp.getModel().getEffectiveNamespace(sComp);
+            } else {
+                namespaceURI = SchemaModelsStack.getEffectiveNamespace(sComp, sms);
+            }
+            assert namespaceURI != null;
+            //
             NamespaceContext nsContext = xPathModel.getNamespaceContext();
             if (nsContext != null) {
                 nsPrefix = nsContext.getPrefix(namespaceURI);

@@ -114,8 +114,8 @@ public interface WebServerProvider {
             return myProviders;
         }
         
-        public static WebServerProvider getDefaultProvider(String domain, String baseDir, String port, String docRoot) {
-            return new DefaultLocalServerProvider(domain, baseDir, port, docRoot);
+        public static WebServerProvider getDefaultProvider(String domain, String baseDir, String port, String docRoot, String indexFile) {
+            return new DefaultLocalServerProvider(domain, baseDir, port, docRoot, indexFile);
         }
                 
         private static void initProviders() {

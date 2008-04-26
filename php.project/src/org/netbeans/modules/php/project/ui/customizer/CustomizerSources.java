@@ -44,12 +44,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
+import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
@@ -73,8 +77,10 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     final Category category;
     final PhpProjectProperties properties;
     final PropertyEvaluator evaluator;
-    final LocalServerController localServerController;
-    final CopyFilesVisual copyFilesVisual;
+    private final LocalServerController localServerController;
+    private final CopyFilesVisual copyFilesVisual;
+    private final boolean originalCopySrcFiles;
+    private final String originalCopySrcTarget;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -85,15 +91,20 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         initEncoding();
         LocalServer sources = initSources();
-        boolean copyFiles = initCopyFiles();
+        originalCopySrcFiles = initCopyFiles();
+        LocalServer copyTarget = initCopyTarget();
+        LocalServer[] copyTargets = getCopyTargets(copyTarget);
+        originalCopySrcTarget = copyTarget.getSrcRoot();
         initUrl();
+        initIndexFile();
 
-        localServerController = new LocalServerController(localServerComboBox, localServerButton, this,
+        localServerController = LocalServerController.create(localServerComboBox, localServerButton,
                 NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
         localServerController.selectLocalServer(sources);
 
-        copyFilesVisual = new CopyFilesVisual(this);
-        copyFilesVisual.setCopyFiles(copyFiles);
+        copyFilesVisual = new CopyFilesVisual(this, copyTargets);
+        copyFilesVisual.selectLocalServer(copyTarget);
+        copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         encodingComboBox.addActionListener(new ActionListener() {
@@ -104,30 +115,15 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                     return;
                 }
                 encName = enc.name();
-                properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
+                properties.setEncoding(encName);
             }
         });
-        localServerController.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                validateFields(category);
-            }
-        });
-        copyFilesVisual.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                validateFields(category);
-            }
-        });
-        urlTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                validateFields(category);
-            }
-            public void removeUpdate(DocumentEvent e) {
-                validateFields(category);
-            }
-            public void changedUpdate(DocumentEvent e) {
-                validateFields(category);
-            }
-        });
+        ChangeListener defaultChangeListener = new DefaultChangeListener();
+        localServerController.addChangeListener(defaultChangeListener);
+        copyFilesVisual.addChangeListener(defaultChangeListener);
+        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        urlTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        indexFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
         // check init values
         validateFields(category);
@@ -135,7 +131,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
     private void initEncoding() {
         encodingComboBox.setRenderer(new EncodingRenderer());
-        encodingComboBox.setModel(new EncodingModel(evaluator.getProperty(PhpProjectProperties.SOURCE_ENCODING)));
+        encodingComboBox.setModel(new EncodingModel(evaluator.evaluate(properties.getEncoding())));
     }
 
     private LocalServer initSources() {
@@ -147,7 +143,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         projectFolderTextField.setText(projectPath);
 
         // sources
-        String src = evaluator.getProperty(PhpProjectProperties.SRC);
+        String src = evaluator.evaluate(properties.getSrcDir());
         File resolvedFile = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), src);
         FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
         if (resolvedFO == null) {
@@ -158,11 +154,43 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     }
 
     private boolean initCopyFiles() {
-        return Boolean.valueOf(evaluator.getProperty(PhpProjectProperties.COPY_SRC_FILES));
+        return Boolean.valueOf(evaluator.evaluate(properties.getCopySrcFiles()));
+    }
+
+    private LocalServer initCopyTarget() {
+        // copy target, if any
+        String copyTarget = evaluator.evaluate(properties.getCopySrcTarget());
+        if (copyTarget == null || copyTarget.length() == 0) {
+            return new LocalServer(""); // NOI18N
+        }
+        File resolvedFile = FileUtil.normalizeFile(new File(copyTarget));
+        FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
+        if (resolvedFO == null) {
+            // target directory doesn't exist?!
+            return new LocalServer(resolvedFile.getAbsolutePath());
+        }
+        return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
+    }
+
+    private LocalServer[] getCopyTargets(LocalServer initialLocalServer) {
+        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(getWebFolderName());
+
+        int size = roots.size() + 1;
+        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        localServers.add(initialLocalServer);
+        for (DocumentRoot root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            localServers.add(ls);
+        }
+        return localServers.toArray(new LocalServer[size]);
     }
 
     private void initUrl() {
-        urlTextField.setText(evaluator.getProperty(PhpProjectProperties.URL));
+        urlTextField.setText(properties.getUrl());
+    }
+
+    private void initIndexFile() {
+        indexFileTextField.setText(properties.getIndexFile());
     }
 
     public String getWebFolderName() {
@@ -174,7 +202,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         category.setValid(true);
 
         // sources
-        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true); // NOI18N
+        String err = LocalServerController.validateLocalServer(localServerController.getLocalServer(), "Sources", true, // NOI18N
+                true);
         if (err != null) {
             category.setErrorMessage(err);
             category.setValid(false);
@@ -182,9 +211,25 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         }
 
         // copy files
+        File srcDir = getSrcDir();
+        File copyTargetDir = getCopyTargetDir();
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
-            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", false); // NOI18N
+            if (copyTargetDir == null) {
+                // nothing selected
+                category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalFolderName"));
+                category.setValid(false);
+                return;
+            }
+            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
+                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath()), true);
+            if (err != null) {
+                category.setErrorMessage(err);
+                category.setValid(false);
+                return;
+            }
+            // #131023
+            err = Utils.validateSourcesAndCopyTarget(srcDir.getAbsolutePath(), copyTargetDir.getAbsolutePath());
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -199,25 +244,53 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             category.setErrorMessage(err);
             category.setValid(false);
             return;
+        } else if (!url.endsWith("/")) { // NOI18N
+            err = NbBundle.getMessage(CustomizerSources.class, "MSG_UrlNotTrailingSlash");
+            category.setErrorMessage(err);
+            category.setValid(false);
+            return;
+        }
+
+        // index file
+        String indexFile = indexFileTextField.getText();
+        if (!Utils.isValidFileName(indexFile)) {
+            err = NbBundle.getMessage(CustomizerSources.class, "MSG_IllegalIndexName");
+            category.setErrorMessage(err);
+            category.setValid(false);
+            return;
         }
 
         // everything ok
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
-        File srcDir = getSrcDir();
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        if (srcPath.startsWith("../")) { // NOI18N
+        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-        properties.setProperty(PhpProjectProperties.SRC, srcPath);
-        properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles));
-        properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
-        properties.setProperty(PhpProjectProperties.URL, url);
+        properties.setSrcDir(srcPath);
+        properties.setCopySrcFiles(String.valueOf(isCopyFiles));
+        properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
+        properties.setUrl(url);
+        properties.setIndexFile(indexFile);
     }
 
     private File getSrcDir() {
         LocalServer localServer = localServerController.getLocalServer();
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
+    }
+
+    private File getCopyTargetDir() {
+        LocalServer localServer = copyFilesVisual.getLocalServer();
+        // #132864
+        String srcRoot = localServer.getSrcRoot();
+        if (srcRoot == null || srcRoot.length() == 0) {
+            return null;
+        }
+        return FileUtil.normalizeFile(new File(srcRoot));
+    }
+
+    private boolean allowNonEmptyDirectory(String copyTargetDir) {
+        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir);
     }
 
     /** This method is called from within the constructor to
@@ -239,6 +312,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         urlTextField = new javax.swing.JTextField();
         localServerComboBox = new javax.swing.JComboBox();
         localServerButton = new javax.swing.JButton();
+        indexFileLabel = new javax.swing.JLabel();
+        indexFileTextField = new javax.swing.JTextField();
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/customizer/Bundle"); // NOI18N
@@ -260,33 +335,35 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse")); // NOI18N
 
+        indexFileLabel.setLabelFor(indexFileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_IndexFile")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectFolderLabel)
+                    .add(sourceFolderLabel)
+                    .add(urlLabel)
+                    .add(indexFileLabel)
+                    .add(encodingLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
+                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(sourceFolderLabel)
-                            .add(urlLabel)
-                            .add(encodingLabel))
-                        .add(13, 13, 13)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                            .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(localServerButton))))
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(projectFolderLabel)
+                        .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)))
+                        .add(localServerButton))
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -307,9 +384,13 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                     .add(urlLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(encodingLabel))
-                .addContainerGap(24, Short.MAX_VALUE))
+                    .add(indexFileLabel)
+                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(encodingLabel)
+                    .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -318,6 +399,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     private javax.swing.JPanel copyFilesPanel;
     private javax.swing.JComboBox encodingComboBox;
     private javax.swing.JLabel encodingLabel;
+    private javax.swing.JLabel indexFileLabel;
+    private javax.swing.JTextField indexFileTextField;
     private javax.swing.JButton localServerButton;
     private javax.swing.JComboBox localServerComboBox;
     private javax.swing.JLabel projectFolderLabel;
@@ -326,4 +409,22 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     private javax.swing.JLabel urlLabel;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
+
+    private class DefaultChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            validateFields(category);
+        }
+    }
+
+    private class DefaultDocumentListener implements DocumentListener {
+        public void insertUpdate(DocumentEvent e) {
+            validateFields(category);
+        }
+        public void removeUpdate(DocumentEvent e) {
+            validateFields(category);
+        }
+        public void changedUpdate(DocumentEvent e) {
+            validateFields(category);
+        }
+    }
 }

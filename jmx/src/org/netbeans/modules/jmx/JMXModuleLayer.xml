@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Projects">
         <!-- This customizer should be  located in existing Run category -->
+        <!-- jferaud comment out
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
                 <file name="Management.instance">
@@ -52,6 +53,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        -->
     </folder>
     <folder name="Templates">
         <folder name="Project">
@@ -101,24 +103,7 @@ made subject to such option by the copyright holder.
 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-           <!--
-            <file name="DynamicMBean.java" url="resources/templates/DynamicMBean.java.template">
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
 
-                <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
-
-                <attr name="instantiatingIterator"
-                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.DynamicMBeanIterator.createDynamicMBeanIterator"/>
-
-                <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/DynamicMBean.html"/>
-
-                <attr name="templateCategory" stringvalue="java-classes"/>
-            </file>
-            -->
             <file name="FromExistingClass.java" url="resources/templates/ExtendedStandardMBean.java.template">
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
@@ -145,24 +130,7 @@ made subject to such option by the copyright holder.
 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <!--
-            <file name="Agent.java" url="resources/templates/Agent.java.template">
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
 
-                <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.gif" />
-
-                <attr name="instantiatingIterator"
-                      methodvalue="org.netbeans.modules.jmx.agentwizard.JMXAgentIterator.createAgentIterator"/>
-
-                <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.html"/>
-
-                <attr name="templateCategory" stringvalue="java-classes"/>
-            </file>
-            -->
             <file name="Manager.java" url="resources/templates/Manager.java.template">
                 <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
@@ -176,18 +144,21 @@ made subject to such option by the copyright holder.
 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-
+            
+            <!-- jferaud comment out
             <file name="ManagementProperties.shadow">
                 <attr name="originalFile" methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableManagementProperties"/>
                 <attr name="hidden" boolvalue="true"/>
                 <attr name="position" intvalue="0"/>
             </file>
+            -->
         </folder>
     </folder> <!-- Templates -->
 
     <folder name="Management">
         <folder name="Templates">
-            <file name="management.properties" url="resources/templates/management.properties.template">
+        <!-- jferaud comment out
+        <file name="management.properties" url="resources/templates/management.properties.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
 
@@ -205,8 +176,9 @@ made subject to such option by the copyright holder.
 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
+            -->
 
-            <file name="MBeanInterface.java" url="resources/templates/MBeanInterface.java.template">
+           <file name="MBeanInterface.java" url="resources/templates/MBeanInterface.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
@@ -234,16 +206,7 @@ made subject to such option by the copyright holder.
 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <!-- XXX does not exist!
-            <file name="MBeanTest.java" url="resources/templates/MBeanTest.java.template">
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                <attr name="hidden" boolvalue="true"/>
 
-                <attr name="templateCategory" stringvalue="java-classes"/>
-            </file>
-            -->
         </folder>
     </folder>
 
@@ -261,6 +224,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <!-- jferaud comment out    
     <folder name="Actions">
         <folder name="Management">
             <file name="org-netbeans-modules-jmx-runtime-EnableMMAction.instance">
@@ -270,8 +234,8 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.jmx.runtime.AntActions.debugMM"/>
             </file>
             <file name="org-netbeans-modules-jmx-jconsole-LaunchAction.instance"/>
-        </folder> <!-- Actions -->
-    </folder> <!-- Management -->
+        </folder> 
+    </folder>
 
     <folder name="Toolbars">
         <folder name="Management">
@@ -293,29 +257,8 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Menu"> <!-- Menu actions -->
-        <!-- <folder name="Management">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.actions.Bundle" />
-            <file name="AddAttrAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddAttrAction" />
-            </file>
-            <file name="AddOpAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddOpAction" />
-            </file>
-            <file name="AddNotifAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddNotifAction" />
-            </file>
-            <file name="AddRegisterIntfAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddRegisterIntfAction" />
-            </file>
-            <file name="jmxMenuSeparator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <file name="RegisterMBeanAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.RegisterMBeanAction" />
-            </file>
-        </folder>
-        -->
+    <folder name="Menu">
+
         <folder name="RunProject">
             <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/empty.gif"/>
             <file name="jmxSeparator1.instance">
@@ -343,8 +286,9 @@ made subject to such option by the copyright holder.
                 <attr name="hidden" boolvalue="true"/>
                 <attr name="position" intvalue="468"/>
             </file>
-        </folder>  <!-- RunProject -->
-    </folder> <!-- Menu -->
+        </folder>  
+    </folder> 
+    -->
 
     <folder name="Services"> <!-- Services -->
         <folder name="JavaHelp"> <!-- Java Help -->
@@ -353,7 +297,8 @@ made subject to such option by the copyright holder.
             </file>
         </folder> <!-- Java Help -->
     </folder> <!-- Services -->
-
+    
+    <!-- jferaud comment out
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="JConsole.instance">
@@ -361,6 +306,8 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    -->
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">

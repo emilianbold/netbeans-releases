@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.schema;
 
 import java.io.IOException;
@@ -117,6 +116,7 @@ public final class SchemaDataObject extends MultiDataObject {
         return Lookups.fixed(new Object[]{
             super.getLookup(),
             this,
+            new SearchProvider(this),
             XmlFileEncodingQueryImpl.singleton()});
     }
     
@@ -135,26 +135,26 @@ public final class SchemaDataObject extends MultiDataObject {
      * @return  schema editor support.
      */
     public SchemaEditorSupport getSchemaEditorSupport() {
-	return schemaEditorSupport;
+    return schemaEditorSupport;
     }
 
     @Override
     public void handleDelete() throws IOException {
-	if (isModified()) {
-	    setModified(false);
-	}
-	getSchemaEditorSupport().getEnv().unmarkModified();
-	super.handleDelete();
+    if (isModified()) {
+        setModified(false);
+    }
+    getSchemaEditorSupport().getEnv().unmarkModified();
+    super.handleDelete();
     }
     
     @Override
     protected Node createNodeDelegate() {
-	SchemaNode n = new SchemaNode(this);
-	n.setIconBaseWithExtension(SCHEMA_ICON_BASE_WITH_EXT);
-	n.setShortDescription(NbBundle.getMessage(SchemaDataObject.class,
-	    "LBL_SchemaNode_desc"));
-	
-	return n;
+    SchemaNode n = new SchemaNode(this);
+    n.setIconBaseWithExtension(SCHEMA_ICON_BASE_WITH_EXT);
+    n.setShortDescription(NbBundle.getMessage(SchemaDataObject.class,
+        "LBL_SchemaNode_desc"));
+    
+    return n;
     }
 
     static class SchemaNode extends DataNode implements ModelProvider {
@@ -205,35 +205,35 @@ public final class SchemaDataObject extends MultiDataObject {
     
     @Override
     public void setModified(boolean modified) {
-	super.setModified(modified);
-	if (modified) {
-	    getCookieSet().add(getSaveCookie());
-	} else {
-	    getCookieSet().remove(getSaveCookie());
-	}
+    super.setModified(modified);
+    if (modified) {
+        getCookieSet().add(getSaveCookie());
+    } else {
+        getCookieSet().remove(getSaveCookie());
+    }
     }
     
     private SaveCookie getSaveCookie() {
-	return new SaveCookie() {
-	    public void save() throws IOException {
-		getSchemaEditorSupport().saveDocument();
-	    }
-	    
-	    @Override
-	    public int hashCode() {
-		return getClass().hashCode();
-	    }
-	    
-	    @Override
-	    public boolean equals(Object other) {
-		return other != null && getClass().equals(other.getClass());
-	    }
-	};
+    return new SaveCookie() {
+        public void save() throws IOException {
+        getSchemaEditorSupport().saveDocument();
+        }
+        
+        @Override
+        public int hashCode() {
+        return getClass().hashCode();
+        }
+        
+        @Override
+        public boolean equals(Object other) {
+        return other != null && getClass().equals(other.getClass());
+        }
+    };
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
+    return HelpCtx.DEFAULT_HELP;
     }
     
     @Override
@@ -253,7 +253,7 @@ public final class SchemaDataObject extends MultiDataObject {
     ////////////////////////////////////////////////////////////////////////////
     
     public static final String SCHEMA_ICON_BASE_WITH_EXT =
-	"org/netbeans/modules/xml/schema/resources/Schema_File.png"; // NOI18N
+    "org/netbeans/modules/xml/schema/resources/Schema_File.png"; // NOI18N
     private static final long serialVersionUID = -8229569186860053169L;
     
     

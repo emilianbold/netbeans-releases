@@ -60,9 +60,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
-import org.netbeans.modules.xml.xam.ui.highlight.HighlightGroup;
-import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
@@ -138,7 +135,6 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
@@ -177,7 +173,6 @@ public class EditorUtil {
       }
       Lookup.Provider provider = (Lookup.Provider) data;
 
-      // # 100277
       try {
         return (BpelModel) provider.getLookup().lookup(BpelModel.class);
       }
@@ -231,11 +226,6 @@ public class EditorUtil {
     }
     
     public static Icon getIcon(Component component) {
-        Node node = getNode(component);
-
-        if (node  != null) {
-          return new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
         Icon icon = null;
 
         if (component instanceof BpelEntity) {
@@ -247,7 +237,6 @@ public class EditorUtil {
                 icon = bpelNodeType.getIcon();
             }
         }
-        
         icon = icon != null 
                 ? icon 
                 : org.netbeans.modules.bpel.editors.api.nodes.NodeType.
@@ -255,51 +244,7 @@ public class EditorUtil {
         
         return icon;
     }
-                        
-    // vlv
-    public static String getToolTip(Component component) {
-      String type = getType(component);
 
-      if (type != null) {
-        return "<html>" + type + " <b>" + getName(component) + "</b></html>";
-      }
-      return getName(component);
-    }
-
-    // vlv
-    public static String getType(Component component) {
-      String type = null;
-      
-      if (component instanceof BpelEntity) {
-        type = ((BpelEntity) component).getElementType().getName();
-      }
-      else if (component instanceof SchemaComponent) {
-        type = ((SchemaComponent) component).getComponentType().getName();
-      }
-      else {
-        type = component.getClass().getName();
-      }
-      int k = type.lastIndexOf("."); // NOI18N
-
-      if (k == -1) {
-        return type;
-      }
-      return type.substring(k + 1);
-    }
-
-    // vlv
-    private static Node getNode(Component component) {
-      if (component instanceof SchemaComponent) {
-        SchemaComponent schemaComponent = (SchemaComponent) component;
-        CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(schemaComponent.getModel(), Lookups.singleton(schemaComponent));
-        return factory.createNode(schemaComponent);
-      }
-      if (component instanceof WSDLComponent) {
-        return NodesFactory.getInstance().create(component);
-      }
-      return null;
-    }
-    
     private static String removeHtmlHeader(String htmlString) {
         if (htmlString == null) {
             return htmlString;
@@ -489,20 +434,6 @@ public class EditorUtil {
         return basicNode;
     }
 
-    // vlv
-    public static Component getRoot(Model model) {
-      if (model instanceof BpelModel) {
-        return ((BpelModel) model).getProcess();
-      }
-      if (model instanceof SchemaModel) {
-        return ((SchemaModel) model).getSchema();
-      }
-      if (model instanceof WSDLModel) {
-        return ((WSDLModel) model).getDefinitions();
-      }
-      return null;
-    }
-
     /**
      * This method don't aware about bpelModel lock
      * @param component Component
@@ -523,6 +454,9 @@ public class EditorUtil {
     }
 
     public static void goToSource(Component component) {
+        if (component.getModel() == null) { // deleted
+          return;
+        }
         if ( !(component instanceof DocumentComponent)) {
             return;
         }
@@ -630,48 +564,15 @@ public class EditorUtil {
         }
     }
 
-    public static void goToDesign(Component component) {
-        goToDesign(component, null, null);
-    }
-
-    public static void goToDesign(final Component component, Object cookie, Object view) {
-        // vlv
-        if ( !(component instanceof BpelEntity)) {
-          HighlightManager manager = HighlightManager.getDefault();
-          List<HighlightGroup> groups = manager.getHighlightGroups(HighlightGroup.SEARCH);
-
-          if (groups != null) {
-            for (HighlightGroup group : groups) {
-              manager.removeHighlightGroup(group);
-            }
-          }
-          HighlightGroup group = new HighlightGroup(HighlightGroup.SEARCH);
-          Highlight highlight = new Highlight(component, Highlight.SEARCH_RESULT);
-          group.addHighlight(highlight);
-          manager.addHighlightGroup(group);
-
-          if (view instanceof SchemaTreeView && component instanceof SchemaComponent) {
-            ((SchemaTreeView) view).showComponent((SchemaComponent) component);
-            return;
-          }
-          if (view instanceof SchemaColumnsView && component instanceof SchemaComponent) {
-            ((SchemaColumnsView) view).showComponent((SchemaComponent) component);
-            return;
-          }
-          if (cookie instanceof ShowCookie) {
-//System.out.println();
-//System.out.println("========: " + cookie.getClass().getName());
-//System.out.println();
-            ((ShowCookie) cookie).show(new ResultItem(null, null, component, null));
-            return;
-          }
+    public static void goToDesign(final BpelEntity bpelEntity) {
+        if (bpelEntity.getModel() == null) { // deleted
           return;
         }
-        final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
 
         if (fo == null) {
-            return;                                                        }
+            return;                                                        
+        }
         try {
             DataObject d = DataObject.find(fo);
             final Lookup lookup = d != null ? d.getLookup() : null;
@@ -692,10 +593,9 @@ public class EditorUtil {
                         } else if (NodeType.UNKNOWN_TYPE.equals(nodeType)) {
                             nodeType = NodeType.DEFAULT_BPEL_ENTITY_NODE;
                         }
-                        Node bpelNode = FactoryAccess.getPropertyNodeFactory()
-                        .createNode(nodeType,bpelEntity, lookup);
-                        //TODO m
+                        Node bpelNode = FactoryAccess.getPropertyNodeFactory().createNode(nodeType, bpelEntity, lookup);
                         TopComponent designTc = WindowManager.getDefault().getRegistry().getActivated();
+
                         if (designTc != null) {
                             designTc.setActivatedNodes(new Node[0]);
                             designTc.setActivatedNodes(new Node[] {bpelNode});

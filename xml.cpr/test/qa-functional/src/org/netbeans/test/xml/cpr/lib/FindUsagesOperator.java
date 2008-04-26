@@ -101,10 +101,12 @@ public class FindUsagesOperator extends TopComponentOperator {
      */
     private static final ComponentChooser findUsagesSubchooser = new ComponentChooser() {
         public boolean checkComponent(Component comp) {
-            return comp.getClass().getName().endsWith("Usages"); //NOI18N
+            System.out.println( "**** check: " + comp.getClass().getName() );
+            return comp.getClass().getName().startsWith("Usages"); //NOI18N
         }
         
         public String getDescription() {
+            System.out.println( "**** descr" );
             return "Possibly this is Find Usages result output";// NOI18N
         }
     };

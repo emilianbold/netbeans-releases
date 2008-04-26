@@ -168,11 +168,6 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
     
     @Override
-    public boolean useDefaultServer () {
-        return false;
-    }
-    
-    @Override
     public String getServerID () {
         return project.getServerID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
     }

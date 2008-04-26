@@ -104,7 +104,7 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
         projectTree.clickOnPath(path1, 1, InputEvent.BUTTON1_MASK);
         new EventTool().waitNoEvent(500);
         projectTree.clickOnPath(path2, 1, InputEvent.BUTTON1_MASK, InputEvent.SHIFT_MASK);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(2000);
         projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
 
         log(projectTree.getSelectionCount() + " elements selected");
@@ -114,6 +114,7 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
         selectMenu.pushMenu("Create Diagram From Selected Elements");
 
         create_diag = new NbDialogOperator("Create New Diagram");
+        create_diag.move(0, 0);
         new EventTool().waitNoEvent(1000);
         JListOperator diag_type = new JListOperator(create_diag, 1);
         diag_type.selectItem("Class Diagram");

@@ -88,7 +88,7 @@ import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
-import static org.netbeans.modules.soa.ui.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -347,7 +347,7 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String getInfo(BpelEntity entity) {
-    String info = EditorUtil.getType(entity);
+    String info = getType(entity);
     String name = getName(entity);
 
     if (name != null) {
@@ -363,6 +363,16 @@ public class DocumentationGenerator implements ReportCookie {
     return info;
   }
 
+  private String getType(BpelEntity entity) {
+    String type = entity.getElementType().getName();
+    int k = type.lastIndexOf("."); // NOI18N
+
+    if (k == -1) {
+      return type;
+    }
+    return type.substring(k + 1);
+  }
+
   private String getName(BpelEntity entity) {
     if ( !(entity instanceof Named)) {
       return null;
@@ -371,11 +381,11 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String i18n(String key) {
-    return org.netbeans.modules.soa.ui.UI.i18n(DocumentationGenerator.class, key);
+    return org.netbeans.modules.xml.ui.UI.i18n(DocumentationGenerator.class, key);
   }
 
   private String i18n(String key, String param) {
-    return org.netbeans.modules.soa.ui.UI.i18n(DocumentationGenerator.class, key, param);
+    return org.netbeans.modules.xml.ui.UI.i18n(DocumentationGenerator.class, key, param);
   }
 
   private JComponent myCanvas;

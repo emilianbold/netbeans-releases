@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions" prio="1"
+    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions or gc" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -103,6 +103,14 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions4.class/Start Appserver"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or gc" prio="2"
+             executor="ide_performance" name="GC" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureGC.class"/>
             </patternset>
         </testset>
     </testbag>

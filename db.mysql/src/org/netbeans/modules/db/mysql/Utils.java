@@ -42,6 +42,12 @@ package org.netbeans.modules.db.mysql;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
@@ -169,5 +175,33 @@ public class Utils {
     public static boolean stringEquals(String str1, String str2) {
         return  (str1 == null && str2 == null) ||
                 (str2 != null && str1 != null && str1.equals(str2));
+    }
+    
+    /**
+     * Take a byte array encoded in UTF-8 and return the string for it.
+     * Can't say I understand this, this is cut-and-paste code.
+     * 
+     * @param bytes the UTF-8 encoded byte array
+     * @return the decoded string
+     */
+    public static String decodeUTF8ByteArray(byte[] bytes) 
+        throws CharacterCodingException {
+        CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder(); // NOI18N
+        ByteBuffer input = ByteBuffer.wrap(bytes);
+        int outputLength = (int)(bytes.length * (double)decoder.maxCharsPerByte());
+        if (outputLength == 0) {
+            return null; // NOI18N
+        }
+        char[] chars = new char[outputLength];
+        CharBuffer output = CharBuffer.wrap(chars);
+        CoderResult result = decoder.decode(input, output, true);
+        if (!result.isError() && !result.isOverflow()) {
+            result = decoder.flush(output);
+        }
+        if (result.isError() || result.isOverflow()) {
+            throw new CharacterCodingException();
+        } else {
+            return new String(chars, 0, output.position());
+        }
     }
 }

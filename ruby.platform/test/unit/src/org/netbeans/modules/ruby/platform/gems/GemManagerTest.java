@@ -168,10 +168,22 @@ public class GemManagerTest extends RubyTestBase {
         String version = "0.10.0";
         installFakeGem("ruby-debug-base", version, platform);
         assertEquals("native fast debugger available", version, gemManager.getLatestVersion("ruby-debug-base"));
-        assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
+        assertFalse("no jruby fast debugger available", gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0"));
         uninstallFakeGem("ruby-debug-base", version, platform);
         installFakeGem("ruby-debug-base", version, "java", platform);
-        assertEquals("no jruby fast debugger available", version, gemManager.getVersionForPlatform("ruby-debug-base"));
+        assertEquals("no jruby fast debugger available", true, gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0"));
+    }
+    
+    public void testIsGemInstalledForPlatform() throws IOException {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        for (String version : new String[]{"0.10.0", "0.10.1"}) {
+            installFakeGem("ruby-debug-base", version, platform);
+        }
+        GemManager gemManager = platform.getGemManager();
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0", false));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0", true));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", false));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", true));
     }
     
     public void testCompareGemVersions() {

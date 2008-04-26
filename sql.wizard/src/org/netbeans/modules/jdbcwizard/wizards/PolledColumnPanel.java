@@ -490,9 +490,7 @@ public class PolledColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
         column.setPreferredWidth(80);
-        column.setMaxWidth(120);
     }
 
     public void addColumnTable(final List testList) {

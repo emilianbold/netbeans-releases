@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 
@@ -32,6 +34,13 @@ public interface Import extends TMapComponent {
 
     TMapComponents TYPE = TMapComponents.IMPORT;
 
+    /**
+     * 
+     * @return imported moded
+     * @throws CatalogModelException
+     */
+    WSDLModel getImportModel() throws CatalogModelException;
+    
     /**
      * Getter for "namespace" attribute.
      *
