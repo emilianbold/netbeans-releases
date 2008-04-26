@@ -170,7 +170,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends BpelValidator {
     
-  public SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  @Override
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
+  {
 
   @Override 
   public void visit(PartnerLink p) {
@@ -223,7 +225,7 @@ public final class Validator extends BpelValidator {
        * portType value implied by the combination of the specified 
        * partnerLink and the role implicitly specified by the activity.
        */
-      checkPortTypeCombinedPartnerLink( invoke );
+      checkPortTypeCombinedPartnerLink(invoke);
       
       /*
        * Rule : For <invoke>, one-way invocation requires only the 
@@ -290,7 +292,7 @@ public final class Validator extends BpelValidator {
        * portType value implied by the combination of the specified 
        * partnerLink and the role implicitly specified by the activity.
        */
-      checkPortTypeCombinedPartnerLink( receive );
+      checkPortTypeCombinedPartnerLink(receive);
       
       /*
        * A "start activity" is a <receive> or <pick> activity that is 
@@ -325,7 +327,6 @@ public final class Validator extends BpelValidator {
        * attributes variable, inputVariable or outputVariable,
        * MAY be omitted,and the <fromParts> or <toParts>
        * construct MUST be omitted., IZ #87444
-
        */
       checkReplyVariableToPartCombination(reply);
 
@@ -336,7 +337,7 @@ public final class Validator extends BpelValidator {
        * portType value implied by the combination of the specified 
        * partnerLink and the role implicitly specified by the activity.
        */
-      checkPortTypeCombinedPartnerLink( reply );
+      checkPortTypeCombinedPartnerLink(reply);
       
       // Rule: All the WSDL message parts must be completely initialised
       // when using <toPart> element.
@@ -346,10 +347,8 @@ public final class Validator extends BpelValidator {
   @Override
   public void visit(OnMessage onMessage) {
       // Rule: Porttype should not be solicit-response or Notification.
-      checkSolicitResponsePortType(onMessage,
-              onMessage.getPortType());
+      checkSolicitResponsePortType(onMessage, onMessage.getPortType());
       checkNotificationPortType(onMessage, onMessage.getPortType());
-      
       
       // Rule: PortType should not contain overloaded operation names.
       checkOverloadedPortTypeOperation(onMessage, onMessage.getPortType());
@@ -361,7 +360,7 @@ public final class Validator extends BpelValidator {
        * portType value implied by the combination of the specified 
        * partnerLink and the role implicitly specified by the activity.
        */
-      checkPortTypeCombinedPartnerLink( onMessage );
+      checkPortTypeCombinedPartnerLink(onMessage);
       
       // Variable and <fromPart> must not be used at the simultaneously.
       checkOnMessageVariableFromPartCombination(onMessage);
@@ -374,6 +373,7 @@ public final class Validator extends BpelValidator {
        * (i.e. <catch> and <catchAll> elements).
        */
       boolean isInsideFaultHandlers = Utils.hasAscendant(reThrow, FaultHandlers.class); 
+
       if ( !isInsideFaultHandlers ){
           addError( FIX_RETHROW_OCCURANCE, reThrow );
       }
@@ -606,7 +606,7 @@ public final class Validator extends BpelValidator {
        * portType value implied by the combination of the specified 
        * partnerLink and the role implicitly specified by the activity.
        */
-      checkPortTypeCombinedPartnerLink( onEvent );
+      checkPortTypeCombinedPartnerLink(onEvent);
       
       /*
        * Check variable name.
@@ -634,10 +634,9 @@ public final class Validator extends BpelValidator {
        * associated scope only and MUST NOT be resolved to the ancestor
        * scopes.
        */
-
       checkImplicitlyDeclaredVars(onEvent);
-
       FromPartContainer fromParts = onEvent.getFromPartContaner();
+
       if (fromParts != null) {
           for (FromPart part : fromParts.getFromParts()) {
               checkVariableName(part);
@@ -1345,7 +1344,7 @@ public final class Validator extends BpelValidator {
       NamedComponentReference<PortType> portTypeRef = Utils.getPortTypeRef(partnerLinkRef, (Component) portTypeReference);
 
       if (portTypeRef == null || !Utils.equals(portTypeDirectRef.get(), portTypeRef.get())) {
-        addError("FIX_DifferentPortTypes", (BpelEntity) portTypeReference); // NOI18N
+        addError("FIX_SA00005", (BpelEntity) portTypeReference); // NOI18N
       }
 //out("    1: " + getName(portTypeRef.get()));
 //out("    2: " + getName(portTypeDirectRef.get()));

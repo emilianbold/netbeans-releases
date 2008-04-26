@@ -110,7 +110,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         return id2Bean.get(id);
     }
 
-    public SpringBean findBeanByIDOrName(String name) {
+    public SpringBean findBean(String name) {
         SpringBean bean = findBeanByID(name);
         if (bean == null) {
             bean = name2Bean.get(name);

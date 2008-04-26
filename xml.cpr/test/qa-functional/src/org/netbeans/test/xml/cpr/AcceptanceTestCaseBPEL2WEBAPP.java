@@ -519,7 +519,11 @@ public class AcceptanceTestCaseBPEL2WEBAPP extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
 
       endTest( );
     }

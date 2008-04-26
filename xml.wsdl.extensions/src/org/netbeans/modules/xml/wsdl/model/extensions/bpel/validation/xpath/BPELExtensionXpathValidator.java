@@ -65,8 +65,4 @@ public class BPELExtensionXpathValidator extends AbstractValidator {
     {
         return new BPELExtensionXpathVisitor(this);
     }
-
-
-    
 }
-

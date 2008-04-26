@@ -85,6 +85,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.model.spi.NameGenerator;
 import org.netbeans.modules.xslt.tmap.util.ImportRegistrationHelper;
+import org.openide.util.NbBundle;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -408,32 +409,23 @@ public final class Iterator implements TemplateWizard.Iterator {
 
             if (foTransform != null) {
                 tMapOp.addTransform(foTransform);
+                foTransform = getTransform(tMapOp, foTransform.getName());
             }
             if (invoke != null) {
                 tMapOp.addInvoke(invoke);
-            }
-            
-            if (tMapOp != null) {
-                List<Transform> children =  tMapOp.getTransforms();
-                if (children != null) {
-                    for (Transform child : children) {
-                        if (child.equals(foTransform)) {
-                            foTransform = child;
-                            break;
-                        }
-                    }
+                invoke = getInvoke(tMapOp, invoke.getName());
+                if (invoke != null) {
+                    configureInvoke(invoke, wizard);
                 }
-                
-               List<Invoke> invokes = tMapOp.getInvokes();
-               invoke = invokes == null || invokes.size() < 1 ? invoke : invokes.get(invokes.size()-1);
-                
             }
             
             if (foTransform != null) {
                 String result = getTMapVarRef(invoke.getInputVariable());
-                if (result != null) {
-                    foTransform.setResult(result);
+                if (result == null) {
+                    LOGGGER.log(Level.WARNING, NbBundle.getMessage(
+                            Iterator.class, "MSG_Warning_VariableReferenceNull", "result"));// NOI18N
                 }
+                foTransform.setResult(result);
             }
             
         } finally {
@@ -469,13 +461,19 @@ public final class Iterator implements TemplateWizard.Iterator {
 
             if (inTransform != null) {
                 tMapOp.addTransform(inTransform);
+                inTransform = getTransform(tMapOp, inTransform.getName());
             }
             invoke = createInvoke(tMapOp, inputInvokeVar, outputInvokeVar,
                       wizard, componentFactory);
 
             if (invoke != null) {
                 tMapOp.addInvoke(invoke);
+                invoke = getInvoke(tMapOp, invoke.getName());
+                if (invoke != null) {
+                    configureInvoke(invoke, wizard);
+                }
             }
+
             Transform outTransform = null;
             outTransform = createTransform(componentFactory, 
                     (String)wizard.getProperty(Panel.OUTPUT_FILE), 
@@ -483,17 +481,23 @@ public final class Iterator implements TemplateWizard.Iterator {
 
             if (outTransform != null) {
                 tMapOp.addTransform(outTransform);
+                outTransform = getTransform(tMapOp, outTransform.getName());
+
                 String source = getTMapVarRef(invoke.getOutputVariable());
-                if (source != null) {
-                    outTransform.setSource(source);
+                if (source == null) {
+                    LOGGGER.log(Level.WARNING, NbBundle.getMessage(
+                            Iterator.class, "MSG_Warning_VariableReferenceNull", "source"));// NOI18N
                 }
+                outTransform.setSource(source);
             }
             
             if (inTransform != null) {
                 String result = getTMapVarRef(invoke.getInputVariable());
-                if (result != null) {
-                    inTransform.setResult(result);
+                if (result == null) {
+                    LOGGGER.log(Level.WARNING, NbBundle.getMessage(
+                            Iterator.class, "MSG_Warning_VariableReferenceNull", "result"));// NOI18N
                 }
+                inTransform.setResult(result);
             }
             
         } finally {
@@ -708,6 +712,63 @@ public final class Iterator implements TemplateWizard.Iterator {
         return null;
     }
     
+    private Transform getTransform(org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
+            String name) 
+    {
+        if (tMapOp == null || name == null) {
+            return null;
+        }
+        
+        List<Transform> transforms = tMapOp.getTransforms();
+        if (transforms == null) {
+            return null;
+        }
+        
+        for (Transform transform : transforms) {
+            if (transform != null && name.equals(transform.getName())) {
+                return transform;
+            }
+        }
+        return null;
+    }
+
+    private Invoke getInvoke(org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
+            String name) 
+    {
+        if (tMapOp == null || name == null) {
+            return null;
+        }
+        
+        List<Invoke> invokes = tMapOp.getInvokes();
+        if (invokes == null) {
+            return null;
+        }
+        
+        for (Invoke invoke : invokes) {
+            if (invoke != null && name.equals(invoke.getName())) {
+                return invoke;
+            }
+        }
+        return null;
+    }
+
+    private void configureInvoke(Invoke invoke, TemplateWizard wizard) {
+        assert invoke != null && wizard != null;
+
+        Operation wizardOutputOperation = 
+                (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
+        PortType wizardOutputPortType = 
+                (PortType) wizard.getProperty(Panel.OUTPUT_PORT_TYPE);
+
+        if (wizardOutputPortType != null && wizardOutputOperation != null) {
+          invoke.setPortType(
+                  invoke.createWSDLReference(wizardOutputPortType, PortType.class));
+          invoke.setOperation(
+                  invoke.createWSDLReference(wizardOutputOperation, Operation.class));
+
+        }
+    }
+    
     private void registerImport(TMapModel tMapModel, 
             ReferenceableWSDLComponent wsdlComponent) 
     {
@@ -853,10 +914,10 @@ public final class Iterator implements TemplateWizard.Iterator {
           registerImport(tMapOp.getModel(), wizardOutputPortType);
           
           invoke = componentFactory.createInvoke();
-          invoke.setPortType(
-                  invoke.createWSDLReference(wizardOutputPortType, PortType.class));
-          invoke.setOperation(
-                  invoke.createWSDLReference(wizardOutputOperation, Operation.class));
+//          invoke.setPortType(
+//                  invoke.createWSDLReference(wizardOutputPortType, PortType.class));
+//          invoke.setOperation(
+//                  invoke.createWSDLReference(wizardOutputOperation, Operation.class));
 
           if (inputInvokeVar == null || "".equals(inputInvokeVar)) {
               inputInvokeVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
@@ -882,6 +943,8 @@ public final class Iterator implements TemplateWizard.Iterator {
     }
   }
 
+  
+  
   private static Map<String, TransformationUseCase> TRANSFORMATION_USE_CASE = 
           new HashMap<String, TransformationUseCase>();
   static {

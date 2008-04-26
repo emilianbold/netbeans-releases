@@ -60,6 +60,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -101,6 +102,7 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.WHILE);
     }
 
+    @CheckForNull
     public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
         try {
             if (info == null) {

@@ -1656,15 +1656,21 @@ public class Util {
         DialogDisplayer.getDefault().notify(desc);
     }
 
-    public static String createPrintStatement(String pkg, String serviceName,
+    public static String createPrintStatement(String pkg, String typeName,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String indent) {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
-            String resultClass = pkg + "." + Util.camelize(serviceName, false);
-            methodBody += indent + resultClass + " resultObj = " +
-                    "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
+            if (!isPrimitive(typeName)) {
+                String resultClass = pkg + "." + Util.camelize(typeName, false);
+                methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsObject(" + resultClass + ".class);\n";
+            } else {
+                String resultClass = Util.camelize(typeName, false);
+                methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
+            }
         }
         methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
         methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
@@ -1673,6 +1679,11 @@ public class Util {
         return methodBody;
     }
 
+    private static boolean isPrimitive(String typeName) {
+        return typeName.equals("integer") || typeName.equals("string") || typeName.equals("boolean") ||
+                typeName.equals("float") || typeName.equals("long");  //NOI18N
+    }
+    
     public static void addInputParamField(JavaSource source,
             final ParameterInfo p, final String[] annotations, final Object[] annotationAttrs) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {

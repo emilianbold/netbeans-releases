@@ -1960,6 +1960,27 @@ public class CasaWrapperModel extends CasaModel {
         return true;
     }
 
+    
+    /**
+     * Gets the name of the component hosting the given endpoint.
+     *
+     * @param endpoint  a casa endpoint reference
+     * @return  the SE/BC hosting the given component.
+     */
+    public String getComponentName(final CasaEndpointRef endpointRef) {
+        String compName = null;
+        CasaPort casaPort = getCasaPort(endpointRef);
+        if (casaPort != null) {
+            compName = getBindingComponentName(casaPort);
+        } else {
+            CasaServiceEngineServiceUnit sesu = 
+                    getCasaEngineServiceUnit(endpointRef);
+            assert sesu != null;
+            compName = sesu.getComponentName();
+        }
+        return compName;
+    }
+    
     /**
      * Gets the containing casa port for an endpoint.
      *
