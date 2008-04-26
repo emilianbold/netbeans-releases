@@ -492,8 +492,17 @@ public class Evaluator extends javax.swing.JPanel {
                 addExpressionToHistory(exp);
                 displayResult(var);
             } catch (InvalidExpressionException ieex) {
+                String message = ieex.getLocalizedMessage();
+                Throwable t = ieex.getTargetException();
+                if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+                    java.io.StringWriter s = new java.io.StringWriter();
+                    java.io.PrintWriter p = new java.io.PrintWriter(s);
+                    t.printStackTrace(p);
+                    p.close();
+                    message += " \n"+s.toString();
+                }
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ieex.getLocalizedMessage()));
+                        new NotifyDescriptor.Message(message));
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         evalDialog.requestFocus();
