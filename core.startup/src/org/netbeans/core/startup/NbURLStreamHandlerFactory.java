@@ -44,19 +44,13 @@ package org.netbeans.core.startup;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,26 +59,12 @@ import org.openide.util.NbBundle;
  * in which case registering them via Lookup would be deprecated.
  * @author Jesse Glick
  */
-final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, LookupListener {
-    private static final Logger LOG = Logger.getLogger(NbURLStreamHandlerFactory.class.getName());
+public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory {
     
-    private final Lookup.Result<URLStreamHandlerFactory> r;
-    private URLStreamHandlerFactory[] handlers;
-    private URLStreamHandlerFactory delegate;
-    
-    public NbURLStreamHandlerFactory() {
-        r = Lookup.getDefault().lookupResult(URLStreamHandlerFactory.class);
-        r.addLookupListener(this);
-        resultChanged(null);
-    }
+    /** public for lookup */
+    public NbURLStreamHandlerFactory() {}
     
     public URLStreamHandler createURLStreamHandler(String protocol) {
-        if (protocol.equals("jar") || protocol.equals("file") || // NOI18N
-                protocol.equals("http") || protocol.equals("https") || protocol.equals("resource")) { // NOI18N
-            // Well-known handlers in JRE. Do not try to initialize lookup, etc.
-            return null;
-        }
-        
         if (protocol.equals("nbfs")) { // NOI18N
              return FileUtil.nbfsURLStreamHandler();
         }
@@ -94,62 +74,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
            return new NbResourceStreamHandler();
         }
         
-        URLStreamHandlerFactory d = delegate;
-        if (d != null) {
-            URLStreamHandler h = d.createURLStreamHandler(protocol);
-            if (h != null) {
-                return h;
-            }
-        }
-        
-        URLStreamHandlerFactory[] _handlers;
-        synchronized (this) {
-            _handlers = handlers;
-        }
-        if (_handlers == null) {
-            // Too early during startup (#75422)
-            return null;
-        }
-        for (int i = 0; i < _handlers.length; i++) {
-            URLStreamHandler h = _handlers[i].createURLStreamHandler(protocol);
-            if (h != null) {
-                return h;
-            }
-        }
         return null;
-    }
-    
-    public void resultChanged(LookupEvent ev) {
-        Collection<? extends URLStreamHandlerFactory> c = r.allInstances();
-        synchronized (this) {
-            handlers = c.toArray(new URLStreamHandlerFactory[0]);
-        }
-    }
-
-    void registerUsingReflection(Error e) {
-        LOG.log(Level.CONFIG, "Problems registering URLStreamHandlerFactory, trying reflection", e); // NOI18N
-        try {
-            URLStreamHandlerFactory prev = null;
-            for (Field f : URL.class.getDeclaredFields()) {
-                LOG.log(Level.FINEST, "Found field {0}", f);
-                if (f.getType() == URLStreamHandlerFactory.class) {
-                    LOG.log(Level.FINEST, "Clearing field {0}");
-                    f.setAccessible(true);
-                    prev = (URLStreamHandlerFactory)f.get(null);
-                    LOG.log(Level.CONFIG, "Previous value was {0}", prev);
-                    f.set(null, null);
-                    LOG.config("Field is supposed to be empty");
-                    break;
-                }
-            }
-            URL.setURLStreamHandlerFactory(this);
-            delegate = prev;
-        } catch (Throwable t) {
-            LOG.log(Level.SEVERE, 
-                "No way to register URLStreamHandlerFactory; NetBeans is unlikely to work", 
-                t
-            ); // NOI18N
-        }
     }
     
     /** Stream handler for internal resource-based URLs.
