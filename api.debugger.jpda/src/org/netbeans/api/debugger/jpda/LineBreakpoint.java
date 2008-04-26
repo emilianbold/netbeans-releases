@@ -41,8 +41,11 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
@@ -57,6 +60,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 
@@ -410,10 +416,12 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
     
     private static class LineBreakpointImpl extends LineBreakpoint 
-                                            implements Comparable, FileChangeListener, ChangeListener {
+                                            implements Comparable, FileChangeListener,
+                                                       ChangeListener, PropertyChangeListener {
         
        // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
        private FileObject fo;
+       private ChangeListener registryListener;
        
        public LineBreakpointImpl(String url) {
             super(url);
@@ -421,6 +429,8 @@ public class LineBreakpoint extends JPDABreakpoint {
                 fo = URLMapper.findFileObject(new URL(url));
                 if (fo != null) {
                     fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
+                    registryListener = WeakListeners.change(this, DataObject.getRegistry());
+                    DataObject.getRegistry().addChangeListener(registryListener);
                 }
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ex);
@@ -471,8 +481,33 @@ public class LineBreakpoint extends JPDABreakpoint {
             Object source = chev.getSource();
             if (source instanceof Breakpoint.VALIDITY) {
                 setValidity((Breakpoint.VALIDITY) source, chev.toString());
+            } else if (source instanceof Collection) {
+                for (DataObject dobj : ((Collection<DataObject>) source)) {
+                    if (registryListener != null) {
+                        FileObject primary = dobj.getPrimaryFile();
+                        if (fo.equals(primary)) {
+                            dobj.addPropertyChangeListener(WeakListeners.propertyChange(this, dobj));
+                            DataObject.getRegistry().removeChangeListener(registryListener);
+                            registryListener = null;
+                        }
+                    }
+                }
             } else {
                 throw new UnsupportedOperationException(chev.toString());
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                FileObject newFO = ((DataObject) evt.getSource()).getPrimaryFile();
+                newFO.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
+                try {
+                    this.setURL(newFO.getURL().toString());
+                } catch (FileStateInvalidException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+                fo = newFO;
+                DebuggerManager.getDebuggerManager().addBreakpoint(this);
             }
         }
 
