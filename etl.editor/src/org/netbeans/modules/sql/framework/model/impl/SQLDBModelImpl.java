@@ -826,9 +826,8 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             String modelName = generateDBModelName(type == SQLConstants.SOURCE_DBMODEL);
             name = modelName;
             ((SQLDBConnectionDefinitionImpl) connectionDefinition).setName(name);
+                DataObjectProvider.getProvider().getActiveDataObject().getETLEditorSupport().setUpdatedDuringLoad(true);        
         }
-        
-
     }
     
         

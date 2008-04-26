@@ -171,7 +171,14 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         putClientProperty("NewEtlWizard_Title", displayName); // NOI18N
 
         if (template != null) {
-            documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());            
+            int i = 0;
+            String str = null;
+            while (fileExists) {
+                ++i;
+                str = NEW_FILE_PREFIX + template.getName() + i;
+                boolean value = existFileName(getTargetGroup().getRootFolder(), str);
+            }            
+            documentNameTextField.setText(str);
             documentNameTextField.selectAll();
         }
         String nbBundle2 = mLoc.t("BUND092: Folder Name:");
@@ -225,6 +232,23 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
              nbBundle13.substring(15).charAt(0)
             ); // NOI18N
         }
+    }
+    
+    private boolean fileExists = true;
+
+    private boolean existFileName(FileObject targetFolder, String relFileName) {
+        File fileForTargetFolder = FileUtil.toFile(targetFolder);
+        if (fileForTargetFolder.exists()) {
+            File f = new File(fileForTargetFolder + File.separator + getTargetFolder(), relFileName+".etl");            
+            if (f.exists()) {
+                fileExists = true;
+            } else {
+                fileExists = false;
+            }
+        } else {
+            fileExists = targetFolder.getFileObject(relFileName) != null;
+        }
+        return fileExists;
     }
 
     /**
