@@ -169,6 +169,7 @@ public class JbiInstalledExtensionInfo {
             for (DataObject extsDO : df.getChildren()) {
                 if (extsDO instanceof DataFolder) {
                     String name = extsDO.getName();
+                    String displayName = extsDO.getNodeDelegate().getDisplayName();
                     String file = ""; // NOI18N
                     String type = ""; // NOI18N
                     String target = ""; // NOI18N
@@ -200,7 +201,7 @@ public class JbiInstalledExtensionInfo {
                     List[] children = processElement((DataFolder)extsDO);
 
                     @SuppressWarnings("unchecked")
-                    JbiExtensionInfo extInfo = new JbiExtensionInfo(name, type, 
+                    JbiExtensionInfo extInfo = new JbiExtensionInfo(name, displayName, type, 
                             target, file, ns, desc, icon, provider, children[0]);
                     singleton.extensionList.add(extInfo);
                     singleton.extensionMap.put(name, extInfo);
@@ -221,21 +222,25 @@ public class JbiInstalledExtensionInfo {
         for (DataObject child : ext.getChildren()) {
             FileObject childFO = child.getPrimaryFile();
             String childName = child.getName();
+            String childDisplayName = child.getNodeDelegate().getDisplayName();
             if (childFO.isFolder()) {
                 JbiExtensionElement element;
                 String choice = (String) childFO.getAttribute(CHOICE); 
-                String description = (String) childFO.getAttribute(DESCRIPTION); 
+                String description = //(String) childFO.getAttribute(DESCRIPTION); 
+                        (String) child.getNodeDelegate().getValue(DESCRIPTION);
                 List[] grandChildren = processElement((DataFolder)child);  
                 List<JbiExtensionElement> subElements = grandChildren[0];
                 List<JbiExtensionAttribute> attributes = grandChildren[1];
                 if (choice != null && choice.equalsIgnoreCase("true")) { // NOI18N
                     String defaultChoice = (String) childFO.getAttribute(DEFAULT_CHOICE); 
                     element = new JbiChoiceExtensionElement(
-                            childName, subElements, attributes, description, 
+                            childName, childDisplayName,
+                            subElements, attributes, description, 
                             defaultChoice);
                 } else {
                     element = new JbiExtensionElement(
-                            childName, subElements, attributes, description);
+                            childName, childDisplayName,
+                            subElements, attributes, description);
                 }
                 elements.add(element);                
             } else {
@@ -244,6 +249,7 @@ public class JbiInstalledExtensionInfo {
                 String extCodeGen = (String) childFO.getAttribute(ITEM_CODEGEN);
                 JbiExtensionAttribute attr = new JbiExtensionAttribute(
                         childName, 
+                        childDisplayName,
                         extType, 
                         extDesc,
                         !("false".equalsIgnoreCase(extCodeGen)));
