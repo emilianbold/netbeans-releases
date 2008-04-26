@@ -125,7 +125,7 @@ class DataViewWorkerThread extends SwingWorker {
         }
         dataOutputPanel.refreshButton.setEnabled(true);
         dataOutputPanel.refreshField.setEnabled(true);
-        if (this.dbTable instanceof SQLDBTable) {
+        if (this.dbTable instanceof SQLDBTable || dbTable instanceof SQLJoinView || dbTable instanceof SQLJoinOperator) {
             if (((dataOutputPanel.nowCount - dataOutputPanel.maxRows) > 0) && (dataOutputPanel.totalCount != 0)) {
                 dataOutputPanel.first.setEnabled(true);
                 dataOutputPanel.previous.setEnabled(true);
@@ -146,17 +146,21 @@ class DataViewWorkerThread extends SwingWorker {
                 dataOutputPanel.maxRows = dataOutputPanel.totalCount;
                 dataOutputPanel.refreshField.setText(String.valueOf(dataOutputPanel.maxRows));
             }
-            if (dataOutputPanel.totalCount != 0 && dataOutputPanel.maxRows != 0) {
-                dataOutputPanel.deleteRow.setEnabled(true);
-            } else {
-                dataOutputPanel.deleteRow.setEnabled(false);
+            
+            // editing controls
+            if(this.dbTable instanceof SQLDBTable) {
+                if (dataOutputPanel.totalCount != 0 && dataOutputPanel.maxRows != 0) {
+                    dataOutputPanel.deleteRow.setEnabled(true);
+                } else {
+                    dataOutputPanel.deleteRow.setEnabled(false);
+                }
+                dataOutputPanel.insert.setEnabled(true);
             }
-            dataOutputPanel.insert.setEnabled(true);
         } else {
-            dataOutputPanel.first.setEnabled(true);
-            dataOutputPanel.next.setEnabled(true);
-            dataOutputPanel.last.setEnabled(true);
-            dataOutputPanel.previous.setEnabled(true);
+            dataOutputPanel.first.setEnabled(false);
+            dataOutputPanel.next.setEnabled(false);
+            dataOutputPanel.last.setEnabled(false);
+            dataOutputPanel.previous.setEnabled(false);
             dataOutputPanel.commit.setEnabled(false);
             dataOutputPanel.deleteRow.setEnabled(false);
             dataOutputPanel.insert.setEnabled(false);
@@ -164,6 +168,10 @@ class DataViewWorkerThread extends SwingWorker {
 
         if (dataOutputPanel.totalCount == 0) {
             dataOutputPanel.nowCount = 0;
+        }
+        
+        if(dataOutputPanel.totalCount > 0 && dataOutputPanel.maxRows == 0){
+            dataOutputPanel.maxRows = 10; // set it to default
         }
 
         dataOutputPanel.refreshField.setText("" + dataOutputPanel.maxRows);
@@ -200,6 +208,9 @@ class DataViewWorkerThread extends SwingWorker {
         try {
             DBTableMetadata meta = dataOutputPanel.meta;
             DB db = DBFactory.getInstance().getDatabase(meta.getDBType());
+            if (dbTable.getObjectType() == SQLConstants.TARGET_TABLE) {
+                meta.shutdownIfAxion();
+            }
             conn = meta.createConnection();
             if (conn != null) {
                 String resetFetchSizeSQL = null;
