@@ -204,11 +204,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      * @return Returns true of plugin implements DS Management API's
      */
     public boolean supportsCreateDatasource() {
-        // !PW FIXME Don't enable datasource creation just yet --
-        // XXX need to resolve writing to sun-resources.xml and poolname mapping.
-        // return true;
-        String createDSProp = System.getProperty("glassfish.javaee.createDataSources");
-        return Boolean.valueOf(createDSProp).booleanValue();
+        return true;
     }
     
     /**

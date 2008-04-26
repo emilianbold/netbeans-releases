@@ -118,6 +118,9 @@ public final class TreeParser extends DefaultHandler {
                 if(!skipping.equals(qname)) {
                     LOGGER.log(Level.WARNING, "Skip: " + skipping + " does not match " + qname + " at depth " + depth);
                 }
+                if(childNodeReader != null) {
+                    childNodeReader.endNode(qname);
+                }
                 LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
                 skipping = null;
                 childNodeReader = null;
@@ -147,6 +150,9 @@ public final class TreeParser extends DefaultHandler {
         }
 
         public void readChildren(String qname, Attributes attributes) throws SAXException {
+        }
+        
+        public void endNode(String qname) throws SAXException {
         }
 
     }

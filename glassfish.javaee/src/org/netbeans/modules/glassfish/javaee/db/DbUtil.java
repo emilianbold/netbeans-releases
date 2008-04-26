@@ -178,14 +178,60 @@ public class DbUtil {
         }
         return null;
     }
+    
+    public static final boolean notEmpty(String testedString) {
+        return (testedString != null) && (testedString.length() > 0);
+    }
+    
+    public static final boolean strEmpty(String testedString) {
+        return testedString == null || testedString.length() == 0;
+    }
+    
+    public static final boolean strEquals(String one, String two) {
+        boolean result = false;
+        
+        if(one == null) {
+            result = (two == null);
+        } else {
+            if(two == null) {
+                result = false;
+            } else {
+                result = one.equals(two);
+            }
+        }
+        return result;
+    }
 
-// -- insert resource statements into sun-resources.xml
-// open sun-resources.xml
-// scan for doctype on 
-
-// reader on /resources
-// qname = jdbc-resource, check jndi-name, then get pool-name
-// qname = jdbc-connection-pool, cache pool-names unless we know what we are looking for already
-
-
+    public static final boolean strEquivalent(String one, String two) {
+        boolean result = false;
+        
+        if(strEmpty(one) && strEmpty(two)) {
+            result = true;
+        } else if(one != null && two != null) {
+            result = one.equals(two);
+        }
+        
+        return result;
+    }
+    
+    public static final int strCompareTo(String one, String two) {
+        int result;
+        
+        if(one == null) {
+            if(two == null) {
+                result = 0;
+            } else {
+                result = -1;
+            }
+        } else {
+            if(two == null) {
+                result = 1;
+            } else {
+                result = one.compareTo(two);
+            }
+        }
+        
+        return result;
+    }
+    
 }

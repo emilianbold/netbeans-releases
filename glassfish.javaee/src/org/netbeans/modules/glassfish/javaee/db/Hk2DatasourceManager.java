@@ -39,13 +39,21 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import org.netbeans.modules.glassfish.javaee.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -59,10 +67,15 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.ServerCommand;
 import org.netbeans.spi.glassfish.TreeParser;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -423,31 +436,42 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
 
         try {
-            // !PW FIXME determine vendor name
-//                String vendorName = convertToValidName(url);
-//                if(vendorName == null) {
-//                    vendorName = jndiName;
-//                }else{
-//                    if(vendorName.equals("derby_embedded")){ //NOI18N
-//                        NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
-//                        DialogDisplayer.getDefault().notify(d);
-//                        return null;
-//                    }
-//                }                
-            String vendorName = "vendorName";
-
-            // generate default pool name
-            String defaultPoolName = vendorName + "Pool";
-
-            // !PW FIXME logic to locate or create proper pool name
-
-            if(!cpFinder.getPoolNames().contains(defaultPoolName)) {
-                // create pool if necessary
-                createConnectionPool(xmlFile, defaultPoolName, url, username, password, driver);
+            String vendorName = VendorNameMgr.vendorNameFromDbUrl(url);
+            if(vendorName == null) {
+                vendorName = jndiName;
+            } else {
+                if("derby_embedded".equals(vendorName)) {
+                    // !PW FIXME display as dialog warning?
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
+                            "Embedded derby not supported as a datasource");
+                    return null;
+                }
             }
 
+            // Is there a connection pool we can reuse, or do we need to create one?
+            String defaultPoolName = vendorName + "Pool";
+            Map<String, CPool> pools = cpFinder.getPoolData();
+            CPool defaultPool = pools.get(defaultPoolName);
+            
+            String poolName = null;
+            if(defaultPool != null && isSameDatabaseConnection(defaultPool, url, username, password)) {
+                poolName = defaultPoolName;
+            } else {
+                for(CPool pool: pools.values()) {
+                    if(isSameDatabaseConnection(pool, url, username, password)) {
+                        poolName = pool.getPoolName();
+                        break;
+                    }
+                }
+            }
+            
+            if(poolName == null) {
+                poolName = defaultPool == null ? defaultPoolName : generateUniqueName(defaultPoolName, pools.keySet());
+                createConnectionPool(xmlFile, poolName, url, username, password, driver);
+            }
+            
             // create jdbc resource
-            createJdbcResource(xmlFile, jndiName, defaultPoolName);
+            createJdbcResource(xmlFile, jndiName, poolName);
 
             ds = new SunDatasource(jndiName, url, username, password, driver, resourceDir);
         } catch(IOException ex) {
@@ -456,6 +480,40 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
         
         return ds;
+    }
+    
+    private static String generateUniqueName(String prefix, Set<String> keys) {
+        for(int i = 1; ; i++) {
+            String candidate = prefix + "_" + i; // NOI18N
+            if(!keys.contains(candidate)) {
+                return candidate;
+            }
+        }
+    }
+    
+    private static boolean isSameDatabaseConnection(final CPool pool, final String url, 
+            final String username, final String password) {
+        boolean result = false;
+        boolean matchedSettings = false;
+        
+        UrlData urlData = new UrlData(url);
+        if(DbUtil.strEmpty(pool.getUrl())) {
+            matchedSettings = DbUtil.strEquivalent(urlData.getHostName(), pool.getHostName()) &&
+                    DbUtil.strEquivalent(urlData.getPort(), pool.getPort()) &&
+                    DbUtil.strEquivalent(urlData.getDatabaseName(), pool.getDatabaseName()) &&
+                    DbUtil.strEquivalent(urlData.getSid(), pool.getSid());
+        } else {
+            matchedSettings = DbUtil.strEquivalent(url, pool.getUrl());
+        }
+        
+        if(matchedSettings) {
+            if(DbUtil.strEquivalent(username, pool.getUsername()) && 
+                    DbUtil.strEquivalent(password, pool.getPassword())) {
+                result = true;
+            }
+        }
+        
+        return result;
     }
     
     private static final String CP_TAG_1 = 
@@ -544,19 +602,12 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         String xmlFragment = xmlBuilder.toString();
         Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + xmlFragment);
-        //        appendResource(sunResourcesXml, xmlFragment);
+        appendResource(sunResourcesXml, xmlFragment);
     }
     
     private static String computeDataSourceClassName(String url, String driver) {
-        String dsClassName = null;
-        
-        // !PW FIXME Try to compute datasource classname from url + wizard data structure
-//        Wizard wizard = getWizardInfo();
-//        String vendorName = getDatabaseVendorName(databaseUrl, wizard);
-//        String datasourceClassName = ""; // NOI18N
-//        if(!vendorName.equals("")) { // NOI18N
-//            datasourceClassName = getDatasourceClassName(vendorName, false, wizard);
-//        }
+        String vendorName = VendorNameMgr.vendorNameFromDbUrl(url);
+        String dsClassName = VendorNameMgr.dsClassNameFromVendorName(vendorName);
         
         if(dsClassName == null || dsClassName.length() == 0) {
             dsClassName = DriverMaps.getDSClassName(url);
@@ -594,7 +645,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         String xmlFragment = xmlBuilder.toString();
         Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + xmlFragment);
-        //        appendResource(sunResourcesXml, xmlFragment);
+        appendResource(sunResourcesXml, xmlFragment);
     }
     
     private static void appendAttr(StringBuilder builder, String name, String value, boolean force) {
@@ -616,6 +667,126 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
     }
     
+    private static void appendResource(File sunResourcesXml, String fragment) throws IOException {
+        String sunResourcesBuf = readResourceFile(sunResourcesXml);
+        sunResourcesBuf = insertFragment(sunResourcesBuf, fragment);
+        writeResourceFile(sunResourcesXml, sunResourcesBuf);
+    }
+    
+    private static final String SUN_RESOURCES_XML_HEADER =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE resources PUBLIC " + 
+            "\"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" " + 
+            "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
+        "<resources>\n";
+    private static final String SUN_RESOURCES_XML_FOOTER =
+        "</resources>\n";
+    
+    private static String insertFragment(String sunResourcesBuf, String fragment) throws IOException {
+        String header = SUN_RESOURCES_XML_HEADER;
+        String footer = SUN_RESOURCES_XML_FOOTER;
+        boolean insertNewLine = false;
+        
+        if(sunResourcesBuf != null) {
+            int closeIndex = sunResourcesBuf.indexOf("</resources>");
+            if(closeIndex == -1) {
+                throw new IOException("Malformed XML");
+            }
+            header = sunResourcesBuf.substring(0, closeIndex);
+            footer = sunResourcesBuf.substring(closeIndex);
+            
+            if(closeIndex > 0 && sunResourcesBuf.charAt(closeIndex-1) != '\n') {
+                insertNewLine = true;
+            }
+        }
+        
+        int length = header.length() + footer.length() + 2;
+        if(fragment != null) {
+            length += fragment.length();
+        }
+        
+        StringBuilder builder = new StringBuilder(length);
+        builder.append(header);
+        
+        if(insertNewLine) {
+            String lineSeparator = System.getProperty("line.separator");
+            builder.append(lineSeparator != null ? lineSeparator : "\n");
+        }
+        
+        if(fragment != null) {
+            builder.append(fragment);
+        }
+        
+        builder.append(footer);
+        return builder.toString();
+    }
+
+    private static String readResourceFile(File sunResourcesXml) throws IOException {
+        String content = null;
+        if(sunResourcesXml.exists()) {
+            sunResourcesXml = FileUtil.normalizeFile(sunResourcesXml);
+            FileObject sunResourcesFO = FileUtil.toFileObject(sunResourcesXml);
+            
+            if(sunResourcesFO != null) {
+                InputStream is = null;
+                Reader reader = null;
+                try {
+                    long flen = sunResourcesFO.getSize();
+                    if(flen > 1000000) {
+                        throw new IOException(sunResourcesXml.getAbsolutePath() + " is too long to update.");
+                    }
+
+                    int length = (int) (2 * flen + 32);
+                    char [] buf = new char[length];
+                    is = new BufferedInputStream(sunResourcesFO.getInputStream());
+                    String encoding = EncodingUtil.detectEncoding(is);
+                    reader = new InputStreamReader(is, encoding);
+                    int max = reader.read(buf);
+                    if(max > 0) {
+                        content = new String(buf, 0, max);
+                    }
+                } finally {
+                    if(is != null) {
+                        try { is.close(); } catch(IOException ex) { }
+                    }
+                    if(reader != null) {
+                        try { reader.close(); } catch(IOException ex) { }
+                    }
+                }
+            } else {
+                throw new IOException("Unable to get FileObject for " + sunResourcesXml.getAbsolutePath());
+            }
+        }
+        return content;
+    }
+    
+    private static void writeResourceFile(final File sunResourcesXml, final String content) throws IOException {
+        FileObject parentFolder = FileUtil.createFolder(sunResourcesXml.getParentFile());
+        FileSystem fs = parentFolder.getFileSystem();
+        writeResourceFile(fs, sunResourcesXml, content);
+    }
+    
+    private static void writeResourceFile(FileSystem fs, final File sunResourcesXml, final String content) throws IOException {
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileLock lock = null;
+                BufferedWriter writer = null;
+                try {
+                    FileObject sunResourcesFO = FileUtil.createData(sunResourcesXml);
+                    lock = sunResourcesFO.lock();
+                    writer = new BufferedWriter(new OutputStreamWriter(sunResourcesFO.getOutputStream(lock)));
+                    writer.write(content);
+                } finally {
+                    if(writer != null) {
+                        try { writer.close(); } catch(IOException ex) { }
+                    }
+                    if(lock != null) {
+                        lock.releaseLock();
+                    }
+                }
+            }
+        });
+    }
     
     private static class DuplicateJdbcResourceFinder extends TreeParser.NodeReader {
         
@@ -654,25 +825,111 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static class ConnectionPoolFinder extends TreeParser.NodeReader {
         
-        private List<String> poolNames = new ArrayList<String>();
+        private Map<String, String> properties = null;
+        private Map<String, CPool> pools = new HashMap<String, CPool>();
         
         @Override
         public void readAttributes(Attributes attributes) throws SAXException {
+            properties = new HashMap<String, String>();
+            
             String poolName = attributes.getValue("name");
             if(poolName != null && poolName.length() > 0) {
-                if(!poolNames.contains(poolName)) {
-                    poolNames.add(poolName);
+                if(!pools.containsKey(poolName)) {
+                    properties.put("name", poolName);
                 } else {
                     Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
                             "Duplicate pool-names defined for JDBC Connection Pools.");
                 }
             }
         }
+
+        @Override
+        public void readChildren(String qname, Attributes attributes) throws SAXException {
+            properties.put(attributes.getValue("name").toLowerCase(Locale.ENGLISH), 
+                    attributes.getValue("value"));
+        }
+        
+        @Override
+        public void endNode(String qname) throws SAXException {
+            String poolName = properties.get("name");
+            CPool pool = new CPool(
+                    poolName,
+                    properties.get("url"),
+                    properties.get("servername"),
+                    properties.get("portnumber"),
+                    properties.get("databasename"),
+                    properties.get("user"),
+                    properties.get("password"),
+                    properties.get("connectionattributes")
+                    );
+            pools.put(poolName, pool);
+        }
         
         public List<String> getPoolNames() {
-            return poolNames;
+            return new ArrayList<String>(pools.keySet());
+        }
+        
+        public Map<String, CPool> getPoolData() {
+            return Collections.unmodifiableMap(pools);
         }
         
     }
 
+    private static class CPool {
+        
+        private final String poolName;
+        private final String url;
+        private final String hostName;
+        private final String port;
+        private final String databaseName;
+        private final String username;
+        private final String password;
+        private final String sid;
+        
+        public CPool(String poolName, String url, String hostName, String port, 
+                String databaseName, String username, String password, String sid) {
+            this.poolName = poolName;
+            this.url = url;
+            this.hostName = hostName;
+            this.port = port;
+            this.databaseName = databaseName;
+            this.username = username;
+            this.password = password;
+            this.sid = sid;
+        }
+        
+        public String getPoolName() {
+            return poolName;
+        }
+        
+        public String getUrl() {
+            return url;
+        }
+
+        public String getDatabaseName() {
+            return databaseName;
+        }
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public String getPort() {
+            return port;
+        }
+
+        public String getSid() {
+            return sid;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+        
+    }
+    
 }
