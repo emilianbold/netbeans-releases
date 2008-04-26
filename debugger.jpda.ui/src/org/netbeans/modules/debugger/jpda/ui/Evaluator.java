@@ -68,6 +68,8 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -236,7 +238,7 @@ public class Evaluator extends javax.swing.JPanel {
     
     private void initCombo() {
         String textInEditor = (String) expressionComboBox.getEditor().getItem();
-        CompletionedEditor ce = new CompletionedEditor();
+        CompletionedEditor ce = new CompletionedEditor(expressionComboBox);
         expressionComboBox.setEditor(ce);
         expressionComboBox.setEditable(true);
         ce.setupContext();
@@ -519,8 +521,9 @@ public class Evaluator extends javax.swing.JPanel {
         private java.awt.Component component;
         private Object oldValue;
         private boolean isContextSetUp;
+        private boolean canTransferFocus = true;
         
-        public CompletionedEditor() {
+        public CompletionedEditor(javax.swing.JComboBox comboBox) {
             editor = new JEditorPane();
             editor.setBorder(null);
             editor.setKeymap(new FilteredKeymap(editor));
@@ -537,9 +540,21 @@ public class Evaluator extends javax.swing.JPanel {
                 public void focusLost(FocusEvent e) {
                 }
             });
+            comboBox.addPopupMenuListener(new PopupMenuListener() {
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    canTransferFocus = false;
+                }
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    canTransferFocus = true;
+                }
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
             component.addFocusListener(new FocusListener() {
                 public void focusGained(FocusEvent e) {
-                    editor.requestFocusInWindow();
+                    if (canTransferFocus) {
+                        editor.requestFocusInWindow();
+                    }
                 }
                 public void focusLost(FocusEvent e) {
                 }
