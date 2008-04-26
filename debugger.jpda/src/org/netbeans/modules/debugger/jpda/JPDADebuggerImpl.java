@@ -987,6 +987,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine; // re-take the VM, it can be nulled by finish()
         }
         if (vm != null) {
+            notifyToBeResumedAll();
             synchronized (LOCK) {
                 vm.resume();
             }
