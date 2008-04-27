@@ -157,6 +157,7 @@ public class ExtensionPropertyFactory {
             String displayName,
             String discription,
             Map<String, CasaExtensibilityElement> choiceMap,
+            Map<String, String> choiceDisplayNameMap,
             String defaultChoice) {
 
         return new ChoiceExtensionProperty(
@@ -169,6 +170,7 @@ public class ExtensionPropertyFactory {
                 displayName,
                 discription,
                 choiceMap,
+                choiceDisplayNameMap,
                 defaultChoice);
     }
 }

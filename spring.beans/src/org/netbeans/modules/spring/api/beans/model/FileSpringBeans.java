@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,50 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.core;
+package org.netbeans.modules.spring.api.beans.model;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import java.util.List;
 
 /**
+ * Encapsulates the Spring beans in a file. All beans obtained through
+ * this interface are guaranteed to return a non-null value from
+ * {@link SpringBean#getLocation}, and the location is guaranteed to
+ * provide a valid start offset.
  *
  * @author Andrei Badea
  */
-public class SQLOptions  {
-    private static SQLOptions INSTANCE = new SQLOptions();
-    private static final String PROP_FETCH_STEP = "fetchStep"; // NOI18N
-    private static final int DEFAULT_FETCH_STEP = 200;
-    private static final String PROP_MAXROWS = "maxrows";
-    private static final int DEFAULT_MAXROWS = 200000;
+public interface FileSpringBeans {
 
+    /**
+     * Finds a bean by its id or name.
+     *
+     * @param  idOrName the bean id or name; never null.
+     * @return the bean with the specified id or name; {@code null} if no such
+     *         bean was found.
+     */
+    SpringBean findBean(String idOrName);
 
-    public static SQLOptions getDefault() {
-        return INSTANCE;
-    }
-    
-    public String displayName() {
-        return NbBundle.getMessage(SQLOptions.class, "LBL_SQLOptions");
-    }
-    
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(SQLOptions.class);
-    }
-        
-    public int getFetchStep() {
-        return getPreferences().getInt(PROP_FETCH_STEP, DEFAULT_FETCH_STEP);
-    }
-    
-    public void setFetchStep(int value) {
-        getPreferences().putInt(PROP_FETCH_STEP, value);
-    }   
-    
-    public int getMaxRows() {
-        return NbPreferences.forModule(SQLOptions.class).getInt(PROP_MAXROWS, DEFAULT_MAXROWS);
-    }
-    
-    public void setMaxRows(int rows) {
-        NbPreferences.forModule(SQLOptions.class).putInt(PROP_MAXROWS, rows);
-    }
+    /**
+     * Finds a bean by its id.
+     *
+     * @param  name the bean id or name; never null.
+     * @return the bean with the specified id or name; {@code null} if no such
+     *         bean was found.
+     */
+    SpringBean findBeanByID(String id);
 
+    /**
+     * Returns the list of beans in this beans config file.
+     *
+     * @param  file the beans config file.
+     * @return the list of beans; never null.
+     */
+    List<SpringBean> getBeans();
 }
