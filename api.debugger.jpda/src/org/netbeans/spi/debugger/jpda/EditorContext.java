@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -86,6 +87,8 @@ public abstract class EditorContext {
     public static final String CURRENT_EXPRESSION_SECONDARY_LINE_ANNOTATION_TYPE = "CurrentExpression";
     /** Annotation type constant. */
     public static final String CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE = "CurrentExpressionLine";
+    /** Annotation type constant. */
+    public static final String OTHER_THREAD_ANNOTATION_TYPE = "OtherThread";
 
     /** Property name constant. */
     public static final String PROP_LINE_NUMBER = "lineNumber";
@@ -143,6 +146,16 @@ public abstract class EditorContext {
         String annotationType,
         Object timeStamp
     );
+
+    public Object annotate (
+        String url, 
+        int lineNumber, 
+        String annotationType,
+        Object timeStamp,
+        JPDAThread thread
+    ) {
+        return null;
+    }
 
     /**
      * Adds annotation to given url on given character range.

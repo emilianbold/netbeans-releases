@@ -147,6 +147,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
     public  PropertyChangeSupport       varChangeSupport = new PropertyChangeSupport(this);
+    private PropertyChangeSupport       threadsChangeSupport = new PropertyChangeSupport(this);
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
