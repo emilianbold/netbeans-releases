@@ -84,7 +84,7 @@ public class DBExplorerUtil {
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
-    private static String adjustDatabaseURL(String url) {
+    public static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
             String relativePath = "\\nbproject\\private\\databases\\";
@@ -448,6 +448,6 @@ public class DBExplorerUtil {
         int endDBIndex = url.indexOf(":", initialDBIndex);
         String dbName = url.substring(initialDBIndex, endDBIndex);
         String dbLoc = url.substring(endDBIndex + 1);
-        return (Databases.getOrCreateDatabase(dbName, new File(dbLoc))); 
+        return (Databases.getOrCreateDatabase(dbName, new File(dbLoc)));
     }
 }

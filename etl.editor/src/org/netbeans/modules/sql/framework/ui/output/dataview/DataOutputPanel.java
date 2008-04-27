@@ -517,7 +517,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         }
         if (doCalculation) {
             try {
-                nowCount = totalCount - maxRows + 1;
+                nowCount = totalCount - (totalCount % maxRows) + 1;
             } finally {
             }
             recordToRefresh = totalCount;
