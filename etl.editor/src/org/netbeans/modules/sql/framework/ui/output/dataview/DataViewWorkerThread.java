@@ -125,7 +125,7 @@ class DataViewWorkerThread extends SwingWorker {
         }
         dataOutputPanel.refreshButton.setEnabled(true);
         dataOutputPanel.refreshField.setEnabled(true);
-        if (this.dbTable instanceof SQLDBTable || dbTable instanceof SQLJoinView || dbTable instanceof SQLJoinOperator) {
+        if (this.errMsg == null && (this.dbTable instanceof SQLDBTable || dbTable instanceof SQLJoinView || dbTable instanceof SQLJoinOperator)) {
             if (((dataOutputPanel.nowCount - dataOutputPanel.maxRows) > 0) && (dataOutputPanel.totalCount != 0)) {
                 dataOutputPanel.first.setEnabled(true);
                 dataOutputPanel.previous.setEnabled(true);
@@ -170,10 +170,6 @@ class DataViewWorkerThread extends SwingWorker {
             dataOutputPanel.nowCount = 0;
         }
         
-        if(dataOutputPanel.totalCount > 0 && dataOutputPanel.maxRows == 0){
-            dataOutputPanel.maxRows = 10; // set it to default
-        }
-
         dataOutputPanel.refreshField.setText("" + dataOutputPanel.maxRows);
         dataOutputPanel.queryView.revalidate();
         dataOutputPanel.queryView.repaint();
@@ -186,6 +182,11 @@ class DataViewWorkerThread extends SwingWorker {
             } catch (SQLException e) {
             }
         }
+    }
+
+    private void handleException() {
+        dataOutputPanel.queryView.clearView();
+        dataOutputPanel.totalRowsLabel.setText("0");
     }
 
     private void shutdownConnection(Connection conn) {
@@ -278,8 +279,7 @@ class DataViewWorkerThread extends SwingWorker {
         } catch (Exception e) {
             this.errMsg = e.getMessage();
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            handleException();
         } finally {
             if (stmt != null) {
                 try {
@@ -382,8 +382,7 @@ class DataViewWorkerThread extends SwingWorker {
             }
         } catch (Exception ex1) {
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), ex1);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            handleException();
         } finally {
             shutdownConnection(conn);
         }
@@ -474,8 +473,7 @@ class DataViewWorkerThread extends SwingWorker {
             }
         } catch (Exception e) {
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            handleException();
         } finally {
             shutdownConnection(conn);
         }
