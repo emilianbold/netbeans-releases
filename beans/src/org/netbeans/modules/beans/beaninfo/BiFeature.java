@@ -823,7 +823,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private static String getTypeClass(TypeMirror type) {
             TypeKind kind = type.getKind();
             if (kind.isPrimitive()) {
-                return kind.name();
+                return type.toString();
             } else if (kind == TypeKind.ARRAY) {
                 return resolveArrayClass((ArrayType) type);
             } else if (kind == TypeKind.DECLARED) {
