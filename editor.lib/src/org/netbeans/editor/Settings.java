@@ -501,7 +501,7 @@ public class Settings {
                 }
             }
         }
-        
+
         // Fallback on to the kitmaps
         if (!hasValue) {
             value = getValueOld(kitClass, settingName, evaluateEvaluators);
@@ -855,15 +855,22 @@ public class Settings {
         listenerList.remove(SettingsChangeListener.class, l);
     }
 
-    private static void fireSettingsChange(Class kitClass, String settingName, Object oldValue, Object newValue) {
+    private static void fireSettingsChange(final Class kitClass, final String settingName, final Object oldValue, final Object newValue) {
         if (firingEnabled == 0) {
-            SettingsChangeListener[] listeners = (SettingsChangeListener[])
-                    listenerList.getListeners(SettingsChangeListener.class);
-            SettingsChangeEvent evt = new SettingsChangeEvent(Settings.class,
-                    kitClass, settingName, oldValue, newValue);
-            for (int i = 0; i < listeners.length; i++) {
-                listeners[i].settingsChange(evt);
-            }
+            // firing events asynchronously to make sure that the KitsTracker context
+            // that may have been set in the code calling setValue does not apply
+            // to listeners; see #133094
+            PROCESSOR.post(new Runnable() {
+                public void run() {
+                    SettingsChangeListener[] listeners = (SettingsChangeListener[])
+                            listenerList.getListeners(SettingsChangeListener.class);
+                    SettingsChangeEvent evt = new SettingsChangeEvent(Settings.class,
+                            kitClass, settingName, oldValue, newValue);
+                    for (int i = 0; i < listeners.length; i++) {
+                        listeners[i].settingsChange(evt);
+                    }
+                }
+            });
         }
     }
 

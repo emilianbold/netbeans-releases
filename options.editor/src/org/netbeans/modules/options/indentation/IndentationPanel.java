@@ -248,6 +248,12 @@ ActionListener {
         model.setRightMargin(
             (Integer) sRightMargin.getValue ()
         );
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            // ignore
+        }
         
         // start formatter
         SwingUtilities.invokeLater (new Runnable () {
