@@ -69,6 +69,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     private static Map<JPDADebugger, DebuggingTreeExpansionModelFilter> FILTERS = new WeakHashMap<JPDADebugger, DebuggingTreeExpansionModelFilter>();
     
     private Set<Object> expandedNodes = new WeakSet<Object>();
+    private Set<Object> expandedExplicitely = new WeakSet<Object>();
     private List<ModelListener> listeners = new ArrayList<ModelListener>();
     private JPDADebugger debugger;
     
@@ -95,9 +96,17 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
             filter = FILTERS.get(debugger);
         }
         if (filter != null) {
-            filter.nodeExpanded(node);
-            filter.fireNodeExpanded(node);
+            filter.expand(node);
         }
+    }
+    
+    private void expand(Object node) {
+        synchronized (this) {
+            expandedExplicitely.add(node);
+        }
+        nodeExpanded(node);
+        fireNodeExpanded(node);
+        
     }
 
     private boolean isExpanded(Object node) {
@@ -119,6 +128,11 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
                 if (nodesInDeadlock.contains(node)) {
                     return true;
                 }
+            }
+        }
+        synchronized (this) {
+            if (expandedExplicitely.contains(node)) {
+                return true;
             }
         }
         if (node instanceof CallStackFrame) {
@@ -152,6 +166,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     public void nodeCollapsed (Object node) {
         synchronized (this) {
             expandedNodes.remove(node);
+            expandedExplicitely.remove(node);
         }
         if (node instanceof JPDAThread) {
             fireNodeChanged(node);

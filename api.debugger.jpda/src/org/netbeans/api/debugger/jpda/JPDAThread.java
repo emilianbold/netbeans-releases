@@ -84,6 +84,8 @@ public interface JPDAThread {
     public static final String PROP_CALLSTACK = "callStack";
     /** Property name constant. */
     public static final String PROP_VARIABLES = "variables";
+    /** Property name constant. */
+    public static final String PROP_BREAKPOINT = "currentBreakpoint";
 
     
     

@@ -202,8 +202,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return currentBreakpoint;
     }
 
-    public synchronized void setCurrentBreakpoint(JPDABreakpoint currentBreakpoint) {
-        this.currentBreakpoint = currentBreakpoint;
+    public void setCurrentBreakpoint(JPDABreakpoint currentBreakpoint) {
+        JPDABreakpoint oldBreakpoint;
+        synchronized (this) {
+            oldBreakpoint = this.currentBreakpoint;
+            this.currentBreakpoint = currentBreakpoint;
+        }
+        pch.firePropertyChange(PROP_BREAKPOINT, oldBreakpoint, currentBreakpoint);
     }
 
 

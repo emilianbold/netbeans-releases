@@ -452,6 +452,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task task;
+        private boolean shouldExpand = false;
         
         public ThreadStateUpdater(JPDAThread t) {
             this.tr = new WeakReference(t);
@@ -463,9 +464,15 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             if (t != null) {
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = new RequestProcessor("Debugger Threads Refresh").create(new Refresher());
                     }
                     task.schedule(100);
+                }
+                if (JPDAThread.PROP_BREAKPOINT.equals(evt.getPropertyName()) &&
+                    t.isSuspended() && t.getCurrentBreakpoint() != null) {
+                    synchronized (this) {
+                        shouldExpand = true;
+                    }
                 }
             }
         }
@@ -475,6 +482,14 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 JPDAThread t = tr.get();
                 if (t != null) {
                     fireNodeChanged(t);
+                    boolean shouldExpand;
+                    synchronized (this) {
+                        shouldExpand = ThreadStateUpdater.this.shouldExpand;
+                        ThreadStateUpdater.this.shouldExpand = false;
+                    }
+                    if (shouldExpand) {
+                        DebuggingTreeExpansionModelFilter.expand(debugger, t);
+                    }
                 }
             }
         }
