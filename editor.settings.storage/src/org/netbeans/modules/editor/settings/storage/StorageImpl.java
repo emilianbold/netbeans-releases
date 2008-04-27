@@ -332,7 +332,8 @@ public final class StorageImpl <K extends Object, V extends Object> {
 
     private void filterAfterLoad(Map<K, V> data, MimePath mimePath, String profile, boolean defaults) throws IOException {
         List<StorageFilter> filters = Filters.getFilters(storageDescription.getId());
-        for(StorageFilter filter : filters) {
+        for(int i = 0; i < filters.size(); i++) {
+            @SuppressWarnings("unchecked") StorageFilter<K, V> filter = filters.get(i);
             filter.afterLoad(data, mimePath, profile, defaults);
         }
     }
@@ -340,7 +341,8 @@ public final class StorageImpl <K extends Object, V extends Object> {
     private void filterBeforeSave(Map<K, V> data, MimePath mimePath, String profile, boolean defaults) throws IOException {
         List<StorageFilter> filters = Filters.getFilters(storageDescription.getId());
         for(int i = filters.size() - 1; i >= 0; i--) {
-            filters.get(i).beforeSave(data, mimePath, profile, defaults);
+            @SuppressWarnings("unchecked") StorageFilter<K, V> filter = filters.get(i);
+            filter.beforeSave(data, mimePath, profile, defaults);
         }
     }
     

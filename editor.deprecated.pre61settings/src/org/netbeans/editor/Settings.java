@@ -55,7 +55,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,7 +70,10 @@ import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.modules.editor.deprecated.pre61settings.EditorPreferencesInjector;
+import org.netbeans.modules.editor.deprecated.pre61settings.OrgNbEditorAccessor;
 import org.netbeans.modules.editor.impl.KitsTracker;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -185,7 +187,8 @@ public class Settings {
     private static final WeakEventListenerList listenerList = new WeakEventListenerList();
 
     private static volatile int firingEnabled = 0;
-
+    private static final ThreadLocal<EditorPreferencesInjector> setValueInterceptor = new ThreadLocal<EditorPreferencesInjector>();
+    
     /** Save repetitive creation of the empty maps using this variable.
      * [kit-class, map-of-settings] pairs
      */
@@ -201,6 +204,10 @@ public class Settings {
         }
     });
 
+    static {
+        OrgNbEditorAccessor.register(new PackageAccessor());
+    }
+    
     private Settings() {
         // no instances allowed
     }
@@ -383,110 +390,86 @@ public class Settings {
     }
     
     private static Object getValueEx(MimePath mimePath, Class kitClass, String settingName, boolean evaluateEvaluators) {
-        Object value = null;
-        boolean hasValue = false;
-
         // read the value according to the guessed type of the setting
         if (settingName != null && SettingsNames.ABBREV_MAP.equals(settingName)) {
-            value = findCodeTemplates(mimePath);
-            hasValue = true;
+            return findCodeTemplates(mimePath);
         } else if (settingName != null && SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-            value = findKeyBindings(mimePath);
-            hasValue = true;
+            return findKeyBindings(mimePath);
         } else if (settingName != null && SettingsNames.MACRO_MAP.equals(settingName)) {
-            value = findMacros(mimePath);
-            hasValue = true;
+            return findMacros(mimePath);
+        } else if (settingName != null && HIGHLIGHT_COLOR_NAMES.contains(settingName)) {
+            return findColor(settingName, mimePath);
+        } else if (settingName != null && HIGHLIGHT_COLORING_NAMES.contains(settingName)) {
+            return findColoring(settingName, mimePath, false, true);
         } else {
-            // Check if the requested setting is a coloring
-            if (settingName != null && HIGHLIGHT_COLOR_NAMES.contains(settingName)) {
-                value = findColor(settingName, mimePath);
-                hasValue = true;
-            } else if (settingName != null && HIGHLIGHT_COLORING_NAMES.contains(settingName)) {
-                value = findColoring(settingName, mimePath, false, true);
-                hasValue = true;
-            } else {
-                String coloringName = translateOldTokenColoringName(settingName);
-                if (coloringName != null) {
-                    value = findColoring(coloringName, mimePath, true, true);
-                    hasValue = true;
-                }
+            String coloringName = translateOldTokenColoringName(settingName);
+            if (coloringName != null) {
+                return findColoring(coloringName, mimePath, true, true);
             }
 
             // Try getting it from editor Preferences
-            if (!hasValue) {
-                Preferences prefs = findPreferences(mimePath);
-
-                // check if there is actually some value
-                if (prefs != null && null != prefs.get(settingName, null)) {
-                    // try guessing the type
-                    Class type = null;
-                    String javaType = prefs.get(JAVATYPE_KEY_PREFIX + settingName, null);
-                    if (javaType != null) {
-                        type = typeFromString(javaType);
-                    }
-                    
-                    if (type != null) {
-                        if (type.equals(Boolean.class)) {
-                            value = prefs.getBoolean(settingName, false);
-                            hasValue = true;
-                        } else if (type.equals(Integer.class)) {
-                            value = prefs.getInt(settingName, 0);
-                            hasValue = true;
-                        } else if (type.equals(Long.class)) {
-                            value = prefs.getLong(settingName, 0L);
-                            hasValue = true;
-                        } else if (type.equals(Float.class)) {
-                            value = prefs.getFloat(settingName, 0.0F);
-                            hasValue = true;
-                        } else if (type.equals(Double.class)) {
-                            value = prefs.getDouble(settingName, 0.0D);
-                            hasValue = true;
-                        } else if (type.equals(Insets.class)) {
-                            value = parseInsets(prefs.get(settingName, null));
-                            hasValue = true;
-                        } else if (type.equals(Dimension.class)) {
-                            value = parseDimension(prefs.get(settingName, null));
-                            hasValue = true;
-                        } else if (type.equals(Color.class)) {
-                            value = parseColor(prefs.get(settingName, null));
-                            hasValue = true;
-                        } else if (type.equals(String.class)) {
-                            value = prefs.get(settingName, null);
-                            hasValue = true;
-                        } else {
-                            LOG.log(Level.WARNING, "Can't load setting '" + settingName + "' with value '" + prefs.get(settingName, null) //NOI18N
-                                + "' through org.netbeans.editor.Settings! Unsupported value conversion to " + type, new Throwable("Stacktrace")); //NOI18N
-                        }
-                    } else {
-                        // unknown setting type, treat it as String
-                        LOG.warning("Can't determine type of '" + settingName + "' editor setting. If you supplied this setting" //NOI18N
-                            + " through the editor implementation of java.util.prefs.Preferences you should use the 'javaType'" //NOI18N
-                            + " attribute and specify the class representing values of this setting. There seem to be legacy" //NOI18N
-                            + " clients accessing your setting through the old org.netbeans.editor.Settings."); //NOI18N
-                    }
-                }
-            }
-        }
-        
-        // Fallback on to the kitmaps
-        if (!hasValue) {
-            List allKitMaps = getAllKitMaps(kitClass);
-            assert allKitMaps.size() % 2 == 0 : "allKitMaps should contain pairs of [kitClass, settingsMap]."; //NOI18N
+            Object value = null;
+            Preferences prefs = findPreferences(mimePath);
             
-            for(int i = 0; i < allKitMaps.size() / 2; i++) {
-                Class kc = (Class) allKitMaps.get(2 * i);
-                Map map = (Map) allKitMaps.get(2 * i + 1);
-                value = map.get(settingName);
-                if (evaluateEvaluators && value instanceof Evaluator) {
-                    value = ((Evaluator)value).getValue(kc, settingName);
+            // check if there is actually some value
+            if (prefs != null && null != prefs.get(settingName, null)) {
+                // try guessing the type
+                Class type = null;
+                String javaType = prefs.get(JAVATYPE_KEY_PREFIX + settingName, null);
+                if (javaType != null) {
+                    type = typeFromString(javaType);
                 }
-                if (value != null) {
-                    break;
+
+                if (type != null) {
+                    if (type.equals(Boolean.class)) {
+                        value = prefs.getBoolean(settingName, false);
+                    } else if (type.equals(Integer.class)) {
+                        value = prefs.getInt(settingName, 0);
+                    } else if (type.equals(Long.class)) {
+                        value = prefs.getLong(settingName, 0L);
+                    } else if (type.equals(Float.class)) {
+                        value = prefs.getFloat(settingName, 0.0F);
+                    } else if (type.equals(Double.class)) {
+                        value = prefs.getDouble(settingName, 0.0D);
+                    } else if (type.equals(Insets.class)) {
+                        value = SettingsConversions.parseInsets(prefs.get(settingName, null));
+                    } else if (type.equals(Dimension.class)) {
+                        value = SettingsConversions.parseDimension(prefs.get(settingName, null));
+                    } else if (type.equals(Color.class)) {
+                        value = SettingsConversions.parseColor(prefs.get(settingName, null));
+                    } else if (type.equals(String.class)) {
+                        value = prefs.get(settingName, null);
+                    } else {
+                        LOG.log(Level.WARNING, "Can't load setting '" + settingName + "' with value '" + prefs.get(settingName, null) //NOI18N
+                            + "' through org.netbeans.editor.Settings! Unsupported value conversion to " + type, new Throwable("Stacktrace")); //NOI18N
+                    }
+                } else {
+                    // unknown setting type, treat it as String
+                    LOG.warning("Can't determine type of '" + settingName + "' editor setting. If you supplied this setting" //NOI18N
+                        + " through the editor implementation of java.util.prefs.Preferences you should use the 'javaType'" //NOI18N
+                        + " attribute and specify the class representing values of this setting. There seem to be legacy" //NOI18N
+                        + " clients accessing your setting through the old org.netbeans.editor.Settings."); //NOI18N
+                }
+            } else {
+                // Fallback on to the kitmaps
+                List allKitMaps = getAllKitMaps(kitClass);
+                assert allKitMaps.size() % 2 == 0 : "allKitMaps should contain pairs of [kitClass, settingsMap]."; //NOI18N
+
+                for(int i = 0; i < allKitMaps.size() / 2; i++) {
+                    Class kc = (Class) allKitMaps.get(2 * i);
+                    Map map = (Map) allKitMaps.get(2 * i + 1);
+                    value = map.get(settingName);
+                    if (evaluateEvaluators && value instanceof Evaluator) {
+                        value = ((Evaluator)value).getValue(kc, settingName);
+                    }
+                    if (value != null) {
+                        break;
+                    }
                 }
             }
+            
+            return value;
         }
-
-        return value;
     }
 
     /** Get the value hierarchy and evaluate the evaluators */
@@ -548,6 +531,15 @@ public class Settings {
      *   be null to clear the value for the specified kit
      */
     public static void setValue(Class kitClass, String settingName, Object newValue) {
+        // Some initializators incorrectly call Settings.setValue() instead of
+        // setting values to the provided map. Even though it's wrong behavior, we
+        // have been quietly accepting it so far and we have to keep doing so with new the preferences injectors.
+        EditorPreferencesInjector injector = setValueInterceptor.get();
+        if (injector != null) {
+            injector.capturedSetValue(kitClass, settingName, newValue);
+            return;
+        }
+        
         if (settingName != null && SettingsNames.ABBREV_MAP.equals(settingName)) {
             LOG.log(Level.WARNING, "Can't save 'SettingsNames.ABBREV_MAP' setting through org.netbeans.editor.Settings!", new Throwable("Stacktrace")); //NOI18N
         } else if (settingName != null && SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
@@ -590,13 +582,13 @@ public class Settings {
                         } else if (newValue instanceof Double) {
                             prefs.putDouble(settingName, (Double) newValue);
                         } else if (newValue instanceof Insets) {
-                            prefs.put(settingName, insetsToString((Insets) newValue));
+                            prefs.put(settingName, SettingsConversions.insetsToString((Insets) newValue));
                             prefs.put(JAVATYPE_KEY_PREFIX + settingName, Insets.class.getName());
                         } else if (newValue instanceof Dimension) {
-                            prefs.put(settingName, dimensionToString((Dimension) newValue));
+                            prefs.put(settingName, SettingsConversions.dimensionToString((Dimension) newValue));
                             prefs.put(JAVATYPE_KEY_PREFIX + settingName, Dimension.class.getName());
                         } else if (newValue instanceof Color) {
-                            prefs.put(settingName, color2String((Color) newValue));
+                            prefs.put(settingName, SettingsConversions.color2String((Color) newValue));
                             prefs.put(JAVATYPE_KEY_PREFIX + settingName, Color.class.getName());
                         } else if (newValue instanceof String) {
                             prefs.put(settingName, (String) newValue);
@@ -831,7 +823,7 @@ public class Settings {
     
     private static Map getKitMapWithEvent(Class kitClass, boolean forceCreation) {
         Map kitMap = (Map)kit2Maps.get(kitClass);
-        if (kitMap == null) {
+        if (kitMap == null && forceCreation) {
             Map emptyMap = (Map) emptyMaps.get(kitClass);
             if (emptyMap != null) {
                 // recursive initialization, return what we have collected so far
@@ -863,16 +855,16 @@ public class Settings {
                 }
             }
 
-            // Add the bridge for loading values supplied from MimeLookup
-            if (!emptyMap.containsKey(SettingsNames.ABBREV_MAP)) {
-                emptyMap.put(SettingsNames.ABBREV_MAP, S2ML_BRIDGE);
-            }
-            if (!emptyMap.containsKey(SettingsNames.KEY_BINDING_LIST)) {
-                emptyMap.put(SettingsNames.KEY_BINDING_LIST, S2ML_BRIDGE);
-            }
-            if (!emptyMap.containsKey(SettingsNames.MACRO_MAP)) {
-                emptyMap.put(SettingsNames.MACRO_MAP, S2ML_BRIDGE);
-            }
+//            // Add the bridge for loading values supplied from MimeLookup
+//            if (!emptyMap.containsKey(SettingsNames.ABBREV_MAP)) {
+//                emptyMap.put(SettingsNames.ABBREV_MAP, S2ML_BRIDGE);
+//            }
+//            if (!emptyMap.containsKey(SettingsNames.KEY_BINDING_LIST)) {
+//                emptyMap.put(SettingsNames.KEY_BINDING_LIST, S2ML_BRIDGE);
+//            }
+//            if (!emptyMap.containsKey(SettingsNames.MACRO_MAP)) {
+//                emptyMap.put(SettingsNames.MACRO_MAP, S2ML_BRIDGE);
+//            }
             
             kitMap = emptyMap;
             
@@ -1135,7 +1127,7 @@ public class Settings {
     } // End of LoggingMap class
 
     // ----------------------------------------------------------
-    // Fonts & Colors bridge to Editor Settings API
+    // Fonts & Colors to Editor Settings API bridge
     // ----------------------------------------------------------
 
     private static final Map<MimePath, ChangesTrackingLookupResult<FontColorSettings>> FCS_CACHE = 
@@ -1216,7 +1208,7 @@ public class Settings {
     }
 
     // ----------------------------------------------------------
-    // KeyBindings bridge to Editor Settings API
+    // KeyBindings to Editor Settings API bridge
     // ----------------------------------------------------------
 
     private static final Map<MimePath, ChangesTrackingLookupResult<KeyBindingSettings>> KBS_CACHE =
@@ -1258,7 +1250,7 @@ public class Settings {
     }
     
     // ----------------------------------------------------------
-    // CodeTemplates bridge to Editor Settings API
+    // CodeTemplates to Editor Settings API bridge
     // ----------------------------------------------------------
 
     private static final Map<MimePath, ChangesTrackingLookupResult<CodeTemplateSettings>> CTS_CACHE = 
@@ -1326,7 +1318,7 @@ public class Settings {
     } // End of TrackingResult class
 
     // ----------------------------------------------------------
-    // Preferences bridge to Editor Settings API
+    // Preferences to Editor Settings API bridge
     // ----------------------------------------------------------
 
     private static final Map<MimePath, PreferenceChangesTracker> PREFS_CACHE = 
@@ -1368,7 +1360,7 @@ public class Settings {
     } // End of TrackingResult class
     
     // ----------------------------------------------------------
-    // Macros to Editor Settings API
+    // Macros to Editor Settings API bridge
     // ----------------------------------------------------------
 
     // XXX: rewrite this to not use reflection. It will require dependency on editor/macros
@@ -1407,124 +1399,26 @@ public class Settings {
         return macros;
     }
 
-    private static final SettingsToMimeLookupBridge S2ML_BRIDGE = new SettingsToMimeLookupBridge();
-    
-    private static final class SettingsToMimeLookupBridge implements Evaluator {
-        public Object getValue(Class kitClass, String settingName) {
-            String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
-            MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
-            
-            if (SettingsNames.ABBREV_MAP.equals(settingName)) {
-                return findCodeTemplates(mimePath);
-            }
-            if (SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-                return findKeyBindings(mimePath);
-            }
-            if (SettingsNames.MACRO_MAP.equals(settingName)) {
-                return findMacros(mimePath);
-            }
-            
-            return null;
-        }
-    } // End of SettingsToMimeLookupBridge class
-    
-    /** Coverts Insets to String representation */
-    private static String insetsToString(Insets ins) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(ins.top);
-        sb.append(','); //NOI18N
-
-        sb.append(ins.left);
-        sb.append(','); //NOI18N
-
-        sb.append(ins.bottom);
-        sb.append(','); //NOI18N
-
-        sb.append(ins.right);
-
-        return sb.toString();
-    }
-
-    /** Converts textual representation of Insets */
-    private static Insets parseInsets(String s) {
-        StringTokenizer st = new StringTokenizer(s, ","); //NOI18N
-
-        int arr[] = new int[4];
-        int i = 0;
-        while (st.hasMoreElements()) {
-            if (i > 3) {
-                return null;
-            }
-            try {
-                arr[i] = Integer.parseInt(st.nextToken());
-            } catch (NumberFormatException nfe) {
-                LOG.log(Level.WARNING, null, nfe);
-                return null;
-            }
-            i++;
-        }
-        if (i != 4) {
-            return null;
-        } else {
-            return new Insets(arr[0], arr[1], arr[2], arr[3]);
-        }
-    }
-    
-    private static String dimensionToString(Dimension dim) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(dim.width);
-        sb.append(','); //NOI18N
-        sb.append(dim.height);
-        return sb.toString();
-    }
-
-    private static Dimension parseDimension(String s) {
-        StringTokenizer st = new StringTokenizer(s, ","); // NOI18N
-
-        int arr[] = new int[2];
-        int i = 0;
-        while (st.hasMoreElements()) {
-            if (i > 1) {
-                return null;
-            }
-            try {
-                arr[i] = Integer.parseInt(st.nextToken());
-            } catch (NumberFormatException nfe) {
-                LOG.log(Level.WARNING, null, nfe);
-                return null;
-            }
-            i++;
-        }
-        if (i != 2) {
-            return null;
-        } else {
-            return new Dimension(arr[0], arr[1]);
-        }
-    }
-    
-    private static String wrap(String s) {
-        return (s.length() == 1) ? "0" + s : s; // NOI18N
-    }
-    
-    /** Converts Color to hexadecimal String representation */
-    private static String color2String(Color c) {
-        StringBuilder sb = new StringBuilder();
-        sb.append('#'); // NOI18N
-        sb.append(wrap(Integer.toHexString(c.getRed()).toUpperCase()));
-        sb.append(wrap(Integer.toHexString(c.getGreen()).toUpperCase()));
-        sb.append(wrap(Integer.toHexString(c.getBlue()).toUpperCase()));
-        return sb.toString();
-    }
-    
-    /** Converts a String to an integer and returns the specified opaque Color. */
-    private static Color parseColor(String s) {
-        try {
-            return Color.decode(s);
-        } catch (NumberFormatException nfe) {
-            LOG.log(Level.WARNING, null, nfe);
-            return null;
-        }
-    }
+//    private static final SettingsToMimeLookupBridge S2ML_BRIDGE = new SettingsToMimeLookupBridge();
+//    
+//    private static final class SettingsToMimeLookupBridge implements Evaluator {
+//        public Object getValue(Class kitClass, String settingName) {
+//            String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
+//            MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
+//            
+//            if (SettingsNames.ABBREV_MAP.equals(settingName)) {
+//                return findCodeTemplates(mimePath);
+//            }
+//            if (SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
+//                return findKeyBindings(mimePath);
+//            }
+//            if (SettingsNames.MACRO_MAP.equals(settingName)) {
+//                return findMacros(mimePath);
+//            }
+//            
+//            return null;
+//        }
+//    } // End of SettingsToMimeLookupBridge class
     
 //    private static final Map<String, Class> typesCache = new HashMap<String, Class>();
 //    private static final class NO_TYPE {};
@@ -1572,4 +1466,26 @@ public class Settings {
             return null;
         }
     }
+    
+    private static final class PackageAccessor extends OrgNbEditorAccessor {
+
+        @Override
+        public List[] Settings_getListsOfInitializers() {
+            return getListsOfInitializers();
+        }
+
+        @Override
+        public String Settings_JAVATYPE_KEY_PREFIX() {
+            return JAVATYPE_KEY_PREFIX;
+        }
+        
+        public void Settings_interceptSetValue(EditorPreferencesInjector interceptor) {
+            if (interceptor != null) {
+                assert setValueInterceptor.get() == null : "Can't set more than one setValue interceptor"; //NOI18N
+                setValueInterceptor.set(interceptor);
+            } else {
+                setValueInterceptor.remove();
+            }
+        }
+    } // End of PackageAccessor class
 }

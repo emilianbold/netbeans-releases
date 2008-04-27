@@ -39,55 +39,38 @@
 
 package org.netbeans.modules.editor.settings.storage.spi;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.editor.mimelookup.MimePath;
-
 /**
  *
- * TODO: describe threading, possible storageDescription IDs, semantics of filtering 
- *       after load and 'un-filtering' before save
- * 
  * @author vita
  */
-public abstract class StorageFilter<K extends Object, V extends Object> {
+public final class TypedValue {
 
-    protected StorageFilter(String storageDescriptionId) {
-        this.storageDescriptionId = storageDescriptionId;
-    }
-    
-    public abstract void afterLoad(Map<K, V> map, MimePath mimePath, String profile, boolean defaults) throws IOException;
-    public abstract void beforeSave(Map<K, V> map, MimePath mimePath, String profile, boolean defaults) throws IOException;
-    
-    protected final void notifyChanges() {
-        assert notificationCallback != null;
-        try {
-            notificationCallback.call();
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, null, ex);
-        }
-    }
-    
-    // ----------------------------------------------------------------------
-    // Package private implementation
-    // ----------------------------------------------------------------------
+    private final String value;
+    private String javaType;
+    private String apiCategory; // the API stability
 
-    /* package */ final void initialize(Callable<?> notificationCallback) {
-        this.notificationCallback = notificationCallback;
+    public TypedValue(String value, String javaType) {
+        this.value = value;
+        this.javaType = javaType;
     }
-    
-    /* package */ final String getStorageDescriptionId() {
-        return storageDescriptionId;
+
+    public String getApiCategory() {
+        return apiCategory;
     }
-    
-    // ----------------------------------------------------------------------
-    // Private implementation
-    // ----------------------------------------------------------------------
-    
-    private static final Logger LOG = Logger.getLogger(StorageFilter.class.getName());
-    private final String storageDescriptionId;
-    private Callable<?> notificationCallback;
-}
+
+    public void setApiCategory(String apiCategory) {
+        this.apiCategory = apiCategory;
+    }
+
+    public String getJavaType() {
+        return javaType;
+    }
+
+    public void setJavaType(String javaType) {
+        this.javaType = javaType;
+    }
+
+    public String getValue() {
+        return value;
+    }
+} // End of TypedValue class

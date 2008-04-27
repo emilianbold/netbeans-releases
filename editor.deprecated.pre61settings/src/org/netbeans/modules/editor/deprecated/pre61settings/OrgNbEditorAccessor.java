@@ -37,57 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.settings.storage.spi;
+package org.netbeans.modules.editor.deprecated.pre61settings;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import java.util.List;
+import org.netbeans.editor.Settings;
 
 /**
  *
- * TODO: describe threading, possible storageDescription IDs, semantics of filtering 
- *       after load and 'un-filtering' before save
- * 
  * @author vita
  */
-public abstract class StorageFilter<K extends Object, V extends Object> {
+public abstract class OrgNbEditorAccessor {
 
-    protected StorageFilter(String storageDescriptionId) {
-        this.storageDescriptionId = storageDescriptionId;
+    private static OrgNbEditorAccessor ACCESSOR = null;
+    
+    public static synchronized void register(OrgNbEditorAccessor accessor) {
+        assert ACCESSOR == null : "Can't register two SPI package accessors!";
+        ACCESSOR = accessor;
     }
     
-    public abstract void afterLoad(Map<K, V> map, MimePath mimePath, String profile, boolean defaults) throws IOException;
-    public abstract void beforeSave(Map<K, V> map, MimePath mimePath, String profile, boolean defaults) throws IOException;
-    
-    protected final void notifyChanges() {
-        assert notificationCallback != null;
+    public static synchronized OrgNbEditorAccessor get() {
+        // Trying to wake up HighlightsLayer ...
         try {
-            notificationCallback.call();
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, null, ex);
+            Class clazz = Class.forName(Settings.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
         }
+        
+        assert ACCESSOR != null : "There is no org.netbeans.editor package accessor available!";
+        return ACCESSOR;
     }
     
-    // ----------------------------------------------------------------------
-    // Package private implementation
-    // ----------------------------------------------------------------------
-
-    /* package */ final void initialize(Callable<?> notificationCallback) {
-        this.notificationCallback = notificationCallback;
+    /** Creates a new instance of OrgNbEditorAccessor */
+    protected OrgNbEditorAccessor() {
     }
     
-    /* package */ final String getStorageDescriptionId() {
-        return storageDescriptionId;
-    }
-    
-    // ----------------------------------------------------------------------
-    // Private implementation
-    // ----------------------------------------------------------------------
-    
-    private static final Logger LOG = Logger.getLogger(StorageFilter.class.getName());
-    private final String storageDescriptionId;
-    private Callable<?> notificationCallback;
+    public abstract List [] Settings_getListsOfInitializers();
+    public abstract String Settings_JAVATYPE_KEY_PREFIX();
+    public abstract void Settings_interceptSetValue(EditorPreferencesInjector interceptor);
 }

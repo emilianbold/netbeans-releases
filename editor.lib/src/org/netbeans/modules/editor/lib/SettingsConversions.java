@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.editor.lib;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.lang.reflect.InvocationTargetException;
@@ -134,6 +135,30 @@ public final class SettingsConversions {
         }
     }
 
+    private static String wrap(String s) {
+        return (s.length() == 1) ? "0" + s : s; // NOI18N
+    }
+    
+    /** Converts Color to hexadecimal String representation */
+    public static String color2String(Color c) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('#'); // NOI18N
+        sb.append(wrap(Integer.toHexString(c.getRed()).toUpperCase()));
+        sb.append(wrap(Integer.toHexString(c.getGreen()).toUpperCase()));
+        sb.append(wrap(Integer.toHexString(c.getBlue()).toUpperCase()));
+        return sb.toString();
+    }
+    
+    /** Converts a String to an integer and returns the specified opaque Color. */
+    public static Color parseColor(String s) {
+        try {
+            return Color.decode(s);
+        } catch (NumberFormatException nfe) {
+            LOG.log(Level.WARNING, null, nfe);
+            return null;
+        }
+    }
+    
     public static Object callFactory(String factoryRef, MimePath mimePath) {
         int lastDot = factoryRef.lastIndexOf('.'); //NOI18N
         assert lastDot != -1 : "Need fully qualified name of class with the setting factory method."; //NOI18N

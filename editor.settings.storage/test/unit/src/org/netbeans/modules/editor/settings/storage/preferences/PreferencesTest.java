@@ -50,7 +50,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
-import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl.TypedValue;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 
 /**
  *

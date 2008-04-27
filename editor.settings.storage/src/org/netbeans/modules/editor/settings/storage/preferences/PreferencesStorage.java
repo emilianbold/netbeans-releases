@@ -50,10 +50,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharacterConversions;
-import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl.TypedValue;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
@@ -67,7 +67,7 @@ import org.xml.sax.SAXException;
  *
  * @author Vita Stejskal
  */
-public final class PreferencesStorage implements StorageDescription<String, PreferencesImpl.TypedValue> {
+public final class PreferencesStorage implements StorageDescription<String, TypedValue> {
 
     private static final Logger LOG = Logger.getLogger(PreferencesStorage.class.getName());
 

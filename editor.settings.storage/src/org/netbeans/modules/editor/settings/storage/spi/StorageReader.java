@@ -184,6 +184,7 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
             return f.getStorageDescriptionId();
         }
         
+        @SuppressWarnings("unchecked")
         public void storageFilterInitialize(StorageFilter f, Callable<Void> notificationCallback) {
             f.initialize(notificationCallback);
         }

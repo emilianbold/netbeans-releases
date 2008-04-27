@@ -57,6 +57,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -80,38 +81,6 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         return prefs;
     }
 
-    public static final class TypedValue {
-        
-        private final String value;
-        private String javaType;
-        private String apiCategory; // the API stability
-        
-        public TypedValue(String value, String javaType) {
-            this.value = value;
-            this.javaType = javaType;
-        }
-
-        public String getApiCategory() {
-            return apiCategory;
-        }
-        
-        public void setApiCategory(String apiCategory) {
-            this.apiCategory = apiCategory;
-        }
-        
-        public String getJavaType() {
-            return javaType;
-        }
-
-        public void setJavaType(String javaType) {
-            this.javaType = javaType;
-        }
-        
-        public String getValue() {
-            return value;
-        }
-    } // End of TypedValue class
-    
     // ---------------------------------------------------------------------
     // Preferences API
     // ---------------------------------------------------------------------
