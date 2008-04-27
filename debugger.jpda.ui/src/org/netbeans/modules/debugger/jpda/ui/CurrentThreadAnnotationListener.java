@@ -66,6 +66,8 @@ import org.openide.util.RequestProcessor;
  * @author Jan Jancura
  */
 public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
+    
+    private static final int ANNOTATION_SCHEDULE_TIME = 100;
 
     // annotation for current line
     private transient Object                currentPC;
@@ -76,6 +78,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
 
 
+    @Override
     public String[] getProperties () {
         return new String[] {DebuggerManager.PROP_CURRENT_ENGINE};
     }
@@ -83,21 +86,23 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     /**
      * Listens JPDADebuggerEngineImpl and DebuggerManager.
      */
+    @Override
     public void propertyChange (PropertyChangeEvent e) {
-        if (e.getPropertyName () == DebuggerManager.PROP_CURRENT_ENGINE) {
+        String propertyName = e.getPropertyName();
+        if (DebuggerManager.PROP_CURRENT_ENGINE.equals(propertyName)) {
             updateCurrentDebugger ();
             updateCurrentThread ();
             annotate ();
         } else
-        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_THREAD) {
+        if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
             updateCurrentThread ();
             annotate ();
         } else
-        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME) {
+        if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propertyName)) {
             updateCurrentThread ();
             annotate ();
         } else
-        if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
+        if (JPDADebugger.PROP_STATE.equals(propertyName)) {
             annotate ();
         }
     }
@@ -229,7 +234,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 });
             }
         }
-        taskRemove.schedule(500);
+        taskRemove.schedule(ANNOTATION_SCHEDULE_TIME);
     }
 
     private void annotateCallStack (
@@ -243,7 +248,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             this.stackToAnnotate = stack;
             this.sourcePathToAnnotate = sourcePath;
             if (taskAnnotate == null) {
-                taskAnnotate = rp.post (new Runnable () {
+                taskAnnotate = rp.create (new Runnable () {
                     public void run () {
                         CallStackFrame[] stack;
                         SourcePath sourcePath;
@@ -294,6 +299,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 });
             }
         }
-        taskAnnotate.schedule(500);
+        taskAnnotate.schedule(ANNOTATION_SCHEDULE_TIME);
     }
 }
