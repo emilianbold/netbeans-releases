@@ -596,7 +596,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         }
         if (!valid) {
             //System.err.println(" FRAMES INVALID (#"+hashCode()+", #"+o.hashCode()+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+super.equals(o));//(sf == ((CallStackFrameImpl) o).sf));
-            return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
+            //return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
+            return this == o;
         }
         try {
             //System.err.println(" FRAMES (#"+hashCode()+":"+getLineNumber(null)+", #"+o.hashCode()+":"+frame.getLineNumber(null)+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+
@@ -604,7 +605,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             return  sf.equals (frame.sf) && getFrameDepth() == frame.getFrameDepth();
         } catch (InvalidStackFrameException isfex) {
             //System.err.println(" FRAMES Invalid (#"+hashCode()+", #"+o.hashCode()+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+super.equals(o));//(sf == ((CallStackFrameImpl) o).sf));
-            return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
+            //return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
+            return this == o;
         }
     }
     
