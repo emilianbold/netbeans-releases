@@ -43,6 +43,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -145,7 +146,9 @@ public class InfoPanel extends javax.swing.JPanel {
                 } catch (UnknownTypeException e) {
                     displayName = thread.getName();
                 }
-                JMenuItem item = new JMenuItem(displayName);
+                Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+                Icon icon = image != null ? new ImageIcon(image) : null;
+                JMenuItem item = new JMenuItem(displayName, icon);
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         thread.makeCurrent();

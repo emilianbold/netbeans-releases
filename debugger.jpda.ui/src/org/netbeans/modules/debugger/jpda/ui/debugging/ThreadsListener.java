@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,15 +56,28 @@ import org.openide.util.RequestProcessor;
 
 public final class ThreadsListener implements PropertyChangeListener {
 
+    private static ThreadsListener instance;
+    
     private JPDADebugger debugger = null;
+    private LinkedList<JPDAThread> currentThreadsHistory = new LinkedList();
     private Set<JPDAThread> threads = new HashSet<JPDAThread>();
     private BreakpointHits hits = new BreakpointHits();
     private DebuggingView debuggingView;
     
-    public ThreadsListener(DebuggingView debuggingView) {
-        this.debuggingView = debuggingView;
+    private ThreadsListener() {
     }
 
+    public static synchronized ThreadsListener getDefault() {
+        if (instance == null) {
+            instance = new ThreadsListener();
+        }
+        return instance;
+    }
+    
+    public void setDebuggingView(DebuggingView debuggingView) {
+        this.debuggingView = debuggingView;
+    }
+    
     public synchronized void changeDebugger(JPDADebugger deb) {
         if (debugger == deb || deb == null) {
             return;
@@ -119,13 +133,17 @@ public final class ThreadsListener implements PropertyChangeListener {
 
                 JPDAThread jpdaThread = (JPDAThread)evt.getOldValue();
                 if (threads.remove(jpdaThread)) {
+                    currentThreadsHistory.remove(jpdaThread);
                     ((Customizer)jpdaThread).removePropertyChangeListener(this);
                     
                     // System.out.println("RELEASED: " + jpdaThread.getName());
                     
                 }
             } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propName)) {
-                removeBreakpointHit(debugger.getCurrentThread());
+                JPDAThread currentThread = debugger.getCurrentThread();
+                removeBreakpointHit(currentThread);
+                currentThreadsHistory.remove(currentThread);
+                currentThreadsHistory.addFirst(currentThread);
             } else if (JPDADebugger.PROP_STATE.equals(propName) && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                 unregisterListeners();
             }
@@ -156,6 +174,10 @@ public final class ThreadsListener implements PropertyChangeListener {
                 setShowDeadlock(true);
             }
         }
+    }
+    
+    public synchronized List<JPDAThread> getCurrentThreadsHistory() {
+        return new ArrayList<JPDAThread>(currentThreadsHistory);
     }
     
     public synchronized int getHitsCount() {
@@ -199,11 +221,12 @@ public final class ThreadsListener implements PropertyChangeListener {
         debuggingView.getInfoPanel().setShowDeadlock(detected);
     }
 
-    private void unregisterListeners() {
+    private synchronized void unregisterListeners() {
         for (JPDAThread thread : threads) {
             ((Customizer) thread).removePropertyChangeListener(this);
         }
         threads.clear();
+        currentThreadsHistory.clear();
         clearAllHits();
         setShowDeadlock(false);
         debugger.removePropertyChangeListener(this);

@@ -250,6 +250,27 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
          */
     }
 
+    public static String getIconBase(JPDAThread thread) {
+        Breakpoint b = thread.getCurrentBreakpoint();
+        if (b != null) {
+            if (b instanceof LineBreakpoint) {
+                String condition = ((LineBreakpoint) b).getCondition();
+                if (condition != null && condition.length() > 0) {
+                    return THREAD_AT_BRKT_CONDITIONAL;
+                } else {
+                    return THREAD_AT_BRKT_LINE;
+                }
+            } else {
+                return THREAD_AT_BRKT_NONLINE;
+            }
+        }
+        if (thread.isSuspended()) {
+            return THREAD_SUSPENDED;
+        } else {
+            return THREAD_RUNNING;
+        }
+    }
+    
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof CallStackFrame) {
             CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
@@ -270,25 +291,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
 
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (node instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) node;
-            Breakpoint b = t.getCurrentBreakpoint();
-            if (b != null) {
-                if (b instanceof LineBreakpoint) {
-                    String condition = ((LineBreakpoint) b).getCondition();
-                    if (condition != null && condition.length() > 0) {
-                        return THREAD_AT_BRKT_CONDITIONAL;
-                    } else {
-                        return THREAD_AT_BRKT_LINE;
-                    }
-                } else {
-                    return THREAD_AT_BRKT_NONLINE;
-                }
-            }
-            if (t.isSuspended()) {
-                return THREAD_SUSPENDED;
-            } else {
-                return THREAD_RUNNING;
-            }
+            return getIconBase((JPDAThread)node);
         }
         if (node instanceof CallStackFrame) {
             return CALL_STACK2;

@@ -112,7 +112,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
         setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
         
-        threadsListener = new ThreadsListener(this);
+        threadsListener = ThreadsListener.getDefault();
+        threadsListener.setDebuggingView(this);
         
         resumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
         focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
