@@ -9,12 +9,13 @@
             <attr name="extensionTarget" stringvalue="sun-http-binding|sun-etl-engine"/>
             <attr name="prefix" stringvalue="config"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/configuration"/>
+            <attr name="description" stringvalue="Application Configuration Extension"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
             <folder name="application-config">
                 <file name="name">
                     <attr name="type" stringvalue="String"/>
-                    <attr name="description" stringvalue="Application Configuration Name"/> 
+                    <attr name="description" stringvalue="Application configuration name"/> 
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
             </folder>
@@ -26,12 +27,13 @@
             <attr name="extensionTarget" stringvalue=".*-binding"/>
             <attr name="prefix" stringvalue="config-endpoint"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/config-endpoint"/>
+            <attr name="description" stringvalue="Endpoint Configuration Extension"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
             <folder name="codegen">
                 <file name="disableInBC">
                     <attr name="type" stringvalue="Boolean"/>
-                    <attr name="description" stringvalue="Whether to generate this endpoint in the BC SU's jbi.xml."/>
+                    <attr name="description" stringvalue="Whether to enable this endpoint in the binding component service unit's descriptor"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
             </folder>
@@ -43,6 +45,7 @@
             <attr name="extensionTarget" stringvalue=".*"/>
             <attr name="prefix" stringvalue="redelivery"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/qos/redelivery"/>
+            <attr name="description" stringvalue="QoS Redelivery Extension"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
             <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.redelivery.RedirectTargetExtenionPropertyClassProvider"/>
@@ -50,7 +53,7 @@
                 <folder name="on-failure">
                     <attr name="choice" stringvalue="true"/>
                     <attr name="default-choice" stringvalue="error"/>
-                    <attr name="description" stringvalue="What to do when redelivery attempts are exhausted."/>
+                    <attr name="description" stringvalue="What to do when redelivery attempts are exhausted"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                     <folder name="error">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
@@ -91,12 +94,13 @@
             <attr name="extensionTarget" stringvalue=".*"/>
             <attr name="prefix" stringvalue="throttling"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/qos/throttling"/>
+            <attr name="description" stringvalue="QoS Throttling Extension"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
             <folder name="throttling">
                 <file name="maximumConcurrencyLimit">
                     <attr name="type" stringvalue="Integer"/>
-                    <attr name="description" stringvalue="Maximim Concurrency Limit"/>
+                    <attr name="description" stringvalue="Maximim concurrency limit"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
             </folder>
@@ -108,15 +112,14 @@
             <attr name="extensionTarget" stringvalue="sun-http-binding"/>
             <attr name="prefix" stringvalue="wsit-callback-project"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/wsit/callbackproject"/>
-            <attr name="SystemFileSystem.localizingBundle"
-                  stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
-            <attr name="SystemFileSystem.icon"
-                  urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="description" stringvalue="WSIT Callback Project Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
             <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.WsitCallbackExtenionPropertyClassProvider"/>
             <folder name="WsitCallback">
                 <file name="CallbackProject">
                     <attr name="type" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.properties.CallbackProjectExtensionProperty"/>
-                    <attr name="description" stringvalue="WSIT Callback handler Java project"/>
+                    <attr name="description" stringvalue="WSIT callback handler Java project"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
             </folder>

@@ -838,77 +838,8 @@ public class PropertyPanel {
     }
     
     public static PropertyPanel createComboBoxPanel(String label, Property prop, String[] displayNames, String[] values, boolean createPanel) {
-        PropertyPanel panel = new PropertyPanel(label, prop) {
-            public String getStringValue() {
-                return (String)((JComboBox)input[0]).getSelectedItem();
-            }
-            public void store() {
-                String value = getStringValue();
-                if (!mProperty.getValue().equals(value)) {
-                	mProperty.getModel().startTransaction();
-                    mProperty.setValue(value);
-                    mProperty.getModel().endTransaction();
-                }
-            }
-        };
-        JLabel nameLabel = new JLabel(label);
-        JComboBox cbb = new JComboBox(displayNames);
-        // PreferredSize must be set o.w. failed validation will resize this field.
-        cbb.setPreferredSize(new Dimension(140, 20));
-        cbb.setMinimumSize(new Dimension(50, 20));
-
-        String value = prop.getValue();
-        for (int i = 0; i < values.length; i++) {
-            if (values[i].equals(value)) {
-                cbb.setSelectedItem(displayNames[i]);
-                break;
-            }
-        }
-        if (createPanel) {
-            panel.panel = new JPanel();
-            panel.panel.setLayout(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(4, 3, 4, 3);
-            
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            panel.panel.add(nameLabel, gbc);
-            
-            gbc.gridx = 1;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            panel.panel.add(cbb, gbc);
-            
-            gbc.gridx = 2;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.weightx = 1.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            java.awt.Component glue = Box.createHorizontalGlue();
-            panel.panel.add(glue, gbc);
-        }
-        panel.component = new JComponent[2];
-        panel.component[0] = nameLabel;
-        panel.component[1] = cbb;
-        
-        panel.input = new JComponent[1];
-        panel.input[0] = cbb;
-        
-        return panel;
+        return new ComboBoxPropertyPanel(label, prop, displayNames, values, createPanel);
     }
-
     
     private static Calendar CALENDAR = Calendar.getInstance();
 //    public static PropertyPanel createDatePanel(String label, TcgProperty prop, boolean createPanel) {
@@ -1280,4 +1211,121 @@ public class PropertyPanel {
         panel.input[1] = cbb;
         return panel;
     }
+    
+    static class ComboBoxPropertyPanel extends PropertyPanel {
+            JComboBox mComboBox;
+            
+            private String[] mValues;
+            private String[] mDisplayNames;
+            private boolean mCreatePanel;
+            
+            
+            ComboBoxPropertyPanel(String label, Property prop, String[] displayNames, String[] values, boolean createPanel) {
+                super(label, prop);
+                this.mDisplayNames = displayNames;
+                this.mValues = values;
+                this.mCreatePanel = createPanel;
+                init();
+            }
+            
+            private void init() {
+                JLabel nameLabel = new JLabel(mLabel);
+                mComboBox = new JComboBox(mDisplayNames);
+                // PreferredSize must be set o.w. failed validation will resize this field.
+                mComboBox.setPreferredSize(new Dimension(140, 20));
+                mComboBox.setMinimumSize(new Dimension(50, 20));
+
+                String value = mProperty.getValue();
+                for (int i = 0; i < mValues.length; i++) {
+                    if (mValues[i].equals(value)) {
+                        mComboBox.setSelectedItem(mDisplayNames[i]);
+                        break;
+                    }
+                }
+                if (mCreatePanel) {
+                    panel = new JPanel();
+                    panel.setLayout(new GridBagLayout());
+                    GridBagConstraints gbc = new GridBagConstraints();
+                    gbc.insets = new Insets(4, 3, 4, 3);
+
+                    gbc.gridx = 0;
+                    gbc.gridy = 0;
+                    gbc.gridwidth = 1;
+                    gbc.gridheight = 1;
+                    gbc.anchor = GridBagConstraints.WEST;
+                    gbc.weightx = 0.0D;
+                    gbc.weighty = 0.0D;
+                    gbc.fill = GridBagConstraints.NONE;
+                    panel.add(nameLabel, gbc);
+
+                    gbc.gridx = 1;
+                    gbc.gridy = 0;
+                    gbc.gridwidth = 1;
+                    gbc.gridheight = 1;
+                    gbc.weightx = 0.0D;
+                    gbc.weighty = 0.0D;
+                    gbc.fill = GridBagConstraints.HORIZONTAL;
+                    panel.add(mComboBox, gbc);
+
+                    gbc.gridx = 2;
+                    gbc.gridy = 0;
+                    gbc.gridwidth = 1;
+                    gbc.gridheight = 1;
+                    gbc.weightx = 1.0D;
+                    gbc.weighty = 0.0D;
+                    gbc.fill = GridBagConstraints.HORIZONTAL;
+                    java.awt.Component glue = Box.createHorizontalGlue();
+                    panel.add(glue, gbc);
+                }
+                component = new JComponent[2];
+                component[0] = nameLabel;
+                component[1] = mComboBox;
+
+                input = new JComponent[1];
+                input[0] = mComboBox;
+
+
+            }
+            
+            public String getStringValue() {
+                String val = null;
+                String displayName = (String)((JComboBox)input[0]).getSelectedItem();
+                for (int i = 0; i < mDisplayNames.length; i++) {
+                    String dName = mDisplayNames[i];
+                    if(dName.equals(displayName)) {
+                        val = mValues[i];
+                        break;
+                    }
+                }
+                
+                return val;
+            }
+
+            @Override
+            public void setStringValue(String value) {
+                String displayName = null;
+                for (int i = 0; i < mValues.length; i++) {
+                    String val = mValues[i];
+                    if(val.equals(value)) {
+                        displayName = mDisplayNames[i];
+                        break;
+                    }
+                }
+                
+                if(displayName != null) {
+                    mComboBox.setSelectedItem(displayName);
+                }
+            }
+            
+            
+            public void store() {
+                String value = getStringValue();
+                if (!mProperty.getValue().equals(value)) {
+                	mProperty.getModel().startTransaction();
+                    mProperty.setValue(value);
+                    mProperty.getModel().endTransaction();
+                }
+            }
+        }
+    
 }
