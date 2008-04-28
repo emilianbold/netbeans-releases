@@ -21,7 +21,6 @@ package org.netbeans.modules.etl.project;
 import java.io.File;
 import java.io.IOException;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -53,37 +52,20 @@ import org.w3c.dom.Element;
 public class EtlproProjectGenerator {
 
     private static transient final Logger mLogger = Logger.getLogger(EtlproProjectGenerator.class.getName());
-    /*private static transient final Localizer mLoc = Localizer.get();
-    private static final String nbBundle1 = mLoc.t("BUND713: Collaborations");
-    private static final String nbBundle2 = mLoc.t("BUND714: conf");
-    private static final String nbBundle3 = mLoc.t("BUND715: setup");
-    private static final String nbBundle4 = mLoc.t("BUND716: bpelasa");
-    private static final String nbBundle5 = mLoc.t("BUND717: build");
-    private static final String nbBundle6 = mLoc.t("BUND718: data");
-    private static final String nbBundle7 = mLoc.t("BUND719: databases");
-    private static final String nbBundle8 = mLoc.t("BUND720: nbproject");
-    private static final String nbBundle9 = mLoc.t("BUND721: jdbc:axiondb:");
-    private static final String nbBundle11 = mLoc.t("BUND722: Default");*/
     //Trimming the initial spaces
-    private static final String DEFAULT_DOC_BASE_FOLDER = "conf";//nbBundle2.substring(15).trim(); //NOI18N
+    private static final String DEFAULT_DOC_BASE_FOLDER = "conf";//NOI18N
+    public static final String DEFAULT_SRC_FOLDER = "Collaborations";//NOI18N
+    private static final String DEFAULT_RESOURCE_FOLDER = "setup";//NOI18N
+    private static final String DEFAULT_BPELASA_FOLDER = "bpelasa"; //NOI18N
 
-    public static final String DEFAULT_SRC_FOLDER = "Collaborations";//nbBundle1.substring(15).trim(); //NOI18N
+    private static final String DEFAULT_BUILD_DIR = "build";//NOI18N
+    public static final String DEFAULT_DATA_DIR = "data";//NOI18N
+    private static final String DEFAULT_DB_DIR = "Default"; //NOI18N
 
-    private static final String DEFAULT_RESOURCE_FOLDER = "setup";//nbBundle3.substring(15).trim(); //NOI18N
+    public static final String DEFAULT_DATABASES_DIR = "databases"; //NOI18N
 
-    private static final String DEFAULT_BPELASA_FOLDER = "bpelasa";//nbBundle4.substring(15).trim(); //NOI18N
-
-    private static final String DEFAULT_BUILD_DIR = "build";//nbBundle5.substring(15).trim(); //NOI18N
-
-    public static final String DEFAULT_DATA_DIR = "data";//nbBundle6.substring(15).trim(); //NOI18N
-
-    private static final String DEFAULT_DB_DIR = "Default";//nbBundle11.substring(15).trim(); //NOI18N
-
-    public static final String DEFAULT_DATABASES_DIR = "databases";//nbBundle7.substring(15).trim(); //NOI18N
-
-    private static final String DEFAULT_NBPROJECT_DIR = "nbproject";//nbBundle8.substring(15).trim(); //NOI18N
-
-    private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";//nbBundle9.substring(15).trim();
+    private static final String DEFAULT_NBPROJECT_DIR = "nbproject";//NOI18N
+    private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
@@ -101,7 +83,7 @@ public class EtlproProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {        
+    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {
         dir.mkdirs();
         prjName = name;
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
@@ -240,6 +222,7 @@ public class EtlproProjectGenerator {
         char[] ch = name.toCharArray();
         if (ch == null) {
             String nbBundle10 = "No Database name specified.";//mLoc.t("BUND723: No Database name specified.");
+
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(nbBundle10/*.substring(15)*/, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -254,6 +237,7 @@ public class EtlproProjectGenerator {
                 conn = DBExplorerUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
             } catch (Exception ex) {
                 String nbBundle12 = "Axion driver could not be loaded.";//mLoc.t("BUND724: Axion driver could not be loaded.");
+
                 NotifyDescriptor d =
                         new NotifyDescriptor.Message(nbBundle12/*.substring(15)*/, NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
@@ -269,10 +253,8 @@ public class EtlproProjectGenerator {
             }
         }
     }
-    
-    
-    //Need for Migration - Start
 
+    //Need for Migration - Start
     public static File getDatabasesFolder() {
         return databases;
     }
@@ -297,24 +279,23 @@ public class EtlproProjectGenerator {
     }
 
     public static boolean isCommandLineImport(File dir) {
-        java.util.logging.Logger.getLogger(EtlproProjectGenerator.class.getName()).info("***********EtlproProjectGenerator dir " + dir);
         while (dir.getParentFile() != null) {
             dir = dir.getParentFile();
         }
         FileObject fo = FileUtil.toFileObject(dir);
-        java.util.logging.Logger.getLogger(EtlproProjectGenerator.class.getName()).info("***********EtlproProjectGenerator FileObject " + fo);
+
         if (null != fo) {
-            isCommandLine = false;            
-            java.util.logging.Logger.getLogger(EtlproProjectGenerator.class.getName()).info("***********EtlproProjectGenerator isCommandLine " + isCommandLine);
+            isCommandLine = false;
+
         } else {
-            isCommandLine = true;            
-            java.util.logging.Logger.getLogger(EtlproProjectGenerator.class.getName()).info("***********EtlproProjectGenerator else part isCommandLine " + isCommandLine);
+            isCommandLine = true;
+
         }
         DBExplorerUtil.isCmdLineImport(isCommandLine);
         return isCommandLine;
     }
-   
-    public static URL getResourceURL(String resource){        
+
+    public static URL getResourceURL(String resource) {
         return EtlproProject.class.getResource("resources/build.xsl");
     }
     private static boolean isCommandLine = false;
