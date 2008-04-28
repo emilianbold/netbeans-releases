@@ -260,7 +260,7 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
 
         AdministrationService adminService = getAdministrationService();
 
-        String assemblyName = getName();
+        String assemblyName = getParentNode().getName();
         try {
             suDD = adminService.getServiceUnitDeploymentDescriptor(
                     assemblyName, getName());

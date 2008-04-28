@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtilTestHidden;
 import org.openide.filesystems.URLMapperTestHidden;
 
 /**
- * @author rmatous
+ * @author Tomas Stupka
  */
 public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
 
@@ -105,6 +105,7 @@ public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
 //      XXX failing        
 //        suite.addTest(new BaseFileObjectTestHid("testLockFileAfterCrash"));                                
 //        suite.addTest(new FileObjectTestHid("testFireFileDeletedEvent2"));        
+//        suite.addTest(new FileObjectTestHid("testMove1_Fs"));        
         return new ClearcaseFileSystemTest(suite);
     }
     
@@ -132,6 +133,9 @@ public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
             files.add(FileUtil.toFile(fo));            
         }
         checkin(files);               
+//        for (File file : files) {
+//            assertStatus(file);
+//        }
         
         return new FileSystem[]{workFo.getFileSystem()};
     }
@@ -141,27 +145,18 @@ public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
     protected String getResourcePrefix(String testName, String[] resources) {
         return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }
-
     
     private void checkin(List<File> files) throws IOException {       
-        getClient().exec(new CheckinCommand(files.toArray(new File[files.size()]), "checkin", true, false), false);                    
-            
-//        for (File file : files) {
-//            assertStatus(file);
-//        }
+        getClient().exec(new CheckinCommand(files.toArray(new File[files.size()]), "checkin", true, false), false);                                
     }
 
-//    private void assertStatus(FileObject fo) throws IOException {
-//        assertStatus(FileUtil.toFile(fo));
-//    }    
-    
     private ClearcaseClient getClient() {
         return Clearcase.getInstance().getClient();
     }
     
-//    private void assertStatus(File f) throws IOException {
-//        FileInformation info = cache.getInfo(f);
-//        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, info.getStatus());        
-//    }    
+    private void assertStatus(File f) throws IOException {
+        FileInformation info = cache.getInfo(f);
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, info.getStatus());        
+    }    
     
 }

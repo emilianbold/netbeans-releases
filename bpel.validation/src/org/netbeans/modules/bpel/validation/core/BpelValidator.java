@@ -67,7 +67,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class BpelValidator extends Validator {
 
-  public abstract SimpleBpelModelVisitor getVisitor();
+  protected abstract SimpleBpelModelVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
     if ( !(m instanceof BpelModel)) {

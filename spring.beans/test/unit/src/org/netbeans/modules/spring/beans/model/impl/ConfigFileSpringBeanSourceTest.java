@@ -72,9 +72,9 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         List<SpringBean> beans = source.getBeans();
         assertEquals(1, beans.size());
         SpringBean bean = beans.get(0);
-        assertSame(bean, source.findBeanByIDOrName("foo"));
-        assertSame(bean, source.findBeanByIDOrName("bar"));
-        assertSame(bean, source.findBeanByIDOrName("baz"));
+        assertSame(bean, source.findBean("foo"));
+        assertSame(bean, source.findBean("bar"));
+        assertSame(bean, source.findBean("baz"));
         assertSame(bean, source.findBeanByID("foo"));
         assertNull(source.findBeanByID("bar"));
         assertNull(source.findBeanByID("baz"));

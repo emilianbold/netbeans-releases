@@ -80,14 +80,10 @@ import org.xml.sax.SAXParseException;
  * @author Praveen Savur
  */
 public abstract class XsdBasedValidator implements Validator {
-    
    
     /** Creates a new instance of XsdBasedValidation */
     public XsdBasedValidator() {
     }
-    
-    
-    
     
     /**
      * Get Schemas that the model has to be validated against.
@@ -98,7 +94,6 @@ public abstract class XsdBasedValidator implements Validator {
      */
     abstract protected Schema getSchema(Model model);
     
-    
     /**
      * Entry point to validate a model.
      * @param model Model to validate.
@@ -107,22 +102,18 @@ public abstract class XsdBasedValidator implements Validator {
      * @return ValidationResults.
      */
     public ValidationResult validate(Model model, Validation validation, Validation.ValidationType validationType) {
-        Collection<ResultItem> results = Collections.emptyList();
-        List<Model> validateds = Collections.emptyList();
         Schema schema = getSchema(model);
-        if (schema == null) {
-            return new ValidationResult(results, validateds);
-        }
         
+        if (schema == null) {
+            return null;
+        }
         Handler handler = new Handler(model);
         validate(model, schema, handler);
-        results = handler.getResultItems();
-        validateds = Collections.singletonList(model);
+        Collection<ResultItem> results = handler.getResultItems();
+        List<Model> validateds = Collections.singletonList(model);
         
         return new ValidationResult(results, validateds);
     }
-    
-    
     
     /**
      * 
@@ -155,8 +146,6 @@ public abstract class XsdBasedValidator implements Validator {
         return source;
     }
     
-    
-    
     /**
      * Validates the model against the schema. Errors are sent to the handler.
      * @param model Model to be validated.
@@ -164,7 +153,6 @@ public abstract class XsdBasedValidator implements Validator {
      * @param handler Handler to receive validation messages.
      */
     protected void validate(Model model, Schema schema, Handler handler) {
-
         javax.xml.validation.Validator validator = schema.newValidator();
         Source source = getSource(model, handler);
         
@@ -185,7 +173,6 @@ public abstract class XsdBasedValidator implements Validator {
             }
         }
     }
-    
     
     /**
      * Subclasses can use this to get a compiled schema object.
@@ -406,5 +393,4 @@ public abstract class XsdBasedValidator implements Validator {
     public DocumentModel resolveResource(String systemId, Model currentModel) {
         return null;
     }
-    
 }

@@ -100,6 +100,14 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.exceptionDescription = exception.getLocalizedMessage ();
         if (exceptionDescription == null)
             exceptionDescription = exception.getMessage ();
+        Throwable t = exception.getCause();
+        if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+            java.io.StringWriter s = new java.io.StringWriter();
+            java.io.PrintWriter p = new java.io.PrintWriter(s);
+            t.printStackTrace(p);
+            p.close();
+            exceptionDescription += " \n"+s.toString();
+        }
         this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
     
