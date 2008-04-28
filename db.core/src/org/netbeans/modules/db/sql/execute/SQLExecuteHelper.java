@@ -399,8 +399,8 @@ public final class SQLExecuteHelper {
             skipWhitespace();
             
             int endPos = pos;
-            while ( ! Character.isWhitespace(sql.charAt(endPos)) && 
-                    endPos < sqlLength) {
+            while ( endPos < sqlLength &&
+                    ! Character.isWhitespace(sql.charAt(endPos))) {
                 endPos++;
             }
             
