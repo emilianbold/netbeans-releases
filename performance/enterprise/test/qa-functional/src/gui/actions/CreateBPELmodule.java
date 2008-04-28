@@ -51,6 +51,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -117,6 +118,7 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
                     exc.printStackTrace(getLog());
                     continue;
                 }
+                Dumper.dumpAll(getLog("dump.xml"));
                 throw exc;
             } finally {
                 JemmyProperties.setCurrentTimeouts(old_timeouts);
