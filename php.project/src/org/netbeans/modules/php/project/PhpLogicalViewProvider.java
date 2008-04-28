@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -89,6 +90,7 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -97,6 +99,8 @@ import org.openide.util.lookup.Lookups;
  * @author ads, Tomas Mysik
  */
 class PhpLogicalViewProvider implements LogicalViewProvider {
+    static final Image PACKAGE_BADGE = Utilities.loadImage(
+            "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
 
     final PhpProject project;
 
@@ -446,6 +450,16 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                     | DELEGATE_GET_SHORT_DESCRIPTION
                     | DELEGATE_GET_ACTIONS);
             setDisplayName(name);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return Utilities.mergeImages(super.getIcon(type), PACKAGE_BADGE, 7, 7);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return Utilities.mergeImages(super.getOpenedIcon(type), PACKAGE_BADGE, 7, 7);
         }
 
         @Override
