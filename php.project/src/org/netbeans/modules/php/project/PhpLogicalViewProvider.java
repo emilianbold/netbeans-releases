@@ -252,35 +252,35 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class LogicalViewChildren extends Children.Keys
-            implements FileChangeListener, ChangeListener, PropertyChangeListener
+    // XXX verify all the implemented interfaces
+    private class LogicalViewChildren extends Children.Keys<SourceGroup>
+            implements /*FileChangeListener, */ChangeListener, PropertyChangeListener
             //,FileStatusListener
     {
 
         private ChangeListener sourcesListener;
-        private java.util.Map groupsListeners;
+        private java.util.Map<SourceGroup, PropertyChangeListener> groupsListeners;
         //private HashMap<FileSystem, FileStatusListener> fileSystemListeners;
 
         @Override
         protected void addNotify() {
             super.addNotify();
-            project.getHelper().getProjectDirectory().addFileChangeListener(this);
+            //project.getHelper().getProjectDirectory().addFileChangeListener(this);
             createNodes();
         }
 
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
-            project.getHelper().getProjectDirectory().removeFileChangeListener(this);
+            setKeys(Collections.<SourceGroup>emptySet());
+            //project.getHelper().getProjectDirectory().removeFileChangeListener(this);
             super.removeNotify();
         }
 
         @Override
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(SourceGroup key) {
             Node node = null;
-            if (key instanceof SourceGroup) {
-                SourceGroup sourceGroup = (SourceGroup) key;
-                DataFolder folder = getFolder(sourceGroup.getRootFolder());
+            if (key != null) {
+                DataFolder folder = getFolder(key.getRootFolder());
                 if (folder != null) {
                     /* no need to use sourceGroup.getDisplayName() while we have only one sourceRoot.
                      * Now it contains not good-looking label.
@@ -356,13 +356,13 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
             // parse SG
             // update SG listeners
-            // TODO check if this is necessary
+            // XXX check if this is necessary
             final SourceGroup[] sourceGroups = Utils.getSourceGroups(project);
             updateSourceGroupsListeners(sourceGroups);
             final SourceGroup[] groups = new SourceGroup[sourceGroups.length];
             System.arraycopy(sourceGroups, 0, groups, 0, sourceGroups.length);
 
-            List<Object> keysList = new ArrayList<Object>(groups.length);
+            List<SourceGroup> keysList = new ArrayList<SourceGroup>(groups.length);
             //Set<FileObject> roots = new HashSet<FileObject>();
             FileObject fileObject = null;
             for (int i = 0; i < groups.length; i++) {
@@ -399,7 +399,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                     group.removePropertyChangeListener(pcl);
                 }
             }
-            groupsListeners = new HashMap();
+            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
             for (SourceGroup group : sourceGroups) {
                 PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
                 groupsListeners.put(group, pcl);
