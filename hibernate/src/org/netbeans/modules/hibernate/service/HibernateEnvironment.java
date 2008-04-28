@@ -144,6 +144,15 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
     }
 
     /**
+     * Returns all reverse engineering files defined under this project.
+     * 
+     * @return List of FileObjects for reverse engg. files.
+     */
+    public ArrayList<FileObject> getAllHibernateReverseEnggFileObjects() {
+        return HibernateUtil.getAllHibernateReverseEnggFileObjects(project);
+    }
+    
+    /**
      * Connects to the DB using supplied HibernateConfigurations and gets the list of
      * all table names.
      *
