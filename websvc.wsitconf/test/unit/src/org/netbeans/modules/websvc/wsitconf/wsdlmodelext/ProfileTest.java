@@ -41,16 +41,11 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.File;
-import java.util.Collection;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
-import org.netbeans.modules.websvc.wsitmodelext.policy.All;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -96,7 +91,7 @@ public class ProfileTest extends NbTestCase {
             ComboConstants.PROF_KERBEROS,
             ComboConstants.PROF_STSISSUED,
             ComboConstants.PROF_STSISSUEDCERT,
-            ComboConstants.PROF_STSISSUEDENDORSE
+            ComboConstants.PROF_STSISSUEDENDORSE,
             ComboConstants.PROF_STSISSUEDSUPPORTING
         };
         
