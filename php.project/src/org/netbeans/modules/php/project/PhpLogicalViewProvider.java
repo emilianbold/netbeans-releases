@@ -55,6 +55,8 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -74,7 +76,6 @@ import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -113,6 +114,10 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
     }
 
     public Node findPath(Node root, Object target) {
+        Project p = root.getLookup().lookup(Project.class);
+        if (p == null) {
+            return null;
+        }
         // Check each child node in turn.
         Node[] children = root.getChildren().getNodes(true);
         for (Node node : children) {
@@ -128,6 +133,10 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                     targetFO = ((DataObject) target).getPrimaryFile();
                 } else {
                     targetFO = (FileObject) target;
+                }
+                Project owner = FileOwnerQuery.getOwner(targetFO);
+                if (!p.equals(owner)) {
+                    return null; // Don't waste time if project does not own the fileobject
                 }
                 if (kidFO == targetFO) {
                     return node;
@@ -197,13 +206,17 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class PhpLogicalViewRootNode extends AbstractNode {
+    private final class PhpLogicalViewRootNode extends AbstractNode {
         private PhpLogicalViewRootNode() {
-            super(new LogicalViewChildren(), Lookups.fixed(new Object[]{project}));
-
+            super(new LogicalViewChildren(), Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png"); // NOI18N
-
             setName(ProjectUtils.getInformation(project).getDisplayName());
+        }
+
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(PhpLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
         }
 
         @Override
@@ -228,8 +241,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
-            // honor 57874 contact
 
+            // honor 57874 contact
             Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
             if (!res.isEmpty()) {
                 actions.add(null);
@@ -392,10 +405,10 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private void updateSourceGroupsListeners(SourceGroup[] sourceGroups) {
             if (groupsListeners != null) {
-                Iterator it = groupsListeners.keySet().iterator();
+                Iterator<SourceGroup> it = groupsListeners.keySet().iterator();
                 while (it.hasNext()) {
-                    SourceGroup group = (SourceGroup) it.next();
-                    PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
+                    SourceGroup group = it.next();
+                    PropertyChangeListener pcl = groupsListeners.get(group);
                     group.removePropertyChangeListener(pcl);
                 }
             }
@@ -438,9 +451,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
          * Uses specified name.
          */
         SrcNode(DataFolder folder, String name) {
-            this(new FilterNode(folder.getNodeDelegate(),
-                                folder.createNodeChildren(new PhpSourcesFilter()))
-                 , name);
+            this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new PhpSourcesFilter())), name);
         }
 
         private SrcNode(FilterNode node, String name) {
@@ -501,7 +512,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-/**
+    /**
      * Children for node that represents folder (SrcNode or PackageNode)
      */
     private class FolderChildren extends FilterNode.Children {
@@ -559,9 +570,9 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             };
             int idx = actions.indexOf(SystemAction.get(PasteAction.class));
             for (int i = 0; i < toAdd.length; i++) {
-                if (idx >= 0 && idx+toAdd.length < actions.size()) {
+                if (idx >= 0 && idx + toAdd.length < actions.size()) {
                     //put on the proper place after paste
-                    actions.add(idx+i+1, toAdd[i]);
+                    actions.add(idx + i + 1, toAdd[i]);
                 } else {
                     //else put at the tail
                     actions.add(toAdd[i]);
@@ -579,9 +590,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                 return isNotProjectFile(object) && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
         }
 
-        private boolean isNotProjectFile(DataObject object){
+        private boolean isNotProjectFile(DataObject object) {
             try {
-
                 if (PROJECT_XML != null) {
                     File nbProject = PROJECT_XML.getParentFile().getCanonicalFile();
                     File f = FileUtil.toFile(object.getPrimaryFile()).getCanonicalFile();
