@@ -113,7 +113,7 @@ is the proper place.
            <author login="abadea"/>
            <compatibility addition="yes"/>
            <description>
-                Added the template attribute <code>project.license</code> for templates using scripting language.
+                Added the template attribute <code>project.encoding</code> for templates using scripting language.
            </description>
            <issue number="129685"/>
         </change>

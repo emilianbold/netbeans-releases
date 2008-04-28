@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import javax.sound.sampled.TargetDataLine;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -63,7 +64,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.sql.framework.model.SQLConstants;
+import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.JoinViewDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.NbBundle;
@@ -341,6 +347,32 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         }
         validate();
         requestActive();
+    }
+    public void findAndRemoveComponent(SQLObject sqlObj){
+        if (sqlObj.getObjectType() == SQLConstants.SOURCE_TABLE || sqlObj.getObjectType() == SQLConstants.TARGET_TABLE) {
+            if(tabbedPane.getComponentCount() <= 0){
+                removeAll();
+                close();
+            }
+            
+            for(Component comp : tabbedPane.getComponents()){
+                if(comp instanceof TargetTableDataPanel){
+                    if(((TargetTableDataPanel)comp).getTable() == sqlObj){
+                        removePanel(comp);
+                    }
+                } else if(comp instanceof SourceTableDataPanel){
+                    if(((SourceTableDataPanel)comp).getTable() == sqlObj){
+                        removePanel(comp);
+                    }
+                } else if(comp instanceof JoinViewDataPanel){
+                    if(((JoinViewDataPanel)comp).getTable() == sqlObj){
+                        removePanel(comp);
+                    }
+                }
+            }
+
+        }
+            
     }
 
     @Override

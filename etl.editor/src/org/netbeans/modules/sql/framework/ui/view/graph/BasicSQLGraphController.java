@@ -116,6 +116,7 @@ import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -881,6 +882,7 @@ public class BasicSQLGraphController implements IGraphController {
                     SQLDataEvent evt = new SQLDataEvent(collabModel, (RuntimeInput) col.getParent(), col);
                     collabModel.fireChildObjectDeletedEvent(evt);
                 }
+                ETLOutputWindowTopComponent.getDefault().findAndRemoveComponent(sqlObj);
             }
             updateActions(collabModel);
         } catch (Exception e) {
