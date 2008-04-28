@@ -1,4 +1,4 @@
 #!/bin/sh
 hg --config extensions.purge= clean --all || exit
-ant build-nozip || exit
+ant build || exit
 ant -Dtest.fail.on.error=false build-test-dist
