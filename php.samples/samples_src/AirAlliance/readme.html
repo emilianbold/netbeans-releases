@@ -68,14 +68,20 @@
                         <h2 id="getting_started">Getting Started</h2>
                         <ol>
                             <li>
-                                Firstly, we have to create the database and populate it with data:
+                                Firstly, we set database authentication in <code>conf/conf.php</code>,
+                                which is stored in Air Alliance Project directory. <br>
+                                Just update login and password
+                                fields in the configuration file, so they are the same as MySQL ones.
+                            </li>
+                            <li>
+                                Secondly, we create the database and populate it with data:
                                 <ol type="a">
                                     <li>Create new MySQL database named <code>AirAlliance</code> in phpMyAdmin.</li>
                                     <li>Run <code>sql/aadb_dump.sql</code> script stored in Air Alliance Project directory.
                                     The script creates tables and fills them with sample data.</li>
                                 </ol>
                             </li>
-                            <li>Secondly, we have to set project preperties to deploy project sucessfully to PHP document directory:
+                            <li>Then we set project preperties to deploy project sucessfully to PHP document directory:
                                 <ol type="a">
                                     <li>Right-click on the <code>AirAlliance</code> project node and select <code>Properties</code>.</li>
                                     <li>Check the option <code>Copy files from Sources Folder to another location</code>.</li>
@@ -98,7 +104,7 @@
                             There steps should enable you the debugging option at the sample project, <b>if you already have PHP debugger
                             installed and configured</b>.<br>
                             For demonstrating the PHP debugger in NetBeans we have to put the sample project to the PHP documents directory (htdocs):
-                            <li>Create new <code>Air Alliance Sample Appliaction</code> with following settings:</li>
+                            <li>Create new <code>Air Alliance Sample Application</code> with following settings:</li>
                             <li>Set the Project Folder to your PHP documents (htdocs) directory, for example: 
                             <code>...\Apache2.2\htdocs\AirAlliance\</code></li>
                             <li>In project properies (Right-click the project node and select <code>Properties</code>.) set the <code>Project URL</code>
