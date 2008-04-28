@@ -35,6 +35,7 @@ import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 import org.netbeans.modules.bpel.design.DiagramView;
+import org.netbeans.modules.bpel.design.DiagramViewLayout;
 import org.netbeans.modules.bpel.design.TriScrollPane;
 import org.netbeans.modules.bpel.design.geometry.Triangle;
 import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
@@ -94,8 +95,23 @@ public class MessageConnection extends Connection {
         
         path.moveTo(pl_point.x, pl_point.y);
         FPoint pl_point1 = getPLSidePoint();
-        path.lineTo(pl_point.x + ((dir == Direction.RIGHT) ? 100 : -100), pl_point.y);
-       // path.lineTo(pl_point1.x, pl_point1.y);
+       // path.lineTo(pl_point.x + ((dir == Direction.RIGHT) ? 100 : -100), pl_point.y);
+        
+       DiagramModel model = getPattern().getModel();
+
+        if (model == null) {
+            return ;
+        }
+
+        DesignView view = model.getView();
+        
+        int x;
+        if  (view.getPrintMode()) {
+            x = (dir == Direction.RIGHT) ? 100 : 0;
+        } else {
+            x = (dir == Direction.RIGHT) ? 100 : -100;
+        }
+        path.lineTo(x, pl_point.y);
                 
         if (isPatternSelected()) {
             paintCurvedConnection(g2, path, 2, pl_point, COLOR_SELECTED, isOutcoming, dir);
@@ -175,14 +191,19 @@ public class MessageConnection extends Connection {
                 == PartnerRole.PROVIDER)
         {
             tmp.x = viewVisibleRect.x + viewVisibleRect.width 
-                    - scrollPane.getRightPreferredWidth();
+                    - scrollPane.getRightPreferredWidth() + 1;
         } else {
-            tmp.x = viewVisibleRect.x + scrollPane.getLeftPreferredWidth();
+            tmp.x = viewVisibleRect.x + scrollPane.getLeftPreferredWidth() - 1;
         }
-           
-        FPoint left = process_view.convertScreenToDiagram(tmp);
         
-        FPoint result = new FPoint(left.x, pl_point.y + delta.y);
+        FPoint result = null;
+        FPoint left = process_view.convertScreenToDiagram(tmp);
+        result = new FPoint(left.x, pl_point.y + delta.y);
+        
+        if (view.getPrintMode()) {
+            result = pl_point.x <= DiagramViewLayout.MARGIN_LEFT + 1 ? new FPoint(process_view.getWidth(), pl_point.y + delta.y)
+                    : new FPoint(0, pl_point.y + delta.y);  
+        }
         
         return result;
     }

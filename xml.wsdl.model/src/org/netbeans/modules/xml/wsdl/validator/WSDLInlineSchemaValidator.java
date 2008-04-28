@@ -121,7 +121,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                 }
             }
         }
-        return new ValidationResult(new ArrayList<ResultItem>(), new ArrayList<Model>());
+        return null;
     }
     
     private String getSystemId(WSDLModel model) {

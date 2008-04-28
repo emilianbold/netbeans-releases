@@ -250,6 +250,12 @@ public interface SearchProvider {
         SearchProvider.Adapter.this.gotoVisual(myComponent);
       }
 
+      @Override
+      public boolean isDeleted()
+      {
+        return myComponent.getModel() == null;
+      }
+
       private Component myComponent;
     }
 

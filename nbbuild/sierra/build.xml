@@ -303,6 +303,7 @@
             <buildpath location="${home}/xslt.tmap/build.xml"/>
             <buildpath location="${home}/xslt.project/build.xml"/>
             <buildpath location="${home}/xslt.core/build.xml"/>
+            <buildpath location="${home}/xslt.validation/build.xml"/>
             <buildpath location="${home}/xslt.help/build.xml"/>
         </subant>
     </target>

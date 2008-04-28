@@ -46,8 +46,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.spring.api.beans.model.FileSpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * The {@link SpringBeans} implementation for multiple config files.
@@ -65,7 +68,7 @@ public class ConfigModelSpringBeans implements SpringBeans {
     public SpringBean findBean(String name) {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
         for (SpringBeanSource beanSource : file2BeanSource.values()) {
-            SpringBean bean = beanSource.findBeanByIDOrName(name);
+            SpringBean bean = beanSource.findBean(name);
             if (bean != null) {
                 return bean;
             }
@@ -73,20 +76,11 @@ public class ConfigModelSpringBeans implements SpringBeans {
         return null;
     }
 
-    public SpringBean findBean(File file, String id) {
+    public FileSpringBeans getFileBeans(FileObject fo) {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
-        SpringBeanSource beanSource = file2BeanSource.get(file);
-        if (beanSource != null) {
-            return beanSource.findBeanByID(id);
-        }
-        return null;
-    }
-
-    public List<SpringBean> getBeans(File file) {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
-        SpringBeanSource beanSource = file2BeanSource.get(file);
-        if (beanSource != null) {
-            return beanSource.getBeans();
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            return file2BeanSource.get(file);
         }
         return null;
     }

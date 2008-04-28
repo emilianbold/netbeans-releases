@@ -241,6 +241,7 @@ public final class RubyPlatform {
 
     /** Return the lib directory for this interprerter. */
     public String getLib() {
+        assert !isRubinius() : "RubyPlatform#getLib must not be called for Rubinius";
         File home = getHome();
         if (home == null) {
             return null;
@@ -280,6 +281,10 @@ public final class RubyPlatform {
             File home = getHome();
             assert home != null : "home not null";
 
+            if (isRubinius()) {
+                File lib = new File(home, "lib"); // NOI18N
+                return lib.exists() ? lib.getAbsolutePath() : null;
+            }
             File lib = new File(home, "lib" + File.separator + "ruby"); // NOI18N
 
             if (!lib.exists()) {
@@ -446,10 +451,19 @@ public final class RubyPlatform {
         return info.isJRuby();
     }
 
+    public boolean isRubinius() {
+        return info.isRubinius();
+    }
+
     public boolean isValid() {
         return new File(interpreter).isFile();
     }
 
+    /**
+     * If the platform is in invalid state, shows general message to the user.
+     * 
+     * @return whether the platform is valid
+     */
     public boolean showWarningIfInvalid() {
         boolean valid = isValid();
         if (!valid) {
@@ -608,7 +622,8 @@ public final class RubyPlatform {
      * @return whether everything needed for fast debugging is installed
      */
     public boolean hasFastDebuggerInstalled() {
-        return gemManager != null && getFastDebuggerProblemsInHTML() == null;
+        // no usable version of Fast Debugger for Rubinius is available yet
+        return gemManager != null && !isRubinius() && getFastDebuggerProblemsInHTML() == null;
     }
 
     /**
@@ -644,7 +659,7 @@ public final class RubyPlatform {
      */
     public FileObject getSystemRoot(FileObject file) {
         // See if the file is under the Ruby libraries
-        FileObject rubyLibFo = getLibFO();
+        FileObject rubyLibFo = isRubinius() ? null : getLibFO();
         FileObject rubyStubs = getRubyStubs();
         FileObject gemHome = gemManager != null ? gemManager.getGemHomeFO() : null;
 
@@ -849,6 +864,10 @@ public final class RubyPlatform {
 
         public boolean isJRuby() {
             return "JRuby".equals(kind); // NOI18N
+        }
+
+        public boolean isRubinius() {
+            return "Rubinius".equals(kind); // NOI18N
         }
 
         public final void setGemHome(String gemHome) {

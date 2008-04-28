@@ -88,18 +88,21 @@ public class HgLogMessage {
         this.dpaths = new ArrayList<HgLogMessageChangedPath>();
         this.cpaths = new ArrayList<HgLogMessageChangedPath>();
         
-        if( fm != null && !fm.equals("")){
-            splits = fm.split(" ");
-            for(String s: splits){
-                this.mpaths.add(new HgLogMessageChangedPath(s, HgModStatus));             
-                logCopied(s);
-            }
-        }
         if( fa != null && !fa.equals("")){
             splits = fa.split(" ");
             for(String s: splits){
                 this.apaths.add(new HgLogMessageChangedPath(s, HgAddStatus));                
                 logCopied(s);
+            }
+        }    
+        if( fm != null && !fm.equals("")){
+            splits = fm.split(" ");
+            for(String s: splits){
+                //#132984: range of issues with upgrade to Hg 1.0, incorrectly reporting files as added and modified in same changeset
+                if(!this.apaths.contains(s)){
+                    this.mpaths.add(new HgLogMessageChangedPath(s, HgModStatus));             
+                    logCopied(s);
+                }
             }
         }
         if( fd != null && !fd.equals("")){

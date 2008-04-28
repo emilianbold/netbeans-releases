@@ -53,6 +53,11 @@ public class TransformNode extends TMapComponentNode<DecoratedTransform> {
         //
         Node.Property prop;
         prop = PropertyUtils.registerProperty(this, mainPropertySet,
+                PropertyType.NAME,
+                "getName", "setName"); // NOI18N
+        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        //
+        prop = PropertyUtils.registerProperty(this, mainPropertySet,
                 PropertyType.FILE,
                 "getFile", "setFile"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N

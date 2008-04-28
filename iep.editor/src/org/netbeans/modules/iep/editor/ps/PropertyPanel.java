@@ -713,6 +713,13 @@ public class PropertyPanel {
             public boolean getBooleanValue() {
                 return ((JCheckBox)input[0]).isSelected();
             }
+            
+            @Override
+            public void setStringValue(String value) {
+            	boolean val = Boolean.parseBoolean(value);
+            	((JCheckBox)input[0]).setSelected(val);
+            }
+            
             public void store() {
                 boolean value = ((JCheckBox)input[0]).isSelected();
                 if (!mProperty.getValue().equals(Boolean.valueOf(value).toString())) {
@@ -825,8 +832,12 @@ public class PropertyPanel {
 //        return panel;
 //    }
 
-    
     public static PropertyPanel createComboBoxPanel(String label, Property prop, String[] values, boolean createPanel) {
+        //this api assumes that value and display names are same
+        return createComboBoxPanel(label, prop, values, values, createPanel);
+    }
+    
+    public static PropertyPanel createComboBoxPanel(String label, Property prop, String[] displayNames, String[] values, boolean createPanel) {
         PropertyPanel panel = new PropertyPanel(label, prop) {
             public String getStringValue() {
                 return (String)((JComboBox)input[0]).getSelectedItem();
@@ -841,7 +852,7 @@ public class PropertyPanel {
             }
         };
         JLabel nameLabel = new JLabel(label);
-        JComboBox cbb = new JComboBox(values);
+        JComboBox cbb = new JComboBox(displayNames);
         // PreferredSize must be set o.w. failed validation will resize this field.
         cbb.setPreferredSize(new Dimension(140, 20));
         cbb.setMinimumSize(new Dimension(50, 20));
@@ -849,7 +860,7 @@ public class PropertyPanel {
         String value = prop.getValue();
         for (int i = 0; i < values.length; i++) {
             if (values[i].equals(value)) {
-                cbb.setSelectedItem(value);
+                cbb.setSelectedItem(displayNames[i]);
                 break;
             }
         }

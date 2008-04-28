@@ -51,10 +51,12 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
+import org.netbeans.modules.xslt.tmap.model.impl.InvalidNamespaceException;
 import org.netbeans.modules.xslt.tmap.nodes.properties.ResolverUtility;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -150,6 +152,16 @@ public class ImportRegistrationHelper {
     }
     
     public Import createImport(String namespace, String location){
+        TransformMap tMap = myModel.getTransformMap();
+        if (tMap != null) {
+            try {
+                ExNamespaceContext nsContext = tMap.getNamespaceContext();
+                nsContext.addNamespace(namespace);
+            } catch (InvalidNamespaceException ex) {
+                LOGGER.log(Level.SEVERE, null, ex);
+            }
+        }
+        
         Import imp = myModel.getFactory().createImport();
         if (namespace != null){
             try {

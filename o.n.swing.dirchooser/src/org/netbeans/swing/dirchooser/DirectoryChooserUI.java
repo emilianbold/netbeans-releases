@@ -70,7 +70,6 @@ import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,7 +95,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-import sun.nio.cs.Surrogate;
 
 /**
  * An implementation of a customized filechooser.
@@ -1585,15 +1583,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private Icon getNbProjectIcon () {
-        if (projectIcon == null) {
-            projectIcon = new ImageIcon(Utilities.loadImage(
-                    "org/netbeans/swing/dirchooser/resources/main_project_16.png"));
-        }
-        return projectIcon;
-    }
-    
-    
     /*************** HELPER CLASSES ***************/
     
     private class IconIndenter implements Icon {
@@ -1638,12 +1627,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             File directory = (File)value;
             setText(getFileChooser().getName(directory));
-            Icon icon;
-            if (DirectoryNode.isNetBeansProject(directory)) {
-                icon = getNbProjectIcon();
-            } else {
-                icon = getFileChooser().getIcon(directory);
-            }
+            Icon icon = getFileChooser().getIcon(directory);
             indenter.icon = icon;
             indenter.depth = directoryComboBoxModel.getDepth(index);
             setIcon(indenter);
@@ -2327,9 +2311,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         private Icon getNodeIcon(DirectoryNode node) {
-            if (node.isNetBeansProject()) {
-                return getNbProjectIcon();
-            }
             File file = node.getFile();
             if(file.exists()) {
                 return fileChooser.getIcon(file);

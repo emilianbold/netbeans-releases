@@ -99,7 +99,7 @@ public class BeansRefCompletor extends Completor {
             model.runReadAction(new Action<SpringBeans>() {
 
                 public void run(SpringBeans sb) {
-                    List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
+                    List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getFileBeans(fo).getBeans();
                     Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
 
                     for (String beanName : name2Bean.keySet()) {
