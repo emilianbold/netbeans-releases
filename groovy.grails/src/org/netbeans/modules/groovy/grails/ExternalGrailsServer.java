@@ -164,7 +164,7 @@ public class ExternalGrailsServer implements GrailsServer{
             waitForOutput();
         }
         
-        lastException = gsr.getLastError();
+        lastException = gsr.getLastException();
         return gsr.getProcess();
     }
     
@@ -185,8 +185,8 @@ public class ExternalGrailsServer implements GrailsServer{
                     serverState.setProcess(proc);
                     exTask.addTaskListener(serverState);
                 } else {
-                    LOG.log(Level.WARNING, "Could not startup process : " + gsr.getLastError().getLocalizedMessage());
-                    lastException = gsr.getLastError();
+                    LOG.log(Level.WARNING, "Could not startup process : " + gsr.getLastException().getLocalizedMessage());
+                    lastException = gsr.getLastException();
                 }
             } else {
                 LOG.log(Level.WARNING, "Could not get serverState through lookup");

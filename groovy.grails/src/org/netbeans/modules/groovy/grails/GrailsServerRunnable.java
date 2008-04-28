@@ -28,10 +28,8 @@
 
 package org.netbeans.modules.groovy.grails;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import org.openide.execution.NbProcessDescriptor;
 import org.netbeans.modules.groovy.grails.settings.Settings;
 import java.util.logging.Logger;
@@ -44,69 +42,65 @@ import org.openide.util.Utilities;
  * @author schmidtm
  */
 public class GrailsServerRunnable implements Runnable {
-    PrintWriter writer = null;
-    String grailsExecutable;
-    Settings settings;
-    String cwdName;
-    String cmd;
-    private BufferedReader procOutput;
-    private Process process;
-    CountDownLatch outputReady = null;
-    boolean waitforme;
-    Exception lastException = null; 
-    
-    private  final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
-    
-    public GrailsServerRunnable(CountDownLatch outputReady, boolean waitforme, String cwdName, String cmd){
 
+    private final Settings settings;
+    private final String cwdName;
+    private final String cmd;
+    private final CountDownLatch outputReady;
+    private final String grailsExecutable;
+    private final boolean waitforme;
+
+    private Process process;
+    private Exception lastException;
+
+    private static final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
+
+    public GrailsServerRunnable(CountDownLatch outputReady, boolean waitforme, String cwdName, String cmd) {
         this.settings = Settings.getInstance();
-        this.cwdName = cwdName; 
+        this.cwdName = cwdName;
         this.cmd = cmd;
         this.outputReady = outputReady;
         this.waitforme = waitforme;
-        
+
         this.grailsExecutable = settings.getGrailsBase() + ( Utilities.isWindows() ? "\\bin\\grails.bat" : "/bin/grails" ); // NOI18N
-        }
-    
+    }
+
     public void run() {
         if (new File(grailsExecutable).exists()) {
             try {
                 LOG.log(Level.FINEST, "About to run: " + cmd);
                 NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(grailsExecutable, cmd);
 
-                String[] envp = new String[] { "GRAILS_HOME=" + settings.getGrailsBase() };
+                String[] envp = new String[] {"GRAILS_HOME=" + settings.getGrailsBase()};
                 File cwd = new File(cwdName);
 
                 process = grailsProcessDesc.exec(null, envp, true, cwd);
 
                 outputReady.countDown();
-                
-                if(waitforme) {
-                        try {
+
+                if (waitforme) {
+                    try {
                         process.waitFor();
-                            } catch (InterruptedException ex) {
-                            lastException = ex;    
-                            LOG.log(Level.WARNING, "InterruptedException while waiting: " + ex.getLocalizedMessage());
-                            }
+                    } catch (InterruptedException ex) {
+                        lastException = ex;
+                        LOG.log(Level.WARNING, "InterruptedException while waiting: " + ex.getLocalizedMessage());
+                    }
                 }
-                    
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, "Problem creating Process: " + ex.getLocalizedMessage());
-                    lastException = ex;
-                    outputReady.countDown();
-                    }                
-           
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Problem creating Process: " + ex.getLocalizedMessage());
+                lastException = ex;
+                outputReady.countDown();
+            }
         } else {
             LOG.log(Level.WARNING, "Executable doesn't exist...");
-            }
+        }
     }
 
-    
     public Process getProcess() {
         return process;
-    } 
-    
-    public Exception getLastError() {
+    }
+
+    public Exception getLastException() {
         return lastException;
     }
 }

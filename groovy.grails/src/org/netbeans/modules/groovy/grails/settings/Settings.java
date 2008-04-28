@@ -36,123 +36,115 @@ import org.openide.util.NbPreferences;
  *
  * @author schmidtm
  */
-public class Settings {
+public final class Settings {
 
-    private static Settings instance = null;
+    private static Settings instance;
+
     private static final String GRAILS_HOME_KEY = "grailsHome";
     private static final String GRAILS_PORT_KEY = "grailsPrj-Port-";
     private static final String GRAILS_ENV_KEY = "grailsPrj-Env-";
     private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-";
     private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-";
-    
-    protected Settings () {}
-    
-    public static Settings getInstance() {
-        if(instance == null){
+
+    private Settings() {
+        super();
+    }
+
+    public static synchronized Settings getInstance() {
+        if (instance == null) {
             instance = new Settings();
         }
-        
         return instance;
     }
-    
-    private Preferences getPreferences() {
-        return NbPreferences.forModule( Settings.class );
-    }
-    
+
     public String getGrailsBase() {
         return getPreferences().get(GRAILS_HOME_KEY, null);
-        }
+    }
 
     public void setGrailsBase(String path) {
         getPreferences().put(GRAILS_HOME_KEY, path);
-        }
-    
-    String getProjectName(Project prj){
+    }
+
+    // Which port should we run on
+    public String getPortForProject(Project prj) {
         assert prj != null;
-        
+        return getPreferences().get(getPortKey(prj), null);
+    }
+
+    public void setPortForProject(Project prj, String port) {
+        assert prj != null;
+        assert port != null;
+
+        getPreferences().put(getPortKey(prj), port);
+    }
+
+    // which Environment should we use (Test, Production, Development, etc.)
+    public String getEnvForProject(Project prj) {
+        assert prj != null;
+        return getPreferences().get(getEnvKey(prj), null);
+    }
+
+    public void setEnvForProject(Project prj, String env) {
+        assert prj != null;
+        assert env != null;
+
+        getPreferences().put(getEnvKey(prj), env);
+    }
+
+    // Should we Autodeploy right after a 'grails war' command?
+    public boolean getAutoDeployFlagForProject(Project prj) {
+        assert prj != null;
+        return getPreferences().getBoolean(getAutodeployKey(prj), false);
+    }
+
+    public void setAutoDeployFlagForProject(Project prj, boolean flag) {
+        assert prj != null;
+
+        getPreferences().putBoolean(getAutodeployKey(prj), flag);
+    }
+
+    // Where should the WAR-File be deployed to?
+    public String getDeployDirForProject(Project prj) {
+        assert prj != null;
+        return getPreferences().get(getDeployKey(prj), null);
+    }
+
+    public void setDeployDirForProject(Project prj, String dir) {
+        assert prj != null;
+        assert dir != null;
+
+        getPreferences().put(getDeployKey(prj), dir);
+    }
+
+    private String getProjectName(Project prj) {
+        assert prj != null;
+
         ProjectInformation info = prj.getLookup().lookup(ProjectInformation.class);
         assert info != null;
         return info.getName();
-    }            
-    
-    String getPortKey(Project prj){
-        assert prj != null;
-        return GRAILS_PORT_KEY+getProjectName(prj);
     }
-    
-    String getEnvKey(Project prj){
+
+    private String getPortKey(Project prj) {
         assert prj != null;
-        return GRAILS_ENV_KEY+getProjectName(prj);
+        return GRAILS_PORT_KEY + getProjectName(prj);
     }
-    
-    String getDeployKey(Project prj){
+
+    private String getEnvKey(Project prj) {
         assert prj != null;
-        return GRAILS_DEPLOY_KEY+getProjectName(prj);
+        return GRAILS_ENV_KEY + getProjectName(prj);
     }
-    
-    String getAutodeployKey(Project prj){
+
+    private String getDeployKey(Project prj) {
         assert prj != null;
-        return GRAILS_AUTODEPLOY_KEY+getProjectName(prj);
+        return GRAILS_DEPLOY_KEY + getProjectName(prj);
     }
-    
-    // Which port should we run on
-    
-    public String getPortForProject(Project prj){
+
+    private String getAutodeployKey(Project prj) {
         assert prj != null;
-        return getPreferences().get(getPortKey(prj), null);
-        }
-    
-    public void setPortForProject(Project prj, String port){
-        assert prj != null;
-        assert port != null;
-        
-        getPreferences().put(getPortKey(prj), port);
-        
+        return GRAILS_AUTODEPLOY_KEY + getProjectName(prj);
     }
-    
-    // which Environment should we use (Test, Production, Development, etc.)
-    
-    public String getEnvForProject(Project prj){
-        assert prj != null;
-        return getPreferences().get(getEnvKey(prj), null);
-        }
-    
-    public void setEnvForProject(Project prj, String env){
-        assert prj != null;
-        assert env != null;
-        
-        getPreferences().put(getEnvKey(prj), env);
-        
+
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(Settings.class);
     }
-    
-    // Should we Autodeploy right after a 'grails war' command?
-    
-    public boolean getAutoDeployFlagForProject(Project prj){
-        assert prj != null;
-        return getPreferences().getBoolean(getAutodeployKey(prj), false);
-        }
-    
-    public void setAutoDeployFlagForProject(Project prj, boolean flag){
-        assert prj != null;
-        
-        getPreferences().putBoolean(getAutodeployKey(prj), flag);
-        
-    }    
-    
-    // Where should the WAR-File be deployed to?
-    
-    public String getDeployDirForProject(Project prj){
-        assert prj != null;
-        return getPreferences().get(getDeployKey(prj), null);
-        }
-    
-    public void setDeployDirForProject(Project prj, String dir){
-        assert prj != null;
-        assert dir != null;
-        
-        getPreferences().put(getDeployKey(prj), dir);
-        
-    }    
-    
-    
 }
