@@ -113,7 +113,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         
         LOG.log(Level.FINEST, "We are looking for: " + text);
         
-        Set<SearchScope> searchScope = new HashSet();
+        Set<SearchScope> searchScope = new HashSet<SearchScope>();
         
         searchScope.add(SearchScope.SOURCE);
         searchScope.add(SearchScope.DEPENDENCIES);

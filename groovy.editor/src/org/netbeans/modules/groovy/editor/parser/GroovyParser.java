@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +97,10 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
+import java.util.logging.Level;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
@@ -111,6 +116,10 @@ public class GroovyParser implements Parser {
     private final PositionManager positions = createPositionManager();
     private final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
     private JavaSource javaSource;
+
+    public GroovyParser() {
+        // LOG.setLevel(Level.FINEST);
+    }
 
     public void parseFiles(Job job) {
         ParseListener listener = job.listener;
@@ -598,7 +607,7 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            if (!ignoreErrors && isRealError(errorMessage)) {
+            if (!ignoreErrors && filterError(errorMessage, context)) {
                 notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
             }
         }
@@ -671,14 +680,12 @@ public class GroovyParser implements Parser {
                 for (Object object : errors) {
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        if (isRealError(ex.getMessage())) {
-                            String sourceLocator = ex.getSourceLocator();
-                            String name = moduleNode != null ? moduleNode.getContext().getName() : null;
-                            if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
-                                int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
-                                int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
-                                notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
-                            }
+                        String sourceLocator = ex.getSourceLocator();
+                        String name = moduleNode != null ? moduleNode.getContext().getName() : null;
+                        if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
+                            int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
+                            int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
+                            notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
                         }
                     } else if (object instanceof SimpleMessage) {
                         String message = ((SimpleMessage)object).getMessage();
@@ -691,17 +698,83 @@ public class GroovyParser implements Parser {
         }
     }
     
-    /**
-     * Hack to remove errors about unresolved class,
-     * we don't have full integration with Java yet, so it's just less evil
-     */
-    private static boolean isRealError(String errorMessage) {
-//        if (errorMessage.startsWith("unable to resolve class ")) { // NOI18N
-//            return false;
-//        }
-        return true;
+    
+    List<String> getImportCandidate(FileObject fo, String missingClass) {
+        LOG.log(Level.FINEST, "Looking for class: " + missingClass);
+
+        List<String> result = new ArrayList<String>();
+
+        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+
+        if (bootPath == null || compilePath == null || srcPath == null) {
+            LOG.log(Level.FINEST, "bootPath    : " + bootPath);
+            LOG.log(Level.FINEST, "compilePath : " + compilePath);
+            LOG.log(Level.FINEST, "srcPath     : " + srcPath);
+            return result;
+        }
+
+        ClasspathInfo pathInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
+
+        Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
+
+        typeNames = pathInfo.getClassIndex().getDeclaredTypes(missingClass, NameKind.SIMPLE_NAME,
+                EnumSet.allOf(ClassIndex.SearchScope.class));
+
+        for (org.netbeans.api.java.source.ElementHandle<TypeElement> typeName : typeNames) {
+            javax.lang.model.element.ElementKind ek = typeName.getKind();
+
+            if (ek == javax.lang.model.element.ElementKind.CLASS ||
+                    ek == javax.lang.model.element.ElementKind.INTERFACE) {
+                String fqnName = typeName.getQualifiedName();
+                LOG.log(Level.FINEST, "Found     : " + fqnName);
+                result.add(fqnName);
+            }
+
+        }
+
+        return result;
+
     }
     
+    
+    /**
+     * We filter all errors through this method to feed the Hinting System.
+     * At the moment, we only look for "unable to resolve class " messages
+     * to provide the user with some candidates to import.
+     */
+    private boolean filterError(String errorMessage, Context context) {
+        String ERR_PREFIX = "unable to resolve class ";
+                
+        LOG.log(Level.FINEST, "errorMessage: " + errorMessage);
+        
+        if (errorMessage.startsWith(ERR_PREFIX)) { // NOI18N
+            FileObject fo = context.file.getFileObject();
+
+            String missingClass = errorMessage.substring(ERR_PREFIX.length());
+            int idx = missingClass.indexOf(" ");
+            
+            if(idx != -1){
+                missingClass = missingClass.substring(0, idx);
+                List<String> importCandidates = getImportCandidate(fo, missingClass);
+                
+                if(!importCandidates.isEmpty()){
+                    if(importCandidates.size() == 1){
+                        // just do the import ...
+                        LOG.log(Level.FINEST, "Importing class!");
+                    } else {
+                        LOG.log(Level.FINEST, "Present Chooser between: ");
+                        LOG.log(Level.FINEST, importCandidates.toString());
+                    }
+                }
+            }
+            
+        }
+
+        return true;
+    }
+
     private static ASTNode find(ASTNode oldRoot, ASTNode oldObject, ASTNode newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
         @SuppressWarnings("unchecked")
