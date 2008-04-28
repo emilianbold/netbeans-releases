@@ -54,27 +54,27 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  rashid@netbeans.org
  */
-public class OpenMobileproject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class OpenMobileProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
     private static String projectName = "MobileApplicationVisualMIDlet_Open";
     private JButtonOperator openButton;
 
     /**
-     * Creates a new instance of OpenMobileproject
+     * Creates a new instance of OpenMobileProject
      * @param testName the name of the test
      */
-    public OpenMobileproject(String testName) {
+    public OpenMobileProject(String testName) {
         super(testName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 4000;
     }
 
     /**
-     * Creates a new instance of OpenMobileproject
+     * Creates a new instance of OpenMobileProject
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenMobileproject(String testName, String performanceDataName) {
+    public OpenMobileProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 4000;
@@ -108,6 +108,6 @@ public class OpenMobileproject extends org.netbeans.performance.test.utilities.P
     }
 
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new OpenMobileproject("measureTime"));
+        junit.textui.TestRunner.run(new OpenMobileProject("measureTime"));
     }
 }

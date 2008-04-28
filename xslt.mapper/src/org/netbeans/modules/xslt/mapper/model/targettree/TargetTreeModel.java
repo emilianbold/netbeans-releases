@@ -47,13 +47,11 @@ public class TargetTreeModel extends XsltNodesTreeModel {
             
             List<Template> templates = stylesheet.getChildren(Template.class);
             for (Template t: templates){
-                if (t.getMatch().equals("/")){
+                if (t.getMatch() != null && t.getMatch().equals("/")){
                     return (TreeNode) NodeFactory.createNode(t, getMapper());
                 }
             }
         }  
-         return null;
-        
+        return null;
     }
-    
 }
