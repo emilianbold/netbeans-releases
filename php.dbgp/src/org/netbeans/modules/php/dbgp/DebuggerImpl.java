@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-import java.util.MissingResourceException;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -48,6 +47,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.api.Debugger;
 import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -58,8 +58,7 @@ import org.openide.util.RequestProcessor;
  * @author Radek Matous
  *
  */
-public class DebuggerImpl implements Debugger {
-
+public class DebuggerImpl implements Debugger, XDebugStarter {
     static String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
     static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
     static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
@@ -67,25 +66,13 @@ public class DebuggerImpl implements Debugger {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
-    public void debug(Project project, Runnable run, FileObject startFile) {
+    public void start(Project project, Runnable run, FileObject startFile) {
         assert startFile != null;
-        final SessionId sessionId = getSessionId(project);
-        debug(sessionId, run, startFile);
-    }
-
-    public void debug(SessionId id) {
-        DebugSession session = new DebugSession();
-        DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, session});
-        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
-        StartActionProviderImpl.getInstance().start(id);
-    }
-
-    private void debug(SessionId sessionId, Runnable run, FileObject startFile) throws MissingResourceException {
+        SessionId sessionId = getSessionId(project);
         if (sessionId != null) {
             //just one session allowed for now
             String message = NbBundle.getMessage(DebuggerImpl.class, "MSG_NoMoreDebugSession");
             NotifyDescriptor descriptor = new NotifyDescriptor.Message(message); //NOI18N
-
             DialogDisplayer.getDefault().notify(descriptor);
         } else {
             sessionId = new SessionId(startFile);
@@ -94,10 +81,17 @@ public class DebuggerImpl implements Debugger {
             long started = System.currentTimeMillis();
             String serverFileUri = sessionId.waitServerFile(true);
             if (serverFileUri == null) {
-                notifyError(((int) (System.currentTimeMillis() - started) / 1000));
+                ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
                 return;
             }
         }
+    }
+
+    public void debug(SessionId id) {
+        DebugSession session = new DebugSession();
+        DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, session});
+        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
+        StartActionProviderImpl.getInstance().start(id);
     }
 
     private SessionId getSessionId(Project project) {
@@ -112,9 +106,5 @@ public class DebuggerImpl implements Debugger {
             }
         }
         return null;
-    }
-
-    private void notifyError(int seconds) {
-        ConnectionErrMessage.showMe(seconds);
     }
 }

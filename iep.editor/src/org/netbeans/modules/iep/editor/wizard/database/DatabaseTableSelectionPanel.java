@@ -315,9 +315,13 @@ private void mMoveAllToAvailableTableListButtonActionPerformed(java.awt.event.Ac
 
     private void reInitializeAvailableTableList() {
         try {
-            Connection connection = this.mSelectedConnection.getJDBCConnection();
-            List<TableInfo> tables = DatabaseMetaDataHelper.getTablesAndViews("", "", "", false, connection);
-            this.mAvailableTableListModel.setTables(tables);
+        	if(this.mSelectedConnection != null) {
+	            Connection connection = this.mSelectedConnection.getJDBCConnection();
+	            if(connection != null) {
+	            	List<TableInfo> tables = DatabaseMetaDataHelper.getTablesAndViews("", "", "", false, connection);
+	            	this.mAvailableTableListModel.setTables(tables);
+	            }
+        	}
         } catch(Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }

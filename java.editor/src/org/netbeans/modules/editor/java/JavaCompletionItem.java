@@ -1323,8 +1323,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 controller.toPhase(JavaSource.Phase.PARSED);
                                 TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
                                 Tree tree = tp.getLeaf();
-                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                                     tp = tp.getParentPath();
+                                    if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
+                                        ret[0] = ";"; //NOI18N
+                                }
                                 if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
                                     (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
                                     tp = tp.getParentPath();

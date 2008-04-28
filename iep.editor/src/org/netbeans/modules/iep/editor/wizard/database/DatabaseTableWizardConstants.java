@@ -39,6 +39,12 @@
 
 package org.netbeans.modules.iep.editor.wizard.database;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author radval
@@ -61,6 +67,7 @@ public class DatabaseTableWizardConstants {
     
     public static final String PROP_JNDI_NAME = "PROP_JNDI_NAME";
     
+    public static final String PROP_IS_DELETE_RECORDS = "PROP_IS_DELETE_RECORDS";
     
     public static final String MILLISECOND = "millisecond"; //NO I18N
     
@@ -77,4 +84,67 @@ public class DatabaseTableWizardConstants {
     public static final String MONTH = "month"; //NO I18N
     
     public static final String YEAR = "year"; //NO I18N
+    
+    private static List<TimeUnitInfo> mTimeUnitInfoList = new ArrayList<TimeUnitInfo>();
+    
+    static {
+        mTimeUnitInfoList.add(new TimeUnitInfo("millisecond", DatabaseTableWizardConstants.MILLISECOND));
+        mTimeUnitInfoList.add(new TimeUnitInfo("second", DatabaseTableWizardConstants.SECOND));
+        mTimeUnitInfoList.add(new TimeUnitInfo("minute", DatabaseTableWizardConstants.MINUTE));
+        mTimeUnitInfoList.add(new TimeUnitInfo("hour", DatabaseTableWizardConstants.HOUR));
+        mTimeUnitInfoList.add(new TimeUnitInfo("day", DatabaseTableWizardConstants.DAY));
+        mTimeUnitInfoList.add(new TimeUnitInfo("week", DatabaseTableWizardConstants.WEEK));
+        mTimeUnitInfoList.add(new TimeUnitInfo("month", DatabaseTableWizardConstants.MONTH));
+        mTimeUnitInfoList.add(new TimeUnitInfo("year", DatabaseTableWizardConstants.YEAR));
+    }
+    
+    public static List<TimeUnitInfo> getTimeUnitInfos() {
+        return mTimeUnitInfoList;        
+    }
+    
+    public static List<String> getTimeUnitInfosDisplayName() {
+        List<String> timeUnitDisplayNames = new ArrayList<String>();
+        Iterator<TimeUnitInfo> it = mTimeUnitInfoList.iterator();
+        while(it.hasNext()) {
+            TimeUnitInfo info = it.next();
+            timeUnitDisplayNames.add(info.getDisplayName());
+        }
+        
+        return timeUnitDisplayNames;
+    }
+    
+    public static List<String> getTimeUnitInfosCodeName() {
+        List<String> timeUnitCodeNames = new ArrayList<String>();
+        Iterator<TimeUnitInfo> it = mTimeUnitInfoList.iterator();
+        while(it.hasNext()) {
+            TimeUnitInfo info = it.next();
+            timeUnitCodeNames.add(info.getCodeName());
+        }
+        
+        return timeUnitCodeNames;
+    }
+    
+    static class TimeUnitInfo {
+        private String mDisplayName;
+        
+        private String mCodeName;
+        
+        TimeUnitInfo(String displayName, String codeName) {
+            this.mDisplayName = displayName;
+            this.mCodeName = codeName;
+        }
+        
+        
+        public String getDisplayName() {
+            return this.mDisplayName;
+        }
+        
+        public String getCodeName() {
+            return this.mCodeName;
+        }
+        
+        public String toString() {
+            return this.mCodeName;
+        }
+    }
 }

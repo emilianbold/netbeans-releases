@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,11 +50,11 @@ import org.netbeans.api.autoupdate.DefaultTestCase;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -201,10 +201,28 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             assertFalse (support.isTrusted (i, installElement));
             assertFalse (support.isSigned (i, installElement));
             if (hiddenUpdate) {
-                r = support.doInstall (i, null);
+                try {
+                    r = support.doInstall (i, null);
+                } catch (OperationException ex) {
+                    if (OperationException.ERROR_TYPE.INSTALL == ex.getErrorType ()) {
+                        // can ingore
+                        // module system cannot load the module either
+                    } else {
+                        fail (ex.toString ());
+                    }
+                }
                 assertNotNull ("If there is hiddenUpdate then returns Restarer.", r);
             } else {
-                assertNull ("No Restarer when no hidden update.", support.doInstall (i, null));
+                try {
+                    assertNull ("No Restarer when no hidden update.", support.doInstall (i, null));
+                } catch (OperationException ex) {
+                    if (OperationException.ERROR_TYPE.INSTALL == ex.getErrorType ()) {
+                        // can ingore
+                        // module system cannot load the module either
+                    } else {
+                        fail (ex.toString ());
+                    }
+                }
             }
         } else {
             OperationContainer<OperationSupport> container = OperationContainer.createForDirectInstall ();
@@ -307,7 +325,17 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             //assertNotNull(support.getCertificate(i, upEl));
             assertFalse (support.isTrusted (i, upEl));
             assertFalse (support.isSigned (i, upEl));
-            OperationSupport.Restarter r = support.doInstall (i, null);
+            OperationSupport.Restarter r = null;
+            try {
+                r = support.doInstall (i, null);
+            } catch (OperationException ex) {
+                if (OperationException.ERROR_TYPE.INSTALL == ex.getErrorType ()) {
+                    // can ingore
+                    // module system cannot load the module either
+                } else {
+                    fail (ex.toString ());
+                }
+            }
             if (r != null) {
                 support.doRestartLater (r);
             }

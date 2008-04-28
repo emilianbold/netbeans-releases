@@ -49,7 +49,6 @@ import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.modules.spring.util.SpringBeansUIs.GoToBeanAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -79,7 +78,7 @@ public class BeansRefHyperlinkProcessor extends HyperlinkProcessor {
                     if(globalSearch) {
                         bean = beans.findBean(beanName);
                     } else {
-                        bean = beans.findBean(FileUtil.toFile(fileObject), beanName);
+                        bean = beans.getFileBeans(fileObject).findBeanByID(beanName);
                     }
                     
                     if (bean == null) {

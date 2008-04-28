@@ -64,6 +64,9 @@ public abstract class XsltValidator extends Validator {
     if ( !(m instanceof XslModel)) {
       return null;
     }
+//out();
+//out("XSLT VALIDATOR");
+//out();
     XslModel model = (XslModel) m;
     
     if (model.getState() == Model.State.NOT_WELL_FORMED) {

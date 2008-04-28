@@ -40,15 +40,11 @@
  */
 package org.netbeans.modules.php.dbgp.api;
 
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
-
 /**
  * @author Radek Matous
  *
  */
-//this class will be moved to php.project and php.project will lookup its impl.
+//keeps php.rt compilable (after deleteing php.rt should be deleted)
 public interface Debugger {
     public void debug( SessionId id );
-    public void debug(Project project, Runnable run, FileObject startFile);    
 }

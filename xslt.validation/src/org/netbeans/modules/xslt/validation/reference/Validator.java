@@ -40,10 +40,25 @@
  */
 package org.netbeans.modules.xslt.validation.reference;
 
-import org.netbeans.modules.xslt.model.Stylesheet;
-import org.netbeans.modules.xslt.model.Template;
+import java.util.List;
+
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+
+import org.netbeans.modules.xslt.model.AttributeSet;
+import org.netbeans.modules.xslt.model.CallTemplate;
+import org.netbeans.modules.xslt.model.CharacterMap;
+import org.netbeans.modules.xslt.model.TypeSpec;
+import org.netbeans.modules.xslt.model.UseAttributesSetsSpec;
+import org.netbeans.modules.xslt.model.UseCharacterMapsSpec;
+import org.netbeans.modules.xslt.model.WithParam;
+import org.netbeans.modules.xslt.model.XslComponent;
+import org.netbeans.modules.xslt.model.XslReference;
 import org.netbeans.modules.xslt.model.XslVisitor;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
+
 import org.netbeans.modules.xslt.validation.core.XsltValidator;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -56,11 +71,75 @@ public final class Validator extends XsltValidator {
   public XslVisitor getVisitor() { return new XslVisitorAdapter() {
 
   @Override
-  public void visit(Template template)
+  public void visit(CallTemplate callTemplate)
   {
 //out();
-//out("TEMPLATE: " + template);
-//    addError("FIX_", template);
+//out("callTemplate: " + callTemplate);
+    checkReference(callTemplate, callTemplate.getName());
+  }
+
+  @Override
+  public void visit(TypeSpec typeSpec)
+  {
+//out();
+//out("typeSpec: " + typeSpec);
+    checkReference(typeSpec, typeSpec.getType());
+  }
+
+  @Override
+  public void visit(UseAttributesSetsSpec useAttributesSetsSpec)
+  {
+//out();
+//out("useAttributesSetsSpec: " + useAttributesSetsSpec);
+    List<XslReference<AttributeSet>> sets = useAttributesSetsSpec.getUseAttributeSets();
+
+    for (XslReference<AttributeSet> set : sets) {
+      checkReference(useAttributesSetsSpec, set);
+    }
+  }
+
+  @Override
+  public void visit(UseCharacterMapsSpec useCharacterMapsSpec)
+  {
+//out();
+//out("useCharacterMapsSpec: " + useCharacterMapsSpec);
+    List<XslReference<CharacterMap>> sets = useCharacterMapsSpec.getUseCharacterMaps();
+
+    for (XslReference<CharacterMap> set : sets) {
+      checkReference(useCharacterMapsSpec, set);
+    }
+  }
+
+  @Override
+  public void visit(WithParam withParam)
+  {
+//out();
+//out("withParam: " + withParam);
+    checkReference(withParam, withParam.getName());
+  }
+
+  private void checkReference(Object object, Reference<? extends Component> reference) {
+//out("reference: " + reference);
+    if ( !(object instanceof Component)) {
+      return;
+    }
+    Component component = (Component) object;
+
+    if (reference == null) {
+      return;
+    }
+    if ( !reference.isBroken()) {
+      return;
+    }
+    String name;
+
+    if (component instanceof DocumentComponent) {
+      name = ((DocumentComponent) component).getPeer().getLocalName();
+    }
+    else {
+      name = ""; // NOI18N
+    }
+    addError("FIX_Reference", component, name); // NOI18N
   }
 
 };}}
