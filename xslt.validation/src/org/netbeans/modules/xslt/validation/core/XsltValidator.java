@@ -40,16 +40,14 @@
  */
 package org.netbeans.modules.xslt.validation.core;
 
-import java.util.List;
-
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 
-import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.model.Stylesheet;
+import org.netbeans.modules.xslt.model.XslVisitor;
 
 import org.netbeans.modules.soa.validation.core.Validator;
 import static org.netbeans.modules.xml.ui.UI.*;
@@ -60,22 +58,15 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class XsltValidator extends Validator {
 
-  private void travel(XslComponent component) {
-//out("see: " + component.getClass().getName());
-    visit(component);
-    List<XslComponent> children = component.getChildren();
-
-    for (XslComponent child : children) {
-      travel(child);
-    }
-  }
-
-  protected abstract void visit(XslComponent component);
+  public abstract XslVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
     if ( !(m instanceof XslModel)) {
       return null;
     }
+//out();
+//out("XSLT VALIDATOR");
+//out();
     XslModel model = (XslModel) m;
     
     if (model.getState() == Model.State.NOT_WELL_FORMED) {
@@ -88,9 +79,8 @@ public abstract class XsltValidator extends Validator {
     if (stylesheet == null) {
       return null;
     }
-//out();
     startTime();
-    travel(stylesheet);
+    stylesheet.accept(getVisitor());
     endTime(getDisplayName());
 
     return createValidationResult(model);

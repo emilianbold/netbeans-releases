@@ -146,6 +146,12 @@ public class CSSCompletion implements Completable {
                 return null; //no parse tree, just quit
             }
 
+            if(node.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
+                node = (SimpleNode)node.jjtGetParent();
+                if(node == null) {
+                    return null;
+                }
+            }
 //            root.dump("");
 //            System.out.println("AST node kind = " + CSSParserTreeConstants.jjtNodeName[node.kind()]);
 
