@@ -148,9 +148,6 @@ public class MutualCertificatesProfile extends ProfileBase
     }    
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
-        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
-            return false;
-        }
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);

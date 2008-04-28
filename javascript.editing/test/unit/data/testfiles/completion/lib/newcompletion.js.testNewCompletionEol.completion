@@ -27,6 +27,9 @@ CONSTRUCTO CSSStyleSheet                              DOM
 CONSTRUCTO CSSUnknownRule                             DOM
 CONSTRUCTO CSSValue                                   DOM
 CONSTRUCTO CSSValueList                               DOM
+CONSTRUCTO CanvasGradient                             DOM
+CONSTRUCTO CanvasPattern                              DOM
+CONSTRUCTO CanvasRenderingContext2D                   DOM
 CONSTRUCTO CharacterData                              DOM
 CONSTRUCTO Comment                                    DOM
 CONSTRUCTO Counter                                    DOM
@@ -89,6 +92,7 @@ CONSTRUCTO HTMLBaseFontElement                        DOM
 CONSTRUCTO HTMLBlockquoteElement                      DOM
 CONSTRUCTO HTMLBodyElement                            DOM
 CONSTRUCTO HTMLButtonElement                          DOM
+CONSTRUCTO HTMLCanvasElement                          DOM
 CONSTRUCTO HTMLCollection                             DOM
 CONSTRUCTO HTMLDListElement                           DOM
 CONSTRUCTO HTMLDirectoryElement                       DOM
@@ -137,6 +141,7 @@ CONSTRUCTO HTMLTableSectionElement                    DOM
 CONSTRUCTO HTMLTextAreaElement                        DOM
 CONSTRUCTO HTMLTitleElement                           DOM
 CONSTRUCTO HTMLUListElement                           DOM
+CONSTRUCTO ImageData                                  DOM
 CONSTRUCTO Infinity                                   Core JS
 CONSTRUCTO Infinity()                                 Core JS
 CONSTRUCTO IsFinite                                   Core JS

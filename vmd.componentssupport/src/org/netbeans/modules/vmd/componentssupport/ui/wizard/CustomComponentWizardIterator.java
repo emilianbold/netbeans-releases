@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in
+ * the editor.
  */
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
@@ -34,23 +34,61 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-public class CustomComponentWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
+public class CustomComponentWizardIterator implements
+        WizardDescriptor./* Progress */InstantiatingIterator
+{
+
+    private static final String UTF_8       = "UTF-8";                           // NOI18N
+    private static final String CODE_NAME_BASE 
+                                            = "code-name-base";                  // NOI18N
+    private static final String DATA        = "data";                            // NOI18N
+    private static final String PROJECT_XML = "nbproject/project.xml";           // NOI18N
 
     public static final String WIZARD_PANEL_ERROR_MESSAGE 
-                                        = "WizardPanel_errorMessage";   // NOI18N
-    private static final String LBL_WIZARD_STEPS_COUNT = "LBL_WizardStepsCount"; // NOI18N
-    public static final String CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    public static final String SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
-    // steps
-    public static final String STEP_BASIC_PARAMS = "LBL_BasicProjectParamsStep"; // NOI18N
-    // properties
-    public static final String PROJECT_DIR = "projdir"; // NOI18N
-    public static final String PROJECT_NAME = "projname"; // NOI18N
+                                            = "WizardPanel_errorMessage";        // NOI18N
+    private static final String LBL_WIZARD_STEPS_COUNT 
+                                            = "LBL_WizardStepsCount";            // NOI18N
     
+    public static final String CONTENT_DATA = "WizardPanel_contentData";         // NOI18N
+    public static final String SELECTED_INDEX 
+                                            = "WizardPanel_contentSelectedIndex";// NOI18N
 
-    
+    // steps
+    public static final String STEP_BASIC_PARAMS 
+                                            = "LBL_BasicProjectParamsStep";      // NOI18N
+    private static final String LBL_LIBRARIES 
+                                            = "LBL_LibrariesDescStep";
+    private static final String LBL_COMPONENT_DESC 
+                                            = "LBL_ComponentsDescStep";
+    private static final String FINAL_STEP  = "LBL_FinalStep";
+
+    // properties
+    public static final String PROJECT_DIR  = "projdir";                         // NOI18N
+    public static final String PROJECT_NAME = "projname";                        // NOI18N
+    public static final String LAYER_PATH   = "layer";                           // NOI18N
+    public static final String CODE_BASE_NAME
+                                            = "codeBaseName";                    // NOI18N
+
+
+    // parameters for project
+    private static final String CODE_NAME_PARAM 
+                                            = "_CODE_NAME_";                     // NOI18N
+    private static final String LAYER_PATH_PARAM    
+                                            = "_LAYER_PATH_";                    // NOI18N
+    private static final String BUNDLE_PATH_PARAM 
+                                            = "_BUNDLE_PATH_";                   // NOI18N
+    private static final String PROJECT_NAME_PARAM 
+                                            = "_PROJECT_NAME_";                  // NOI18N
+
+    // names of templates
+    private static final String BUNDLE_NAME = "src/Bundle.properties";           // NOI18N
+    private static final String LAYER_NAME  = "src/layer.xml";                   // NOI18N
+    private static final String MANIFEST    = "manifest.mf";                     // NOI18N
+
     private int index;
+
     private WizardDescriptor.Panel[] panels;
+
     private WizardDescriptor wiz;
 
     public CustomComponentWizardIterator() {
@@ -61,26 +99,36 @@ public class CustomComponentWizardIterator implements WizardDescriptor./*Progres
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[]{
-                    new CustomComponentWizardPanel(),
-                };
+        return new WizardDescriptor.Panel[] { new CustomComponentWizardPanel(), 
+              new JavaMELibsWizardPanel(),
+              new DescriptorsWizardPanel(),
+              new BasicModuleConfWizardPanel()};
     }
 
     private String[] createSteps() {
-        return new String[]{
-            NbBundle.getMessage(CustomComponentWizardIterator.class, STEP_BASIC_PARAMS)
-        };
+        return new String[] { 
+                NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, STEP_BASIC_PARAMS) ,
+                NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, LBL_LIBRARIES),
+                NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC),
+                NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, FINAL_STEP)
+                        };
     }
 
-    public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
+    public Set/* <FileObject> */instantiate(/* ProgressHandle handle */)
+            throws IOException
+    {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty(
-                CustomComponentWizardIterator.PROJECT_DIR));
+        File dirF = FileUtil.normalizeFile((File) wiz
+                .getProperty(PROJECT_DIR));
         dirF.mkdirs();
 
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir);
+        unZipFile(template.getInputStream(), dir , wiz );
 
         // Always open top dir as a project:
         resultSet.add(dir);
@@ -93,14 +141,6 @@ public class CustomComponentWizardIterator implements WizardDescriptor./*Progres
             }
         }
 
-        // the only way I could change visible name of nb module project
-        //Project project = FileOwnerQuery.getOwner(dir);
-        //if (project instanceof NbModuleProject){
-        //    NbModuleProject moduleProject4 = (NbModuleProject)project;
-        //    moduleProject.getBundleInfo().setDisplayName(
-        //            (String)wiz.getProperty(CustomComponentWizardIterator.PROJECT_NAME));
-        //}
-        
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
@@ -109,7 +149,7 @@ public class CustomComponentWizardIterator implements WizardDescriptor./*Progres
         return resultSet;
     }
 
-    public void initialize(WizardDescriptor wiz) {
+    public void initialize( WizardDescriptor wiz ) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
@@ -134,18 +174,18 @@ public class CustomComponentWizardIterator implements WizardDescriptor./*Progres
         }
     }
 
-    public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(CustomComponentWizardIterator.PROJECT_DIR, null);
-        this.wiz.putProperty(CustomComponentWizardIterator.PROJECT_NAME, null);
+    public void uninitialize( WizardDescriptor wiz ) {
+        this.wiz.putProperty(PROJECT_DIR, null);
+        this.wiz.putProperty(PROJECT_NAME, null);
         this.wiz = null;
         panels = null;
     }
 
     public String name() {
-        return MessageFormat.format(
-                NbBundle.getBundle(CustomComponentWizardIterator.class).
-                    getString(LBL_WIZARD_STEPS_COUNT), 
-            new Object[]{new Integer(index + 1) + "", new Integer(panels.length) + ""});
+        return MessageFormat.format(NbBundle.getBundle(
+                CustomComponentWizardIterator.class).getString(
+                LBL_WIZARD_STEPS_COUNT), new Object[] {
+                new Integer(index + 1) + "", new Integer(panels.length) + "" });
     }
 
     public boolean hasNext() {
@@ -175,57 +215,104 @@ public class CustomComponentWizardIterator implements WizardDescriptor./*Progres
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {
+    public final void addChangeListener( ChangeListener l ) {
     }
 
-    public final void removeChangeListener(ChangeListener l) {
+    public final void removeChangeListener( ChangeListener l ) {
     }
 
-    private static void unZipFile(InputStream source, FileObject projectRoot) 
-            throws IOException 
+    private static void unZipFile( InputStream source, FileObject projectRoot ,
+            WizardDescriptor wizard )
+            throws IOException
     {
         try {
-            ZipInputStream str = new ZipInputStream(source);
+            ZipInputStream zipIS = new ZipInputStream(source);
             ZipEntry entry;
-            while ((entry = str.getNextEntry()) != null) {
+            String layerPath = (String)wizard.getProperty(LAYER_PATH);
+            while ((entry = zipIS.getNextEntry()) != null) {
                 if (entry.isDirectory()) {
                     FileUtil.createFolder(projectRoot, entry.getName());
-                } else {
-                    FileObject fo = FileUtil.createData(projectRoot, entry.getName());
-                    if ("nbproject/project.xml".equals(entry.getName())) {
-                        // Special handling for setting name of Ant-based projects; customize as needed:
-                        filterProjectXML(fo, str, projectRoot.getName());
-                    } else {
-                        writeFile(str, fo);
+                }
+                else {
+                    FileObject fo = FileUtil.createData(projectRoot, entry
+                            .getName());
+                    if (PROJECT_XML.equals(entry.getName())) {
+                        // Special handling for setting name of Ant-based
+                        // projects; customize as needed:
+                        filterProjectXML(fo, zipIS, (String)wizard.getProperty( 
+                                CODE_BASE_NAME ));
+                    }
+                    else if ( MANIFEST.equals(entry.getName())){
+                        filterManifest( fo , zipIS, wizard );
+                    }
+                    else if ( LAYER_NAME.equals(entry.getName())){
+                        copyLayer( fo , zipIS , wizard );
+                    }
+                    else if ( BUNDLE_NAME.equals(entry.getName()) ) {
+                        filterBundle( fo , zipIS, (String)wizard.getProperty( 
+                                CODE_BASE_NAME ) );
+                    }
+                    else {
+                        writeFile(zipIS, fo);
                     }
                 }
             }
-        } finally {
+        }
+        finally {
             source.close();
         }
     }
 
-    private static void writeFile(ZipInputStream str, FileObject fo) throws IOException {
+    private static void filterBundle( FileObject fo, ZipInputStream is,
+            String property )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private static void copyLayer( FileObject fo, ZipInputStream is,
+            WizardDescriptor wizard )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private static void filterManifest( FileObject fo, ZipInputStream is,
+            WizardDescriptor wizard )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private static void writeFile( ZipInputStream is, FileObject fo )
+            throws IOException
+    {
         OutputStream out = fo.getOutputStream();
         try {
-            FileUtil.copy(str, out);
-        } finally {
+            FileUtil.copy(is, out);
+        }
+        finally {
             out.close();
         }
     }
 
-    private static void filterProjectXML(FileObject fo, ZipInputStream str, String name) 
-            throws IOException 
+    private static void filterProjectXML( FileObject fo, ZipInputStream str,
+            String name ) throws IOException
     {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             FileUtil.copy(str, baos);
-            Document doc = XMLUtil.parse(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false, false, null, null);
-            NodeList nl = doc.getDocumentElement().getElementsByTagName("name");
+            Document doc = XMLUtil.parse(new InputSource(
+                    new ByteArrayInputStream(baos.toByteArray())), false,
+                    false, null, null);
+            NodeList nl = doc.getDocumentElement().getElementsByTagName(
+                    CODE_NAME_BASE);
             if (nl != null) {
                 for (int i = 0; i < nl.getLength(); i++) {
                     Element el = (Element) nl.item(i);
-                    if (el.getParentNode() != null && "data".equals(el.getParentNode().getNodeName())) {
+                    if (el.getParentNode() != null
+                            && DATA.equals(el.getParentNode().getNodeName()))
+                    {
                         NodeList nl2 = el.getChildNodes();
                         if (nl2.getLength() > 0) {
                             nl2.item(0).setNodeValue(name);
@@ -236,11 +323,13 @@ public class CustomComponentWizardIterator implements WizardDescriptor./*Progres
             }
             OutputStream out = fo.getOutputStream();
             try {
-                XMLUtil.write(doc, out, "UTF-8");
-            } finally {
+                XMLUtil.write(doc, out, UTF_8);
+            }
+            finally {
                 out.close();
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             writeFile(str, fo);
         }
