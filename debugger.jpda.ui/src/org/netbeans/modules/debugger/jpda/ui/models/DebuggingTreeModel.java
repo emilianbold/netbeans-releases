@@ -92,8 +92,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                                                            "Signal Dispatcher",
                                                            "Finalizer",
                                                            "Java2D Disposer",
-                                                           //"DestroyJavaVM",
-                                                           "TimerQueue",
+                                                           "TimerQueue"}));
+    private static final Set<String> SYSTEM_MAIN_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
+                                                           "DestroyJavaVM",
                                                            "AWT-XAWT",
                                                            "AWT-Shutdown"}));
     
@@ -171,7 +172,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             JPDAThreadGroup g = t.getParentThreadGroup();
             return (g != null && "system".equals(g.getName()));
         }
-        if ("DestroyJavaVM".equals(t.getName())) {
+        if (SYSTEM_MAIN_THREAD_NAMES.contains(t.getName())) {
             JPDAThreadGroup g = t.getParentThreadGroup();
             return (g != null && "main".equals(g.getName()));
         }
