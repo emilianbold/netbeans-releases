@@ -469,7 +469,12 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             Map<JPDAThread, Object> threadAnnotations = new HashMap<JPDAThread, Object>();
             Set<JPDAThread> removeFutures = new HashSet<JPDAThread>();
             for (JPDAThread t : threadsToAnnotate) {
-                Object annotation = currentSourcePath.annotate(t, currentLanguage, false);
+                Object annotation;
+                if (currentSourcePath != null) {
+                    annotation = currentSourcePath.annotate(t, currentLanguage, false);
+                } else {
+                    annotation = null;
+                }
                 if (annotation != null) {
                     threadAnnotations.put(t, annotation);
                     futureAnnotations.get(t).setAnnotation(annotation);
