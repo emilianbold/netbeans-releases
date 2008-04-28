@@ -44,6 +44,8 @@ package org.netbeans.editor;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.List;
@@ -249,6 +251,8 @@ public class Settings {
 
             initializerListsVersion++;
         }
+
+        firePropertyChange("initializers", null, null); //NOI18N
     }
 
     /** Remove the initializer of the given name from all the levels
@@ -274,6 +278,8 @@ public class Settings {
 
             initializerListsVersion++;
         }
+        
+        firePropertyChange("initializers", null, null); //NOI18N
     }
 
     /** Get the current initializer sorter. */
@@ -308,6 +314,14 @@ public class Settings {
         }
     }
 
+    private static void firePropertyChange(String name, Object old, Object nue) {
+        PropertyChangeEvent evt = new PropertyChangeEvent(Settings.class, name, old, nue);
+        PropertyChangeListener [] listeners = listenerList.getListeners(PropertyChangeListener.class);
+        for(PropertyChangeListener l : listeners) {
+            l.propertyChange(evt);
+        }
+    }
+    
     /** Add filter instance to the list of current filters.
      * If there are already existing editor components,
      * and you want to apply the changes that this filter makes
@@ -1474,11 +1488,6 @@ public class Settings {
             return getListsOfInitializers();
         }
 
-        @Override
-        public String Settings_JAVATYPE_KEY_PREFIX() {
-            return JAVATYPE_KEY_PREFIX;
-        }
-        
         public void Settings_interceptSetValue(EditorPreferencesInjector interceptor) {
             if (interceptor != null) {
                 assert setValueInterceptor.get() == null : "Can't set more than one setValue interceptor"; //NOI18N
@@ -1487,5 +1496,14 @@ public class Settings {
                 setValueInterceptor.remove();
             }
         }
+        
+        public void Settings_addPropertyChangeListener(PropertyChangeListener l) {
+            listenerList.add(PropertyChangeListener.class, l);
+        }
+        
+        public void Settings_removePropertyChangeListener(PropertyChangeListener l) {
+            listenerList.remove(PropertyChangeListener.class, l);
+        }
+        
     } // End of PackageAccessor class
 }

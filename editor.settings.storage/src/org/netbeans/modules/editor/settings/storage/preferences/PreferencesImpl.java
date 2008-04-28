@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.editor.settings.storage.preferences;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -56,6 +58,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.settings.storage.Utils;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.RequestProcessor;
@@ -312,9 +315,8 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         // clients can generally get this node and call flush() on it without
         // changing anything.
         if (local != null) {
-            EditorSettingsStorage<String, TypedValue> ess = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
             try {
-                ess.save(MimePath.parse(mimePath), null, false, local);
+                storage.save(MimePath.parse(mimePath), null, false, local);
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, "Can't save editor preferences for '" + mimePath + "'", ioe); //NOI18N
             }
@@ -369,6 +371,43 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     private final ThreadLocal<String> putValueJavaType = new ThreadLocal<String>();
     
     private final String mimePath;
+    private final EditorSettingsStorage<String, TypedValue> storage;
+    private final PropertyChangeListener storageTracker = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt == null || EditorSettingsStorage.PROP_DATA.equals(evt.getPropertyName())) {
+                Map<String, TypedValue> added = new HashMap<String, TypedValue>();
+                Map<String, TypedValue> removed = new HashMap<String, TypedValue>();
+                
+                synchronized (lock) {
+                    if (local == null) {
+                        // the data has not been read yet
+                        return;
+                    }
+                    
+                    Map<String, TypedValue> oldLocal = local;
+                    
+                    // re-read the data
+                    local = null;
+                    getLocal();
+                    
+                    // figure out what changed
+                    Utils.<String, TypedValue>diff(oldLocal, local, added, removed);
+                }
+                
+                // fire the changes
+                for(String key : added.keySet()) {
+                    TypedValue value = added.get(key);
+                    firePreferenceChange(key, value.getValue());
+                }
+                
+                for(String key : removed.keySet()) {
+                    TypedValue value = removed.get(key);
+                    firePreferenceChange(key, value.getValue());
+                }
+            }
+        }
+    };
+    
     private Map<String, TypedValue> local = null;
     private Preferences inherited = null;
     
@@ -376,13 +415,14 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         super(null, EMPTY);
         
         this.mimePath = mimePath;
+        this.storage = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
+        this.storage.addPropertyChangeListener(WeakListeners.propertyChange(storageTracker, this.storage));
     }
 
     private Map<String, TypedValue> getLocal() {
         if (local == null) {
-            EditorSettingsStorage<String, TypedValue> ess = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
             try {
-                local = new HashMap<String, TypedValue>(ess.load(MimePath.parse(mimePath), null, false));
+                local = new HashMap<String, TypedValue>(storage.load(MimePath.parse(mimePath), null, false));
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, "Can't load editor preferences for '" + mimePath + "'", ioe); //NOI18N
                 local = new HashMap<String, TypedValue>();

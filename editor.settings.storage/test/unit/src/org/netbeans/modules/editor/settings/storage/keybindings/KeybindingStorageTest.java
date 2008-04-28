@@ -140,7 +140,7 @@ public class KeybindingStorageTest extends NbTestCase {
         assertEquals("Wrong mime type", KeyMapsStorage.MIME_TYPE, settingFile.getMIMEType());
         
         // Force loading from the files
-        StorageImpl<Collection<KeyStroke>, MultiKeyBinding> storage = new StorageImpl<Collection<KeyStroke>, MultiKeyBinding>(new KeyMapsStorage());
+        StorageImpl<Collection<KeyStroke>, MultiKeyBinding> storage = new StorageImpl<Collection<KeyStroke>, MultiKeyBinding>(new KeyMapsStorage(), null);
         Map<Collection<KeyStroke>, MultiKeyBinding> keybindings = storage.load(MimePath.EMPTY, "MyProfileXyz", false); //NOI18N
         assertNotNull("Keybindings map should not be null", keybindings);
         assertEquals("Wrong number of keybindings", 1, keybindings.size());

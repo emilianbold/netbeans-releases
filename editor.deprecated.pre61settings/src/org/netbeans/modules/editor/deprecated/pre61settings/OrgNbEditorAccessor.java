@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.editor.deprecated.pre61settings;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import org.netbeans.editor.Settings;
 
@@ -72,6 +73,8 @@ public abstract class OrgNbEditorAccessor {
     }
     
     public abstract List [] Settings_getListsOfInitializers();
-    public abstract String Settings_JAVATYPE_KEY_PREFIX();
     public abstract void Settings_interceptSetValue(EditorPreferencesInjector interceptor);
+    public abstract void Settings_addPropertyChangeListener(PropertyChangeListener l);
+    public abstract void Settings_removePropertyChangeListener(PropertyChangeListener l);
+    
 }

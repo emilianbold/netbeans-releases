@@ -257,7 +257,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     private final Map<String, Map<String, AttributeSet>> highlightings = new HashMap<String, Map<String, AttributeSet>>();
-    private final StorageImpl<String, AttributeSet> highlightingsStorage = new StorageImpl<String, AttributeSet>(new ColoringStorage(false));
+    private final StorageImpl<String, AttributeSet> highlightingsStorage = new StorageImpl<String, AttributeSet>(new ColoringStorage(false), null);
     
     /**
      * Returns highlighting properties for given profile or null, if the 

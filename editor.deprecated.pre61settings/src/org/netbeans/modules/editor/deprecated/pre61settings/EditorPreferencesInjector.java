@@ -42,7 +42,8 @@ package org.netbeans.modules.editor.deprecated.pre61settings;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.io.IOException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -62,7 +63,7 @@ import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
  *
  * @author vita
  */
-public final class EditorPreferencesInjector extends StorageFilter<String, TypedValue> {
+public final class EditorPreferencesInjector extends StorageFilter<String, TypedValue> implements PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(EditorPreferencesInjector.class.getName());
     
@@ -70,6 +71,8 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
     
     public EditorPreferencesInjector() {
         super("Preferences"); //NOI18N
+        // Settings uses WeakListenerList and holds all listeners by WeakReference
+        OrgNbEditorAccessor.get().Settings_addPropertyChangeListener(this);
     }
 
     public void capturedSetValue(Class kitClass, String settingName, Object value) {
@@ -77,6 +80,10 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
         assert map != null : "The current settings map should not be null"; //NOI18N
         map.put(settingName, value);
     }
+    
+    // ------------------------------------------------------------------------
+    // StorageFilter implementation
+    // ------------------------------------------------------------------------
     
     @Override
     public void afterLoad(Map<String, TypedValue> preferences, MimePath mimePath, String profile, boolean defaults) {
@@ -132,7 +139,6 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
             }
 
             Object value = map.get(settingName);
-            String javaTypeKey = OrgNbEditorAccessor.get().Settings_JAVATYPE_KEY_PREFIX() + settingName;
             if (value instanceof Boolean) {
                 preferences.put(settingName, new TypedValue(
                         ((Boolean) value).toString(), Boolean.class.getName()));
@@ -173,7 +179,18 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
     }
 
     @Override
-    public void beforeSave(Map<String, TypedValue> map, MimePath mimePath, String profile, boolean defaults) throws IOException {
+    public void beforeSave(Map<String, TypedValue> map, MimePath mimePath, String profile, boolean defaults) {
+        // let's save everything we may have added
+    }
+
+    // ------------------------------------------------------------------------
+    // PropertyChangeListener implementation
+    // ------------------------------------------------------------------------
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt == null || "initializers".equals(evt.getPropertyName())) { //NOI18N
+            notifyChanges();
+        }
     }
 
 } // End of EditorPreferencesInjector class

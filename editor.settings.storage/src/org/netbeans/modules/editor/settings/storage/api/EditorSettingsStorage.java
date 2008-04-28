@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.editor.settings.storage.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.SettingsType;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
@@ -53,6 +56,8 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
  */
 public final class EditorSettingsStorage <K extends Object, V extends Object> {
 
+    public static final String PROP_DATA = "EditorSettingsStorage.PROP_DATA"; //NOI18N
+    
     public static <K extends Object, V extends Object> EditorSettingsStorage<K, V> get(String settingsTypeId) {
         EditorSettingsStorage<K, V> ess = EditorSettingsStorage.<K, V>find(settingsTypeId);
         assert ess != null : "Invalid settings type Id: '" + settingsTypeId + "'"; //NOI18N
@@ -68,7 +73,7 @@ public final class EditorSettingsStorage <K extends Object, V extends Object> {
             if (sd != null) {
                 ess = cache.get(sd);
                 if (ess == null) {
-                    ess = new EditorSettingsStorage<K, V>(new StorageImpl<K, V>(sd));
+                    ess = new EditorSettingsStorage<K, V>(sd);
                     cache.put(sd, ess);
                 }
             }            
@@ -88,15 +93,30 @@ public final class EditorSettingsStorage <K extends Object, V extends Object> {
     public void delete(MimePath mimePath, String profile, boolean defaults) throws IOException {
         storageImpl.delete(mimePath, profile, defaults);
     }
-     
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        PCS.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        PCS.removePropertyChangeListener(l);
+    }
+    
     // ------------------------------------------
     // private implementation
     // ------------------------------------------
 
     private static final Map<StorageDescription<?, ?>, EditorSettingsStorage> cache = new HashMap<StorageDescription<?, ?>, EditorSettingsStorage>();
+    
+    private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
     private final StorageImpl<K, V> storageImpl;
     
-    private EditorSettingsStorage(StorageImpl<K, V> storageImpl) {
-        this.storageImpl = storageImpl;
+    private EditorSettingsStorage(StorageDescription<K, V> storageDescription) {
+        this.storageImpl = new StorageImpl<K, V>(storageDescription, new Callable<Void>() {
+            public Void call() {
+                PCS.firePropertyChange(PROP_DATA, null, null);
+                return null;
+            }
+        });
     }
 }

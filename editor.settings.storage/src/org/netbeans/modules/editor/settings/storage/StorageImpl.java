@@ -77,10 +77,12 @@ public final class StorageImpl <K extends Object, V extends Object> {
     // -J-Dorg.netbeans.modules.editor.settings.storage.StorageImpl.level=FINE
     private static final Logger LOG = Logger.getLogger(StorageImpl.class.getName());
 
-    public StorageImpl(StorageDescription<K, V> sd) {
+    public StorageImpl(StorageDescription<K, V> sd, Callable<Void> callback) {
         this.storageDescription = sd;
+        this.dataChangedCallback = callback;
         this.sfs = Repository.getDefault().getDefaultFileSystem();
         this.baseFolder = sfs.findResource("Editors"); //NOI18N
+        Filters.registerCallback(this);
     }
 
     public Map<K, V> load(MimePath mimePath, String profile, boolean defaults) throws IOException {
@@ -163,7 +165,14 @@ public final class StorageImpl <K extends Object, V extends Object> {
             profilesCache.clear();
         }
         
-        // XXX: fire changes somehow
+        // notify about possible changes in the cached data
+        if (dataChangedCallback != null) {
+            try {
+                dataChangedCallback.call();
+            } catch (Exception e) {
+                // ignore, the callback is not supposed to throw anything
+            }
+        }
     }
     
     public static interface Operations<K extends Object, V extends Object> {
@@ -177,6 +186,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
     // ------------------------------------------
     
     private final StorageDescription<K, V> storageDescription;
+    private final Callable<Void> dataChangedCallback;
     private final FileSystem sfs;
     private final FileObject baseFolder;
     
