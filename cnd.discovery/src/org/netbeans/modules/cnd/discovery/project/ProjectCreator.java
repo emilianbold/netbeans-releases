@@ -192,10 +192,10 @@ public class ProjectCreator {
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake clean'"); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake clobber'"); // NOI18N
         } else {
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake all'"); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake clean'"); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue("bldenv -d ../../../"+buildScript+" 'dmake clobber'"); // NOI18N
         }
         extConf.getMakefileConfiguration().getOutput().setValue(output);
         
