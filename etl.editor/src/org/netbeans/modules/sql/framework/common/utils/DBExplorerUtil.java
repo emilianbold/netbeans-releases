@@ -89,7 +89,8 @@ public class DBExplorerUtil {
             String[] urlParts = parseConnUrl(url);
             String relativePath = "\\nbproject\\private\\databases\\";
             if (urlParts[1].startsWith(ETLEditorSupport.PRJ_PATH)) {
-                url = AXION_URL_PREFIX + ETLEditorSupport.PRJ_NAME + "_" + urlParts[0] + ":" + urlParts[1];
+                String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME) ? urlParts[0] : ETLEditorSupport.PRJ_NAME + "_" + urlParts[0];
+                url = AXION_URL_PREFIX + adjustedName + ":" + urlParts[1];
             } else if (urlParts[1].startsWith(relativePath)) {
                 url = AXION_URL_PREFIX + urlParts[0] + ":" + ETLEditorSupport.PRJ_PATH + urlParts[1];
             }
