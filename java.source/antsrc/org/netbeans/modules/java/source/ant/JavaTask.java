@@ -114,6 +114,10 @@ public class JavaTask extends Java {
         }
         
         try {
+            if (FileUtil.isArchiveFile(fo)) {
+                fo = FileUtil.getArchiveRoot(fo);
+            }
+            
             SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(fo.getURL());
             
             if (r.getRoots().length != 1) {

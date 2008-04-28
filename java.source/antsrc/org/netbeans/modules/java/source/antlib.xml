@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <antlib>
-    <taskdef name="java" classname="org.netbeans.modules.java.source.ant.JavaTask"/>
+<!--    <taskdef name="java" classname="org.netbeans.modules.java.source.ant.JavaTask"/>
     <taskdef name="javac" classname="org.netbeans.modules.java.source.ant.JavacTask"/>
-    <taskdef name="depend" classname="org.netbeans.modules.java.source.ant.DependTask"/>
+    <taskdef name="depend" classname="org.netbeans.modules.java.source.ant.DependTask"/>-->
 </antlib>
