@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
@@ -118,38 +117,58 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                 if (d == null) {
                     continue;
                 }
-                // Copied from
-                // org.netbeans.spi.java.project.support.ui.TreeRootNode.PathFinder.findPath:
+                // Copied from org.netbeans.spi.java.project.support.ui.TreeRootNode.PathFinder.findPath:
                 FileObject kidFO = d.getPrimaryFile();
-                FileObject targetFO = target instanceof DataObject ? ((DataObject) target).getPrimaryFile() : (FileObject) target;
+                FileObject targetFO = null;
+                if (target instanceof DataObject) {
+                    targetFO = ((DataObject) target).getPrimaryFile();
+                } else {
+                    targetFO = (FileObject) target;
+                }
                 if (kidFO == targetFO) {
                     return node;
                 } else if (FileUtil.isParentOf(kidFO, targetFO)) {
                     String relPath = FileUtil.getRelativePath(kidFO, targetFO);
-                    List<String> path = Arrays.asList(relPath.split("/")); // NOI18N
-                    // XXX see original code for justification
-                    path.set(path.size() - 1, targetFO.getName());
-                    try {
-                        Node found = NodeOp.findPath(node, Collections.enumeration(path));
 
-                        if (hasObject(found, target)) {
-                            return found;
-                        }
-                        Node parent = found.getParentNode();
-                        Children kids = parent.getChildren();
-                        children = kids.getNodes();
-                        for (Node child : children) {
-                            if (hasObject(child, target)) {
-                                return child;
-                            }
-                        }
-                    } catch (NodeNotFoundException e) {
+                    // first path without extension (more common case)
+                    String[] path = relPath.split("/"); // NOI18N
+                    path[path.length - 1] = targetFO.getName();
+
+                    // first try to find the file without extension (more common case)
+                    Node found = findNode(node, path);
+                    if (found == null) {
+                        // file not found, try to search for the name with the extension
+                        path[path.length - 1] = targetFO.getNameExt();
+                        found = findNode(node, path);
+                    }
+                    if (found == null) {
                         return null;
+                    }
+                    if (hasObject(found, target)) {
+                        return found;
+                    }
+                    Node parent = found.getParentNode();
+                    Children kids = parent.getChildren();
+                    children = kids.getNodes();
+                    for (Node child : children) {
+                        if (hasObject(child, target)) {
+                            return child;
+                        }
                     }
                 }
             }
         }
         return null;
+    }
+
+    private Node findNode(Node start, String[] path) {
+        Node found = null;
+        try {
+            found = NodeOp.findPath(start, path);
+        } catch (NodeNotFoundException ex) {
+            // ignored
+        }
+        return found;
     }
 
     private boolean hasObject(Node node, Object obj) {
