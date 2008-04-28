@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.etl.project.ui.EtlproLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
