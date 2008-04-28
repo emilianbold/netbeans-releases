@@ -93,7 +93,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                                                            "Finalizer",
                                                            "Java2D Disposer",
                                                            //"DestroyJavaVM",
-                                                           "TimerQueue"}));
+                                                           "TimerQueue",
+                                                           "AWT-XAWT",
+                                                           "AWT-Shutdown"}));
     
     private JPDADebugger debugger;
     private Listener            listener;
