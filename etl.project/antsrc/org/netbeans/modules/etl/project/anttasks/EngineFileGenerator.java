@@ -133,9 +133,9 @@ public class EngineFileGenerator {
         sqlDefinition.overrideCatalogNamesForDb(dbCatalogOverrideMapMap);
         sqlDefinition.overrideSchemaNamesForDb(dbSchemaOverrideMapMap);
         ETLProcessFlowGenerator flowGen = ETLProcessFlowGeneratorFactory.getCollabFlowGenerator(sqlDefinition, true);
-        flowGen.setWorkingFolder(sqlDefinition.getDBWorkingFolder());
-        flowGen.setInstanceDBName(sqlDefinition.getDbInstanceName());
-        flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefinition.getDBWorkingFolder(), sqlDefinition.getDbInstanceName()));
+        flowGen.setWorkingFolder(sqlDefinition.getAxiondbWorkingDirectory());
+        flowGen.setInstanceDBName("instancedb");
+        flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder());
         //flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder());
         flowGen.setMonitorDBName(def.getDisplayName());
         flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(def.getDisplayName(), ETLDeploymentConstants.PARAM_APP_DATAROOT));
