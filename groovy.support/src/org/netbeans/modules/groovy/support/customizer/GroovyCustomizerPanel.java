@@ -41,15 +41,32 @@
 
 package org.netbeans.modules.groovy.support.customizer;
 
+import org.netbeans.modules.groovy.support.AntHelper;
+
 /**
  *
  * @author Martin Adamek
  */
 public class GroovyCustomizerPanel extends javax.swing.JPanel {
 
-    /** Creates new form GroovyCustomizerPanel */
-    public GroovyCustomizerPanel() {
+    private final AntHelper antHelper;
+    
+    public GroovyCustomizerPanel(AntHelper antHelper) {
         initComponents();
+        this.antHelper = antHelper;
+        if (antHelper == null) {
+            enableGroovyCheckBox.setSelected(false);
+            enableGroovyCheckBox.setEnabled(false);
+            classpathCheckBox.setSelected(false);
+            excludeCHeckBox.setSelected(false);
+            groovycCheckBox.setSelected(false);
+        } else if (antHelper.isGroovyEnabled()) {
+            enableGroovyCheckBox.setSelected(true);
+            enableGroovyCheckBox.setEnabled(false);
+            classpathCheckBox.setSelected(true);
+            excludeCHeckBox.setSelected(true);
+            groovycCheckBox.setSelected(true);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -61,38 +78,74 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jCheckBox1 = new javax.swing.JCheckBox();
+        enableGroovyCheckBox = new javax.swing.JCheckBox();
+        classpathCheckBox = new javax.swing.JCheckBox();
+        groovycCheckBox = new javax.swing.JCheckBox();
+        excludeCHeckBox = new javax.swing.JCheckBox();
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.jCheckBox1.text")); // NOI18N
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+        enableGroovyCheckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.enableGroovyCheckBox.text")); // NOI18N
+        enableGroovyCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
+                enableGroovyCheckBoxActionPerformed(evt);
             }
         });
+
+        classpathCheckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.classpathCheckBox.text")); // NOI18N
+        classpathCheckBox.setEnabled(false);
+
+        groovycCheckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.groovycCheckBox.text")); // NOI18N
+        groovycCheckBox.setEnabled(false);
+
+        excludeCHeckBox.setText(org.openide.util.NbBundle.getMessage(GroovyCustomizerPanel.class, "GroovyCustomizerPanel.excludeCHeckBox.text")); // NOI18N
+        excludeCHeckBox.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jCheckBox1)
-                .addContainerGap(287, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(enableGroovyCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(classpathCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(groovycCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(excludeCHeckBox)))
+                .addContainerGap(110, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jCheckBox1)
-                .addContainerGap(278, Short.MAX_VALUE))
+                .add(enableGroovyCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(classpathCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(groovycCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(excludeCHeckBox)
+                .addContainerGap(212, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_jCheckBox1ActionPerformed
+private void enableGroovyCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableGroovyCheckBoxActionPerformed
+    if (enableGroovyCheckBox.isSelected()) {
+        enableGroovyCheckBox.setEnabled(false);
+        classpathCheckBox.setSelected(true);
+        excludeCHeckBox.setSelected(true);
+        groovycCheckBox.setSelected(true);
+    }
+}//GEN-LAST:event_enableGroovyCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox classpathCheckBox;
+    private javax.swing.JCheckBox enableGroovyCheckBox;
+    private javax.swing.JCheckBox excludeCHeckBox;
+    private javax.swing.JCheckBox groovycCheckBox;
     // End of variables declaration//GEN-END:variables
 
 }
