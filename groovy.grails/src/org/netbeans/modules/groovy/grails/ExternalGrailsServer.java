@@ -40,6 +40,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
+import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
 import org.netbeans.modules.groovy.grails.settings.Settings;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileUtil;
@@ -101,7 +102,7 @@ public class ExternalGrailsServer implements GrailsServer{
                     }
             }
             
-            String env = prjConfig.getEnv();
+            GrailsEnvironment env = prjConfig.getEnv();
             
             if(env != null && ! env.equals("")){
                 retVal = retVal + " -Dgrails.env=" + env + " ";

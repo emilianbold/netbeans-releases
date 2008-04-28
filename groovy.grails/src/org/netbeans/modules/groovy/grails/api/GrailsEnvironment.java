@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,60 +34,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.grails.api;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.settings.Settings;
-
+import org.openide.util.Parameters;
 
 /**
+ * Represents the environment of the Grails.
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class GrailsProjectConfig {
+public enum GrailsEnvironment {
 
-    private final Project prj;
-    private final Settings settings = Settings.getInstance();
+    /** Development environment. */
+    DEVELOPMENT("Development"), // NOI18N
 
-    public GrailsProjectConfig(Project prj) {
-        this.prj = prj;
+    /** Production environment. */
+    PRODUCTION("Production"), // NOI18N
+
+    /** Test environment. */
+    TEST("Test"); // NOI18N
+
+    private final String value;
+
+    private GrailsEnvironment(String value) {
+        this.value = value;
     }
 
-    public String getPort() {
-        return settings.getPortForProject(prj);
+    /**
+     * Find the enum value for the given string representation of the grails
+     * environment.
+     *
+     * @param value the grails environment
+     * @return enum representing the value
+     * @throws IllegalArgumentException if the value is not the known value of
+     *             grails environment
+     */
+    public static GrailsEnvironment forString(String value) {
+        Parameters.notNull("value", value);
+
+        if ("Development".equals(value)) { // NOI18N
+            return DEVELOPMENT;
+        } else if ("Production".equals(value)) { // NOI18N
+            return PRODUCTION;
+        } else if ("Test".equals(value)) { // NOI18N
+            return TEST;
+        } else {
+            throw new IllegalArgumentException("Unknown environment type"); // NOI18N
+        }
     }
 
-    public void setPort(String port) {
-        assert port != null;
-        settings.setPortForProject(prj, port);
-    }
-
-    public GrailsEnvironment getEnv() {
-        return settings.getEnvForProject(prj);
-    }
-
-    public void setEnv(GrailsEnvironment env) {
-        assert env != null;
-        settings.setEnvForProject(prj, env);
-    }
-
-    public String getDeployDir() {
-        return settings.getDeployDirForProject(prj);
-    }
-
-    public void setDeployDir(String dir) {
-        assert dir != null;
-        settings.setDeployDirForProject(prj, dir);
-    }
-
-    public boolean getAutoDeployFlag() {
-        return settings.getAutoDeployFlagForProject(prj);
-    }
-
-    public void setAutoDeployFlag(boolean flag) {
-        settings.setAutoDeployFlagForProject(prj, flag);
+    /**
+     * Returns the string representation usable in grails.
+     *
+     * @return the string representation usable in grails
+     */
+    @Override
+    public String toString() {
+        return value;
     }
 }

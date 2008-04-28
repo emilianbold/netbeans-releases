@@ -30,6 +30,7 @@ package org.netbeans.modules.groovy.grails.settings;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
 import org.openide.util.NbPreferences;
 
 /**
@@ -79,16 +80,20 @@ public final class Settings {
     }
 
     // which Environment should we use (Test, Production, Development, etc.)
-    public String getEnvForProject(Project prj) {
+    public GrailsEnvironment getEnvForProject(Project prj) {
         assert prj != null;
-        return getPreferences().get(getEnvKey(prj), null);
+        String value = getPreferences().get(getEnvKey(prj), null);
+        if (value != null) {
+            return GrailsEnvironment.forString(value);
+        }
+        return null;
     }
 
-    public void setEnvForProject(Project prj, String env) {
+    public void setEnvForProject(Project prj, GrailsEnvironment env) {
         assert prj != null;
         assert env != null;
 
-        getPreferences().put(getEnvKey(prj), env);
+        getPreferences().put(getEnvKey(prj), env.toString());
     }
 
     // Should we Autodeploy right after a 'grails war' command?

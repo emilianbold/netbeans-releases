@@ -45,6 +45,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -85,10 +86,10 @@ public class SettingsTest extends NbTestCase {
         final Project project = new TestProject("test",
                 FileUtil.toFileObject(FileUtil.normalizeFile(this.getWorkDir())));
         assertNull(settings.getEnvForProject(project));
-        settings.setEnvForProject(project, "Production");
-        assertEquals("Production", settings.getEnvForProject(project));
-        settings.setEnvForProject(project, "Development");
-        assertEquals("Development", settings.getEnvForProject(project));
+        settings.setEnvForProject(project, GrailsEnvironment.PRODUCTION);
+        assertEquals(GrailsEnvironment.PRODUCTION, settings.getEnvForProject(project));
+        settings.setEnvForProject(project, GrailsEnvironment.DEVELOPMENT);
+        assertEquals(GrailsEnvironment.DEVELOPMENT, settings.getEnvForProject(project));
     }
 
     public void testAutoDeployFlagForProject() throws IOException {
