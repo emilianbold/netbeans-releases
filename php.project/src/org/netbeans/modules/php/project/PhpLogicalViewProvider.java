@@ -584,7 +584,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
     private class PhpSourcesFilter implements DataFilter {
         private static final long serialVersionUID = -7439706583318056955L;
-        private final File PROJECT_XML = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH);
+        private final File projectXml = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH);
 
         public boolean acceptDataObject(DataObject object) {
                 return isNotProjectFile(object) && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
@@ -592,8 +592,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private boolean isNotProjectFile(DataObject object) {
             try {
-                if (PROJECT_XML != null) {
-                    File nbProject = PROJECT_XML.getParentFile().getCanonicalFile();
+                if (projectXml != null) {
+                    File nbProject = projectXml.getParentFile().getCanonicalFile();
                     File f = FileUtil.toFile(object.getPrimaryFile()).getCanonicalFile();
                     return nbProject != null && !nbProject.equals(f);
                 } else {
