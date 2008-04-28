@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.db.core.SQLOptions;
 
 /**
  * Support class for executing SQL statements.
@@ -65,8 +65,6 @@ public final class SQLExecuteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private static final String PROP_MAXROWS = "maxrows";
-    private static final int MAXROWS = 200000;
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -113,7 +111,7 @@ public final class SQLExecuteHelper {
                 // to avoid getting out-of-memory errors if the driver
                 // (e.g. MySQL) tries to load all the rows of a Very Big
                 // Table before returning
-                stmt.setMaxRows(getMaxRows());
+                stmt.setMaxRows(SQLOptions.getDefault().getMaxRows());
                 
                 boolean isResultSet = false;
                 long startTime = System.currentTimeMillis();
@@ -168,11 +166,6 @@ public final class SQLExecuteHelper {
             results.close();
             return null;
         }
-    }
-
-    private static int getMaxRows() {
-        return NbPreferences.forModule(SQLExecuteHelper.class).
-                getInt(PROP_MAXROWS, MAXROWS);
     }
 
     private static int[] getSupportedResultSetTypeConcurrency(Connection conn) throws SQLException {

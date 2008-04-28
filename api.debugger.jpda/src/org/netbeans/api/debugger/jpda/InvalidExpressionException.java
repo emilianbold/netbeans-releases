@@ -67,9 +67,20 @@ public class InvalidExpressionException extends Exception {
      * @param t a target exception
      */
     public InvalidExpressionException (Throwable t) {
-        super (t.getMessage ());// == null ? t.getClass ().getName () : t.getMessage ());
+        super ();// == null ? t.getClass ().getName () : t.getMessage ());
         throwable = t;
     }
+
+    @Override
+    public String getMessage() {
+        if (throwable != null) {
+            return throwable.getMessage();
+        } else {
+            return super.getMessage();
+        }
+    }
+    
+    
     
     /**
      * Get the thrown target exception.

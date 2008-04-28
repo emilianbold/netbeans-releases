@@ -130,7 +130,7 @@ public class JsIndexer implements Indexer {
     private boolean cachedIndexable;
     
     public String getIndexVersion() {
-        return "6.113"; // NOI18N
+        return "6.114"; // NOI18N
     }
 
     public String getIndexerName() {

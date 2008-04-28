@@ -55,6 +55,11 @@ public class JbiExtensionElement implements Serializable {
      * Name of the element.
      */
     private String name;
+
+    /**
+     * Display name of the element.
+     */
+    private String displayName;
     
     /**
      * A list of child elements.
@@ -75,10 +80,12 @@ public class JbiExtensionElement implements Serializable {
      * 
      */
     public JbiExtensionElement(String name, 
+            String displayName,
             List<JbiExtensionElement> subElements,
             List<JbiExtensionAttribute> attributes,
             String description) {
         this.name = name;
+        this.displayName = displayName;
         this.elements = subElements;
         this.attributes = attributes;
         this.description = description;
@@ -89,6 +96,14 @@ public class JbiExtensionElement implements Serializable {
      */
     public String getName() {
         return name;
+    }
+    
+    
+    /**
+     * Gets the display name of the element.
+     */
+    public String getDisplayName() {
+        return displayName;
     }
     
     /**

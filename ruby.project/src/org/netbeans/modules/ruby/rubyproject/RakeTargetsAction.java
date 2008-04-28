@@ -665,6 +665,9 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
             if (!RubyPlatform.hasValidRake(project, true)) {
                 return;
             }
+            if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
+                return;
+            }
 
             if (target.getTarget().equals(REFRESH_TARGETS)) {
                 // Run rake -T to get the actual list of targets
