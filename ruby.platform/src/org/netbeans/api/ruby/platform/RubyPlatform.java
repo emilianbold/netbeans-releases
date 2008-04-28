@@ -459,6 +459,11 @@ public final class RubyPlatform {
         return new File(interpreter).isFile();
     }
 
+    /**
+     * If the platform is in invalid state, shows general message to the user.
+     * 
+     * @return whether the platform is valid
+     */
     public boolean showWarningIfInvalid() {
         boolean valid = isValid();
         if (!valid) {
