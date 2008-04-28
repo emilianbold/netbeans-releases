@@ -75,7 +75,6 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    //private static transient final Logger mLogger = LogUtil.getLogger(EtlproLogicalViewProvider.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public EtlproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {

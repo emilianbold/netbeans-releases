@@ -370,8 +370,8 @@ made subject to such option by the copyright holder.
             </OptionProperty>
             <Property name="sourceModelName" valueType="java.lang.String" position="3" readOnly="true" />
             <Property name="targetModelName" valueType="java.lang.String" position="4" readOnly="true" />
-            <Property name="workingFolder" valueType="java.lang.String" position="5"/>
-            <Property name="dbInstanceName" valueType="java.lang.String" position="6"/>
+            <Property name="axiondbWorkingDirectory" valueType="java.lang.String" position="5"/>
+            <Property name="axiondbDataDirectory" valueType="java.lang.String" position="6"/>
         </PropertyGroup>
     </Template>
     
