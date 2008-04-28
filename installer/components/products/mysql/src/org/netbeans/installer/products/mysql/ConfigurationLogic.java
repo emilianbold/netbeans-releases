@@ -823,7 +823,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String PRODUCT_NAME =
             "MySQL Server 5.0";//NOI18N
     public static final String TARGET_CONFIGURATION_FILE =
-            "mysql.ini";//NOI18N
+            "my.ini";//NOI18N
     public static final String TEMPLATE_CONFIGURATION_FILE =
             "my-template.ini";//NOI18N
     public static final String MYSQL_SERVICE_NAME =
