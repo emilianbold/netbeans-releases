@@ -82,7 +82,7 @@ public class DBExplorerUtil {
     private static final String LOG_CATEGORY = DBExplorerUtil.class.getName();
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
 
     public static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
@@ -170,13 +170,19 @@ public class DBExplorerUtil {
         return conn;
     }
 
+    public static void isCmdLineImport(boolean val) {
+        isCmdLine = val;
+    }
+    public static boolean isCmdLine;
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
         JDBCDriver drv = null;
         Connection conn = null;
         try {
+            if (!isCmdLine) {
             url = adjustDatabaseURL(url);
+            }
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
@@ -226,8 +232,9 @@ public class DBExplorerUtil {
         JDBCDriver drv = null;
         String schema = null;
         try {
-
+            if (!isCmdLine) {
             url = adjustDatabaseURL(url);
+            }
             drv = registerDriver(driverName);
 
             // check if connection exists in DB Explorer. Else add the connection to DB Explorer.
@@ -343,12 +350,15 @@ public class DBExplorerUtil {
                 prop.setProperty("password", password);
                 conn = newDriverClass.connect(url, prop);
             } catch (SQLException e) {
-                mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                //mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                mLogger.infoNoloc("Unable to get the specified connection directly.{0}");
             } catch (Exception numex) {
-                mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                //mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                mLogger.infoNoloc("Unable to get the specified connection directly.{0}");
             }
         } catch (Exception ex) {
-            mLogger.infoNoloc(mLoc.t("EDIT100: Unable to find the driver class in the specified jar file{0}", LOG_CATEGORY));
+            //mLogger.infoNoloc(mLoc.t("EDIT100: Unable to find the driver class in the specified jar file{0}", LOG_CATEGORY));
+            mLogger.infoNoloc("Unable to find the driver class in the specified jar file{0}");
         }
         return conn;
     }
