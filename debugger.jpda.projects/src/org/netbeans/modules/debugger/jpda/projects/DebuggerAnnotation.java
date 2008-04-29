@@ -55,7 +55,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -63,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
-public class DebuggerAnnotation extends Annotation {
+public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
     private Line        line;
     private String      type;
@@ -160,6 +162,14 @@ public class DebuggerAnnotation extends Annotation {
         }
         
 
+    }
+
+    public Lookup getLookup() {
+        if (thread == null) {
+            return Lookup.EMPTY;
+        } else {
+            return Lookups.singleton(thread);
+        }
     }
     
 }

@@ -370,6 +370,9 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>
+            <folder name="OtherThreadActions">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+            </folder>
             <file name="Breakpoint.xml" url="Breakpoint.xml"/>
             <file name="Breakpoint_broken.xml" url="Breakpoint_broken.xml"/>
             <file name="DisabledBreakpoint.xml" url="DisabledBreakpoint.xml"/>

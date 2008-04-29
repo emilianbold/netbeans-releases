@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
     name='OtherThread'
     description_key='HINT_OTHER_THREAD'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
+    actions='OtherThreadActions'
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/other_threads_suspended.png'
     type='line'

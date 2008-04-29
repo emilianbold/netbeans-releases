@@ -86,6 +86,11 @@ made subject to such option by the copyright holder.
             <file name="DisabledMethodBreakpoint.xml" url="DisabledMethodBreakpoint.xml"/>
             <file name="FieldBreakpoint.xml" url="FieldBreakpoint.xml"/>
             <file name="MethodBreakpoint.xml" url="MethodBreakpoint.xml"/>
+            <folder name="OtherThreadActions">
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetAsCurrentThreadGutterAction.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 
