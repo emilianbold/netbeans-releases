@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.sql.framework.ui.graph.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.net.URL;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
-
-import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
- * @author Ritesh Adval
- * @version $Revision$
+ *
+ * @author eu155513
  */
-public class AutoLayoutAction extends GraphAction {
+public class FunctionDefinitionResolverImpl extends CsmFunctionDefinitionResolver {
 
-    private static final URL autoLayoutImgUrl = AutoLayoutAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/layout_edm.png");
-    private static transient final Logger mLogger = Logger.getLogger(AutoLayoutAction.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
-
-    public AutoLayoutAction() {
-        //action name
-        String nbBundle = mLoc.t("BUND311: AutoLayout");
-        this.putValue(Action.NAME, nbBundle.substring(15));
-
-        //action icon
-        this.putValue(Action.SMALL_ICON, new ImageIcon(autoLayoutImgUrl));
-
-        //action tooltip
-        String nbBundle1 = mLoc.t("BUND312: AutoLayout All Graph Objects");
-        this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-
-        // Acceleratot Shift-L
-
+    @Override
+    public Collection<CsmOffsetableDeclaration> findDeclarationByName(CsmProject project, String name) {
+        if (project instanceof ProjectBase) {
+            return ((ProjectBase)project).findDeclarationsByPrefix(
+                    Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + name);
+        } else {
+            return null;
+        }
     }
 
-    /**
-     * called when this action is performed in the ui
-     * 
-     * @param ev event
-     */
-    public void actionPerformed(ActionEvent ev) {
-        IGraphView graphView = (IGraphView) ev.getSource();
-        graphView.autoLayout();
+    @Override
+    public CsmReference getFunctionDefinition(CsmFunction referencedFunction) {
+        return null;
     }
 }
-
