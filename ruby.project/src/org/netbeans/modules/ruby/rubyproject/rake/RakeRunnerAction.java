@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.rubyproject.rake;
 
 import java.io.File;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,6 +70,12 @@ public final class RakeRunnerAction extends CallableSystemAction {
         Lookup context = Utilities.actionsGlobalContext();
         Project p = context.lookup(Project.class);
         if (p == null) { // no project in the current context
+            FileObject fo = context.lookup(FileObject.class);
+            if (fo != null) {
+                p = FileOwnerQuery.getOwner(fo);
+            }
+        }
+        if (p == null) {
             return;
         }
 
