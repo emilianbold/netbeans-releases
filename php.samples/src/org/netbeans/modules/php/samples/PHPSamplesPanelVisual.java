@@ -5,7 +5,6 @@
 package org.netbeans.modules.php.samples;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.HashSet;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -228,7 +227,7 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
             }
 
             boolean dontHaveName = true;
-            int i = 2;
+            int i = 1;
             
             do{
                 newProjectName = projectName + i;

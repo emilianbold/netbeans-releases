@@ -46,8 +46,9 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServerManager;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
@@ -236,7 +237,7 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_createProductionDbActionPerformed
 
     private DatabaseConnection createMySqlDb() {
-        ServerInstance mysql = ServerInstance.getDefault();
+        DatabaseServer mysql = DatabaseServerManager.getDatabaseServer();
         if (!mysql.isConnected()) {
             tryToConnect(mysql);
         }
@@ -248,7 +249,7 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
         return result;
     }
 
-    private void tryToConnect(ServerInstance mysql) {
+    private void tryToConnect(DatabaseServer mysql) {
         doConnect(mysql, true);
         if (!mysql.isConnected()) {
             if (new PropertiesDialog(mysql).displayDialog()) {
@@ -257,7 +258,7 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
     
-    private void doConnect(ServerInstance mysql, boolean quiet) {
+    private void doConnect(DatabaseServer mysql, boolean quiet) {
         try {
             mysql.connect();
         } catch (DatabaseException ex) {

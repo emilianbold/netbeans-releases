@@ -69,7 +69,7 @@ public class ZoomOutAction extends GraphAction {
         //action tooltip
         String nbBundle1 = mLoc.t("BUND323: Zoom Out");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-
+        // Acceleratot Shift-Z
     }
 
     public void actionPerformed(ActionEvent e) {

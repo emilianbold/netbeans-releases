@@ -37,12 +37,14 @@ package org.netbeans.installer.products.mysql;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.products.mysql.wizard.panels.MySQLPanel;
-import org.netbeans.installer.products.mysql.wizard.panels.MySQLPanel.SystemType;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -50,22 +52,27 @@ import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import static org.netbeans.installer.utils.StringUtils.QUOTE;
-import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
-import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.CompositeProgress;
+import org.netbeans.installer.utils.system.NativeUtils;
+import org.netbeans.installer.utils.system.UnixNativeUtils.FileAccessMode;
+import org.netbeans.installer.utils.system.WindowsNativeUtils;
 import org.netbeans.installer.utils.system.shortcut.FileShortcut;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
+import org.netbeans.installer.utils.system.windows.WindowsRegistry;
+import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
 /**
  *
@@ -74,6 +81,7 @@ import org.netbeans.installer.utils.system.shortcut.LocationType;
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+
     private List<WizardComponent> wizardComponents;
 
     // constructor //////////////////////////////////////////////////////////////////
@@ -86,10 +94,40 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     // configuration logic implementation ///////////////////////////////////////////
     public void install(
             final Progress progress) throws InstallationException {
+        LogManager.log("Starting MySQL installation...");
         if (SystemUtils.isWindows()) {
             installWindows(progress);
+        } else {
+            installUnix(progress);
         }
 
+        final List<Product> ides =
+                Registry.getInstance().getProducts("nb-base");
+        for (Product ide : ides) {
+            // if the IDE was installed in the same session as the
+            // MySQL, we should add its "product id" to the IDE
+            if (ide.hasStatusChanged()) {
+                try {
+                    NetBeansUtils.addPackId(ide.getInstallationLocation(), PRODUCT_ID);
+                    break;
+                } catch (IOException e) {
+                    LogManager.log("Cannot update NetBeans productid with MySQL data", e);
+                }
+            }
+        }
+        try {
+            ClassLoader cl = getClass().getClassLoader();
+            FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_LICENSE),
+                    ResourceUtils.getResource(LEGAL_RESOURCE_PREFIX + NBGFMYSQL_LICENSE,
+                    cl));
+            FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_THIRDPARTY_README),
+                    ResourceUtils.getResource(LEGAL_RESOURCE_PREFIX + NBGFMYSQL_THIRDPARTY_README,
+                    cl));
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.legal.creation"), // NOI18N
+                    e);
+        }
 
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
@@ -122,6 +160,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 results = runInstanceConfigurationWizard(location, configurationProgress);
                 switch (results.getErrorCode()) {
                     case 0:// All OK; 
+
                         break;
                     case 2:
                     case 3:
@@ -140,7 +179,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 ResourceUtils.getString(ConfigurationLogic.class,
                                 ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY));
                 }
-                //createWindowsShortcuts(location);
+                SystemUtils.sleep(3000);//wait for 3 seconds so that mysql really starts
+                if(Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+                    fixSecuritySettingsWindows(location);
+                }
+            //createWindowsShortcuts(location);
 
             }
 
@@ -161,16 +204,101 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
+    private void fixSecuritySettingsWindows(File location) throws InstallationException {        
+        if (!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
+            query(location, REMOVE_ANONYMOUS_QUERY);
+        }
+        query(location, REMOVE_REMOTE_ROOT_QUERY);
+        query(location, FLUSH_PRIVILEGES_QUERY);
+    }
+
+    private void query(File location, String query) {
+        final File exe = new File(location, MYSQL_EXE);
+        
+
+        try {
+            LogManager.log("... query : " + query);
+            List<String> commands = new ArrayList<String>();
+            commands.add(exe.getAbsolutePath());
+            commands.add("--defaults-file=" + new File(location, TARGET_CONFIGURATION_FILE));
+            commands.add("--user=root");
+            if (!getProperty(MySQLPanel.PASSWORD_PROPERTY).equals(StringUtils.EMPTY_STRING)) {
+                commands.add("--password=" + getProperty(MySQLPanel.PASSWORD_PROPERTY));
+            }
+            commands.add("--connect_timeout=3");
+            commands.add("-v");
+            ProcessBuilder pb = new ProcessBuilder(commands).directory(location).redirectErrorStream(true);
+            LogManager.log("... starting process : " + StringUtils.asString(commands, " "));
+            Process p = pb.start();
+            LogManager.log("... started, write query to stdin");
+            p.getOutputStream().write(query.getBytes());
+            p.getOutputStream().flush();
+            p.getOutputStream().close();
+            LogManager.log("... wait for termination");
+            try {
+                p.waitFor();
+            } catch (InterruptedException e) {
+                LogManager.log(e);
+            }
+            LogManager.logIndent("... query output: ");
+            LogManager.log(StreamUtils.readStream(p.getInputStream()));           
+            LogManager.logUnindent("... query errorcode: " + p.exitValue());
+            p.destroy();
+        } catch (IOException e) {
+            LogManager.log(e);
+        } 
+    }
+
+    private void installUnix(Progress progress) throws InstallationException {
+        progress.setDetail(PROGRESS_DETAIL_RUNNING_MYSQL_INSTANCE_CONFIGURATION);
+        final File location = getProduct().getInstallationLocation();
+        final File installScript = new File(location, "configure-mysql.sh");
+        try {
+            InputStream is = ResourceUtils.getResource(INSTALL_SCRIPT_UNIX,
+                    getClass().getClassLoader());
+            FileUtils.writeFile(installScript, is);
+            SystemUtils.setPermissions(installScript, FileAccessMode.EU, NativeUtils.FA_MODE_ADD);
+            is.close();
+            List<String> commandsList = new ArrayList<String>();
+            commandsList.add(installScript.getAbsolutePath());
+            commandsList.add(SystemUtils.isCurrentUserAdmin() ? "1" : "0"); // is root            
+            commandsList.add("small"); // small system type
+            commandsList.add(getProperty(MySQLPanel.PASSWORD_PROPERTY)); // password            
+            if(!Boolean.parseBoolean(getProperty(MySQLPanel.NETWORK_PROPERTY))) {
+                SystemUtils.setEnvironmentVariable("SKIP_NETWORKING", "true", EnvironmentScope.PROCESS, false);
+            } else {
+                SystemUtils.setEnvironmentVariable("PORT_NUMBER", getProperty(MySQLPanel.PORT_PROPERTY), EnvironmentScope.PROCESS, false);
+            }
+            if(!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
+                SystemUtils.setEnvironmentVariable("REMOVE_ANONYMOUS", "true", EnvironmentScope.PROCESS, false);
+            }
+            if(Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+                SystemUtils.setEnvironmentVariable("MODIFY_SECURITY", "true", EnvironmentScope.PROCESS, false);
+            }
+            SystemUtils.executeCommand(location, commandsList.toArray(new String[0]));
+        } catch (NativeException e) {
+            throw new InstallationException(ERROR_INSTALL_MYSQL_ERROR_KEY, e);
+        } catch (IOException e) {
+            throw new InstallationException(ERROR_INSTALL_MYSQL_ERROR_KEY, e);
+        } finally {
+            try {
+                FileUtils.deleteFile(installScript);
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
+    }
+
     private void createWindowsShortcuts(File location) throws InstallationException {
         // start MySQL server
-        File icon       = new File(location, "icons\\mysqlStart.ico");
+        File icon = new File(location, "icons\\mysqlStart.ico");
         File executable = new File(location, "bin\\mysqld-nt.exe");
         FileShortcut shortcut = new FileShortcut(START_MYSQL_SHORTCUT_NAME, executable);
 
         shortcut.setRelativePath(MYSQL_START_MENU_GROUP);
         shortcut.setWorkingDirectory(location);
         shortcut.setModifyPath(true);
-        List <String> args = new ArrayList <String> ();
+        List<String> args = new ArrayList<String>();
         args.add("--defaults-file=" + new File(location, TARGET_CONFIGURATION_FILE).getAbsolutePath());
         args.add("--console");
         shortcut.setIcon(icon);
@@ -180,22 +308,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (NativeException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
-                    ERROR_CANNOT_CREATE_SHORTCUT_KEY), 
+                    ERROR_CANNOT_CREATE_SHORTCUT_KEY),
                     e);
         }
-        
+
         // stop MySQL server
-        icon       = new File(location, "icons\\mysqlStop.ico");
+        icon = new File(location, "icons\\mysqlStop.ico");
         executable = new File(location, "bin\\mysqladmin.exe");
         shortcut = new FileShortcut(STOP_MYSQL_SHORTCUT_NAME, executable);
         shortcut.setRelativePath(MYSQL_START_MENU_GROUP);
         shortcut.setWorkingDirectory(location);
         shortcut.setModifyPath(true);
-        args = new ArrayList <String> ();        
+        args = new ArrayList<String>();
         args.add("--u");
         args.add("root");
         args.add("shutdown");
-                
+
         shortcut.setIcon(icon);
         shortcut.setArguments(args);
         try {
@@ -203,11 +331,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (NativeException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
-                    ERROR_CANNOT_CREATE_SHORTCUT_KEY), 
+                    ERROR_CANNOT_CREATE_SHORTCUT_KEY),
                     e);
         }
     }
-    
+
     private long getInstanceConfigurationSpace() {
         return 40000000L;
     }
@@ -249,15 +377,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
         commandsList.add(configInstanceFile.getAbsolutePath());
         commandsList.add("-i");                             // -i  (install instance)        
+
         commandsList.add("-q");                             // -q  (be quiet)
         //commandsList.add("-n" + PRODUCT_NAME);              // -n<product name>
+
         commandsList.add("-p" + installationLocation);      // -p<path of installation> (no \bin)
-        
+
         commandsList.add("-v" + version);                    // -v<version>
-        
+
         if (logFile != null) {
+            // -lfilename  (write log file)
             commandsList.add("-l" + logFile.getAbsolutePath());
-        } // -lfilename  (write log file)
+        }
 
         // When launched manually, these can also be submitted
         // -t<.cnf template filename>
@@ -287,8 +418,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commandsList.add("ServerType=DEVELOPMENT");
         commandsList.add("DatabaseType=MIXED");
         commandsList.add("ConnectionUsage=DSS");
-        commandsList.add("Port=3311");
-        commandsList.add("RootPassword=1234");
+
+        if (Boolean.parseBoolean(getProperty(MySQLPanel.NETWORK_PROPERTY))) {
+            commandsList.add("SkipNetworking=no");
+            commandsList.add("Port=" + getProperty(MySQLPanel.PORT_PROPERTY));
+        } else {
+            commandsList.add("SkipNetworking=yes");
+        }
+
+        if (Boolean.parseBoolean(getProperty(MySQLPanel.MODIFY_SECURITY_PROPERTY))) {
+            commandsList.add("RootPassword=" + getProperty(MySQLPanel.PASSWORD_PROPERTY));
+        }
+
 
         String[] commands = commandsList.toArray(new String[0]);
 
@@ -388,13 +529,133 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
+    private String getInstallationID(File location) throws NativeException {
+        String id = null;
+        WindowsNativeUtils utils = (WindowsNativeUtils) SystemUtils.getNativeUtils();
+        WindowsRegistry reg = utils.getWindowsRegistry();
+        String[] keyNames = reg.getSubKeyNames(HKLM, utils.UNINSTALL_KEY);
+        for (String key : keyNames) {
+            if (key.startsWith("{")) {//all IS-based installations start with this string
+
+                String publisher = reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "Publisher") ? reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "Publisher")
+                        : null;
+                String installSource = reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "InstallSource") ? reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "InstallSource") : null;
+
+                if (publisher != null && publisher.equals("MySQL AB") &&
+                        installSource != null && new File(installSource).equals(location)) {
+                    // this value is created by JDK installer
+                    String uninstallString = reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "UninstallString");
+                    int index = uninstallString.indexOf("/I{");
+                    if (index != -1) {
+                        uninstallString = uninstallString.substring(index + 2);
+                        if (uninstallString.indexOf("}") != -1) {
+                            id = uninstallString.substring(0, uninstallString.indexOf("}") + 1);
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+        return id;
+    }
+
     public void uninstall(
             final Progress progress)
             throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
+        if (SystemUtils.isWindows()) {
+            uninstallWindows(progress, directory);
+        } else {
+            uninstallUnix(progress, directory);
+        }
 
+        try {
+            FileUtils.deleteFile(new File(directory, "data"), true);
+        } catch (IOException e) {
+            LogManager.log(e);
+        }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
+    }
+
+    private void uninstallWindows(Progress progress, File location) throws UninstallationException {
+        try {
+            String id = getInstallationID(location);
+            if (id != null) {
+                LogManager.log("... uninstall ID : " + id);
+                final File logFile = getLog("uninstall");
+                final String[] commands;
+                if (logFile != null) {
+                    commands = new String[]{"msiexec.exe", "/qn", "/x", id, "/log", logFile.getAbsolutePath()};
+                } else {
+                    commands = new String[]{"msiexec.exe", "/qn", "/x", id};
+                }
+                progress.setDetail(PROGRESS_DETAIL_RUNNING_MYSQL_UNINSTALLER);
+
+                ProgressThread progressThread = new ProgressThread(progress,
+                        new File[]{location}, -1 * FileUtils.getSize(location));
+                try {
+                    progressThread.start();
+                    ExecutionResults results = SystemUtils.executeCommand(commands);
+                    if (results.getErrorCode() != 0) {
+                        throw new UninstallationException(
+                                ResourceUtils.getString(ConfigurationLogic.class,
+                                ERROR_MYSQL_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY,
+                                StringUtils.EMPTY_STRING + results.getErrorCode()));
+                    }
+                } catch (IOException e) {
+                    throw new UninstallationException(
+                            ResourceUtils.getString(ConfigurationLogic.class,
+                            ERROR_UNINSTALL_MYSQL_ERROR_KEY), e);
+                } finally {
+                    progressThread.finish();
+                }
+
+            }
+        } catch (NativeException e) {
+            throw new UninstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_UNINSTALL_MYSQL_ERROR_KEY), e);
+
+        } finally {
+            progress.setPercentage(progress.COMPLETE);
+        }
+    }
+
+    private void uninstallUnix(Progress progress, File location) throws UninstallationException {
+        
+        final File uninstallScript = new File(location, "uninstall-mysql.sh");
+        try {
+            InputStream is = ResourceUtils.getResource(UNINSTALL_SCRIPT_UNIX,
+                    getClass().getClassLoader());
+            FileUtils.writeFile(uninstallScript, is);
+            SystemUtils.setPermissions(uninstallScript, FileAccessMode.EU, NativeUtils.FA_MODE_ADD);
+            is.close();
+            List<String> commandsList = new ArrayList<String>();
+            commandsList.add(uninstallScript.getAbsolutePath());
+            commandsList.add(getProperty(MySQLPanel.PASSWORD_PROPERTY));
+            ExecutionResults results = SystemUtils.executeCommand(location, commandsList.toArray(new String[0]));
+            if(results.getStdErr().contains("Check that mysqld is running")) {
+                LogManager.log("MySQL server is not running");
+            } else if (results.getErrorCode() != 0) {
+                throw new UninstallationException(
+                        ResourceUtils.getString(ConfigurationLogic.class,
+                        ERROR_MYSQL_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY,
+                        StringUtils.EMPTY_STRING + results.getErrorCode()));
+            }
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_UNINSTALL_MYSQL_ERROR_KEY), e);
+        } finally {
+            progress.setPercentage(progress.COMPLETE);
+            try {
+                FileUtils.deleteFile(uninstallScript);
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
     }
 
     public List<WizardComponent> getWizardComponents() {
@@ -408,14 +669,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     @Override
     public boolean registerInSystem() {
-        return false;
+        return !SystemUtils.isWindows();
     }
 
     @Override
     public boolean allowModifyMode() {
         return false;
     }
-    
+
     @Override
     public RemovalMode getRemovalMode() {
         return RemovalMode.ALL;
@@ -444,6 +705,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log("...   initial : " + initialSize);
             LogManager.log("...     delta : " + deltaSize);
         }
+
         @Override
         public void run() {
             LogManager.log("... progress thread started");
@@ -530,6 +792,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/products/mysql/wizard.xml"; // NOI18N
+
     public static final String MYSQL_MSI_FILE_NAME =
             "mysql-essential-5.0.51a-win32.msi";//NOI18N
     public static final String INSTANCE_CONFIGURATION_FILE =
@@ -541,11 +804,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String PROGRESS_DETAIL_RUNNING_MYSQL_INSTALLER =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.progress.detail.install.mysql");
+    public static final String PROGRESS_DETAIL_RUNNING_MYSQL_UNINSTALLER =
+            ResourceUtils.getString(ConfigurationLogic.class,
+            "CL.progress.detail.uninstall.mysql");
     public static final String PROGRESS_DETAIL_RUNNING_MYSQL_INSTANCE_CONFIGURATION =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.progress.detail.configure.mysql");
     public static final String ERROR_INSTALL_MYSQL_ERROR_KEY =
             "CL.error.install.mysql.exception";
+    public static final String ERROR_UNINSTALL_MYSQL_ERROR_KEY =
+            "CL.error.uninstall.mysql.exception";
+    public static final String ERROR_MYSQL_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY =
+            "CL.error.uninstall.mysql.non.zero";
     public static final String ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY =
             "CL.error.configure.instance.exception";
     public static final String ERROR_CONFIGURE_INSTANCE_MYSQL_ERROR_KEY_CODE_PREFIX =
@@ -553,21 +823,42 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String PRODUCT_NAME =
             "MySQL Server 5.0";//NOI18N
     public static final String TARGET_CONFIGURATION_FILE =
-            "mysql.ini";//NOI18N
+            "my.ini";//NOI18N
     public static final String TEMPLATE_CONFIGURATION_FILE =
             "my-template.ini";//NOI18N
     public static final String MYSQL_SERVICE_NAME =
             "MySQL50";
     private static final String START_MENU_SHORTCUT_LOCATION_PROPERTY =
             "start.menu.shortcut.location"; // NOI18N
+
     public static final String START_MYSQL_SHORTCUT_NAME =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.shortcuts.start.mysql");
     public static final String STOP_MYSQL_SHORTCUT_NAME =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.shortcuts.stop.mysql");
-    public static final String MYSQL_START_MENU_GROUP = 
+    public static final String MYSQL_START_MENU_GROUP =
             "MySQL\\MySQL Server 5.0";
-    public static final String ERROR_CANNOT_CREATE_SHORTCUT_KEY = 
+    public static final String ERROR_CANNOT_CREATE_SHORTCUT_KEY =
             "CL.error.shortcut.create";
+    public static final String PRODUCT_ID =
+            "MYSQL";
+    public static final String INSTALL_SCRIPT_UNIX =
+            "org/netbeans/installer/products/mysql/scripts/install.sh";
+    public static final String UNINSTALL_SCRIPT_UNIX =
+            "org/netbeans/installer/products/mysql/scripts/uninstall.sh";
+    final public static String REMOVE_ANONYMOUS_QUERY =
+            "DELETE FROM mysql.user WHERE User='';";
+    final public static String REMOVE_REMOTE_ROOT_QUERY =
+            "DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';";
+    final public static String FLUSH_PRIVILEGES_QUERY =
+            "FLUSH PRIVILEGES;";
+    final public static String MYSQL_EXE = SystemUtils.isWindows() ? "bin/mysql.exe" : "bin/mysql";
+
+    public static final String LEGAL_RESOURCE_PREFIX =
+            "org/netbeans/installer/products/mysql/";
+    public static final String NBGFMYSQL_LICENSE =
+            "NB_GF_MySQL.txt";//NOI18N
+    public static final String NBGFMYSQL_THIRDPARTY_README =
+            "NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt";
 }

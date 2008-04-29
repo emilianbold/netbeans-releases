@@ -71,9 +71,13 @@ public class ETLDeploymentConstants {
     public static final String ETL_ENGINE_INSTANCE_DB_DIR = "ETL_ENGINE_INSTANCE_DB_DIR";
     public static final String ETL_MONITOR_DB_DIR = "ETL_MONITOR_DB_DIR";
 
-    public static final String PARAM_APP_DATAROOT = "{APP_DATAROOT}";
+    public static final String PARAM_APP_DATAROOT = "APP_DATAROOT";
     public static final String PARAM_MONITOR_DB_NAME = "{MONITOR_DB_NAME}";
     public static final String PARAM_INSTANCE_DB_NAME = "{INSTANCE_DB_NAME}";
+    
+    
+    public static final String MONITOR_DB = "MONITOR_DB";
+    public static final String INSTANCE_DB = "INSTANCE_DB";
 
     public static final String OPERATION_NAME_TAG = "OPERATION_NAME";
     public static final String OPERATION_NAME = "execute";

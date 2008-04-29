@@ -6,7 +6,7 @@
 package fu;
 
 /**
- *
+ * 
  * @author jp159440
  */
 public class FindUsagesClass {
@@ -14,5 +14,19 @@ public class FindUsagesClass {
     
     public FindUsagesClass retunType(FindUsagesClass param) {
         return null;
+    }
+    
+    java.util.List<FindUsagesClass> list;
+    
+    class Inner<T extends FindUsagesClass> {
+        
+    }
+    
+    public void method() {
+        this.<FindUsagesClass>generics(this);
+    }
+    
+    public <T extends FindUsagesClass> T generics(T in) {
+        return in;
     }
 }
