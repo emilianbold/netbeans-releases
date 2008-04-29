@@ -67,6 +67,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.JoinOperatorDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.JoinViewDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
@@ -348,6 +349,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         validate();
         requestActive();
     }
+    
     public void findAndRemoveComponent(SQLObject sqlObj){
         if (sqlObj.getObjectType() == SQLConstants.SOURCE_TABLE || sqlObj.getObjectType() == SQLConstants.TARGET_TABLE) {
             if(tabbedPane.getComponentCount() <= 0){
@@ -367,6 +369,11 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
                 } else if(comp instanceof JoinViewDataPanel){
                     if(((JoinViewDataPanel)comp).getTable() == sqlObj){
                         removePanel(comp);
+                    }
+                } else if(comp instanceof JoinOperatorDataPanel){
+                    if(((JoinOperatorDataPanel)comp).getTable() == sqlObj){
+                        removePanel(comp);
+                        // TODO: remove all the source object data view
                     }
                 }
             }

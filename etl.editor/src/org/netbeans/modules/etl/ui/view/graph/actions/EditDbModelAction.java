@@ -81,7 +81,7 @@ public class EditDbModelAction extends GraphAction {
         //action tooltip
         String nbBundle2 = mLoc.t("BUND020: Edit Database Properties ");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-
+        // Acceleratot Shift-D
     }
 
     /**
