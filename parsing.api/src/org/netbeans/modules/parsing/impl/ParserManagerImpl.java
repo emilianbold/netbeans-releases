@@ -89,6 +89,17 @@ import org.openide.util.lookup.ProxyLookup;
 public class ParserManagerImpl {
     
     
+    /**
+     * Returns {@link Parser} for given {@link Source}
+     * @param source for which the {@link Parser} should
+     * be returned
+     * @return a parser
+     */
+    static Parser getParser (final Source source) {
+        return null;
+    }
+    
+    
     static void setDocument (Document document) {
     }
     

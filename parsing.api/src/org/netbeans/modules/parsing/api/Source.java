@@ -49,6 +49,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 
 
@@ -89,7 +90,7 @@ public final class Source {
     private Document        document;
     private FileObject      fileObject;
     private final Set<SourceFlags> flags = EnumSet.noneOf(SourceFlags.class);
-    private Parser parser;
+    private Parser.Result result;
     
    
     private Source (
@@ -267,12 +268,28 @@ public final class Source {
             assert source != null;
             return source.flags;
         }
+        
+        @Override
+        public Parser.Result getResult (Source source) {
+            synchronized (source) {
+                if (source.flags.contains(SourceFlags.INVALID)) {
+                    return null;
+                }
+                else {
+                    return source.result;
+                }
+            }
+        }
 
         @Override
-        public Parser getParser(Source source) {
-            assert source != null;
-            return source.parser;
+        public void setResult(Source source, Result result) {
+            synchronized (source) {                
+                source.result = result;
+                source.flags.remove(SourceFlags.INVALID);
+            }            
         }
+        
+        
         
     }
 }

@@ -157,18 +157,31 @@ public class TaskProcessor {
             parserLock.lock();
             try {
                 Parser.Result currentResult = null;
-                boolean jsInvalid;
                 synchronized (source) {
                     final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                    jsInvalid = flags.contains(SourceFlags.INVALID);
+                    currentResult = SourceAccessor.getINSTANCE().getResult(source);
                     if (!shared) {
                         flags.add(SourceFlags.INVALID);
                     }                        
                 }
                 
-                if (jsInvalid) {
-                    final Parser parser = SourceAccessor.getINSTANCE().getParser(source);
+                if (currentResult == null) {
+                    final Parser parser = ParserManagerImpl.getParser(source);
+                    if (parser == null) {
+                        throw new IllegalAccessException();
+                    }                    
                     currentResult = parser.parse(source);
+                    if (shared) {
+                        synchronized (source) {
+                            final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);
+                            if (tmpResult == null) {
+                                SourceAccessor.getINSTANCE().setResult(source, tmpResult);
+                            }
+                            else {
+                                currentResult = tmpResult;
+                            }
+                        }
+                    }
                 }
                 assert currentResult != null;
                 Stack<Parser.Result> stack = resultsStack.get(source);
@@ -392,7 +405,7 @@ public class TaskProcessor {
                                     }
                                 }
                                 else {
-                                    Parser parser;
+                                    Parser.Result currentResult;
                                     synchronized (INTERNAL_LOCK) {
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
                                         //it will cause a starvation
@@ -412,14 +425,27 @@ public class TaskProcessor {
                                                 rc.add(r);
                                                 continue;
                                             }
-                                            parser = SourceAccessor.getINSTANCE().getParser(source);
+                                            currentResult = SourceAccessor.getINSTANCE().getResult(source);
                                         }
                                     }
-                                    assert parser != null;                                        
+                                    if (currentResult == null) {
+                                        final Parser parser = ParserManagerImpl.getParser(source);
+                                        assert parser != null;
+                                        currentResult = parser.parse(source);
+                                        synchronized (source) {                                                
+                                            final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);                                            
+                                            if (tmpResult == null) {
+                                                SourceAccessor.getINSTANCE().setResult(source, tmpResult);
+                                            }
+                                            else {
+                                                currentResult = tmpResult;
+                                            }
+                                        }
+                                    }
+                                    assert currentResult != null;
                                     parserLock.lock();
                                     try {
                                         boolean shouldCall;                                            
-                                        final Parser.Result result = parser.parse(source);
                                         synchronized (source) {
                                             shouldCall = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
                                         }
@@ -427,7 +453,7 @@ public class TaskProcessor {
                                             try {
                                                 final long startTime = System.currentTimeMillis();
                                                 if (r.task instanceof ParserResultTask) {
-                                                    ((ParserResultTask)r.task).run (result,source);
+                                                    ((ParserResultTask)r.task).run (currentResult,source);
                                                 }
                                                 else if (r.task instanceof EmbeddingProvider) {
                                                     //todo: What the embedding provider should do?
