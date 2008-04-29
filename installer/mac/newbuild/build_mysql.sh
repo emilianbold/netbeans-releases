@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -17,28 +17,28 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
-set -e
+set -x -e 
 
-script_dir=`dirname "$0"`
-
-. "$script_dir"/env.sh
-
-"$script_dir"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$2"
-
-"$script_dir"/unpack200.sh "$2" "$2"
-
-cd "$2"
-
-chmod -R a+r *
-
-chmod a+w logs
-
-"$script_dir"/perm.sh
-
-#add Product ID
-"$script_dir"/addproduct_id.sh "TOMCAT"
-
-
-if [ -d "/Library/Receipts/tomcat.pkg" ] ; then
-    rm -rf "/Library/Receipts/tomcat.pkg"
+if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ]; then
+    echo "usage: $0 zipdir prefix buildnumber"
+    echo ""
+    echo "zipdir is the dir which contains the zip/modulclusters and zip-ml/moduleclusters"
+    echo "prefix-buildnumber is the distro filename prefix, e.g. netbeans-hudson-trunk-2464"
+    exit 1
 fi
+
+work_dir=$1
+prefix=$2
+buildnumber=$3
+  
+basename=`dirname "$0"`
+. "$basename"/build-private.sh
+
+cd "$basename"
+chmod -R a+x *.sh
+
+commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
+ant -f $basename/build.xml build-all-mysql-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
+
+rm -rf "$basename"/dist_en
+mv -f "$basename"/dist "$basename"/dist_en
