@@ -571,7 +571,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         am.put("Run Collaboration", new RunAction());
     }
 
-    //For Navigator
+     //For Navigator
     /*public JComponent getSatelliteView() {
         GraphView graphView = (GraphView) getGraphView();
         BirdsEyeView satelliteView = graphView.getSatelliteView();
