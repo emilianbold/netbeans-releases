@@ -26,16 +26,21 @@
             <attr name="position" intvalue="260"/>
             <file name="GroovyScript.groovy" url="GroovyScript.groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyScript.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/script.gif"/>
             </file>
             <file name="GroovyClass.groovy" url="GroovyClass.groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
                 <attr name="position" intvalue="0"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyClass.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/script.gif"/>
             </file>
         </folder>
     </folder>

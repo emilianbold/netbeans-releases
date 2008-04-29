@@ -4,7 +4,7 @@
 <#include "../Licenses/license-${project.license}.txt">
 
 <#if package?? && package != "">
-package ${package};
+package ${package}
 
 </#if>
 /**

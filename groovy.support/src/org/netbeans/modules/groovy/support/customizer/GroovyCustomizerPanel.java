@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.groovy.support.customizer;
 
-import org.netbeans.modules.groovy.support.AntHelper;
+import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 
 /**
  *
@@ -49,9 +49,9 @@ import org.netbeans.modules.groovy.support.AntHelper;
  */
 public class GroovyCustomizerPanel extends javax.swing.JPanel {
 
-    private final AntHelper antHelper;
+    private final GroovyProjectExtender antHelper;
     
-    public GroovyCustomizerPanel(AntHelper antHelper) {
+    public GroovyCustomizerPanel(GroovyProjectExtender antHelper) {
         initComponents();
         this.antHelper = antHelper;
         if (antHelper == null) {

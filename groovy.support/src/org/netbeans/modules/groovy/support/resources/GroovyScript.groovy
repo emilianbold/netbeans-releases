@@ -1,5 +1,12 @@
-// Groovy source file
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-def name='World'
+<#if package?? && package != "">
+package ${package}
+
+</#if>
+def name='${user}'
 
 println "Hello $name!"
