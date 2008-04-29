@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -52,6 +53,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -70,7 +72,7 @@ public class HibernateMappingRefactoringActionsProvider extends ActionsImplement
 
     @Override
     public void doRename(final Lookup lookup) {
-        if (canRename(lookup)) {
+        if(canRename(lookup)) {
             Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
 
                 @Override
@@ -90,7 +92,7 @@ public class HibernateMappingRefactoringActionsProvider extends ActionsImplement
 
     @Override
     public void doMove(final Lookup lookup) {
-        if (canMove(lookup)) {
+        if(canMove(lookup)) {
             Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
 
                 @Override
@@ -111,12 +113,27 @@ public class HibernateMappingRefactoringActionsProvider extends ActionsImplement
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        return false;
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        return isHibernateMappingFile(lookup);
     }
 
     @Override
-    public void doFindUsages(Lookup lookup) {
-        throw new UnsupportedOperationException("Not supported yet"); // NOI18N
+    public void doFindUsages(final Lookup lookup) {
+        if(canFindUsages(lookup)){
+            if(canRename(lookup)) {
+            Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] fileObjects) {
+                    return new HibernateMappingWhereUsedQueryUI(fileObjects[0]);
+                }
+            };
+            task.run();
+        }
+        }
     }
 
     private static String getNewName(Lookup look) {
@@ -207,4 +224,6 @@ public class HibernateMappingRefactoringActionsProvider extends ActionsImplement
 
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement);
     }
+    
+    
 }

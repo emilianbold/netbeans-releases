@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,56 +40,67 @@
  */
 package org.netbeans.modules.hibernate.refactoring;
 
-import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Refactoring plugin factory for refactoring Hibernate mapping files
- * 
+ *
  * @author Dongmei Cao
  */
-public class HibernateRefactoringPluginFactory implements RefactoringPluginFactory {
+public class HibernateMappingWhereUsedQueryUI implements RefactoringUI {
+    private WhereUsedQuery query = null;
+    private FileObject fileObject;
 
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        
-        if (refactoring instanceof WhereUsedQuery) {
-            if (isMappingFile(refactoring)) {
-                return new HibernateMappingFindUsagesPlugin((WhereUsedQuery)refactoring);
-            } else {
-                return new HibernateFindUsagesPlugin((WhereUsedQuery) refactoring);
-            }
-        } else if (refactoring instanceof RenameRefactoring) {
-            if (isMappingFile(refactoring)) {
-                return new HibernateMappingRenamePlugin((RenameRefactoring) refactoring);
-            } else {
-                return new HibernateRenamePlugin((RenameRefactoring) refactoring);
-            }
-        } else if (refactoring instanceof MoveRefactoring) {
-            if (isMappingFile(refactoring)) {
-                return new HibernateMappingMovePlugin((MoveRefactoring)refactoring);
-                
-            } else {
-                return new HibernateMovePlugin((MoveRefactoring) refactoring);
-            }
-        }
+    public HibernateMappingWhereUsedQueryUI(FileObject fileObject) {
+        this.query = new WhereUsedQuery(Lookups.singleton(fileObject));
+        this.fileObject = fileObject;
+    }
+    
 
+    public boolean isQuery() {
+        return true;
+    }
+
+    public CustomRefactoringPanel getPanel(ChangeListener parent) {
         return null;
     }
 
-    public static boolean isMappingFile(AbstractRefactoring refactoring) {
-        Lookup refactoringSource = refactoring.getRefactoringSource();
-        FileObject fileObject = refactoringSource.lookup(FileObject.class);
-        if (fileObject != null &&
-                fileObject.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
-            return true;
-        }
+    public org.netbeans.modules.refactoring.api.Problem setParameters() {
+            return null;
+    }
+    
+    
+    
+    public org.netbeans.modules.refactoring.api.Problem checkParameters() {
+        
+            return null;
+    }
+
+    public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
+        return query;
+    }
+
+    public String getDescription() {
+        return NbBundle.getMessage(HibernateMappingWhereUsedQueryUI.class, "DSC_WhereUsed", fileObject.getNameExt());
+    }
+   
+    
+    public boolean hasParameters() {
         return false;
     }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(HibernateMappingWhereUsedQueryUI.class);
+    }
+
+    public String getName() {
+        return fileObject.getName();
+    }
+    
 }
