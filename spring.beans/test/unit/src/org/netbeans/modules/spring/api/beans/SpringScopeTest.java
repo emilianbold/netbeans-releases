@@ -84,18 +84,6 @@ public class SpringScopeTest extends ConfigFileTestCase {
             }
         });
         assertEquals(1, beanCount[0]);
-        assertEquals(1, scope.file2Model.size());
-
-        SpringConfigModel anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
-        assertSame(model, anotherModel);
-
-        FileLock lock = configFO.lock();
-        try {
-            configFO.rename(lock, "tmp", "xml");
-        } finally {
-            lock.releaseLock();
-        }
-        assertEquals(0, scope.file2Model.size());
     }
 
     public void testGetConfigModel() throws IOException {
@@ -142,20 +130,5 @@ public class SpringScopeTest extends ConfigFileTestCase {
         assertEquals(2, beanNames.size());
         assertTrue(beanNames.contains("foo"));
         assertTrue(beanNames.contains("bar"));
-
-        assertEquals(1, scope.group2Model.size());
-
-        SpringConfigModel anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
-        assertSame(model, anotherModel);
-
-        anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO2);
-        assertSame(model, anotherModel);
-
-        manager.mutex().writeAccess(new Runnable() {
-            public void run() {
-                manager.putConfigFilesAndGroups(Collections.<File>emptyList(), Collections.<ConfigFileGroup>emptyList());
-            }
-        });
-        assertEquals(0, scope.group2Model.size());
     }
 }

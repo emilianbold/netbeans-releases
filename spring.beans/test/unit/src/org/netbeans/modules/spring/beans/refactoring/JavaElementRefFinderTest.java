@@ -51,6 +51,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.JavaClassRefMatcher;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.JavaPackageRefMatcher;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.Occurrence;
@@ -70,8 +71,9 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
         final String CLASS = PACKAGE + ".Foo";
         final String contents = TestUtils.createXMLConfigText("<bean id='foo' class='" + CLASS + "'/>");
         TestUtils.copyStringToFile(contents, configFile);
+        SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
         ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(group);
+        SpringConfigModel model = new SpringConfigModel(fileModelManager, group);
         model.runDocumentAction(new Action<DocumentAccess>() {
             public void run(DocumentAccess docAccess) {
                 JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);
@@ -100,8 +102,9 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
                 "<bean id='foo' class='" + FOO_CLASS + "'/>" +
                 "<bean id='bar' class='" + BAR_CLASS + "'/>");
         TestUtils.copyStringToFile(contents, configFile);
+        SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
         ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(group);
+        SpringConfigModel model = new SpringConfigModel(fileModelManager, group);
         model.runDocumentAction(new Action<DocumentAccess>() {
             public void run(DocumentAccess docAccess) {
                 JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);

@@ -51,6 +51,7 @@ import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionRef;
@@ -79,8 +80,8 @@ public final class SpringConfigModel {
     }
 
     // XXX should not be public.
-    public SpringConfigModel(ConfigFileGroup configFileGroup) {
-        controller = SpringConfigModelController.create(configFileGroup);
+    public SpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup) {
+        controller = new SpringConfigModelController(fileModelManager, configFileGroup);
     }
 
     /**
