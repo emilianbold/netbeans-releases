@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLWriter;
@@ -903,7 +904,17 @@ public class WSDLGenerator {
             writer.writeWSDL(this.def, sink);
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
-            throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
+			try{
+            //throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
+			final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+            final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+            writer.writeWSDL(this.def, sink);
+            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+			} catch (Exception uee){
+				uee.printStackTrace();
+			}
         }
 
     }
