@@ -40,7 +40,7 @@
 package org.netbeans.modules.groovy.grails.api;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.settings.Settings;
+import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 
 /**
@@ -50,7 +50,7 @@ import org.netbeans.modules.groovy.grails.settings.Settings;
 public class GrailsProjectConfig {
 
     private final Project prj;
-    private final Settings settings = Settings.getInstance();
+    private final GrailsSettings settings = GrailsSettings.getInstance();
 
     public GrailsProjectConfig(Project prj) {
         this.prj = prj;

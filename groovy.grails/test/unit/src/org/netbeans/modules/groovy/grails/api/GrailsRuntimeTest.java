@@ -42,7 +42,7 @@ package org.netbeans.modules.groovy.grails.api;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.groovy.grails.settings.Settings;
+import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -58,7 +58,7 @@ public class GrailsRuntimeTest extends NbTestCase {
     }
 
     public void testConfigured() throws IOException {
-        final Settings settings = Settings.getInstance();
+        final GrailsSettings settings = GrailsSettings.getInstance();
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         String path = getWorkDirPath();
 

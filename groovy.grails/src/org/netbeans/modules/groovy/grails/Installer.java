@@ -1,7 +1,7 @@
 package org.netbeans.modules.groovy.grails;
 
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.grails.settings.Settings;
+import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 import org.openide.modules.ModuleInstall;
 
@@ -12,11 +12,11 @@ import org.openide.modules.ModuleInstall;
 public class Installer extends ModuleInstall {
 
     private static final Logger LOG = Logger.getLogger(Installer.class.getName());
-    private Settings settings;
+    private GrailsSettings settings;
     
     @Override
     public void restored() {
-        settings = Settings.getInstance();
+        settings = GrailsSettings.getInstance();
         //LOG.log(Level.WARNING, "Hello, World from my module ...");
         
         

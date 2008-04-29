@@ -31,7 +31,7 @@ package org.netbeans.modules.groovy.grails;
 import java.io.File;
 import java.io.IOException;
 import org.openide.execution.NbProcessDescriptor;
-import org.netbeans.modules.groovy.grails.settings.Settings;
+import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.CountDownLatch;
@@ -43,7 +43,7 @@ import org.openide.util.Utilities;
  */
 public class GrailsServerRunnable implements Runnable {
 
-    private final Settings settings;
+    private final GrailsSettings settings;
     private final String cwdName;
     private final String cmd;
     private final CountDownLatch outputReady;
@@ -56,7 +56,7 @@ public class GrailsServerRunnable implements Runnable {
     private static final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
 
     public GrailsServerRunnable(CountDownLatch outputReady, boolean waitforme, String cwdName, String cmd) {
-        this.settings = Settings.getInstance();
+        this.settings = GrailsSettings.getInstance();
         this.cwdName = cwdName;
         this.cmd = cmd;
         this.outputReady = outputReady;

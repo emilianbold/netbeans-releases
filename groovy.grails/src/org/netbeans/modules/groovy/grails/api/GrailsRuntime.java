@@ -40,7 +40,7 @@
 package org.netbeans.modules.groovy.grails.api;
 
 import java.io.File;
-import org.netbeans.modules.groovy.grails.settings.Settings;
+import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.util.Utilities;
 
 /**
@@ -67,7 +67,7 @@ public final class GrailsRuntime {
     }
 
     public boolean isConfigured() {
-        Settings settings = Settings.getInstance();
+        GrailsSettings settings = GrailsSettings.getInstance();
 
         if (settings == null) {
             return false;
