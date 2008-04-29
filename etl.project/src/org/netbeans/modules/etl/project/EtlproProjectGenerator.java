@@ -37,6 +37,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.sql.framework.common.utils.MigrationUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -255,49 +256,16 @@ public class EtlproProjectGenerator {
     }
 
     //Need for Migration - Start
-    public static File getDatabasesFolder() {
-        return databases;
-    }
-
-    public static String getDatabasesFolderPath() {
-        //return databases.getPath();
-        String path = FileUtil.toFile(dbObj).getAbsolutePath();
-        /*if (Utilities.isWindows()) {
-        path = path.replace("\\", "/"); // NOI18N
-        }*/
-        return path;
-    }
-
-    public static String getDataFolderPath() {
-        //return data.getPath();
+     public static void setMigrationUtil() {
         String path = FileUtil.toFile(data).getAbsolutePath();
         if (Utilities.isWindows()) {
             path = path.replace("\\", "/"); // NOI18N
 
         }
-        return path;
+        String path1 = FileUtil.toFile(dbObj).getAbsolutePath();
+        MigrationUtils.setDatabasesFolder(databases);
+        MigrationUtils.setDataFolderPath(path);
+        MigrationUtils.setDatabasesFolderPath(path1);
     }
-
-    public static boolean isCommandLineImport(File dir) {
-        while (dir.getParentFile() != null) {
-            dir = dir.getParentFile();
-        }
-        FileObject fo = FileUtil.toFileObject(dir);
-
-        if (null != fo) {
-            isCommandLine = false;
-
-        } else {
-            isCommandLine = true;
-
-        }
-        DBExplorerUtil.isCmdLineImport(isCommandLine);
-        return isCommandLine;
-    }
-
-    public static URL getResourceURL(String resource) {
-        return EtlproProject.class.getResource("resources/build.xsl");
-    }
-    private static boolean isCommandLine = false;
     //Need for Migration - End  
 }
