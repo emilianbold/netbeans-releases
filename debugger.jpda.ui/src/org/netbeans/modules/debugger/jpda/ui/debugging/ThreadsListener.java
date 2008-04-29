@@ -177,7 +177,13 @@ public final class ThreadsListener implements PropertyChangeListener {
     }
     
     public synchronized List<JPDAThread> getCurrentThreadsHistory() {
-        return new ArrayList<JPDAThread>(currentThreadsHistory);
+        List<JPDAThread> result = new ArrayList<JPDAThread>(currentThreadsHistory.size());
+        for (JPDAThread thread : currentThreadsHistory) {
+            if (thread.isSuspended()) {
+                result.add(thread);
+            }
+        }
+        return result;
     }
     
     public synchronized int getHitsCount() {
