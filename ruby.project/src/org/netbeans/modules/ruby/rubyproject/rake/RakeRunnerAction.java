@@ -68,6 +68,9 @@ public final class RakeRunnerAction extends CallableSystemAction {
     public void performAction() {
         Lookup context = Utilities.actionsGlobalContext();
         Project p = context.lookup(Project.class);
+        if (p == null) { // no project in the current context
+            return;
+        }
 
         if (!RubyPlatform.platformFor(p).showWarningIfInvalid()) {
             return;

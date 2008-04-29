@@ -56,6 +56,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -72,7 +74,7 @@ public class RakeTaskChooser extends JPanel {
     static TaskDescriptor select(final RubyBaseProject project) {
         assert EventQueue.isDispatchThread() : "must be called from EDT";
         RakeTaskChooser panel = new RakeTaskChooser(project);
-        String title = NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.title");
+        String title = NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.title", ProjectUtils.getInformation(project).getDisplayName());
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.accessibleName"));
