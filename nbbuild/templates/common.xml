@@ -390,8 +390,8 @@ made subject to such option by the copyright holder.
                 </path>
                 <mapper type="identity" />
             </pathconvert>
-            <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
-            <subant buildpath="${modules.sorted}" target="do-test-build" />
+            <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
+            <subant buildpath="${mods.sorted}" target="do-test-build" />
         </sequential>
     </macrodef>
     <target name="test-unit-dep-build" if="test.unit.testdep">
