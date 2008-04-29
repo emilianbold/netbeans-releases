@@ -319,7 +319,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
                     buffer.append("'").append(defaultValue).append("'");
                     break;
                 default:
-                        buffer.append(defaultValue);
+                    buffer.append(defaultValue);
                     break;
             }
         }
