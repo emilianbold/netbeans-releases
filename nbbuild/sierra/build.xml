@@ -256,7 +256,7 @@
     <target name="clean-etl"><antcall target="do-etl"><param name="action" value="clean"/></antcall></target>
     <target name="do-etl">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${home}/etl.editor/build.xml"/>
+            <!--buildpath location="${home}/etl.editor/build.xml"/-->
             <buildpath location="${home}/etl.project/build.xml"/>
         </subant>
     </target>
