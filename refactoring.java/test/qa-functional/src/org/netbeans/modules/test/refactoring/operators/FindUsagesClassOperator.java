@@ -36,10 +36,15 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.test.refactoring.operators;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 
 /**
  *
@@ -50,14 +55,99 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
     public FindUsagesClassOperator() {
         super(java.util.ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_FindUsagesDialog"));
     }
-
-    JButtonOperator find;
+    private JButtonOperator find;
+    private JLabelOperator label;
+    private JCheckBoxOperator searchInComments;
+    private JRadioButtonOperator findUsages;
+    private JRadioButtonOperator findDirectSubtypes;
+    private JRadioButtonOperator findAllSubtypes;
+    private JCheckBoxOperator findOverridding;
+    private JCheckBoxOperator findFromBaseClass;
+    private JCheckBoxOperator findMethodUsage;
+    
+    private JComboBoxOperator scope;
     
     public JButtonOperator getFind() {
-        if(find==null) {
-            find = new JButtonOperator(this,"Find");
+        if (find == null) {
+            find = new JButtonOperator(this, "Find");
         }
         return find;
     }
-    
+
+    public JLabelOperator getLabel() {
+        if (label == null) {
+            label = new JLabelOperator(this);
+        }
+        return label;
+
+    }
+
+    public JRadioButtonOperator getFindAllSubtypes() {
+        if (findAllSubtypes == null) {
+            findAllSubtypes = new JRadioButtonOperator(this, getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindAllSubtypes"));
+        }
+        return findAllSubtypes;
+    }
+
+    public JRadioButtonOperator getFindDirectSubtypes() {
+        if (findDirectSubtypes == null) {
+            findDirectSubtypes = new JRadioButtonOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindDirectSubtypesOnly"));
+        }
+        return findDirectSubtypes;
+    }
+
+    public JRadioButtonOperator getFindUsages() {
+        if (findUsages == null) {
+            findUsages = new JRadioButtonOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindUsages"));
+        }
+        return findUsages;
+    }
+
+    public JCheckBoxOperator getSearchInComments() {
+        if (searchInComments == null) {
+            searchInComments = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_SearchInComents"));
+        }
+        return searchInComments;
+    }
+
+    public JComboBoxOperator getScope() {
+        if (scope == null) {
+            scope = new JComboBoxOperator(this);
+        }
+        return scope;
+    }
+
+    public JCheckBoxOperator getFindFromBaseClass() {
+        if (findFromBaseClass == null) {
+            findFromBaseClass = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","DSC_WhereUsedFromBaseClass"));
+        }
+        return findFromBaseClass;
+    }
+
+    public JCheckBoxOperator getFindMethodUsage() {
+        if (findMethodUsage == null) {
+            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_SearchInComents"));
+        }
+        return findMethodUsage;
+    }
+
+    public JCheckBoxOperator getFindOverridding() {
+        if (findOverridding == null) {
+            findOverridding = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","DSC_WhereUsedMethodOverriders"));
+        }
+        return findOverridding;
+    }
+
+    /**
+     * Select the scope
+     * @param projectName The name of project or null if find should be performed on all projects
+     */
+    public void setScope(String projectName) {        
+        JComboBoxOperator scopeOperator = getScope();
+        if(projectName == null) {                        
+            ComboBoxModel model = scopeOperator.getModel();            
+            scopeOperator.selectItem(getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_AllProjects"));
+        }
+        else scopeOperator.selectItem(projectName);
+    }
 }
