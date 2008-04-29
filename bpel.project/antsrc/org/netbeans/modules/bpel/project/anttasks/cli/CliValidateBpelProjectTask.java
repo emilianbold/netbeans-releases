@@ -47,6 +47,7 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 import org.netbeans.modules.bpel.project.anttasks.util.Util;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 
 /**
  * Ant task wrapper invokes Validate BPEL Model
@@ -63,9 +64,7 @@ public class CliValidateBpelProjectTask extends Task {
     private String mBuildDependentProjectFilesDirectory;
     private boolean mAllowBuildWithError = false;
     
-    public CliValidateBpelProjectTask() {
-        // Does nothing
-    }
+    public CliValidateBpelProjectTask() {}
     
     public void setBuildDependentProjectDir(String dependentProjectFilesDir) {
         this.mBuildDependentProjectFilesDirectory = dependentProjectFilesDir;
@@ -150,7 +149,7 @@ public class CliValidateBpelProjectTask extends Task {
         
         if (isErrors != null && isErrors.booleanValue()) {
             if (!mAllowBuildWithError) {
-                throw new BuildException(Util.FOUND_VALIDATION_ERRORS);
+                throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
             }
         }
     }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.soa.validation.core;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,6 +129,45 @@ public final class Controller implements ComponentListener {
     DELAY);
   }
 
+  public boolean cliValidate(File file, boolean allowBuildWithError) {
+    boolean isError = false;
+    List<ResultItem> result = validate(ValidationType.COMPLETE);
+      
+    for (ResultItem item : result) {
+      if ( !allowBuildWithError) {
+        if (item.getType() == Validator.ResultType.ERROR) {
+          System.out.println(LineUtil.getValidationError(file, item));
+          System.out.println();
+        }
+      }
+      if (item.getType() == Validator.ResultType.ERROR) {
+        isError = true;
+      }
+    }
+    return isError;
+  }
+
+  public boolean ideValidate(File file) {
+    boolean isError = false;
+    List<ResultItem> result = validate(ValidationType.COMPLETE);
+
+    for (ResultItem item : result) {
+      System.err.println(LineUtil.getValidationError(file, item));
+      System.err.println();
+
+      if (item.getType() == Validator.ResultType.ERROR) {
+        isError = true;
+      }
+    }
+    return isError;
+  }
+
+  private List<ResultItem> validate(ValidationType type) {
+    Validation validation = new Validation();
+    validation.validate(myModel, type);
+    return validation.getValidationResult();
+  }
+
   private synchronized void doValidation(boolean isComplete, boolean isOutput) {
     cancelTimer();
 
@@ -156,9 +196,7 @@ public final class Controller implements ComponentListener {
         items = new ValidationOutputWindowController().validate(myModel);
       }
       else {
-        Validation validation = new Validation();
-        validation.validate(myModel, type);
-        items = validation.getValidationResult();
+        items = validate(type);
       }
     }
     endTime("validation"); // NOI18N
