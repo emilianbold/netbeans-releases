@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.mysql.Installation.Command;
+import org.netbeans.modules.db.mysql.impl.Installation.Command;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -56,9 +56,9 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author David Van Couvering
  */
-public class InstallationSupport {    
+public class InstallationManager {    
     private static Logger LOGGER = 
-            Logger.getLogger(InstallationSupport.class.getName());
+            Logger.getLogger(InstallationManager.class.getName());
     
     private static ArrayList<Installation> INSTALLATIONS = null;
     
@@ -104,7 +104,7 @@ public class InstallationSupport {
      *      the other ones available will not be detected.
      */
     public static Installation detectInstallation() {
-        List<Installation> installations = InstallationSupport.getInstallations();
+        List<Installation> installations = InstallationManager.getInstallations();
         
         for ( Iterator it = installations.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();
@@ -114,7 +114,7 @@ public class InstallationSupport {
                     installation.getStartCommand()[1]);
             
             if ( installation.isInstalled() ) {
-                LOGGER.log(Level.INFO, "Installation is installed");
+                LOGGER.log(Level.FINE, "Installation is installed");
                 return installation;
             }
         }

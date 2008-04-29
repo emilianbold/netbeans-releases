@@ -39,41 +39,33 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.ConnectionListener;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.mysql.DatabaseUtils.URLParser;
+import java.util.Collection;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Listen to changes on the connection list, and if we're not registered
- * and a MySQL connection is added, register the MySQL 
  * 
+ *
  * @author David Van Couvering
  */
-public class DbExplorerConnectionListener implements ConnectionListener {
+public class DatabaseServerManager {
+    private static DatabaseServer SERVER = lookupDatabaseServer();
+    
+    private static final String SERVER_PROVIDER_PATH = 
+            "Databases/MySQL/Servers"; // NOI18N
 
-    public void connectionsChanged() {
-        MySQLOptions options = MySQLOptions.getDefault();
-        
-        if ( options.isProviderRegistered() || options.isProviderRemoved() ) {
-            return;
-        }
 
-        DatabaseConnection[] connections = 
-            ConnectionManager.getDefault().getConnections();
+    private static synchronized DatabaseServer lookupDatabaseServer() {
+        @SuppressWarnings("unchecked")
+        Collection<DatabaseServer> servers = 
+                (Collection<DatabaseServer>)
+                Lookups.forPath(SERVER_PROVIDER_PATH)
+                    .lookupAll(DatabaseServer.class);
 
-        for ( DatabaseConnection conn : connections ) {
-            if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass()) ) {
-                ServerInstance instance = ServerInstance.getDefault();
-                URLParser parser = new URLParser(conn.getDatabaseURL());
-                instance.setHost(parser.getHost());
-                instance.setPort(parser.getPort());
-                instance.setUser(conn.getUser());
-                instance.setPassword(conn.getPassword());
-                
-                ServerNodeProvider.getDefault().setRegistered(true);
-            }
-        }
+        return servers.toArray(new DatabaseServer[0])[0];       
+    }
+    
+    public static DatabaseServer getDatabaseServer() {
+        return SERVER;
     }
 
 }

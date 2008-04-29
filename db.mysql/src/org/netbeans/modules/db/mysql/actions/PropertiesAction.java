@@ -36,91 +36,63 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
+package org.netbeans.modules.db.mysql.actions;
+
+import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
+ *
  * @author David Van Couvering
  */
-public class StopAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+public class PropertiesAction extends CookieAction {
     
-    public StopAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
+    private static final Class[] COOKIE_CLASSES = new Class[] {
+        DatabaseServer.class
+    };
 
-    @Override
+    public PropertiesAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
+        
     protected boolean asynchronous() {
         return false;
     }
 
     public String getName() {
-        return NbBundle.getBundle(StopAction.class).
-                getString("LBL_StopAction");
+        return Utils.getBundle().getString("LBL_PropertiesAction");
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(StopAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
-        }
-        
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        
-        return server != null && server.isConnected();
+        return new HelpCtx(PropertiesAction.class);
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        String path = server.getStopPath();
-        String message = NbBundle.getMessage(AdministerAction.class,
-                "MSG_NoStopPath");
-        PropertiesDialog dialog = new PropertiesDialog(server);
-
-
-        while ( path == null || path.equals("")) {
-            
-            if ( ! Utils.displayConfirmDialog(message) ) {
-                return;
-            }  
-            
-            if ( ! dialog.displayDialog(Tab.ADMIN) ) {
-                return;
-            }
-            
-            path = server.getAdminPath();
-        }
-
-        try {
-            server.stop();                
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(StopAction.class,
-                        "MSG_UnableToStopServer"), 
-                    dbe);
-        }
+        Node node = activatedNodes[0];
+        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        
+        PropertiesDialog dlg = new PropertiesDialog(server);
+        dlg.displayDialog();
     }
-    
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
     @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
 
     @Override
-    protected Class<?>[] cookieClasses() {
+    protected Class[] cookieClasses() {
         return COOKIE_CLASSES;
     }
 }

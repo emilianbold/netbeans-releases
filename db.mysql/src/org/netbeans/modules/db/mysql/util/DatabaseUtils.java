@@ -37,8 +37,10 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.util;
 
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
+import org.netbeans.modules.db.mysql.*;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -124,7 +126,7 @@ public class DatabaseUtils {
         
         if ( jdbcDriver == null ) {
             throw new DatabaseException(
-                    NbBundle.getMessage(DatabaseUtils.class, 
+                    Utils.getMessage( 
                     "MSG_JDBCDriverNotRegistered"));
         }
                 
@@ -134,7 +136,7 @@ public class DatabaseUtils {
                         true, driverLoader).newInstance();
         } catch ( Exception e ) {
             DatabaseException dbe = new DatabaseException(
-                    NbBundle.getMessage(DatabaseUtils.class,
+                    Utils.getMessage(
                         "MSG_UnableToLoadJDBCDriver") + e.getMessage());
             dbe.initCause(e);
             throw dbe;
@@ -190,7 +192,7 @@ public class DatabaseUtils {
                 //
                 // If other MySQL exceptions exhibit this behavior we'll have to
                 // address this in a more general way...
-                String msg = NbBundle.getMessage(DatabaseUtils.class,
+                String msg = Utils.getMessage(
                         "ERR_MySQLCommunicationFailure");
 
                 DatabaseException dbe = new DatabaseException(msg);
@@ -207,7 +209,7 @@ public class DatabaseUtils {
      * 
      * @param conn the connection to close
      */
-    static void closeConnection(Connection conn) {
+    public static void closeConnection(Connection conn) {
         try {
             if ( conn != null ) {
                 conn.close();
@@ -284,7 +286,7 @@ public class DatabaseUtils {
         return url.toString();
     }
 
-    static boolean ensureConnected(DatabaseConnection dbconn) {
+    public static boolean ensureConnected(DatabaseConnection dbconn) {
         try {
             Connection conn = dbconn.getJDBCConnection();
             if ( conn == null || conn.isClosed() ) {

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.util;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

@@ -36,83 +36,57 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
+package org.netbeans.modules.db.mysql.actions;
+
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
- * Connect to a database
- * 
+ *
  * @author David Van Couvering
  */
-public class AdministerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
-    
-    public AdministerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
+public class CreateDatabaseAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = new Class[] {
+        DatabaseServer.class
+    };
 
-    @Override
+    public CreateDatabaseAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
+        
     protected boolean asynchronous() {
         return false;
     }
 
     public String getName() {
-        return NbBundle.getBundle(AdministerAction.class).
-                getString("LBL_AdministerAction");
+        return Utils.getBundle().getString("LBL_CreateDatabaseAction");
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(AdministerAction.class);
+        return new HelpCtx(CreateDatabaseAction.class);
     }
 
     @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
+    protected boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes.length == 0 ) {
             return false;
         }
-
-        return ServerNodeProvider.getDefault().isRegistered();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
         
-        String path = server.getAdminPath();
-        String message = NbBundle.getMessage(AdministerAction.class,
-                "MSG_NoAdminPath");
-        PropertiesDialog dialog = new PropertiesDialog(server);
-
-
-        while ( path == null || path.equals("")) {
-            
-            if ( ! Utils.displayConfirmDialog(message) ) {
-                return;
-            }  
-            
-            if ( ! dialog.displayDialog(Tab.ADMIN) ) {
-                return;
-            }
-            
-            path = server.getAdminPath();
+        Node node = activatedNodes[0];
+        
+        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        if ( server != null && server.isConnected() ) {
+            return true;
         }
-
-        try {
-            server.startAdmin();
-        } catch ( DatabaseException e ) {
-            Utils.displayError(NbBundle.getMessage(AdministerAction.class,
-                    "MSG_ErrorStartingAdminTool"), e);
-        }
+        
+        return false;
     }
-    
+
     @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
@@ -121,5 +95,13 @@ public class AdministerAction extends CookieAction {
     @Override
     protected Class<?>[] cookieClasses() {
         return COOKIE_CLASSES;
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        Node node = activatedNodes[0];
+        
+        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        CreateDatabasePanel.showCreateDatabaseDialog(server);
     }
 }

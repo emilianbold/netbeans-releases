@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.db.mysql;
 
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  * Model class representing a database.  Right now all it has is a 
@@ -48,37 +49,37 @@ import org.openide.util.NbBundle;
  * 
  * @author David Van Couvering
  */
-public class DatabaseModel implements Node.Cookie {
+public class Database implements Node.Cookie {
     private final String name;
-    private final ServerInstance server;
+    private final DatabaseServer server;
     
-    public DatabaseModel(ServerInstance server, String dbname) {
+    public Database(DatabaseServer server, String dbname) {
         name = dbname;
         this.server = server;
     }
 
-    String getDbName() {
+    public String getDbName() {
         return name;
     }
     
-    String getDisplayName() {
+    public String getDisplayName() {
         return name;
     }
 
-    String getShortDescription() {
-       return NbBundle.getMessage(DatabaseModel.class, 
+    public String getShortDescription() {
+       return Utils.getMessage( 
                "LBL_DBNodeShortDescription",
                getDisplayName());
     }
     
-    ServerInstance getServer() {
+    public DatabaseServer getServer() {
         return server;
     }
     
     @Override
     public boolean equals(Object other) {
-        return other != null && other instanceof DatabaseModel &&
-                ((DatabaseModel)other).getDbName().equals(getDbName());
+        return other != null && other instanceof Database &&
+                ((Database)other).getDbName().equals(getDbName());
     }
     
     @Override

@@ -37,8 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.nodes;
 
+import org.netbeans.modules.db.mysql.impl.*;
+import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.actions.ConnectAction;
+import org.netbeans.modules.db.mysql.DatabaseServer;
 import javax.swing.Action;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.actions.DeleteAction;
@@ -58,9 +63,9 @@ class DatabaseNode extends AbstractNode implements Comparable {
     // I'd like a less generic icon, but this is what we have for now...
     private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
     
-    private final DatabaseModel model;    
+    private final Database model;    
     
-    public DatabaseNode(DatabaseModel model) {
+    public DatabaseNode(Database model) {
         super(Children.LEAF);
         this.model = model;
         setDisplayName(model.getDisplayName());
@@ -88,13 +93,13 @@ class DatabaseNode extends AbstractNode implements Comparable {
     
     @Override
     public void destroy() {
-        ServerInstance server = model.getServer();
+        DatabaseServer server = model.getServer();
         String dbname = model.getDbName();
 
         try {                
             server.dropDatabase(dbname);
         } catch ( DatabaseException dbe ) {
-            String msg = NbBundle.getMessage(DatabaseNode.class,
+            String msg = Utils.getMessage(
                     "MSG_ErrorDeletingDatabase", model.getDbName());
             Utils.displayError(msg, dbe);
         }
@@ -104,7 +109,7 @@ class DatabaseNode extends AbstractNode implements Comparable {
     @Override
     @SuppressWarnings("unchecked")
     public Node.Cookie getCookie(Class cls) {
-        if ( cls == DatabaseModel.class ) {
+        if ( cls == Database.class ) {
             return model;
         } else {
             return super.getCookie(cls);

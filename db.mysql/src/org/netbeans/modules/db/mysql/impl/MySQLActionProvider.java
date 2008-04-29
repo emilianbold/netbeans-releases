@@ -37,71 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import org.netbeans.modules.db.mysql.actions.RegisterServerAction;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.db.api.explorer.ActionProvider;
+import org.openide.util.actions.SystemAction;
 
 /**
- *
+ * Provides the actions for this module to be registered under the
+ * Databases node in the DB Explorer
+ * 
  * @author David Van Couvering
  */
-public class CreateDatabaseAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = new Class[] {
-        ServerInstance.class
-    };
+public class MySQLActionProvider implements ActionProvider {
 
-    public CreateDatabaseAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }    
-        
-    protected boolean asynchronous() {
-        return false;
+    private static final MySQLActionProvider DEFAULT = new MySQLActionProvider();
+    private final ArrayList<Action> actions = new ArrayList<Action>();
+    private static final ArrayList<Action> emptyActions = new ArrayList<Action>();
+    
+    static MySQLActionProvider getDefault() {
+        return DEFAULT;
+    }
+    
+    private MySQLActionProvider() {
+        // Right now only one server, although this may (likely) change
+        actions.add(SystemAction.get(RegisterServerAction.class));
     }
 
-    public String getName() {
-        return NbBundle.getBundle(CreateDatabaseAction.class).
-                getString("LBL_CreateDatabaseAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(CreateDatabaseAction.class);
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes.length == 0 ) {
-            return false;
+    public List<Action> getActions() {
+        // If we're registered, then don't provide the action
+        // to register the server...
+        if ( ServerNodeProvider.getDefault().isRegistered()){
+            return emptyActions;
+        } else {
+            return actions;
         }
-        
-        Node node = activatedNodes[0];
-        
-        ServerInstance server = node.getCookie(ServerInstance.class);
-        if ( server != null && server.isConnected() ) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        Node node = activatedNodes[0];
-        
-        ServerInstance server = node.getCookie(ServerInstance.class);
-        CreateDatabasePanel.showCreateDatabaseDialog(server);
-    }
+    } 
+    
 }

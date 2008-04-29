@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.util;
 
 import java.net.URL;
 import java.net.URLClassLoader;

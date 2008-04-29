@@ -39,9 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
-import java.io.File;
+import org.netbeans.modules.db.mysql.util.ExecSupport;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.*;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -60,17 +63,9 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.CloseCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.JarFileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -84,7 +79,7 @@ import org.openide.util.Utilities;
  * 
  * @author David Van Couvering
  */
-public class ServerInstance implements Node.Cookie {
+public class MySQLDatabaseServer implements DatabaseServer {
     public enum State {
         CONNECTED, CONNECTING, DISCONNECTED
     };
@@ -98,16 +93,9 @@ public class ServerInstance implements Node.Cookie {
     // Synchronized on this
     private Task refreshTask;
     
-    /**
-     *  Enumeration of valid sample database names
-     */
-    public enum SampleName {
-        sample, vir, travel
-    };
-
-    private static final Logger LOGGER = Logger.getLogger(ServerInstance.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DatabaseServer.class.getName());
         
-    private static ServerInstance DEFAULT;;
+    private static DatabaseServer DEFAULT;;
 
     private static final MySQLOptions OPTIONS = MySQLOptions.getDefault();
     
@@ -123,12 +111,6 @@ public class ServerInstance implements Node.Cookie {
     private static final String GRANT_ALL_SQL_1 = "GRANT ALL ON "; // NOI18N
     private static final String GRANT_ALL_SQL_2 = ".* TO ?@?"; // NOI8N
     
-    // Other static finals
-    private static final String MODULE_JAR_FILE = 
-            "modules/org-netbeans-modules-db-mysql.jar";
-    private static final String RESOURCE_DIR_PATH =
-            "org/netbeans/modules/db/mysql/resources";
-    
     final AdminConnection adminConn = new AdminConnection();
     final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
@@ -139,17 +121,17 @@ public class ServerInstance implements Node.Cookie {
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
     // Synchronized on the instance (this)
-    HashMap<String, DatabaseModel> databases = new HashMap<String, DatabaseModel>();
+    HashMap<String, Database> databases = new HashMap<String, Database>();
 
-    public static synchronized ServerInstance getDefault() {
+    public static synchronized DatabaseServer getDefault() {
         if ( DEFAULT == null ) {
-            DEFAULT = new ServerInstance();
+            DEFAULT = new MySQLDatabaseServer();
         }
         
         return DEFAULT;
     }
     
-    private ServerInstance() {  
+    private MySQLDatabaseServer() {  
         updateDisplayName();
     }
     
@@ -185,87 +167,6 @@ public class ServerInstance implements Node.Cookie {
         }
     } 
     
-    public static boolean isSampleName(String name) {
-        SampleName[] samples = SampleName.values();
-        for ( SampleName sample : samples ) {
-            if (sample.toString().equals(name)) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public void createSample(String sampleName, DatabaseConnection dbconn) 
-            throws DatabaseException {     
-        if ( ! isSampleName(sampleName)) {
-            throw new DatabaseException(NbBundle.getMessage(
-                    ServerInstance.class, 
-                    "MSG_NoSuchSample", sampleName));
-        }
-             
-        DataObject sqlDO = getSQLDataObject(sampleName);
-        
-        try {
-            if ( ! DatabaseUtils.ensureConnected(dbconn) ) {
-                return;
-            } 
-            
-            OpenCookie openCookie = (OpenCookie)sqlDO.getCookie(OpenCookie.class);
-            openCookie.open();
-
-            SQLExecuteCookie sqlCookie = (SQLExecuteCookie)sqlDO.getCookie(
-                    SQLExecuteCookie.class);
-
-            sqlCookie.setDatabaseConnection(dbconn);
-            sqlCookie.execute();
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(
-                    NbBundle.getMessage(ServerInstance.class,
-                        "MSG_ErrorExecutingSampleSQL", sampleName, 
-                        e.getMessage()));
-            dbe.initCause(e);
-            throw dbe;
-        } finally {
-            if ( sqlDO != null ) {
-                CloseCookie closeCookie = 
-                        (CloseCookie)sqlDO.getCookie(CloseCookie.class);
-                
-                if ( closeCookie != null ) {
-                    closeCookie.close();
-                }
-            }
-        }
-
-    }
-        
-    private DataObject getSQLDataObject(String sampleName) 
-            throws DatabaseException {
-        SQLExecuteCookie sqlCookie = null;
-        
-        try {
-            File jarfile = InstalledFileLocator.getDefault().locate(
-                MODULE_JAR_FILE, null, false); // NOI18N
-    
-            JarFileSystem jarfs = new JarFileSystem();
-
-            jarfs.setJarFile(jarfile);
-
-            String filename = "/create-" + sampleName + ".sql";
-            FileObject sqlFO = jarfs.findResource(RESOURCE_DIR_PATH + filename);
-
-            return DataObject.find(sqlFO);
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(
-                    NbBundle.getMessage(ServerInstance.class,
-                        "MSG_ErrorLoadingSampleSQL", sampleName, 
-                        e.getMessage()));
-            dbe.initCause(e);
-            throw dbe;
-        }
-    }
-
-
     public String getHost() {
         return Utils.isEmpty(OPTIONS.getHost()) ?  
             MySQLOptions.getDefaultHost() : OPTIONS.getHost();
@@ -393,12 +294,12 @@ public class ServerInstance implements Node.Cookie {
         } else {
             label = "LBL_ServerConnectingDisplayName";
         }
-        setDisplayName(NbBundle.getMessage(ServerInstance.class,
+        setDisplayName(Utils.getMessage(
                 label, getHostPort(), getUser()));
     }
     
     public String getShortDescription() {
-        return NbBundle.getMessage(ServerInstance.class,
+        return Utils.getMessage(
                 "LBL_ServerShortDescription", getHostPort(), getUser());
     }
     
@@ -433,7 +334,7 @@ public class ServerInstance implements Node.Cookie {
         notifyChange();
     }
     
-    public synchronized State getState() {
+    private synchronized State getState() {
         return state;
     }
         
@@ -448,7 +349,7 @@ public class ServerInstance implements Node.Cookie {
     public void refreshDatabaseList() throws DatabaseException {        
         try {
             synchronized(this) {
-                databases = new HashMap<String, DatabaseModel>();
+                databases = new HashMap<String, Database>();
                 if ( isConnected() ) {        
                     ResultSet rs = adminConn.getConnection()
                             .prepareStatement(GET_DATABASES_SQL)
@@ -456,7 +357,7 @@ public class ServerInstance implements Node.Cookie {
 
                     while ( rs.next() ) {
                         String dbname = rs.getString(1);
-                        databases.put(dbname, new DatabaseModel(this, dbname));
+                        databases.put(dbname, new Database(this, dbname));
                     }
                 }
             }
@@ -476,7 +377,7 @@ public class ServerInstance implements Node.Cookie {
      * @see #refreshDatabaseList()
      * @throws org.netbeans.api.db.explorer.DatabaseException
      */
-    public synchronized Collection<DatabaseModel> getDatabases() 
+    public synchronized Collection<Database> getDatabases() 
             throws DatabaseException {
         if ( databases == null ) {
             refreshDatabaseList();
@@ -541,7 +442,7 @@ public class ServerInstance implements Node.Cookie {
      */
     public synchronized void connectAsync(final boolean quiet) {        
          final ProgressHandle progress = ProgressHandleFactory.createHandle(
-            NbBundle.getMessage(DatabaseUtils.class, "MSG_ConnectingToServer"));
+            Utils.getMessage( "MSG_ConnectingToServer"));
          progress.start();
          progress.switchToIndeterminate();
          
@@ -564,7 +465,7 @@ public class ServerInstance implements Node.Cookie {
                      connect();
                      progress.finish();
                  } catch ( DatabaseException dbe ) {
-                    String message = NbBundle.getMessage(DatabaseUtils.class,
+                    String message = Utils.getMessage(
                             "MSG_UnableToConnect");
                     if ( ! quiet ) {         
                         // Try again
@@ -592,7 +493,7 @@ public class ServerInstance implements Node.Cookie {
      */
     private void postPropertiesDialog(final ProgressHandle progress, 
             final String message, final DatabaseException dbe) {
-        final ServerInstance instance = this;
+        final DatabaseServer instance = this;
         Mutex.EVENT.postReadRequest(new Runnable() {
             public void run() {
                 Utils.displayError(message, dbe);
@@ -722,13 +623,13 @@ public class ServerInstance implements Node.Cookie {
      */
     public void start() throws DatabaseException {        
         if ( !Utils.isValidExecutable(getStopPath(), false)) {
-            throw new DatabaseException(NbBundle.getMessage(ServerInstance.class,
+            throw new DatabaseException(Utils.getMessage(
                     "MSG_InvalidStartCommand"));
         }
         
         try {
             runProcess(getStartPath(), getStartArgs(),
-                    true, NbBundle.getMessage(ServerInstance.class, 
+                    true, Utils.getMessage( 
                         "LBL_StartOutputTab"));
             
             // Spawn off a thread to poll the server and attempt to 
@@ -765,13 +666,13 @@ public class ServerInstance implements Node.Cookie {
     
     public void stop() throws DatabaseException {
         if ( !Utils.isValidExecutable(getStopPath(), false)) {
-            throw new DatabaseException(NbBundle.getMessage(ServerInstance.class,
+            throw new DatabaseException(Utils.getMessage(
                     "MSG_InvalidStopCommand"));
         }
         
         try {
             runProcess(getStopPath(), getStopArgs(), 
-                    true, NbBundle.getMessage(ServerInstance.class, 
+                    true, Utils.getMessage( 
                         "LBL_AdminOutputTab"));
         } catch ( Exception e ) {
             throw new DatabaseException(e);
@@ -796,7 +697,7 @@ public class ServerInstance implements Node.Cookie {
         
         if ( adminCommand == null || adminCommand.length() == 0) {
             throw new DatabaseException(NbBundle.getMessage(
-                    ServerInstance.class,
+                    DatabaseServer.class,
                     "MSG_AdminCommandNotSet"));
         }
         
@@ -804,11 +705,11 @@ public class ServerInstance implements Node.Cookie {
             launchBrowser(adminCommand);
         } else if ( Utils.isValidExecutable(adminCommand, false)) {
             runProcess(adminCommand, getAdminArgs(),
-                    true, NbBundle.getMessage(ServerInstance.class, 
+                    true, Utils.getMessage( 
                         "LBL_AdminOutputTab"));
         } else {
             throw new DatabaseException(NbBundle.getMessage(
-                    ServerInstance.class,
+                    DatabaseServer.class,
                     "MSG_InvalidAdminCommand", adminCommand));
         }
         
@@ -845,11 +746,11 @@ public class ServerInstance implements Node.Cookie {
         }
     }
     
-    void addChangeListener(ChangeListener listener) {
+    public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     } 
     
-    void removeChangeListener(ChangeListener listener) {
+    public void removeChangeListener(ChangeListener listener) {
         listeners.remove(listener);
     }
 

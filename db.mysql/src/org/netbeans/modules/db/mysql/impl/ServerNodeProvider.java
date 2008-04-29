@@ -37,14 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
+import org.netbeans.modules.db.mysql.nodes.ServerNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServerManager;
 import org.openide.nodes.Node;
 
 /**
@@ -67,12 +70,12 @@ public class ServerNodeProvider implements NodeProvider {
     
     private ServerNodeProvider() {
         // Right now only one server, although this may (likely) change
-        nodes.add(ServerNode.create(ServerInstance.getDefault()));
+        nodes.add(ServerNode.create(DatabaseServerManager.getDatabaseServer()));
     }
 
     public List<Node> getNodes() {
          if ( options.isProviderRegistered() ) {
-            ServerInstance.getDefault().connectAsync(true /* quiet */);
+            DatabaseServerManager.getDatabaseServer().connectAsync(true /* quiet */);
             return nodes;
         } else {
             return emptyNodeList;
@@ -82,7 +85,7 @@ public class ServerNodeProvider implements NodeProvider {
     public synchronized void setRegistered(boolean registered) {
         boolean old = isRegistered();
         if ( registered != old ) {
-            ServerInstance instance = ServerInstance.getDefault();
+            DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
             options.setProviderRegistered(registered);
             
             if ( ! registered ) {
