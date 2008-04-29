@@ -97,9 +97,14 @@ public class SpringConfigModelController {
      *
      * @param  action the action to run.
      */
-    public void runReadAction(Action<SpringBeans> action) throws IOException {
+    public void runReadAction(final Action<SpringBeans> action) throws IOException {
         try {
-            runReadAction0(action);
+            ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
+                public Void call() throws IOException {
+                    runReadActionExclusively(action);
+                    return null;
+                }
+            });
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException)e;
@@ -112,32 +117,32 @@ public class SpringConfigModelController {
         }
     }
 
-    private void runReadAction0(final Action<SpringBeans> action) throws Exception {
-        ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
-            public Void call() throws IOException {
-                if (writeAccess) {
-                    throw new IllegalStateException("Already in write access.");
-                }
-                // Handle reentrant access.
-                boolean firstEntry = (readAccess == null);
-                try {
-                    if (firstEntry) {
-                        readAccess = new ConfigModelSpringBeans(computeSpringBeanSources(null));
-                    }
-                    action.run(readAccess);
-                } finally {
-                    if (firstEntry) {
-                        readAccess = null;
-                    }
-                }
-                return null;
+    private void runReadActionExclusively(Action<SpringBeans> action) throws IOException {
+        if (writeAccess) {
+            throw new IllegalStateException("Already in write access.");
+        }
+        // Handle reentrant access.
+        boolean firstEntry = (readAccess == null);
+        try {
+            if (firstEntry) {
+                readAccess = new ConfigModelSpringBeans(computeSpringBeanSources(null));
             }
-        });
+            action.run(readAccess);
+        } finally {
+            if (firstEntry) {
+                readAccess = null;
+            }
+        }
     }
 
-    public void runDocumentAction(Action<DocumentAccess> action) throws IOException {
+    public void runDocumentAction(final Action<DocumentAccess> action) throws IOException {
         try {
-            runDocumentAction0(action);
+            ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
+                public Void call() throws IOException {
+                    runDocumentActionExclusively(action);
+                    return null;
+                }
+            });
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException)e;
@@ -150,39 +155,34 @@ public class SpringConfigModelController {
         }
     }
 
-    private void runDocumentAction0(final Action<DocumentAccess> action) throws Exception {
-        ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
-            public Void call() throws IOException {
-                if (readAccess != null) {
-                    throw new IllegalStateException("Already in read access.");
-                }
-                if (writeAccess) {
-                    throw new IllegalStateException("Reentrant write access not supported");
-                }
-                writeAccess = true;
-                try {
-                    for (File currentFile : file2Controller.keySet()) {
-                        Map<File, SpringBeanSource> beanSources = computeSpringBeanSources(currentFile);
-                        SpringConfigFileModelController controller = file2Controller.get(currentFile);
-                        LockedDocument lockedDoc = controller.getLockedDocument();
-                        if (lockedDoc != null) {
-                            lockedDoc.lock();
-                            try {
-                                beanSources.put(currentFile, lockedDoc.getBeanSource());
-                                ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
-                                DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
-                                action.run(docAccess);
-                            } finally {
-                                lockedDoc.unlock();
-                            }
-                        }
+    private void runDocumentActionExclusively(Action<DocumentAccess> action) throws IOException {
+        if (readAccess != null) {
+            throw new IllegalStateException("Already in read access.");
+        }
+        if (writeAccess) {
+            throw new IllegalStateException("Reentrant write access not supported");
+        }
+        writeAccess = true;
+        try {
+            for (File currentFile : file2Controller.keySet()) {
+                Map<File, SpringBeanSource> beanSources = computeSpringBeanSources(currentFile);
+                SpringConfigFileModelController controller = file2Controller.get(currentFile);
+                LockedDocument lockedDoc = controller.getLockedDocument();
+                if (lockedDoc != null) {
+                    lockedDoc.lock();
+                    try {
+                        beanSources.put(currentFile, lockedDoc.getBeanSource());
+                        ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
+                        DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
+                        action.run(docAccess);
+                    } finally {
+                        lockedDoc.unlock();
                     }
-                } finally {
-                    writeAccess = false;
                 }
-                return null;
             }
-        });
+        } finally {
+            writeAccess = false;
+        }
     }
 
     private Map<File, SpringBeanSource> computeSpringBeanSources(File skip) throws IOException {
