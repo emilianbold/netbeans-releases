@@ -72,7 +72,10 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
     
     private String mWhereClause;
     
-           
+    private String[] mTimeUnitDisplayName = new String[] {};
+            
+    private String[] mTimeUnitCodeName = new String[] {};
+    
     
     /** Creates a new instance of InvokeStreamCustomEditor */
     public ExternalTablePollingStreamCustomEditor() {
@@ -240,12 +243,13 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            List attributeList = mSelectPanel.getQuantityAttributeList();
 //            attributeList.add(0, "");
 //            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
-            String[] timeUnitDisplayName = new String[] {};
-            String[] timeUnitCodeName = new String[] {};
+            mTimeUnitDisplayName = DatabaseTableWizardConstants.getTimeUnitInfosDisplayName().toArray(mTimeUnitDisplayName);
+            mTimeUnitCodeName = DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(mTimeUnitCodeName);
+            
             mPollingIntervalTimeUnitPanel = PropertyPanel.createComboBoxPanel(pollingIntervalTimeUnitLabel, 
                                                                               pollingIntervalTimeUnit, 
-                                                                              DatabaseTableWizardConstants.getTimeUnitInfosDisplayName().toArray(timeUnitDisplayName), 
-                                                                              DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(timeUnitCodeName), 
+                                                                              DatabaseTableWizardConstants.getTimeUnitInfosDisplayName().toArray(mTimeUnitDisplayName), 
+                                                                              DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(mTimeUnitCodeName), 
                                                                               false);
             
             gbc.gridx = 3;
@@ -482,6 +486,9 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     mDatabaseJndiNamePanel.setStringValue(databaseJNDIName);
                     mIsDeleteRecordsPanel.setStringValue(isDeleteRecords);
                     
+                    if(pollingIntervalUnit != null) {
+                        mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
+                    }
                     
                     Iterator<TableInfo> tableIt = tables.iterator();
                     List<String> fromList = new ArrayList<String>(); 
@@ -503,9 +510,33 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         SchemaAttribute sa = factory.createSchemaAttribute(model);
                         String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
                         sa.setAttributeName(attrName);
-                        sa.setAttributeType(column.getColumnDataType());
-                        sa.setAttributeSize(""+column.getPrecision());
-                        sa.setAttributeScale(""+column.getScale());
+                        String dataType = column.getColumnDataType();
+                        sa.setAttributeType(dataType);
+                        
+                        int precision = column.getPrecision();
+                        int scale = column.getScale();
+                        sa.setAttributeSize("");
+                        sa.setAttributeScale("");
+                        
+                        if(dataType.equalsIgnoreCase("CHAR")
+                           || dataType.equalsIgnoreCase("VARCHAR")
+                           || dataType.equalsIgnoreCase("DECIMAL") 
+                           || dataType.equalsIgnoreCase("REAL")
+                           || dataType.equalsIgnoreCase("DOUBLE")
+                           ) {
+                            if(precision != 0) {
+                                sa.setAttributeSize(""+column.getPrecision());
+                            } 
+                        }
+                        
+                        if(dataType.equalsIgnoreCase("DECIMAL") 
+                           || dataType.equalsIgnoreCase("REAL")
+                           || dataType.equalsIgnoreCase("DOUBLE")
+                           ) {
+                            if(scale != 0) {
+                                sa.setAttributeScale(""+column.getScale());
+                            } 
+                        }
                         
                         
                         attrs.add(sa);

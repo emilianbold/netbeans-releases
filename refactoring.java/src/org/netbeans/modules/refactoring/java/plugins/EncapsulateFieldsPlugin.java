@@ -64,6 +64,9 @@ import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.Javadoc;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.openide.filesystems.FileObject;
@@ -188,7 +191,11 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
         }
 
-        Encapsulator encapsulator = new Encapsulator(descs, problem);
+        Encapsulator encapsulator = new Encapsulator(descs, problem,
+                refactoring.getContext().lookup(InsertPoint.class),
+                refactoring.getContext().lookup(SortBy.class),
+                refactoring.getContext().lookup(Javadoc.class)
+                );
         Problem prob = createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
         fireProgressListenerStop();
         problem = encapsulator.getProblem();

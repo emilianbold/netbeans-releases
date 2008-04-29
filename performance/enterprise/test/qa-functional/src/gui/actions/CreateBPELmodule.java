@@ -47,8 +47,11 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -103,7 +106,10 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         for(int attempt = 1; ; attempt++) {
             log("Attempt " + attempt + " to open New Project Wizard");
             new EventTool().waitNoEvent(3000);
-            try {
+            Timeouts old_timeouts = JemmyProperties.getCurrentTimeouts().cloneThis();
+            try {                
+                JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 150000);
+                JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 150000);
                 wizard = NewProjectWizardOperator.invoke();
                 break;
             } catch (RuntimeException exc) {
@@ -112,7 +118,10 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
                     exc.printStackTrace(getLog());
                     continue;
                 }
+                Dumper.dumpAll(getLog("dump.xml"));
                 throw exc;
+            } finally {
+                JemmyProperties.setCurrentTimeouts(old_timeouts);
             }
         }   
         wizard.selectCategory(category);

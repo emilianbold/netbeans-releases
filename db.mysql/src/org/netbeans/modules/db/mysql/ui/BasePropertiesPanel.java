@@ -7,17 +7,11 @@
 package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
-import java.awt.Dialog;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.MySQLOptions;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +67,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
     }
     
     /** Creates new form BasePropertiesPanel */
-    public BasePropertiesPanel(ServerInstance server) {
+    public BasePropertiesPanel(DatabaseServer server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466

@@ -45,9 +45,7 @@ public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
         getComponent();
         return component.valid(wizardDescriptor);
     }
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-
-
+    
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -85,4 +83,7 @@ public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
         getComponent();
         component.validate(wizardDescriptor);
     }
+    
+    private final Set<ChangeListener> listeners 
+        = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 }

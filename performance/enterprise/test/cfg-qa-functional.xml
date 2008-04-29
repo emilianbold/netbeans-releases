@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="GC" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureGC.class"/>
+                <include name="gui/EPMeasureGC.class/Test GC of Schema View"/>
             </patternset>
         </testset>
     </testbag>
@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -205,7 +205,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="130172"/>
             </patternset>
         </testset>
     </testbag>

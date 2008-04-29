@@ -42,8 +42,10 @@ package org.netbeans.modules.db.mysql.util;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -61,7 +63,7 @@ public class Utils {
         LOGGER.log(Level.INFO, msg, ex);
         
         String reason = ex.getMessage() != null ? ex.getMessage() : 
-            NbBundle.getMessage(Utils.class, "MSG_SeeErrorLog");
+            Utils.getMessage( "MSG_SeeErrorLog");
         
         msg = msg + ": " + reason;
         
@@ -153,7 +155,7 @@ public class Utils {
     public static void displayErrorMessage(String message) {
         NotifyDescriptor ndesc = new NotifyDescriptor(
                 message, 
-                NbBundle.getMessage(Utils.class, "MSG_ErrorDialogTitle"),
+                Utils.getBundle().getString("MSG_ErrorDialogTitle"),
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.ERROR_MESSAGE, 
                 new Object[] { NotifyDescriptor.OK_OPTION },
@@ -169,5 +171,13 @@ public class Utils {
     public static boolean stringEquals(String str1, String str2) {
         return  (str1 == null && str2 == null) ||
                 (str2 != null && str1 != null && str1.equals(str2));
+    }
+    
+    public static ResourceBundle getBundle() {
+        return NbBundle.getBundle(DatabaseServer.class);
+    }
+    
+    public static String getMessage(String key, Object ... args) {
+        return NbBundle.getMessage(DatabaseServer.class, key, args);
     }
 }
