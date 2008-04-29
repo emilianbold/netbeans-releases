@@ -93,13 +93,6 @@ public final class ThreadsHistoryAction extends AbstractAction {
                         KeyboardPopupSwitcher.selectItem(
                                 createSwitcherItems(threads),
                                 releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
-                    } else {
-//                        KeyEvent kev = new KeyEvent(
-//                            new JLabel(), KeyEvent.KEY_PRESSED, evt.getWhen(), // [TODO] JLabel
-//                            keyStroke.getModifiers(), keyStroke.getKeyCode(),
-//                            keyStroke.getKeyChar()
-//                        );
-//                        KeyboardPopupSwitcher.processShortcut(kev);
                     }
                     return;
                 }
