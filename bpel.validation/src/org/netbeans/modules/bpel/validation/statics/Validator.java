@@ -1343,7 +1343,7 @@ public final class Validator extends BpelValidator {
         NamedComponentReference<PortType> portTypeRef = Utils.getPortTypeRef(partnerLinkRef, (Component) portTypeReference);
 
         if (portTypeRef == null || !Utils.equals(portTypeDirectRef.get(), portTypeRef.get())) {
-          addError("FIX_DifferentPortTypes", (BpelEntity) portTypeReference); // NOI18N
+          addError("FIX_SA00005", (BpelEntity) portTypeReference); // NOI18N
         }
 //out("    1: " + getName(portTypeRef.get()));
 //out("    2: " + getName(portTypeDirectRef.get()));
