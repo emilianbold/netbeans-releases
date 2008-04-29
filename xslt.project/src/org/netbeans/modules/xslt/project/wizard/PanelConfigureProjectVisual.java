@@ -16,19 +16,25 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.xslt.project.wizard;
 
+import org.netbeans.modules.compapp.projects.base.ui.wizards.PanelConfigureProject;
+import org.netbeans.modules.compapp.projects.base.ui.wizards.SettingsPanel;
 
-package org.netbeans.modules.compapp.projects.base.ui.wizards;
+/**
+ *
+ * @author Vitaly Bychkov
+ * @version 1.0
+ */
+public class PanelConfigureProjectVisual 
+        extends org.netbeans.modules.compapp.projects.base.ui.wizards.PanelConfigureProjectVisual 
+{
+    public PanelConfigureProjectVisual(PanelConfigureProject panel) {
+        super(panel);
+    }
 
-import javax.swing.JPanel;
-import org.openide.WizardDescriptor;
-
-
-public abstract class SettingsPanel extends JPanel {
-
-    public abstract void store (WizardDescriptor settings);
-
-    public abstract void read (WizardDescriptor settings);
-
-    public abstract boolean valid (WizardDescriptor settings);
+    @Override
+    protected SettingsPanel getOptionsPanel(PanelConfigureProject panel) {
+        return new PanelOptionsVisual(panel);
+    }
 }

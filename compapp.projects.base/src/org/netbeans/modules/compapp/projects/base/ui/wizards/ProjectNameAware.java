@@ -16,19 +16,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.compapp.projects.base.ui.wizards;
 
-import javax.swing.JPanel;
-import org.openide.WizardDescriptor;
+import javax.swing.JTextField;
 
-
-public abstract class SettingsPanel extends JPanel {
-
-    public abstract void store (WizardDescriptor settings);
-
-    public abstract void read (WizardDescriptor settings);
-
-    public abstract boolean valid (WizardDescriptor settings);
+/**
+ *
+ * @author Vitaly Bychkov
+ * @version 1.0
+ */
+public interface ProjectNameAware {
+    void attachProjectNameListener(JTextField projectNameTextFiled);
 }
