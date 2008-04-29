@@ -81,7 +81,7 @@ public class GroovyProjectExtender {
     
     private final Project project;
     
-    public GroovyProjectExtender(Project project) {
+    GroovyProjectExtender(Project project) {
         this.project = project;
     }
     
@@ -102,7 +102,7 @@ public class GroovyProjectExtender {
      */
     public boolean isGroovyEnabled() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
-        return extender.getExtension(GROOVY_EXTENSION_ID) != null;
+        return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
     }
 
     /**

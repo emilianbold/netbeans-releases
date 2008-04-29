@@ -49,18 +49,15 @@ import org.netbeans.modules.groovy.support.GroovyProjectExtender;
  */
 public class GroovyCustomizerPanel extends javax.swing.JPanel {
 
-    private final GroovyProjectExtender antHelper;
-    
-    public GroovyCustomizerPanel(GroovyProjectExtender antHelper) {
+    public GroovyCustomizerPanel(GroovyProjectExtender extender) {
         initComponents();
-        this.antHelper = antHelper;
-        if (antHelper == null) {
+        if (extender == null) {
             enableGroovyCheckBox.setSelected(false);
             enableGroovyCheckBox.setEnabled(false);
             classpathCheckBox.setSelected(false);
             excludeCHeckBox.setSelected(false);
             groovycCheckBox.setSelected(false);
-        } else if (antHelper.isGroovyEnabled()) {
+        } else if (extender.isGroovyEnabled()) {
             enableGroovyCheckBox.setSelected(true);
             enableGroovyCheckBox.setEnabled(false);
             classpathCheckBox.setSelected(true);
