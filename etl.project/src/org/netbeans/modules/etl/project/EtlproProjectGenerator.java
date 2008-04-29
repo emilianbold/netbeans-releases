@@ -119,7 +119,7 @@ public class EtlproProjectGenerator {
 
         String dbName = FileUtil.toFile(defaultFileObj).getAbsolutePath();
         createDefaultDatabase(dbName);
-		setMigrationUtil();
+        setMigrationUtil();
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
@@ -257,7 +257,30 @@ public class EtlproProjectGenerator {
     }
 
     //Need for Migration - Start
-     public static void setMigrationUtil() {
+    public static File getDatabasesFolder() {
+        return databases;
+    }
+
+    public static String getDatabasesFolderPath() {
+        //return databases.getPath();
+        String path = FileUtil.toFile(dbObj).getAbsolutePath();
+        /*if (Utilities.isWindows()) {
+        path = path.replace("\\", "/"); // NOI18N
+        }*/
+        return path;
+    }
+
+    public static String getDataFolderPath() {
+        //return data.getPath();
+        String path = FileUtil.toFile(data).getAbsolutePath();
+        if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+
+        }
+        return path;
+    }
+    
+    public static void setMigrationUtil() {
         String path = FileUtil.toFile(data).getAbsolutePath();
         if (Utilities.isWindows()) {
             path = path.replace("\\", "/"); // NOI18N

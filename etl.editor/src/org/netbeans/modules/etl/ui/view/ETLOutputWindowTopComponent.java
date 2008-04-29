@@ -317,7 +317,6 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     public void addPanel(Component panel) {
         if (getComponentCount() == 0) {
             add(panel, BorderLayout.CENTER);
-            add(verticalBar, BorderLayout.WEST);
             if (panel instanceof ETLOutputPanel) {
                 lastKnownSelection = (ETLOutputPanel) panel;
                 verticalBar.removeAll();

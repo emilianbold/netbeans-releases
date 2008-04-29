@@ -278,7 +278,7 @@ public final class TableDetailsVisualPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     public boolean canAdvance() {
-        return (typeCombo.getSelectedIndex() != -1 || checkTableName(tableName.getText().trim()));
+        return (typeCombo.getSelectedIndex() != -1 && checkTableName(tableName.getText().trim()));
     }
 
     public void guessParserType(FlatfileDBTable table) {
