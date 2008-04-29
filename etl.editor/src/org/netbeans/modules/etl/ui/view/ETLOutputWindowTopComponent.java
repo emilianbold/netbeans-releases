@@ -50,7 +50,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import javax.sound.sampled.TargetDataLine;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -73,7 +72,6 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPane
 import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -98,6 +96,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private ETLOutputPanel newSelection;
     private JToolBar verticalBar;
     public static final String ICON_RESOURCE = "org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png"; // NOI18N
+
     private static transient final Logger mLogger = Logger.getLogger(ETLOutputWindowTopComponent.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
@@ -167,7 +166,9 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     String nbBundle1 = mLoc.t("BUND168: Close Tab");
     String nbBundle2 = mLoc.t("BUND169: Close All Tabs");
     String nbBundle3 = mLoc.t("BUND150: Close Other Tabs");
+
     private class Close extends AbstractAction {
+
         public Close() {
             super(nbBundle1.substring(15));
         }
@@ -272,7 +273,6 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
      * To obtain the singleton instance, use {@link findInstance}.
      * @return ETLOutputWindowTopComponent defaultInstance
      */
-
     public static synchronized ETLOutputWindowTopComponent getDefault() {
         if (instance == null) {
             instance = new ETLOutputWindowTopComponent();
@@ -287,13 +287,13 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     public static synchronized ETLOutputWindowTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-        mLogger.infoNoloc(mLoc.t("EDIT511: Cannot find {0}component. It will not be located properly in the window system.",PREFERRED_ID));
-        return getDefault();
+            mLogger.infoNoloc(mLoc.t("EDIT511: Cannot find {0}component. It will not be located properly in the window system.", PREFERRED_ID));
+            return getDefault();
         }
         if (win instanceof ETLOutputWindowTopComponent) {
             return (ETLOutputWindowTopComponent) win;
         }
-         mLogger.infoNoloc(mLoc.t("EDIT512: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.",PREFERRED_ID));
+        mLogger.infoNoloc(mLoc.t("EDIT512: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.", PREFERRED_ID));
         return getDefault();
     }
 
@@ -324,7 +324,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
                 for (JButton btn : btns) {
                     verticalBar.add(btn);
                 }
-                add(verticalBar, BorderLayout.WEST);
+               add(verticalBar, BorderLayout.WEST);
             }
         } else if (tabbedPane.getComponentCount() == 0 && lastKnownSelection != panel) {
             Component comp = (Component) lastKnownSelection;
@@ -349,37 +349,37 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         validate();
         requestActive();
     }
-    
-    public void findAndRemoveComponent(SQLObject sqlObj){
+
+    public void findAndRemoveComponent(SQLObject sqlObj) {
         if (sqlObj.getObjectType() == SQLConstants.SOURCE_TABLE || sqlObj.getObjectType() == SQLConstants.TARGET_TABLE) {
-            if(tabbedPane.getComponentCount() <= 0){
+            if (tabbedPane.getComponentCount() <= 0) {
                 removeAll();
                 close();
             }
-            
-            for(Component comp : tabbedPane.getComponents()){
-                if(comp instanceof TargetTableDataPanel){
-                    if(((TargetTableDataPanel)comp).getTable() == sqlObj){
+
+            for (Component comp : tabbedPane.getComponents()) {
+                if (comp instanceof TargetTableDataPanel) {
+                    if (((TargetTableDataPanel) comp).getTable() == sqlObj) {
                         removePanel(comp);
                     }
-                } else if(comp instanceof SourceTableDataPanel){
-                    if(((SourceTableDataPanel)comp).getTable() == sqlObj){
+                } else if (comp instanceof SourceTableDataPanel) {
+                    if (((SourceTableDataPanel) comp).getTable() == sqlObj) {
                         removePanel(comp);
                     }
-                } else if(comp instanceof JoinViewDataPanel){
-                    if(((JoinViewDataPanel)comp).getTable() == sqlObj){
+                } else if (comp instanceof JoinViewDataPanel) {
+                    if (((JoinViewDataPanel) comp).getTable() == sqlObj) {
                         removePanel(comp);
                     }
-                } else if(comp instanceof JoinOperatorDataPanel){
-                    if(((JoinOperatorDataPanel)comp).getTable() == sqlObj){
+                } else if (comp instanceof JoinOperatorDataPanel) {
+                    if (((JoinOperatorDataPanel) comp).getTable() == sqlObj) {
                         removePanel(comp);
-                        // TODO: remove all the source object data view
+                    // TODO: remove all the source object data view
                     }
                 }
             }
 
         }
-            
+
     }
 
     @Override
@@ -389,12 +389,12 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-    // TODO add custom code on component opening
+        // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-    // TODO add custom code on component closing
+        // TODO add custom code on component closing
     }
 
     @Override
@@ -428,7 +428,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private void setToolbarButtons(JButton[] buttons) {
         verticalBar.removeAll();
         for (JButton btn : buttons) {
-            if(btn != null) {
+            if (btn != null) {
                 verticalBar.add(btn);
             }
         }

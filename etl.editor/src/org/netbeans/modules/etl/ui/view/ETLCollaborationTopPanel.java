@@ -87,11 +87,8 @@ import org.openide.util.actions.SystemAction;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import java.io.Externalizable;
-import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.sql.framework.ui.graph.impl.BirdsEyeView;
-import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLCollaborationView;
 import org.openide.awt.StatusDisplayer;
@@ -176,8 +173,11 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
 
         //do not show tab view if there is only one tab
         putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
+
         putClientProperty("PersistenceType", "Never"); //NOI18N
+
         this.setFont(new Font("Dialog", Font.PLAIN, 12)); //NOI18N
+
         registerActions();
     // Use the Component Inspector to set tool-tip text. This will be saved
     // automatically. Other JComponent properties you may need to save yuorself.
@@ -234,6 +234,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
     // End of variables declaration//GEN-END:variables
     // Printing, saving, compiling, etc.: use cookies on some appropriate node and
     // use this node as the node selection.
+
     /**
      * Is editable
      *
@@ -244,7 +245,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
             return true;
         }
 
-        String nbBundle5 = mLoc.t("BUND161: Please check out {0} before modifying it.",DataObjectProvider.getProvider().getActiveDataObject().getName());
+        String nbBundle5 = mLoc.t("BUND161: Please check out {0} before modifying it.", DataObjectProvider.getProvider().getActiveDataObject().getName());
         try {
             String msg = nbBundle5.substring(15);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
@@ -270,7 +271,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
             }
         } catch (Exception ex) {
             mLogger.errorNoloc(mLoc.t("EDIT045: \nError occurred during validation:{0}", ex.getMessage()), ex);
-            String nbBundle6 = mLoc.t("BUND162: \nError occurred during validation: {0}",ex.getMessage());
+            String nbBundle6 = mLoc.t("BUND162: \nError occurred during validation: {0}", ex.getMessage());
             validationView.appendToView(nbBundle6.substring(15));
         }
     }
@@ -296,7 +297,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         contentPane.add(editPanel, BorderLayout.CENTER);
 
         String nbBundle8 = mLoc.t("BUND164: Edit Database Properties");
-        DialogDescriptor dd = new DialogDescriptor(contentPane,nbBundle8.substring(15));
+        DialogDescriptor dd = new DialogDescriptor(contentPane, nbBundle8.substring(15));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.getAccessibleContext().setAccessibleDescription("This is the dialog to edit database properties");
         dlg.setSize(new Dimension(600, 450));
@@ -504,8 +505,9 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
+
     private void logReloadException(Exception e) {
-        String nbBundle9 = mLoc.t("BUND165: Error encountered while loading eTL collaboration {0}",getName());
+        String nbBundle9 = mLoc.t("BUND165: Error encountered while loading eTL collaboration {0}", getName());
         mLogger.errorNoloc(mLoc.t("EDIT046: Error in executing reload {0}", ETLCollaborationTopPanel.class.getName()), e);
         NotifyDescriptor d = new NotifyDescriptor.Message(nbBundle9.substring(15), NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(d);
@@ -555,29 +557,39 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         CallableSystemAction saveAction = (CallableSystemAction) SystemAction.get(SaveAction.class);
 
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK), "Save Collaboration"); // NOI18N
+
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK), "undo-something"); // NOI18N
+
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK), "redo-something"); // NOI18N
+
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK), "Print Collaboration"); // NOI18N
+
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK), "run-something"); // NOI18N
+
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK), "Save Collaboration"); // NOI18N
+
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK), "undo-something"); // NOI18N
+
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK), "redo-something"); // NOI18N
+
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK), "Print Collaboration"); // NOI18N
+
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, KeyEvent.SHIFT_DOWN_MASK), "Run Collaboration"); // NOI18N
+
         am.put("Save Collaboration", saveAction); // NOI18N
+
         am.put("undo-something", new UndoAction());
         am.put("redo-something", new RedoAction());
         am.put("Print Collaboration", new PrintAction());
         am.put("Run Collaboration", new RunAction());
     }
 
-     //For Navigator
+    //For Navigator
     /*public JComponent getSatelliteView() {
-        GraphView graphView = (GraphView) getGraphView();
-        BirdsEyeView satelliteView = graphView.getSatelliteView();
-        return satelliteView;
+    GraphView graphView = (GraphView) getGraphView();
+    BirdsEyeView satelliteView = graphView.getSatelliteView();
+    return satelliteView;
     }*/
-
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(dObj);
     }
