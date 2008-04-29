@@ -31,7 +31,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import javax.swing.JSeparator;
-import net.java.hulp.i18n.Logger;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -54,7 +53,6 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.etl.project.EtlproProject;
-import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.etl.project.MasterIndexAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
@@ -75,8 +73,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    //private static transient final Logger mLogger = LogUtil.getLogger(EtlproLogicalViewProvider.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
 
     public EtlproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -245,9 +242,9 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         protected Sheet createSheet() {
             Sheet sheet = Sheet.createDefault();
             Sheet.Set set = Sheet.createPropertiesSet();
-            String nbBundle8 = mLoc.t("BUND700: Name");
-            String nbBundle9 = mLoc.t("BUND701: ETL Project Name");
-            Property nameProp = new PropertySupport.Name(this,nbBundle8.substring(15),nbBundle9.substring(15));
+            String nbBundle8 = "Name";
+            String nbBundle9 = "ETL Project Name";
+            Property nameProp = new PropertySupport.Name(this,nbBundle8,nbBundle9);
             set.put(nameProp);
             sheet.put(set);
             return sheet;
@@ -257,34 +254,34 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
 
             ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
-            String nbBundle1 = mLoc.t("BUND702: Build");
-            String nbBundle2 = mLoc.t("BUND703: Clean & Build");
-            String nbBundle3 = mLoc.t("BUND704: Clean");
-            String nbBundle4 = mLoc.t("BUND705: Generate WSDL");
-            String nbBundle5 = mLoc.t("BUND706: Generate Schema...");
-            String nbBundle6 = mLoc.t("BUND707: Redeploy Project");
-            String nbBundle7 = mLoc.t("BUND708: Deploy Project");
-            String nbBundle10 = mLoc.t("BUND709: Generate Bulk Loader");
+            String nbBundle1 = "Build";
+            String nbBundle2 = "Clean & Build";
+            String nbBundle3 = "Clean";
+            String nbBundle4 = "Generate WSDL";
+            String nbBundle5 = "Generate Schema...";
+            String nbBundle6 = "Redeploy Project";
+            String nbBundle7 = "Deploy Project";
+            String nbBundle10 = "Generate Bulk Loader";
 
 
             return new Action[]{
                         CommonProjectActions.newFileAction(),
                         null,
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, nbBundle1.substring(15), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD,nbBundle2.substring(15) , null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, nbBundle3.substring(15), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, nbBundle1, null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD,nbBundle2 , null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, nbBundle3, null), // NOI18N
                         null,
-                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, nbBundle4.substring(15), null), // NOI18N
-                        //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, nbBundle5.substring(15), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, nbBundle4, null), // NOI18N
+                        //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, nbBundle5, null), // NOI18N
 			SystemAction.get(MasterIndexAction.class),
-                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER,nbBundle10.substring(15), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER,nbBundle10, null), // NOI18N
                         null,
                         SystemAction.get(NewFlatfileDatabaseWizardAction.class),
                         SystemAction.get(NewFlatfileTableAction.class),
                         //SystemAction.get(FlatfileDBViewerAction.class),
                         null,
-                        ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_REDEPLOY, nbBundle6.substring(15), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_DEPLOY, nbBundle7.substring(15), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_REDEPLOY, nbBundle6, null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_DEPLOY, nbBundle7, null), // NOI18N
                         null,
                         CommonProjectActions.setAsMainProjectAction(),
                         CommonProjectActions.openSubprojectsAction(),
@@ -325,8 +322,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
 
             public BrokenLinksAction() {
                 evaluator.addPropertyChangeListener(this);
-                String nbBundle1 = mLoc.t("BUND710: Resolve Reference Problems...");
-                putValue(Action.NAME, nbBundle1.substring(15));
+                String nbBundle1 = "Resolve Reference Problems...";
+                putValue(Action.NAME, nbBundle1);
             }
 
             public void actionPerformed(ActionEvent e) {
