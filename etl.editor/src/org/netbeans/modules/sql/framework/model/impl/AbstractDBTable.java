@@ -1218,6 +1218,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
         }
         return resolvedSchemaName;
     }
+    
     public static String getResolvedTableName(SQLDBTable t) {
         // Ensure order of precedence for schema name is followed.
         String resolvedTableName = t.getUserDefinedTableName();
