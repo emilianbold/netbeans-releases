@@ -81,7 +81,7 @@ public class TestOperationAction extends NodeAction  {
         OperationInfo operationInfo = activatedNodes[0].getLookup().lookup(OperationInfo.class);
         Service service = activatedNodes[0].getLookup().lookup(Service.class);
         Preferences prefs = AxisUtils.getPreferences();
-        String axisUrl = prefs.get("AXIS_URL", "").trim();
+        String axisUrl = prefs.get("AXIS_URL", "").trim(); // NOI18N
         if (axisUrl.length() > 0) {
             // open tester page in browser
             AxisUtils.openInBrowser(getOperationQueryString(axisUrl, service, operationInfo));

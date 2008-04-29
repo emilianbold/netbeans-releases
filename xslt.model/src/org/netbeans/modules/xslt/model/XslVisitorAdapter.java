@@ -229,4 +229,8 @@ public class XslVisitorAdapter implements XslVisitor {
     public void visit( ApplyImports impt ) {
     }
 
+    public void visit(TypeSpec typeSpec) {}
+    public void visit(UseAttributesSetsSpec useAttributesSetsSpec) {}
+    public void visit(UseCharacterMapsSpec useCharacterMapsSpec) {}
+    public void visit(WithParam withParam) {}
 }

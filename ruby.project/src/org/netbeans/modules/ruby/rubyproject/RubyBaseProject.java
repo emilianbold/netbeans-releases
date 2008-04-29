@@ -50,6 +50,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -217,11 +218,13 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     private void updateRakeTargets() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                RakeTargetsAction.refreshTargets(RubyBaseProject.this);
-            }
-        });
+        if (RubyPlatform.platformFor(this).showWarningIfInvalid()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    RakeTargetsAction.refreshTargets(RubyBaseProject.this);
+                }
+            });
+        }
     }
     
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {

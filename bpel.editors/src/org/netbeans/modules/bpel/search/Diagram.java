@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
 
-import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.DiagramModel;
@@ -108,7 +108,7 @@ public final class Diagram {
     }
 
     public void gotoSource() {
-      EditorUtil.goToSource(getComponent());
+      EditorUtil.goToSource(getBpelEntity());
     }
 
     public void gotoDesign() {
@@ -119,25 +119,25 @@ public final class Diagram {
       view.getSelectionModel().setSelectedPattern(pattern);
 
       // glow
-      getDecorator().select(getComponent());
+      getDecorator().select(getBpelEntity());
 
       // scroll
       // myElement.scrollTo();
     }
 
     public void highlight() {
-      getDecorator().doHighlight(getComponent(), true);
+      getDecorator().doHighlight(getBpelEntity(), true);
     }
 
     public void unhighlight() {
-      getDecorator().doHighlight(getComponent(), false);
+      getDecorator().doHighlight(getBpelEntity(), false);
     }
 
     private Decorator getDecorator() {
       return Decorator.getDecorator(myElement.getPattern().getModel().getView());
     }
 
-    public Component getComponent() {
+    public BpelEntity getBpelEntity() {
       return myElement.getPattern().getOMReference();
     }
 

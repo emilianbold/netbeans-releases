@@ -55,6 +55,7 @@ import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.xml.schema.model.Attribute;
+import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
@@ -73,8 +74,10 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.XPathAxis;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.openide.ErrorManager;
 
 /**
@@ -182,6 +185,12 @@ public class AbstractBpelModelUpdater {
         //
         XPathBpelVariable xPathVar = 
                 new XPathBpelVariable(tpInfo.varDecl, tpInfo.part);
+        //
+        ReferenceableSchemaComponent sComp = xPathVar.getType();
+        assert sComp != null;
+        SchemaModelsStack sms = new SchemaModelsStack();
+        sms.appendSchemaComponent(sComp);
+        //
         QName varQName = xPathVar.constructXPathName();
         XPathVariableReference xPathVarRef = 
                 xPathModel.getFactory().newXPathVariableReference(varQName);
@@ -190,7 +199,7 @@ public class AbstractBpelModelUpdater {
             return xPathVarRef;
         } else {
             List<LocationStep> stepList = constructLSteps(
-                    xPathModel, tpInfo.schemaCompList, typeCastCollector);
+                    xPathModel, tpInfo.schemaCompList, typeCastCollector, sms);
             if (stepList != null && !(stepList.isEmpty())) {
                 XPathExpressionPath exprPath = xPathModel.getFactory().
                         newXPathExpressionPath(xPathVarRef, 
@@ -205,27 +214,29 @@ public class AbstractBpelModelUpdater {
     //==========================================================================
 
     protected List<LocationStep> constructLSteps(XPathModel xPathModel, 
-            List<Object> sCompList, Set<AbstractTypeCast> typeCastCollector) {
+            List<Object> sCompList, Set<AbstractTypeCast> typeCastCollector, 
+            SchemaModelsStack sms) {
         if (sCompList == null || sCompList.isEmpty()) {
             return null;
         } 
         //
         ArrayList<LocationStep> result = new ArrayList<LocationStep>();
+        SchemaComponent sComp = null;
         //
         for (Object stepObj : sCompList) {
             LocationStep newLocationStep = null;
             if (stepObj instanceof SchemaComponent) {
-                newLocationStep = constructLStep(xPathModel, 
-                        (SchemaComponent)stepObj, null);
+                sComp = (SchemaComponent)stepObj;
+                newLocationStep = constructLStep(xPathModel, sComp, null, sms);
             } else if (stepObj instanceof AbstractPredicate) {
                 AbstractPredicate pred = (AbstractPredicate)stepObj;
                 XPathPredicateExpression[] predArr = pred.getPredicates();
-                SchemaComponent sComp = pred.getSComponent();
-                newLocationStep = constructLStep(xPathModel, sComp, predArr);
+                sComp = pred.getSComponent();
+                newLocationStep = constructLStep(xPathModel, sComp, predArr, sms);
             } else if (stepObj instanceof AbstractTypeCast) {
                 AbstractTypeCast typeCast = (AbstractTypeCast)stepObj;
-                SchemaComponent sComp = typeCast.getSComponent();
-                newLocationStep = constructLStep(xPathModel, sComp, null);
+                sComp = typeCast.getSComponent();
+                newLocationStep = constructLStep(xPathModel, sComp, null, sms);
                 //
                 if (typeCastCollector != null) {
                     typeCastCollector.add(typeCast);
@@ -236,9 +247,21 @@ public class AbstractBpelModelUpdater {
                 // TODO: It would be more correct to do a copy of the stepObj
                 // because of it is owned by another XPathModel. 
                 newLocationStep = (LocationStep)stepObj;
+                if (newLocationStep != null) {
+                    XPathSchemaContext sContext = newLocationStep.getSchemaContext();
+                    if (sContext != null) {
+                        sComp = XPathSchemaContext.Utilities.getSchemaComp(sContext);
+                    }
+                }
             } else if (stepObj instanceof AbstractTypeCast) {
-                SchemaComponent sComp = ((AbstractTypeCast)stepObj).getSComponent();
-                newLocationStep = constructLStep(xPathModel, sComp, null);
+                sComp = ((AbstractTypeCast)stepObj).getSComponent();
+                newLocationStep = constructLStep(xPathModel, sComp, null, sms);
+            }
+            //
+            if (sComp != null) {
+                sms.appendSchemaComponent(sComp);
+            } else {
+                sms.discard();
             }
             //
             if (newLocationStep != null) {
@@ -256,7 +279,8 @@ public class AbstractBpelModelUpdater {
      * @return
      */
     protected LocationStep constructLStep(XPathModel xPathModel, 
-            SchemaComponent sComp, XPathPredicateExpression[] predArr) {
+            SchemaComponent sComp, XPathPredicateExpression[] predArr, 
+            SchemaModelsStack sms) {
         //
         if (!(sComp instanceof Named)) {
             return null;
@@ -269,7 +293,7 @@ public class AbstractBpelModelUpdater {
             axis = XPathAxis.CHILD;
         }
         //
-        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sComp);
+        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sComp, sms);
         LocationStep newLocationStep = xPathModel.getFactory().
                 newLocationStep(axis, nameTest, predArr);
         //

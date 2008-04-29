@@ -110,7 +110,7 @@ public class PathValidationContext implements XPathValidationContext {
         return myValidator;
     }
 
-    public ValidationVisitor getVVisitor() {
+    private ValidationVisitor getVVisitor() {
         return myVVisitor;
     }
 

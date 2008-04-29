@@ -49,13 +49,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.server.test.MockInstanceImplementation;
 import org.netbeans.modules.server.test.MockInstanceProvider;
-import org.netbeans.modules.server.test.MockWizardProvider;
 import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  *

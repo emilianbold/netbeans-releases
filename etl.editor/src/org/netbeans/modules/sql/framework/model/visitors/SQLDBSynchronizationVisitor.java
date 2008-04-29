@@ -222,9 +222,9 @@ public class SQLDBSynchronizationVisitor {
         try {
             meta.connectDB(conn);
 
-            if (meta.isTableOrViewExist(collabTable.getCatalog(), collabTable.getSchema(), collabTable.getName())) {
+            if (meta.isTableOrViewExist(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable))) {
                 // Get the table from database
-                Table newTable = new Table(collabTable.getName(), collabTable.getCatalog(), collabTable.getSchema());
+                Table newTable = new Table(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable));
                 meta.populateColumns(newTable);
 
                 List collabColumns = collabTable.getColumnList();
@@ -245,9 +245,13 @@ public class SQLDBSynchronizationVisitor {
 
             // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
             } else {
+                boolean createIfNotExists = false;
+                if (collabTable instanceof TargetTable) {
+                    createIfNotExists = ((TargetTable) collabTable).isCreateTargetTable();
+                }
                 String nbBundle1 = mLoc.t("BUND299: Table {0} is removed or renamed in Database",collabTable.getName());
                 String desc = nbBundle1.substring(15) + " " + connDef.getConnectionURL();
-                ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
+                ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, createIfNotExists ? ValidationInfo.VALIDATION_WARNING : ValidationInfo.VALIDATION_ERROR);
                 infoList.add(vInfo);
                 return;
             }

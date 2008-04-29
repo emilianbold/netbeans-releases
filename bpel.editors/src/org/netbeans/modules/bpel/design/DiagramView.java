@@ -427,14 +427,22 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
     public FPoint convertScreenToDiagram(Point point, double zoom) {
         double x = ((point.x - offsetX) / zoom) + LayoutManager.HMARGIN;
         double y = ((point.y - offsetY) / zoom) + LayoutManager.VMARGIN;
-
+        
+        if (designView.getPrintMode()) {
+            x = ((point.x - getWidth() / 2) / zoom) + LayoutManager.HMARGIN;
+            y = ((point.y) / zoom) + LayoutManager.VMARGIN;
+        }
         return new FPoint(x, y);
     }
 
     public Point convertDiagramToScreen(FPoint point, double zoom) {
         double x = (point.x - LayoutManager.HMARGIN) * zoom + offsetX;
         double y = (point.y - LayoutManager.VMARGIN) * zoom + offsetY;
-
+        
+        if (designView.getPrintMode()) {
+            x = (point.x - LayoutManager.HMARGIN) * zoom + getWidth() / 2;
+            y = (point.y - LayoutManager.VMARGIN) * zoom;
+        }
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
 

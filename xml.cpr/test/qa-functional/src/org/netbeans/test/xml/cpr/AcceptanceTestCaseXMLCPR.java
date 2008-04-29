@@ -76,6 +76,8 @@ import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.netbeans.jellytools.OutputTabOperator;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -348,6 +350,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Normal version
       // just click
       table.clickOnCell( row, col, count );
+      table.pushKey( KeyEvent.VK_RIGHT );
 
       // HaCk version
       /*
@@ -363,7 +366,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       table.releaseMouse( pt.x, pt.y );
       */
 
-      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+      try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
       int iRows = table.getRowCount( );
       if( result != iRows )
         fail( error + iRows );
@@ -1307,6 +1310,15 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     protected void ValidateAndBuildInternal( String sSample )
     {
+      ValidateAndBuildInternal( sSample, false, "dist_se" );
+    }
+
+    protected void ValidateAndBuildInternal(
+        String sSample,
+        boolean bWarnings,
+        String sBuildName
+      )
+    {
       // Set focus to file for validation to ensure Validate menu enabled
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
       
@@ -1336,6 +1348,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
 
       // Build
+      BuildInternal( sSample, bWarnings, sBuildName );
+      /*
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
@@ -1349,14 +1363,28 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       prn.performPopupActionNoBlock( "Build" );
 
-      // Wait till JAXB really created
-      try
+      if( bWarnings )
       {
-        stt.waitText( "Finished building build.xml (dist_se)." );
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
       }
-      catch( JemmyException ex )
+
+      for( int i = 0; i < 3; i++ )
       {
-        // Check after exception anyway to avoid some fails.
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
       }
       stt.stop( );
 
@@ -1370,10 +1398,36 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Close output
       out.close( );
+      */
     }
 
     protected void DeployCompositeApplicationInternal( String sName )
     {
+      // TEMP : start GF first
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Services");
+      TopComponentOperator top = new TopComponentOperator( "Services" );
+      JTreeOperator jt = new JTreeOperator( top, 0 );
+      Node node = new Node( jt, "Servers|GlassFish" );
+      node.select( );
+      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
+      node.performPopupActionNoBlock( "Start" );
+      OutputOperator ogf = new OutputOperator( );
+      OutputTabOperator otgf = ogf.getOutputTab( "GlassFish" );
+      for( int i = 0; i < 8; i++ )
+      {
+        try
+        {
+          otgf.waitText( "Application server startup complete." );
+          i = 8;
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( "**** GF IN PROGRESS ****" );
+        }
+      }
+      ////////////////////////////////////////////////////////////////////
+      
+
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -1401,7 +1455,18 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
 
       // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (run)." );
+      for( int i = 0; i < 5; i++ )
+      {
+        try
+        {
+          stt.waitText( "Finished building build.xml (run)." );
+          i = 5;
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( "**** DEPLOY IN PROGRESS ****" );
+        }
+      }
       stt.stop( );
 
       // Check output for BUILD SUCCESSFUL
@@ -1415,7 +1480,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         fail( "BUILD FAILED mark found for deploy CA:\n" + sText + "\n" );
     }
 
-    public void BuildCompositeApplicationInternal( String sName )
+    public void BuildInternal(
+        String sName,
+        boolean bWarnings,
+        String sBuildName
+      )
     {
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
@@ -1428,19 +1497,142 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       stt.start( );
 
       prn.performPopupActionNoBlock( "Build" );
+      OutputOperator out = OutputOperator.invoke( );
 
-      // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (jbi-build)." );
+      if( bWarnings )
+      {
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
+      }
+
+      for( int i = 0; i < 3; i++ )
+      {
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
+      }
       stt.stop( );
 
-      // Check output for BUILD SUCCESSFUL
       // Get output
-      OutputOperator out = OutputOperator.invoke( );
+      out = new OutputOperator( );
       String sText = out.getText( );
       if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
-        fail( "Unable to build composite application.\n" + sText + "\n" );
+        fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( BUILD_FAILED ) )
-        fail( "BUILD FAILED mark found for build CA:\n" + sText + "\n" );
+        fail( "BUILD FAILED mark found:\n" + sText + "\n" );
+
+      // Close output
+      out.close( );
+    }
+
+    public void CreateNewTestInternal( String sSample, String sApplication )
+    {
+      // Get tree
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Test" );
+      prn.select( );
+      // Click create new test
+      prn.performPopupActionNoBlock( "New Test Case" );
+      JDialogOperator jnew = new JDialogOperator( "New Test Case" );
+      JButtonOperator jbut = new JButtonOperator( jnew, "Next" );
+      jbut.pushNoBlock( );
+      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
+      jnew = new JDialogOperator( "New Test Case" );
+      JTreeOperator jt = new JTreeOperator( jnew, 0 );
+      TreePath path = jt.findPath( sSample + " - Source Packages|POService" );
+      jt.clickOnPath( path );
+      jbut = new JButtonOperator( jnew, "Next" );
+      jbut.pushNoBlock( );
+      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
+      System.out.println( "**** find page ****" );
+      jnew = new JDialogOperator( "New Test Case" );
+      System.out.println( "**** find tree ****" );
+      jt = new JTreeOperator( jnew, 0 );
+      System.out.println( "**** find  ****" );
+      jt.pushKey( KeyEvent.VK_DOWN );
+      jt.pushKey( KeyEvent.VK_DOWN );
+      //path = jt.findPath( "purchaseOrderPort|sendPurchaseOrder" );
+      //jt.clickOnPath( path );
+      jbut = new JButtonOperator( jnew, "Finish" );
+      jbut.pushNoBlock( );
+      WaitDialogClosed( jnew );
+
+      // Check result
+      //prn = pto.getProjectRootNode( sApplication + "|Test|TestCase1" );
+      //prn.select( );
+
+      EditorOperator op = new EditorOperator( "Input.xml" );
+      op.close( );
+    }
+
+    public void RunNewTestInternal( String sApplication )
+    {
+      // Get tree
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Test|TestCase1" );
+      prn.select( );
+      // Click create new test
+      prn.performPopupActionNoBlock( "Run" );
+
+      // Select server
+      try
+      {
+        JDialogOperator warn = new JDialogOperator( "Warning - Select Server" );
+        JButtonOperator jok = new JButtonOperator( warn, "OK" );
+        jok.push( );
+        WaitDialogClosed( warn );
+      }
+      catch( JemmyException ex )
+      {
+      }
+
+      // Warning x2
+      /*
+      for( int i = 0; i < 2; i++ )
+      {
+        JDialogOperator warn = new JDialogOperator( "Warning" );
+        JButtonOperator jok = new JButtonOperator( warn, "OK" );
+        jok.push( );
+        WaitDialogClosed( warn );
+      }
+      */
+
+      // Overwrite Empty Output
+      JDialogOperator empty = new JDialogOperator( "Overwrite Empty Output" );
+      JButtonOperator jyes = new JButtonOperator( empty, "Yes" );
+      jyes.push( );
+      WaitDialogClosed( empty );
+
+      // Run
+      pto = new ProjectsTabOperator( );
+      prn = pto.getProjectRootNode( sApplication + "|Test|TestCase1" );
+      prn.select( );
+      // Click create new test
+      //prn.performPopupActionNoBlock( "Run" );
+
+      // "Finished building build.xml (test-single)."
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      prn.performPopupActionNoBlock( "Run" );
+      stt.waitText( "Finished building build.xml (test-single)." );
+      stt.stop( );
+
+      // Check result
+      // "JUnit Test Results"
+      // "Passed. Threads count Success: <1> Error: <0> Not completed: <0>"
+      
     }
 
     public void tearDown() {

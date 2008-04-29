@@ -62,6 +62,11 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import org.axiondb.AxionException;
+import org.axiondb.Database;
+import org.axiondb.engine.Databases;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.openide.util.Exceptions;
@@ -77,14 +82,15 @@ public class DBExplorerUtil {
     private static final String LOG_CATEGORY = DBExplorerUtil.class.getName();
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
 
-    private static String adjustDatabaseURL(String url) {
+    public static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
             String relativePath = "\\nbproject\\private\\databases\\";
             if (urlParts[1].startsWith(ETLEditorSupport.PRJ_PATH)) {
-                url = AXION_URL_PREFIX + ETLEditorSupport.PRJ_NAME + "_" + urlParts[0] + ":" + urlParts[1];
+                String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME) ? urlParts[0] : ETLEditorSupport.PRJ_NAME + "_" + urlParts[0];
+                url = AXION_URL_PREFIX + adjustedName + ":" + urlParts[1];
             } else if (urlParts[1].startsWith(relativePath)) {
                 url = AXION_URL_PREFIX + urlParts[0] + ":" + ETLEditorSupport.PRJ_PATH + urlParts[1];
             }
@@ -128,6 +134,12 @@ public class DBExplorerUtil {
         String username = connProps.getProperty(DBConnectionFactory.PROP_USERNAME);
         String password = connProps.getProperty(DBConnectionFactory.PROP_PASSWORD);
         String url = connProps.getProperty(DBConnectionFactory.PROP_URL);
+        if(!(url.contains(AXION_URL_PREFIX))){
+            if (StringUtil.isNullString(username) || StringUtil.isNullString(password)){
+             JOptionPane.showMessageDialog(new JFrame(),"UserName/Password is empty.Please fill in the credentials ","Error", JOptionPane.ERROR_MESSAGE);                
+                return null;
+            }
+        }
         return createConnection(driver, url, username, password);
     }
     public static final String AXION_URL_PREFIX = "jdbc:axiondb:";
@@ -158,13 +170,19 @@ public class DBExplorerUtil {
         return conn;
     }
 
+    public static void isCmdLineImport(boolean val) {
+        isCmdLine = val;
+    }
+    public static boolean isCmdLine;
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
         JDBCDriver drv = null;
         Connection conn = null;
         try {
+            if (!isCmdLine) {
             url = adjustDatabaseURL(url);
+            }
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
@@ -214,8 +232,9 @@ public class DBExplorerUtil {
         JDBCDriver drv = null;
         String schema = null;
         try {
-
+            if (!isCmdLine) {
             url = adjustDatabaseURL(url);
+            }
             drv = registerDriver(driverName);
 
             // check if connection exists in DB Explorer. Else add the connection to DB Explorer.
@@ -331,12 +350,15 @@ public class DBExplorerUtil {
                 prop.setProperty("password", password);
                 conn = newDriverClass.connect(url, prop);
             } catch (SQLException e) {
-                mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                //mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                mLogger.infoNoloc("Unable to get the specified connection directly.{0}");
             } catch (Exception numex) {
-                mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                //mLogger.infoNoloc(mLoc.t("EDIT098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
+                mLogger.infoNoloc("Unable to get the specified connection directly.{0}");
             }
         } catch (Exception ex) {
-            mLogger.infoNoloc(mLoc.t("EDIT100: Unable to find the driver class in the specified jar file{0}", LOG_CATEGORY));
+            //mLogger.infoNoloc(mLoc.t("EDIT100: Unable to find the driver class in the specified jar file{0}", LOG_CATEGORY));
+            mLogger.infoNoloc("Unable to find the driver class in the specified jar file{0}");
         }
         return conn;
     }
@@ -431,5 +453,12 @@ public class DBExplorerUtil {
             connName = dbName.trim() + "@" + host + " [DERBY]";
         }
         return connName;
+    }
+    public static Database getAxionDBFromURL(String url) throws AxionException {
+        int initialDBIndex = url.indexOf("axiondb") + 8;
+        int endDBIndex = url.indexOf(":", initialDBIndex);
+        String dbName = url.substring(initialDBIndex, endDBIndex);
+        String dbLoc = url.substring(endDBIndex + 1);
+        return (Databases.getOrCreateDatabase(dbName, new File(dbLoc)));
     }
 }

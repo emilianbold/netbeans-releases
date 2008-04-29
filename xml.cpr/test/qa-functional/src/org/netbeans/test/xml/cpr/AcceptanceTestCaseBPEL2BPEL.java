@@ -103,8 +103,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "ValidateAndBuild",
         "BuildCompositeApplication",
         "DeployCompositeApplication", // This will failed, followed skipped
-        //"CreateNewTest",
-        //"RunNewTest",
+        "CreateNewTest",
+        "RunNewTest",
     };
 
     static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
@@ -563,7 +563,11 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
 
       endTest( );
     }
@@ -572,7 +576,6 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      fail( "OHH" );
       DeployCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
       
       endTest( );
@@ -582,7 +585,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      CreateNewTestInternal( SAMPLE_NAME, COMPOSITE_APPLICATION_NAME );
 
       endTest( );
     }
@@ -591,7 +594,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      RunNewTestInternal( COMPOSITE_APPLICATION_NAME );
 
       endTest( );
     }

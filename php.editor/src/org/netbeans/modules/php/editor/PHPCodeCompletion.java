@@ -91,6 +91,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -157,7 +158,7 @@ public class PHPCodeCompletion implements Completable {
     private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
-    private NameKind prefixNameKind;
+    private NameKind nameKind;
     
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         try {
@@ -242,7 +243,7 @@ public class PHPCodeCompletion implements Completable {
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
-        this.prefixNameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
         
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
@@ -296,7 +297,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
-        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
             proposals.add(new ClassItem(clazz, request));
         }
     }
@@ -366,8 +367,8 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (typeName != null){
                     Collection<IndexedFunction> methods = includeInherited ?
-                        request.index.getAllMethods(request.result, typeName, request.prefix, prefixNameKind) :
-                        request.index.getMethods(request.result, typeName, request.prefix, prefixNameKind);
+                        request.index.getAllMethods(request.result, typeName, request.prefix, nameKind) :
+                        request.index.getMethods(request.result, typeName, request.prefix, nameKind);
                     
                     for (IndexedFunction method : methods){
                         if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
@@ -376,8 +377,8 @@ public class PHPCodeCompletion implements Completable {
                     }
                     
                     Collection<IndexedConstant> properties = includeInherited ?
-                        request.index.getAllProperties(request.result, typeName, request.prefix, prefixNameKind) :
-                        request.index.getProperties(request.result, typeName, request.prefix, prefixNameKind);
+                        request.index.getAllProperties(request.result, typeName, request.prefix, nameKind) :
+                        request.index.getProperties(request.result, typeName, request.prefix, nameKind);
                     
                     for (IndexedConstant prop : properties){
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
@@ -393,7 +394,7 @@ public class PHPCodeCompletion implements Completable {
                     
                     if (staticContext) {
                         Collection<IndexedConstant> classConstants = request.index.getClassConstants(
-                                request.result, typeName, request.prefix, prefixNameKind);
+                                request.result, typeName, request.prefix, nameKind);
                         
                         for (IndexedConstant constant : classConstants) {
                             proposals.add(new VariableItem(constant, request));
@@ -427,12 +428,12 @@ public class PHPCodeCompletion implements Completable {
         // FUNCTIONS
         PHPIndex index = request.index;
 
-        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
             proposals.add(new FunctionItem(function, request));
         }
 
         // CONSTANTS
-        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, prefixNameKind)) {
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
             proposals.add(new ConstantItem(constant, request));
         }
 
@@ -473,6 +474,32 @@ public class PHPCodeCompletion implements Completable {
         return proposals;
     }
     
+    private void getLocalVariables_indexVariable(Expression expr,
+            Map<String, IndexedConstant> localVars,
+            String namePrefix, String localFileURL) {
+        
+        if (expr instanceof Assignment) {
+            Assignment assignment = (Assignment) expr;
+            String varName = extractVariableNameFromAssignment(assignment);
+            String varType = extractVariableTypeFromAssignment(assignment);
+
+            if (varName != null && (varName.startsWith(namePrefix) 
+                    || nameKind == NameKind.CASE_INSENSITIVE_PREFIX 
+                    && varName.toLowerCase().startsWith(namePrefix.toLowerCase()))) {
+                
+                IndexedConstant ic = new IndexedConstant(varName, null,
+                        null, localFileURL, -1, 0, varType);
+
+                localVars.put(varName, ic);
+            }
+            
+            if (assignment.getRightHandSide() instanceof Assignment){
+                getLocalVariables_indexVariable(assignment.getRightHandSide(),
+                        localVars, namePrefix, localFileURL);
+            }
+        }
+    }
+    
     private Collection<IndexedConstant> getLocalVariables(Collection<Statement> statementList, String namePrefix, int position, String localFileURL){
         Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
         
@@ -482,16 +509,9 @@ public class PHPCodeCompletion implements Completable {
             }
             
             if (statement instanceof ExpressionStatement){
-                String varName = extractVariableNameFromExpression(statement);
+                Expression expr = ((ExpressionStatement)statement).getExpression();
+                getLocalVariables_indexVariable(expr, localVars, namePrefix, localFileURL);
                 
-                if (varName != null && varName.startsWith(namePrefix)) {
-                    IndexedConstant ic = new IndexedConstant(varName, null,
-                            null, localFileURL, null, 0, -1);
-
-                    String varType = extractVariableTypeFromExpression(statement);
-                    ic.setTypeName(varType);
-                    localVars.put(varName, ic);
-                }
             } else if (!offsetWithinStatement(position, statement)){
                 continue;
             }
@@ -504,6 +524,7 @@ public class PHPCodeCompletion implements Completable {
                 
             } else if (statement instanceof IfStatement){
                 IfStatement ifStmt = (IfStatement)statement;
+                getLocalVariables_indexVariable(ifStmt.getCondition(), localVars, namePrefix, localFileURL);
                 
                 if (offsetWithinStatement(position, ifStmt.getTrueStatement())) {
                     getLocalVariables_MergeResults(localVars,
@@ -517,6 +538,7 @@ public class PHPCodeCompletion implements Completable {
                 }
             } else if (statement instanceof WhileStatement) {
                 WhileStatement whileStatement = (WhileStatement) statement;
+                getLocalVariables_indexVariable(whileStatement.getCondition(), localVars, namePrefix, localFileURL);
                 
                 getLocalVariables_MergeResults(localVars,
                         getLocalVariables(Collections.singleton(whileStatement.getBody()), namePrefix, position, localFileURL));
@@ -525,20 +547,25 @@ public class PHPCodeCompletion implements Completable {
                 
                 getLocalVariables_MergeResults(localVars,
                         getLocalVariables(Collections.singleton(doStatement.getBody()), namePrefix, position, localFileURL));
-            }
-            else if (statement instanceof FunctionDeclaration) {
+            } else if (statement instanceof ForStatement) {
+                ForStatement forStatement = (ForStatement) statement;
+                
+                for (Expression expr : forStatement.getInitializers()){
+                    getLocalVariables_indexVariable(expr, localVars, namePrefix, localFileURL);
+                }
+                
+                getLocalVariables_MergeResults(localVars,
+                        getLocalVariables(Collections.singleton(forStatement.getBody()), namePrefix, position, localFileURL));
+            } else if (statement instanceof FunctionDeclaration) {
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
 
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
+                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
                         IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, null, 0, -1);
+                                null, localFileURL, -1, 0, type);
                         
-                        if (param.getParameterType() != null) {
-                            ic.setTypeName(param.getParameterType().getName());
-                        }
-
                         localVars.put(varName, ic);
                     }
                 }
@@ -574,40 +601,37 @@ public class PHPCodeCompletion implements Completable {
         return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
     }
 
-    private static String extractVariableNameFromExpression(Statement statement) {
-        Expression expr = ((ExpressionStatement) statement).getExpression();
+    private static String extractVariableNameFromAssignment(Assignment assignment) {
+        VariableBase variableBase = assignment.getLeftHandSide();
 
-        if (expr instanceof Assignment) {
-            VariableBase variableBase = ((Assignment) expr).getLeftHandSide();
-
-            if (variableBase instanceof Variable) {
-                Variable var = (Variable) variableBase;
-                return extractVariableName(var);
-            }
+        if (variableBase instanceof Variable) {
+            Variable var = (Variable) variableBase;
+            return extractVariableName(var);
         }
-        
+
         return null;
     }
     
-    private static String extractVariableTypeFromExpression(Statement statement) {
-        Expression expr = ((ExpressionStatement) statement).getExpression();
-
-        if (expr instanceof Assignment) {
-            Expression rightSideExpression = ((Assignment) expr).getRightHandSide();
-
-            if (rightSideExpression instanceof ClassInstanceCreation) {
-                ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
-                Expression className = classInstanceCreation.getClassName().getName();
-                
-                if (className instanceof Identifier) {
-                    Identifier identifier = (Identifier) className;
-                    return identifier.getName();
-                }
-            } else if (rightSideExpression instanceof ArrayCreation){
-                return "array"; //NOI18N
-            }
-        }
+    private static String extractVariableTypeFromAssignment(Assignment assignment) {
+        Expression rightSideExpression = assignment.getRightHandSide();
         
+        if (rightSideExpression instanceof Assignment) {
+            // handle nested assignments, e.g. $l = $m = new ObjectName;
+            return extractVariableTypeFromAssignment((Assignment)assignment.getRightHandSide());
+        }
+
+        if (rightSideExpression instanceof ClassInstanceCreation) {
+            ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
+            Expression className = classInstanceCreation.getClassName().getName();
+
+            if (className instanceof Identifier) {
+                Identifier identifier = (Identifier) className;
+                return identifier.getName();
+            }
+        } else if (rightSideExpression instanceof ArrayCreation) {
+            return "array"; //NOI18N
+        }
+
         return null;
     }
     
