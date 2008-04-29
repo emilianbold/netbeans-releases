@@ -82,16 +82,12 @@ public class DBExplorerUtil {
     private static final String LOG_CATEGORY = DBExplorerUtil.class.getName();
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
-    private static String cmdLinePrjName = null;
-    public static boolean isCmdLine;
+    //private static transient final Localizer mLoc = Localizer.get();
 
     public static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
             String relativePath = "\\nbproject\\private\\databases\\";
-            if ((isCmdLine)) {
-                url = AXION_URL_PREFIX + cmdLinePrjName + "_" + urlParts[0] + ":" + urlParts[1];
-            }
             if (urlParts[1].startsWith(ETLEditorSupport.PRJ_PATH)) {
                 String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME) ? urlParts[0] : ETLEditorSupport.PRJ_NAME + "_" + urlParts[0];
                 url = AXION_URL_PREFIX + adjustedName + ":" + urlParts[1];
@@ -174,21 +170,15 @@ public class DBExplorerUtil {
         return conn;
     }
 
-    public static void isCmdLineImport(boolean val) {
-        isCmdLine = val;
-    }
-    public static void setCmdLinePrjName(String str) {
-        cmdLinePrjName = str;
-    }
+
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
         JDBCDriver drv = null;
         Connection conn = null;
         try {
-            if (!isCmdLine) {
+           
             url = adjustDatabaseURL(url);
-            }
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
