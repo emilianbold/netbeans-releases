@@ -119,6 +119,7 @@ public class EtlproProjectGenerator {
 
         String dbName = FileUtil.toFile(defaultFileObj).getAbsolutePath();
         createDefaultDatabase(dbName);
+		setMigrationUtil();
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
