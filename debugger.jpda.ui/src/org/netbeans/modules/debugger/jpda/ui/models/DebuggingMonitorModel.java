@@ -349,24 +349,29 @@ NodeActionsProviderFilter, TableModel, Constants {
         evaluationRP.post(new Runnable() {
             public void run() {
                 Object shortDescription;
+                // TODO: Enable tooltips again after problem with call stack refreshing is fixed.
                 if (o instanceof ContendedMonitor) {
-                    ObjectVariable v = ((ContendedMonitor) o).variable;
+                    /*ObjectVariable v = ((ContendedMonitor) o).variable;
                     try {
                         shortDescription = "(" + v.getType () + ") " + v.getToStringValue ();
                     } catch (InvalidExpressionException ex) {
                         shortDescription = ex.getLocalizedMessage ();
-                    }
+                    }*/
+                    shortDescription = "";
                 } else
                 if (o instanceof OwnedMonitors) {
                     shortDescription = "";
                 } else
                 if (o instanceof ObjectVariable) {
+                    /*
                     ObjectVariable v = (ObjectVariable) o;
                     try {
                         shortDescription = "(" + v.getType () + ") " + v.getToStringValue ();
                     } catch (InvalidExpressionException ex) {
                         shortDescription = ex.getLocalizedMessage ();
                     }
+                     */
+                    shortDescription = "";
                 } else {
                     try {
                         shortDescription = model.getShortDescription (o);

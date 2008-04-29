@@ -310,7 +310,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                         ("CTL_ThreadsModel_State_Unknown");
                     break;
                 case JPDAThread.STATE_MONITOR:
-                    ObjectVariable ov = t.getContendedMonitor ();
+                    s = ""; // TODO: Enable tooltips again after problem with call stack refreshing is fixed.
+                    ObjectVariable ov;/* = t.getContendedMonitor ();
                     if (ov == null)
                         s = NbBundle.getBundle (ThreadsNodeModel.class).
                             getString ("CTL_ThreadsModel_State_Monitor");
@@ -324,7 +325,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                                     new Object [] { ov.getToStringValue () });
                         } catch (InvalidExpressionException ex) {
                             s = ex.getLocalizedMessage ();
-                        }
+                        }*/
                     break;
                 case JPDAThread.STATE_NOT_STARTED:
                     s = NbBundle.getBundle (ThreadsNodeModel.class).getString
