@@ -93,17 +93,33 @@ public final class SpringConfigModel {
      * sense that they are reachable when the {@code run()} method has
      * finished running.</strong></p>
      *
-     * @param action
+     * @param action the action to run.
      */
     public void runReadAction(final Action<SpringBeans> action) throws IOException {
         controller.runReadAction(action);
     }
 
+    /**
+     * Provides access to the model and the document for each underlying configuration file.
+     * This method expects an {@link Action} which will be invoked sequentially for each configuration
+     * file. This is useful for actions which need to process all files in the
+     * model while also accessing the document for each file (for example, refactoring).
+     *
+     * <p><strong>All clients must make sure that no objects obtained from
+     * the {@code SpringBeans} instance "escape" the {@code run()} method, in the
+     * sense that they are reachable when the {@code run()} method has
+     * finished running.</strong></p>
+     *
+     * @param  action the action to run.
+     */
     public void runDocumentAction(Action<DocumentAccess> action) throws IOException {
         controller.runDocumentAction(action);
     }
 
-    // XXX remove public constructor.
+    /**
+     * Encapsulates access to the model and the document of one of the underlying
+     * configuration files.
+     */
     public static final class DocumentAccess {
 
         private final SpringBeans springBeans;

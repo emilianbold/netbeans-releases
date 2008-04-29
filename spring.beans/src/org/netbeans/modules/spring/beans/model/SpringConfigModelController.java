@@ -135,6 +135,14 @@ public class SpringConfigModelController {
         }
     }
 
+    /**
+     * Provides access to the model and the document for each underlying configuration file.
+     * The passed {@code action} will be invoked sequentially for each configuration
+     * file. This is useful for actions which need to process all files in the
+     * model while also accessing the document for each file (for example, refactoring).
+     *
+     * @param  action the action to run.
+     */
     public void runDocumentAction(final Action<DocumentAccess> action) throws IOException {
         try {
             ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
