@@ -181,6 +181,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             editorExtProcessor.processVariables();
             for (Copy copy : assign.getChildren(Copy.class)) {
                 BpelEntityCasts castList = editorExtProcessor.getCastList(copy);
+                editorExtProcessor.registerCasts(castList);
                 addCopyGraph(copy, newMapperModel, castList);
             }
             //
@@ -211,12 +212,14 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                 if (timeEvent instanceof For) {
                     For expr = (For)timeEvent;
                     BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                    editorExtProcessor.registerCasts(castList);
                     addExpressionGraph(expr, newMapperModel, 
                             DateValueTreeModel.DURATION_CONDITION, 
                             timeEH, castList);
                 } else if (timeEvent instanceof DeadlineExpression) {
                     DeadlineExpression expr = (DeadlineExpression)timeEvent;
                     BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                    editorExtProcessor.registerCasts(castList);
                     addExpressionGraph(expr, newMapperModel, 
                             DateValueTreeModel.DEADLINE_CONDITION, 
                             timeEH, castList);
@@ -249,6 +252,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             Expression expr = ((ConditionHolder)bpelEntity).getCondition();
             if (expr != null) {
                 BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                editorExtProcessor.registerCasts(castList);
                 addExpressionGraph(expr, newMapperModel, 
                         ConditionValueTreeModel.BOOLEAN_CONDITION, 
                         bpelEntity, castList);
@@ -277,6 +281,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             Expression expr = forEach.getStartCounterValue();
             if (expr != null) {
                 BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                editorExtProcessor.registerCasts(castList);
                 addExpressionGraph(expr, newMapperModel, 
                         ForEachConditionsTreeModel.START_VALUE, 
                         forEach, castList);

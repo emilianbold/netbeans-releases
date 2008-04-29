@@ -168,17 +168,20 @@ public class CastManager {
         }
     }
 
-    public void addTypeCast(RestartableIterator<Object> castedCompItr, 
+    public boolean addTypeCast(RestartableIterator<Object> castedCompItr, 
             SyntheticTypeCast cast) {
         //
         List<Object> castedCompPath = 
-                PathConverter.constructObjectLocationtList(castedCompItr);
+                PathConverter.constructObjectLocationtList(castedCompItr, true);
         //
         if (castedCompPath != null) {
             if (addTypeCastImpl(castedCompPath, cast)) {
                 registerVariableTypeCast(cast);
+                return true;
             }
         }
+        //
+        return false;
     }
     
     //-------------------------------------------------------
@@ -434,6 +437,10 @@ public class CastManager {
         int initialSize = children.size();
         int deletedChildCount = 0;
         for (BpelEntity child : children) {
+            if (child instanceof Cast) {
+                // it's strange, but the Cast extends the BpelContainer
+                continue;
+            }
             if (child instanceof BpelContainer) {
                 if (clearEmptyContainer((BpelContainer)child)) {
                     container.remove(child);
@@ -450,17 +457,22 @@ public class CastManager {
      * @param castToDelete
      */
     public void removeTypeCast(AbstractTypeCast castToDelete) {
-        for (CashedVariableCast cVarCast : mCashedCastedVarList) {
+        ListIterator<CashedVariableCast> varItr = mCashedCastedVarList.listIterator();
+        while (varItr.hasNext()) {
+            CashedVariableCast cVarCast = varItr.next();
             AbstractTypeCast cast = cVarCast.getTypeCast();
             if (cast.equals(castToDelete)) {
-                mCashedCastList.remove(cast);
+                varItr.remove();
                 return;
             }
         }
-        for (CachedCast cCast : mCashedCastList) {
+        //
+        ListIterator<CachedCast> typeItr = mCashedCastList.listIterator();
+        while (typeItr.hasNext()) {
+            CachedCast cCast = typeItr.next();
             AbstractTypeCast cast = cCast.getTypeCast();
             if (cast.equals(castToDelete)) {
-                mCashedCastList.remove(cast);
+                typeItr.remove();
                 return;
             }
         }
