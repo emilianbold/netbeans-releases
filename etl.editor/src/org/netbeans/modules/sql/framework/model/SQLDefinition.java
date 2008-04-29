@@ -69,8 +69,8 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
     /** XML formatting constant: indent prefix */
     public static final String INDENT = "    ";
 
-    public static final String AXION_DB_WORKING_FOLDER="AxionWorkingFolder";
-    public static final String AXION_DB_INSTANCE_NAME="AxionInstanceName";
+    public static final String AXION_DB_WORKING_DIR="AxiondbWorkingDirectory";
+    public static final String AXION_DB_DATA_DIR="AxiondbDataDirectory";
 
     /**
      * add an sql object listener
@@ -109,26 +109,26 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * run this colloboration
      * @param appDataRoot
      */
-    public void setWorkingFolder(String appDataRoot);
+    public void setAxiondbWorkingDirectory(String appDataRoot);
     
     /**
      * sets the name of the axion instance where this etl 
      * colloboration is run
      * @param dbInstanceName
      */
-    public void setDbInstanceName(String dbInstanceName);
+    public void setAxiondbDataDirectory(String dbInstanceName);
     
     /**
      * getter for axion db working folder
      * @return
      */
-    public String getDBWorkingFolder();
+    public String getAxiondbWorkingDirectory();
     
     /**
      * getter for the axion database instance name
      * @return
      */
-    public String getDbInstanceName();
+    public String getAxiondbDataDirectory();
     
     
     public Object getAttributeValue(String attrName);
