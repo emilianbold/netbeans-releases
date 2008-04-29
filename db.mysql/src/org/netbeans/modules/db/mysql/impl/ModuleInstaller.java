@@ -39,8 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
+import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.util.Utils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -50,8 +52,9 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
-import org.netbeans.modules.db.mysql.DatabaseUtils.URLParser;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils.ConnectStatus;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -91,7 +94,7 @@ public class ModuleInstaller extends ModuleInstall {
 
 
             ProgressHandle handle = ProgressHandleFactory.createSystemHandle(
-                    NbBundle.getMessage(ModuleInstaller.class, "MSG_RegisterMySQL"));
+                    Utils.getMessage( "MSG_RegisterMySQL"));
             handle.start();
             try {
                 findAndRegisterMySQL();
@@ -171,7 +174,7 @@ public class ModuleInstaller extends ModuleInstall {
         }
         
         private void findAndRegisterInstallation() {
-            Installation installation = InstallationSupport.detectInstallation();
+            Installation installation = InstallationManager.detectInstallation();
             if ( installation == null ) {
                 return;
             }

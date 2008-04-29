@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,24 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+
+package org.netbeans.modules.db.mysql;
+
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.nodes.Node;
 
 /**
- * This is marker class for its package.
- *
- * @author ads
- *
+ * Model class representing a database.  Right now all it has is a 
+ * name, but in the future it may provide more information.
+ * 
+ * @author David Van Couvering
  */
-public final class ResourceMarker {
-
-    public static final String PROJECT_ICON = "phpProject.png";      // NOI18N
+public class Database implements Node.Cookie {
+    private final String name;
+    private final DatabaseServer server;
     
-    public static final String OPTIONS_ICON = "php-icon_32.png";      // NOI18N
+    public Database(DatabaseServer server, String dbname) {
+        name = dbname;
+        this.server = server;
+    }
 
-    private ResourceMarker () {}    
+    public String getDbName() {
+        return name;
+    }
+    
+    public String getDisplayName() {
+        return name;
+    }
 
-    public static String getLocation() {
-        return ResourceMarker.class.getPackage().getName().replace( ".", "/") +"/ui/resources/";
+    public String getShortDescription() {
+       return Utils.getMessage( 
+               "LBL_DBNodeShortDescription",
+               getDisplayName());
+    }
+    
+    public DatabaseServer getServer() {
+        return server;
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+        return other != null && other instanceof Database &&
+                ((Database)other).getDbName().equals(getDbName());
+    }
+    
+    @Override
+    public int hashCode() {
+        return getDbName().hashCode();
     }
 }

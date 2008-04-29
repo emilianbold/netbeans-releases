@@ -84,7 +84,7 @@ public abstract class WsdlValidator extends Validator {
 //out("22");
     init(validation, type);
 
-    if ( !isValidationComplete()) {
+    if ( !isComplete()) {
 //out("33");
       return null;
     }

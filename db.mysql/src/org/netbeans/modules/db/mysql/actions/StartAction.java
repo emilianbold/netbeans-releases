@@ -36,10 +36,11 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.actions;
 
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
@@ -52,7 +53,7 @@ import org.openide.util.actions.CookieAction;
  */
 public class StartAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+            new Class[] { DatabaseServer.class };
     
     public StartAction() {
         putValue("noIconInMenu", Boolean.TRUE);
@@ -64,8 +65,7 @@ public class StartAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(StartAction.class).
-                getString("LBL_StartAction");
+        return Utils.getBundle().getString("LBL_StartAction");
     }
 
     public HelpCtx getHelpCtx() {
@@ -78,7 +78,7 @@ public class StartAction extends CookieAction {
             return false;
         }
         
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
 
         return server != null && !server.isConnected();
 
@@ -86,10 +86,9 @@ public class StartAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
                 String path = server.getStartPath();
-        String message = NbBundle.getMessage(AdministerAction.class,
-                "MSG_NoStartPath");
+        String message = Utils.getMessage("MSG_NoStartPath");
         PropertiesDialog dialog = new PropertiesDialog(server);
 
 
@@ -109,8 +108,7 @@ public class StartAction extends CookieAction {
         try { 
             server.start();
         } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(StartAction.class,
-                        "MSG_UnableToStartServer"), 
+            Utils.displayError(Utils.getMessage("MSG_UnableToStartServer"), 
                     dbe);
         }
     }

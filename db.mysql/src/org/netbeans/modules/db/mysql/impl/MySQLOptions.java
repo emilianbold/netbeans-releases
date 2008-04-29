@@ -39,14 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
+import org.netbeans.modules.db.mysql.util.Utils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.CharacterCodingException;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
@@ -109,18 +107,6 @@ public class MySQLOptions {
     }
     
     private MySQLOptions() {
-        if ( Utils.isEmpty(getAdminUser() )) {
-            setAdminUser(getDefaultAdminUser());
-        }
-        if ( Utils.isEmpty(getAdminPassword())) {
-            setAdminPassword(getDefaultAdminPassword());
-        }
-        if ( Utils.isEmpty(getHost())) {
-            setHost(getDefaultHost());
-        }
-        if ( Utils.isEmpty(getPort())) {
-            setPort(getDefaultPort());
-        }
         if ( Utils.isEmpty(getConnectTimeout()) ) {
             setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         }
@@ -223,14 +209,7 @@ public class MySQLOptions {
 
     public synchronized String getAdminPassword() {
         if ( isSavePassword() ) {
-            byte[] bytes = Base64.base64ToByteArray(getProperty(PROP_ADMINPWD));
-            try {
-                return Utils.decodeUTF8ByteArray(bytes);
-            } catch ( CharacterCodingException e ) {
-                LOGGER.log(Level.WARNING, "Unable to decode password", e); // NOI18N
-                setAdminPassword("");
-                return "";
-            }
+            return getProperty(PROP_ADMINPWD);
         } else {
             return adminPassword;
         }
@@ -248,13 +227,7 @@ public class MySQLOptions {
         this.adminPassword = adminPassword;
         
         if ( isSavePassword() ) {
-            try {
-                putProperty(PROP_ADMINPWD, 
-                        Base64.byteArrayToBase64(
-                            adminPassword.getBytes("UTF-8")));
-            } catch ( UnsupportedEncodingException uee ) {
-                LOGGER.log(Level.WARNING, null, uee);
-            }
+            putProperty(PROP_ADMINPWD, adminPassword);
         } 
     }
     

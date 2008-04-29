@@ -162,7 +162,6 @@ public final class Controller implements ComponentListener {
       }
     }
     endTime("validation"); // NOI18N
-    log("."); // NOI18N
 
     notifyListeners(items);
   }

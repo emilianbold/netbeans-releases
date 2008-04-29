@@ -37,63 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.actions;
+
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServerManager;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
- * This interface defines an abstraction of an installation of MySQL, which
- * gives you information such as the path/arguments to the start command,
- * stop command, admin command.
- * 
- * Valid installations are loaded through the layer file using the folder
- * Databases/MySQL/Installations
+ * The ation to register the MySQL Server Provider.  
  * 
  * @author David Van Couvering
  */
-public interface Installation {
-     public enum Command { START, STOP, ADMIN };
-
-
-    /**
-     * @return true if this installation is part of a stack installation
-     * like XAMPP or MAMP.  Stack-based installations take preference because 
-     * they usually have an admin tool (myphpadmin) and usually don't install 
-     * MySQL as a service but are instead manually started and stopped.
-     * 
-     * Also, standalone installs often come as part of the OS distribution,
-     * where a stack based install is explicitly installed by the user, and
-     * thus is probably their preference.
-     */
-    public boolean isStackInstall();
+public class RegisterServerAction extends NodeAction {
     
-    /**
-     * Returns true if this installation is valid for the current OS
-     */
-    public boolean isInstalled();
+    @Override
+    public String getName() {
+        return Utils.getBundle().getString("LBL_RegisterServerAction");
+    }
 
-    /**
-     * @return the command to administer this installation.  This is normally
-     * phpMyAdmin; rarely does an installation come with the MySQL admin tool.
-     * <p>
-     * The first element is the path/URL to the command.  
-     * The second element is the arguments to the command
-     */
-    public String[] getAdminCommand();
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
     
-    /**
-     * @return the command to stop the server.  The first element is the path
-     * to the command. The second element is the arguments to the command
-     */
-    public String[] getStartCommand();
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        DatabaseServer server = DatabaseServerManager.getDatabaseServer();
+        PropertiesDialog dlg = new PropertiesDialog(server);
+        dlg.displayDialog();
+    }
 
-    /**
-     * @return the command to start the server.  The first element is the path
-     * to the command. The second element is the arguments to the command
-     */
-    public String[] getStopCommand();
-    
-    /**
-     * @return the default port number for the server
-     */
-    public String getDefaultPort();
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RegisterServerAction.class);
+    }
 }
-

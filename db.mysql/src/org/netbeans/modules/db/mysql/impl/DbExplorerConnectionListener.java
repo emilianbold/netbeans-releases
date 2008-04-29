@@ -37,46 +37,46 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.api.db.explorer.ConnectionListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
 
 /**
- * The ation to register the MySQL Server Provider.  
+ * Listen to changes on the connection list, and if we're not registered
+ * and a MySQL connection is added, register the MySQL 
  * 
  * @author David Van Couvering
  */
-public class RegisterServerAction extends NodeAction {
-    
-    @Override
-    public String getName() {
-        return NbBundle.getBundle(RegisterServerAction.class).
-                getString("LBL_RegisterServerAction");
+public class DbExplorerConnectionListener implements ConnectionListener {
+
+    public void connectionsChanged() {
+        MySQLOptions options = MySQLOptions.getDefault();
+        
+        if ( options.isProviderRegistered() || options.isProviderRemoved() ) {
+            return;
+        }
+
+        DatabaseConnection[] connections = 
+            ConnectionManager.getDefault().getConnections();
+
+        for ( DatabaseConnection conn : connections ) {
+            if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass()) ) {
+                DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
+                URLParser parser = new URLParser(conn.getDatabaseURL());
+                instance.setHost(parser.getHost());
+                instance.setPort(parser.getPort());
+                instance.setUser(conn.getUser());
+                instance.setPassword(conn.getPassword());
+                
+                ServerNodeProvider.getDefault().setRegistered(true);
+            }
+        }
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = ServerInstance.getDefault();
-        PropertiesDialog dlg = new PropertiesDialog(server);
-        dlg.displayDialog();
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(RegisterServerAction.class);
-    }
 }

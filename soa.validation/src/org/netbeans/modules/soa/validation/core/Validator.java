@@ -153,7 +153,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
     myValidationResult.add(new QuickFixable(this, type, component, message, quickFix));
   }
 
-  protected final boolean isValidationComplete() {
+  protected final boolean isComplete() {
     return myType == ValidationType.COMPLETE;
   }
 

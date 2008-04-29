@@ -32,20 +32,17 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.modules.ModuleInstall;
 
 /**
- *
- * @author avk
+ * @author avk, Tomas Mysik
  */
 public class PhpModuleInstaller extends ModuleInstall {
+    private static final long serialVersionUID = 3447246352491016636L;
 
     @Override
     public void restored() {
-        super.restored();
-
         setPhpInterpreter();
     }
 
     private void setPhpInterpreter() {
-        PhpOptions.getInstance().getPhpInterpreter();
         if (PhpOptions.getInstance().getPhpInterpreter() == null) {
             String interpreter = PhpEnvironment.get().getAnyPhpInterpreter();
             if (interpreter != null) {

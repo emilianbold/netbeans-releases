@@ -37,55 +37,63 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.installations;
-
-import org.netbeans.modules.db.mysql.impl.Installation;
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.util.Utilities;
+package org.netbeans.modules.db.mysql.impl;
 
 /**
- * Standalone version on Linux.  Assuming installed as a service, and that
- * the standard approach is to manage the service, not another instance.
+ * This interface defines an abstraction of an installation of MySQL, which
+ * gives you information such as the path/arguments to the start command,
+ * stop command, admin command.
+ * 
+ * Valid installations are loaded through the layer file using the folder
+ * Databases/MySQL/Installations
  * 
  * @author David Van Couvering
  */
-public class LinuxStandaloneInstallation implements Installation {
+public interface Installation {
+     public enum Command { START, STOP, ADMIN };
+
+
+    /**
+     * @return true if this installation is part of a stack installation
+     * like XAMPP or MAMP.  Stack-based installations take preference because 
+     * they usually have an admin tool (myphpadmin) and usually don't install 
+     * MySQL as a service but are instead manually started and stopped.
+     * 
+     * Also, standalone installs often come as part of the OS distribution,
+     * where a stack based install is explicitly installed by the user, and
+     * thus is probably their preference.
+     */
+    public boolean isStackInstall();
     
-    private static final LinuxStandaloneInstallation DEFAULT = new
-            LinuxStandaloneInstallation();
+    /**
+     * Returns true if this installation is valid for the current OS
+     */
+    public boolean isInstalled();
+
+    /**
+     * @return the command to administer this installation.  This is normally
+     * phpMyAdmin; rarely does an installation come with the MySQL admin tool.
+     * <p>
+     * The first element is the path/URL to the command.  
+     * The second element is the arguments to the command
+     */
+    public String[] getAdminCommand();
     
-    private static final String SVC_EXE = "/etc/init.d/mysql"; // NOI18N
-    private static final String GKSU = "/usr/bin/gksu"; // NOI18N
-        
-    public static LinuxStandaloneInstallation getDefault() {
-        return DEFAULT;
-    }
+    /**
+     * @return the command to stop the server.  The first element is the path
+     * to the command. The second element is the arguments to the command
+     */
+    public String[] getStartCommand();
 
-    protected LinuxStandaloneInstallation() {
-    }
+    /**
+     * @return the command to start the server.  The first element is the path
+     * to the command. The second element is the arguments to the command
+     */
+    public String[] getStopCommand();
     
-    public String[] getStartCommand() {
-        return new String[] { GKSU, SVC_EXE + " start"};
-    }
-
-    public String[] getStopCommand() {
-        return new String[] { GKSU, SVC_EXE + " stop"};
-    }
-    
-    public boolean isInstalled() {
-        return Utilities.isUnix() && Utils.isValidExecutable(SVC_EXE) &&
-                Utils.isValidExecutable(GKSU);
-    }
-
-    public boolean isStackInstall() {
-        return false;
-    }
-
-    public String[] getAdminCommand() {
-        return new String[] { "", ""};
-    }
-
-    public String getDefaultPort() {
-        return "3306"; // NOI18N
-    }
+    /**
+     * @return the default port number for the server
+     */
+    public String getDefaultPort();
 }
+

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,6 +36,67 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.mysql.actions;
 
-package org.netbeans.modules.db.mysql;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CookieAction;
 
+/**
+ * Connect to a database
+ * 
+ * @author David Van Couvering
+ */
+public class ConnectServerAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = 
+            new Class[] { DatabaseServer.class };
+    
+    public ConnectServerAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public String getName() {
+        return Utils.getBundle().getString("LBL_ConnectServerAction");
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectServerAction.class);
+    }
+
+    @Override
+    public boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes == null || activatedNodes.length == 0 ) {
+            return false;
+        }
+        
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        
+        return server != null && !server.isConnected();
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+
+        // Run this on a separate thread so that we don't hang up the AWT 
+        // thread if the database server is not responding
+        server.connectAsync();
+    }
+    
+    @Override
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return COOKIE_CLASSES;
+    }
+}

@@ -37,8 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.nodes;
 
+import org.netbeans.modules.db.mysql.impl.*;
+import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.nodes.DatabaseNode;
+import org.netbeans.modules.db.mysql.actions.PropertiesAction;
+import org.netbeans.modules.db.mysql.actions.StopAction;
+import org.netbeans.modules.db.mysql.actions.StartAction;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.actions.CreateDatabaseAction;
+import org.netbeans.modules.db.mysql.actions.ConnectServerAction;
+import org.netbeans.modules.db.mysql.actions.AdministerAction;
+import org.netbeans.modules.db.mysql.DatabaseServer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,8 +73,8 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author David Van Couvering
  */
-class ServerNode extends AbstractNode implements ChangeListener, Comparable {  
-    private final ServerInstance server;
+public class ServerNode extends AbstractNode implements ChangeListener, Comparable {  
+    private final DatabaseServer server;
     
     // I'd like a less generic icon, but this is what we have for now...
     private static final String ICON = "org/netbeans/modules/db/mysql/resources/catalog.gif";
@@ -71,12 +82,12 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
     private static final HelpCtx HELP_CONTEXT =
             new HelpCtx(ServerNode.class.getName());
             
-    public static ServerNode create(ServerInstance server) {
+    public static ServerNode create(DatabaseServer server) {
         ChildFactory factory = new ChildFactory(server);
         return new ServerNode(factory, server);
     }
     
-    private ServerNode(ChildFactory factory, ServerInstance server) {
+    private ServerNode(ChildFactory factory, DatabaseServer server) {
         super(Children.create(factory, true));
         this.server = server;
         
@@ -91,7 +102,7 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
     @Override
     @SuppressWarnings("unchecked")
     public Node.Cookie getCookie(Class cls) {
-        if ( cls == ServerInstance.class ) {
+        if ( cls == DatabaseServer.class ) {
             return server;
         } else {
             return super.getCookie(cls);
@@ -105,11 +116,11 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
     }    
     
     private void registerListeners() {
-        ServerInstance.getDefault().addChangeListener(
-                WeakListeners.create(ChangeListener.class, this,
-                    ServerInstance.getDefault()));
+        DatabaseServer server = DatabaseServerManager.getDatabaseServer();
+        server.addChangeListener(
+                WeakListeners.create(ChangeListener.class, this, server));
         
-        stateChanged(new ChangeEvent(ServerInstance.getDefault()));
+        stateChanged(new ChangeEvent(server));
     }
     
 
@@ -149,16 +160,16 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
     }
             
     private static class ChildFactory 
-            extends org.openide.nodes.ChildFactory<DatabaseModel> 
+            extends org.openide.nodes.ChildFactory<Database> 
             implements ChangeListener {
         
-        private static final Comparator<DatabaseModel> COMPARATOR = 
+        private static final Comparator<Database> COMPARATOR = 
                 new InstanceComparator();
 
-        private final ServerInstance server;
+        private final DatabaseServer server;
 
 
-        public ChildFactory(ServerInstance server) {            
+        public ChildFactory(DatabaseServer server) {            
             super();
             
             this.server = server;
@@ -169,18 +180,18 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
         }
 
         @Override
-        protected Node createNodeForKey(DatabaseModel db) {
+        protected Node createNodeForKey(Database db) {
             return new DatabaseNode(db);
         }
 
         @Override
-        protected boolean createKeys(List<DatabaseModel> toPopulate) {
-            List<DatabaseModel> fresh = new ArrayList<DatabaseModel>();
+        protected boolean createKeys(List<Database> toPopulate) {
+            List<Database> fresh = new ArrayList<Database>();
 
             try {
                 fresh.addAll(server.getDatabases());
             } catch (DatabaseException ex) {
-                Utils.displayError(NbBundle.getMessage(ServerNode.class, 
+                Utils.displayError(Utils.getMessage( 
                         "MSG_UnableToGetDatabaseList"), ex);
                 return true;
             }
@@ -198,9 +209,9 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
     }
 
     private static class InstanceComparator 
-            implements Comparator<DatabaseModel>, Serializable {
+            implements Comparator<Database>, Serializable {
 
-        public int compare(DatabaseModel o1, DatabaseModel o2) {
+        public int compare(Database o1, Database o2) {
             return o1.getDisplayName().compareTo(o2.getDisplayName());
         }
 

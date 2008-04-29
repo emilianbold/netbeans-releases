@@ -37,52 +37,71 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.actions;
 
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CookieAction;
 
 /**
- * Model class representing a database.  Right now all it has is a 
- * name, but in the future it may provide more information.
- * 
+ *
  * @author David Van Couvering
  */
-public class DatabaseModel implements Node.Cookie {
-    private final String name;
-    private final ServerInstance server;
-    
-    public DatabaseModel(ServerInstance server, String dbname) {
-        name = dbname;
-        this.server = server;
+public class CreateDatabaseAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = new Class[] {
+        DatabaseServer.class
+    };
+
+    public CreateDatabaseAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
+        
+    protected boolean asynchronous() {
+        return false;
     }
 
-    String getDbName() {
-        return name;
-    }
-    
-    String getDisplayName() {
-        return name;
+    public String getName() {
+        return Utils.getBundle().getString("LBL_CreateDatabaseAction");
     }
 
-    String getShortDescription() {
-       return NbBundle.getMessage(DatabaseModel.class, 
-               "LBL_DBNodeShortDescription",
-               getDisplayName());
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CreateDatabaseAction.class);
     }
-    
-    ServerInstance getServer() {
-        return server;
-    }
-    
+
     @Override
-    public boolean equals(Object other) {
-        return other != null && other instanceof DatabaseModel &&
-                ((DatabaseModel)other).getDbName().equals(getDbName());
+    protected boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes.length == 0 ) {
+            return false;
+        }
+        
+        Node node = activatedNodes[0];
+        
+        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        if ( server != null && server.isConnected() ) {
+            return true;
+        }
+        
+        return false;
     }
-    
+
     @Override
-    public int hashCode() {
-        return getDbName().hashCode();
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return COOKIE_CLASSES;
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        Node node = activatedNodes[0];
+        
+        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        CreateDatabasePanel.showCreateDatabaseDialog(server);
     }
 }

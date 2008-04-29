@@ -37,14 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.actions;
 
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.DatabaseServer;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -54,7 +57,7 @@ import org.openide.util.actions.CookieAction;
  */
 public class ConnectAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = new Class[] {
-        DatabaseModel.class
+        Database.class
     };
 
     public ConnectAction() {
@@ -66,8 +69,7 @@ public class ConnectAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(ConnectAction.class).
-                getString("LBL_ConnectAction");
+        return Utils.getBundle().getString("LBL_ConnectAction");
     }
 
     public HelpCtx getHelpCtx() {
@@ -95,8 +97,8 @@ public class ConnectAction extends CookieAction {
         if ( activatedNodes == null || activatedNodes.length == 0 ) {
             return;
         }
-        DatabaseModel model = activatedNodes[0].getCookie(DatabaseModel.class);        
-        ServerInstance server = model.getServer();
+        Database model = activatedNodes[0].getCookie(Database.class);        
+        DatabaseServer server = model.getServer();
         String dbname = model.getDbName();
         
         List<DatabaseConnection> conns = 

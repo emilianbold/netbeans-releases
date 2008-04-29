@@ -36,11 +36,16 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.actions;
 
+import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -48,11 +53,11 @@ import org.openide.util.actions.CookieAction;
  * 
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
+public class AdministerAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
-    
-    public ConnectServerAction() {
+            new Class[] { DatabaseServer.class };
+        
+    public AdministerAction() {
         putValue("noIconInMenu", Boolean.TRUE);
     }
 
@@ -62,12 +67,12 @@ public class ConnectServerAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(ConnectServerAction.class).
-                getString("LBL_ConnectServerAction");
+        return Utils.getBundle().
+                getString("LBL_AdministerAction");
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
+        return new HelpCtx(AdministerAction.class);
     }
 
     @Override
@@ -75,19 +80,37 @@ public class ConnectServerAction extends CookieAction {
         if ( activatedNodes == null || activatedNodes.length == 0 ) {
             return false;
         }
-        
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        
-        return server != null && !server.isConnected();
+
+        return ServerNodeProvider.getDefault().isRegistered();
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        
+        String path = server.getAdminPath();
+        String message = Utils.getBundle().getString("MSG_NoAdminPath");
+        PropertiesDialog dialog = new PropertiesDialog(server);
 
-        // Run this on a separate thread so that we don't hang up the AWT 
-        // thread if the database server is not responding
-        server.connectAsync();
+
+        while ( path == null || path.equals("")) {
+            
+            if ( ! Utils.displayConfirmDialog(message) ) {
+                return;
+            }  
+            
+            if ( ! dialog.displayDialog(Tab.ADMIN) ) {
+                return;
+            }
+            
+            path = server.getAdminPath();
+        }
+
+        try {
+            server.startAdmin();
+        } catch ( DatabaseException e ) {
+            Utils.displayError(Utils.getMessage("MSG_ErrorStartingAdminTool"), e);
+        }
     }
     
     @Override
