@@ -82,12 +82,16 @@ public class DBExplorerUtil {
     private static final String LOG_CATEGORY = DBExplorerUtil.class.getName();
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
-    //private static transient final Localizer mLoc = Localizer.get();
+    private static String cmdLinePrjName = null;
+    public static boolean isCmdLine;
 
     public static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
             String relativePath = "\\nbproject\\private\\databases\\";
+            if ((isCmdLine)) {
+                url = AXION_URL_PREFIX + cmdLinePrjName + "_" + urlParts[0] + ":" + urlParts[1];
+            }
             if (urlParts[1].startsWith(ETLEditorSupport.PRJ_PATH)) {
                 String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME) ? urlParts[0] : ETLEditorSupport.PRJ_NAME + "_" + urlParts[0];
                 url = AXION_URL_PREFIX + adjustedName + ":" + urlParts[1];
@@ -134,9 +138,9 @@ public class DBExplorerUtil {
         String username = connProps.getProperty(DBConnectionFactory.PROP_USERNAME);
         String password = connProps.getProperty(DBConnectionFactory.PROP_PASSWORD);
         String url = connProps.getProperty(DBConnectionFactory.PROP_URL);
-        if(!(url.contains(AXION_URL_PREFIX))){
-            if (StringUtil.isNullString(username) || StringUtil.isNullString(password)){
-             JOptionPane.showMessageDialog(new JFrame(),"UserName/Password is empty.Please fill in the credentials ","Error", JOptionPane.ERROR_MESSAGE);                
+        if (!(url.contains(AXION_URL_PREFIX))) {
+            if (StringUtil.isNullString(username) || StringUtil.isNullString(password)) {
+                JOptionPane.showMessageDialog(new JFrame(), "UserName/Password is empty.Please fill in the credentials ", "Error", JOptionPane.ERROR_MESSAGE);
                 return null;
             }
         }
@@ -173,7 +177,11 @@ public class DBExplorerUtil {
     public static void isCmdLineImport(boolean val) {
         isCmdLine = val;
     }
-    public static boolean isCmdLine;
+
+    public static void setCmdLinePrjName(String str) {
+        cmdLinePrjName = str;
+    }
+
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
@@ -181,17 +189,19 @@ public class DBExplorerUtil {
         Connection conn = null;
         try {
             if (!isCmdLine) {
-            url = adjustDatabaseURL(url);
+                url = adjustDatabaseURL(url);
             }
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
             if (conn == null) { // get from db explorer
+
                 DatabaseConnection dbConn = createDatabaseConnection(driverName, url, username, password);
                 try {
                     if (dbConn != null) {
                         conn = dbConn.getJDBCConnection();
                         if (conn == null) { // make a final try
+
                             ConnectionManager.getDefault().showConnectionDialog(dbConn);
                             Thread.sleep(5000);
                             conn = dbConn.getJDBCConnection();
@@ -233,7 +243,7 @@ public class DBExplorerUtil {
         String schema = null;
         try {
             if (!isCmdLine) {
-            url = adjustDatabaseURL(url);
+                url = adjustDatabaseURL(url);
             }
             drv = registerDriver(driverName);
 
@@ -454,6 +464,7 @@ public class DBExplorerUtil {
         }
         return connName;
     }
+
     public static Database getAxionDBFromURL(String url) throws AxionException {
         int initialDBIndex = url.indexOf("axiondb") + 8;
         int endDBIndex = url.indexOf(":", initialDBIndex);
