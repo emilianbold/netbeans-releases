@@ -46,6 +46,7 @@ import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentListener;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -83,6 +84,15 @@ final class BasicConfVisualPanel extends JPanel {
         codeNameBaseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CodeNameBaseValue"));
         displayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayNameValue"));
         layerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LayerValue"));
+        
+        bundleValue.getAccessibleContext().setAccessibleName(
+                getMessage("ACS_CTL_BundleValue"));
+        codeNameBaseValue.getAccessibleContext().setAccessibleName(
+                getMessage("ACS_CTL_CodeNameBaseValue"));
+        displayNameValue.getAccessibleContext().setAccessibleName(
+                getMessage("ACS_CTL_DisplayNameValue"));
+        layerValue.getAccessibleContext().setAccessibleName(
+                getMessage("ACS_CTL_LayerValue"));
     }
     
     private void checkCodeNameBase() {
@@ -109,6 +119,7 @@ final class BasicConfVisualPanel extends JPanel {
             }
         }*/
     }
+    
     private static String abbreviate(String cnb) {
         return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
                    replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
@@ -159,12 +170,15 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     /** Stores collected data into model. */
-    void storeData() {
-        // change will be fired -> update data
-        /*getData().setCodeNameBase(getCodeNameBaseValue());
-        getData().setProjectDisplayName(displayNameValue.getText());
-        getData().setBundle(getBundleValue());
-        getData().setLayer(getLayerValue());*/
+    void storeData( WizardDescriptor descriptor ) {
+        descriptor.putProperty( CustomComponentWizardIterator.CODE_BASE_NAME, 
+                getCodeNameBaseValue() );
+        descriptor.putProperty( CustomComponentWizardIterator.DISPLAY_NAME, 
+                displayNameValue.getText() );
+        descriptor.putProperty( CustomComponentWizardIterator.BUNDLE_PATH, 
+                getBundleValue() );
+        descriptor.putProperty( CustomComponentWizardIterator.LAYER_PATH, 
+                getLayerValue() );
     }
     
     private String getCodeNameBaseValue() {

@@ -31,7 +31,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;

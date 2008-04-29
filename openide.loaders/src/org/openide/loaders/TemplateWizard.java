@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -1017,12 +1017,18 @@ public class TemplateWizard extends WizardDescriptor {
         
         public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set workSet = null;
+            Set workSet;
             if (instantiatingIterator instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                 assert wiz.getProgressHandle () != null : "ProgressHandle cannot be null.";
                 workSet = ((ProgressInstantiatingIterator)instantiatingIterator).instantiate (wiz.getProgressHandle ());
             } else {
                 workSet = instantiatingIterator.instantiate ();
+            }
+            if (workSet == null) {
+                Logger.getLogger(TemplateWizard.class.getName()).warning(
+                        "Wizard iterator of type " + instantiatingIterator.getClass().getName() +
+                        " illegally returned null from the instantiate method");
+                return Collections.emptySet ();
             }
             java.util.Iterator it = workSet.iterator ();
             Object obj;

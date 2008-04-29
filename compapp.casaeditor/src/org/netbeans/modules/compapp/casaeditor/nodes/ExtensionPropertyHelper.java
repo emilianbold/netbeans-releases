@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -143,7 +144,8 @@ public class ExtensionPropertyHelper {
                 for (JbiExtensionElement extElement : extInfo.getElements()) {
                     if (extElement.getName().equals(eeLocalName)) {
                         Sheet.Set extPropertySet =
-                                node.getPropertySet(sheet, extInfo.getName());
+                                node.getPropertySet(sheet, extInfo.getDisplayName());
+                        extPropertySet.setShortDescription(extInfo.getDescription());
                         createExistingProperties(node, document, extElement,
                                 extPropertySet, casaExtPoint,
                                 ee, ee, namespace, extInfo.getProvider());
@@ -170,7 +172,8 @@ public class ExtensionPropertyHelper {
             }
 
             // For each extension, create a new property sheet
-            Sheet.Set extPropertySet = node.getPropertySet(sheet, extInfo.getName());
+            Sheet.Set extPropertySet = node.getPropertySet(sheet, extInfo.getDisplayName());
+            extPropertySet.setShortDescription(extInfo.getDescription());
 
             String namespace = extInfo.getNameSpace();
 
@@ -222,6 +225,7 @@ public class ExtensionPropertyHelper {
         CasaComponentFactory casaFactory = casaModel.getFactory();
 
         String extElementName = extElement.getName();
+        String extElementDisplayName = extElement.getDisplayName();
         String extElementDescription = extElement.getDescription();
         Element domElement = document.createElementNS(namespace, extElementName);
 
@@ -245,13 +249,22 @@ public class ExtensionPropertyHelper {
 
             // Build choice map.
             Map<String, CasaExtensibilityElement> choiceMap =
-                    new HashMap<String, CasaExtensibilityElement>();
+                    new HashMap<String, CasaExtensibilityElement>(); 
+            
+            // Build a map mapping choice element name to display name
+            // with the order of choices in the layer preserved.
+            Map<String, String> choiceDisplayNameMap =
+                    new LinkedHashMap<String, String>();
+            
             for (JbiExtensionElement childElement : extElement.getElements()) {
                 CasaExtensibilityElement childEE =
                         createNonExistingProperties(node, document,
                         childElement, extSheetSet,
                         lastEE, null, null, namespace, provider, false);
-                choiceMap.put(childElement.getName(), childEE);
+                String name = childElement.getName();
+                String displayName = childElement.getDisplayName();
+                choiceMap.put(name, childEE);
+                choiceDisplayNameMap.put(name, displayName);
             }
 
             // Add an artificial property for the choice extension element.
@@ -260,9 +273,10 @@ public class ExtensionPropertyHelper {
                     firstEE, lastEE,
                     CasaNode.ALWAYS_WRITABLE_PROPERTY,
                     String.class,
-                    extElementName, extElementName,
+                    extElementName, extElementDisplayName,
                     extElementDescription,
                     choiceMap,
+                    choiceDisplayNameMap,
                     defaultChoice);
 
         } else {
@@ -271,6 +285,7 @@ public class ExtensionPropertyHelper {
             if (attributes != null) {
                 for (JbiExtensionAttribute attr : extElement.getAttributes()) {
                     String attrName = attr.getName();
+                    String attrDisplayName = attr.getDisplayName();
                     String attrType = attr.getType();
                     String attrDescription = attr.getDescription();
                     boolean codeGen = attr.getCodeGen();
@@ -285,7 +300,7 @@ public class ExtensionPropertyHelper {
                                 extSheetSet, node, casaExtPoint,
                                 firstEE, lastEE,
                                 CasaNode.ALWAYS_WRITABLE_PROPERTY, attrType,
-                                attrName, attrName, attrDescription, provider);
+                                attrName, attrDisplayName, attrDescription, provider);
                     }
                 }
             }
@@ -323,6 +338,7 @@ public class ExtensionPropertyHelper {
             String defaultChoice = choiceExtElement.getDefaultChoice();
 
             String elementName = extElement.getName();
+            String elementDisplayName = extElement.getDisplayName();
             String elementDescription = extElement.getDescription();
 
             CasaExtensibilityElement currentChild = null;
@@ -338,7 +354,13 @@ public class ExtensionPropertyHelper {
 
             // Build choice map.
             Map<String, CasaExtensibilityElement> choiceMap =
-                    new HashMap<String, CasaExtensibilityElement>();
+                    new HashMap<String, CasaExtensibilityElement>();  
+            
+            // Build a map mapping choice element name to display name 
+            // with the order of choices defined in the layer preserved.
+            Map<String, String> choiceDisplayNameMap =
+                    new LinkedHashMap<String, String>();
+            
             List<JbiExtensionElement> childExtElements = extElement.getElements();
             if (childExtElements != null) {
                 // Add potential children defined in the layer.
@@ -351,6 +373,9 @@ public class ExtensionPropertyHelper {
                                 casaExtPoint, null, null, namespace, provider, false);
                         choiceMap.put(childElementName, childEE);
                     }
+                        
+                    String childDisplayName = childElement.getDisplayName();
+                    choiceDisplayNameMap.put(childElementName, childDisplayName);
                 }
             }
 
@@ -367,9 +392,10 @@ public class ExtensionPropertyHelper {
                     firstEE, lastEE,
                     CasaNode.ALWAYS_WRITABLE_PROPERTY,
                     String.class,
-                    elementName, elementName,
+                    elementName, elementDisplayName,
                     elementDescription,
                     choiceMap,
+                    choiceDisplayNameMap,
                     defaultChoice);
         }
 
@@ -378,6 +404,7 @@ public class ExtensionPropertyHelper {
         if (attributes != null) {
             for (JbiExtensionAttribute attr : attributes) {
                 String attrName = attr.getName();
+                String attrDisplayName = attr.getDisplayName();
                 String attrType = attr.getType();
                 String attrDescription = attr.getDescription();
                 PropertyUtils.installExtensionProperty(
@@ -385,7 +412,7 @@ public class ExtensionPropertyHelper {
                         firstEE, lastEE,
                         CasaNode.ALWAYS_WRITABLE_PROPERTY,
                         attrType,
-                        attrName, attrName, attrDescription, provider);
+                        attrName, attrDisplayName, attrDescription, provider);
             }
         }
 

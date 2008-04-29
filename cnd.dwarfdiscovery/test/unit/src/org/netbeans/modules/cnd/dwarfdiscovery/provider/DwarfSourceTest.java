@@ -243,6 +243,49 @@ public class DwarfSourceTest extends TestCase {
         assertDocumentText(line, expResult, result);
     }
 
+    /**
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testGccLine() {
+        String line = "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc -shared-libgcc -B/export/home/gcc/gccobj/gcc/ -nostdinc++ -L/export/home/gcc/gccobj/i386-pc-solaris2.11/libstdc++-v3/src -L/export/home/gcc/gccobj/i386-pc-solaris2.11/libstdc++-v3/src/.libs -B/usr/local/i386-pc-solaris2.11/bin/ -B/usr/local/i386-pc-solaris2.11/lib/ -isystem /usr/local/i386-pc-solaris2.11/include -isystem /usr/local/i386-pc-solaris2.11/sys-include -DHAVE_CONFIG_H -I. -I../../../libjava -I./include -I./gcj -I../../../libjava -Iinclude -I../../../libjava/include -I/export/home/gcc/boehm-gc/include  -DGC_SOLARIS_THREADS=1 -DGC_SOLARIS_PTHREADS=1 -DSOLARIS25_PROC_VDB_BUG_FIXED=1 -DSILENT=1 -DNO_SIGNALS=1 -DALL_INTERIOR_POINTERS=1 -DJAVA_FINALIZATION=1 -DGC_GCJ_SUPPORT=1 -DATOMIC_UNCOLLECTABLE=1   -I../../../libjava/libltdl -I../../../libjava/libltdl  -I../../../libjava/.././libjava/../gcc -I../../../libjava/../zlib -I../../../libjava/../libffi/include -I../libffi/include  -O2 -g3 -gdwarf-2 -fno-rtti -fnon-call-exceptions  -fdollars-in-identifiers -Wswitch-enum -ffloat-store  -I/usr/openwin/include -W -Wall -D_GNU_SOURCE -DPREFIX=\"\\\"/usr/local\\\"\" -DLIBDIR=\"\\\"/usr/local/lib\\\"\" -DBOOT_CLASS_PATH=\"\\\"/usr/local/share/java/libgcj-3.4.3.jar\\\"\" -g3 -gdwarf-2 -MD -MT gnu/gcj/natCore.lo -MF gnu/gcj/natCore.pp -c -o gnu/gcj/natCore.lo ../../../libjava/gnu/gcj/natCore.cc";
+        String expResult =
+                "Macros:\n" +
+                "ALL_INTERIOR_POINTERS=1\n" +
+                "ATOMIC_UNCOLLECTABLE=1\n" +
+                "BOOT_CLASS_PATH=\"\\\"/usr/local/share/java/libgcj-3.4.3.jar\\\"\"\n" +
+                "GC_GCJ_SUPPORT=1\n" +
+                "GC_SOLARIS_PTHREADS=1\n" +
+                "GC_SOLARIS_THREADS=1\n" +
+                "HAVE_CONFIG_H\n" +
+                "JAVA_FINALIZATION=1\n" +
+                "LIBDIR=\"\\\"/usr/local/lib\\\"\"\n" +
+                "NO_SIGNALS=1\n" +
+                "PREFIX=\"\\\"/usr/local\\\"\"\n" +
+                "SILENT=1\n" +
+                "SOLARIS25_PROC_VDB_BUG_FIXED=1\n" +
+                "_GNU_SOURCE\n" +
+                "Paths:\n" +
+                "/usr/local/i386-pc-solaris2.11/include\n" +
+                "/usr/local/i386-pc-solaris2.11/sys-include\n" +
+                ".\n" +
+                "../../../libjava\n" +
+                "./include\n" +
+                "./gcj\n" +
+                "../../../libjava\n" +
+                "include\n" +
+                "../../../libjava/include\n" +
+                "/export/home/gcc/boehm-gc/include\n" +
+                "../../../libjava/libltdl\n" +
+                "../../../libjava/libltdl\n" +
+                "../../../libjava/.././libjava/../gcc\n" +
+                "../../../libjava/../zlib\n" +
+                "../../../libjava/../libffi/include\n" +
+                "../libffi/include\n" +
+                "/usr/openwin/include";
+        String result = processLine(line, true);
+        assertDocumentText(line, expResult, result);
+    }
+
     private String processLine(String line, boolean isScriptOutput) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new TreeMap<String, String>();
