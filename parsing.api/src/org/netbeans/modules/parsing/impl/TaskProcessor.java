@@ -40,12 +40,16 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -57,11 +61,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Task;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -90,6 +100,9 @@ public class TaskProcessor {
     //Currently running Task
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
 //    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
+    
+    //Stack of actives infos in nested runUserTasks
+    private static Map<Source,Stack<Parser.Result>> resultsStack = new HashMap<Source,Stack<Parser.Result>> ();
                 
     //Internal lock used to synchronize access to TaskProcessor iternal state
     private static class InternalLock {};    
@@ -127,6 +140,75 @@ public class TaskProcessor {
             Exceptions.printStackTrace(e);
         }
         includedTasks = _includedTasks;
+    }
+        
+    public static void runUserTask (final UserTask userTask, final Source source, final boolean shared) throws IOException {
+        Parameters.notNull("userTask", userTask);
+        Parameters.notNull("source", source);
+        assert parserLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(
+                Collections.singleton(source.getFileObject())) :
+                "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N        
+        
+        final Request request = currentRequest.getTaskToCancel();
+        try {
+            if (request != null) {
+                request.task.cancel();
+            }            
+            parserLock.lock();
+            try {
+                Parser.Result currentResult = null;
+                boolean jsInvalid;
+                synchronized (source) {
+                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+                    jsInvalid = flags.contains(SourceFlags.INVALID);
+                    if (!shared) {
+                        flags.add(SourceFlags.INVALID);
+                    }                        
+                }
+                
+                if (jsInvalid) {
+                    final Parser parser = SourceAccessor.getINSTANCE().getParser(source);
+                    currentResult = parser.parse(source);
+                }
+                assert currentResult != null;
+                Stack<Parser.Result> stack = resultsStack.get(source);
+                boolean shouldClean = false;
+                boolean didClean = false;
+                if (shared) {
+                    if (stack != null && !stack.isEmpty()) {
+                        currentResult = stack.peek();
+                    }
+                }
+                else {
+                    if (stack == null) {
+                        stack = new Stack<Parser.Result> ();
+                        resultsStack.put(source, stack);
+                        shouldClean = true;
+                    }
+                    stack.push (currentResult);
+                }
+                try {
+                    userTask.run (currentResult, source);                    
+                } finally {
+                    if (!shared) {
+                        stack.pop ();
+                        if (stack.isEmpty()) {
+                            resultsStack.remove(source);
+                            didClean = true;
+                        }
+                    }
+                    assert !shouldClean || (shouldClean && didClean);
+                }
+            } catch (final Exception e) {
+                final IOException ioe = new IOException ();
+                ioe.initCause(e);
+                throw ioe;
+            } finally {                    
+                parserLock.unlock();
+            }
+        } finally {
+            currentRequest.cancelCompleted (request);
+        }        
     }
     
     /** Adds a task to scheduled requests. The tasks will run sequentially.
@@ -226,7 +308,42 @@ public class TaskProcessor {
         }
     }
     
-    
+    /**
+     * Checks if the current thread holds a document write lock on some of given files
+     * Slow should be used only in assertions
+     * @param files to be checked
+     * @return true when the current thread holds a edeitor write lock on some of given files
+     */
+    private static boolean holdsDocumentWriteLock (final Iterable<FileObject> files) {
+        assert files != null;
+        final Class<AbstractDocument> docClass = AbstractDocument.class;
+        try {
+            final Method method = docClass.getDeclaredMethod("getCurrentWriter"); //NOI18N
+            method.setAccessible(true);
+            final Thread currentThread = Thread.currentThread();
+            for (FileObject fo : files) {
+                try {
+                final DataObject dobj = DataObject.find(fo);
+                final EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    final StyledDocument doc = ec.getDocument();
+                    if (doc instanceof AbstractDocument) {
+                        Object result = method.invoke(doc);
+                        if (result == currentThread) {
+                            return true;
+                        }
+                    }
+                }
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }            
+            }
+        } catch (NoSuchMethodException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return false;
+    }
+       
     //Private classes
     /**
      * Task scheduler loop
