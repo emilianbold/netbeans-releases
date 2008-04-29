@@ -161,6 +161,10 @@ public class NativeExecution extends ExecutionSupport {
         return rc;
     }
     
+    public void start() {
+        super.start();
+    }
+    
     public void stop() {
         /*
         if (executionThread != null) {
@@ -180,6 +184,7 @@ public class NativeExecution extends ExecutionSupport {
         /** This is all output, not just stderr */
         private Reader err;
         private Writer output;
+        private Reader tmp_in;
         private boolean cancel = false;
         
         public OutputReaderThread(InputStream err, Writer output) {
@@ -195,14 +200,13 @@ public class NativeExecution extends ExecutionSupport {
          *  Java don't have a good way of interleaving stdout and stderr while keeping the
          *  exact order of the output.
          */
-        @Override
         public void run() {
             try {
                 int read;
                 
                 while ((read = err.read()) != (-1)) {
                     if (cancel) { // 131739 
-                        return;
+                        break;
                     }
                     if (read == 10)
                         output.write("\n"); // NOI18N
@@ -238,7 +242,6 @@ public class NativeExecution extends ExecutionSupport {
          *  Reader proc to read input from Output2's input textfield and send it
          *  to the running process.
          */
-        @Override
         public void run() {
             int ch;
             
