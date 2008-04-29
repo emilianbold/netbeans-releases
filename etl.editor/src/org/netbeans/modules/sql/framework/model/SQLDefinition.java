@@ -71,6 +71,7 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
 
     public static final String AXION_DB_WORKING_DIR="AxiondbWorkingDirectory";
     public static final String AXION_DB_DATA_DIR="AxiondbDataDirectory";
+    public static final String DYNAMIC_FLAT_FILE="DynamicFlatFile";
 
     /**
      * add an sql object listener
@@ -129,6 +130,11 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * @return
      */
     public String getAxiondbDataDirectory();
+    
+    
+    public boolean isDynamicFlatFile();
+    
+    public void setDynamicFlatFile(boolean flag);
     
     
     public Object getAttributeValue(String attrName);

@@ -52,6 +52,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
@@ -67,6 +68,68 @@ import org.openide.explorer.propertysheet.PropertyModel;
  */
 public class DefaultPropertyEditor {
 
+    
+    
+    public static class TextEditor extends PropertyEditorSupport {
+
+        JTextArea textArea;
+        JPanel panel;
+        JScrollPane sPane;
+         private Object value = "";
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public void setValue(Object val) {
+            this.value = val;
+        }
+        
+         @Override
+    public void setAsText(String text) {
+       setValue(text);
+    }
+         
+          @Override
+    public String getAsText() {
+        return textArea.getText();
+    }
+       
+
+        public TextEditor(String defaultValue) {
+            textArea = new JTextArea();
+            setAsText(defaultValue);
+            
+            panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            sPane = new JScrollPane(panel);
+            sPane.setPreferredSize(new Dimension(300, 150));
+            panel.add(textArea, BorderLayout.CENTER);
+        }
+        
+        /**
+         @Override
+        public Object getValue() {
+            return textArea.getText();
+        }
+         
+        @Override
+        public void setValue(Object val) {
+            this.textArea.setText((String) val);
+        }**/
+
+        @Override
+        public Component getCustomEditor() {
+            return sPane;
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return true;
+        }
+    }
     /**
      * Concrete implementation of PropertyEditorSupport to provide a list editor widget
      * for use in a bean property sheet.
