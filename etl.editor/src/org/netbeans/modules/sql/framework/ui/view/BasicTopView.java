@@ -95,7 +95,6 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeOutputImpl;
-import org.netbeans.modules.sql.framework.model.impl.SQLJoinViewImpl;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyNode;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.TemplateFactory;
@@ -108,7 +107,6 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPane
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeInputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeOutputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SQLCollaborationProperties;
-import org.netbeans.modules.sql.framework.ui.view.property.SQLJoinProperties;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
