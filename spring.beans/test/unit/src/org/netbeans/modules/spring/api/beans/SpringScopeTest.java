@@ -44,7 +44,6 @@ package org.netbeans.modules.spring.api.beans;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.spring.api.Action;
@@ -55,7 +54,6 @@ import org.netbeans.modules.spring.beans.ConfigFileManagerAccessor;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.netbeans.modules.spring.beans.TestUtils;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -72,11 +70,11 @@ public class SpringScopeTest extends ConfigFileTestCase {
     public void testGetConfigModelAdHoc() throws Exception {
         String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);
-        ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl());
-        SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
+        ConfigFileManager manager = ConfigFileManagerAccessor.getDefault().createConfigFileManager(new DefaultConfigFileManagerImpl());
+        SpringScope scope = SpringScopeAccessor.getDefault().createSpringScope(manager);
 
         final FileObject configFO = FileUtil.toFileObject(configFile);
-        SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
+        SpringConfigModel model = SpringScopeAccessor.getDefault().getConfigModel(scope, configFO);
         final int[] beanCount = { 0 };
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {
@@ -91,11 +89,11 @@ public class SpringScopeTest extends ConfigFileTestCase {
         final File configFile2 = createConfigFileName("anotherContext.xml");
         TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='bar' class='org.example.Bar'/>"), configFile2);
         ConfigFileGroup group = ConfigFileGroup.create(Arrays.asList(configFile, configFile2));
-        final ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl(group));
-        SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
+        final ConfigFileManager manager = ConfigFileManagerAccessor.getDefault().createConfigFileManager(new DefaultConfigFileManagerImpl(group));
+        SpringScope scope = SpringScopeAccessor.getDefault().createSpringScope(manager);
 
         final FileObject configFO = FileUtil.toFileObject(configFile);
-        SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
+        SpringConfigModel model = SpringScopeAccessor.getDefault().getConfigModel(scope, configFO);
         final Set<String> beanNames = new HashSet<String>();
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {

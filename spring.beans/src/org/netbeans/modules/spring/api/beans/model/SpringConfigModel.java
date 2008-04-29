@@ -74,7 +74,7 @@ public final class SpringConfigModel {
     public static SpringConfigModel forFileObject(FileObject file) {
         SpringScope scope = SpringScope.getSpringScope(file);
         if (scope != null) {
-            return SpringScopeAccessor.DEFAULT.getConfigModel(scope, file);
+            return SpringScopeAccessor.getDefault().getConfigModel(scope, file);
         }
         return null;
     }

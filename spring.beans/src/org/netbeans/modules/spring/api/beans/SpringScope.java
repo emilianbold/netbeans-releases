@@ -74,7 +74,7 @@ public final class SpringScope {
     private final SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
 
     static {
-        SpringScopeAccessor.DEFAULT = new SpringScopeAccessor() {
+        SpringScopeAccessor.setDefault(new SpringScopeAccessor() {
             @Override
             public SpringScope createSpringScope(ConfigFileManager configFileManager) {
                 return new SpringScope(configFileManager);
@@ -83,7 +83,7 @@ public final class SpringScope {
             public SpringConfigModel getConfigModel(SpringScope scope, FileObject fo) {
                 return scope.getConfigModel(fo);
             }
-        };
+        });
     }
 
     private SpringScope(ConfigFileManager configFileManager) {
