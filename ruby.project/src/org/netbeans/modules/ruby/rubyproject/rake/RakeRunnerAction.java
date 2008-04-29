@@ -38,24 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.railsprojects.plugins;
+package org.netbeans.modules.ruby.rubyproject.rake;
 
-import java.awt.Dialog;
+import org.netbeans.modules.ruby.rubyproject.*;
+import java.io.File;
 import org.netbeans.api.project.Project;
-
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
+import org.openide.LifecycleManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-public final class PluginAction extends NodeAction {
+/**
+ * Shows convenient runner for running or debugging Rake tasks, similar to e.g.
+ * Go To File dialog.
+ */
+public final class RakeRunnerAction extends NodeAction {
 
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.RunDebugRakeTask");
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
     protected void performAction(Node[] activatedNodes) {
         Lookup lookup = activatedNodes[0].getLookup();
         Project p = lookup.lookup(Project.class);
@@ -63,47 +81,70 @@ public final class PluginAction extends NodeAction {
         if (!RubyPlatform.platformFor(p).showWarningIfInvalid()) {
             return;
         }
+
+        RubyBaseProject project = (RubyBaseProject) p;
+
+        TaskDescriptor taskDesc = RakeTaskChooser.select(project);
+        runTask(project, taskDesc);
+
+    }
+
+    private void runTask(final RubyBaseProject project, final TaskDescriptor taskDesc) {
+        if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
+            return;
+        }
         
-        RailsProject project = (RailsProject)p;
-
-        PluginManager manager = new PluginManager(project);
-        String pluginProblem = manager.getPluginProblem();
-
-        if (pluginProblem != null) {
-            NotifyDescriptor nd =
-                new NotifyDescriptor.Message(pluginProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-
+        if (!RubyPlatform.hasValidRake(project, true)) {
             return;
         }
 
-        PluginPanel customizer = new PluginPanel(manager);
-        javax.swing.JButton close =
-            new javax.swing.JButton(NbBundle.getMessage(PluginAction.class, "CTL_Close"));
-        close.getAccessibleContext()
-             .setAccessibleDescription(NbBundle.getMessage(PluginAction.class, "AD_Close"));
+        // Save all files first
+        LifecycleManager.getDefault().saveAll();
 
-        DialogDescriptor descriptor =
-            new DialogDescriptor(customizer, NbBundle.getMessage(PluginAction.class, "CTL_PluginTitle"),
-                true, new Object[] { close }, close, DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(PluginPanel.class), null); // NOI18N
-        Dialog dlg = null;
 
-        try {
-            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-            dlg.setVisible(true);
-        } finally {
-            if (dlg != null) {
-                dlg.dispose();
-            }
+        // EMPTY CONTEXT??
+        FileLocator fileLocator = new RubyFileLocator(Lookup.EMPTY, project);
+        String displayName = NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.Rake");
+
+        ProjectInformation info = ProjectUtils.getInformation(project);
+
+        File pwd = null;
+
+        FileObject rakeFile = RakeSupport.findRakeFile(project);
+        if (rakeFile == null) {
+            pwd = FileUtil.toFile(project.getProjectDirectory());
         }
 
-        // The roots don't include Rails plugins yet anyway
-        //if (customizer.isModified()) {
-        //    RubyInstallation.getInstance().recomputeRoots();
-        //}
+        RakeSupport rake = new RakeSupport(project);
+
+        final RakeTask task = taskDesc.getRakeTask();
+        String taskName = task.getTask();
+
+        if (taskName != null && (taskName.equals("test") || taskName.startsWith("test:"))) { // NOI18N
+            rake.setTest(true);
+        }
+
+        if (info != null) {
+            displayName = info.getDisplayName();
+        }
+
+        displayName += " (" + taskName + ')';
+
+        rake.runRake(pwd, rakeFile, displayName, fileLocator, true, taskDesc.isDebug(), taskName);
+
+//        // Update recent tasks list: add or move to end
+//        if (rakeFile != null) {
+//            List<RakeTask> recent = recentTasks.get(rakeFile);
+//            if (recent == null) {
+//                recent = new ArrayList<RakeTask>();
+//                recenttasks.put(rakeFile, recent);
+//            }
+//            recent.remove(task);
+//            recent.add(task);
+//        }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if ((activatedNodes == null) || (activatedNodes.length != 1)) {
             return false;
@@ -112,23 +153,7 @@ public final class PluginAction extends NodeAction {
         Lookup lookup = activatedNodes[0].getLookup();
         Project project = lookup.lookup(Project.class);
 
-        return project instanceof RailsProject;
-    }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(PluginAction.class, "CTL_PluginAction");
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return project instanceof RubyBaseProject;
     }
 
     @Override
