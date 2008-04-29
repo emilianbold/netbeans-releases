@@ -41,14 +41,10 @@
 package org.netbeans.modules.sql.framework.ui.view.property;
 
 import com.sun.sql.framework.exception.BaseException;
-import java.beans.PropertyEditor;
 import java.util.List;
-import java.util.Vector;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
-import org.netbeans.modules.sql.framework.ui.editor.property.impl.DefaultPropertyEditor;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -64,15 +60,6 @@ public class SQLCollaborationProperties {
         this.editor = editor;
     }
     
-    
-    
-    public PropertyEditor getCustomEditor(Node.Property property) {
-        //if (property.getName().equals("axiondbWorkingDirectory1")) {
-        //    return new DefaultPropertyEditor.TextEditor(sqlDef.getAxiondbWorkingDirectory());
-        //}
-        return null;
-    }
-
     /**
      * Gets display name of this table.
      * 

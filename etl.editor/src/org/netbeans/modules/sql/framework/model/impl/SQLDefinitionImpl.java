@@ -1046,7 +1046,6 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         this.setAttribute(AXION_DB_DATA_DIR, dbInstanceName);
     }
     
-  
     /**
      * @see SQLDefinition#setParent
      */
