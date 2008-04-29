@@ -83,4 +83,13 @@ public class ParametersPanelOperator extends JDialogOperator {
         //return new FindUsagesClassOperator()
     }
 
+    protected String getBungleText(String bundlePath, String bundleKey) {
+        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
+        int index = bundleText.indexOf('&');
+        if (index == -1) {
+            return bundleText;
+        }
+        return bundleText.substring(0, index) + bundleText.substring(index + 1);
+    }
+
 }
