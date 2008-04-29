@@ -8,15 +8,15 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.project.Project;
-import java.io.File;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
-import javax.swing.JCheckBox;
+import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,18 +51,19 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
         // 1 : "Production", 
         // 2 : "Test"
         
-        grailsEnvChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Development", "Production", "Test" }));
-        
-        String env = prjConfig.getEnv();
-        int idx = 0;
-        
-        if(env != null) {
-            if       (env.equals("Development")) { idx = 0; } 
-            else if  (env.equals("Production"))  { idx = 1; }
-            else if  (env.equals("Test"))        { idx = 2; }
+        GrailsEnvironment[] envs = GrailsEnvironment.values();
+        Object[] values = new Object[envs.length];
+        for (int i = 0; i < envs.length; i++) {
+            values[i] = new EnvironmentItem(envs[i]);
         }
         
-        grailsEnvChooser.setSelectedIndex(idx);
+        grailsEnvChooser.setModel(new DefaultComboBoxModel(values));
+        
+        GrailsEnvironment env = prjConfig.getEnv();
+
+        if (env != null) {
+            grailsEnvChooser.setSelectedItem(new EnvironmentItem(env));
+        }
         grailsEnvChooser.addItemListener(this);
     }
     
@@ -207,8 +208,48 @@ private void autodeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     public void itemStateChanged(ItemEvent e) {
+        prjConfig.setEnv(((EnvironmentItem) e.getItem()).getEnvironment());
         
-        prjConfig.setEnv((String)e.getItem());
+    }
+    
+    private static class EnvironmentItem {
+
+        private final GrailsEnvironment environment;
+
+        public EnvironmentItem(GrailsEnvironment environment) {
+            this.environment = environment;
+        }
+
+        public GrailsEnvironment getEnvironment() {
+            return environment;
+        }
+
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel." + environment.name());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EnvironmentItem other = (EnvironmentItem) obj;
+            if (this.environment != other.environment) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + (this.environment != null ? this.environment.hashCode() : 0);
+            return hash;
+        }
         
     }
     

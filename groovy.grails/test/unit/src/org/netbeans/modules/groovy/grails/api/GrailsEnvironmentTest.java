@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,60 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.grails.api;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.settings.Settings;
-
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class GrailsProjectConfig {
+public class GrailsEnvironmentTest extends NbTestCase{
 
-    private final Project prj;
-    private final Settings settings = Settings.getInstance();
-
-    public GrailsProjectConfig(Project prj) {
-        this.prj = prj;
+    public GrailsEnvironmentTest(String name) {
+        super(name);
     }
 
-    public String getPort() {
-        return settings.getPortForProject(prj);
+    public void testForString() {
+        assertEquals(GrailsEnvironment.DEVELOPMENT, GrailsEnvironment.forString("Development"));
+        assertEquals(GrailsEnvironment.PRODUCTION, GrailsEnvironment.forString("Production"));
+        assertEquals(GrailsEnvironment.TEST, GrailsEnvironment.forString("Test"));
+
+        try {
+            GrailsEnvironment.forString(null);
+            fail("Method forString accepts null");
+        } catch (NullPointerException ex) {
+            // expected
+        }
+
+        try {
+            GrailsEnvironment.forString("Something");
+            fail("Unknown environment allowed");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
     }
 
-    public void setPort(String port) {
-        assert port != null;
-        settings.setPortForProject(prj, port);
-    }
-
-    public GrailsEnvironment getEnv() {
-        return settings.getEnvForProject(prj);
-    }
-
-    public void setEnv(GrailsEnvironment env) {
-        assert env != null;
-        settings.setEnvForProject(prj, env);
-    }
-
-    public String getDeployDir() {
-        return settings.getDeployDirForProject(prj);
-    }
-
-    public void setDeployDir(String dir) {
-        assert dir != null;
-        settings.setDeployDirForProject(prj, dir);
-    }
-
-    public boolean getAutoDeployFlag() {
-        return settings.getAutoDeployFlagForProject(prj);
-    }
-
-    public void setAutoDeployFlag(boolean flag) {
-        settings.setAutoDeployFlagForProject(prj, flag);
+    public void testToString() {
+        assertEquals("Development", GrailsEnvironment.DEVELOPMENT.toString());
+        assertEquals("Production", GrailsEnvironment.PRODUCTION.toString());
+        assertEquals("Test", GrailsEnvironment.TEST.toString());
     }
 }
