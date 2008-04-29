@@ -50,8 +50,6 @@ import javax.swing.JLabel;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.TreePath;
 
-import org.netbeans.core.projects.SettingChildren.FileStateProperty;
-
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
@@ -69,6 +67,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
+import org.openide.nodes.Node;
 
 /**
  * Provides access to the Options window and it's subcomponents.
@@ -304,7 +303,7 @@ public class OptionsOperator extends NbDialogOperator {
      */
     protected int getValue(int row, int column) {
         try { 
-            FileStateProperty property = ((FileStateProperty)treeTable().getValueAt(row, column));
+            Node.Property<?> property = ((Node.Property<?>)treeTable().getValueAt(row, column));
             return(((Integer)property.getValue()).intValue());
         } catch(IllegalAccessException e) {
             throw new JemmyException("Can not access value!", e);
