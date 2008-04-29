@@ -1200,6 +1200,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
         setUsingFullyQualifiedName(true);
         setStagingTableName("");
     }
+    
     public static String getResolvedCatalogName(SQLDBTable t) {
         // Ensure order of precedence for catalog name is followed.
         String resolvedCatalogName = t.getUserDefinedCatalogName();
@@ -1208,6 +1209,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
         }
         return resolvedCatalogName;
     }
+        
     public static String getResolvedSchemaName(SQLDBTable t) {
         // Ensure order of precedence for schema name is followed.
         String resolvedSchemaName = t.getUserDefinedSchemaName();

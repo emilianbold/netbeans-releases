@@ -134,9 +134,9 @@ public class DBExplorerUtil {
         String username = connProps.getProperty(DBConnectionFactory.PROP_USERNAME);
         String password = connProps.getProperty(DBConnectionFactory.PROP_PASSWORD);
         String url = connProps.getProperty(DBConnectionFactory.PROP_URL);
-        if(!(url.contains(AXION_URL_PREFIX))){
-            if (StringUtil.isNullString(username) || StringUtil.isNullString(password)){
-             JOptionPane.showMessageDialog(new JFrame(),"UserName/Password is empty.Please fill in the credentials ","Error", JOptionPane.ERROR_MESSAGE);                
+        if (!(url.contains(AXION_URL_PREFIX))) {
+            if (StringUtil.isNullString(username) || StringUtil.isNullString(password)) {
+                JOptionPane.showMessageDialog(new JFrame(), "UserName/Password is empty.Please fill in the credentials ", "Error", JOptionPane.ERROR_MESSAGE);
                 return null;
             }
         }
@@ -178,16 +178,18 @@ public class DBExplorerUtil {
         Connection conn = null;
         try {
            
-            url = adjustDatabaseURL(url);
+                url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
             if (conn == null) { // get from db explorer
+
                 DatabaseConnection dbConn = createDatabaseConnection(driverName, url, username, password);
                 try {
                     if (dbConn != null) {
                         conn = dbConn.getJDBCConnection();
                         if (conn == null) { // make a final try
+
                             ConnectionManager.getDefault().showConnectionDialog(dbConn);
                             Thread.sleep(5000);
                             conn = dbConn.getJDBCConnection();
@@ -228,9 +230,8 @@ public class DBExplorerUtil {
         JDBCDriver drv = null;
         String schema = null;
         try {
-            if (!isCmdLine) {
-            url = adjustDatabaseURL(url);
-            }
+            
+                url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
             // check if connection exists in DB Explorer. Else add the connection to DB Explorer.
@@ -450,6 +451,7 @@ public class DBExplorerUtil {
         }
         return connName;
     }
+
     public static Database getAxionDBFromURL(String url) throws AxionException {
         int initialDBIndex = url.indexOf("axiondb") + 8;
         int endDBIndex = url.indexOf(":", initialDBIndex);
