@@ -47,9 +47,6 @@ public interface GrailsServer {
     
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName);
     
-    // is the Grails server configured properly and the start binary ready-to-run?
-    public boolean serverConfigured ();
-    
     // gets the last error from the grails server in case runCommand returns null.
     public Exception getLastError();
 }

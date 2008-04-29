@@ -49,6 +49,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
 
 
@@ -72,7 +73,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     CountDownLatch serverFinished = new CountDownLatch(1);
     boolean        serverRunning = false;
     boolean        serverConfigured = true;
-    GrailsServer server = GrailsServerFactory.getServer();
     
     
     private WizardDescriptor.Panel[] createPanels () {
@@ -136,7 +136,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
         this.wiz = wizard;
         index = 0;
         
-        if(!server.serverConfigured()) {
+        if(!GrailsRuntime.getInstance().isConfigured()) {
             wizard.putProperty("WizardPanel_errorMessage", 
                     NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
