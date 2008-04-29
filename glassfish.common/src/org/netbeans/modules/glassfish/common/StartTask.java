@@ -230,7 +230,7 @@ public class StartTask extends BasicTask<OperationState> {
         argMap.remove(GlassfishModule.JRUBY_HOME);
         argMap.remove(GlassfishModule.COMET_FLAG);
         
-        if("true".equals(System.getProperty("glassfish.use.jvm.config"))) {
+        if(!"false".equals(System.getProperty("glassfish.use.jvm.config"))) {
             for(Map.Entry<String, String> entry: argMap.entrySet()) {
                 appendSystemVar(argumentBuf, entry.getKey(), entry.getValue());
             }
