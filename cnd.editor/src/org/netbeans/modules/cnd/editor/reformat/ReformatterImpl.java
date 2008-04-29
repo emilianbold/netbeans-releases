@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -1069,25 +1070,50 @@ public class ReformatterImpl {
                     case LPAREN:
                         paren--;
                         if (paren==0 && hasParen){
+                            ArrayList<Integer> nlList = new ArrayList<Integer>();
                             Token<CppTokenId> function = ts.lookPreviousImportant();
                             if (function != null && function.id()==IDENTIFIER) {
                                 int startName = -1;
+                                boolean isPrevID = false;
                                 while (ts.movePrevious()) {
                                     switch(ts.token().id()){
                                         case COMMA:
                                         case COLON:
                                             return;
+                                        case NEW_LINE:
+                                            nlList.add(ts.index());
+                                            break;
+                                        case BLOCK_COMMENT:
                                         case WHITESPACE:
                                             break;
-                                        case IDENTIFIER:
-                                        case SCOPE:
                                         case TILDE:
                                             startName = ts.index();
+                                            isPrevID = true;
                                             break;
+                                        case SCOPE:
+                                            startName = ts.index();
+                                            isPrevID = false;
+                                            break;
+                                        case IDENTIFIER:
+                                            if (!isPrevID) {
+                                                startName = ts.index();
+                                                isPrevID = true;
+                                                break;
+                                            }
+                                            // nobreak
                                         default:
                                             ts.moveIndex(startName);
                                             ts.moveNext();
-                                            newLineBefore(false);
+                                            newLineBefore(braces.getIndent());
+                                            for(int i = 0; i < nlList.size(); i++){
+                                                int nl = nlList.get(i);
+                                                if (startName < nl) {
+                                                    ts.moveIndex(nl);
+                                                    ts.moveNext();
+                                                    ts.moveNext();
+                                                    removeLineBefore(false);
+                                                }
+                                            }
                                             return;
                                     }
                                 }
@@ -1640,6 +1666,10 @@ public class ReformatterImpl {
         } else {
             spaces = getIndent();
         }
+        newLineBefore(spaces);
+    }
+
+    private void newLineBefore(int spaces) {
         if (!ts.isFirstLineToken()) {
             Token<CppTokenId> previous = ts.lookPrevious();
             if (previous != null) {

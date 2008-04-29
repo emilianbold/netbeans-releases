@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
  */
 public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
-    public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
+    public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         super(ast, cls, visibility, false);
         setName(cls.getName());
         registerInProject();

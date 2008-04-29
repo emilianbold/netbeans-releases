@@ -61,11 +61,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
     private static final int ABSTRACT = 1 << 1;
     private static final int VIRTUAL = 1 << 2;
 
-    public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
+    public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         this(ast, cls, visibility, true);
     }
     
-    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) {
+    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
         super(ast, cls.getContainingFile(), cls, false);
         this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);

@@ -121,7 +121,7 @@ public class CCFormatter extends ExtFormatter {
             typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
-                if (checkCase(doc, fnw, typedText+"\n")) { // NOI18N
+                if (checkCase(doc, fnw, typedText+"\n") || dotPos == doc.getLength()) { // NOI18N
                     ret = new int[]{fnw, fnw + 1};
                 }
             } catch (BadLocationException e) {
