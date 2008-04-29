@@ -299,7 +299,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject viewFile;
             viewFile = updateViewPage("index.jsp", DataFolder.findFolder(jsp), "index"); // NOI18N
             addFileToOpen(viewFile);
-            newFiles.add(FileUtil.toFile(viewFile));
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
