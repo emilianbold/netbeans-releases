@@ -1017,7 +1017,7 @@ public class TemplateWizard extends WizardDescriptor {
         
         public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set workSet = null;
+            Set workSet;
             if (instantiatingIterator instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                 assert wiz.getProgressHandle () != null : "ProgressHandle cannot be null.";
                 workSet = ((ProgressInstantiatingIterator)instantiatingIterator).instantiate (wiz.getProgressHandle ());
@@ -1025,6 +1025,9 @@ public class TemplateWizard extends WizardDescriptor {
                 workSet = instantiatingIterator.instantiate ();
             }
             if (workSet == null) {
+                Logger.getLogger(TemplateWizard.class.getName()).warning(
+                        "Wizard iterator of type " + instantiatingIterator.getClass().getName() +
+                        " illegally returned null from the instantiate method");
                 return Collections.emptySet ();
             }
             java.util.Iterator it = workSet.iterator ();
