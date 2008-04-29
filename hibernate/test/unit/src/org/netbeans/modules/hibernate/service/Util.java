@@ -61,6 +61,7 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader;
 
 /**
  * This class provides utility methods for test cases.
@@ -251,7 +252,7 @@ public class Util {
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo != null && fo.getNameExt().endsWith("cfg.xml")) {
+                if(fo != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) {
                     files.add(fo);
                 }
             }
