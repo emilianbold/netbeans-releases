@@ -48,6 +48,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
@@ -68,7 +69,6 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     CountDownLatch serverFinished = new CountDownLatch(1);
     boolean        serverRunning = false;
     boolean        serverConfigured = true;
-    GrailsServer server = GrailsServerFactory.getServer();
     GrailsProject project;
     SourceCategory cat;
     String wizardTitle;
@@ -163,7 +163,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     public void initialize(WizardDescriptor wizard) {
         this.wiz = wizard;
         
-        if(!server.serverConfigured()) {
+        if(!GrailsRuntime.getInstance().isConfigured()) {
             wizard.putProperty("WizardPanel_errorMessage", 
                     NbBundle.getMessage(NewArtifactWizardIterator.class, 
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
