@@ -43,6 +43,7 @@ package gui.actions;
 import gui.MPUtilities;
 import gui.window.MIDletEditorOperator;
 
+import javax.swing.JComponent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
@@ -52,6 +53,8 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.performance.test.guitracker.ActionTracker;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 
 /**
  *
@@ -64,6 +67,7 @@ public class SwitchConfiguration extends org.netbeans.performance.test.utilities
     private String targetProject,  midletName;
     private WizardOperator propertiesWindow;
     private MIDletEditorOperator editor;
+    private LoggingRepaintManager.RegionFilter filter;
 
     /**
      * Creates a new instance of OpenMIDletEditor
@@ -107,7 +111,26 @@ public class SwitchConfiguration extends org.netbeans.performance.test.utilities
 
         projectNode.properties();
         propertiesWindow = new WizardOperator(targetProject);
+        
+        filter = new LoggingRepaintManager.RegionFilter() {
+            boolean done = false;
 
+            public boolean accept(JComponent comp) {
+                if (done) { 
+                    return false;
+                }
+                if (comp.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView")) {
+                    done = true;
+                    return false;
+                }
+                return true;
+            }
+
+            public String getFilterName() {
+                return "Filters out all Regions starting with org.netbeans.modules.editor.errorstripe.AnnotationView";
+            }
+        };
+        repaintManager().addRegionFilter(filter);
     }
 
     public ComponentOperator open() {
@@ -122,6 +145,7 @@ public class SwitchConfiguration extends org.netbeans.performance.test.utilities
     @Override
     public void close() {
         log(":: close");
+        repaintManager().removeRegionFilter(filter);
         if (projectNode != null) {
             projectNode.properties();
             propertiesWindow = new WizardOperator(targetProject);
