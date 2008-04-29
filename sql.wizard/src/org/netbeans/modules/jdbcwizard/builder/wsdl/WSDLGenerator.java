@@ -905,8 +905,7 @@ public class WSDLGenerator {
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
 			try{
-            //throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
-			final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+            final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
             final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
             java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
             final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
