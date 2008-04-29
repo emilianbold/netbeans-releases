@@ -49,6 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
+import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 import org.openide.filesystems.FileObject;
@@ -166,7 +167,7 @@ public final class SpringScope {
     private SpringConfigModel getGroupConfigModel(File configFile) {
         for (ConfigFileGroup group : configFileManager.getConfigFileGroups()) {
             if (group.containsFile(configFile)) {
-                return new SpringConfigModel(fileModelManager, group);
+                return SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group);
             }
         }
         return null;
@@ -176,7 +177,7 @@ public final class SpringScope {
         File configFile = FileUtil.toFile(configFO);
         if (configFile != null) {
             ConfigFileGroup singleFileGroup = ConfigFileGroup.create(Collections.singletonList(configFile));
-            return new SpringConfigModel(fileModelManager, singleFileGroup);
+            return SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, singleFileGroup);
         }
         return null;
     }

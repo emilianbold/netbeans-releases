@@ -50,6 +50,7 @@ import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
+import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.TestUtils;
 import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.JavaClassRefMatcher;
@@ -73,7 +74,7 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
         TestUtils.copyStringToFile(contents, configFile);
         SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
         ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(fileModelManager, group);
+        SpringConfigModel model = SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group);
         model.runDocumentAction(new Action<DocumentAccess>() {
             public void run(DocumentAccess docAccess) {
                 JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);
@@ -104,7 +105,7 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
         TestUtils.copyStringToFile(contents, configFile);
         SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
         ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(fileModelManager, group);
+        SpringConfigModel model = SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group);
         model.runDocumentAction(new Action<DocumentAccess>() {
             public void run(DocumentAccess docAccess) {
                 JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);

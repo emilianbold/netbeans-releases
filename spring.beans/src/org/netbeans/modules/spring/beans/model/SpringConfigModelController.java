@@ -50,6 +50,7 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
+import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
 
 /**
@@ -181,7 +182,7 @@ public class SpringConfigModelController {
                     try {
                         beanSources.put(currentFile, lockedDoc.getBeanSource());
                         ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
-                        DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
+                        DocumentAccess docAccess = SpringConfigModelAccessor.getDefault().createDocumentAccess(springBeans, currentFile, lockedDoc);
                         action.run(docAccess);
                     } finally {
                         lockedDoc.unlock();

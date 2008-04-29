@@ -49,6 +49,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
+import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
 import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
@@ -65,6 +66,19 @@ public final class SpringConfigModel {
 
     private final SpringConfigModelController controller;
 
+    static {
+        SpringConfigModelAccessor.setDefault(new SpringConfigModelAccessor() {
+            @Override
+            public SpringConfigModel createSpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup) {
+                return new SpringConfigModel(fileModelManager, configFileGroup);
+            }
+            @Override
+            public DocumentAccess createDocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc) {
+                return new DocumentAccess(springBeans, file, lockedDoc);
+            }
+        });
+    }
+
     /**
      * Returns a Spring configuration model for the given file.
      *
@@ -79,8 +93,7 @@ public final class SpringConfigModel {
         return null;
     }
 
-    // XXX should not be public.
-    public SpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup) {
+    private SpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup) {
         controller = new SpringConfigModelController(fileModelManager, configFileGroup);
     }
 
@@ -126,7 +139,7 @@ public final class SpringConfigModel {
         private final LockedDocument lockedDoc;
         private final File file;
 
-        public DocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc) {
+        private DocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc) {
             this.springBeans = springBeans;
             this.lockedDoc = lockedDoc;
             this.file = file;
