@@ -79,7 +79,7 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new BasicConfVisualPanel();
+            myComponent = new BasicConfVisualPanel( );
             myComponent.setName(
                     NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
                     CustomComponentWizardIterator.FINAL_STEP));
@@ -105,9 +105,9 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
-    public void readSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-
+    public void readSettings( Object settings ) {
+        WizardDescriptor descriptor = (WizardDescriptor) settings;
+        myComponent.refreshData( descriptor );
     }
 
     /* (non-Javadoc)

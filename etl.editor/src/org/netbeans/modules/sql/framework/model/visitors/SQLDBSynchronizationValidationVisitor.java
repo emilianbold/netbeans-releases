@@ -203,7 +203,7 @@ public class SQLDBSynchronizationValidationVisitor {
         // compare getPrecision
         if (collabCol.getPrecision() != newCol.getPrecision()) {
             return -1;
-        }
+            }
         }
 
         // compare getOrdinalPosition

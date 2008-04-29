@@ -258,9 +258,6 @@ public class JavaCodegen implements ICodeGenerator
                                     domainTemplate.getTemplateFilename());
                         }
                         
-                        templteFileObject.setAttribute(
-                            "javax.script.ScriptEngine", "freemarker"); // NOI18N
-
                         FileMapping fmap = new FileMapping();
                         fmap.templateFileObject = templteFileObject;
                         fmap.domainTemplate = domainTemplate;
@@ -465,7 +462,25 @@ public class JavaCodegen implements ICodeGenerator
                             ScriptEngine engine = engines.get(templFO);
                             if (engine == null) 
                             {
-                                engine = mgr.getEngineByName("freemarker");
+                                String engineID = null;
+                                Object value = templFO.getAttribute("javax.script.ScriptEngine");
+                        
+                                if (value instanceof String) 
+                                {
+                                    engineID = (String) value;
+                                }
+                                if (engineID == null || engineID.length() == 0) 
+                                {
+                                    engineID = "freemarker";
+                                }
+                                engine = mgr.getEngineByName(engineID);
+                                if (engine == null) 
+                                {
+                                    task.log(task.TERSE, getBundleMessage(
+                                        "MSG_ErrorNonExistingScriptingEngine", engineID)); // NOI18N
+                                    errorsCount++;
+                                    continue;
+                                }
                                 engines.put(templFO, engine);
                             }
 
@@ -833,6 +848,10 @@ public class JavaCodegen implements ICodeGenerator
     private void deleteDirs(String topParent, String path) 
     {               
         File topDir = new File(topParent);
+        if (path == null) 
+        {
+            return;
+        }
         File cur = new File(path);
         if (! inSubdir(topDir, cur)) 
         {
