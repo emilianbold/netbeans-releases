@@ -65,10 +65,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
-    private static final int ICON_WIDTH = 16;
+    private static final int CLICKABLE_ICON_WIDTH = 16;
     private static final int BAR_WIDTH = 8;
     
     static final Color hitsColor = new Color(255, 255, 178); // [TODO]
+    static final Color hitsBarColor = new Color(230, 230, 130); // [TODO]
     static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // [TODO]
     
     private transient Color greenBarColor = new Color(189, 230, 170);
@@ -444,7 +445,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             leftPanel.removeAll();
             rightPanel.removeAll();
             int sy = 0;
-            int sx = (rightPanel.getWidth() - ICON_WIDTH) / 2;
+            int sx = (rightPanel.getWidth() - CLICKABLE_ICON_WIDTH) / 2;
 
             JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
             // collect all deadlocked threads
@@ -485,13 +486,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 treeViewWidth = rect != null ? Math.max(treeViewWidth, (int) Math.round(rect.getX() + rect.getWidth())) : treeViewWidth;
                 leftBarHeight += height;
 
-                JLabel icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon, suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
-                icon.setPreferredSize(new Dimension(ICON_WIDTH, height));
+                JComponent icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon, suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
+                icon.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, height));
                 icon.setBackground(treeBackgroundColor);
                 icon.setOpaque(false);
                 rightPanel.add(icon);
                 if (icon instanceof ClickableIcon) {
-                    ((ClickableIcon) icon).initializeState(sx, sy, ICON_WIDTH, height);
+                    ((ClickableIcon) icon).initializeState(sx, sy, CLICKABLE_ICON_WIDTH, height);
                 }
                 sy += height;
             } // for
@@ -534,7 +535,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 label.setBackground(greenBarColor);
                 toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
             } else if (isAtBreakpoint) {
-                label.setBackground(hitsColor);
+                label.setBackground(hitsBarColor);
                 toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
             } else {
                 label.setBackground(treeBackgroundColor);

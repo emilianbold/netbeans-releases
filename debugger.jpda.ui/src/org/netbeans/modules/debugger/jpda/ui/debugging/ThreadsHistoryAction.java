@@ -149,7 +149,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    /** Only here for fix #41477:, called from layer.xml:
+    /* Only here for fix #41477:, called from layer.xml:
      * For KDE on unixes, Ctrl+TAB is occupied by OS,
      * so we also register Ctrl+BACk_QUOTE as recent view list action shortcut.
      * For other OS's, Ctrl+TAB is the only default, because we create link

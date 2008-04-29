@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import java.awt.Container;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
