@@ -43,16 +43,23 @@ package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.OperationStateListener;
 import org.netbeans.spi.glassfish.ServerUtilities;
+import org.netbeans.spi.glassfish.TreeParser;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -187,8 +194,10 @@ public class StartTask extends BasicTask<OperationState> {
         }
         String jarLocation = jar.getAbsolutePath();
         
+        Map<String, String> argMap = readJvmArgs(getDomain(serverHome));
+        
         StringBuilder argumentBuf = new StringBuilder(1024);
-        appendSystemVars(argumentBuf);
+        appendSystemVars(argMap, argumentBuf);
         appendJavaOpts(argumentBuf);
         argumentBuf.append(" -client -jar ");
         argumentBuf.append(quote(jarLocation));
@@ -214,16 +223,18 @@ public class StartTask extends BasicTask<OperationState> {
         return argumentBuf;
     }
     
-    private StringBuilder appendSystemVars(StringBuilder argumentBuf) {
+    private StringBuilder appendSystemVars(Map<String, String> argMap, StringBuilder argumentBuf) {
         appendSystemVar(argumentBuf, GlassfishModule.JRUBY_HOME, ip.get(GlassfishModule.JRUBY_HOME));
         appendSystemVar(argumentBuf, GlassfishModule.COMET_FLAG, ip.get(GlassfishModule.COMET_FLAG));
+
+        argMap.remove(GlassfishModule.JRUBY_HOME);
+        argMap.remove(GlassfishModule.COMET_FLAG);
         
-//        <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
-//        <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
-//        String domain = ip.get(GlassfishModule.HOME_FOLDER_ATTR)
-//                + File.separatorChar + "domains" + File.separatorChar + "domain1";
-//        appendSystemVar(argumentBuf, "javax.net.ssl.keyStore", domain + "/config/keystore.jks");
-//        appendSystemVar(argumentBuf, "javax.net.ssl.trustStore", domain + "/config/cacerts.jks");
+        if("true".equals(System.getProperty("glassfish.use.jvm.config"))) {
+            for(Map.Entry<String, String> entry: argMap.entrySet()) {
+                appendSystemVar(argumentBuf, entry.getKey(), entry.getValue());
+            }
+        }
         
         return argumentBuf;
     }    
@@ -252,5 +263,131 @@ public class StartTask extends BasicTask<OperationState> {
             }
         }
         return process;
+    }
+    
+    private File getDomain(String serverHome) {
+        // !PW FIXME default domain hardcoded.
+        return new File(serverHome, "domains" + File.separatorChar + "domain1");
+    }
+    
+    private Map<String, String> readJvmArgs(File domainRoot) {
+        Map<String, String> argMap = new LinkedHashMap<String, String>();
+        Map<String, String> varMap = new HashMap<String, String>();
+        
+        varMap.put("com.sun.aas.installRoot", ip.get(GlassfishModule.HOME_FOLDER_ATTR));
+        varMap.put("com.sun.aas.instanceRoot", domainRoot.getAbsolutePath());
+        varMap.put("com.sun.aas.javaRoot", System.getProperty("java.home"));
+        varMap.put("com.sun.aas.derbyRoot", 
+                ip.get(GlassfishModule.HOME_FOLDER_ATTR) + File.separatorChar + "javadb");
+        
+        File domainXml = new File(domainRoot, "config/domain.xml");
+
+        JvmConfigReader reader = new JvmConfigReader(argMap, varMap);
+        List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+        pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder()));
+        pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder()));
+        pathList.add(new TreeParser.Path("/domain/configs/config/java-config", reader));
+        try {
+            TreeParser.readXml(domainXml, pathList);
+        } catch(IllegalStateException ex) {
+            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+        return argMap;
+    }
+    
+    private static class JvmConfigReader extends TreeParser.NodeReader {
+
+        private final Map<String, String> argMap;
+        private final Map<String, String> varMap;
+        private final String serverName = "server";
+        private String serverConfigName;
+        private boolean readJvmConfig = false;
+        
+        public JvmConfigReader(Map<String, String> argMap, Map<String, String> varMap) {
+            this.argMap = argMap;
+            this.varMap = varMap;
+        }
+        
+        public TreeParser.NodeReader getServerFinder() {
+            return new TreeParser.NodeReader() {
+                @Override
+                public void readAttributes(String qname, Attributes attributes) throws SAXException {
+//                    <server lb-weight="100" name="server" config-ref="server-config">
+                    if(serverConfigName == null || serverConfigName.length() == 0) {
+                        if(serverName.equals(attributes.getValue("name"))) {
+                            serverConfigName = attributes.getValue("config-ref");
+                            Logger.getLogger("glassfish").finer("DOMAIN.XML: Server profile defined by " + serverConfigName);
+                        }
+                    }
+                }
+            };
+        }
+        
+        public TreeParser.NodeReader getConfigFinder() {
+            return new TreeParser.NodeReader() {
+                @Override
+                public void readAttributes(String qname, Attributes attributes) throws SAXException {
+//                    <config name="server-config" dynamic-reconfiguration-enabled="true">
+                    if(serverConfigName != null && serverConfigName.equals(attributes.getValue("name"))) {
+                        readJvmConfig = true;
+                        Logger.getLogger("glassfish").finer("DOMAIN.XML: Reading JVM options from server profile " + serverConfigName);
+                    }
+                }
+                @Override
+                public void endNode(String qname) throws SAXException {
+                    readJvmConfig = false;
+                }
+            };
+        }
+        
+        @Override
+        public void readCData(String qname, char [] ch, int start, int length) throws SAXException {
+//            <jvm-options>-client</jvm-options>
+//            <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
+            if(readJvmConfig) {
+                String option = new String(ch, start, length);
+                if(option.startsWith("-D")) {
+                    int splitIndex = option.indexOf('=');
+                    if(splitIndex != -1) {
+                        String name = option.substring(2, splitIndex);
+                        String value = doSub(option.substring(splitIndex+1));
+                        if(name.length() > 0) {
+                            Logger.getLogger("glassfish").finer("DOMAIN.XML: argument name = " + name + ", value = " + value);
+                            argMap.put(name, value);
+                        }
+                    }
+                }
+            }
+        }
+        
+        private Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
+        
+        private String doSub(String value) {
+            try {
+                Matcher matcher = pattern.matcher(value);
+                boolean result = matcher.find();
+                if(result) {
+                    StringBuffer sb = new StringBuffer();
+                    do {
+                        String key = matcher.group(1);
+                        String replacement = varMap.get(key);
+                        if(replacement == null) {
+                            replacement = System.getProperty(key);
+                            if(replacement == null) {
+                                replacement = "\\$\\{" + key + "\\}";
+                            }
+                        }
+                        matcher.appendReplacement(sb, replacement);
+                        result = matcher.find();
+                    } while(result);
+                    matcher.appendTail(sb);
+                    value = sb.toString();
+                }
+            } catch(Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+            return value;
+        }
+
     }
 }

@@ -305,7 +305,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
             pathList.add(new TreeParser.Path("/domain/configs/config/http-service/http-listener",
                     new TreeParser.NodeReader() {
                 @Override
-                public void readAttributes(Attributes attributes) throws SAXException {
+                public void readAttributes(String qname, Attributes attributes) throws SAXException {
                     // <http-listener 
                     //   id="http-listener-1" port="8080" xpowered-by="true" 
                     //   enabled="true" address="0.0.0.0" security-enabled="false" 

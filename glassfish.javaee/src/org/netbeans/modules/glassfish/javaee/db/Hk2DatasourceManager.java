@@ -308,7 +308,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         //      object-type="user" />
         
         @Override
-        public void readAttributes(Attributes attributes) throws SAXException {
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
             String type = attributes.getValue("object-type");
             
             // Ignore system resources
@@ -373,7 +373,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         //</jdbc-connection-pool>
     
         @Override
-        public void readAttributes(Attributes attributes) throws SAXException {
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
             String poolName = attributes.getValue("name");
             if(poolName != null && poolName.length() > 0) {
                 currentPool = new ConnectionPool(poolName);
@@ -801,7 +801,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
         
         @Override
-        public void readAttributes(Attributes attributes) throws SAXException {
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
             String jndiName = attributes.getValue("jndi-name");
             if(targetJndiName.equals(jndiName)) {
                 if(duplicate) {
@@ -829,7 +829,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         private Map<String, CPool> pools = new HashMap<String, CPool>();
         
         @Override
-        public void readAttributes(Attributes attributes) throws SAXException {
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
             properties = new HashMap<String, String>();
             
             String poolName = attributes.getValue("name");

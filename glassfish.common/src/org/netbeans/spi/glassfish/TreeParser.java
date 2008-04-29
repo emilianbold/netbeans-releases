@@ -80,6 +80,13 @@ public final class TreeParser extends DefaultHandler {
     }
 
     @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if(childNodeReader != null) {
+            childNodeReader.readCData(skipping, ch, start, length);
+        }
+    }
+
+    @Override
     public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
         if(skipping != null) {
             depth++;
@@ -96,7 +103,8 @@ public final class TreeParser extends DefaultHandler {
                 
                 NodeReader reader = rover.getReader();
                 if(reader != null) {
-                    reader.readAttributes(attributes);
+                    LOGGER.log(Level.FINER, "Rover enter & read node " + qname);
+                    reader.readAttributes(qname, attributes);
                 }
             } else {
                 skipping = qname;
@@ -118,9 +126,6 @@ public final class TreeParser extends DefaultHandler {
                 if(!skipping.equals(qname)) {
                     LOGGER.log(Level.WARNING, "Skip: " + skipping + " does not match " + qname + " at depth " + depth);
                 }
-                if(childNodeReader != null) {
-                    childNodeReader.endNode(qname);
-                }
                 LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
                 skipping = null;
                 childNodeReader = null;
@@ -128,6 +133,11 @@ public final class TreeParser extends DefaultHandler {
                 LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
             }
         } else {
+            NodeReader reader = rover.getReader();
+            if(reader != null) {
+                LOGGER.log(Level.FINER, "Rover exit & read node " + qname);
+                reader.endNode(qname);
+            }
             rover = rover.getParent();
             LOGGER.log(Level.FINER, "Rover ascend to " + rover);
         }
@@ -146,10 +156,13 @@ public final class TreeParser extends DefaultHandler {
     
     public static abstract class NodeReader {
 
-        public void readAttributes(Attributes attributes) throws SAXException {
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
         }
 
         public void readChildren(String qname, Attributes attributes) throws SAXException {
+        }
+        
+        public void readCData(String qname, char [] ch, int start, int length) throws SAXException {
         }
         
         public void endNode(String qname) throws SAXException {
@@ -287,7 +300,7 @@ public final class TreeParser extends DefaultHandler {
         public int hashCode() {
             int hash = 3;
             hash = 41 * hash + (this.element != null ? this.element.hashCode() : 0);
-            return hash;
+            return hash;            
         }
 
         @Override
