@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,9 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
 import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
-import org.netbeans.modules.groovy.grails.settings.Settings;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileUtil;
 
@@ -51,125 +50,99 @@ import org.openide.filesystems.FileUtil;
  */
 public class ExternalGrailsServer implements GrailsServer{
 
-    CountDownLatch outputReady = new CountDownLatch(1);
-    GrailsServerRunnable gsr;
-    String cwdName;
-    ExecutionEngine engine = ExecutionEngine.getDefault();
-    Project prj;
-    Exception lastException = null; // last problem in the runnable.
-    GrailsServerState serverState = null;
-    ExecutorTask exTask;
-    
-    private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
-    
-    boolean checkForGrailsExecutable ( File pathToGrails ) {
-        String pathToBinary = Utilities.isWindows() ? "\\bin\\grails.bat" : "/bin/grails"; // NOI18N
-        return new File (pathToGrails, pathToBinary).isFile ();
-    }
-    
-    
-    public boolean serverConfigured () {
-        Settings settings = Settings.getInstance();
-        
-        if(settings == null)
-            return false;
+    private final CountDownLatch outputReady = new CountDownLatch(1);
+    private final ExecutionEngine engine = ExecutionEngine.getDefault();
 
-        String grailsBase = settings.getGrailsBase();
-        
-        if(grailsBase == null)
-            return false;
-                
-        return checkForGrailsExecutable(new File(grailsBase));
-        }
-    
-    String prependOption(){
+    private GrailsServerRunnable gsr;
+    private String cwdName;
+    private Project prj;
+    private Exception lastException;
+    private GrailsServerState serverState;
+    private ExecutorTask exTask;
+
+    private static final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
+
+    private String prependOption() {
         if (prj == null) {
             return "";
         }
-        
+
         String retVal = "";
-        
+
         GrailsProjectConfig prjConfig = new GrailsProjectConfig(prj);
-        
-        if (prjConfig != null){
+
+        if (prjConfig != null) {
             String port = prjConfig.getPort();
-            
-            if(port != null && ! port.equals("")){
-                if(port.matches("\\d+")){ 
-                    retVal = " -Dserver.port=" + port + " ";
+
+            if (port != null && !port.equals("")) {
+                if (port.matches("\\d+")) { //NOI18N
+                    retVal = " -Dserver.port=" + port + " "; // NOI18N
                 } else {
-                    LOG.log(Level.WARNING, "This seems to be no number: " + port);
-                    }
+                    LOG.log(Level.WARNING, "This seems to be no number: " + port); // NOI18N
+                }
             }
-            
+
             GrailsEnvironment env = prjConfig.getEnv();
-            
-            if(env != null && ! env.equals("")){
-                retVal = retVal + " -Dgrails.env=" + env + " ";
+
+            if (env != null && !env.equals("")) {
+                retVal = retVal + " -Dgrails.env=" + env + " "; // NOI18N
             }
-            
+
         }
-        return retVal;    
-        }
-    
+        return retVal;
+    }
+
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName) {
-        
-        // LOG.setLevel(Level.FINEST);
-        
         this.prj = prj;
-        
-        if(prj != null) {
+
+        if (prj != null) {
             cwdName = FileUtil.getFileDisplayName(prj.getProjectDirectory());
             LOG.log(Level.FINEST, "Current working dir: " + cwdName);
-            }
-        
-    
-        if(cmd.startsWith("create-app")) {
+        }
+
+
+        if (cmd.startsWith("create-app")) { // NOI18N
             // in this case we don't have a Project yet, therefore i should be null
             assert prj == null;
             assert dirName != null;
-                
+
             // split dirName in directory to create and parent (used for wd)
             int lastSlash = dirName.lastIndexOf(File.separator);
             String workDir = dirName.substring(0, lastSlash);
             String newDir  = dirName.substring(lastSlash + 1);
-            
+
             gsr = new GrailsServerRunnable(outputReady, true, workDir, prependOption() + "create-app " + newDir);
             exTask = engine.execute("", gsr, io);
 
             waitForOutput();
-            }
-        else if(cmd.startsWith("run-app")) {
+        } else if (cmd.startsWith("run-app")) { // NOI18N
 
             String pslistTag = Utilities.isWindows() ? " REM NB:" +  // NOI18N
                     prj.getProjectDirectory().getName() : "";
-            
+
             gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd + pslistTag);
             exTask = engine.execute("", gsr, io);
 
             waitForOutput();
-
-        }
-        else if(cmd.startsWith("shell")) {
+        } else if (cmd.startsWith("shell")) { // NOI18N
 
             gsr = new GrailsServerRunnable(outputReady, false, cwdName, prependOption() + cmd);
             //new Thread(gsr).start();
             exTask = engine.execute("", gsr, io);
 
             waitForOutput();
-        }
-        else {
+        } else {
             gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
             exTask = engine.execute("", gsr, io);
 
             waitForOutput();
         }
-        
+
         lastException = gsr.getLastException();
         return gsr.getProcess();
     }
-    
-    void waitForOutput() {
+
+    private void waitForOutput() {
         try {
             outputReady.await();
         } catch (InterruptedException ex) {
@@ -178,7 +151,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
         if (prj != null) {
             serverState = prj.getLookup().lookup(GrailsServerState.class);
-            
+
             if (serverState != null) {
                 Process proc = gsr.getProcess();
                 if (proc != null) {
@@ -192,7 +165,6 @@ public class ExternalGrailsServer implements GrailsServer{
             } else {
                 LOG.log(Level.WARNING, "Could not get serverState through lookup");
             }
-
         }
 
     }
