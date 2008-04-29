@@ -161,21 +161,19 @@ public class SpringConfigModelController {
                 }
                 writeAccess = true;
                 try {
-                    synchronized (file2Controller) {
-                        for (File currentFile : file2Controller.keySet()) {
-                            Map<File, SpringBeanSource> beanSources = computeSpringBeanSources(currentFile);
-                            SpringConfigFileModelController controller = file2Controller.get(currentFile);
-                            LockedDocument lockedDoc = controller.getLockedDocument();
-                            if (lockedDoc != null) {
-                                lockedDoc.lock();
-                                try {
-                                    beanSources.put(currentFile, lockedDoc.getBeanSource());
-                                    ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
-                                    DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
-                                    action.run(docAccess);
-                                } finally {
-                                    lockedDoc.unlock();
-                                }
+                    for (File currentFile : file2Controller.keySet()) {
+                        Map<File, SpringBeanSource> beanSources = computeSpringBeanSources(currentFile);
+                        SpringConfigFileModelController controller = file2Controller.get(currentFile);
+                        LockedDocument lockedDoc = controller.getLockedDocument();
+                        if (lockedDoc != null) {
+                            lockedDoc.lock();
+                            try {
+                                beanSources.put(currentFile, lockedDoc.getBeanSource());
+                                ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
+                                DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
+                                action.run(docAccess);
+                            } finally {
+                                lockedDoc.unlock();
                             }
                         }
                     }
@@ -189,12 +187,10 @@ public class SpringConfigModelController {
 
     private Map<File, SpringBeanSource> computeSpringBeanSources(File skip) throws IOException {
         Map<File, SpringBeanSource> result = new HashMap<File, SpringBeanSource>();
-        synchronized (file2Controller) {
-            for (Map.Entry<File, SpringConfigFileModelController> entry : file2Controller.entrySet()) {
-                File currentFile = entry.getKey();
-                if (!currentFile.equals(skip)) {
-                    result.put(entry.getKey(), entry.getValue().getUpToDateBeanSource());
-                }
+        for (Map.Entry<File, SpringConfigFileModelController> entry : file2Controller.entrySet()) {
+            File currentFile = entry.getKey();
+            if (!currentFile.equals(skip)) {
+                result.put(entry.getKey(), entry.getValue().getUpToDateBeanSource());
             }
         }
         return result;
