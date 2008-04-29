@@ -127,8 +127,14 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         FileObject template = Templates.getTemplate(wiz);
         
         DataObject dTemplate = DataObject.find(template);
-        DataObject dobj = dTemplate.createFromTemplate(df, targetName, 
-                Collections.singletonMap("package", getSelectedPackageName(dir)));
+        String pkgName = getSelectedPackageName(dir);
+        DataObject dobj = null;
+        if (pkgName == null) {
+            dobj = dTemplate.createFromTemplate(df, targetName);
+        } else {
+            dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
+        }
+                
         FileObject createdFile = dobj.getPrimaryFile();
         
         initExtender();
@@ -244,7 +250,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         if (packageName != null) {
             packageName = packageName.replaceAll("/", "."); // NOI18N
         }
-        return packageName + ""; // NOI18N
+        return packageName;
     }
     
     private class ValidatingPanel extends DelegatingWizardDescriptorPanel {
