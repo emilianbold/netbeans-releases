@@ -43,7 +43,6 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -61,7 +60,6 @@ import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class RakeTaskChooser extends JPanel {
@@ -72,23 +70,14 @@ public class RakeTaskChooser extends JPanel {
      * Show the Rake Chooser and returns the Rake task selected by the user.
      */
     static TaskDescriptor select(final RubyBaseProject project) {
+        assert EventQueue.isDispatchThread() : "must be called from EDT";
         RakeTaskChooser panel = new RakeTaskChooser(project);
         String title = NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.title");
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.accessibleName"));
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.accessibleDescription"));
-        try {
-            EventQueue.invokeAndWait(new Runnable() {
-                public void run() {
-                    dialog.setVisible(true);
-                }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        dialog.setVisible(true);
         
         if (descriptor.getValue() == NotifyDescriptor.OK_OPTION) {
             RakeTask task = (RakeTask) panel.matchingTaskList.getSelectedValue();

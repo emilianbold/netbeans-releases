@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
@@ -38,45 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.ruby.rubyproject.rake;
 
-import org.netbeans.modules.ruby.rubyproject.*;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.Utilities;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  * Shows convenient runner for running or debugging Rake tasks, similar to e.g.
  * Go To File dialog.
  */
-public final class RakeRunnerAction extends NodeAction {
+public final class RakeRunnerAction extends CallableSystemAction {
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.RunDebugRakeTask");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        Lookup lookup = activatedNodes[0].getLookup();
-        Project p = lookup.lookup(Project.class);
+    public void performAction() {
+        Lookup context = Utilities.actionsGlobalContext();
+        Project p = context.lookup(Project.class);
 
         if (!RubyPlatform.platformFor(p).showWarningIfInvalid()) {
             return;
@@ -88,9 +79,9 @@ public final class RakeRunnerAction extends NodeAction {
         if (taskDesc != null) {
             runTask(project, taskDesc);
         }
-
     }
 
+    
     private void runTask(final RubyBaseProject project, final TaskDescriptor taskDesc) {
         if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
             return;
@@ -146,20 +137,23 @@ public final class RakeRunnerAction extends NodeAction {
 //        }
     }
 
+    public String getName() {
+        return NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.RunDebugRakeTask");
+    }
+
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if ((activatedNodes == null) || (activatedNodes.length != 1)) {
-            return false;
-        }
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
 
-        Lookup lookup = activatedNodes[0].getLookup();
-        Project project = lookup.lookup(Project.class);
-
-        return project instanceof RubyBaseProject;
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
     protected boolean asynchronous() {
-        return true;
+        return false;
     }
 }
