@@ -106,6 +106,7 @@
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.navigation</friend>
+                <friend>org.netbeans.modules.cnd.profiler.ui</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.api.model.services</package>
                 <package>org.netbeans.modules.cnd.api.model.xref</package>
