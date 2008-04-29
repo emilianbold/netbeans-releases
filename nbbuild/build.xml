@@ -1955,13 +1955,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
-      <property name="config.modules.test"
-                value="${config.test.extra},${config.fixedmodules.stable},${config.modules.stable},${config.fixedmodules.ruby}"/>
       <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
           <path>
-              <dirset dir="${nb_all}" includes="${config.modules.test}" />
+              <dirset dir="${nb_all}" includes="${allmodules}"/>
           </path>
           <mapper type="identity" />
       </pathconvert>
