@@ -359,7 +359,7 @@ public class AstUtilities {
             if (expression != null) {
                 children.add(expression);
             }
-        } else {
+        } else if (root != null) {
             AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
             root.visit(astChildrenSupport);
             children = astChildrenSupport.children();
