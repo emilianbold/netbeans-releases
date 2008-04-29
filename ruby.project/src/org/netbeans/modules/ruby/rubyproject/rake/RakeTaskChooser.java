@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -79,7 +80,6 @@ public class RakeTaskChooser extends JPanel {
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.accessibleDescription"));
         try {
             EventQueue.invokeAndWait(new Runnable() {
-
                 public void run() {
                     dialog.setVisible(true);
                 }
@@ -89,9 +89,12 @@ public class RakeTaskChooser extends JPanel {
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        RakeTask task = (RakeTask) panel.matchingTaskList.getSelectedValue();
-        return new TaskDescriptor(task, panel.debugCheckbox.isSelected());
+        
+        if (descriptor.getValue() == NotifyDescriptor.OK_OPTION) {
+            RakeTask task = (RakeTask) panel.matchingTaskList.getSelectedValue();
+            return new TaskDescriptor(task, panel.debugCheckbox.isSelected());
+        }
+        return null;
     }
 
     static class TaskDescriptor {

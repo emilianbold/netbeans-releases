@@ -85,7 +85,9 @@ public final class RakeRunnerAction extends NodeAction {
         RubyBaseProject project = (RubyBaseProject) p;
 
         TaskDescriptor taskDesc = RakeTaskChooser.select(project);
-        runTask(project, taskDesc);
+        if (taskDesc != null) {
+            runTask(project, taskDesc);
+        }
 
     }
 
