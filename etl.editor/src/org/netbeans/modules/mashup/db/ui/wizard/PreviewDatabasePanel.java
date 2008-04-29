@@ -178,8 +178,8 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
                             stmt.close();
                             conn.close();
                             if(dbDir != null){
-                                File dbExpoereNeedRefresh = new File(dbDir + "/dbExpoereNeedRefresh");
-                                dbExpoereNeedRefresh.createNewFile();
+                                File dbExplorerNeedRefresh = new File(dbDir + "/dbExplorerNeedRefresh");
+                                dbExplorerNeedRefresh.createNewFile();
                             }
                         } catch (Exception ex) {
                             //ignore

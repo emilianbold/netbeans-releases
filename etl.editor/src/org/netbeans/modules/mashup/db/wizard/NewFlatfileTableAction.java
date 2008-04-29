@@ -83,8 +83,8 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
                             stmt.execute("shutdown");
                         }
                         conn.close();
-                        File dbExpoereNeedRefresh = new File(dbDir + "/dbExpoereNeedRefresh");
-                        dbExpoereNeedRefresh.createNewFile();
+                        File dbExplorerNeedRefresh = new File(dbDir + "/dbExplorerNeedRefresh");
+                        dbExplorerNeedRefresh.createNewFile();
                     } catch (SQLException ex) {
                         conn = null;
                     } catch(Exception ex) {
