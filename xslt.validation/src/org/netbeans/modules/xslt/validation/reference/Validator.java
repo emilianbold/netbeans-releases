@@ -40,15 +40,25 @@
  */
 package org.netbeans.modules.xslt.validation.reference;
 
-import org.netbeans.modules.xslt.model.CallTemplate;
-import org.netbeans.modules.xslt.model.Instruction;
-import org.netbeans.modules.xslt.model.TypeSpec;
-import org.netbeans.modules.xslt.model.QualifiedNameable;
+import java.util.List;
 
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+
+import org.netbeans.modules.xslt.model.AttributeSet;
+import org.netbeans.modules.xslt.model.CallTemplate;
+import org.netbeans.modules.xslt.model.CharacterMap;
+import org.netbeans.modules.xslt.model.TypeSpec;
 import org.netbeans.modules.xslt.model.UseAttributesSetsSpec;
 import org.netbeans.modules.xslt.model.UseCharacterMapsSpec;
 import org.netbeans.modules.xslt.model.WithParam;
 import org.netbeans.modules.xslt.model.XslComponent;
+import org.netbeans.modules.xslt.model.XslReference;
+import org.netbeans.modules.xslt.model.XslVisitor;
+import org.netbeans.modules.xslt.model.XslVisitorAdapter;
+
 import org.netbeans.modules.xslt.validation.core.XsltValidator;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -58,65 +68,83 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends XsltValidator {
 
+  public XslVisitor getVisitor() { return new XslVisitorAdapter() {
+
   @Override
-  protected final void visit(XslComponent component)
+  public void visit(CallTemplate callTemplate)
   {
-//out("see: " + component.getClass().getName() + " " + (component instanceof QualifiedNameable));
-    checkCallTemplate(component);
-    checkInstruction(component);
-    checkTypeSpec(component);
-    checkUseAttributesSetsSpec(component);
-    checkUseCharacterMapsSpec(component);
-    checkWithParam(component);
+//out();
+//out("callTemplate: " + callTemplate);
+
+// todo a    
+checkReference(callTemplate, callTemplate.getName());
+//todo r
+//addError("FIX_Reference", callTemplate);
+
   }
 
-  private void checkCallTemplate(XslComponent component) {
-    if ( !(component instanceof CallTemplate)) {
-      return;
-    }
-    CallTemplate callTemplate = (CallTemplate) component;
-out("see templat 1: " + component.getClass().getName());
-  }
-  
-  private void checkInstruction(XslComponent component) {
-    if ( !(component instanceof Instruction)) {
-      return;
-    }
-    Instruction instruction = (Instruction) component;
-out("see instruc 2: " + component.getClass().getName());
-  }
-  
-  private void checkTypeSpec(XslComponent component) {
-    if ( !(component instanceof TypeSpec)) {
-      return;
-    }
-    TypeSpec typeSpec = (TypeSpec) component;
-out("see    type 3: " + component.getClass().getName());
+  @Override
+  public void visit(TypeSpec typeSpec)
+  {
+//out();
+//out("typeSpec: " + typeSpec);
+    checkReference(typeSpec, typeSpec.getType());
   }
 
-  private void checkUseAttributesSetsSpec(XslComponent component) {
-    if ( !(component instanceof UseAttributesSetsSpec)) {
-      return;
+  @Override
+  public void visit(UseAttributesSetsSpec useAttributesSetsSpec)
+  {
+//out();
+//out("useAttributesSetsSpec: " + useAttributesSetsSpec);
+    List<XslReference<AttributeSet>> sets = useAttributesSetsSpec.getUseAttributeSets();
+
+    for (XslReference<AttributeSet> set : sets) {
+      checkReference(useAttributesSetsSpec, set);
     }
-    UseAttributesSetsSpec useAttributesSetsSpec = (UseAttributesSetsSpec) component;
-out("see use set 4: " + component.getClass().getName());
   }
 
-  private void checkUseCharacterMapsSpec(XslComponent component) {
-    if ( !(component instanceof UseCharacterMapsSpec)) {
-      return;
+  @Override
+  public void visit(UseCharacterMapsSpec useCharacterMapsSpec)
+  {
+//out();
+//out("useCharacterMapsSpec: " + useCharacterMapsSpec);
+    List<XslReference<CharacterMap>> sets = useCharacterMapsSpec.getUseCharacterMaps();
+
+    for (XslReference<CharacterMap> set : sets) {
+      checkReference(useCharacterMapsSpec, set);
     }
-    UseCharacterMapsSpec useCharacterMapsSpec = (UseCharacterMapsSpec) component;
-out("see use map 5: " + component.getClass().getName());
   }
 
-  private void checkWithParam(XslComponent component) {
-    if ( !(component instanceof WithParam)) {
-      return;
-    }
-    WithParam withParam = (WithParam) component;
-out("see   param 6: " + component.getClass().getName());
+  @Override
+  public void visit(WithParam withParam)
+  {
+//out();
+//out("withParam: " + withParam);
+    checkReference(withParam, withParam.getName());
   }
 
-//todo a  addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference));
-}
+  private void checkReference(Object object, Reference<? extends Component> reference) {
+//out("reference: " + reference);
+    if ( !(object instanceof Component)) {
+      return;
+    }
+    Component component = (Component) object;
+
+    if (reference == null) {
+      return;
+    }
+    if ( !reference.isBroken()) {
+      return;
+    }
+    String name;
+
+    if (component instanceof DocumentComponent) {
+      name = ((DocumentComponent) component).getPeer().getLocalName();
+    }
+    else {
+      name = ""; // NOI18N
+    }
+    addError("FIX_Reference", component, name); // NOI18N
+  }
+
+};}}

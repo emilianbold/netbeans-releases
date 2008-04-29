@@ -95,22 +95,22 @@ public class SQLCollaborationProperties {
         setDirty(true);
     }
 
-    public void setWorkingFolder(String appDataRoot) {
-        this.sqlDef.setWorkingFolder(appDataRoot);
+    public void setAxiondbWorkingDirectory(String appDataRoot) {
+        this.sqlDef.setAxiondbWorkingDirectory(appDataRoot);
         setDirty(true);
     }
 
-    public void setDbInstanceName(String dbInstanceName) {
-        this.sqlDef.setDbInstanceName(dbInstanceName);
+    public void setAxiondbDataDirectory(String dbInstanceName) {
+        this.sqlDef.setAxiondbDataDirectory(dbInstanceName);
         setDirty(true);
     }
 
-    public String getWorkingFolder() {
-        return this.sqlDef.getDBWorkingFolder();
+    public String getAxiondbWorkingDirectory() {
+        return this.sqlDef.getAxiondbWorkingDirectory();
     }
 
-    public String getDbInstanceName() {
-        return this.sqlDef.getDbInstanceName();
+    public String getAxiondbDataDirectory() {
+        return this.sqlDef.getAxiondbDataDirectory();
     }
 
     public String getSourceModelName() {

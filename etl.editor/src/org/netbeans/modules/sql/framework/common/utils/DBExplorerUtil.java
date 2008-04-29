@@ -170,19 +170,15 @@ public class DBExplorerUtil {
         return conn;
     }
 
-    public static void isCmdLineImport(boolean val) {
-        isCmdLine = val;
-    }
-    public static boolean isCmdLine;
+
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
         JDBCDriver drv = null;
         Connection conn = null;
         try {
-            if (!isCmdLine) {
+           
             url = adjustDatabaseURL(url);
-            }
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);

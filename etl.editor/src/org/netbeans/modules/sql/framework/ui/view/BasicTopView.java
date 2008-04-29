@@ -439,7 +439,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
-            if(attr == null){
+            if (attr == null) {
                 template = "FFSourceTable";
                 return template;
             }
@@ -456,7 +456,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 template = "FFSourceTable";
             }
         } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
-            if(attr == null){
+            if (attr == null) {
                 template = "FFTargetTable";
                 return template;
             }
@@ -469,9 +469,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
                     ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
                 template = "FFTargetTable";
-            }else {
+            } else {
                 template = "FFTargetTable";
             }
+
         }
         return template;
     }
