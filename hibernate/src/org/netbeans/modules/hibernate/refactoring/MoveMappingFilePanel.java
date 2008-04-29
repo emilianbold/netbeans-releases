@@ -44,9 +44,6 @@ package org.netbeans.modules.hibernate.refactoring;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.Collator;
-import java.util.Arrays;
-import java.util.Comparator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -63,7 +60,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
@@ -162,6 +158,7 @@ public class MoveMappingFilePanel extends JPanel implements ActionListener, Docu
 
         setLayout(new java.awt.GridBagLayout());
 
+        labelProject.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(labelProject, org.openide.util.NbBundle.getMessage(MoveMappingFilePanel.class, "LBL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
