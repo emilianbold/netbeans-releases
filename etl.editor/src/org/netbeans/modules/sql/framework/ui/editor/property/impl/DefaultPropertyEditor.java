@@ -52,6 +52,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
@@ -66,7 +67,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
  */
 public class DefaultPropertyEditor {
 
-    /**
+        /**
      * Concrete implementation of PropertyEditorSupport to provide a list editor widget
      * for use in a bean property sheet.
      */
