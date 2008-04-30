@@ -55,7 +55,7 @@ public interface DatabaseServer extends Cookie {
      * Connect to the server.  If we already have a connection, close
      * it and open a new one
      */
-    public void connect() throws DatabaseException;
+    public void reconnect() throws DatabaseException;
 
     /**
      * Connect to the MySQL server on a task thread, showing a progress bar
@@ -63,7 +63,7 @@ public interface DatabaseServer extends Cookie {
      *
      * @param instance the server instance to connect with
      */
-    public void connectAsync();
+    public void reconnectAsync();
 
     /**
      * Connect to the server asynchronously, with the option not to display
@@ -72,7 +72,7 @@ public interface DatabaseServer extends Cookie {
      * @param quiet true if you don't want this to happen without any dialogs
      * being displayed in case of error or to get more information.
      */
-    public void connectAsync(final boolean quiet);
+    public void reconnectAsync(final boolean quiet);
 
     public void createDatabase(String dbname) throws DatabaseException;
 
@@ -145,13 +145,6 @@ public interface DatabaseServer extends Cookie {
     public boolean isConnected();
 
     public boolean isSavePassword();
-
-    /**
-     * Reconnect to the server, which means disconnect and then connect again
-     *
-     * @throws DatabaseException if disconnect had an error
-     */
-    public void reconnect() throws DatabaseException;
 
     public void refreshDatabaseList() throws DatabaseException;
 

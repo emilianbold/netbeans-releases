@@ -390,8 +390,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
      * Connect to the server.  If we already have a connection, close
      * it and open a new one
      */
-    public synchronized void connect() throws DatabaseException {
-        setState(State.CONNECTING);
+    public void reconnect() throws DatabaseException {
+        disconnect();
         try {
             adminConn.reconnect();
             setState(State.CONNECTED);
@@ -403,7 +403,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
         }
     }
     
-    public synchronized void disconnect() {
+    public void disconnect() {
         adminConn.disconnect();
         setState(State.DISCONNECTED);
         
@@ -415,22 +415,13 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
     
     /**
-     * Reconnect to the server, which means disconnect and then connect again
-     * 
-     * @throws DatabaseException if disconnect had an error
-     */
-    public synchronized void reconnect() throws DatabaseException {
-        disconnect();
-        connect();
-    }
-    /**
      * Connect to the MySQL server on a task thread, showing a progress bar
      * and displaying a dialog if an error occurred
      * 
      * @param instance the server instance to connect with
      */
-    public void connectAsync() {
-         connectAsync(false);
+    public void reconnectAsync() {
+         reconnectAsync(false);
     }
      
     /**
@@ -440,76 +431,56 @@ public class MySQLDatabaseServer implements DatabaseServer {
      * @param quiet true if you don't want this to happen without any dialogs
      *   being displayed in case of error or to get more information.
      */
-    public synchronized void connectAsync(final boolean quiet) {        
+    public synchronized void reconnectAsync(final boolean quiet) {        
          final ProgressHandle progress = ProgressHandleFactory.createHandle(
             Utils.getMessage( "MSG_ConnectingToServer"));
          progress.start();
          progress.switchToIndeterminate();
          
-         postConnect(progress, quiet);
-    }
-    
-    /**
-     * Post a thread to connect to the server.  On failure if quiet
-     * is set to false, we will dispatch an event to the AWT thread to
-     * notify the user that the connect failed and allow them to modify
-     * the server properties, and then we'll post another attempt to
-     * connect.  If quiet is set to true we'll just log the error and
-     * finish.
-     */
-    private void postConnect(final ProgressHandle progress, 
-            final boolean quiet) {
          RequestProcessor.getDefault().post(new Runnable() {
              public void run() {
-                 try { 
-                     connect();
-                     progress.finish();
-                 } catch ( DatabaseException dbe ) {
-                    String message = Utils.getMessage(
-                            "MSG_UnableToConnect");
-                    if ( ! quiet ) {         
-                        // Try again
-                        postPropertiesDialog(progress, message, dbe);
-                    } else {
-                        LOGGER.log(Level.INFO, message);
-                        progress.finish();
-                    }
-                 } catch ( Throwable t ) {
-                     LOGGER.log(Level.INFO, null, t);
-                     progress.finish();
-                 }
-             };
+                do {
+                     try { 
+                         reconnect();
+                         break;
+                     } catch ( DatabaseException dbe ) {
+                        String message = Utils.getMessage("MSG_UnableToConnect");
+                        
+                        if (!quiet) {         
+                            // Try again
+                            boolean retry = postPropertiesDialog(message, dbe);
+                            if (! retry) {
+                                break;
+                            }                       
+                        } else {
+                            LOGGER.log(Level.INFO, message);
+                            break;
+                        }
+                     } catch (Throwable t) {
+                         LOGGER.log(Level.INFO, null, t);
+                         break;
+                     } finally {
+                     }
+                 } while (!isConnected());
+                 progress.finish();
+            }
          });
         
     }
     
-    /**
-     * Post a request to raise the properties dialog on the event thread.
-     * If the user doesn't cancel when they close the dialog, then we 
-     * post another asynchronous task to connect to the server.
-     * 
-     * @param instance
-     * @param progress
-     */
-    private void postPropertiesDialog(final ProgressHandle progress, 
-            final String message, final DatabaseException dbe) {
+    private boolean postPropertiesDialog(final String message, final DatabaseException dbe) {
         final DatabaseServer instance = this;
-        Mutex.EVENT.postReadRequest(new Runnable() {
-            public void run() {
+        Boolean retry = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 Utils.displayError(message, dbe);
                 
                 PropertiesDialog dlg = new PropertiesDialog(instance);
-                if ( dlg.displayDialog()) {
-                    postConnect(progress, false /* quiet */);
-                } else {
-                    progress.finish();
-                }
+                return new Boolean(dlg.displayDialog());
             }
-            
         });
+        
+        return retry;
     }
-
-
     
     public boolean databaseExists(String dbname)  throws DatabaseException {
         refreshDatabaseList();
@@ -767,7 +738,20 @@ public class MySQLDatabaseServer implements DatabaseServer {
         private AdminConnection() {
         }
         
-        synchronized Connection getConnection() throws DatabaseException {
+        private synchronized void setConn(Connection conn) {
+            this.conn = conn;
+        }
+        
+        private synchronized Connection getConn() {
+            return conn;
+        }
+        
+        Connection getConnection() throws DatabaseException {
+            synchronized(this) {
+                if ( conn != null ) {
+                    return conn;
+                }
+            }
             try {
                 if ( conn == null || conn.isClosed() ) {
                     reconnect();
@@ -778,22 +762,52 @@ public class MySQLDatabaseServer implements DatabaseServer {
             return conn;
         }
         
-        synchronized void disconnect() {
-            DatabaseUtils.closeConnection(conn);
-            conn = null;
+        void disconnect() {
+            Connection connection;
+            synchronized (this) {
+                if ( conn == null ) {
+                    return;
+                } else {
+                    connection = conn;
+                    conn = null;
+                }
+            }
+            DatabaseUtils.closeConnection(connection);
         }
+        
+        Connection connect() throws DatabaseException {
+            synchronized ( this ) {
+                if ( conn != null ) {
+                    return conn;
+                }
+            }
             
-        synchronized void reconnect() throws DatabaseException {
-            conn = null;
-
             // I would love to use a DatabaseConnection, but this
             // causes deadlocks because DatabaseConnection.showDialog
             // relys on DatabaseNodeInfo, which scans the node tree
             // at the same time this method is being used to update
             // the node tree (e.g. to get the list of databases).
-
-            conn = DatabaseUtils.connect(getURL(), getUser(), 
+            //
+            // This could be solved with an API that just connects without
+            // doing any UI
+            Connection connection = DatabaseUtils.connect(getURL(), getUser(),
                     getPassword());
+            
+            synchronized( this ) {
+                conn = connection;
+            }
+            
+            return conn;
+        }
+        
+        
+            
+        synchronized void reconnect() throws DatabaseException {
+            synchronized ( this ) {
+                conn = null;
+            }
+            
+            connect();
         }
     }     
 }

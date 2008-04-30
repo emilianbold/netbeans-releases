@@ -260,7 +260,7 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
     
     private void doConnect(DatabaseServer mysql, boolean quiet) {
         try {
-            mysql.connect();
+            mysql.reconnect();
         } catch (DatabaseException ex) {
             if (quiet) {
                 LOGGER.log(Level.FINE, "Could not connect to the MySQL server instance", ex);
