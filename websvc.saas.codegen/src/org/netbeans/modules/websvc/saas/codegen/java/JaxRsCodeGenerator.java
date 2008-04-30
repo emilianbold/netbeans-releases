@@ -203,10 +203,10 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 methodBody += "             " + returnStatement + ".put(" + headerUsage + ");\n";
             }
         } else if (httpMethod == HttpMethodType.POST) {
-            if (!queryParamsCode.trim().equals("")) {
+            if (hasRequestRep) {
                 methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
             } else {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
+                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", (java.io.InputStream) null);\n";
             }
         } else if (httpMethod == HttpMethodType.DELETE) {
             methodBody += "             " + returnStatement + ".delete(" + headerUsage + ");\n";
@@ -253,13 +253,13 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                     String value = findParamValue(contentTypeParam);
                     if (value.equals("text/plain") || value.equals("application/xml") ||
                             value.equals("text/xml")) {     //NOI18N
+
                         contentType = String.class;
                     }
                 }
-            }
-
-            if (!getBean().findInputRepresentations(getBean().getMethod()).isEmpty()) {
-                params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
+                if (!getBean().findInputRepresentations(getBean().getMethod()).isEmpty()) {
+                    params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
+                }
             }
         }
         return params;
@@ -303,6 +303,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 code = getCustomMethodBody();
             } else {
                 code = "\nprivate String call" + getBean().getName() + "Service() {\n"; // NOI18n
+
                 code += getCustomMethodBody() + "\n";
                 code += "return result;\n";
                 code += "}\n";
@@ -354,16 +355,20 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
 
 
                 String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";// NOI18N
+
                 for (String param : parameters) {
                     comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
+
                 }
                 comment += "@return an instance of " + type;// NOI18N
+
                 ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
                 ClassTree tree = JavaSourceHelper.addMethod(copy, initial,
                         modifiers, null, null,
                         getBean().getSaasServiceMethodName(), type, parameters, paramTypes,
                         null, null, new String[]{"java.io.IOException"},
                         bodyText, comment);      //NOI18N
+
                 copy.rewrite(initial, tree);
             }
         });
