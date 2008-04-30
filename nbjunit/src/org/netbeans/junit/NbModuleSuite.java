@@ -341,7 +341,21 @@ public class NbModuleSuite {
 
                 return util.getParentFile().getParentFile();
             } catch (Exception ex) {
-                Assert.fail("Cannot find utilities JAR: " + ex);
+                try {
+                    File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    File harness = nbjunit.getParentFile().getParentFile();
+                    Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
+                    TreeSet<File> sorted = new TreeSet<File>();
+                    for (File p : harness.getParentFile().listFiles()) {
+                        if (p.getName().startsWith("platform")) {
+                            sorted.add(p);
+                        }
+                    }
+                    Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());
+                    return sorted.last();
+                } catch (Exception ex2) {
+                    Assert.fail("Cannot find utilities JAR: " + ex + " and: " + ex2);
+                }
                 return null;
             }
         }
