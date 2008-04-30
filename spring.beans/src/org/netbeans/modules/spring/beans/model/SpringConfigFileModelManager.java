@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,6 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.spring.beans.model;
@@ -44,8 +42,8 @@ package org.netbeans.modules.spring.beans.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -54,97 +52,96 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
+import org.netbeans.modules.spring.util.fcs.FileChangeSupport;
+import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
+import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.WeakSet;
 
 /**
  *
  * @author Andrei Badea
  */
-public class EditorListener {
+public class SpringConfigFileModelManager {
 
-    static final int EXPUNGE_EVERY = 50;
+    // XXX improve MIME type checking.
+    // XXX when to clear file2Controller?
 
-    private static EditorListener INSTANCE;
+    // @GuardedBy("file2Controller")
+    private final Map<File, SpringConfigFileModelController> file2Controller = Collections.synchronizedMap(new HashMap<File, SpringConfigFileModelController>());
 
     // @GuardedBy("this")
-    final Map<File, WeakSet<SpringConfigModelController>> file2Controllers = new HashMap<File, WeakSet<SpringConfigModelController>>();
+    private FileListener fileListener;
     // @GuardedBy("this")
-    private int expungeCountDown = EXPUNGE_EVERY;
-    private EditorRegistryListener listener;
+    private EditorRegistryListener editorListener;
 
-    private EditorListener() {}
-
-    public static synchronized EditorListener getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new EditorListener();
-            INSTANCE.initialize();
-        }
-        return INSTANCE;
+    public SpringConfigFileModelManager() {
     }
 
-    private void initialize() {
-        listener = new EditorRegistryListener();
-        listener.initialize();
-    }
-
-    public void register(SpringConfigModelController controller) {
-        ConfigFileGroup group = controller.getConfigFileGroup();
+    public SpringConfigFileModelController getFileModelController(File file) {
         synchronized (this) {
-            for (File file : group.getFiles()) {
-                register(file, controller);
+            // Initializing the listeners lazily especially in order to avoid
+            // adding unnecessary listeners to EditorRegistry.
+            if (fileListener == null) {
+                fileListener = new FileListener();
+                editorListener = new EditorRegistryListener();
+                editorListener.initialize();
             }
-            expungeStaleFiles();
+        }
+        synchronized (file2Controller) {
+            SpringConfigFileModelController controller = file2Controller.get(file);
+            if (controller == null) {
+                controller = new SpringConfigFileModelController(file, new ConfigFileSpringBeanSource());
+                FileChangeSupport.DEFAULT.addListener(fileListener, file);
+                file2Controller.put(file, controller);
+            }
+            return controller;
         }
     }
 
-    private void register(File file, SpringConfigModelController controller) {
-        assert Thread.holdsLock(this);
-        WeakSet<SpringConfigModelController> controllers = file2Controllers.get(file);
-        if (controllers == null) {
-            controllers = new WeakSet<SpringConfigModelController>();
-            file2Controllers.put(file, controllers);
+    private void notifyFileChanged(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return;
         }
-        controllers.add(controller);
+        notifyFileChanged(fo, file);
+    }
+
+    private void notifyFileDeleted(File file) {
+        // XXX probably in order to support repeatable read, we should remove
+        // the controller under exclusive access
     }
 
     private void notifyFileChanged(FileObject fo, File file) {
-        synchronized (this) {
-            WeakSet<SpringConfigModelController> controllers = file2Controllers.get(file);
-            if (controllers != null) {
-                if (controllers.size() == 0) {
-                // This is a stale entry, expunge it.
-                    file2Controllers.remove(file);
-                } else {
-                    for (SpringConfigModelController controller : controllers) {
-                        controller.notifyFileChanged(fo, file);
-                    }
-                }
-            }
-            expungeStaleFiles();
+        SpringConfigFileModelController fileController = file2Controller.get(file);
+        if (fileController != null) {
+            fileController.notifyChange(fo);
         }
     }
 
-    private void expungeStaleFiles() {
-        assert Thread.holdsLock(this);
-        if (expungeCountDown > 0) {
-            expungeCountDown--;
-            return;
+    /**
+     * Listens on disk changes to the config files.
+     */
+    private final class FileListener implements FileChangeSupportListener {
+
+        public void fileCreated(FileChangeSupportEvent event) {
+            notifyFileChanged(event.getPath());
         }
-        expungeCountDown = EXPUNGE_EVERY;
-        Iterator<Map.Entry<File, WeakSet<SpringConfigModelController>>> iterator = file2Controllers.entrySet().iterator();
-        while (iterator.hasNext()) {
-            WeakSet<SpringConfigModelController> controllers = iterator.next().getValue();
-            if (controllers.size() == 0) {
-                iterator.remove();
-            }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            notifyFileChanged(event.getPath());
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            notifyFileDeleted(event.getPath());
         }
     }
 
+    /**
+     * Listens on editor changes.
+     */
     private final class EditorRegistryListener implements PropertyChangeListener, DocumentListener {
 
         private Document currentDocument;
@@ -157,7 +154,7 @@ public class EditorListener {
             JTextComponent newComponent = EditorRegistry.lastFocusedComponent();
             currentDocument = newComponent != null ? newComponent.getDocument() : null;
             if (currentDocument != null) {
-                currentDocument.addDocumentListener(listener);
+                currentDocument.addDocumentListener(this);
             }
         }
 
