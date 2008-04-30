@@ -242,7 +242,7 @@ public class AllOptionsFolder{
                 // attach listeners for module registry for listening on addition or removal of modules in IDE
                 if(moduleRegListener == null) {
                     moduleRegListener = new FileChangeAdapter() {
-                        public void fileChanged(FileEvent fe){
+                        public @Override void fileChanged(FileEvent fe){
                             updateOptions();
                         }
                     };
@@ -340,20 +340,7 @@ public class AllOptionsFolder{
     /** Gets the singleton of BaseOptions and register it in Settings initializer,
      * if it wasn't been done before. */
     private BaseOptions getBase(){
-        
-        BaseOptions ret = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
-        
-        synchronized (Settings.class){
-            if (baseInitialized == false){
-                // Add the initializer for the base options. It will not be removed
-                Settings.addInitializer(ret.getSettingsInitializer(),
-                Settings.OPTION_LEVEL);
-                baseInitialized = true;
-                Settings.reset();
-            }
-        }
-        
-        return ret;
+        return (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
     }
     
     /** Gets the instance of BaseOptions from InstanceCookie */
@@ -461,26 +448,27 @@ public class AllOptionsFolder{
     /** Updates MIME option initializer. Loads user's settings stored in XML
      *  files and updates Setting's initializers via reset method */
     private void processInitializers(BaseOptions bo, boolean remove) {
-        //synchronized (BaseKit.class){
-            synchronized (Settings.class){
-                Settings.Initializer si = bo.getSettingsInitializer();
-                // Remove the old one
-                Settings.removeInitializer(si.getName());
-                if (!remove) { // add the new one
-                    Settings.addInitializer(si, Settings.OPTION_LEVEL);
-                }
-
-                // load all settings of this mime type from XML files
-                bo.loadXMLSettings();
-
-                //initialize popup menu
-                bo.initPopupMenuItems();
-
-                /* Reset the settings so that the new initializers take effect
-                 * or the old are removed. */
-                Settings.reset();
-            }
-        //}
+// XXX: remove
+//        //synchronized (BaseKit.class){
+//            synchronized (Settings.class){
+//                Settings.Initializer si = bo.getSettingsInitializer();
+//                // Remove the old one
+//                Settings.removeInitializer(si.getName());
+//                if (!remove) { // add the new one
+//                    Settings.addInitializer(si, Settings.OPTION_LEVEL);
+//                }
+//
+//                // load all settings of this mime type from XML files
+//                bo.loadXMLSettings();
+//
+//                //initialize popup menu
+//                bo.initPopupMenuItems();
+//
+//                /* Reset the settings so that the new initializers take effect
+//                 * or the old are removed. */
+//                Settings.reset();
+//            }
+//        //}
     }
     
 }

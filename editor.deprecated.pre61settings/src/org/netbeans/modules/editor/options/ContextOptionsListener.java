@@ -47,7 +47,6 @@ import java.beans.beancontext.BeanContextMembershipListener;
 import java.beans.beancontext.BeanContextMembershipEvent;
 import java.util.Iterator;
 import java.util.Arrays;
-import org.netbeans.editor.Settings;
 import org.openide.options.ContextSystemOption;
 import org.openide.options.SystemOption;
 
@@ -101,28 +100,29 @@ class ContextOptionsListener implements BeanContextMembershipListener {
     }
 
     private void processInitializers(Iterator it, boolean remove) {
-        while (it.hasNext()) {
-            Object o = it.next();
-            if (o instanceof OptionSupport) {
-                OptionSupport os = (OptionSupport)o;
-                Settings.Initializer si = os.getSettingsInitializer();
-                // Remove the old one
-                Settings.removeInitializer(si.getName());
-                if (!remove) { // add the new one
-                    Settings.addInitializer(si, Settings.OPTION_LEVEL);
-                }
-
-                if (debug) {
-                    System.err.println((remove ? "Removed" : "Refreshed") // NOI18N
-                        + " initializer=" + si.getName()); // NOI18N
-                }
-            }
-        }
-        
-        /* Reset the settings so that the new initializers take effect
-         * or the old are removed.
-         */
-        Settings.reset();
+// XXX: remove
+//        while (it.hasNext()) {
+//            Object o = it.next();
+//            if (o instanceof OptionSupport) {
+//                OptionSupport os = (OptionSupport)o;
+//                Settings.Initializer si = os.getSettingsInitializer();
+//                // Remove the old one
+//                Settings.removeInitializer(si.getName());
+//                if (!remove) { // add the new one
+//                    Settings.addInitializer(si, Settings.OPTION_LEVEL);
+//                }
+//
+//                if (debug) {
+//                    System.err.println((remove ? "Removed" : "Refreshed") // NOI18N
+//                        + " initializer=" + si.getName()); // NOI18N
+//                }
+//            }
+//        }
+//        
+//        /* Reset the settings so that the new initializers take effect
+//         * or the old are removed.
+//         */
+//        Settings.reset();
     }
 
 }

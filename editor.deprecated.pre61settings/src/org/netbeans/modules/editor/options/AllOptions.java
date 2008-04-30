@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.util.List;
 import java.util.HashMap;
-import org.netbeans.editor.Settings;
 import org.openide.options.ContextSystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -74,9 +73,6 @@ public class AllOptions extends ContextSystemOption {
      */
     public AllOptions() {
         // Dead class
-        // Add the initializer for the base options. It will not be removed
-        Settings.addInitializer(baseOptions.getSettingsInitializer(),
-            Settings.OPTION_LEVEL);
     }
     
     /** Initialization of the options contains adding listener

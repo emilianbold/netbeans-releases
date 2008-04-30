@@ -223,6 +223,13 @@ made subject to such option by the copyright holder.
         <value><![CDATA[16384]]></value>
     </entry>
     
+    <entry category="private" javaType="java.lang.Boolean" name="toolbarVisible" xml:space="preserve">
+        <value><![CDATA[true]]></value>
+    </entry>
+    <entry category="private" javaType="java.lang.Boolean" name="lineNumberVisible" xml:space="preserve">
+        <value><![CDATA[false]]></value>
+    </entry>
+    
 <!--
             settingsMap.put(SettingsNames.TAB_SIZE, SettingsDefaults.defaultTabSize);
             settingsMap.put(SettingsNames.EXPAND_TABS, SettingsDefaults.defaultExpandTabs);

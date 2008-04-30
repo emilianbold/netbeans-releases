@@ -43,11 +43,16 @@ package org.netbeans.modules.editor.options;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.editor.Settings;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.deprecated.pre61settings.KitchenSink;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.editor.deprecated.pre61settings.NbEditorSettingsInitializer;
 
 /**
 * Options for the base editor kit
@@ -57,21 +62,17 @@ import org.netbeans.modules.editor.deprecated.pre61settings.NbEditorSettingsInit
 */
 public class OptionSupport extends SystemOption {
 
+    private static final Logger LOG = Logger.getLogger(OptionSupport.class.getName());
+    
     static final long serialVersionUID = 2002899758839584077L;
 
     static final String OPTIONS_PREFIX = "OPTIONS_"; // NOI18N
 
-    private Class kitClass;
+    private final Class kitClass;
+    private final String typeName;
+    private Preferences prefs = null;
 
-    private String typeName;
-
-    
-    private HashMap initializerValuesMap;
-    
-    private transient SettingsInitializer settingsInitializer;
-    
     private static final HashMap kitClass2Type = new HashMap();
-    
 
 
     /** Construct new option support. The pair [kitClass, typeName]
@@ -83,27 +84,7 @@ public class OptionSupport extends SystemOption {
     public OptionSupport(Class kitClass, String typeName) {
         this.kitClass = kitClass;
         this.typeName = typeName;
-        initializerValuesMap = new HashMap();
         kitClass2Type.put(kitClass, typeName);
-        
-        // Hook up the settings initializer. This must not happen before
-        // subclasses finish their initialization.
-        Settings.update(new Runnable() {
-            public void run() {
-                Settings.Initializer si = getSettingsInitializer();
-                Settings.removeInitializer(si.getName());
-                Settings.addInitializer(si, Settings.OPTION_LEVEL);
-                Settings.reset();
-            }
-            
-            public boolean asynchronous() {
-                return true;
-            }
-            
-            public int delay() {
-                return 10;
-            }
-        });
     }
 
     public Class getKitClass() {
@@ -122,32 +103,25 @@ public class OptionSupport extends SystemOption {
         return getString(OPTIONS_PREFIX + typeName);
     }
 
-    Settings.KitAndValue[] getSettingValueHierarchy(String settingName) {
-        return Settings.getValueHierarchy(kitClass, settingName);
-    }
-
     /** Get the value of the setting from the <code>Settings</code>
      * @param settingName name of the setting to get.
      */
     public Object getSettingValue(String settingName) {
-        NbEditorSettingsInitializer.init();
-        return Settings.getValue(kitClass, settingName);
+        return KitchenSink.getValueFromPrefs(settingName, getPreferences());
     }
 
     /** Get the value of the boolean setting from the <code>Settings</code>
      * @param settingName name of the setting to get.
      */
     protected final boolean getSettingBoolean(String settingName) {
-        Boolean val = (Boolean)getSettingValue(settingName);
-        return (val != null) ? val.booleanValue() : false;
+        return getPreferences().getBoolean(settingName, false);
     }
 
     /** Get the value of the integer setting from the <code>Settings</code>
      * @param settingName name of the setting to get.
      */
     protected final int getSettingInteger(String settingName) {
-        Integer val = (Integer)getSettingValue(settingName);
-        return (val != null) ? val.intValue() : 0;
+        return getPreferences().getInt(settingName, 0);
     }
 
     /** Can be used when the settingName is the same as the propertyName */
@@ -162,25 +136,12 @@ public class OptionSupport extends SystemOption {
      * @param propertyName Ignored.
      */
     public void setSettingValue(String settingName, Object newValue, String propertyName) {
-        
-        initializerValuesMap.put(settingName, newValue);
-
-        Object oldValue = getSettingValue(settingName);
-        if ((oldValue == null && newValue == null)
-                || (oldValue != null && oldValue.equals(newValue))
-           ) {
-            return; // no change
-        }
-
-        Settings.setValue(kitClass, settingName, newValue);
+        doSetSettingValue(settingName, newValue, propertyName);
     }
 
-    
     public void doSetSettingValue(String settingName, Object newValue, String propertyName) {
-        initializerValuesMap.put(settingName, newValue);
-        Settings.setValue(kitClass, settingName, newValue);
+        KitchenSink.setValueToPreferences(settingName, newValue, getPreferences());
     }
-    
     
     /** Enables easier handling of the boolean settings.
      * @param settingName name of the setting to change
@@ -188,7 +149,7 @@ public class OptionSupport extends SystemOption {
      * @param propertyName Ignored.
      */
     protected void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
-        setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE, propertyName);
+        getPreferences().putBoolean(settingName, newValue);
     }
 
     /** Enables easier handling of the integer settings.
@@ -197,7 +158,7 @@ public class OptionSupport extends SystemOption {
      * @param propertyName Ignored.
      */
     protected  void setSettingInteger(String settingName, int newValue, String propertyName) {
-        setSettingValue(settingName, new Integer(newValue));
+        getPreferences().putInt(settingName, newValue);
     }
 
     /** @return localized string */
@@ -222,39 +183,47 @@ public class OptionSupport extends SystemOption {
     }
 
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
-        if (kitClass == getKitClass()) {
-            settingsMap.putAll(initializerValuesMap);
+    }
+
+    /* package */ Preferences getPreferences() {
+        if (prefs == null) {
+            MimePath mimePath = kitClass.equals(BaseKit.class) ? MimePath.EMPTY : MimePath.parse(getCTImpl());
+            prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
         }
+        return prefs;
+    }
+
+    // ------------------------------------------------------------------------
+    // Mime type
+    // ------------------------------------------------------------------------
+    
+    /**
+     * <b>ALWAYS OVERWRITE THIS AND PROVIDE VALID MIME TYPE!</b>
+     * @return The mime type for this BaseOptions instance.
+     */
+    protected String getContentType() {
+        BaseKit kit = BaseKit.getKit(getKitClass());
+        return kit.getContentType();
     }
     
-    Settings.Initializer getSettingsInitializer() {
-        if (settingsInitializer == null) {
-            settingsInitializer = new SettingsInitializer();
-        }
-        return settingsInitializer;
-    }
-    
-    
-    class SettingsInitializer implements Settings.Initializer {
-        
-        String name;
-        public String getName() {
-            if (name == null) {
-                name = getSettingsInitializerName();
-            }
+    // diagnostics for #101078
+    /* package */ String getCTImpl() {
+        String mimeType = getContentType();
+        if (mimeType == null) {
+            String msg = "Can't determine mime type for " + simpleToString(this) + "; kitClass = " + getKitClass(); //NOI18N
+            LOG.log(Level.WARNING, null, new Throwable(msg));
             
-            return name;
+            mimeType="text/plain"; //NOI18N
         }
-        
-        public void updateSettingsMap(Class kitClass, Map settingsMap) {
-            OptionSupport.this.updateSettingsMap(kitClass, settingsMap);
+        return mimeType;
+    }
+    
+    private static String simpleToString(Object o) {
+        if (o == null) {
+            return null;
+        } else {
+            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
         }
-
-        public @Override String toString() {
-            return super.toString() + "[" + getName(); //NOI18N
-        }
-        
-    } // End of SettingsInitializer class
-
-
+    }
+    
 }

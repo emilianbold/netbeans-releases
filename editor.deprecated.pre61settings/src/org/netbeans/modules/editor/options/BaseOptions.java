@@ -58,12 +58,9 @@ import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
 import org.openide.text.IndentEngine;
 import java.beans.IntrospectionException;
@@ -73,9 +70,9 @@ import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
 import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
 import org.openide.util.Lookup;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import java.awt.RenderingHints;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -222,27 +219,14 @@ public class BaseOptions extends OptionSupport {
     
     static final long serialVersionUID =-5469192431366914841L;
     
-    //private static final String HELP_ID = "editing.global"; // !!! NOI18N
     private static final String NO_INDENT_ENGINE = "NO_INDENT_ENGINE"; // NOI18N
-    
-//    private transient Settings.Initializer coloringMapInitializer;
     
     /** Version of the options. It's used for patching the options. */
     private transient int optionsVersion;
     
-//    /* Indent engine available during readExternal() */
-//    private transient IndentEngine readExternalIndentEngine;
-//    private transient boolean inReadExternal;
-    
     private transient MIMEOptionNode mimeNode;
-//    private transient Map defaultMacrosMap;
-//    private transient Map defaultKeyBindingsMap;
     private transient MIMEOptionFolder settingsFolder;
     private transient boolean settingsFolderInitialization;
-//    private transient KeyBindingSettings keyBindingsSettings;    
-//    
-//    private transient boolean keybindingsInitialized = false;
-//    private transient boolean loaded = false;
     
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
@@ -250,10 +234,6 @@ public class BaseOptions extends OptionSupport {
     /** Code template expand key setting name */
     public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
 
-//    private Lookup.Result resultKB;
-//    private LookupListener weakLookupListenerKB;
-//    private LookupListener lookupListenerKB;
-    
     // ------------------------------------------------------------------------
     // BaseOptions creation
     // ------------------------------------------------------------------------
@@ -317,141 +297,23 @@ public class BaseOptions extends OptionSupport {
     }
 
     // ------------------------------------------------------------------------
-    // Mime type
-    // ------------------------------------------------------------------------
-    
-    /**
-     * <b>ALWAYS OVERWRITE THIS AND PROVIDE VALID MIME TYPE!</b>
-     * @return The mime type for this BaseOptions instance.
-     */
-    protected String getContentType() {
-        BaseKit kit = BaseKit.getKit(getKitClass());
-        return kit.getContentType();
-    }
-
-    // diagnostics for #101078
-    private String getCTImpl() {
-        String mimeType = getContentType();
-        if (mimeType == null) {
-            String msg = "Can't determine mime type for " + simpleToString(this) + "; kitClass = " + getKitClass(); //NOI18N
-            LOG.log(Level.WARNING, null, new Throwable(msg));
-            
-            mimeType="text/plain"; //NOI18N
-        }
-        return mimeType;
-    }
-    
-    private static String simpleToString(Object o) {
-        if (o == null) {
-            return null;
-        } else {
-            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
-        }
-    }
-    
-    // ------------------------------------------------------------------------
     // o.n.e.Settings initialization
     // ------------------------------------------------------------------------
-    
-    protected @Override void updateSettingsMap(Class kitClass, Map settingsMap) {
-//        final String id = "kitClass=" + kitClass + "; getKitClass()=" + getKitClass() + "; this=" + this;
-//        System.out.println("### USM: " + id);
-        
-        loadXMLSettings();
-
-        super.updateSettingsMap(kitClass, settingsMap);
-
-        if (kitClass == getKitClass()) {
-            // Create evaluators for indentEngine and formatter
-            settingsMap.put(NbEditorDocument.INDENT_ENGINE,
-                new Settings.Evaluator() {
-                    public Object getValue(Class kitClass2, String settingName) {
-                        return getIndentEngine();
-                    }
-                }
-            );
-
-            settingsMap.put(NbEditorDocument.FORMATTER,
-                new Settings.Evaluator() {
-                    public Object getValue(Class kitClass2, String settingName) {
-                        IndentEngine eng = getIndentEngine();
-                        return (eng != null)
-                            ? ((eng instanceof FormatterIndentEngine)
-                                ? ((FormatterIndentEngine)eng).getFormatter()
-                                : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
-                            : null;
-                    }
-                }
-            );
-
-            settingsMap.put(SettingsNames.RENDERING_HINTS,
-                new Settings.Evaluator() {
-                    public Object getValue(Class kitClass2, String settingName) {
-                        String mimeType = KitsTracker.getInstance().findMimeType(kitClass2);
-                        MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
-                        return EditorRenderingHints.get(mimePath).getHints();
-                    }
-                }
-            );
-// XXX: remove
-//            if (coloringMapInitializer != null) {
-//                coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
-//            }
-        }
-        
-// XXX: remove
-//        if (kitClass == BaseKit.class && coloringMapInitializer != null) {
-//            coloringMapInitializer.updateSettingsMap(BaseKit.class, settingsMap);
-//        }
-    }
     
     // ------------------------------------------------------------------------
     // Antialiasing
     // ------------------------------------------------------------------------
     
     public boolean isTextAntialiasing() {
-        // artificial setting -> evaluator used (at begining of this class)
-        Boolean val = (Boolean)getSettingValue(TEXT_ANTIALIASING_PROP);
-        if (val != null) {
-            return val.booleanValue();
+        if (null != getPreferences().get(TEXT_ANTIALIASING_PROP, null)) {
+            return getPreferences().getBoolean(TEXT_ANTIALIASING_PROP, false);
         } else {
-            //XXX this prop is not used anymore, but anyway, I believe
-            //it should have been swing.aatext - I've never seen
-            //javax.aatext.  -Tim
-            // #56234: Check -Djavax.aatext=true
-            if (Boolean.getBoolean("javax.aatext")) {
-                return true;
-
-            } else {
-                // fix of #31758
-                if (Utilities.isMac()) {
-                    // On OSX, default to true
-                    return true;
-                } else {
-                    return isSystemAntialias();
-                }
-            }
+            return EditorRenderingHints.isAAOnByDefault();
         }
     }
 
-    private static boolean isSystemAntialias() {
-        Map systemHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
-                "awt.font.desktophints")); //NOI18N
-        if (systemHints != null) {
-            Object o = systemHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
-            boolean result = o != null && 
-                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_OFF &&  
-                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT;
-            return result;
-        } else {
-            return false;
-        }
-    }
-    
     public void setTextAntialiasing(boolean textAntialiasing) {
-        setSettingBoolean(TEXT_ANTIALIASING_PROP, textAntialiasing, TEXT_ANTIALIASING_PROP);
-        // Cause refresh or renderingHints variable in EditorUI
-        Settings.touchValue(getKitClass(), SettingsNames.RENDERING_HINTS);
+        getPreferences().putBoolean(TEXT_ANTIALIASING_PROP, textAntialiasing);
     }
     
     // ------------------------------------------------------------------------
@@ -460,12 +322,14 @@ public class BaseOptions extends OptionSupport {
     
     /** Saves the keystroke of code tamplate expansion into properties.xml file under Editors/text/base */
     public static void setCodeTemplateExpandKey(KeyStroke ks) {
-        Settings.setValue(BaseKit.class, CODE_TEMPLATE_EXPAND_KEY, Utilities.keyToString(ks));
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(CODE_TEMPLATE_EXPAND_KEY, Utilities.keyToString(ks));
     }
     
     /** Gets Code Template Expand Key. Can return null if there is no key in the settings file */
     public static KeyStroke getCodeTemplateExpandKey(){
-        String ks = (String) Settings.getValue(BaseKit.class, CODE_TEMPLATE_EXPAND_KEY);
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        String ks = prefs.get(CODE_TEMPLATE_EXPAND_KEY, null);
         if (ks != null) {
             KeyStroke keyStroke = Utilities.stringToKey(ks);
             if (keyStroke != null) {
@@ -505,19 +369,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings Storage API instead.
      */
     public void setAbbrevMap(Map<String, String> map, boolean saveToXML) {
-// XXX: try harder to preseve backwards compatibility of this method
-//        Map diffMap = null;
-//        if (saveToXML){
-//            // we are going to save the diff-ed changes to XML, all default
-//            // properties have to be available
-//            loadDefaultAbbreviations();
-//            diffMap = OptionUtilities.getMapDiff(getAbbrevMap(),map,true);
-//            if (diffMap.size()>0){
-//                // settings has changed, write changed settings to XML file
-//                updateSettings(AbbrevsMIMEProcessor.class, diffMap);
-//            }
-//        }
-//        super.setSettingValue(SettingsNames.ABBREV_MAP, map, ABBREV_MAP_PROP);
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     /** 
@@ -581,10 +433,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
      */
     public void setKeyBindingsDiffMap(Map<String, MultiKeyBinding> diffMap) {
-// XXX: try harder to preseve backwards compatibility of this method
-//        if ((diffMap != null) && (diffMap.size()>0)){
-//            updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
-//        }
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     
@@ -598,34 +447,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
      */
     public void setKeyBindingList(List list, boolean saveToXML) {
-// XXX: try harder to preseve backwards compatibility of this method
-//        if( list.size() > 0 &&
-//        ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
-//        ) {
-//            list.remove( 0 ); //remove kit class name
-//        }
-//        
-//        Map diffMap = null;
-//        if (saveToXML){
-//            // we are going to save the diff-ed changes to XML, all default
-//            // properties have to be available
-//            loadDefaultKeyBindings();
-//            List kbMap = getKeyBindingList();
-//            if( kbMap.size() > 0 &&
-//            ( kbMap.get( 0 ) instanceof Class || kbMap.get( 0 ) instanceof String )
-//            ) {
-//                kbMap.remove( 0 ); //remove kit class name
-//            }
-//            
-//            diffMap = OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(kbMap),
-//            OptionUtilities.makeKeyBindingsMap(list),true);
-//            if (diffMap.size()>0){
-//                // settings has changed, write changed settings to XML file
-//                updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
-//            }
-//        }
-//        
-//        super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     // ------------------------------------------------------------------------
@@ -663,56 +485,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings Storage API instead.
      */
     public void setColoringMap(final Map<String, Coloring> coloringMap, boolean saveToXML) {
-        if (coloringMap != null) {
-            Settings.update(new Runnable() {
-                public void run() {
-                    SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
-                }
-            });
-        }
-        
-// XXX: try harder to preseve backwards compatibility of this method
-//        Map diffMap = null;
-//        if (coloringMap != null) {
-////            if (inReadExternal) {
-//                /* Fix of #11115
-//                 * The better place would be in upgradeOptions()
-//                 * which was attempted originally. However the normal
-//                 * behavior of setColoringMap() destroys the colorings
-//                 * if they are not upgraded immediately. Therefore
-//                 * the readExternalColoringMap approach was attempted.
-//                 * However there was an NPE in
-//                 * properties.syntax.EditorSettingsCopy.updateColors
-//                 * at line 235 the keyColoring was null.
-//                 * Therefore the patch appears here.
-//                 */
-//                //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
-////            }
-//            
-//            if (!usesNewOptionsDialog() && saveToXML){
-//                diffMap = OptionUtilities.getMapDiff(getColoringMap(),coloringMap,false);
-//                if (diffMap.size()>0){
-//                    // settings has changed, write changed settings to XML file
-//                    //System.out.println("SETTING COLORING MAP:"+diffMap);
-//                    updateSettings(FontsColorsMIMEProcessor.class, diffMap);
-//                }
-//            }
-//            
-//            coloringMap.remove(null); // remove kit class
-//            
-//            Settings.update(new Runnable() {
-//                public void run() {
-//                    SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
-//                }
-//            });
-//            
-//            coloringMapInitializer = SettingsUtil.getColoringMapInitializer(
-//            getKitClass(), coloringMap, false,
-//            getTypeName() + "-coloring-map-initializer" //NOI18N
-//            );
-//            
-//            firePropertyChange(COLORING_MAP_PROP, null, null);
-//        }
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     /**
@@ -729,46 +502,18 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings Storage API instead.
      */
     public void setFontSize(final int size) {
-// XXX: do something sensible here like changing the size of the default coloring for example
-//
-//        if (size < 0) {
-//            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-//            return;
-//        }
-//        final int oldSize = getFontSize();
-//        Map cm = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
-//        if (cm != null) {
-//            Iterator it = cm.entrySet().iterator();
-//            while (it.hasNext()) {
-//                Map.Entry entry = (Map.Entry)it.next();
-//                Object value = entry.getValue();
-//                if (value instanceof Coloring) {
-//                    Coloring c = (Coloring)value;
-//                    Font font = c.getFont();
-//                    if (font != null && font.getSize() != size) {
-//                        font = font.deriveFont((float)size);
-//                        Coloring newColoring = new Coloring(font, c.getFontMode(),
-//                        c.getForeColor(), c.getBackColor()); // this way due to bug in Coloring
-//                        entry.setValue(newColoring);
-//                    }
-//                }
-//            }
-//            setColoringMap(cm);
-//    
-//            firePropertyChange(FONT_SIZE_PROP, null, null);
-//        }
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     public float getLineHeightCorrection() {
-        return ((Float) getSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION)).floatValue();
+        return getPreferences().getFloat(SettingsNames.LINE_HEIGHT_CORRECTION, 1);
     }
     public void setLineHeightCorrection(float f) {
         if (f <= 0) {
             NbEditorUtilities.invalidArgument("MSG_OutOfRange"); // NOI18N
             return;
         }
-        setSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION, new Float(f),
-        LINE_HEIGHT_CORRECTION_PROP);
+        getPreferences().putFloat(SettingsNames.LINE_HEIGHT_CORRECTION, f);
     }
     
     // ------------------------------------------------------------------------
@@ -783,74 +528,6 @@ public class BaseOptions extends OptionSupport {
         return getMacroMap();
     }
   
-// XXX: remove
-//    /** Loads default abbreviations from MIMEFolder/Defaults/macros.xml and
-//     *  stores them to defaultMacrosMap */
-//    private void loadDefaultMacros(){
-//        if (defaultMacrosMap!=null) return;
-//        MIMEOptionFolder mimeFolder = getMIMEFolder();
-//        if (mimeFolder == null) return;
-//
-//        MIMEOptionFolder mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
-//        if (mof == null) return;
-//        
-//        MIMEOptionFile file = mof.getFile(MacrosMIMEProcessor.class, false);
-//        if ((file!=null) && (!file.isLoaded())) {
-//            file.loadSettings(false);
-//            defaultMacrosMap = new HashMap(file.getAllProperties());
-//        }
-//    }
-
-// XXX:  not needed in netbeans, but we may want to put it back to keep setMacroMap
-//       backwards compatible
-//    /** removes keybindings from deleted macros, or if macro deletion was cancelled
-//     *  it restores old keybinding value */
-//    private void processMacroKeyBindings(Map diff, List oldKB){
-//        List deletedKB = new ArrayList();
-//        List addedKB = new ArrayList();
-//        List newKB = getKBList();        
-//
-//        for( Iterator i = diff.keySet().iterator(); i.hasNext(); ) {
-//            String key = (String)i.next();
-//            if (!(diff.get(key) instanceof String)) continue;
-//            String action = (String) diff.get(key);
-//            String kbActionName = BaseKit.macroActionPrefix+key;
-//
-//            if (action.length()!=0){
-//                // process restored macros
-//                for (int j = 0; j < oldKB.size(); j++){
-//                    if(oldKB.get(j) instanceof MultiKeyBinding){
-//                        MultiKeyBinding mkb = (MultiKeyBinding) oldKB.get(j);
-//                        if (!kbActionName.equals(mkb.actionName)) continue;
-//                        addedKB.add(mkb);
-//                        break;
-//                    }
-//                }
-//                continue;
-//            }
-//            
-//            for (int j = 0; j < newKB.size(); j++){
-//                // process deleted macros
-//                if(newKB.get(j) instanceof MultiKeyBinding){
-//                    MultiKeyBinding mkb = (MultiKeyBinding) newKB.get(j);
-//                    if (!kbActionName.equals(mkb.actionName)) continue;
-//                    deletedKB.add(mkb);
-//                    break;
-//                }
-//            }
-//        }
-//        
-//        if ((deletedKB.size()>0) || (addedKB.size()>0)){
-//            newKB.removeAll(deletedKB);
-//            newKB.addAll(addedKB);
-//            // save changed keybindings to XML file
-//            setKeyBindingsDiffMap(OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(getKBList()), 
-//                OptionUtilities.makeKeyBindingsMap(newKB), true));
-//            // set new keybindings
-//            Settings.setValue( getKitClass(), SettingsNames.KEY_BINDING_LIST, newKB);
-//        }
-//    }
-    
     /** 
      * @return The map of macro names (<code>String</code>) and the associated macro code (<code>String</code>).
      *   The <code>null</code> key entry has value of <code>List&lt;? extends MultiKeyBinding&gt;</code>.
@@ -868,10 +545,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Without any replacement.
      */
     public void setMacroDiffMap(Map diffMap){
-// XXX: try harder to preseve backwards compatibility of this method
-//        if ((diffMap != null) && (diffMap.size()>0)){
-//            updateSettings(MacrosMIMEProcessor.class, diffMap);
-//        }
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     /** 
@@ -886,35 +560,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Without any replacement.
      */
     public void setMacroMap(final Map macros, boolean saveToXML) {
-        if (macros != null) {
-            Settings.update(new Runnable() {
-                public void run() {
-                    BaseOptions.super.setSettingValue(SettingsNames.MACRO_MAP, macros);
-                }
-            });
-        }
-        
-//        Map diffMap = null;
-//        List kb = new ArrayList();
-//        if (map.containsKey(null)){
-//            kb.addAll((List)map.get(null));
-//            map.remove(null);
-//        }
-//        if (saveToXML){
-//            // we are going to save the diff-ed changes to XML, all default
-//            // properties have to be available
-//            loadDefaultMacros();
-//            diffMap = OptionUtilities.getMapDiff(getMacroMap(),map,true);
-//            if (diffMap.containsKey(null)) diffMap.remove(null);
-//            if (diffMap.size()>0){
-//                // settings has changed, write changed settings to XML file
-//// XXX: does not work
-////                processMacroKeyBindings(diffMap,kb);
-//                updateSettings(MacrosMIMEProcessor.class, diffMap);
-//            }
-//        }
-//        
-//        super.setSettingValue(SettingsNames.MACRO_MAP, map);
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     /** 
@@ -964,51 +610,42 @@ public class BaseOptions extends OptionSupport {
     }
     
     public String getCaretTypeInsertMode() {
-        return (String)getSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE);
+        return getPreferences().get(SettingsNames.CARET_TYPE_INSERT_MODE, SettingsDefaults.defaultCaretTypeInsertMode);
     }
     public void setCaretTypeInsertMode(String type) {
-        setSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE, type,
-        CARET_TYPE_INSERT_MODE_PROP);
+        getPreferences().put(SettingsNames.CARET_TYPE_INSERT_MODE, type);
     }
     
     public String getCaretTypeOverwriteMode() {
-        return (String)getSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE);
+        return getPreferences().get(SettingsNames.CARET_TYPE_OVERWRITE_MODE, SettingsDefaults.defaultCaretTypeOverwriteMode);
     }
     public void setCaretTypeOverwriteMode(String type) {
-        setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type,
-        CARET_TYPE_OVERWRITE_MODE_PROP);
+        getPreferences().put(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type);
     }
 
     /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
+     * @deprecated Since adaptation to new view implementation the option is not supported.
      */
     public boolean getCaretItalicInsertMode() {
-        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
+        return false;
     }
     /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
+     * @deprecated Since adaptation to new view implementation the option is not supported.
      */
     public void setCaretItalicInsertMode(boolean b) {
-        setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b,
-        CARET_ITALIC_INSERT_MODE_PROP);
+        throw new UnsupportedOperationException();
     }
-
     /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
+     * @deprecated Since adaptation to new view implementation the option is not supported.
      */
     public boolean getCaretItalicOverwriteMode() {
-        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
+        return false;
     }
     /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
+     * @deprecated Since adaptation to new view implementation the option is not supported.
      */
     public void setCaretItalicOverwriteMode(boolean b) {
-        setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b,
-        CARET_ITALIC_OVERWRITE_MODE_PROP);
+        throw new UnsupportedOperationException();
     }
     
     public Color getCaretColorInsertMode() {
@@ -1058,24 +695,21 @@ public class BaseOptions extends OptionSupport {
         return getSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE);
     }
     public void setLineNumberVisible(boolean b) {
-        setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b,
-        LINE_NUMBER_VISIBLE_PROP);
+        setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b, LINE_NUMBER_VISIBLE_PROP);
     }
 
     public Insets getScrollJumpInsets() {
         return (Insets)getSettingValue(SettingsNames.SCROLL_JUMP_INSETS);
     }
     public void setScrollJumpInsets(Insets i) {
-        setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i,
-        SCROLL_JUMP_INSETS_PROP);
+        setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i, SCROLL_JUMP_INSETS_PROP);
     }
     
     public Insets getScrollFindInsets() {
         return (Insets)getSettingValue(SettingsNames.SCROLL_FIND_INSETS);
     }
     public void setScrollFindInsets(Insets i) {
-        setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i,
-        SCROLL_FIND_INSETS_PROP);
+        setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i, SCROLL_FIND_INSETS_PROP);
     }
 
     public Insets getMargin() {
@@ -1100,8 +734,7 @@ public class BaseOptions extends OptionSupport {
             NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
             return;
         }
-        setSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY, delay,
-        STATUS_BAR_CARET_DELAY_PROP);
+        setSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY, delay, STATUS_BAR_CARET_DELAY_PROP);
     }
     
     public boolean getFindHighlightSearch() {
@@ -1109,8 +742,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setFindHighlightSearch(boolean b) {
-        setSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH, b,
-        FIND_HIGHLIGHT_SEARCH_PROP);
+        setSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH, b, FIND_HIGHLIGHT_SEARCH_PROP);
     }
 
     public boolean getFindBlockSearch() {
@@ -1138,8 +770,7 @@ public class BaseOptions extends OptionSupport {
             NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
             return;
         }
-        setSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY, delay,
-        FIND_INC_SEARCH_DELAY_PROP);
+        setSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY, delay, FIND_INC_SEARCH_DELAY_PROP);
     }
     
     public boolean getFindWrapSearch() {
@@ -1147,8 +778,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setFindWrapSearch(boolean b) {
-        setSettingBoolean(SettingsNames.FIND_WRAP_SEARCH, b,
-        FIND_WRAP_SEARCH_PROP);
+        setSettingBoolean(SettingsNames.FIND_WRAP_SEARCH, b, FIND_WRAP_SEARCH_PROP);
     }
     
     public boolean getFindSmartCase() {
@@ -1160,11 +790,11 @@ public class BaseOptions extends OptionSupport {
     }
     
     public Map getFindHistory() {
-        return new HashMap( (Map)getSettingValue(SettingsNames.FIND_HISTORY) );
+        return Collections.EMPTY_MAP;
     }
     
     public void setFindHistory(Map m) {
-        setSettingValue(SettingsNames.FIND_HISTORY, m, FIND_HISTORY_PROP);
+        throw new UnsupportedOperationException();
     }
     
     public int getFindHistorySize() {
@@ -1172,8 +802,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setFindHistorySize(int size) {
-        setSettingInteger(SettingsNames.FIND_HISTORY_SIZE, size,
-        FIND_HISTORY_SIZE_PROP);
+        setSettingInteger(SettingsNames.FIND_HISTORY_SIZE, size, FIND_HISTORY_SIZE_PROP);
     }
     
     public boolean getPairCharactersCompletion() {
@@ -1181,8 +810,7 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setPairCharactersCompletion(boolean v) {
-        setSettingBoolean(SettingsNames.PAIR_CHARACTERS_COMPLETION, v,
-            PAIR_CHARACTERS_COMPLETION);
+        setSettingBoolean(SettingsNames.PAIR_CHARACTERS_COMPLETION, v, PAIR_CHARACTERS_COMPLETION);
     }
 
     public Color getTextLimitLineColor() {
@@ -1218,8 +846,7 @@ public class BaseOptions extends OptionSupport {
             NbEditorUtilities.invalidArgument("MSG_OutOfRange"); // NOI18N
             return;
         }
-        setSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH, width,
-        TEXT_LIMIT_WIDTH_PROP);
+        setSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH, width, TEXT_LIMIT_WIDTH_PROP);
     }
     
     public boolean getTextLimitLineVisible() {
@@ -1227,8 +854,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setTextLimitLineVisible(boolean visible) {
-        setSettingBoolean(SettingsNames.TEXT_LIMIT_LINE_VISIBLE, visible,
-        TEXT_LIMIT_LINE_VISIBLE_PROP);
+        setSettingBoolean(SettingsNames.TEXT_LIMIT_LINE_VISIBLE, visible, TEXT_LIMIT_LINE_VISIBLE_PROP);
     }
     
     public boolean getHighlightMatchingBracket() {
@@ -1236,8 +862,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setHighlightMatchingBracket(boolean highlight) {
-        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, highlight,
-        HIGHLIGHT_MATCHING_BRACKET_PROP);
+        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, highlight, HIGHLIGHT_MATCHING_BRACKET_PROP);
     }
     
     public boolean getHighlightCaretRow() {
@@ -1245,8 +870,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setHighlightCaretRow(boolean highlight) {
-        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight,
-        HIGHLIGHT_CARET_ROW_PROP);
+        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight, HIGHLIGHT_CARET_ROW_PROP);
     }
 
     public boolean isToolbarVisible() {
@@ -1276,12 +900,6 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use the layers, ie. Editors/<mime-type>/Popup.
      */
     public void initPopupMenuItems(){
-// XXX: remove
-//        List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup"); //NOI18N
-//        if (orderedPopupFiles.size() >0){
-//            super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-//                OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
-//        }
     }
     
     // ------------------------------------------------------------------------
@@ -1289,12 +907,6 @@ public class BaseOptions extends OptionSupport {
     // ------------------------------------------------------------------------
     
     public IndentEngine getIndentEngine() {
-// XXX: remove
-//        // Due to #11212
-//        if (inReadExternal) {
-//            return readExternalIndentEngine;
-//        }
-//
         if (!BASE.equals(getTypeName())) {
             Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
             String handle = prefs.get(INDENT_ENGINE_PROP, null);
@@ -1346,31 +958,24 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setIndentEngine(IndentEngine eng) {
-// XXX: remove
-//        /* Disabled direct setting of the engine
-//         * during project deserialization to avoid doubled
-//         * indent engine as described in #9687
-//         */
-//        if (!inReadExternal) {
-            String id = null;
-            if (eng != null) {
-                Lookup.Template tmp = new Lookup.Template(null, null, eng);
-                Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
-                if (item != null) {
-                    id = item.getId();
-                }
+        String id = null;
+        if (eng != null) {
+            Lookup.Template tmp = new Lookup.Template(null, null, eng);
+            Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
+            if (item != null) {
+                id = item.getId();
             }
+        }
 
-            if (!BASE.equals(getTypeName())){
-                Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
-                if (id == null) {
-                    id = NO_INDENT_ENGINE;
-                } 
-                prefs.put(INDENT_ENGINE_PROP, id);
-            }
+        if (!BASE.equals(getTypeName())){
+            Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
+            if (id == null) {
+                id = NO_INDENT_ENGINE;
+            } 
+            prefs.put(INDENT_ENGINE_PROP, id);
+        }
 
-            refreshIndentEngineSettings();
-//        }
+        refreshIndentEngineSettings();
     }
     
     private void refreshIndentEngineSettings() {
@@ -1522,146 +1127,11 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-// XXX: remove    
-//    /** Load settings from XML files and initialize changes */
-//    private void loadSettings(Class processor){
-//        MIMEOptionFile file;
-//        if (BASE.equals(getTypeName())){
-//            MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-//            if (mimeFolder == null) return;
-//            file= mimeFolder.getFile(processor, false);
-//        }else{
-//            MIMEOptionFolder mimeFolder = getMIMEFolder();
-//            if (mimeFolder == null) return;
-//            file= mimeFolder.getFile(processor, false);
-//        }
-//        if ((file!=null) && (!file.isLoaded())) {
-//            file.loadSettings();
-//        }
-//    }
-//    
-//    /** Save changes to XML files.
-//     * @see #updateSettings(java.lang.Class, java.util.Map, boolean )
-//     */
-//    private void updateSettings(Class processor, Map settings){
-//        updateSettings(processor, settings, true);
-//    }
-//    
-//    /** Save changes to XML files 
-//     *  @param processor MIMEProcessor class
-//     *  @param settings the settings map 
-//     *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
-//     */
-//    private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
-//        if (processor == FontsColorsMIMEProcessor.class ||
-//            processor == KeyBindingsMIMEProcessor.class ||
-//            processor == AbbrevsMIMEProcessor.class ||
-//            processor == MacrosMIMEProcessor.class
-//        ) {
-//            return;
-//        }
-//        
-//        MIMEOptionFile fileX;
-//        MIMEOptionFolder mimeFolder;
-//        if (BASE.equals(getTypeName())){
-//            mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-//            if (mimeFolder == null) return;
-//            fileX = mimeFolder.getFile(processor, true);
-//        }else{
-//            mimeFolder = getMIMEFolder();
-//            if (mimeFolder == null) return;
-//            fileX = mimeFolder.getFile(processor, true);
-//        }
-//        final Map finalSettings = settings;
-//        final MIMEOptionFile file = fileX;
-//        if (file!=null){
-//            if (useRequestProcessorForSaving){
-//                Settings.update(new Runnable() {
-//                    public void run() {
-//                        file.setAllProperties(finalSettings);
-//                    }
-//                    public boolean asynchronous() {
-//                        return true;
-//                    }
-//                });
-//            }else{
-//                file.setAllProperties(finalSettings);                
-//            }
-//            
-//        } else {
-//            LOG.info("A settings file for " + processor + " does not exist in " + mimeFolder.getDataFolder()); //NOI18N
-//        }
-//    }
-//    
-//    public @Override void setSettingValue(String settingName, Object newValue) {
-//        setSettingValue(settingName, newValue, settingName);
-//    }
-//    
-//    private boolean isTheSame(String settingName, Object newValue){
-//        if (settingName == null ||
-//            settingName.equals(NbEditorDocument.INDENT_ENGINE) ||
-//            settingName.equals(NbEditorDocument.FORMATTER)
-//        ) {
-//            return true;
-//        }
-//        Object oldValue = getSettingValue(settingName);
-//        if ((oldValue == null && newValue == null)
-//        || (oldValue != null && oldValue.equals(newValue))
-//        ) {
-//            return true; // the same object
-//        }
-//        return false;
-//    }
-//    
-//
-//    /** Sets setting value to initializer Map and save the changes to XML file
-//     *  (properties.xml) */
-//    public @Override void setSettingValue(String settingName, Object newValue, String propertyName) {
-//        if (!isTheSame(settingName, newValue)){
-//            super.setSettingValue(settingName,newValue,propertyName);
-//            
-//            // Save it
-//            Map map = new HashMap();
-//            map.put(settingName, newValue);
-//            updateSettings(PropertiesMIMEProcessor.class, map);
-//        }
-//    }
-//    
-//    public @Override Object getSettingValue(String settingName) {
-//        loadSettings(PropertiesMIMEProcessor.class);
-//        return super.getSettingValue(settingName);
-//    }
-//    
-//    protected final @Override void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
-//        setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
-//    }
-//    
-//    protected final @Override void setSettingInteger(String settingName, int newValue, String propertyName) {
-//        setSettingValue(settingName, new Integer(newValue));
-//    }
-    
     /** 
      * Load all available settings from XML files and initialize them.
      * @deprecated Use Editor Settings Storage API instead. This method is never called.
      */
     protected void loadXMLSettings() {
-// XXX: remove    
-//        if (!loaded) {
-//            loaded = true;
-//            if (LOG.isLoggable(Level.FINE)) {
-//                LOG.fine("Loading " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
-//            }
-//
-//            loadSettings(PropertiesMIMEProcessor.class);
-//
-//            if (LOG.isLoggable(Level.FINE)) {
-//                LOG.fine("Loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
-//            }
-//        } else {
-//            if (LOG.isLoggable(Level.FINE)) {
-//                LOG.fine("Already loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
-//            }
-//        }
     }
 
     // ------------------------------------------------------------------------
@@ -1672,42 +1142,6 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings Storage API instead. BaseOptions are no longer serialized.
      */
     public @Override void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-// XXX: remove
-//        /** Hold the current indent engine due to #11212 */
-//        readExternalIndentEngine = getIndentEngine();
-//        inReadExternal = true;
-//        
-//        /* Make the current options version to be zero
-//         * temporarily to distinguish whether the options
-//         * imported were old and the setOptionsVersion()
-//         * was not called or whether the options
-//         * were new so the options version was set
-//         * to the LATEST_OPTIONS_VERSION value.
-//         */
-//        optionsVersion = 0;
-//        
-//        try {
-//            // Read the serialized options
-//            super.readExternal(in);
-//        }catch(java.io.OptionalDataException ode){
-//            // #17385. It occurs during reading Settings.settings, that is unimportant
-//        } finally {
-//
-//            // Make sure the indent engine settings are propagated
-//            // (SharedClassObject.putProperty() is final)
-//            refreshIndentEngineSettings();
-//
-//            // Possibly upgrade the options
-//            //if (optionsVersion < LATEST_OPTIONS_VERSION) {
-//            //    upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
-//            //}
-//
-//            optionsVersion = LATEST_OPTIONS_VERSION;
-//
-//            /** Release temp indent engine -  #11212 */
-//            inReadExternal = false;
-//            readExternalIndentEngine = null;
-//        }
     }
     
     /** 

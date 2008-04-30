@@ -377,22 +377,7 @@ public class SettingsUtil {
      * @deprecated Use Editor Settings Storage API instead.
      */
     public static void setColoringMap( Class kitClass, Map coloringMap, boolean printingSet ) {
-// XXX: try harder to preserve backwards compatibility of this call
-//
-//        List colNameList = getCumulativeList(kitClass, SettingsNames.COLORING_NAME_LIST, null);
-//        if (colNameList != null && coloringMap != null && coloringMap.size() > 0) {
-//            HashSet nameSet = new HashSet(colNameList);
-//
-//            for( Iterator i = coloringMap.keySet().iterator(); i.hasNext(); ) {
-//                String name = (String)i.next();
-//                Object coloring = coloringMap.get( name );
-//                if( nameSet.contains( name ) ) {
-//                    setColoring( kitClass, name, coloring, printingSet );
-//                } else {
-//                    setColoring( BaseKit.class, name, coloring, printingSet );
-//                }
-//            }
-//        }
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
     }
     
     /** 

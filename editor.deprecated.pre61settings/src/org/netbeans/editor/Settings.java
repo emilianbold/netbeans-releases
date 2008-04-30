@@ -42,8 +42,6 @@
 package org.netbeans.editor;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -73,9 +71,9 @@ import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.deprecated.pre61settings.EditorPreferencesInjector;
+import org.netbeans.modules.editor.deprecated.pre61settings.KitchenSink;
 import org.netbeans.modules.editor.deprecated.pre61settings.OrgNbEditorAccessor;
 import org.netbeans.modules.editor.impl.KitsTracker;
-import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -427,43 +425,7 @@ public class Settings {
             
             // check if there is actually some value
             if (prefs != null && null != prefs.get(settingName, null)) {
-                // try guessing the type
-                Class type = null;
-                String javaType = prefs.get(JAVATYPE_KEY_PREFIX + settingName, null);
-                if (javaType != null) {
-                    type = typeFromString(javaType);
-                }
-
-                if (type != null) {
-                    if (type.equals(Boolean.class)) {
-                        value = prefs.getBoolean(settingName, false);
-                    } else if (type.equals(Integer.class)) {
-                        value = prefs.getInt(settingName, 0);
-                    } else if (type.equals(Long.class)) {
-                        value = prefs.getLong(settingName, 0L);
-                    } else if (type.equals(Float.class)) {
-                        value = prefs.getFloat(settingName, 0.0F);
-                    } else if (type.equals(Double.class)) {
-                        value = prefs.getDouble(settingName, 0.0D);
-                    } else if (type.equals(Insets.class)) {
-                        value = SettingsConversions.parseInsets(prefs.get(settingName, null));
-                    } else if (type.equals(Dimension.class)) {
-                        value = SettingsConversions.parseDimension(prefs.get(settingName, null));
-                    } else if (type.equals(Color.class)) {
-                        value = SettingsConversions.parseColor(prefs.get(settingName, null));
-                    } else if (type.equals(String.class)) {
-                        value = prefs.get(settingName, null);
-                    } else {
-                        LOG.log(Level.WARNING, "Can't load setting '" + settingName + "' with value '" + prefs.get(settingName, null) //NOI18N
-                            + "' through org.netbeans.editor.Settings! Unsupported value conversion to " + type, new Throwable("Stacktrace")); //NOI18N
-                    }
-                } else {
-                    // unknown setting type, treat it as String
-                    LOG.warning("Can't determine type of '" + settingName + "' editor setting. If you supplied this setting" //NOI18N
-                        + " through the editor implementation of java.util.prefs.Preferences you should use the 'javaType'" //NOI18N
-                        + " attribute and specify the class representing values of this setting. There seem to be legacy" //NOI18N
-                        + " clients accessing your setting through the old org.netbeans.editor.Settings."); //NOI18N
-                }
+                value = KitchenSink.getValueFromPrefs(settingName, prefs);
             } else {
                 // Fallback on to the kitmaps
                 List allKitMaps = getAllKitMaps(kitClass);
@@ -584,36 +546,7 @@ public class Settings {
                 Preferences prefs = findPreferences(mimePath);
                 
                 if (prefs != null) {
-                    if (newValue != null) {
-                        if (newValue instanceof Boolean) {
-                            prefs.putBoolean(settingName, (Boolean) newValue);
-                        } else if (newValue instanceof Integer) {
-                            prefs.putInt(settingName, (Integer) newValue);
-                        } else if (newValue instanceof Long) {
-                            prefs.putLong(settingName,(Long) newValue);
-                        } else if (newValue instanceof Float) {
-                            prefs.putFloat(settingName, (Float) newValue);
-                        } else if (newValue instanceof Double) {
-                            prefs.putDouble(settingName, (Double) newValue);
-                        } else if (newValue instanceof Insets) {
-                            prefs.put(settingName, SettingsConversions.insetsToString((Insets) newValue));
-                            prefs.put(JAVATYPE_KEY_PREFIX + settingName, Insets.class.getName());
-                        } else if (newValue instanceof Dimension) {
-                            prefs.put(settingName, SettingsConversions.dimensionToString((Dimension) newValue));
-                            prefs.put(JAVATYPE_KEY_PREFIX + settingName, Dimension.class.getName());
-                        } else if (newValue instanceof Color) {
-                            prefs.put(settingName, SettingsConversions.color2String((Color) newValue));
-                            prefs.put(JAVATYPE_KEY_PREFIX + settingName, Color.class.getName());
-                        } else if (newValue instanceof String) {
-                            prefs.put(settingName, (String) newValue);
-                        } else {
-                            LOG.log(Level.FINE, "Can't save setting '" + settingName + "' with value '" + newValue //NOI18N
-                                + "' through org.netbeans.editor.Settings; unsupported value conversion!", new Throwable("Stacktrace")); //NOI18N
-                            useKitMaps = true;
-                        }
-                    } else {
-                        prefs.remove(settingName);
-                    }
+                    useKitMaps = !KitchenSink.setValueToPreferences(settingName, newValue, prefs);
                 } else {
                     useKitMaps = true;
                 }
@@ -1469,17 +1402,6 @@ public class Settings {
 //            return settingType == NO_TYPE.class ? null : settingType;
 //        }
 //    }
-    
-    private static final String JAVATYPE_KEY_PREFIX = "nbeditor-javaType-for-legacy-setting_"; //NOI18N
-    private static Class typeFromString(String javaType) {
-        try {
-            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
-            return classLoader == null ? null : classLoader.loadClass(javaType);
-        } catch (ClassNotFoundException cnfe) {
-            LOG.log(Level.WARNING, null, cnfe);
-            return null;
-        }
-    }
     
     private static final class PackageAccessor extends OrgNbEditorAccessor {
 
