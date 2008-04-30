@@ -52,6 +52,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.ArrayList;
@@ -84,6 +85,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
 import org.netbeans.modules.bpel.model.api.BaseScope;
@@ -163,7 +165,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
@@ -172,9 +173,8 @@ import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
-import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
-import org.netbeans.modules.xml.xpath.ext.schema.XmlExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -852,42 +852,25 @@ public class DefineCorrelationWizard implements WizardProperties {
             CorrelationMapperTreeModel 
                 leftTreeModel = (CorrelationMapperTreeModel) mapperModel.getLeftTreeModel(), 
                 rightTreeModel = (CorrelationMapperTreeModel) mapperModel.getRightTreeModel();
-            final List<CorrelationLinker> correlationLinkers = 
-                    getCorrelationLinkers(mapperModel, leftTreeModel, rightTreeModel);
-            if (correlationLinkers.isEmpty()) {
-                return;
-            }
-            //
+            List<CorrelationLinker> correlationLinkers = getCorrelationLinkers(mapperModel, leftTreeModel, rightTreeModel);
             // group linkers by equivalence of [activity-message-part]
             // to combine appropriate properties in one correlation set
-            CorrelationWizardWSDLWrapper wizardWsdlWrapper = 
-                CorrelationWizardWSDLWrapper.getInstance(correlatedActivity.getBpelModel());
-            final WSDLModel wizardWsdlModel = wizardWsdlWrapper.getWsdlModel();
-            if (wizardWsdlModel != null) {
-                WizardUtils.doInTransaction(wizardWsdlModel, new Runnable() {
-                    public void run() {
-                        try {
-                            while (!correlationLinkers.isEmpty()) {
-                                List<CorrelationLinker> equalLinkerSublist = 
-                                        getSublistEqualCorrelationLinkers(correlationLinkers);
-                                if (equalLinkerSublist.isEmpty()) break;
-                                correlationLinkers.removeAll(equalLinkerSublist);
-
-                                createCorrelationPropertiesAndPropertyAliases(
-                                        equalLinkerSublist, wizardWsdlModel);
-                                CorrelationSet correlationSet = 
-                                        createCorrelationSet(equalLinkerSublist);
-                                equalLinkerSublist.get(0).
-                                        createActivityCorrelation(correlationSet);
-                            }
-                        } catch (WizardValidationException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
-                    }
-                });
+            WSDLModel wizardWsdlModel = null;
+            while (! correlationLinkers.isEmpty()) {
+                if (wizardWsdlModel == null) {
+                    CorrelationWizardWSDLWrapper wizardWsdlWrapper = 
+                        CorrelationWizardWSDLWrapper.getInstance(correlatedActivity.getBpelModel());
+                    wizardWsdlModel = wizardWsdlWrapper.getWsdlModel();
+                    wizardWsdlWrapper.importIntoBpelModel();
+                }
+                List<CorrelationLinker> equalLinkerSublist = getSublistEqualCorrelationLinkers(correlationLinkers);
+                if (equalLinkerSublist.isEmpty()) break;
+                correlationLinkers.removeAll(equalLinkerSublist);
+                
+                createCorrelationPropertiesAndPropertyAliases(equalLinkerSublist, wizardWsdlModel);
+                CorrelationSet correlationSet = createCorrelationSet(equalLinkerSublist);
+                equalLinkerSublist.get(0).createActivityCorrelation(correlationSet);
             }
-            //
-            wizardWsdlWrapper.importIntoBpelModel();
         }
 
         private CorrelationSet createCorrelationSet(List<CorrelationLinker> linkerList) {
@@ -1059,7 +1042,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 target.createPropertyAlias(wizardWsdlModel, correlationProperty);
             }
 
-            public void createCorrelationProperty(final WSDLModel wizardWsdlModel) throws WizardValidationException {
+            public void createCorrelationProperty(WSDLModel wizardWsdlModel) throws WizardValidationException {
                 String propertyName = getBasePropertyName();
                 
                 correlationProperty = (CorrelationProperty) wizardWsdlModel.getFactory().create(
@@ -1077,13 +1060,13 @@ public class DefineCorrelationWizard implements WizardProperties {
                 WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
                 WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
                 if (Util.isUniquePropertyName(wizardWsdlModel, propertyName)) {
-                    WizardUtils.doInTransaction(wizardWsdlModel, new Runnable() {
-                        public void run() {
-                            wizardWsdlModel.addChildComponent(
-                                    wizardWsdlModel.getRootComponent(), 
-                                    correlationProperty, 0);
-                        }
-                    });
+                    try {
+                        wizardWsdlModel.startTransaction();
+                        wizardWsdlModel.addChildComponent(wizardWsdlModel.getRootComponent(), 
+                            correlationProperty, 0);
+                    } finally {
+                        wizardWsdlModel.endTransaction();
+                    }
                 }
             }
             
@@ -1248,34 +1231,32 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return null;
             }
             
-            public void createPropertyAlias(final WSDLModel wizardWsdlModel, 
-                    final CorrelationProperty correlationProperty) {
+            public void createPropertyAlias(WSDLModel wizardWsdlModel, CorrelationProperty correlationProperty) {
                 if (! WizardUtils.wsdlContainsPropertyAlias(wizardWsdlModel, correlationProperty, message, part)) {
-                    WizardUtils.doInTransaction(wizardWsdlModel, new Runnable() {
-                        public void run() {
-                            final PropertyAlias propertyAlias = 
-                                    (PropertyAlias) wizardWsdlModel.getFactory().create(
-                                wizardWsdlModel.getDefinitions(), BPELQName.PROPERTY_ALIAS.getQName());
-                            //
-                            wizardWsdlModel.addChildComponent(
-                                    wizardWsdlModel.getRootComponent(), 
-                                    propertyAlias, 0);
-                            //
-                            NamedComponentReference<CorrelationProperty> correlationPropertyRef =
-                                propertyAlias.createReferenceTo(correlationProperty, CorrelationProperty.class);
-                            propertyAlias.setPropertyName(correlationPropertyRef);
-                            //
-                            NamedComponentReference<Message> messageTypeRef =
-                                propertyAlias.createReferenceTo(message, Message.class);
-                            propertyAlias.setMessageType(messageTypeRef);
-                            //
-                            propertyAlias.setPart(part.getName());
-                            //
-                            Query query = getPropertyAliasQuery(wizardWsdlModel,
-                                propertyAlias);
-                            if (query != null) propertyAlias.setQuery(query);
-                        }
-                    });
+                    PropertyAlias propertyAlias = (PropertyAlias) wizardWsdlModel.getFactory().create(
+                        wizardWsdlModel.getDefinitions(), BPELQName.PROPERTY_ALIAS.getQName());
+
+                    NamedComponentReference<CorrelationProperty> correlationPropertyRef =
+                        propertyAlias.createReferenceTo(correlationProperty, CorrelationProperty.class);
+                    propertyAlias.setPropertyName(correlationPropertyRef);
+
+                    NamedComponentReference<Message> messageTypeRef =
+                        propertyAlias.createReferenceTo(message, Message.class);
+                    propertyAlias.setMessageType(messageTypeRef);
+
+                    propertyAlias.setPart(part.getName());
+                    
+                    Query query = getPropertyAliasQuery(wizardWsdlModel,
+                        propertyAlias);
+                    if (query != null) propertyAlias.setQuery(query);
+                    
+                    try {
+                        wizardWsdlModel.startTransaction();
+                        wizardWsdlModel.addChildComponent(wizardWsdlModel.getRootComponent(), 
+                            propertyAlias, 0);
+                    } finally {
+                        wizardWsdlModel.endTransaction();
+                    }
                 }
             }
             
@@ -1847,23 +1828,24 @@ class CorrelationWizardWSDLWrapper {
     }
     
     private FileObject createWSDLPropertiesFile() {
-        FileObject folderBpelProcess = ResolverUtility.getBpelProcessFolder(bpelModel);
-        WsdlWrapper wsdlWrapper = new WsdlWrapper(folderBpelProcess, 
-            WIZARD_PROPERTIES_WSDL_FILE_NAME, true);
-        wsdlModel = wsdlWrapper.getModel();
-        final Definitions definitions = wsdlModel.getDefinitions();
+        try {
+            FileObject folderBpelProcess = ResolverUtility.getBpelProcessFolder(bpelModel);
+            WsdlWrapper wsdlWrapper = new WsdlWrapper(folderBpelProcess, 
+                WIZARD_PROPERTIES_WSDL_FILE_NAME, true);
+            wsdlModel = wsdlWrapper.getModel();
+            Definitions definitions = wsdlModel.getDefinitions();
 
-        WizardUtils.doInTransaction(wsdlModel, new Runnable() {
-            public void run() {
-                try {
-                    definitions.setName(getShortWsdlFileName());
-                    definitions.setTargetNamespace(HOST + WIZARD_PROPERTIES_WSDL_FILE_NAME);
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-            }
-        });
-        return wsdlWrapper.getFile();
+            wsdlModel.startTransaction();
+            definitions.setName(getShortWsdlFileName());
+            definitions.setTargetNamespace(HOST + WIZARD_PROPERTIES_WSDL_FILE_NAME);
+            
+            return wsdlWrapper.getFile();
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        } finally {
+            wsdlModel.endTransaction();
+        }
+        return null;
     }
     
     public String getShortWsdlFileName() {
@@ -1991,46 +1973,42 @@ class WizardUtils implements WizardConstants {
         return null;
     }
     
-    public static void importRequiredSchemas(final WSDLModel wsdlModel, 
-        final List<SchemaComponent> schemaComponents) {
-        WizardUtils.doInTransaction(wsdlModel, new Runnable() {
-            public void run() {
-                try {
-                    for (SchemaComponent schemaComponent : schemaComponents) {
-                        Utility.addSchemaImport(schemaComponent, wsdlModel);
-                    }
-                } catch(Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                }
+    public static void importRequiredSchemas(WSDLModel wsdlModel, 
+        List<SchemaComponent> schemaComponents) {
+        try {
+            wsdlModel.startTransaction();
+            for (SchemaComponent schemaComponent : schemaComponents) {
+                Utility.addSchemaImport(schemaComponent, wsdlModel);
             }
-        });
+        } catch(Exception e) {
+            ErrorManager.getDefault().notify(e);
+        } finally {
+            wsdlModel.endTransaction();
+        }
     }
     
-    public static void importWsdlIntoWsdl(final WSDLModel baseWsdlModel, 
-            final WSDLModel importedWsdlModel) {
+    public static void importWsdlIntoWsdl(WSDLModel baseWsdlModel, WSDLModel importedWsdlModel) {
+        try {
+            org.netbeans.modules.xml.wsdl.model.Import objImport = 
+                baseWsdlModel.getFactory().createImport();
 
-        WizardUtils.doInTransaction(baseWsdlModel, new Runnable() {
-            public void run() {
-                try {
-                    org.netbeans.modules.xml.wsdl.model.Import objImport = 
-                        baseWsdlModel.getFactory().createImport();
+            FileObject 
+                baseFileObj = baseWsdlModel.getModelSource().getLookup().lookup(FileObject.class),
+                importedFileObj = importedWsdlModel.getModelSource().getLookup().lookup(FileObject.class);
+            String importRelativePath = getRelativePath(baseFileObj, importedFileObj);
+            
+            objImport.setNamespace(importedWsdlModel.getDefinitions().getTargetNamespace());
+            objImport.setLocation(importRelativePath);
 
-                    FileObject 
-                        baseFileObj = baseWsdlModel.getModelSource().getLookup().lookup(FileObject.class),
-                        importedFileObj = importedWsdlModel.getModelSource().getLookup().lookup(FileObject.class);
-                    String importRelativePath = getRelativePath(baseFileObj, importedFileObj);
-
-                    objImport.setNamespace(importedWsdlModel.getDefinitions().getTargetNamespace());
-                    objImport.setLocation(importRelativePath);
-
-                    if (! wsdlContainsImport(baseWsdlModel, objImport)) {
-                        baseWsdlModel.getDefinitions().addImport(objImport);
-                    }
-                } catch(Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                }
+            if (! wsdlContainsImport(baseWsdlModel, objImport)) {
+                baseWsdlModel.startTransaction();
+                baseWsdlModel.getDefinitions().addImport(objImport);
             }
-        });
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        } finally {
+            baseWsdlModel.endTransaction();
+        }
     }
     
     public static String getRelativePath(FileObject baseFileObj, 
@@ -2101,10 +2079,8 @@ class WizardUtils implements WizardConstants {
         XPathModelHelper xpathHelper = XPathModelHelper.getInstance();
         XPathModel xpathModel = xpathHelper.newXPathModel();
 
-        NamespaceContext namespaceContext = new XmlExNamespaceContext(
-            (AbstractDocumentComponent)wsdlModel.getDefinitions());
-//        NamespaceContext namespaceContext = new WsdlNamespaceContext(
-//            wsdlModel.getDefinitions());
+        NamespaceContext namespaceContext = new WsdlNamespaceContext(
+            wsdlModel.getDefinitions());
         xpathModel.setNamespaceContext(namespaceContext);
         
         xpathModel.setExternalModelResolver(new ExternalModelResolver() {
@@ -2131,25 +2107,20 @@ class WizardUtils implements WizardConstants {
         XPathModelFactory xpathModelFactory = xpathModel.getFactory();
         List<LocationStep> locationSteps = new ArrayList<LocationStep>(
             schemaComponents.size());
-        SchemaModelsStack sms = new SchemaModelsStack();
         for (SchemaComponent schemaComponent : schemaComponents) {
-//            String nsUri = sms.getEffectiveNamespace(schemaComponent, sms);
-//            String namespacePrefix = getNamespacePrefix(wsdlModel, nsUri);
-            StepNodeNameTest stepNodeNameTest = 
-                    new StepNodeNameTest(xpathModel, schemaComponent, sms);
-//            if (namespacePrefix != null) {
-//                namespacePrefix = XPathUtils.isPrefixRequired(schemaComponent) ? 
-//                    namespacePrefix : "";
-//                stepNodeNameTest = new StepNodeNameTest(xpathModel, schemaComponent, sms);
-////                stepNodeNameTest = new StepNodeNameTest(new QName(null, 
-////                        getSchemaComponentName(schemaComponent), namespacePrefix));
-//            } else {
-//                stepNodeNameTest = new StepNodeNameTest(xpathModel, schemaComponent, sms);
-//            }
+            String namespacePrefix = getNamespacePrefix(wsdlModel, schemaComponent);
+            StepNodeNameTest stepNodeNameTest = null;
+            if (namespacePrefix != null) {
+                namespacePrefix = XPathUtils.isPrefixRequired(schemaComponent) ? 
+                    namespacePrefix : "";
+                stepNodeNameTest = new StepNodeNameTest(new QName(null, 
+                getSchemaComponentName(schemaComponent), namespacePrefix));
+            } else {
+                new StepNodeNameTest(xpathModel, schemaComponent);
+            }
             LocationStep locationStep = xpathModelFactory.newLocationStep(null, 
                 stepNodeNameTest, null);
             locationSteps.add(locationStep);
-            sms.appendSchemaComponent(schemaComponent);
         }
         XPathLocationPath locationPath = xpathModelFactory.newXPathLocationPath(
             locationSteps.toArray(new LocationStep[locationSteps.size()]));
@@ -2158,28 +2129,41 @@ class WizardUtils implements WizardConstants {
         return locationPath.getExpressionString();
     }
     
-    public static String getNamespacePrefix(final WSDLModel wsdlModel, final String nsUri) {
-        String prefix = getNamespacePrefixImpl(wsdlModel, nsUri);
-        if (prefix != null) {
+    public static String getNamespacePrefix(WSDLModel wsdlModel, SchemaComponent schemaComponent) {
+        assert ((wsdlModel != null) && (schemaComponent != null));
+        String uri = schemaComponent.getModel().getSchema().getTargetNamespace();
+        if (uri != null) {
+            try {
+                new URI(uri);
+            }
+            catch (URISyntaxException e) {
+                ErrorManager.getDefault().notify(e);
+                return null;
+            }
+        }
+        try {
+            String prefix = getNamespacePrefix(wsdlModel, uri);
+            if (prefix != null) {
+                return prefix;
+            }
+            prefix = DEFAULT_NS_PREFIX;
+
+            int i = getMaxSuffixNumber(wsdlModel, prefix);
+            prefix += (++i);
+            
+            wsdlModel.startTransaction();
+            if (i == 0) { 
+                ((AbstractDocumentComponent) wsdlModel.getDefinitions()).addPrefix(
+                    prefix, uri);
+            }
             return prefix;
         }
-        prefix = DEFAULT_NS_PREFIX;
-
-        final int i = getMaxSuffixNumber(wsdlModel, prefix) + 1;
-        final String resultPrefix = prefix + i;
-        
-        WizardUtils.doInTransaction(wsdlModel, new Runnable() {
-            public void run() {
-                if (i == 0) { 
-                    ((AbstractDocumentComponent) wsdlModel.getDefinitions()).
-                            addPrefix(resultPrefix, nsUri);
-                }
-            }
-        });
-        return resultPrefix;
+        finally {
+            wsdlModel.endTransaction();
+        }
     }
     
-    private static String getNamespacePrefixImpl(WSDLModel wsdlModel, String uri) {
+    private static String getNamespacePrefix(WSDLModel wsdlModel, String uri) {
         String prefix = wsdlModel.getDefinitions().getPeer().lookupPrefix(uri);
         if ((prefix != null) && (prefix.length() == 0)) {
             return null;
@@ -2206,20 +2190,6 @@ class WizardUtils implements WizardConstants {
         }
         return maxSuffixNumber;
     }
-    
-    public static void doInTransaction(Model model, Runnable runnable) {
-        boolean wasInTransaction = model.isIntransaction();
-        if (!wasInTransaction) {
-            model.startTransaction();
-        }
-        try {
-            runnable.run();
-        } finally {
-            if (!wasInTransaction) {
-                model.endTransaction();
-            }
-        }
-    } 
 }
 //============================================================================//
 interface TypesCompatibilityValidator {
@@ -2492,7 +2462,7 @@ class WsdlNamespaceContext implements NamespaceContext {
         String single = getPrefix(namespaceURI);
         return Collections.singletonList(single).iterator();
     }
-    }
+}
 //============================================================================//
 class CommonUtils {
     private static final String

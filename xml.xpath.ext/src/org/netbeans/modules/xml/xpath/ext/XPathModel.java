@@ -161,12 +161,6 @@ public interface XPathModel extends XPathSchemaContextHolder {
     
     void setExtensionFunctionResolver(ExtensionFunctionResolver extFuncResolver);
 
-    /**
-     * The cast resolver provides the model with information about 
-     * available type casts. The model can use it while resolving 
-     * location paths. 
-     * @param xpathCastResolver
-     */
     void setXPathCastResolver(XPathCastResolver xpathCastResolver);
         
     SchemaComponent getLastSchemaComponent();

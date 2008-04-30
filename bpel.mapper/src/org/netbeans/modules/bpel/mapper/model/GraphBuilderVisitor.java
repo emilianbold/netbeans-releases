@@ -187,7 +187,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
      * 
      * @param newVertex
      */
-    protected void linkToParent(SourcePin sourcePin) {
+    protected void linkToParent(SourcePin newVertex) {
         TargetPin targetPin = null;
         if (mVertexStack.isEmpty()) {
             if (!mConnectToTargetTree) {
@@ -208,7 +208,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
             targetPin = targetVertexItem;
         }
         if (targetPin != null) {
-            Link newLink = new Link(sourcePin, targetPin);
+            Link newLink = new Link(newVertex, targetPin);
             mGraph.addLink(newLink);
         }
     }
