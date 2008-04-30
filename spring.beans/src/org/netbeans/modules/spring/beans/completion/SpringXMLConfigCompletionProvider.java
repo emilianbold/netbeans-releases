@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
@@ -105,16 +106,10 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
                 return;
             }
 
-            switch (context.getCompletionType()) {
-                case ATTRIBUTE_VALUE:
-                    CompletorRegistry.getDefault().completeAttributeValues(resultSet, context);
-                    break;
-                case ATTRIBUTE:
-                    CompletorRegistry.getDefault().completeAttributes(resultSet, context);
-                    break;
-                case TAG:
-                    CompletorRegistry.getDefault().completeElements(resultSet, context);
-                    break;
+            Completor completor = CompletorRegistry.getDefault().getCompletor(context);
+            if(completor != null) {
+                List<SpringXMLConfigCompletionItem> items = completor.doCompletion(context);
+                resultSet.addAllItems(items);
             }
 
             resultSet.finish();

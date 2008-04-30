@@ -50,26 +50,14 @@ import org.netbeans.modules.spring.beans.completion.completors.JavaClassCompleto
 import org.netbeans.modules.spring.beans.completion.completors.GenericCompletorFactory;
 import org.netbeans.modules.spring.beans.completion.completors.BeansRefCompletorFactory;
 import org.netbeans.modules.spring.beans.completion.completors.AttributeValueCompletorFactory;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
+import org.netbeans.modules.spring.beans.completion.completors.PNamespaceCompletor;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
-import org.netbeans.modules.spring.java.JavaUtils;
-import org.netbeans.modules.spring.java.Property;
-import org.netbeans.modules.spring.java.PropertyFinder;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -226,76 +214,45 @@ public final class CompletorRegistry {
         return INSTANCE;
     }
 
-    public void completeAttributeValues(CompletionResultSet resultSet, CompletionContext context) {
+    public Completor getCompletor(CompletionContext context) {
+        switch (context.getCompletionType()) {
+            case ATTRIBUTE_VALUE: return getAttributeValueCompletor(context);
+            case ATTRIBUTE: return getAttributeCompletor(context);
+            case TAG: return getElementCompletor(context);
+            default: return null;
+        }
+    }
+    
+    private Completor getAttributeValueCompletor(CompletionContext context) {
+        Completor completor = locateCompletor(context);
+        return completor;
+    }
+    
+    private Completor locateCompletor(CompletionContext context) {
         String tagName = context.getTag().getNodeName();
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
-
         CompletorFactory completorFactory = locateCompletorFactory(tagName, attribName);
         if (completorFactory != null) {
             Completor completor = completorFactory.createCompletor();
-            resultSet.addAllItems(completor.doCompletion(context));
-            if(completor.getAnchorOffset() != -1) {
-                resultSet.setAnchorOffset(completor.getAnchorOffset());
-            }
+            return completor;
         }
+        
+        return null;
     }
 
-    public void completeAttributes(final CompletionResultSet resultSet, final CompletionContext context) {
+    private Completor getAttributeCompletor(final CompletionContext context) {
         String tagName = context.getTag().getNodeName();
         if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
-            try {
-                final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
-                if (js == null) {
-                    return;
-                }
-
-                final String typedPrefix = context.getTypedPrefix();
-                final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
-                final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(CompilationController cc) throws Exception {
-                        String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()), 
-                                context.getFileObject()).findImplementationClass();
-                        if (className == null) {
-                            return;
-                        }
-                        TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
-                        if (te == null) {
-                            return;
-                        }
-                        ElementUtilities eu = cc.getElementUtilities();
-                        Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
-                        for (Property prop : props) {
-                            if(prop.getSetter() == null) {
-                                continue;
-                            } 
-                            String attribName = pNamespacePrefix + ":" + prop.getName(); // NOI18N
-                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
-                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
-                                        attribName, prop);
-                                resultSet.addItem(item);
-                            }
-                            attribName += "-ref"; // NOI18N
-                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
-                                SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
-                                        attribName, prop); // NOI18N
-                                resultSet.addItem(refItem);
-                            }
-                        }
-                    }
-                }, true);
-                
-                resultSet.setAnchorOffset(substitutionOffset);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            return new PNamespaceCompletor();
         }
+        
+        return null;
     }
 
-    public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
+    private Completor getElementCompletor(CompletionContext context) {
         // TBD
+        return null;
     }
 
     private void registerCompletorFactory(String tagName, String attribName,
