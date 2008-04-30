@@ -31,8 +31,6 @@ package org.netbeans.modules.groovy.grails.api;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
@@ -43,7 +41,7 @@ import org.openide.util.Utilities;
  *
  * @author schmidtm
  */
-public class GrailsServerState implements TaskListener{
+public class GrailsServerState {
     private String name;
     private boolean running = false;
     Process process;
@@ -64,13 +62,6 @@ public class GrailsServerState implements TaskListener{
     public synchronized void setRunning(boolean running) {
         this.running = running;
         LOG.log(Level.FINEST, "Project: " + name + " , setRunning() called: " + running );
-    }
-
-    public void taskFinished(Task task) {
-        synchronized(this) {
-            running = false;
-        }
-        LOG.log(Level.FINEST, "Project: " + name + " , taskFinished() called");
     }
 
     public Process getProcess() {

@@ -219,8 +219,6 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerState;
                 io.getErr().close();
                 
                 displayGrailsProcessError(e);
-                
-                e.printStackTrace();
             }
         }
         
