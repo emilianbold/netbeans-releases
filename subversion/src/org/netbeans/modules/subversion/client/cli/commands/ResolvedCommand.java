@@ -37,45 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.subversion.client.cli.commands;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.subversion.client.cli.SvnCommand;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class CLITest extends NbTestCase {
+public class ResolvedCommand extends SvnCommand {
 
-    public CLITest(String arg0) {
-        super(arg0);
+    private final File file;
+    private final boolean recursive;
+
+    public ResolvedCommand(File file, boolean recursive) {
+        this.file = file;
+        this.recursive = recursive;
+    }
+       
+    @Override
+    public void prepareCommand(Arguments arguments) throws IOException {                     
+        arguments.add("resolved");
+        if (recursive) {
+            arguments.add("-R");
+        }
+        arguments.add(file);                
     }
     
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        
-        suite.addTestSuite(AddTest.class);                
-        suite.addTestSuite(CatTest.class);                
-        suite.addTestSuite(CheckoutTest.class);                
-        suite.addTestSuite(CommitTest.class);                
-        suite.addTestSuite(CopyTest.class);                
-        suite.addTestSuite(DifferentWorkingDirsTest.class);                
-        suite.addTestSuite(ImportTest.class);                
-        suite.addTestSuite(InfoTest.class);                  
-        suite.addTestSuite(ListTest.class);                              
-        suite.addTestSuite(MergeTest.class);                        
-        suite.addTestSuite(MkdirTest.class);                        
-        suite.addTestSuite(MoveTest.class);                         
-        suite.addTestSuite(PropertyTest.class);                                        
-        suite.addTestSuite(RelocateTest.class);                                        
-        suite.addTestSuite(RemoveTest.class);                                        
-        suite.addTestSuite(ResolvedTest.class);                                        
-        suite.addTestSuite(RevertTest.class);                                                        
-        suite.addTestSuite(SwitchToTest.class);                                        
-        suite.addTestSuite(UpdateTest.class);                                        
-        
-        return suite;
-    }
 }

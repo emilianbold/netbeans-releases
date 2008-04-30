@@ -41,61 +41,69 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class GetPropertiesCommand extends SvnCommand {
-
-    private List<String> output = new ArrayList<String>();
-    private final File file;
-    private final boolean rec;
-
-    public GetPropertiesCommand(File file, boolean rec) {
-        this.file = file;
-        this.rec = rec;
-    }
+public class MergeCommand extends SvnCommand {
     
+    private final boolean rec;
+    private final boolean force;
+    private final boolean ignoreAncestry;
+    private final boolean dry;
+    private final SVNUrl startUrl;
+    private final SVNUrl endUrl;
+    private final SVNRevision startRev;
+    private final SVNRevision endRev;
+    private final File file;
+
+    public MergeCommand(SVNUrl startUrl, SVNUrl endUrl, SVNRevision startRev, SVNRevision endRev, File file, boolean rec, boolean force, boolean ignoreAncestry, boolean dry) {
+        this.rec = rec;
+        this.force = force;
+        this.ignoreAncestry = ignoreAncestry;
+        this.dry = dry;
+        this.startUrl = startUrl;
+        this.endUrl = endUrl;
+        this.startRev = startRev;
+        this.endRev = endRev;
+        this.file = file;
+    }
+     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        // XXX what if empty url list?
-        arguments.add("proplist");
-        if (rec) {
-            arguments.add("-R");
-        }			
+        arguments.add("merge");
+        if (!rec) {
+            arguments.add("-N");
+        }
+        if (force) {
+            arguments.add("--force");
+        }
+        if (dry) {
+            arguments.add("--dry-run");
+        }        	        
+        if (ignoreAncestry) {
+            arguments.add("--ignore-ancestry");
+        }
+        if (startUrl.equals(endUrl)) {
+            arguments.add(startUrl);
+            arguments.add(startRev, endRev);
+        } else {
+            arguments.add(startUrl, startRev);
+            arguments.add(endUrl, endRev);
+        }
         arguments.add(file);
     }
 
     @Override
-    public void outputText(String lineString) {
-        if(lineString == null || lineString.trim().equals("") || lineString.startsWith("Properties on '")) {
+    public void errorText(String line) {
+        if (line.startsWith("svn: warning:") /* XXX is not a working copy or line.indexOf("is already under version control") > -1*/) {
             return;
         }
-        output.add(lineString.trim());
+        super.errorText(line);
     }
     
-    public List<String> getPropertyNames() throws SVNClientException {        
-        return output;
-    }
-
 }

@@ -78,7 +78,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
         super(testName);
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
-        repoDir = new File(System.getProperty("repo.dir"));
+        repoDir = new File(System.getProperty("work.dir") + "/repo");
         String repopath = repoDir.getAbsolutePath();
         if(repopath.startsWith("/")) {
             repopath = repopath.substring(1, repopath.length());
@@ -97,7 +97,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
         cache.cleanUp();
         
         cleanUpWC();  
-        initRepo();  
+        initRepo(repoDir);  
         
         wc.mkdirs();        
         if(importOnSetup()) svnimportWC();                   
@@ -244,23 +244,13 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
     }
     
-    protected void initRepo() throws MalformedURLException, IOException, InterruptedException, SVNClientException {        
-        ISVNDirEntry[] list;
+    protected void initRepo(File repoDir) throws MalformedURLException, IOException, InterruptedException, SVNClientException {        
         if(!repoDir.exists()) {
             repoDir.mkdirs();            
             String[] cmd = {"svnadmin", "create", repoDir.getAbsolutePath()};
             Process p = Runtime.getRuntime().exec(cmd);
             p.waitFor();   
-        } else {
-            list = getClient().getList(repoUrl, SVNRevision.HEAD, false);            
-            if(list != null) {
-                for (ISVNDirEntry entry : list) {
-                    if(entry.getPath().equals(wc.getName())) {
-                        getClient().remove(new SVNUrl[] {repoUrl.appendPath(wc.getName())}, "remove");
-                    }
-                }
-            }
-        }
+        } 
     }      
     
     protected void svnimportWC() throws SVNClientException {
@@ -316,6 +306,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return getClient().getInfo(url);
     }
     
+    protected ISVNLogMessage[] getCompleteLog(SVNUrl url) throws SVNClientException {
+        return getClient().getLogMessages(url, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+    }
+    
     protected ISVNLogMessage[] getLog(SVNUrl url) throws SVNClientException {
         return getClient().getLogMessages(url, SVNRevision.HEAD, SVNRevision.HEAD);
     }
@@ -361,6 +355,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
 
     protected SVNUrl getRepoUrl() {
         return repoUrl;
+    }
+    
+    protected File getRepoDir() {
+        return repoDir;
     }
 
     protected boolean isMetadata(File file) {

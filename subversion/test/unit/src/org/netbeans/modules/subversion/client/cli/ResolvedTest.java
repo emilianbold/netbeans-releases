@@ -39,43 +39,66 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
+import java.io.File;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author tomas
  */
-public class CLITest extends NbTestCase {
-
-    public CLITest(String arg0) {
-        super(arg0);
+public class ResolvedTest extends AbstractCLITest {
+    
+    public ResolvedTest(String testName) throws Exception {
+        super(testName);
+    }
+           
+    protected void setUp() throws Exception {
+        importWC = true;
+        if(getName().startsWith("testResolved")) {
+            importWC = false;            
+        } 
+        super.setUp();      
     }
     
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
+    public void testResolved() throws Exception {                                                
+                        
+        File wc1 = createFolder("wc1");
+        File file1 = createFile(wc1, "file");
+        write(file1, 1);
+        importFile(wc1);
+        assertStatus(SVNStatusKind.NORMAL, wc1);
+        assertStatus(SVNStatusKind.NORMAL, file1);
+                        
+        File wc2 = createFolder("wc2");      
+        File file2 = new File(wc2, "file");
         
-        suite.addTestSuite(AddTest.class);                
-        suite.addTestSuite(CatTest.class);                
-        suite.addTestSuite(CheckoutTest.class);                
-        suite.addTestSuite(CommitTest.class);                
-        suite.addTestSuite(CopyTest.class);                
-        suite.addTestSuite(DifferentWorkingDirsTest.class);                
-        suite.addTestSuite(ImportTest.class);                
-        suite.addTestSuite(InfoTest.class);                  
-        suite.addTestSuite(ListTest.class);                              
-        suite.addTestSuite(MergeTest.class);                        
-        suite.addTestSuite(MkdirTest.class);                        
-        suite.addTestSuite(MoveTest.class);                         
-        suite.addTestSuite(PropertyTest.class);                                        
-        suite.addTestSuite(RelocateTest.class);                                        
-        suite.addTestSuite(RemoveTest.class);                                        
-        suite.addTestSuite(ResolvedTest.class);                                        
-        suite.addTestSuite(RevertTest.class);                                                        
-        suite.addTestSuite(SwitchToTest.class);                                        
-        suite.addTestSuite(UpdateTest.class);                                        
+        SVNUrl url = getTestUrl().appendPath(wc1.getName());
+        ISVNClientAdapter c = getNbClient();         
+        c.checkout(url, wc2, SVNRevision.HEAD, true);        
+        assertStatus(SVNStatusKind.NORMAL, file2);
+        assertContents(file2, 1);
         
-        return suite;
-    }
+        write(file2, 2);        
+        assertStatus(SVNStatusKind.MODIFIED, file2);
+        commit(file2);
+        assertStatus(SVNStatusKind.NORMAL, file2);
+                        
+        write(file1, 3);
+        
+        c.update(file1, SVNRevision.HEAD, false);
+        
+        assertStatus(SVNStatusKind.CONFLICTED, file1);
+        
+        write(file1, 2);
+        c.resolved(file1);
+        
+        assertStatus(SVNStatusKind.NORMAL, file1);
+        
+        // assertNotifiedFiles(file1); XXX no notif fromthe cli
+    }    
+    
+    
 }
