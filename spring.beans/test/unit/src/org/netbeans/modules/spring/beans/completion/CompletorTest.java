@@ -36,46 +36,70 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion.completors;
+package org.netbeans.modules.spring.beans.completion;
 
-import org.netbeans.modules.spring.beans.completion.CompletionContext;
-import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
-import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
+import junit.framework.TestCase;
+import org.openide.util.Exceptions;
 
 /**
- * A simple completor for general attribute value items
- * 
- * Takes an array of strings, the even elements being the display text of the items
- * and the odd ones being the corresponding documentation of the items
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Rohan Ranade
  */
-public class AttributeValueCompletor extends Completor {
+public class CompletorTest extends TestCase {
 
-    private String[] itemTextAndDocs;
-
-    public AttributeValueCompletor(String[] itemTextAndDocs) {
-        this.itemTextAndDocs = itemTextAndDocs;
+    public CompletorTest(String testName) {
+        super(testName);
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
-        int caretOffset = context.getCaretOffset();
-        String typedChars = context.getTypedPrefix();
-        
-        for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-            if(progress.isCancelled()) {
-                return;
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    public void testCompletorHaltOnFilter() throws Exception {
+        final TestCompletor completor = new TestCompletor();
+        final QueryProgress progress = new QueryProgress();
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                completor.computeCompletionItems(null, progress);
             }
-            
-            if (itemTextAndDocs[i].startsWith(typedChars)) {
-                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                        itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                addItem(item);
+        });
+        
+        t.start();
+        Thread.currentThread().sleep(400);
+        progress.cancel();
+        t.join();
+        
+        assertFalse(String.valueOf(completor.getExitCount()), completor.getExitCount() == 100);
+    }
+
+    private static final class TestCompletor extends Completor {
+
+        private int exitCount = 100;
+        
+        @Override
+        protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
+            try {
+                for (int i = 0; i < 100; i++) {
+                    if(progress.isCancelled()) {
+                        exitCount = i;
+                        return;
+                    }
+                    Thread.currentThread().sleep(100);
+                    String text = String.valueOf(i);
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        
-        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+
+        public int getExitCount() {
+            return exitCount;
+        }
     }
 }

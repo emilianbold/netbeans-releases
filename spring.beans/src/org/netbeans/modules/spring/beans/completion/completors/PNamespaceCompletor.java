@@ -40,8 +40,6 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -49,6 +47,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
@@ -65,13 +64,11 @@ import org.openide.util.Exceptions;
 public class PNamespaceCompletor extends Completor {
 
     @Override
-    public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-        final List<SpringXMLConfigCompletionItem> completionItems = new ArrayList<SpringXMLConfigCompletionItem>();
-        
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) {
         try {
             final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
             if (js == null) {
-                return null;
+                return;
             }
 
             final String typedPrefix = context.getTypedPrefix();
@@ -101,7 +98,7 @@ public class PNamespaceCompletor extends Completor {
                         if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
                                     attribName, prop);
-                            completionItems.add(item);
+                            addItem(item);
                         }
                         attribName += "-ref"; // NOI18N
 
@@ -109,7 +106,7 @@ public class PNamespaceCompletor extends Completor {
                             SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
                                     attribName, prop); // NOI18N
 
-                            completionItems.add(refItem);
+                            addItem(refItem);
                         }
                     }
                 }
@@ -119,8 +116,5 @@ public class PNamespaceCompletor extends Completor {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-        return completionItems;
     }
-
 }

@@ -39,9 +39,6 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -52,6 +49,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
@@ -71,12 +69,11 @@ public class PropertyCompletor extends Completor {
     }
 
     @Override
-    public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-        final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) {
         final String propertyPrefix = context.getTypedPrefix();
         final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
         if (js == null) {
-            return Collections.emptyList();
+            return;
         }
 
         try {
@@ -142,7 +139,7 @@ public class PropertyCompletor extends Completor {
                         if (prop.getSetter() == null) {
                             continue;
                         }
-                        results.add(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
+                        addItem(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
                     }
 
                     setAnchorOffset(substitutionOffset);
@@ -151,7 +148,5 @@ public class PropertyCompletor extends Completor {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        return results;
     }
 }

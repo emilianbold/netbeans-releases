@@ -39,9 +39,6 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -55,6 +52,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.Public;
@@ -68,8 +66,7 @@ import org.openide.util.Exceptions;
 public abstract class JavaMethodCompletor extends Completor {
 
     @Override
-    public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-        final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) {
         try {
             final String classBinaryName = getTypeName(context);
             final Public publicFlag = getPublicFlag(context);
@@ -77,12 +74,12 @@ public abstract class JavaMethodCompletor extends Completor {
             final int argCount = getArgCount(context);
 
             if (classBinaryName == null || classBinaryName.equals("")) { // NOI18N
-                return Collections.emptyList();
+                return;
             }
 
             final JavaSource javaSource = JavaUtils.getJavaSource(context.getFileObject());
             if (javaSource == null) {
-                return Collections.emptyList();
+                return;
             }
 
             javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -149,7 +146,7 @@ public abstract class JavaMethodCompletor extends Completor {
                         SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
                                 substitutionOffset, (ExecutableElement) e, e.getEnclosingElement() != classElem,
                                 controller.getElements().isDeprecated(e));
-                        results.add(item);
+                        addItem(item);
                     }
 
                     setAnchorOffset(substitutionOffset);
@@ -159,9 +156,6 @@ public abstract class JavaMethodCompletor extends Completor {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        return results;
-
     }
 
     /**

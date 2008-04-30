@@ -93,7 +93,7 @@ public class CompletionContext {
         this.queryType = queryType;
         initContext((BaseDocument) doc);
     }
-    
+
     private void initContext(BaseDocument bDoc) {
         boolean copyResult = copyDocument(bDoc, internalDoc);
         if(!copyResult) {
@@ -322,5 +322,9 @@ public class CompletionContext {
 
     public int getQueryType() {
         return queryType;
+    }
+    
+    public Document getDocument() {
+        return internalDoc;
     }
 }

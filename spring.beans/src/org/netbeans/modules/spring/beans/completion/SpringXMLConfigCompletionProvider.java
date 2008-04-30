@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.completion;
 
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
@@ -76,9 +77,12 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
      */
     private static class SpringXMLConfigCompletionQuery extends AsyncCompletionQuery {
 
+        private static final Logger LOGGER = Logger.getLogger(SpringXMLConfigCompletionQuery.class.getName());
+        
         private int queryType;
         private int caretOffset;
         private JTextComponent component;
+        private Completor completor;
 
         public SpringXMLConfigCompletionQuery(int queryType, int caretOffset) {
             this.queryType = queryType;
@@ -106,12 +110,34 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
                 return;
             }
 
-            Completor completor = CompletorRegistry.getDefault().getCompletor(context);
+            completor = CompletorRegistry.getDefault().getCompletor(context);
             if(completor != null) {
-                List<SpringXMLConfigCompletionItem> items = completor.doCompletion(context);
+                List<SpringXMLConfigCompletionItem> items = completor.complete(context);
                 resultSet.addAllItems(items);
             }
 
+            resultSet.finish();
+        }
+
+        @Override
+        protected boolean canFilter(JTextComponent component) {
+            if(completor == null) {
+                return false;
+            }
+            
+            return completor.canFilter(new CompletionContext(component.getDocument(), 
+                    component.getCaretPosition(), queryType));
+        }
+
+        @Override
+        protected void filter(CompletionResultSet resultSet) {
+            CompletionContext context = new CompletionContext(component.getDocument(), 
+                    component.getCaretPosition(), queryType);
+            List<SpringXMLConfigCompletionItem> filteredItems = completor.filter(context);
+            resultSet.addAllItems(filteredItems);
+            if(completor.getAnchorOffset() != -1) {
+                resultSet.setAnchorOffset(completor.getAnchorOffset());
+            }
             resultSet.finish();
         }
     }

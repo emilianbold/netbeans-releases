@@ -36,46 +36,25 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion.completors;
 
-import org.netbeans.modules.spring.beans.completion.CompletionContext;
-import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
-import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
+package org.netbeans.modules.spring.beans.completion;
 
 /**
- * A simple completor for general attribute value items
- * 
- * Takes an array of strings, the even elements being the display text of the items
- * and the odd ones being the corresponding documentation of the items
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Rohan Ranade
  */
-public class AttributeValueCompletor extends Completor {
+public final class QueryProgress {
 
-    private String[] itemTextAndDocs;
-
-    public AttributeValueCompletor(String[] itemTextAndDocs) {
-        this.itemTextAndDocs = itemTextAndDocs;
+    private volatile boolean state = false;
+    
+    public QueryProgress() {
     }
 
-    @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
-        int caretOffset = context.getCaretOffset();
-        String typedChars = context.getTypedPrefix();
-        
-        for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-            if(progress.isCancelled()) {
-                return;
-            }
-            
-            if (itemTextAndDocs[i].startsWith(typedChars)) {
-                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                        itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                addItem(item);
-            }
-        }
-        
-        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+    public boolean isCancelled() {
+        return state;
+    }
+    
+    public void cancel() {
+        state = true;
     }
 }

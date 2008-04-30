@@ -38,12 +38,10 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 
 /**
@@ -56,24 +54,24 @@ public class PNamespaceBeanRefCompletor extends Completor {
     }
 
     @Override
-    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
         TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
         if (attribToken == null) {
-            return Collections.emptyList();
+            return;
         }
 
         String attribName = attribToken.getImage();
         if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
-            return Collections.emptyList();
+            return;
         }
 
         if (!attribName.endsWith("-ref")) { // NOI18N
-            return Collections.emptyList();
+            return;
         }
 
         // XXX: Ideally find out the property name and it's expected type
         // to list bean proposals intelligently
         BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
-        return beansRefCompletor.doCompletion(context);
+        beansRefCompletor.computeCompletionItems(context, progress);
     }
 }
