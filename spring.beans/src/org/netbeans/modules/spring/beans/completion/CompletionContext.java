@@ -85,10 +85,12 @@ public class CompletionContext {
     private XMLSyntaxSupport support;
     private FileObject fileObject;
     private BaseDocument internalDoc = new BaseDocument(XMLKit.class, false);
+    private int queryType;
 
-    public CompletionContext(Document doc, int caretOffset) {
+    public CompletionContext(Document doc, int caretOffset, int queryType) {
         this.caretOffset = caretOffset;
         this.fileObject = NbEditorUtilities.getFileObject(doc);
+        this.queryType = queryType;
         initContext((BaseDocument) doc);
     }
     
@@ -316,5 +318,9 @@ public class CompletionContext {
         }
         
         return existingAttributes;
+    }
+
+    public int getQueryType() {
+        return queryType;
     }
 }

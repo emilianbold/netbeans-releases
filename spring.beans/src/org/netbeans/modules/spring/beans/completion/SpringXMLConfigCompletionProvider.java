@@ -100,7 +100,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             this.caretOffset = caretOffset;
 
-            CompletionContext context = new CompletionContext(doc, caretOffset);
+            CompletionContext context = new CompletionContext(doc, caretOffset, queryType);
             if (context.getCompletionType() == CompletionType.NONE) {
                 resultSet.finish();
                 return;
