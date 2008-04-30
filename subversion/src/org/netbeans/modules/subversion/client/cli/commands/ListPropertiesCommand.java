@@ -41,61 +41,76 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class PropertyGetCommand extends SvnCommand {
+public class ListPropertiesCommand extends SvnCommand {
 
-    private enum GetType {
+    private enum ListType {
         url,
         file
     }
     
-    private final File file;    
+    private List<String> output = new ArrayList<String>();
+    private final File file;
+    private final boolean rec;
     private final SVNUrl url;
-    private final SVNRevision rev;
-    private final SVNRevision peg;
-    private final String name;
-    private final GetType type;
+    private final ListType type;
     
-    public PropertyGetCommand(File file, String name) {        
-        this.file = file;                
-        this.name = name; 
+    public ListPropertiesCommand(File file, boolean rec) {
+        this.file = file;
+        this.rec = rec;
         url = null;
-        rev = null;
-        peg = null;
-        type = GetType.file;
+        type = ListType.file;
     }
     
-    public PropertyGetCommand(SVNUrl url, SVNRevision rev, SVNRevision peg, String name) {        
-        this.url = url;                
-        this.name = name; 
-        this.rev = rev; 
-        this.peg = peg; 
+    public ListPropertiesCommand(SVNUrl url, boolean rec) {
+        this.url = url;        
+        this.rec = rec;
         file = null;
-        type = GetType.url;
+        type = ListType.url;        
     }
-        
+    
     @Override
-    public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("propget");
-	arguments.add("--strict");
-	arguments.add(name);
+    public void prepareCommand(Arguments arguments) throws IOException {
+        // XXX what if empty url list?
+        arguments.add("proplist");
+        if (rec) {
+            arguments.add("-R");
+        }			        
         switch (type) {
             case file:
                 arguments.add(file);        
                 break;
             case url:
-                arguments.add(rev);
-                arguments.add(url, peg);        
+                arguments.add(url);
                 break;
-            default: 
-                throw new IllegalStateException("Illegal gettype: " + type);    
-        }	
-    }    
+            default:
+                throw new IllegalStateException("Illegal gettype: " + type);                             
+        }        
+    }
+
+    @Override
+    public void outputText(String lineString) {
+        if(lineString == null || 
+           lineString.trim().equals("") || 
+           lineString.startsWith("Properties on '")) 
+        {
+            return;
+        }
+        output.add(lineString.trim());
+    }
+    
+    public List<String> getPropertyNames() throws SVNClientException {        
+        return output;
+    }
+
 }

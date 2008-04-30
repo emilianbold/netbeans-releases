@@ -37,45 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.subversion.client.cli.commands;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class CLITest extends NbTestCase {
+public class SwitchToCommand extends SvnCommand {
 
-    public CLITest(String arg0) {
-        super(arg0);
+    private final File file;
+    private final SVNUrl url;
+    private final SVNRevision rev;
+    private final boolean rec;
+
+    public SwitchToCommand(File file, SVNUrl url, SVNRevision rev, boolean rec) {
+        this.file = file;
+        this.url = url;
+        this.rev = rev;
+        this.rec = rec;
     }
-    
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        
-        suite.addTestSuite(AddTest.class);                
-        suite.addTestSuite(CatTest.class);                
-        suite.addTestSuite(CheckoutTest.class);                
-        suite.addTestSuite(CommitTest.class);                
-        suite.addTestSuite(CopyTest.class);                
-        suite.addTestSuite(DifferentWorkingDirsTest.class);                
-        suite.addTestSuite(ImportTest.class);                
-        suite.addTestSuite(InfoTest.class);                  
-        suite.addTestSuite(ListTest.class);                              
-        suite.addTestSuite(MergeTest.class);                        
-        suite.addTestSuite(MkdirTest.class);                        
-        suite.addTestSuite(MoveTest.class);                         
-        suite.addTestSuite(PropertyTest.class);                                        
-        suite.addTestSuite(RelocateTest.class);                                        
-        suite.addTestSuite(RemoveTest.class);                                        
-        suite.addTestSuite(ResolvedTest.class);                                        
-        suite.addTestSuite(RevertTest.class);                                                        
-        suite.addTestSuite(SwitchToTest.class);                                        
-        suite.addTestSuite(UpdateTest.class);                                        
-        
-        return suite;
+       
+    @Override
+    public void prepareCommand(Arguments arguments) throws IOException {                     
+        arguments.add("switch");
+        arguments.add(url);
+        arguments.add(file);
+        if (!rec) {
+            arguments.add("-N");               
+        }
+        arguments.add(rev);            
     }
+        
 }
