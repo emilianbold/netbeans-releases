@@ -47,10 +47,12 @@ public class AppDesc {
     
     private final String name;
     private final String path;
+    private final String contextRoot;
     
-    public AppDesc(final String name, final String path) {
+    public AppDesc(final String name, final String path, final String contextRoot) {
         this.name = name;
         this.path = path;
+        this.contextRoot = contextRoot;
     }
 
     public String getName() {
@@ -59,6 +61,10 @@ public class AppDesc {
     
     public String getPath() {
         return path;
+    }
+    
+    public String getContextRoot() {
+        return contextRoot;
     }
     
 }

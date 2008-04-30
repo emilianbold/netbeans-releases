@@ -175,6 +175,14 @@ public class Commands {
                 if(path.startsWith("file:")) {
                     path = path.substring(5);
                 }
+                
+                String contextRoot = appAttrs.getValue("nb-context-root_value");
+                if(contextRoot == null) {
+                    contextRoot = name;
+                }
+                if(contextRoot.startsWith("/")) {
+                    contextRoot = contextRoot.substring(1);
+                }
 
                 // Add app to proper list in result map
                 if(appMap == null) {
@@ -186,7 +194,7 @@ public class Commands {
                     appMap.put(engine, appList);
                 }
                 
-                appList.add(new AppDesc(name, path));
+                appList.add(new AppDesc(name, path, contextRoot));
             }
 
             return true;

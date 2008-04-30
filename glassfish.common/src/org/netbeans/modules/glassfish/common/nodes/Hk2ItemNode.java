@@ -160,11 +160,16 @@ public class Hk2ItemNode extends AbstractNode {
                 
             });
         }
+    }
+    
+    public Hk2ItemNode(final Lookup lookup, final AppDesc app, Decorator decorator) {
+        this(Children.LEAF, lookup, app.getName(), decorator);
+        setDisplayName(app.getName());
+        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
 
-        // !PW FIXME retrieve browser URL from decorator directly.
+        // !PW FIXME should method of retrieving context root be controlled by decorator?
         if(decorator.canShowBrowser()) {
             getCookieSet().add(new OpenURLActionCookie() {
-                
                 public String getWebURL() {
                     String result = null;
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
@@ -172,18 +177,12 @@ public class Hk2ItemNode extends AbstractNode {
                         Map<String, String> ip = commonModule.getInstanceProperties();
                         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
                         String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-                        result = HTTP_HEADER + host + ":" + httpPort + "/" + name + "/";
+                        result = HTTP_HEADER + host + ":" + httpPort + "/" + app.getContextRoot() + "/";
                     }
                     return result;
                 }
             });
         }
-    }
-    
-    public Hk2ItemNode(Lookup lookup, AppDesc app, Decorator decorator) {
-        this(Children.LEAF, lookup, app.getName(), decorator);
-        setDisplayName(app.getName());
-        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
     }
     
     public Hk2ItemNode(Lookup lookup, ResourceDesc resource, Decorator decorator) {
