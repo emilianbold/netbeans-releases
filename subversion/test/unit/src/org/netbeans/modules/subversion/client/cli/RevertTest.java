@@ -41,10 +41,7 @@ package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *

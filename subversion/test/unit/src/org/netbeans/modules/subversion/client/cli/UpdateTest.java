@@ -61,9 +61,9 @@ public class UpdateTest extends AbstractCLITest {
             importWC = false;            
         } 
         super.setUp();
-        if(getName().startsWith("testUpdate")) {
-            cleanUpRepo(new String[] {CI_FOLDER});
-        }        
+//        if(getName().startsWith("testUpdate")) {
+//            cleanUpRepo(new String[] {CI_FOLDER});
+//        }        
     }
     
     public void testUpdateFile() throws Exception {                                                

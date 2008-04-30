@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -58,6 +59,19 @@ public class PropertyTest extends AbstractCLITest {
         super(testName);
     }
             
+    public void testPropertyGetNonProp() throws Exception {                                                
+        File file = createFile("file");        
+        add(file);
+        commit(file);
+        
+        ISVNClientAdapter c = getNbClient();        
+        
+        ISVNProperty p = c.propertyGet(file, "dil");
+        assertNull(p);        
+        p = c.propertyGet(getFileUrl(file), "dil");
+        assertNull(p);
+    }            
+    
     public void testPropertyGetUrl() throws Exception {                                                
         File file = createFile("file");        
         add(file);
@@ -69,8 +83,7 @@ public class PropertyTest extends AbstractCLITest {
         
         assertPropertyStatus(SVNStatusKind.NORMAL, file);
 
-        assertProperty(c, getFileUrl(file), "p1", "v1");
-                
+        assertProperty(c, getFileUrl(file), "p1", "v1");                
     }            
     
     public void testPropertyListUrl() throws Exception {                                                
@@ -104,12 +117,16 @@ public class PropertyTest extends AbstractCLITest {
         ISVNClientAdapter c = getNbClient();        
         c.propertySet(file, "p1", "v1", false);
 
+        assertNotifiedFiles(file);
+        
         assertPropertyStatus(SVNStatusKind.MODIFIED, file);
 
         assertProperty(c, file, "p1", "v1");
                 
+        clearNotifiedFiles();
         c.propertyDel(file, "p1", false);
         assertPropertyStatus(SVNStatusKind.NONE, file);
+        assertNotifiedFiles(file);
     }            
     
     public void testPropertyList() throws Exception {                                                
@@ -121,7 +138,8 @@ public class PropertyTest extends AbstractCLITest {
         c.propertySet(file, "p1", "v1", false);
         c.propertySet(file, "p2", "v2", false);
         c.propertySet(file, "p3", "v3", false);
-
+        assertNotifiedFiles(file);
+        
         assertPropertyStatus(SVNStatusKind.MODIFIED, file);
 
         ISVNProperty[] props = c.getProperties(file);
@@ -149,6 +167,7 @@ public class PropertyTest extends AbstractCLITest {
         
         ISVNClientAdapter c = getNbClient();        
         c.propertySet(folder, "p1", "v1", true);
+        assertNotifiedFiles(folder, file, folder1, file1);
 
         assertPropertyStatus(SVNStatusKind.MODIFIED, file);
         assertPropertyStatus(SVNStatusKind.MODIFIED, folder);
@@ -160,12 +179,13 @@ public class PropertyTest extends AbstractCLITest {
         assertProperty(c, folder1, "p1", "v1");
         assertProperty(c, file1, "p1", "v1");                
         
+        clearNotifiedFiles();
         c.propertyDel(folder, "p1", true);
         assertPropertyStatus(SVNStatusKind.NONE, folder);
         assertPropertyStatus(SVNStatusKind.NONE, file);
         assertPropertyStatus(SVNStatusKind.NONE, folder1);
         assertPropertyStatus(SVNStatusKind.NONE, file1);
-        
+        assertNotifiedFiles(folder, file, folder1, file1);
     }    
                 
     public void testPropertySetGetDelFile() throws Exception {                                                
@@ -177,14 +197,16 @@ public class PropertyTest extends AbstractCLITest {
         
         ISVNClientAdapter c = getNbClient();        
         c.propertySet(file, "p1", prop, false);
-
+        assertNotifiedFiles(file);
+        
         assertPropertyStatus(SVNStatusKind.MODIFIED, file);
 
         assertProperty(c, file, "p1", new byte[] {2});
         
+        clearNotifiedFiles();
         c.propertyDel(file, "p1", true);
         assertPropertyStatus(SVNStatusKind.NONE, file);        
-        
+        assertNotifiedFiles(file);
     }            
             
     public void testPropertySetGetDelFileRecursivelly() throws Exception {                                                
@@ -204,7 +226,8 @@ public class PropertyTest extends AbstractCLITest {
         
         ISVNClientAdapter c = getNbClient();        
         c.propertySet(folder, "p1", prop, true);
-
+        assertNotifiedFiles(folder, file, folder1, file1);
+        
         assertPropertyStatus(SVNStatusKind.MODIFIED, file);
         assertPropertyStatus(SVNStatusKind.MODIFIED, folder);
         assertPropertyStatus(SVNStatusKind.MODIFIED, folder1);
@@ -215,11 +238,137 @@ public class PropertyTest extends AbstractCLITest {
         assertProperty(c, folder1, "p1", new byte[] {2});
         assertProperty(c, file1, "p1", new byte[] {2});
         
+        clearNotifiedFiles();
         c.propertyDel(folder, "p1", true);
         assertPropertyStatus(SVNStatusKind.NONE, folder);
         assertPropertyStatus(SVNStatusKind.NONE, file);
         assertPropertyStatus(SVNStatusKind.NONE, folder1);
-        assertPropertyStatus(SVNStatusKind.NONE, file1);        
+        assertPropertyStatus(SVNStatusKind.NONE, file1);    
+        assertNotifiedFiles(folder, file, folder1, file1);
+    }
+    
+    public void testPropertySetNonRecursivelly() throws Exception {                                                
+        File folder = createFolder("folder");        
+        File file = createFolder(folder, "file");        
+        File folder1 = createFolder(folder, "folder1");        
+        File file1 = createFolder(folder1, "file1");        
+        
+        add(folder);
+        add(file);
+        add(folder1);
+        add(file1);
+        commit(getWC());
+        
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(folder, "p1", "v1", false);
+        assertNotifiedFiles(folder);
+        
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder);
+        assertPropertyStatus(SVNStatusKind.NONE, file);
+        assertPropertyStatus(SVNStatusKind.NONE, folder1);
+        assertPropertyStatus(SVNStatusKind.NONE, file1);
+        
+        assertProperty(c, folder, "p1", "v1");        
+    }
+    
+    public void testPropertyDelNonRecursivelly() throws Exception {                                                
+        File folder = createFolder("folder");        
+        File file = createFolder(folder, "file");        
+        File folder1 = createFolder(folder, "folder1");        
+        File file1 = createFolder(folder1, "file1");        
+        
+        add(folder);
+        add(file);
+        add(folder1);
+        add(file1);
+        commit(getWC());
+
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(folder, "p1", "v1", true);
+        assertNotifiedFiles(folder, file, folder1, file1);
+        
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder1);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file1);
+        
+        assertProperty(c, file, "p1", "v1");
+        assertProperty(c, folder, "p1", "v1");
+        assertProperty(c, folder1, "p1", "v1");
+        assertProperty(c, file1, "p1", "v1");
+        
+        clearNotifiedFiles();
+        c.propertyDel(folder, "p1", false);
+        assertPropertyStatus(SVNStatusKind.NONE, folder);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder1);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file1);        
+        assertNotifiedFiles(folder);
+    }
+    
+    public void testPropertySetFileNonRecursivelly() throws Exception {                                                
+        File folder = createFolder("folder");        
+        File file = createFolder(folder, "file");        
+        File folder1 = createFolder(folder, "folder1");        
+        File file1 = createFolder(folder1, "file1");        
+        
+        add(folder);
+        add(file);
+        add(folder1);
+        add(file1);
+        commit(getWC());
+
+        File prop = createFile("prop");
+        write(prop, 2);
+        
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(folder, "p1", prop, false);
+        assertNotifiedFiles(folder);
+        
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder);
+        assertPropertyStatus(SVNStatusKind.NONE, file);
+        assertPropertyStatus(SVNStatusKind.NONE, folder1);
+        assertPropertyStatus(SVNStatusKind.NONE, file1);
+        
+        assertProperty(c, folder, "p1", new byte[] {2});        
+    }
+    
+    public void testPropertyDelFileNonRecursivelly() throws Exception {                                                
+        File folder = createFolder("folder");        
+        File file = createFolder(folder, "file");        
+        File folder1 = createFolder(folder, "folder1");        
+        File file1 = createFolder(folder1, "file1");        
+        
+        add(folder);
+        add(file);
+        add(folder1);
+        add(file1);
+        commit(getWC());
+
+        File prop = createFile("prop");
+        write(prop, 2);
+        
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(folder, "p1", prop, true);
+        assertNotifiedFiles(folder, file, folder1, file1);
+        
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder1);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file1);
+        
+        assertProperty(c, file, "p1", new byte[] {2});
+        assertProperty(c, folder, "p1", new byte[] {2});
+        assertProperty(c, folder1, "p1", new byte[] {2});
+        assertProperty(c, file1, "p1", new byte[] {2});
+        
+        clearNotifiedFiles();
+        c.propertyDel(folder, "p1", false);
+        assertPropertyStatus(SVNStatusKind.NONE, folder);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, folder1);
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file1);        
+        assertNotifiedFiles(folder);
     }
 
     private void assertProperty(String name, String value, Map<String, ISVNProperty> propMap) {
@@ -241,6 +390,7 @@ public class PropertyTest extends AbstractCLITest {
 
     private void assertProperty(ISVNClientAdapter c, File file, String prop, byte[] data) throws SVNClientException {
         ISVNProperty p = c.propertyGet(file, prop);
+        assertNotNull(p);
         for (int i = 0; i < data.length; i++) {
             assertEquals(data[i], p.getData()[i]);                    
         }        
