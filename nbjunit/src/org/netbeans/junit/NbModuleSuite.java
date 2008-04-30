@@ -55,6 +55,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -361,23 +364,33 @@ public class NbModuleSuite {
         }
 
         private File[] findClusters() {
-            if (config.clusterRegExp == null) {
-                return new File[0];
+            Collection<File> clusters = new LinkedHashSet<File>();
+            if (config.clusterRegExp != null) {
+                File plat = findPlatform();
+
+                for (File f : plat.getParentFile().listFiles()) {
+                    if (f.equals(plat)) {
+                        continue;
+                    }
+                    if (!f.getName().matches(config.clusterRegExp)) {
+                        continue;
+                    }
+                    File m = new File(new File(f, "config"), "Modules");
+                    if (m.exists()) {
+                        clusters.add(f);
+                    }
+                }
             }
             
-            List<File> clusters = new ArrayList<File>();
-            File plat = findPlatform();
-
-            for (File f : plat.getParentFile().listFiles()) {
-                if (f.equals(plat)) {
-                    continue;
-                }
-                if (!f.getName().matches(config.clusterRegExp)) {
-                    continue;
-                }
-                File m = new File(new File(f, "config"), "Modules");
-                if (m.exists()) {
-                    clusters.add(f);
+            // find "cluster" from
+            // k/o.n.m.a.p.N/csam/testModule/build/cluster/modules/org-example-testModule.jar
+            // tested in apisupport.project
+            for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
+                File module = new File(s);
+                File cluster = module.getParentFile().getParentFile();
+                File m = new File(new File(cluster, "config"), "Modules");
+                if (m.exists() || cluster.getName().equals("cluster")) {
+                    clusters.add(cluster);
                 }
             }
             return clusters.toArray(new File[0]);
