@@ -48,6 +48,10 @@ public interface QuickFix {
 
   String doFix();
 
-  // -------------------------------------------------
-  public abstract class Adapter implements QuickFix {}
+  // ---------------------------------------
+  public class Adapter implements QuickFix {
+    public String doFix() {
+      return null;
+    }
+  }
 }
