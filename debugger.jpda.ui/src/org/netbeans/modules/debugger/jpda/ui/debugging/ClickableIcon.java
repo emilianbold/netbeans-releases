@@ -45,6 +45,7 @@ import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -107,6 +108,9 @@ class ClickableIcon extends JLabel implements MouseListener {
     
     private void changeIcon() {
         setIcon(computeIcon());
+        String key = isThreadSupended ? "LBL_RESUME_THREAD" : "LBL_SUSPEND_THREAD"; // NOI18N
+        String text = NbBundle.getMessage(ClickableIcon.class, key, jpdaThread.getName());
+        setToolTipText(text);
     }
     
     private void invokeAction() {
