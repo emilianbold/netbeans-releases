@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,40 +20,35 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.grails.api;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.api.project.Project;
-import org.openide.execution.NbProcessDescriptor;
-import org.openide.util.Utilities;
 
 /**
  *
- * @author schmidtm
+ * @author schmidtm, Petr Hejl
  */
 public class GrailsServerState {
-    private String name;
+
+    private final Project project;
+
+    private final String name;
+
+    /** <i>GuardedBy("this")</i> */
     private boolean running = false;
-    Process process;
-    Project prj;
-    private  final Logger LOG = Logger.getLogger(GrailsServerState.class.getName());
-    long    TIMEOUT = 8000L;
-    
+
+    private Process process;
+
     public GrailsServerState (Project prj, String name){
         this.name = name;
-        this.prj = prj;
-        // LOG.setLevel(Level.FINEST);
-        }
+        this.project = prj;
+    }
 
     public synchronized boolean isRunning() {
         return running;
@@ -61,7 +56,6 @@ public class GrailsServerState {
 
     public synchronized void setRunning(boolean running) {
         this.running = running;
-        LOG.log(Level.FINEST, "Project: " + name + " , setRunning() called: " + running );
     }
 
     public Process getProcess() {
@@ -71,7 +65,7 @@ public class GrailsServerState {
     public void setProcess(Process process) {
         this.process = process;
     }
-    
+
     public void destroy() {
         if (process != null) {
             process.destroy();
