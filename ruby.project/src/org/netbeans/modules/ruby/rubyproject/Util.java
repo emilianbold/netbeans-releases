@@ -42,12 +42,15 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import javax.swing.JComboBox;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -79,19 +82,29 @@ public final class Util {
             }
         }
 
-        // next try main project
-        OpenProjects projects = OpenProjects.getDefault();
-        Project mainProject = projects.getMainProject();
-        if (mainProject != null) {
-            RubyBaseProject result = lookupRubyBaseProject(mainProject.getLookup());
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        RubyBaseProject result = lookupRubyBaseProject(globalContext);
+        if (result != null) {
+            return result;
+        }
+        FileObject fo = globalContext.lookup(FileObject.class);
+        if (fo != null) {
+            result = lookupRubyBaseProject(FileOwnerQuery.getOwner(fo));
             if (result != null) {
                 return result;
             }
         }
 
+        // next try main project
+        OpenProjects projects = OpenProjects.getDefault();
+        result = lookupRubyBaseProject(projects.getMainProject());
+        if (result != null) {
+            return result;
+        }
+
         // next try other opened projects
         for (Project project : projects.getOpenProjects()) {
-            RubyBaseProject result = lookupRubyBaseProject(project.getLookup());
+            result = lookupRubyBaseProject(project);
             if (result != null) {
                 return result;
             }
@@ -99,6 +112,13 @@ public final class Util {
         return null;
     }
 
+    private static RubyBaseProject lookupRubyBaseProject(final Project project) {
+        if (project != null) {
+            return lookupRubyBaseProject(project.getLookup());
+        }
+        return null;
+    }
+    
     private static RubyBaseProject lookupRubyBaseProject(final Lookup lookup) {
         // try directly
         RubyBaseProject result = lookup.lookup(RubyBaseProject.class);
