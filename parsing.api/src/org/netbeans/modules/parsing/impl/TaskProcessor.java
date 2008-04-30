@@ -62,7 +62,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -146,7 +146,7 @@ public class TaskProcessor {
         Parameters.notNull("userTask", userTask);
         Parameters.notNull("source", source);
         assert parserLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(
-                Collections.singleton(source.getFileObject())) :
+                Collections.singleton(source)) :
                 "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N        
         
         final Request request = currentRequest.getTaskToCancel();
@@ -327,26 +327,32 @@ public class TaskProcessor {
      * @param files to be checked
      * @return true when the current thread holds a edeitor write lock on some of given files
      */
-    private static boolean holdsDocumentWriteLock (final Iterable<FileObject> files) {
-        assert files != null;
+    private static boolean holdsDocumentWriteLock (final Iterable<Source> sources) {
+        assert sources != null;
         final Class<AbstractDocument> docClass = AbstractDocument.class;
         try {
             final Method method = docClass.getDeclaredMethod("getCurrentWriter"); //NOI18N
             method.setAccessible(true);
             final Thread currentThread = Thread.currentThread();
-            for (FileObject fo : files) {
+            for (Source source : sources) {
                 try {
-                final DataObject dobj = DataObject.find(fo);
-                final EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    final StyledDocument doc = ec.getDocument();
+                    Document doc = source.getDocument();
+                    if (doc == null) {
+                        final FileObject file = source.getFileObject();
+                        if (file != null) {
+                            final DataObject dobj = DataObject.find(file);
+                            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                            if (ec != null) {
+                                doc = ec.getDocument();
+                            }
+                        }
+                    }                
                     if (doc instanceof AbstractDocument) {
                         Object result = method.invoke(doc);
                         if (result == currentThread) {
                             return true;
                         }
                     }
-                }
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }            

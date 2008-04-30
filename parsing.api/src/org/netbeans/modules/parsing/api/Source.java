@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -51,6 +55,7 @@ import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 
 /**
@@ -81,6 +86,8 @@ import org.openide.filesystems.FileObject;
  */
 public final class Source {
     
+    private static Map<FileObject,Reference<Source>> instances = new WeakHashMap<FileObject,Reference<Source>>();
+    
     static {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
     }
@@ -109,12 +116,33 @@ public final class Source {
      * Creates source for given file.
      * 
      * @param fileObject    A file object.
-     * @return              source for given file.
+     * @return source for given file or null when the given file doesn't exist.
      */
     public static Source create (
         FileObject          fileObject
     ) {
-        return null;
+        Parameters.notNull("fileObject", fileObject);
+        if (!fileObject.isValid()) {
+            return null;
+        }
+        synchronized (Source.class) {
+            Reference<Source> ref = instances.get(fileObject);
+            Source result = null;
+            if (ref != null) {
+                result = ref.get();
+            }
+            if (result == null) {
+                result = new Source(
+                        null,
+                        fileObject.getMIMEType(),
+                        null, 
+                        fileObject);
+                ref = new WeakReference<Source>(result);
+                instances.put(fileObject, ref);
+            }
+            return result;
+        }
+        
     }
     
     /**
