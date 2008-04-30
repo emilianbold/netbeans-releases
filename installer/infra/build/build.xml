@@ -2549,7 +2549,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<!-- Enable community d/l page properties -->
 	<if property="community.mlbuild" value="1">
        	<set property="enable.languages.redirect" value="1"/>
-       	<set property="redirect.page.type"        value="community"/>
+       	<set property="redirect.page.type"        value="final"/>
 	</if>
     </target>
 
