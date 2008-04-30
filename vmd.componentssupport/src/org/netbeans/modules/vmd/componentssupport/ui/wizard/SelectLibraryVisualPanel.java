@@ -41,87 +41,75 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.awt.Component;
-import java.util.HashSet;
+import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JPanel;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Panel just asking for basic info.
+ * Represents <em>Libraries</em> panel in J2SE Library Descriptor Wizard.
  */
-public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel 
-{
+final class SelectLibraryVisualPanel extends JPanel {
 
-    private WizardDescriptor wizardDescriptor;
-    private CustomComponentPanelVisual component;
-
-    public CustomComponentWizardPanel() {
-    }
-
-    public Component getComponent() {
-        if (component == null) {
-            component = new CustomComponentPanelVisual(this);
-            component.setName(
-                    NbBundle.getMessage(CustomComponentWizardPanel.class, 
-                    CustomComponentWizardIterator.STEP_BASIC_PARAMS));
-        }
-        return component;
-    }
-
-    public HelpCtx getHelp() {
-        return new HelpCtx(CustomComponentWizardPanel.class);
-    }
-
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+    private static final long serialVersionUID = -3903508171781536427L;
+    
+    public SelectLibraryVisualPanel() {
+        getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectLibraryPanel"));
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
+        myPanel = LibraryChooser.createPanel(null, null);
+        myPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (LibraryChooser.Panel.PROP_SELECTED_LIBRARIES.equals(evt.getPropertyName())) {
+                    checkValidity();
+                }
+            }
+        });
+        setLayout(new BorderLayout());
+        add(myPanel.getVisualComponent(), BorderLayout.CENTER);
     }
     
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
+    private void checkValidity() {
+        mySettings.putProperty(BasicConfVisualPanel.ERROR_MESSAGE,null);
+        if (getSelectedLibrary() != null) {
+            firePropertyChange(BasicConfVisualPanel.VALID, null, true );
+        } else {
+            firePropertyChange(BasicConfVisualPanel.VALID, null, false );
         }
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-
-    protected final void fireChangeEvent() {
-        Set<ChangeListener> ls;
-        synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
-    }
-
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        getComponent();
-        component.read(wizardDescriptor);
-    }
-
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
     }
     
-    private final Set<ChangeListener> listeners 
-        = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private Library getSelectedLibrary() {
+        Set<Library> selection = myPanel.getSelectedLibraries();
+        return selection.size() == 1 ? selection.iterator().next() : null;
+    }
+    
+    void storeData() {
+        //data.setLibrary(getSelectedLibrary());
+    }
+    
+    void readData( WizardDescriptor settings ) {
+        mySettings = settings;
+        checkValidity();
+    }
+    
+    protected String getPanelName() {
+        return getMessage("LBL_SelectLibraryPanel_Title");
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(SelectLibraryVisualPanel.class);
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(SelectLibraryVisualPanel.class, key);
+    }
+    
+    private WizardDescriptor mySettings;
+    private final LibraryChooser.Panel myPanel;
+    
 }

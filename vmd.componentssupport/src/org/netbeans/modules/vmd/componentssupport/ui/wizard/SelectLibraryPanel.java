@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,90 +38,99 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import javax.swing.event.ChangeListener;
+
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.WizardDescriptor.ValidatingPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+
 /**
- * Panel just asking for basic info.
+ * @author ads
+ *
  */
-public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel 
-{
+class SelectLibraryPanel implements Panel, ValidatingPanel {
+        
+    public SelectLibraryPanel() {
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();    }
 
-    private WizardDescriptor wizardDescriptor;
-    private CustomComponentPanelVisual component;
-
-    public CustomComponentWizardPanel() {
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
+     */
+    public void addChangeListener( ChangeListener listener ) {
+        myListeners.add( listener );
     }
 
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#getComponent()
+     */
     public Component getComponent() {
-        if (component == null) {
-            component = new CustomComponentPanelVisual(this);
-            component.setName(
-                    NbBundle.getMessage(CustomComponentWizardPanel.class, 
-                    CustomComponentWizardIterator.STEP_BASIC_PARAMS));
+        if (myComponent == null) {
+            myComponent = new SelectLibraryVisualPanel( );
+            myComponent.setName(
+                    NbBundle.getMessage(NewLibraryDescriptor.class, 
+                            NewLibraryDescriptor.LIBRARY_STEP));
         }
-        return component;
+        return myComponent;
     }
 
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#getHelp()
+     */
     public HelpCtx getHelp() {
-        return new HelpCtx(CustomComponentWizardPanel.class);
+        return new HelpCtx(SelectLibraryPanel.class);
     }
 
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#isValid()
+     */
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
-    
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        // TODO Auto-generated method stub
+        return false;
     }
 
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
+     */
+    public void readSettings( Object settings ) {
+        WizardDescriptor desc = (WizardDescriptor) settings;
+        myComponent.readData( desc );
     }
 
-    protected final void fireChangeEvent() {
-        Set<ChangeListener> ls;
-        synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
+     */
+    public void removeChangeListener( ChangeListener listener ) {
+        myListeners.remove( listener );
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        getComponent();
-        component.read(wizardDescriptor);
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
+     */
+    public void storeSettings( Object settings ) {
+        // TODO Auto-generated method stub
+
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.ValidatingPanel#validate()
+     */
     public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
+        // TODO Auto-generated method stub
+
     }
     
-    private final Set<ChangeListener> listeners 
-        = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private List<ChangeListener> myListeners; 
+    private WizardDescriptor myWizardDescriptor;
+    private SelectLibraryVisualPanel myComponent;
+
 }

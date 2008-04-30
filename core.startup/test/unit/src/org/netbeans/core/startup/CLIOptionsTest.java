@@ -41,6 +41,7 @@
 package org.netbeans.core.startup;
 
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,6 +68,31 @@ public class CLIOptionsTest extends NbTestCase {
 	CLIOptions.defaultsLoaded = false;
         new CLIOptions().cli(new String[] { "--branding", "noexiting", "--nosplash"});
         assertTrue("Splash is explicitly disabled", CLIOptions.isNoSplash());
+    }
+    
+    /**
+     * Test translation from L&F ID to L&F class.
+     */
+    public void testLafId2LafClass () {
+        new CLIOptions().cli(new String[] { "--laf", "Metal" });
+        try {
+            assertEquals("Must be Metal", CLIOptions.uiClass, Class.forName("javax.swing.plaf.metal.MetalLookAndFeel"));
+        } catch (ClassNotFoundException exc) {
+        }
+        if (Utilities.isWindows()) {
+            new CLIOptions().cli(new String[] { "--laf", "Windows" });
+            try {
+                assertEquals("Must be Windows", CLIOptions.uiClass, Class.forName("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"));
+            } catch (ClassNotFoundException exc) {
+            }
+        }
+        if (Utilities.isMac()) {
+            new CLIOptions().cli(new String[] { "--laf", "Aqua" });
+            try {
+                assertEquals("Must be MacOS", CLIOptions.uiClass, Class.forName("apple.laf.AquaLookAndFeel"));
+            } catch (ClassNotFoundException exc) {
+            }
+        }
     }
     
     public void testUserdir() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.spring.beans;
 
-import org.netbeans.modules.spring.api.beans.ConfigFileManager;
+import java.io.File;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 
 /**
  *
  * @author Andrei Badea
  */
-public abstract class ConfigFileManagerAccessor {
+public abstract class SpringConfigModelAccessor {
 
-    private static volatile ConfigFileManagerAccessor accessor;
+    private static volatile SpringConfigModelAccessor accessor;
 
-    public static void setDefault(ConfigFileManagerAccessor accessor) {
-        if (ConfigFileManagerAccessor.accessor != null) {
+    public static void setDefault(SpringConfigModelAccessor accessor) {
+        if (SpringConfigModelAccessor.accessor != null) {
             throw new IllegalStateException();
         }
-        ConfigFileManagerAccessor.accessor = accessor;
+        SpringConfigModelAccessor.accessor = accessor;
     }
 
-    public static ConfigFileManagerAccessor getDefault() {
+    public static SpringConfigModelAccessor getDefault() {
         if (accessor != null) {
             return accessor;
         }
         try {
-            Class.forName(ConfigFileManager.class.getName(), true, ConfigFileManager.class.getClassLoader());
+            Class.forName(SpringConfigModel.class.getName(), true, SpringConfigModel.class.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new AssertionError(e);
         }
         return accessor;
     }
 
-    public abstract ConfigFileManager createConfigFileManager(ConfigFileManagerImplementation impl);
+    public abstract SpringConfigModel createSpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup);
+    
+    public abstract ConfigFileGroup getConfigFileGroup(SpringConfigModel model);
+
+    public abstract DocumentAccess createDocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc);
 }
