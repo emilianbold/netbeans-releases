@@ -46,6 +46,7 @@ import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -57,7 +58,45 @@ public class PropertyTest extends AbstractCLITest {
         super(testName);
     }
             
-    public void testPropertySetGetDelList() throws Exception {                                                
+    public void testPropertyGetUrl() throws Exception {                                                
+        File file = createFile("file");        
+        add(file);
+                
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(file, "p1", "v1", false);
+
+        commit(file);
+        
+        assertPropertyStatus(SVNStatusKind.NORMAL, file);
+
+        assertProperty(c, getFileUrl(file), "p1", "v1");
+                
+    }            
+    
+    public void testPropertyListUrl() throws Exception {                                                
+        File file = createFile("file");        
+        add(file);
+        
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(file, "p1", "v1", false);
+        c.propertySet(file, "p2", "v2", false);
+        c.propertySet(file, "p3", "v3", false);
+        commit(file);
+        
+        assertPropertyStatus(SVNStatusKind.NORMAL, file);
+
+        ISVNProperty[] props = c.getProperties(getFileUrl(file));
+        Map<String, ISVNProperty> propMap = new HashMap<String, ISVNProperty>();
+        for (ISVNProperty p : props) {
+            propMap.put(p.getName(), p);                    
+        }
+        assertEquals(3, propMap.size());
+        assertProperty("p1", "v1", propMap);        
+        assertProperty("p2", "v2", propMap);        
+        assertProperty("p3", "v3", propMap);        
+    }          
+    
+    public void testPropertySetGetDel() throws Exception {                                                
         File file = createFile("file");        
         add(file);
         commit(file);
@@ -192,6 +231,11 @@ public class PropertyTest extends AbstractCLITest {
     
     private void assertProperty(ISVNClientAdapter c, File file, String prop, String val) throws SVNClientException {        
         ISVNProperty p = c.propertyGet(file, prop);
+        assertEquals(val, new String(p.getData()));        
+    }
+    
+    private void assertProperty(ISVNClientAdapter c, SVNUrl url, String prop, String val) throws SVNClientException {        
+        ISVNProperty p = c.propertyGet(url, prop);
         assertEquals(val, new String(p.getData()));        
     }
 
