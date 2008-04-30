@@ -157,7 +157,6 @@ public class ExternalGrailsServer implements GrailsServer{
                 if (proc != null) {
                     serverState.setRunning(true);
                     serverState.setProcess(proc);
-                    exTask.addTaskListener(serverState);
                 } else {
                     LOG.log(Level.WARNING, "Could not startup process : " + gsr.getLastException().getLocalizedMessage());
                     lastException = gsr.getLastException();
