@@ -42,7 +42,6 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
@@ -74,17 +73,30 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
 
             assertNotNull("has README", prjDirFO.getFileObject("README"));
             assertNotNull("has LICENSE", prjDirFO.getFileObject("LICENSE"));
-            
+
             RubyBaseProject p = (RubyBaseProject) ProjectManager.getDefault().findProject(prjDirFO);
             assertNotNull("has project", p);
             List<?> tasks = RakeSupport.getRakeTaskTree(p);
             assertSame("correct Rakefile", 10, tasks.size());
-            
+
             // test main class without extension in the next run
             name = "another_script";
             expectedName = "another_script.rb";
             appName = "RubyApp1";
         }
     }
+    
+    public void testGeneratedSourceRoots() throws Exception {
+        RubyProject project = createTestProject();
+        FileObject projectDir = project.getProjectDirectory();
+        FileObject[] roots = project.getSourceRoots().getRoots();
+        FileObject[] testRoots = project.getTestSourceRoots().getRoots();
 
+        assertEquals("one source root", 1, roots.length);
+        assertEquals("has lib", roots[0], projectDir.getFileObject("lib"));
+
+        assertEquals("two test roots", 2, testRoots.length);
+        assertEquals("has test", testRoots[0], projectDir.getFileObject("test"));
+        assertEquals("has spec", testRoots[1], projectDir.getFileObject("spec"));
+    }
 }
