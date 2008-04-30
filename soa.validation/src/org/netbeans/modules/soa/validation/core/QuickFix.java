@@ -46,11 +46,12 @@ package org.netbeans.modules.soa.validation.core;
  */
 public interface QuickFix {
 
-  boolean canFix();
-  void doFix();
-  String getDescription();
+  String doFix();
 
-  // ------------------------------------------------
-  public abstract class Adapter implements QuickFix {
+  // ---------------------------------------
+  public class Adapter implements QuickFix {
+    public String doFix() {
+      return null;
+    }
   }
 }
