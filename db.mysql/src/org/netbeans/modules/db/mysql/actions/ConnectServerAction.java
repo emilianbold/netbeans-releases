@@ -87,7 +87,7 @@ public class ConnectServerAction extends CookieAction {
 
         // Run this on a separate thread so that we don't hang up the AWT 
         // thread if the database server is not responding
-        server.connectAsync();
+        server.reconnectAsync();
     }
     
     @Override

@@ -9,7 +9,7 @@
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="Dev"/>
     <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkgname" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.1"/>      
 

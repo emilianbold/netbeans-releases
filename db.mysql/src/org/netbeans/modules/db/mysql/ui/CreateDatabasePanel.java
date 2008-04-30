@@ -505,12 +505,7 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
         }
 
         public Object getElementAt(int index) {
-            try {
-                return samplePrefix + SAMPLES[index].toString();
-            } catch ( ArrayIndexOutOfBoundsException abe ) {
-                LOGGER.log(Level.INFO, "Array index out of bounds: " + index, abe);
-                return null;
-            }
+            return samplePrefix + SAMPLES[index].toString();
         }
 
         public void addListDataListener(ListDataListener listener) {

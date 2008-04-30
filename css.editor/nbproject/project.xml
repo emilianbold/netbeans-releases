@@ -118,8 +118,10 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.css.devtools</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.visualweb.html</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.css.editor.model</package>
                 <package>org.netbeans.modules.css.lexer.api</package>
                 <package>org.netbeans.modules.css.parser</package>

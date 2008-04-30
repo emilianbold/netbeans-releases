@@ -42,14 +42,13 @@
 package org.netbeans.modules.ruby.rubyproject.rake;
 
 import java.io.File;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -57,7 +56,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 
 /**
@@ -67,23 +65,14 @@ import org.openide.util.actions.CallableSystemAction;
 public final class RakeRunnerAction extends CallableSystemAction {
 
     public void performAction() {
-        Lookup context = Utilities.actionsGlobalContext();
-        Project p = context.lookup(Project.class);
-        if (p == null) { // no project in the current context
-            FileObject fo = context.lookup(FileObject.class);
-            if (fo != null) {
-                p = FileOwnerQuery.getOwner(fo);
-            }
-        }
-        if (p == null) {
+        RubyBaseProject project = Util.inferRubyProject();
+        if (project == null) {
             return;
         }
 
-        if (!RubyPlatform.platformFor(p).showWarningIfInvalid()) {
+        if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
             return;
         }
-
-        RubyBaseProject project = (RubyBaseProject) p;
 
         TaskDescriptor taskDesc = RakeTaskChooser.select(project);
         if (taskDesc != null) {
