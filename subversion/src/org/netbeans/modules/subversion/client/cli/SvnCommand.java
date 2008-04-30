@@ -227,7 +227,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return targetFile.getAbsolutePath();
     }
 
-    private File getAbsoluteFile(String path) {
+    File getAbsoluteFile(String path) {
         File file = new File(path);
         if(file.isAbsolute()) {
             return file;
@@ -261,6 +261,13 @@ public abstract class SvnCommand implements CommandNotificationListener {
                 add(url.toString());   
             }            
         }
+
+        public void add(SVNRevision rev1, SVNRevision rev2) {
+            add("-r");   
+            add( (rev1 == null || rev1.toString().trim().equals("") ? "HEAD" : rev1.toString() ) + 
+                 ":" +
+                 (rev2 == null || rev2.toString().trim().equals("") ? "HEAD" : rev2.toString() ) ); 
+        }
         
         public void add(SVNUrl url, SVNRevision pegging) {
             if(url != null) {
@@ -270,11 +277,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         
         public void add(SVNRevision revision) {
             add("-r");   
-            if(revision == null || revision.toString().trim().equals("")) {
-                add("HEAD");   
-            } else {
-                add(revision.toString());
-            }                       
+            add(revision == null || revision.toString().trim().equals("") ? "HEAD" : revision.toString());
         }                    
 
         public void addFileArguments(File... files) throws IOException {        
