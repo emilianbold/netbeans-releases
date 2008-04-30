@@ -53,7 +53,6 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.etl.project.EtlproProject;
-import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.etl.project.MasterIndexAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileTableAction;
@@ -111,6 +110,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                     List/*<String>*/ path = Collections.list(
                             new StringTokenizer(relPath, "/")); // NOI18N
                     // XXX see original code for justification
+
                     path.set(path.size() - 1, targetFO.getName());
                     try {
                         Node found = NodeOp.findPath(node,
@@ -189,6 +189,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         public EtlLogicalViewRootNode() {
             super(new EtlproViews.LogicalViewChildren(helper, evaluator, project), createLookup(project));
             setIconBaseWithExtension("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif"); // NOI18N
+
             setName(ProjectUtils.getInformation(project).getDisplayName());
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
@@ -203,7 +204,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             try {
                 prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
             } catch (FileStateInvalidException ex) {
-               // Exceptions.printStackTrace(ex);
+                // Exceptions.printStackTrace(ex);
             }
             MashupTableWizardIterator.setProjectInfo(pro.getName(), prj_locn, true);
             if (context) {
@@ -244,7 +245,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             Sheet.Set set = Sheet.createPropertiesSet();
             String nbBundle8 = "Name";
             String nbBundle9 = "ETL Project Name";
-            Property nameProp = new PropertySupport.Name(this,nbBundle8,nbBundle9);
+            Property nameProp = new PropertySupport.Name(this, nbBundle8, nbBundle9);
             set.put(nameProp);
             sheet.put(set);
             return sheet;
@@ -268,13 +269,13 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                         CommonProjectActions.newFileAction(),
                         null,
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, nbBundle1, null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD,nbBundle2 , null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, nbBundle2, null), // NOI18N
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, nbBundle3, null), // NOI18N
                         null,
                         ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, nbBundle4, null), // NOI18N
                         //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, nbBundle5, null), // NOI18N
-			SystemAction.get(MasterIndexAction.class),
-                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER,nbBundle10, null), // NOI18N
+                        SystemAction.get(MasterIndexAction.class),
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER, nbBundle10, null), // NOI18N
                         null,
                         SystemAction.get(NewFlatfileDatabaseWizardAction.class),
                         SystemAction.get(NewFlatfileTableAction.class),
@@ -361,6 +362,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
 
         private Actions() {
         } // This is a factory
+
 
         public static Action createAction(String key, String name, boolean global) {
             return new ActionImpl(key, name, global ? Utilities.actionsGlobalContext() : null);
