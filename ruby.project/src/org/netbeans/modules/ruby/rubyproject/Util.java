@@ -42,8 +42,13 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import javax.swing.JComboBox;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.windows.WindowManager;
 
 /**
  * Miscellaneous helper methods for Ruby project types.
@@ -54,7 +59,63 @@ public final class Util {
 
     private Util() {
     }
-    
+
+    /**
+     * Tries to infer currently best suitable {@link RubyBaseProject Ruby
+     * project} based on the current user's context.
+     * 
+     * @return might be <tt>null</tt>
+     */
+    public static RubyBaseProject inferRubyProject() {
+        // try current context firstly
+        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+
+        if (activatedNodes != null) {
+            for (Node n : activatedNodes) {
+                RubyBaseProject result = lookupRubyBaseProject(n.getLookup());
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        // next try main project
+        OpenProjects projects = OpenProjects.getDefault();
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            RubyBaseProject result = lookupRubyBaseProject(mainProject.getLookup());
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // next try other opened projects
+        for (Project project : projects.getOpenProjects()) {
+            RubyBaseProject result = lookupRubyBaseProject(project.getLookup());
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private static RubyBaseProject lookupRubyBaseProject(final Lookup lookup) {
+        // try directly
+        RubyBaseProject result = lookup.lookup(RubyBaseProject.class);
+        if (result != null) {
+            return result;
+        }
+        // try through Project instance
+        Project project = lookup.lookup(Project.class);
+        if (project != null) {
+            result = project.getLookup().lookup(RubyBaseProject.class);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
     public static void preselectWizardPlatform(final JComboBox platforms) {
         org.netbeans.modules.ruby.platform.Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
     }
@@ -75,4 +136,5 @@ public final class Util {
         String extension = extIndex == -1 ? "" : fileName.substring(extIndex);
         return ext.equals(extension) ? fileName.substring(0, extIndex) : fileName;
     }
+    
 }
