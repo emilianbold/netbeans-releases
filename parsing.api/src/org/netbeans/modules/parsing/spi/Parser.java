@@ -65,13 +65,7 @@ public abstract class Parser {
     public abstract Result parse (
         Source              source
     );
-    
-    /**
-     * Priority is used when there is more than one parser installed for 
-     * one mimeType.
-     * @return              priority of this parser
-     */
-    public abstract int getPriority ();
+        
     
     /**
      * Registers new listener.
