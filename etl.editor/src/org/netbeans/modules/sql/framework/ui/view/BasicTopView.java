@@ -95,7 +95,6 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeOutputImpl;
-import org.netbeans.modules.sql.framework.model.impl.SQLJoinViewImpl;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyNode;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.TemplateFactory;
@@ -108,7 +107,6 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPane
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeInputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeOutputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SQLCollaborationProperties;
-import org.netbeans.modules.sql.framework.ui.view.property.SQLJoinProperties;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
@@ -439,7 +437,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
-            if(attr == null){
+            if (attr == null) {
                 template = "FFSourceTable";
                 return template;
             }
@@ -456,7 +454,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 template = "FFSourceTable";
             }
         } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
-            if(attr == null){
+            if (attr == null) {
                 template = "FFTargetTable";
                 return template;
             }
@@ -469,9 +467,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
                     ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
                 template = "FFTargetTable";
-            }else {
+            } else {
                 template = "FFTargetTable";
             }
+
         }
         return template;
     }

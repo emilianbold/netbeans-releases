@@ -20,12 +20,12 @@
 set -x -e 
 
 if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
-    echo "usage: $0 zipdir prefix buildnumber ml_build"
+    echo "usage: $0 zipdir prefix buildnumber ml_build [nb_locales]"
     echo ""
-    echo "zipdir is the dir which contains the zip modulclusters"
+    echo "zipdir is the dir which contains the zip/modulclusters and zip-ml/moduleclusters"
     echo "prefix-buildnumber is the distro filename prefix, e.g. netbeans-hudson-trunk-2464"
-    echo "ml_build is 1 if ml builds are requared and 0 if not"
-    echo "zipdir should contain <basename>-ide.zip, <basename>-java.zip, <basename>-ruby.zip,..." 
+    echo "ml_build is 1 if ml builds are requared and 0 if not"  
+    echo "nb_locales is the string with the list of locales (for ml builds)"  
     exit 1
 fi
 

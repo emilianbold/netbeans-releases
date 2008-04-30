@@ -249,7 +249,7 @@ public class SQLDBSynchronizationVisitor {
                 if (collabTable instanceof TargetTable) {
                     createIfNotExists = ((TargetTable) collabTable).isCreateTargetTable();
                 }
-                String nbBundle1 = mLoc.t("BUND299: Table {0} is removed or renamed in Database",collabTable.getName());
+                String nbBundle1 = mLoc.t("BUND299: Table {0} is removed or renamed in Database", collabTable.getName());
                 String desc = nbBundle1.substring(15) + " " + connDef.getConnectionURL();
                 ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, createIfNotExists ? ValidationInfo.VALIDATION_WARNING : ValidationInfo.VALIDATION_ERROR);
                 infoList.add(vInfo);

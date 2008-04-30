@@ -80,7 +80,7 @@ public class ValidationAction extends GraphAction {
         String nbBundle2 = mLoc.t("BUND040: Validate Collaboration (Ctrl+Shift+V)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
-        // Acceleratot Ctrl+Shift+V
+        // Acceleratot Shift-V
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('V', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
     }
 

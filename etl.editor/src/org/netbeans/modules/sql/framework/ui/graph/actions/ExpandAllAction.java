@@ -73,9 +73,8 @@ public class ExpandAllAction extends GraphAction {
         //action tooltip
         String nbBundle1 = mLoc.t("BUND316: Expand All Graph Objects (Ctrl+Shift+E)");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-        
+        // Acceleratot Shift-E
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('E', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
-
     }
 
     /**

@@ -37,6 +37,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.sql.framework.common.utils.MigrationUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -118,6 +119,7 @@ public class EtlproProjectGenerator {
 
         String dbName = FileUtil.toFile(defaultFileObj).getAbsolutePath();
         createDefaultDatabase(dbName);
+        setMigrationUtil();
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
@@ -277,27 +279,17 @@ public class EtlproProjectGenerator {
         }
         return path;
     }
-
-    public static boolean isCommandLineImport(File dir) {
-        while (dir.getParentFile() != null) {
-            dir = dir.getParentFile();
-        }
-        FileObject fo = FileUtil.toFileObject(dir);
-
-        if (null != fo) {
-            isCommandLine = false;
-
-        } else {
-            isCommandLine = true;
+    
+    public static void setMigrationUtil() {
+        String path = FileUtil.toFile(data).getAbsolutePath();
+        if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
 
         }
-        DBExplorerUtil.isCmdLineImport(isCommandLine);
-        return isCommandLine;
+        String path1 = FileUtil.toFile(dbObj).getAbsolutePath();
+        MigrationUtils.setDatabasesFolder(databases);
+        MigrationUtils.setDataFolderPath(path);
+        MigrationUtils.setDatabasesFolderPath(path1);
     }
-
-    public static URL getResourceURL(String resource) {
-        return EtlproProject.class.getResource("resources/build.xsl");
-    }
-    private static boolean isCommandLine = false;
     //Need for Migration - End  
 }

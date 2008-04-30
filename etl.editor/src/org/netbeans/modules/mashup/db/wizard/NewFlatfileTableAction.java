@@ -1,6 +1,7 @@
 package org.netbeans.modules.mashup.db.wizard;
 
 import java.awt.Dialog;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,6 +17,7 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -51,6 +53,7 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
                     MashupTableWizardIterator.TABLE_LIST);
             Connection conn = null;
             Statement stmt = null;
+            String dbDir = (DBExplorerUtil.parseConnUrl(jdbcUrl))[1];
             try {
                 conn = FlatfileDBConnectionFactory.getInstance().getConnection(jdbcUrl);
                 if(conn != null) {
@@ -80,8 +83,12 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
                             stmt.execute("shutdown");
                         }
                         conn.close();
+                        File dbExplorerNeedRefresh = new File(dbDir + "/dbExplorerNeedRefresh");
+                        dbExplorerNeedRefresh.createNewFile();
                     } catch (SQLException ex) {
                         conn = null;
+                    } catch(Exception ex) {
+                        // ignore
                     }
                 }
             }

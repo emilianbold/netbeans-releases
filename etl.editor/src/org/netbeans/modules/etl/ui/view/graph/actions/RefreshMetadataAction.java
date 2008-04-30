@@ -69,7 +69,7 @@ public class RefreshMetadataAction extends GraphAction {
         //action tooltip
         String nbBundle2 = mLoc.t("BUND025: Refresh Metadata ");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
- 
+        // Acceleratot Shift-R
     }
 
     /**

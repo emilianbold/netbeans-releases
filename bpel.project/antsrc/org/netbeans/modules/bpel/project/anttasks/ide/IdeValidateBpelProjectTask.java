@@ -63,10 +63,10 @@ import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 
-/**
- * @author Sreenivasan Genipudi
- */
 public class IdeValidateBpelProjectTask extends Task {
 
     public void setSourceDirectory(String srcDir) {
@@ -79,21 +79,20 @@ public class IdeValidateBpelProjectTask extends Task {
 
     public void setRunValidation(String flag) {
         setAllowBuildWithError(flag);
-        mAllowBuildWithError = !mAllowBuildWithError;
+        myAllowBuildWithError = !myAllowBuildWithError;
     }
 
     public void setAllowBuildWithError(String flag) {
         if (flag != null) {
             if (flag.equals("false")) {
-                mAllowBuildWithError = false;
+                myAllowBuildWithError = false;
             } else if (flag.equals("true")) {
-                mAllowBuildWithError = true;
+                myAllowBuildWithError = true;
             }
         }
     }
 
-    public void setClasspathRef(Reference ref) {
-    }
+    public void setClasspathRef(Reference ref) {}
 
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
@@ -153,9 +152,9 @@ public class IdeValidateBpelProjectTask extends Task {
         }
     }
 
-    private void processBpelFilesInBuildDir(File bpelFile) {
-        String relativePath = Util.getRelativePath(this.mBuildDir, bpelFile);
-        this.mBpelFileNamesToFileInBuildDir.put(relativePath, bpelFile);
+    private void processBpelFilesInBuildDir(File bpel) {
+        String relativePath = Util.getRelativePath(this.mBuildDir, bpel);
+        this.mBpelFileNamesToFileInBuildDir.put(relativePath, bpel);
     }
 
     private void processSourceDirs(List sourceDirs) {
@@ -209,7 +208,7 @@ public class IdeValidateBpelProjectTask extends Task {
 
             for (BPELFile bpel : myBPELFiles) {
                 if (bpel.getQName().equals(qName)) {
-                    if (!mAllowBuildWithError) { // # 106342
+                    if (!myAllowBuildWithError) { // # 106342
                         throw new BuildException(
                                 " \n" +
                                 "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
@@ -225,13 +224,13 @@ public class IdeValidateBpelProjectTask extends Task {
         }
     }
 
-    private boolean isBpelFileModified(File bpelFile) {
+    private boolean isBpelFileModified(File bpel) {
         boolean modified = true;
-        String relativePath = Util.getRelativePath(this.mSourceDir, bpelFile);
+        String relativePath = Util.getRelativePath(this.mSourceDir, bpel);
         File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
 
         if (bpelFileInBuildDir != null) {
-            if (bpelFileInBuildDir.lastModified() == bpelFile.lastModified()) {
+            if (bpelFileInBuildDir.lastModified() == bpel.lastModified()) {
                 modified = false;
             }
         }
@@ -239,61 +238,26 @@ public class IdeValidateBpelProjectTask extends Task {
     }
 
     private void validateBPEL(File bpel) throws BuildException {
-        org.netbeans.modules.xml.xam.Model model = null;
+      try {
+        Model model = IdeBpelCatalogModel.getDefault().getBPELModel(bpel);
+        boolean isError = new Controller(model).ideValidate(bpel);
 
-        try {
-            model = IdeBpelCatalogModel.getDefault().getBPELModel(bpel);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Error while trying to create BPEL Model", e);
-        }
-        List<ResultItem> result = Util.validate(model);
-        boolean isError = false;
-
-        for (ResultItem item : result) {
-            System.err.println(getValidationError(bpel, item));
-            System.err.println();
-
-            if (item.getType() == Validator.ResultType.ERROR) {
-                isError = true;
-            }
-        }
         if (isError) {
-            throw new BuildException(Util.FOUND_VALIDATION_ERRORS);
+          throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
         }
+      }
+      catch (Exception e) {
+        throw new BuildException(e);
+//        throw new RuntimeException("Error while trying to create BPEL Model", e);
+      }
     }
 
-    private String getValidationError(File bpelFile, ResultItem resultItem) {
-        int lineNumber = 0;
-        int columnNumber = 0;
-        String errorDescription = resultItem.getDescription();
-        String msgType = resultItem.getType().name();
-        Component component = resultItem.getComponents();
-        FileObject fileObj = null;
-        File file = null;
-
-        if (component == null) {
-            columnNumber = resultItem.getColumnNumber();
-            lineNumber = resultItem.getLineNumber();
-            fileObj = (FileObject) resultItem.getModel().getModelSource().getLookup().lookup(FileObject.class);
-        } else {
-            lineNumber = Util.getLineNumber(component);
-            columnNumber = Util.getColumnNumber(component);
-            fileObj = (FileObject) component.getModel().getModelSource().getLookup().lookup(FileObject.class);
-        }
-        if (fileObj != null) {
-            file = FileUtil.toFile(fileObj);
-        }
-        return Util.getError(file, columnNumber, lineNumber, errorDescription, msgType);
-    }
-
-    private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
+    private void loadAndValidateExistingBusinessProcess(File bpel) throws BuildException {
         try {
-            validateBPEL(bpelFile);
-        } catch (Throwable ex) {
-            if (!mAllowBuildWithError) {
-                StringWriter writer = new StringWriter();
-                PrintWriter pWriter = new PrintWriter(writer);
+            validateBPEL(bpel);
+        }
+        catch (Throwable ex) {
+            if ( !myAllowBuildWithError) {
                 throw new BuildException(ex);
             }
         }
@@ -333,7 +297,7 @@ public class IdeValidateBpelProjectTask extends Task {
     private File mBuildDir;
     private Map mBpelFileNamesToFileInBuildDir = new HashMap();
     private boolean isFoundErrors = false;
-    private boolean mAllowBuildWithError = false;
+    private boolean myAllowBuildWithError = false;
     private Logger logger = Logger.getLogger(IdeValidateBpelProjectTask.class.getName());
     private List<BPELFile> myBPELFiles;
 }
