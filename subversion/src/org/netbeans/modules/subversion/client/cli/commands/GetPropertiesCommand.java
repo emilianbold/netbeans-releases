@@ -41,25 +41,11 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *

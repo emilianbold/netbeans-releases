@@ -47,9 +47,9 @@ import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.Exceptions;
 
 /**
- * Encapsulates Clearcase shell process. 
+ * Encapsulates svn shell process. 
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
 class Commandline {
     

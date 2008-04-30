@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;

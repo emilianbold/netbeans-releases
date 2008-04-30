@@ -39,10 +39,8 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *

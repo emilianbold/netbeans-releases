@@ -220,39 +220,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             mkdir(url, msg);   
         }        
     }
-
-    private void checkErrors(SvnCommand cmd) throws SVNClientException {
-
-        List<String> errors = cmd.getCmdError();
-        if (errors.size() > 0) {
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < errors.size(); i++) {
-                sb.append(errors.get(i));
-                if (i < errors.size() - 1) {
-                    sb.append('\n');
-                }
-            }
-            throw new SVNClientException(sb.toString());
-        }
-    }
-
-    private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {        
-        List<SVNUrl> ret = new ArrayList<SVNUrl>();
-        if(url == null) {
-            return ret;
-        }
-        try {
-            getInfo(url);            
-        } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1) { // XXX are we shure this is it?
-                ret.addAll(getAllNotExistingParents(url.getParent()));
-                ret.add(url);                        
-            } else {
-                throw e;
-            }                    
-        }        
-        return ret;
-    }
     
     public void mkdir(File file) throws SVNClientException {
         MkdirCommand cmd = new MkdirCommand(file);
@@ -515,6 +482,39 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             throw new SVNClientException(ex);
         }
         checkErrors(cmd);
+        return ret;
+    }
+    
+    private void checkErrors(SvnCommand cmd) throws SVNClientException {
+
+        List<String> errors = cmd.getCmdError();
+        if (errors.size() > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < errors.size(); i++) {
+                sb.append(errors.get(i));
+                if (i < errors.size() - 1) {
+                    sb.append('\n');
+                }
+            }
+            throw new SVNClientException(sb.toString());
+        }
+    }
+
+    private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {        
+        List<SVNUrl> ret = new ArrayList<SVNUrl>();
+        if(url == null) {
+            return ret;
+        }
+        try {
+            getInfo(url);            
+        } catch (SVNClientException e) {
+            if(e.getMessage().indexOf("Not a valid URL") > -1) { // XXX are we shure this is it?
+                ret.addAll(getAllNotExistingParents(url.getParent()));
+                ret.add(url);                        
+            } else {
+                throw e;
+            }                    
+        }        
         return ret;
     }
     
