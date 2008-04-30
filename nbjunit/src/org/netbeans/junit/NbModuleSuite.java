@@ -55,9 +55,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -497,6 +494,9 @@ public class NbModuleSuite {
             Pattern modPattern = regExp == null ? null : Pattern.compile(regExp);
             for (File c : clusterDirs) {
                 File modulesDir = new File(new File(c, "config"), "Modules");
+                if (!modulesDir.isDirectory()) {
+                    continue;
+                }
                 for (File m : modulesDir.listFiles()) {
                     String n = m.getName();
                     if (n.endsWith(".xml")) {
