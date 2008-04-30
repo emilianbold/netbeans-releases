@@ -441,6 +441,19 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator :  dbName;
         return dbName;
     }
+    public boolean isDynamicFlatFile() {
+        Boolean dynamicFlatFile = (Boolean) this.getAttributeValue(DYNAMIC_FLAT_FILE);
+        boolean flag = false;
+        if(dynamicFlatFile != null) {
+            flag = dynamicFlatFile.booleanValue();
+        }
+        return flag;
+    }
+    
+    public void setDynamicFlatFile(boolean flag) {
+        this.setAttribute(DYNAMIC_FLAT_FILE, Boolean.valueOf(flag));
+    }
+    
 
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
