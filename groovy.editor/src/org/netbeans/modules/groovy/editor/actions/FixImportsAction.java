@@ -36,13 +36,57 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.groovy.editor.actions;
 
-package org.netbeans.modules.groovy.editor;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.api.EditorAction;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
  * @author schmidtm
  */
-public enum GroovyCompilerErrorID {
-    FAILURE1, CLASS_NOT_FOUND
+public class FixImportsAction extends AbstractAction implements EditorAction {
+
+    private final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
+    String NAME = "Fix-Imports";
+
+    public FixImportsAction() {
+        super("Fix-Imports");
+        putValue("PopupMenuText", NAME);
+        LOG.setLevel(Level.FINEST);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // here should go all the logic whether there are in fact missing 
+        // imports we're able to fix.
+        return true;
+    }
+
+    void actionPerformed(final JTextComponent comp) {
+        LOG.log(Level.FINEST, "actionPerformed(final JTextComponent comp)");
+        return;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        LOG.log(Level.FINEST, "actionPerformed(ActionEvent e)");
+        return;
+    }
+
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        LOG.log(Level.FINEST, "actionPerformed(ActionEvent evt, JTextComponent target)");
+        return;
+    }
+
+    public String getActionName() {
+        return NAME;
+    }
+
+    public Class getShortDescriptionBundleClass() {
+        return FixImportsAction.class;
+    }
 }

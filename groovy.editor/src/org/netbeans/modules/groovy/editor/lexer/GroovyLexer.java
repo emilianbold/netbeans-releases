@@ -145,7 +145,11 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     case GroovyTokenTypes.STRING_CTOR_END:
                         intId = GroovyTokenTypes.STRING_LITERAL;
                         break;
-                    case GroovyTokenTypes.EOF: return null;
+                    case GroovyTokenTypes.EOF: 
+                        if (lexerInput.readLength() > 0) {
+                            return recovery();
+                        }
+                        return null;
                 }
                 
                 return createToken(intId, len);
@@ -161,20 +165,10 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             }
         } catch (TokenStreamException e) {
             LOG.finest("Caught exception: " + e);
-            int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
-            int tokenLength = lexerInput.readLength();
-            
-            scanner.resetText();
-            
-            while (len < tokenLength) {
-                LOG.finest("Consuming character");
-                scannerConsumeChar();
-                len++;
-            }
-            return createToken(GroovyTokenId.ERROR.ordinal(), tokenLength);
+            return recovery();
         }
     }
-    
+
     public Object state() {
         return scanner.getState();
     }
@@ -182,6 +176,20 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     public void release() {
     }
 
+    private Token<GroovyTokenId> recovery() {
+        int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
+        int tokenLength = lexerInput.readLength();
+
+        scanner.resetText();
+
+        while (len < tokenLength) {
+            LOG.finest("Consuming character");
+            scannerConsumeChar();
+            len++;
+        }
+        return tokenLength > 0 ? createToken(GroovyTokenId.ERROR.ordinal(), tokenLength) : null;
+    }
+    
     private static class MyCharBuffer extends CharBuffer {
         public MyCharBuffer(Reader reader) {
             super( reader );

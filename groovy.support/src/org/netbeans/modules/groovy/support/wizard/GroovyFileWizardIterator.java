@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.groovy.support.GroovyLookupProvider;
 import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -126,11 +127,18 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         FileObject template = Templates.getTemplate(wiz);
         
         DataObject dTemplate = DataObject.find(template);
-        DataObject dobj = dTemplate.createFromTemplate(df, targetName, 
-                Collections.singletonMap("package", getSelectedPackageName(dir)));
+        String pkgName = getSelectedPackageName(dir);
+        DataObject dobj = null;
+        if (pkgName == null) {
+            dobj = dTemplate.createFromTemplate(df, targetName);
+        } else {
+            dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
+        }
+                
         FileObject createdFile = dobj.getPrimaryFile();
         
-        if (!extender.isGroovyEnabled()) {
+        initExtender();
+        if (extender != null && !extender.isGroovyEnabled()) {
             extender.enableGroovy();
         }
         
@@ -144,7 +152,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
     
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        this.extender = new GroovyProjectExtender(Templates.getProject(wiz));
         index = 0;
         panels = createPanels( wiz );
         // Make sure list of steps is accurate.
@@ -221,6 +228,16 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
             l.stateChanged(ev);
         }
     }
+    
+    private GroovyProjectExtender initExtender() {
+        if (extender == null && wiz != null) {
+            Project project = Templates.getProject(wiz);
+            if (project != null) {
+                this.extender = project.getLookup().lookup(GroovyProjectExtender.class);
+            }
+        }
+        return extender;
+    }
      
     private static String getSelectedPackageName(FileObject targetFolder) {
         Project project = FileOwnerQuery.getOwner(targetFolder);
@@ -233,7 +250,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         if (packageName != null) {
             packageName = packageName.replaceAll("/", "."); // NOI18N
         }
-        return packageName + ""; // NOI18N
+        return packageName;
     }
     
     private class ValidatingPanel extends DelegatingWizardDescriptorPanel {
@@ -245,7 +262,8 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         
         public boolean isValid() {
             if (super.isValid()) {
-                if (!extender.isGroovyEnabled()) {
+                initExtender();
+                if (extender != null && !extender.isGroovyEnabled()) {
                     getWizardDescriptor().putProperty("WizardPanel_errorMessage",
                             NbBundle.getMessage(GroovyFileWizardIterator.class, "ERR_GroovyNotEnabled")); // NOI18N
                 }

@@ -12,10 +12,12 @@ import javax.swing.JFileChooser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import java.io.File;
+import java.text.MessageFormat;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 
 
 /**
@@ -38,7 +40,11 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         }
     
     void read (WizardDescriptor d) {
-        //TODO:
+        Integer count = (Integer) d.getProperty("WizardPanel_GrailsProjectCounter");
+        String formater = NbBundle.getMessage(GetProjectLocationPanel.class, "TXT_GrailsApplication");
+        String newPrjName = MessageFormat.format(formater, count.intValue());
+        projectNameTextField.setText(newPrjName);
+        
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {

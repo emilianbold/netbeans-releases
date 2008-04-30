@@ -55,7 +55,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -229,7 +228,7 @@ class ScriptExecSupport {
                 }
                 
                 Runtime rt = Runtime.getRuntime();
-                Process proc = rt.exec( command, null );
+                Process proc = rt.exec( command, env );
                 
                 if ( io != null ) {
                     StreamRedirect errorGobbler = new StreamRedirect( fileObject, proc.getErrorStream(), io.getErr() );
@@ -267,14 +266,8 @@ class ScriptExecSupport {
         if (project == null)
             return ""; //NOI18N
 
-        ClassPathProvider cpp = project.getLookup().lookup( ClassPathProvider.class );
-        if ( cpp == null )
-            return ""; //NOI18N
-        
-        ClassPath cp = cpp.findClassPath( fileObject, ClassPath.EXECUTE );
-        if ( cp == null )
-            return ""; //NOI18N
-        
+        ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
+       
         FileObject[] roots = cp.getRoots();
         if (roots.length == 0)
             return ""; //NOI18N

@@ -48,6 +48,14 @@
             <folder name="x-groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.Bundle"/>
 
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.actions.FixImportsAction"/>
+                        <attr name="position" intvalue="801"/>
+                    </file>
+                </folder>
+
+
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.lexer.GroovyTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>

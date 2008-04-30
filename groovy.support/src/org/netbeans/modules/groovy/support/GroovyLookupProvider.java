@@ -39,69 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.support.customizer;
+package org.netbeans.modules.groovy.support;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JComponent;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.support.GroovyProjectExtender;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Martin Adamek
  */
-public final class GroovyCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public class GroovyLookupProvider implements LookupProvider {
 
-    private static final String GROOVY = "Groovy"; // NOI18N
-
-    public static GroovyCustomizer create() {
-        return new GroovyCustomizer();
+    public static GroovyLookupProvider createJavaSE() {
+        return new GroovyLookupProvider();
     }
 
-    public Category createCategory(Lookup context) {
-        ProjectCustomizer.Category category = ProjectCustomizer.Category.create(
-                GROOVY,
-                NbBundle.getMessage(GroovyCustomizer.class, "LBL_Groovy_Compiling"),
-                null,
-                (ProjectCustomizer.Category[]) null
-                );
-        category.setStoreListener(new StoreActionListener(context));
-        return category;
-    }
-
-    public JComponent createComponent(Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        GroovyProjectExtender extender = null;
-        if (project != null) {
-            extender = project.getLookup().lookup(GroovyProjectExtender.class);
-        }
-        return new GroovyCustomizerPanel(extender);
-    }
+    private GroovyLookupProvider() {}
     
-    private static final class StoreActionListener implements ActionListener {
-
-        private final Lookup context;
-        
-        public StoreActionListener(Lookup context) {
-            this.context = context;
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        Project project = baseContext.lookup(Project.class);
+        if (project == null) {
+            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
         }
-        
-        public void actionPerformed(ActionEvent e) {
-            
-            Project project = context.lookup(Project.class);
-            if (project != null) {
-                GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
-                if (extender != null) {
-                    extender.enableGroovy();
-                }
-            }
-        }
-        
+        List<Object> instances = new ArrayList<Object>(3);
+        instances.add(new GroovyProjectExtender(project));
+        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
     }
-    
+
 }

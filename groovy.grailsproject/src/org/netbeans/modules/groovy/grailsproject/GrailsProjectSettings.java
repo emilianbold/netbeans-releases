@@ -37,12 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.groovy.grailsproject;
+
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
+import java.io.File;
 
 /**
  *
  * @author schmidtm
  */
-public enum GroovyCompilerErrorID {
-    FAILURE1, CLASS_NOT_FOUND
+public class GrailsProjectSettings {
+    
+    private static final GrailsProjectSettings INSTANCE = new GrailsProjectSettings();
+    
+    private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
+    private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
+    
+    public static GrailsProjectSettings getDefault () {
+        return INSTANCE;
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(GrailsProjectSettings.class);
+    }
+
+    public int getNewProjectCount () {
+        return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
+    }
+
+    public void setNewProjectCount (int count) {
+        getPreferences().putInt(NEW_PROJECT_COUNT, count);
+    }    
+    
+    public File getLastUsedArtifactFolder () {
+        return new File (getPreferences().get(LAST_USED_ARTIFACT_FOLDER, System.getProperty("user.home")));
+    }
+
+    public void setLastUsedArtifactFolder (File folder) {
+        assert folder != null : "Folder can not be null";
+        String path = folder.getAbsolutePath();
+        getPreferences().put(LAST_USED_ARTIFACT_FOLDER, path);
+    }   
+    
 }

@@ -108,9 +108,13 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     }
                     String name = fo.getName();
                     sb.append("public class " + name + "{}"); // NOI18N
-                    result.add(file, pkg, file.getName(), sb.toString());
+                    result.add(file, pkg, name, sb.toString());
                 }
             } else {
+                
+                // TODO: temporary workaround for #134067, taking only 1st class from file!
+                classNodes = Collections.singletonList(classNodes.get(0));
+                
                 for (ClassNode classNode : classNodes) {
                     try {
                         CharSequence javaStub = generator.generateClass(classNode);
