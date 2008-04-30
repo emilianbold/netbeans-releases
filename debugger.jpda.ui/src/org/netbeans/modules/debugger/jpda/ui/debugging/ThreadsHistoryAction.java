@@ -93,13 +93,6 @@ public final class ThreadsHistoryAction extends AbstractAction {
                         KeyboardPopupSwitcher.selectItem(
                                 createSwitcherItems(threads),
                                 releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
-                    } else {
-//                        KeyEvent kev = new KeyEvent(
-//                            new JLabel(), KeyEvent.KEY_PRESSED, evt.getWhen(), // [TODO] JLabel
-//                            keyStroke.getModifiers(), keyStroke.getKeyCode(),
-//                            keyStroke.getKeyChar()
-//                        );
-//                        KeyboardPopupSwitcher.processShortcut(kev);
                     }
                     return;
                 }
@@ -149,7 +142,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    /** Only here for fix #41477:, called from layer.xml:
+    /* Only here for fix #41477:, called from layer.xml:
      * For KDE on unixes, Ctrl+TAB is occupied by OS,
      * so we also register Ctrl+BACk_QUOTE as recent view list action shortcut.
      * For other OS's, Ctrl+TAB is the only default, because we create link
