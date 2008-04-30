@@ -46,20 +46,37 @@ import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class GetPropertiesCommand extends SvnCommand {
+public class ListPropertiesCommand extends SvnCommand {
 
+    private enum ListType {
+        url,
+        file
+    }
+    
     private List<String> output = new ArrayList<String>();
     private final File file;
     private final boolean rec;
-
-    public GetPropertiesCommand(File file, boolean rec) {
+    private final SVNUrl url;
+    private final ListType type;
+    
+    public ListPropertiesCommand(File file, boolean rec) {
         this.file = file;
         this.rec = rec;
+        url = null;
+        type = ListType.file;
+    }
+    
+    public ListPropertiesCommand(SVNUrl url, boolean rec) {
+        this.url = url;        
+        this.rec = rec;
+        file = null;
+        type = ListType.url;        
     }
     
     @Override
@@ -68,13 +85,25 @@ public class GetPropertiesCommand extends SvnCommand {
         arguments.add("proplist");
         if (rec) {
             arguments.add("-R");
-        }			
-        arguments.add(file);
+        }			        
+        switch (type) {
+            case file:
+                arguments.add(file);        
+                break;
+            case url:
+                arguments.add(url);
+                break;
+            default:
+                throw new IllegalStateException("Illegal gettype: " + type);                             
+        }        
     }
 
     @Override
     public void outputText(String lineString) {
-        if(lineString == null || lineString.trim().equals("") || lineString.startsWith("Properties on '")) {
+        if(lineString == null || 
+           lineString.trim().equals("") || 
+           lineString.startsWith("Properties on '")) 
+        {
             return;
         }
         output.add(lineString.trim());

@@ -51,7 +51,7 @@ import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CopyCommand;
-import org.netbeans.modules.subversion.client.cli.commands.GetPropertiesCommand;
+import org.netbeans.modules.subversion.client.cli.commands.ListPropertiesCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ImportCommand;
 import org.netbeans.modules.subversion.client.cli.commands.InfoCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ListCommand;
@@ -369,12 +369,44 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     @Override
-    public ISVNProperty propertyGet(SVNUrl arg0, String arg1) throws SVNClientException {
-        return super.propertyGet(arg0, arg1);
+    public ISVNProperty propertyGet(SVNUrl url, String name) throws SVNClientException {
+        return super.propertyGet(url, name);
     }
 
-    public ISVNProperty propertyGet(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, String arg3) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNProperty propertyGet(final SVNUrl url, SVNRevision rev, SVNRevision peg, final String name) throws SVNClientException {
+        // XXX
+        try {
+            PropertyGetCommand cmd = new PropertyGetCommand(url, rev, peg, name);
+            InputStream is = execBinary(cmd);
+            int data = -1;
+            final List<Byte> byteList = new ArrayList<Byte>();
+            while ((data = is.read()) != -1) {
+                byteList.add(new Byte((byte) data));                
+            }
+            final byte[] bytes = new byte[byteList.size()];
+            for (int i = 0; i < byteList.size(); i++) {
+                bytes[i] = byteList.get(i);                
+            }
+            return new ISVNProperty() {
+                public String getName() {
+                    return name;
+                }
+                public String getValue() {
+                    return new String(bytes);
+                }
+                public File getFile() {
+                    return null;
+                }
+                public SVNUrl getUrl() {
+                    return url;
+                }
+                public byte[] getData() {
+                    return bytes;
+                }
+            };
+        } catch (IOException ex) {
+            throw new SVNClientException(ex);
+        }
     }
 
     @Override
@@ -401,7 +433,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNProperty[] getProperties(File file) throws SVNClientException {
-        GetPropertiesCommand cmd = new GetPropertiesCommand(file, false);
+        ListPropertiesCommand cmd = new ListPropertiesCommand(file, false);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
@@ -411,8 +443,15 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return props.toArray(new ISVNProperty[props.size()]);
     }
 
-    public ISVNProperty[] getProperties(SVNUrl arg0) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNProperty[] getProperties(SVNUrl url) throws SVNClientException {
+        ListPropertiesCommand cmd = new ListPropertiesCommand(url, false);
+        exec(cmd);
+        List<String> names = cmd.getPropertyNames();
+        List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
+        for (String name : names) {
+            props.add(propertyGet(url, name));
+        }
+        return props.toArray(new ISVNProperty[props.size()]);
     }
 
     public void resolved(File arg0) throws SVNClientException {
