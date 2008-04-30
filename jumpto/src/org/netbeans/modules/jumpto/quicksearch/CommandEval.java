@@ -36,32 +36,29 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
+package org.netbeans.modules.jumpto.quicksearch;
+
+import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
+import org.netbeans.spi.jumpto.quicksearch.SearchProvider;
+import org.openide.util.Lookup;
 
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ *
+ * @author Jan Becicka
  */
-public abstract class TypeProviderAccessor {
-
-    public static TypeProviderAccessor DEFAULT;
-
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+public class CommandEval {
+    
+    public static Iterable<? extends SearchResultGroup> evaluate(String command) {
+        
+        List< SearchResultGroup> l = new ArrayList< SearchResultGroup>();
+        for (SearchProvider provider:Lookup.getDefault().lookupAll(SearchProvider.class)) {
+            l.add(provider.evaluate(command));
         }
+        return l;
+       
     }
 
-    public abstract Context createContext(Project p, String text, SearchType t);
-
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
 }

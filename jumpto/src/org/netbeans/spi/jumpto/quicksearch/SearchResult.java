@@ -36,32 +36,16 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
+package org.netbeans.spi.jumpto.quicksearch;
 
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ *
+ * @author  Jan Becicka
  */
-public abstract class TypeProviderAccessor {
 
-    public static TypeProviderAccessor DEFAULT;
-
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public abstract Context createContext(Project p, String text, SearchType t);
-
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+public interface SearchResult {
+    public void invoke();
+    public String getDisplayName();
+    public SearchResultGroup getResultGroup();
 }

@@ -36,32 +36,84 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
+
+package org.netbeans.modules.jumpto.quicksearch;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.spi.jumpto.quicksearch.SearchProvider;
+import org.netbeans.spi.jumpto.quicksearch.SearchResult;
+import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
 
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ *
+ * @author  Jan Becicka
  */
-public abstract class TypeProviderAccessor {
+public class JavaTypeSearchProvider implements SearchProvider {
 
-    public static TypeProviderAccessor DEFAULT;
-
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public String getCommandPrefix() {
+        return "t";
     }
 
-    public abstract Context createContext(Project p, String text, SearchType t);
+    public SearchResultGroup evaluate(String pattern) {
+        GoToTypeWorker worker = new GoToTypeWorker(pattern);
+        worker.run();
+        MyResult r = new MyResult(pattern);
+        for (TypeDescriptor ts:worker.getTypes()) {
+            r.addCommand(ts);
+        }
+        return r;
+    }
+    
+    private static class MyResult implements SearchResultGroup {
 
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+        private String command;
+        private Collection<SearchResult> items;
+        public MyResult(String command) {
+            this.command = command;
+            items = new ArrayList<SearchResult>();
+        }
+
+        public Iterable<? extends SearchResult> getItems() {
+            return items;
+        }
+
+        public String getCategory() {
+            return "Go To Type";
+        }
+
+        public int getSize() {
+            return items.size();
+        }
+        
+        public void addCommand(TypeDescriptor td) {
+            items.add(new MyCommand(td, this));
+        }
+
+    }
+    
+    private static class MyCommand implements SearchResult {
+        private TypeDescriptor command;
+        private SearchResultGroup group;
+        
+        public MyCommand(TypeDescriptor command, SearchResultGroup group) {
+            this.command = command;
+            this.group = group;
+        }
+        
+        
+        public void invoke() {
+            command.open();
+        }
+
+        public String getDisplayName() {
+            return command.getSimpleName();
+        }
+
+        public SearchResultGroup getResultGroup() {
+            return group;
+        }
+    }    
 }

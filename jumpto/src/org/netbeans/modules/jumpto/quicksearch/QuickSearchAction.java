@@ -36,32 +36,46 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
+package org.netbeans.modules.jumpto.quicksearch;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ *
+ * @author  Jan Becicka
  */
-public abstract class TypeProviderAccessor {
+public final class QuickSearchAction extends CallableSystemAction {
 
-    public static TypeProviderAccessor DEFAULT;
-
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+   QuickSearchComboBar retValue = new QuickSearchComboBar();
+   
+   public void performAction() {
+       System.out.println("test");
+       retValue.requestFocus();
+        // TODO implement action body
     }
 
-    public abstract Context createContext(Project p, String text, SearchType t);
+    public String getName() {
+        return NbBundle.getMessage(QuickSearchAction.class, "CTL_QuickSearchAction");
+    }
 
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/jumpto/resources/edit_parameters.png";
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public java.awt.Component getToolbarPresenter() {
+        return retValue;
+    }
+    
 }

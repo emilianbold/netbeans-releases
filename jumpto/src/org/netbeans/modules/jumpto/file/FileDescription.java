@@ -275,7 +275,7 @@ public class FileDescription {
     
     public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
         
-        public static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/file/resources/wait.gif") ); // NOI18N
+        public static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/resources/wait.gif") ); // NOI18N
         
         
         private JPanel rendererComponent;
