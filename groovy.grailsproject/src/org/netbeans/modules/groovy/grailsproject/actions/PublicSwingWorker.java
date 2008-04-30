@@ -40,13 +40,12 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.groovy.grails.api.GrailsServer;
-import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
 import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
 import org.openide.DialogDisplayer;
@@ -57,6 +56,8 @@ import org.openide.windows.OutputWriter;
 import org.netbeans.api.project.Project;
 import org.openide.util.Cancellable;
 import java.util.concurrent.CountDownLatch;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 
 
@@ -127,12 +128,17 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerState;
             io.select();
             writer = io.getOut();
 
-            GrailsServer server = GrailsServerFactory.getServer();
-            process = server.runCommand(prj, command, io, dirName);
-
-            if (process == null) {
-                displayGrailsProcessError(server.getLastError());
-                return;
+            // FIXME hack that should be cleaned
+            if (command.startsWith("create-app")) {
+                process = ExecutionSupport.getInstance().executeCreateApp(new File(dirName));
+            } else if (command.startsWith("run-app")) {
+                process = ExecutionSupport.getInstance().executeRunApp(GrailsProjectConfig.forProject(prj));
+                GrailsServerState state = prj.getLookup().lookup(GrailsServerState.class);
+                if (state != null) {
+                    state.setProcess(process);
+                }
+            } else {
+                process = ExecutionSupport.getInstance().executeSimpleCommand(command, GrailsProjectConfig.forProject(prj));
             }
 
             assert process != null;

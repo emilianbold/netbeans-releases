@@ -84,7 +84,7 @@ public final class GrailsSettings {
         assert prj != null;
         String value = getPreferences().get(getEnvKey(prj), null);
         if (value != null) {
-            return GrailsEnvironment.forString(value);
+            return GrailsEnvironment.valueOf(value);
         }
         return null;
     }

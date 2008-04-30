@@ -51,29 +51,35 @@ public class GrailsEnvironmentTest extends NbTestCase{
         super(name);
     }
 
-    public void testForString() {
-        assertEquals(GrailsEnvironment.DEVELOPMENT, GrailsEnvironment.forString("Development"));
-        assertEquals(GrailsEnvironment.PRODUCTION, GrailsEnvironment.forString("Production"));
-        assertEquals(GrailsEnvironment.TEST, GrailsEnvironment.forString("Test"));
+    public void testValueOf() {
+        GrailsEnvironment env = GrailsEnvironment.valueOf("dev");
+        assertEquals(GrailsEnvironment.DEV, env);
+        assertFalse(env.isCustom());
+
+        env = GrailsEnvironment.valueOf("prod");
+        assertEquals(GrailsEnvironment.PROD, env);
+        assertFalse(env.isCustom());
+
+        env = GrailsEnvironment.valueOf("test");
+        assertEquals(GrailsEnvironment.TEST, env);
+        assertFalse(env.isCustom());
+
+        env = GrailsEnvironment.valueOf("something");
+        assertNotNull(env);
+        assertTrue(env.isCustom());
 
         try {
-            GrailsEnvironment.forString(null);
+            GrailsEnvironment.valueOf(null);
             fail("Method forString accepts null");
         } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            GrailsEnvironment.forString("Something");
-            fail("Unknown environment allowed");
-        } catch (IllegalArgumentException ex) {
             // expected
         }
     }
 
     public void testToString() {
-        assertEquals("Development", GrailsEnvironment.DEVELOPMENT.toString());
-        assertEquals("Production", GrailsEnvironment.PRODUCTION.toString());
-        assertEquals("Test", GrailsEnvironment.TEST.toString());
+        assertEquals("dev", GrailsEnvironment.DEV.toString());
+        assertEquals("prod", GrailsEnvironment.PROD.toString());
+        assertEquals("test", GrailsEnvironment.TEST.toString());
+        assertEquals("something", GrailsEnvironment.valueOf("something").toString());
     }
 }

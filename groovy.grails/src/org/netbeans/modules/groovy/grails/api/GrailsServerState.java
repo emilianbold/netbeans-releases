@@ -57,17 +57,19 @@ public class GrailsServerState implements TaskListener{
         // LOG.setLevel(Level.FINEST);
         }
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return running;
     }
 
-    public void setRunning(boolean running) {
+    public synchronized void setRunning(boolean running) {
         this.running = running;
         LOG.log(Level.FINEST, "Project: " + name + " , setRunning() called: " + running );
     }
 
     public void taskFinished(Task task) {
-        running = false;
+        synchronized(this) {
+            running = false;
+        }
         LOG.log(Level.FINEST, "Project: " + name + " , taskFinished() called");
     }
 
@@ -129,7 +131,9 @@ public class GrailsServerState implements TaskListener{
             } else {
                 process.destroy();
             }
-
+            synchronized(this) {
+                running = false;
+            }
         } else {
             LOG.log(Level.FINEST, "Project: " + name + " , destroy() called, but no process running");
         }

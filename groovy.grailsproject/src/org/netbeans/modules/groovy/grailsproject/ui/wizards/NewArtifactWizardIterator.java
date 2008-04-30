@@ -43,8 +43,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.netbeans.modules.groovy.grails.api.GrailsServer;
-import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;

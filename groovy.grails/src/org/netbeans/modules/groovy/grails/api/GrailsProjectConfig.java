@@ -50,10 +50,19 @@ import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 public class GrailsProjectConfig {
 
     private final Project prj;
+
     private final GrailsSettings settings = GrailsSettings.getInstance();
 
-    public GrailsProjectConfig(Project prj) {
+    private GrailsProjectConfig(Project prj) {
         this.prj = prj;
+    }
+
+    public static GrailsProjectConfig forProject(Project project) {
+        return new GrailsProjectConfig(project);
+    }
+
+    public Project getProject() {
+        return prj;
     }
 
     public String getPort() {
@@ -65,11 +74,11 @@ public class GrailsProjectConfig {
         settings.setPortForProject(prj, port);
     }
 
-    public GrailsEnvironment getEnv() {
+    public GrailsEnvironment getEnvironment() {
         return settings.getEnvForProject(prj);
     }
 
-    public void setEnv(GrailsEnvironment env) {
+    public void setEnvironment(GrailsEnvironment env) {
         assert env != null;
         settings.setEnvForProject(prj, env);
     }

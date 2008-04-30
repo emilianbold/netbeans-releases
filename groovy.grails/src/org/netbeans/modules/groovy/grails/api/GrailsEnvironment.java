@@ -46,16 +46,13 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hejl
  */
-public enum GrailsEnvironment {
+public final class GrailsEnvironment {
 
-    /** Development environment. */
-    DEVELOPMENT("Development"), // NOI18N
+    public static final GrailsEnvironment DEV = new GrailsEnvironment("dev"); // NOI18N
 
-    /** Production environment. */
-    PRODUCTION("Production"), // NOI18N
+    public static final GrailsEnvironment PROD = new GrailsEnvironment("prod"); // NOI18N
 
-    /** Test environment. */
-    TEST("Test"); // NOI18N
+    public static final GrailsEnvironment TEST = new GrailsEnvironment("test"); // NOI18N
 
     private final String value;
 
@@ -63,27 +60,26 @@ public enum GrailsEnvironment {
         this.value = value;
     }
 
-    /**
-     * Find the enum value for the given string representation of the grails
-     * environment.
-     *
-     * @param value the grails environment
-     * @return enum representing the value
-     * @throws IllegalArgumentException if the value is not the known value of
-     *             grails environment
-     */
-    public static GrailsEnvironment forString(String value) {
+    public static GrailsEnvironment valueOf(String value) {
         Parameters.notNull("value", value);
 
-        if ("Development".equals(value)) { // NOI18N
-            return DEVELOPMENT;
-        } else if ("Production".equals(value)) { // NOI18N
-            return PRODUCTION;
-        } else if ("Test".equals(value)) { // NOI18N
+        if (DEV.toString().equals(value)) {
+            return DEV;
+        } else if (PROD.toString().equals(value)) {
+            return PROD;
+        } else if (TEST.toString().equals(value)) {
             return TEST;
         } else {
-            throw new IllegalArgumentException("Unknown environment type"); // NOI18N
+            return new GrailsEnvironment(value);
         }
+    }
+
+    public static GrailsEnvironment[] standardValues() {
+        return new GrailsEnvironment[] {DEV, PROD, TEST};
+    }
+
+    public boolean isCustom() {
+        return this != DEV && this != PROD && this != TEST;
     }
 
     /**
@@ -95,4 +91,27 @@ public enum GrailsEnvironment {
     public String toString() {
         return value;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final GrailsEnvironment other = (GrailsEnvironment) obj;
+        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.value != null ? this.value.hashCode() : 0);
+        return hash;
+    }
+
 }

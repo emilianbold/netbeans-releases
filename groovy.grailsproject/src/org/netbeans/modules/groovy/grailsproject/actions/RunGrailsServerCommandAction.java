@@ -70,6 +70,12 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
             writer = psw.getWriter();
         }
 
+        if (line.contains("Server running")) {
+            GrailsServerState state = prj.getLookup().lookup(GrailsServerState.class);
+            if (state != null) {
+                state.setRunning(true);
+            }
+        }
         if (line.contains("Browse to http:/")) {
             writer.println(line, this);
             startBrowserWithUrl(line);

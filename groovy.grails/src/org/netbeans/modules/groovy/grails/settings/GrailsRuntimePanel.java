@@ -79,6 +79,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel5.setLabelFor(grailsHomeLocation);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel5.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

@@ -27,7 +27,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
     
     /** Creates new form GeneralCustomizerPanel */
     public GeneralCustomizerPanel(Project prj) {
-        prjConfig = new GrailsProjectConfig(prj);
+        prjConfig = GrailsProjectConfig.forProject(prj);
         initComponents();
         
         projectFolderTextField.setText(FileUtil.getFileDisplayName(prj.getProjectDirectory()));
@@ -51,7 +51,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
         // 1 : "Production", 
         // 2 : "Test"
         
-        GrailsEnvironment[] envs = GrailsEnvironment.values();
+        GrailsEnvironment[] envs = GrailsEnvironment.standardValues();
         Object[] values = new Object[envs.length];
         for (int i = 0; i < envs.length; i++) {
             values[i] = new EnvironmentItem(envs[i]);
@@ -59,7 +59,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
         
         grailsEnvChooser.setModel(new DefaultComboBoxModel(values));
         
-        GrailsEnvironment env = prjConfig.getEnv();
+        GrailsEnvironment env = prjConfig.getEnvironment();
 
         if (env != null) {
             grailsEnvChooser.setSelectedItem(new EnvironmentItem(env));
@@ -208,7 +208,7 @@ private void autodeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     public void itemStateChanged(ItemEvent e) {
-        prjConfig.setEnv(((EnvironmentItem) e.getItem()).getEnvironment());
+        prjConfig.setEnvironment(((EnvironmentItem) e.getItem()).getEnvironment());
         
     }
     
@@ -226,7 +226,8 @@ private void autodeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
 
         @Override
         public String toString() {
-            return NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel." + environment.name());
+            return NbBundle.getMessage(GeneralCustomizerPanel.class,
+                    "GeneralCustomizerPanel." + environment.toString());
         }
 
         @Override

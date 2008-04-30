@@ -40,7 +40,14 @@
 package org.netbeans.modules.groovy.grails.api;
 
 import java.io.File;
+import java.nio.Buffer;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Utilities;
 
 /**
@@ -48,6 +55,8 @@ import org.openide.util.Utilities;
  * @author Petr Hejl
  */
 public final class GrailsRuntime {
+
+    private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
 
     private static final String WIN_EXECUTABLE = "\\bin\\grails.bat"; // NOI18N
 
@@ -64,6 +73,13 @@ public final class GrailsRuntime {
             instance = new GrailsRuntime();
         }
         return instance;
+    }
+
+    public Callable<Process> createCommand(CommandDescriptor descriptor) {
+        if (!isConfigured()) {
+            throw new IllegalStateException("Grails not configured"); // NOI18N
+        }
+        return new GrailsCallable(descriptor);
     }
 
     public boolean isConfigured() {
@@ -85,5 +101,133 @@ public final class GrailsRuntime {
     private boolean checkForGrailsExecutable(File pathToGrails) {
         String pathToBinary = Utilities.isWindows() ? WIN_EXECUTABLE : NIX_EXECUTABLE;
         return new File(pathToGrails, pathToBinary).isFile();
+    }
+
+    private static String createJvmArguments(Properties properties) {
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+
+        for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
+            String key = e.nextElement().toString();
+            String value = properties.getProperty(key);
+            if (value != null) {
+                if (i > 0) {
+                    builder.append(" "); // NOI18N
+                }
+                builder.append("-D").append(key); // NOI18N
+                builder.append("="); // NOI18N
+                builder.append(value);
+                i++;
+            }
+        }
+        return builder.toString();
+    }
+
+    private static String createCommandArguments(String[] arguments) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < arguments.length; i++) {
+            if (i > 0) {
+                builder.append(" "); // NOI18N
+            }
+            builder.append(arguments[i]);
+        }
+        return builder.toString();
+    }
+
+    public static final class CommandDescriptor {
+
+        private final String name;
+
+        private final File directory;
+
+        private final GrailsEnvironment environment;
+
+        private final String[] arguments;
+
+        private final Properties props;
+
+        public CommandDescriptor(String name, File directory, GrailsEnvironment env) {
+            this(name, directory, env, new String[] {}, new Properties());
+        }
+
+        public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments) {
+            this(name, directory, env, arguments, new Properties());
+        }
+
+        public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments, Properties props) {
+            this.name = name;
+            this.directory = directory;
+            this.environment = env;
+            this.arguments = arguments.clone();
+            this.props = new Properties(props);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public File getDirectory() {
+            return directory;
+        }
+
+        public GrailsEnvironment getEnvironment() {
+            return environment;
+        }
+
+        public String[] getArguments() {
+            return arguments.clone();
+        }
+
+        public Properties getProps() {
+            return new Properties(props);
+        }
+
+    }
+
+    private static class GrailsCallable implements Callable<Process> {
+
+        private final CommandDescriptor descriptor;
+
+        public GrailsCallable(CommandDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+
+        public Process call() throws Exception {
+            String executable =  Utilities.isWindows() ? WIN_EXECUTABLE : NIX_EXECUTABLE;
+            File grailsExecutable = new File(GrailsSettings.getInstance().getGrailsBase(), executable);
+
+            if (!grailsExecutable.exists()) {
+                LOGGER.log(Level.WARNING, "Executable doesn't exist: "
+                        + grailsExecutable.getAbsolutePath());
+
+                return null;
+            }
+
+            LOGGER.log(Level.FINEST, "About to run: " + descriptor.getName());
+
+            Properties props = new Properties(descriptor.getProps());
+            if (descriptor.getEnvironment() != null && descriptor.getEnvironment().isCustom()) {
+                props.setProperty("grails.env", descriptor.getEnvironment().toString()); // NOI18N
+            }
+
+            StringBuilder command = new StringBuilder();
+            command.append(createJvmArguments(props));
+            if (descriptor.getEnvironment() != null && !descriptor.getEnvironment().isCustom()) {
+                command.append(" ").append(descriptor.getEnvironment().toString());
+            }
+            command.append(" ").append(descriptor.getName());
+            command.append(" ").append(createCommandArguments(descriptor.getArguments()));
+
+            LOGGER.log(Level.FINEST, "Command is: " + command.toString());
+
+            NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
+                    grailsExecutable.getAbsolutePath(), command.toString());
+
+            String[] envp = new String[] {"GRAILS_HOME=" // NOI18N
+                    + GrailsSettings.getInstance().getGrailsBase()};
+
+            return grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory());
+        }
+
     }
 }

@@ -86,10 +86,10 @@ public class SettingsTest extends NbTestCase {
         final Project project = new TestProject("test",
                 FileUtil.toFileObject(FileUtil.normalizeFile(this.getWorkDir())));
         assertNull(settings.getEnvForProject(project));
-        settings.setEnvForProject(project, GrailsEnvironment.PRODUCTION);
-        assertEquals(GrailsEnvironment.PRODUCTION, settings.getEnvForProject(project));
-        settings.setEnvForProject(project, GrailsEnvironment.DEVELOPMENT);
-        assertEquals(GrailsEnvironment.DEVELOPMENT, settings.getEnvForProject(project));
+        settings.setEnvForProject(project, GrailsEnvironment.PROD);
+        assertEquals(GrailsEnvironment.PROD, settings.getEnvForProject(project));
+        settings.setEnvForProject(project, GrailsEnvironment.DEV);
+        assertEquals(GrailsEnvironment.DEV, settings.getEnvForProject(project));
     }
 
     public void testAutoDeployFlagForProject() throws IOException {

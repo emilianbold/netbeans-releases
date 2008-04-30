@@ -52,7 +52,7 @@ public class CreateWarFileAction extends AbstractAction implements LineSnooper {
     public CreateWarFileAction(Project prj) {
         super("Create war file");
         this.prj = prj;
-        prjConfig = new GrailsProjectConfig(prj);
+        prjConfig = GrailsProjectConfig.forProject(prj);
         autodeploy = prjConfig.getAutoDeployFlag();
 
     }

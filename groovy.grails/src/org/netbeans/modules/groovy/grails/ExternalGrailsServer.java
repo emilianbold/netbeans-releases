@@ -69,7 +69,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
         String retVal = "";
 
-        GrailsProjectConfig prjConfig = new GrailsProjectConfig(prj);
+        GrailsProjectConfig prjConfig = GrailsProjectConfig.forProject(prj);
 
         if (prjConfig != null) {
             String port = prjConfig.getPort();
@@ -82,7 +82,7 @@ public class ExternalGrailsServer implements GrailsServer{
                 }
             }
 
-            GrailsEnvironment env = prjConfig.getEnv();
+            GrailsEnvironment env = prjConfig.getEnvironment();
 
             if (env != null && !env.equals("")) {
                 retVal = retVal + " -Dgrails.env=" + env + " "; // NOI18N
