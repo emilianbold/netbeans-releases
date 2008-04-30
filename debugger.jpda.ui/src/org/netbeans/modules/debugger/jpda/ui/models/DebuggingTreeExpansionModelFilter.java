@@ -135,6 +135,11 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
                 return true;
             }
         }
+        if (node instanceof JPDAThread) {
+            if (((JPDAThread) node).getCurrentBreakpoint() != null) {
+                return true;
+            }
+        }
         if (node instanceof CallStackFrame) {
             return true;
         }
