@@ -254,7 +254,6 @@ public class ExecuteTestCookie implements Node.Cookie {
                     flowGen.setMonitorDBName(sqlDefn.getDisplayName());
                     flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(sqlDefn.getDisplayName(), sqlDefn.getAxiondbWorkingDirectory()));
                     mLogger.infoNoloc("setting montior folder" + flowGen.getMonitorDBFolder());
-
                     flowGen.applyConnectionDefinitions(true, false);
                     engine = flowGen.getScript();
                     engine.getContext().putValue("AXIONDB_DATA_DIR", sqlDefn.getAxiondbDataDirectory());
