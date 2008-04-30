@@ -75,6 +75,8 @@ public abstract class SpringConfigModelAccessor {
     }
 
     public abstract SpringConfigModel createSpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup);
+    
+    public abstract ConfigFileGroup getConfigFileGroup(SpringConfigModel model);
 
     public abstract DocumentAccess createDocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc);
 }

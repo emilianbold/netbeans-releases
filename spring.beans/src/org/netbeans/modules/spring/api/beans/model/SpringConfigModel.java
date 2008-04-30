@@ -76,6 +76,10 @@ public final class SpringConfigModel {
             public DocumentAccess createDocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc) {
                 return new DocumentAccess(springBeans, file, lockedDoc);
             }
+            @Override
+            public ConfigFileGroup getConfigFileGroup(SpringConfigModel model) {
+                return model.controller.getConfigFileGroup();
+            }
         });
     }
 

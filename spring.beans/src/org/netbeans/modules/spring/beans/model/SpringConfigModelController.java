@@ -88,7 +88,7 @@ public class SpringConfigModelController {
         }
     }
 
-    ConfigFileGroup getConfigFileGroup() {
+    public ConfigFileGroup getConfigFileGroup() {
         return configFileGroup;
     }
 

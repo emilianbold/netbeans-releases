@@ -44,7 +44,10 @@ package org.netbeans.modules.spring.api.beans;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
@@ -120,24 +123,36 @@ public final class SpringScope {
     }
 
     /**
-     * Returns the a list of all known models for all known configuration
-     * files.
+     * Returns the a list of Spring config models for all known configuration
+     * file groups as well as for all files not contained in a group.
      *
      * @return the list of models; never null.
      */
-    public List<SpringConfigModel> getAllFilesConfigModels() {
-        List<File> files = getConfigFileManager().getConfigFiles();
-        List<SpringConfigModel> result = new ArrayList<SpringConfigModel>(files.size());
-        for (File file : files) {
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo == null) {
-                continue;
+    public List<SpringConfigModel> getAllConfigModels() {
+        final List<ConfigFileGroup> groups = new ArrayList<ConfigFileGroup>();
+        final List<File> files = new ArrayList<File>();
+        // Avoid race conditions.
+        configFileManager.mutex().readAccess(new Runnable() {
+            public void run() {
+                groups.addAll(configFileManager.getConfigFileGroups());
+                files.addAll(configFileManager.getConfigFiles());
             }
-            SpringConfigModel model = getFileConfigModel(fo);
-            if (model == null) {
-                continue;
-            }
-            result.add(model);
+        });
+        List<SpringConfigModel> result = new ArrayList<SpringConfigModel>(groups.size());
+        Set<File> modelFiles = new HashSet<File>(groups.size() * 2);
+        // Create models for all config groups, and then for all known config files
+        // not included in a group.
+        for (ConfigFileGroup group : groups) {
+            result.add(SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group));
+            modelFiles.addAll(group.getFiles());
+        }
+        // Using a TreeSet here in order to give deterministic results.
+        Set<File> nonModelFiles = new TreeSet<File>(files);
+        nonModelFiles.removeAll(modelFiles);
+        for (File file : nonModelFiles) {
+            ConfigFileGroup singleFileGroup = ConfigFileGroup.create(Collections.singletonList(file));
+            result.add(SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, singleFileGroup));
+
         }
         return Collections.unmodifiableList(result);
     }

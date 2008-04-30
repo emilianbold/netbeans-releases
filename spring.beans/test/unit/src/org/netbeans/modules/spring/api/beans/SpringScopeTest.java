@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -52,6 +53,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.ConfigFileManagerAccessor;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
+import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.netbeans.modules.spring.beans.TestUtils;
 import org.openide.filesystems.FileObject;
@@ -128,5 +130,26 @@ public class SpringScopeTest extends ConfigFileTestCase {
         assertEquals(2, beanNames.size());
         assertTrue(beanNames.contains("foo"));
         assertTrue(beanNames.contains("bar"));
+    }
+
+    public void testGetAllConfigModels() throws IOException {
+        TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'/>"), configFile);
+        final File configFile2 = createConfigFileName("anotherContext.xml");
+        TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='bar' class='org.example.Bar'/>"), configFile2);
+        ConfigFileGroup group = ConfigFileGroup.create(Arrays.asList(configFile, configFile2));
+        final File configFile3 = createConfigFileName("yetAnotherContext.xml");
+        TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='baz' class='org.example.Baz'/>"), configFile3);
+        final ConfigFileManager manager = ConfigFileManagerAccessor.getDefault().createConfigFileManager(new DefaultConfigFileManagerImpl(
+                new File[] { configFile, configFile2, configFile3 },
+                new ConfigFileGroup[] { group }
+        ));
+        SpringScope scope = SpringScopeAccessor.getDefault().createSpringScope(manager);
+
+        List<SpringConfigModel> models = scope.getAllConfigModels();
+        assertEquals(2, models.size());
+        assertSame(group, SpringConfigModelAccessor.getDefault().getConfigFileGroup(models.get(0)));
+        ConfigFileGroup configFile3GRoup = SpringConfigModelAccessor.getDefault().getConfigFileGroup(models.get(1));
+        assertEquals(1, configFile3GRoup.getFiles().size());
+        assertEquals(configFile3, configFile3GRoup.getFiles().get(0));
     }
 }
