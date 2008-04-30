@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
 
 
@@ -73,7 +74,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     CountDownLatch serverFinished = new CountDownLatch(1);
     boolean        serverRunning = false;
     boolean        serverConfigured = true;
-    
+    int baseCount;
     
     private WizardDescriptor.Panel[] createPanels () {
         
@@ -117,6 +118,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
                    logger.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
                } else {
                    resultSet.add(dir);
+                   GrailsProjectSettings.getDefault().setNewProjectCount(baseCount);
                }
            }
 
@@ -142,6 +144,11 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             serverConfigured = false;
             }
+        
+        // get project counter from GrailsConfiguration
+        
+        baseCount = GrailsProjectSettings.getDefault().getNewProjectCount() + 1;
+        wizard.putProperty("WizardPanel_GrailsProjectCounter", new Integer(baseCount));      
         
         panels = createPanels();
         String[] steps = createSteps();
