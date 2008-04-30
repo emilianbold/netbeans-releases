@@ -50,5 +50,11 @@ made subject to such option by the copyright holder.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/groovy-all.jar!/</resource>
-    </volume>  
+    </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/org/codehaus/groovy/groovy-all/1.5.5/groovy-all-1.5.5.pom</resource>
+    </volume>
+    
 </library>
