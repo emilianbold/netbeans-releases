@@ -76,5 +76,6 @@ public class GrailsServerState {
         if (process != null) {
             process.destroy();
         }
+        setRunning(false);
     }
 }
