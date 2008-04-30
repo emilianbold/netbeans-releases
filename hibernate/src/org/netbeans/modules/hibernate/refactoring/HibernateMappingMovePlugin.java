@@ -54,15 +54,19 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
- *
+ * Plugin for refactor/move Hibernate mapping files
+ * 
  * @author Dongmei Cao
  */
 public class HibernateMappingMovePlugin implements RefactoringPlugin {
 
     private MoveRefactoring refactoring;
     private Project project;
+    private String srcRoot;
+    private ArrayList<MappingFileData> toBeMovedMappingFiles;
 
     public HibernateMappingMovePlugin(MoveRefactoring refactoring) {
         this.refactoring = refactoring;
@@ -77,14 +81,7 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
     }
 
     public Problem fastCheckParameters() {
-        // TODO: verify 
-        return null;
-    }
 
-    public void cancelRequest() {
-    }
-
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
         URL targetURL = refactoring.getTarget().lookup(URL.class);
         if (targetURL == null) {
             // TODO: return a Problem
@@ -96,17 +93,34 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
             // TODO: return a Problem
             return null;
         }
+        
+        // The files to be moved. Can be multiple of them
+        toBeMovedMappingFiles = getToBeMovedMappingFileData(targetPackageName);
 
-        List<String[]> oldNewMappingResources = new ArrayList<String[]>();
-        for (FileObject fo : refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
-            if (project == null) {
-                project = FileOwnerQuery.getOwner(fo);
-            }
+        // The mapping files in the target package
+        ArrayList<MappingFileData> mappingFilesInTargetPkg = getMappingFileDataInTargetPkg(targetPackageName);
 
-            if (fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
-                oldNewMappingResources.add(getOldNewMappingResourceName(fo, targetPackageName));
+        // Make sure the to be moved mapping does not exist in the target package
+        Problem fastCheckProblem = null;
+        for (MappingFileData toBeMovedFo : toBeMovedMappingFiles) {
+
+            for (MappingFileData existingFo : mappingFilesInTargetPkg) {
+                if (!toBeMovedFo.getFo().equals(existingFo.getFo()) && toBeMovedFo.getNewResourcename().equals(existingFo.getResourceName())) {
+
+                    fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem,
+                            true, NbBundle.getMessage(HibernateMappingRenamePlugin.class, "MSG_Name_Exists", toBeMovedFo.getFo().getNameExt()));
+
+                    return fastCheckProblem;
+                }
             }
         }
+        return fastCheckProblem;
+    }
+
+    public void cancelRequest() {
+    }
+
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
 
         // Get the configuration files
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
@@ -116,43 +130,98 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
         }
 
         // TODO: have all the modifications in one transaction
-        for (String[] oldNewResourcePair : oldNewMappingResources) {
+        for(MappingFileData tobemoved : toBeMovedMappingFiles) {
             Map<FileObject, List<OccurrenceItem>> occurrences =
-                    HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, oldNewResourcePair[0]);
+                    HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, tobemoved.getResourceName());
 
             for (FileObject configFile : occurrences.keySet()) {
                 List<OccurrenceItem> foundPlaces = occurrences.get(configFile);
                 for (OccurrenceItem foundPlace : foundPlaces) {
                     HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(configFile,
-                            oldNewResourcePair[0],
-                            oldNewResourcePair[1],
+                            tobemoved.getResourceName(),
+                            tobemoved.getNewResourcename(),
                             foundPlace.getLocation(),
                             foundPlace.getText());
                     refactoringElements.add(refactoring, elem);
                 }
             }
-            refactoringElements.registerTransaction(new HibernateMappingRenameTransaction(occurrences.keySet(), oldNewResourcePair[0], oldNewResourcePair[1]));
+            refactoringElements.registerTransaction(new HibernateMappingRenameTransaction(
+                    occurrences.keySet(), tobemoved.getResourceName(), tobemoved.getNewResourcename()));
         }
 
         return null;
     }
 
-    public static String[] getOldNewMappingResourceName(FileObject fo, String targetPkgName) {
-        String names[] = new String[2]; // [oldName, newName]
-        Project project = FileOwnerQuery.getOwner(fo);
-        SourceGroup[] grp = SourceGroups.getJavaSourceGroups(project);
-        if (grp.length == 0) {
-            return null;
+    private ArrayList<MappingFileData> getToBeMovedMappingFileData(String targetPkgName) {
+
+        ArrayList<MappingFileData> fileData = new ArrayList<MappingFileData>();
+        for (FileObject fo : refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+            if(!fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
+                continue;
+            }
+            
+            if (project == null) {
+                project = FileOwnerQuery.getOwner(fo);
+            }
+
+            if(srcRoot == null) {
+                SourceGroup[] grp = SourceGroups.getJavaSourceGroups(project);
+                if (grp.length == 0) {
+                    return null;
+                }
+
+                srcRoot = grp[0].getRootFolder().getPath();
+            }
+            String oldPath = fo.getPath();
+            String oldResource = oldPath.substring(srcRoot.length() + 1);
+            String fileName = oldResource.substring(oldResource.lastIndexOf("/") + 1);
+            String newResource = targetPkgName + "/" + fileName;
+
+            fileData.add(new MappingFileData(fo, oldResource, newResource));
         }
 
-        String srcRoot = grp[0].getRootFolder().getPath();
-        String oldPath = fo.getPath();
-        String oldResource = oldPath.substring(srcRoot.length() + 1);
-        String fileName = oldResource.substring(oldResource.lastIndexOf("/") + 1);
+        return fileData;
+    }
 
-        names[0] = oldResource;
-        names[1] = targetPkgName + "/" + fileName;
+    private ArrayList<MappingFileData> getMappingFileDataInTargetPkg(String targetPkgName) {
 
-        return names;
+        ArrayList<MappingFileData> fileData = new ArrayList<MappingFileData>();
+        HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+        List<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
+        for (FileObject fo : mappingFiles) {
+            String path = fo.getPath();
+            String resourceName = path.substring(srcRoot.length() + 1);
+            String packageName = resourceName.substring(0, resourceName.lastIndexOf("/"));
+            if (packageName.equals(targetPkgName)) {
+                fileData.add(new MappingFileData(fo, resourceName, null));
+            }
+        }
+
+        return fileData;
+    }
+
+    private class MappingFileData {
+
+        private FileObject fo;
+        private String resourceName;
+        private String newResourcename;
+
+        public MappingFileData(FileObject fo, String resourceName, String newResourcename) {
+            this.fo = fo;
+            this.resourceName = resourceName;
+            this.newResourcename = newResourcename;
+        }
+
+        public FileObject getFo() {
+            return fo;
+        }
+
+        public String getNewResourcename() {
+            return newResourcename;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
     }
 }

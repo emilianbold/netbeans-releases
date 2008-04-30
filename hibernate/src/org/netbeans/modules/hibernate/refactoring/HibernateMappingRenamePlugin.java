@@ -108,7 +108,7 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
         List<String> mappingFiles = hibernateEnv.getAllHibernateMappings();
         if(mappingFiles.contains(newResourceName)){
             fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem, 
-                    true, NbBundle.getMessage(HibernateMappingRenamePlugin.class, "MSG_NameNotUnique"));
+                    true, NbBundle.getMessage(HibernateMappingRenamePlugin.class, "MSG_NameNotUnique", newName));
         } 
 
         return fastCheckProblem;
