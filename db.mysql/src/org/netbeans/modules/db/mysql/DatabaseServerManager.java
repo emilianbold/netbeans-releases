@@ -54,8 +54,7 @@ public class DatabaseServerManager {
 
 
     private static synchronized DatabaseServer lookupDatabaseServer() {
-        return (DatabaseServer)
-                Lookups.forPath(SERVER_PROVIDER_PATH)
+        return Lookups.forPath(SERVER_PROVIDER_PATH)
                     .lookup(DatabaseServer.class);
 
     }
