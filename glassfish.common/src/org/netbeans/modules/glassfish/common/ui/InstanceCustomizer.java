@@ -61,7 +61,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         Map<String, String> ip = commonSupport.getInstanceProperties();
         textLocation.setText(ip.get(GlassfishModule.HOSTNAME_ATTR) + ":" + 
                 ip.get(GlassfishModule.HTTPPORT_ATTR));
-        textDomainsFolder.setText(ip.get(GlassfishModule.HOME_FOLDER_ATTR) + "/domains"); // NOI18N
+        textDomainsFolder.setText(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) + "/domains"); // NOI18N
         textDomainName.setText("domain1"); // NOI18N
         
 //        boolean cometEnabled = Boolean.parseBoolean(ip.get(GlassfishModule.COMET_FLAG));

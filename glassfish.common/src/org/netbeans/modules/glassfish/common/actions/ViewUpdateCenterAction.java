@@ -41,7 +41,13 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
+import org.netbeans.modules.glassfish.common.SimpleIO;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.Node;
@@ -51,6 +57,7 @@ import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
@@ -63,37 +70,60 @@ public class ViewUpdateCenterAction extends NodeAction {
 
     private static final String SHOW_UPDATE_CENTER_ICONBASE = 
             "org/netbeans/modules/glassfish/common/resources/UpdateCenter.gif"; // NOI18N
+
+    private static WeakHashMap<String, Process> taskMap = new WeakHashMap<String, Process>();
     
     @Override
     protected void performAction(Node[] nodes) {
         GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
         if(commonSupport != null) {
-            try {
-                // updatetool already running?  if yes - set focus, return
-                // if no then....
+            // updatetool already running?  if yes, is there a crossplatform way
+            // to set focus to it?
 
-                // locate updatecenter executable 
-                String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.HOME_FOLDER_ATTR);
-                File launcher = getUpdateCenterLauncher(new File(installRoot));
-                
-                // !PW FIXME check to see if run before, if not, run once to download.
-                
-                if(launcher != null) {
-                    // run update tool and log process handle
-                    new NbProcessDescriptor(launcher.getPath(), "").exec();
-                } else {
-                    String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
-                            "MSG_UpdateCenterNotFound", installRoot);
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
-                            NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                }
-            } catch (Exception ex){
-                Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            // If not running, install it if necessary, then run it.
+            Map<String, String> ip = commonSupport.getInstanceProperties();
+            final String serverUrl = ip.get(GlassfishModule.URL_ATTR);
+            final String serverName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
+            final String installRoot = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR);
+            final File installDir = new File(installRoot);
+            final File launcher = getUpdateCenterLauncher(installDir);
+
+            Process p = null;
+            synchronized (taskMap) {
+                p = taskMap.get(serverUrl);
+            }
+            
+            if(p != null) {
+                String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+                        "MSG_UpdateCenterDownloading", serverName);
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
+                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            } 
+
+            if(launcher != null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            if(isUCInstalled(serverName, serverUrl, installDir, launcher)) {
+                                new NbProcessDescriptor(launcher.getPath(), "").exec();
+                            }
+                        } catch(Exception ex) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        }
+                    }
+                });
+            } else {
+                String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+                        "MSG_UpdateCenterNotFound", serverName);
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
+                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
             }
         }
     }
-
+    
     /**
      * Locate update center launcher within the glassfish installation
      *   [installRoot]/updatecenter/bin/updatetool[.BAT]
@@ -101,10 +131,10 @@ public class ViewUpdateCenterAction extends NodeAction {
      * @param asInstallRoot appserver install location
      * @return File reference to launcher, or null if not found.
      */
-    private File getUpdateCenterLauncher(File asInstallRoot) {
+    private File getUpdateCenterLauncher(File installRoot) {
         File result = null;
-        if(asInstallRoot != null && asInstallRoot.exists()) {
-            File updateCenterBin = new File(asInstallRoot, "bin"); // NOI18N
+        if(installRoot != null && installRoot.exists()) {
+            File updateCenterBin = new File(installRoot, "bin"); // NOI18N
             if(updateCenterBin.exists()) {
                 String launcher = "updatetool"; // NOI18N
                 if(Utilities.isWindows()) {
@@ -115,11 +145,67 @@ public class ViewUpdateCenterAction extends NodeAction {
             }
         }
         return result;
-    }    
+    }
+    
+    private boolean isUCInstalled(String serverName, String serverUrl, File installRoot, File launcher) {
+        if(new File(installRoot, "updatetool/bin").exists()) {
+            return true;
+        }
+        
+        String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+                "MSG_QueryInstallUpdateCenter", serverName);
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+        
+        boolean result = false;
+        if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            Writer writer = null;
+            try {
+                Process process = new NbProcessDescriptor(launcher.getPath(), "").exec();
+                synchronized(taskMap) {
+                    taskMap.put(serverUrl, process);
+                }
+                
+                SimpleIO ucIO = new SimpleIO("Update Center Installer", process);
+                ucIO.readInputStreams(process.getInputStream(), process.getErrorStream());
+                writer = new OutputStreamWriter(process.getOutputStream());
+                writer.write("y\n");
+                writer.flush();
+                int exitCode = process.waitFor();
+                Logger.getLogger("glassfish").log(Level.FINEST, "UC exit code = " + exitCode);
+                if(exitCode == 0) {
+                    writer.close();
+                    writer = null;
+                    ucIO.closeIO();
+                    result = true;
+                }
+            } catch(InterruptedException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            } catch(IOException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            } finally {
+                synchronized (taskMap) {
+                    taskMap.remove(serverUrl);
+                }
+                
+                if(writer != null) {
+                    try { writer.close(); } catch(IOException ex) { }
+                }
+            }
+        }
+        return result;
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1 && nodes[0] != null;
+        if(nodes != null && nodes.length == 1 && nodes[0] != null) {
+            GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
+            if(commonSupport != null) {
+                String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.INSTALL_FOLDER_ATTR);
+                return installRoot != null;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -163,6 +163,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 // e.g. domain dir not found, domain.xml corrupt, no ports defined, etc.
                 //
                 File installDir = new File(locationStr);
+                File glassfishDir = getGlassfishRoot(installDir);
                 if(!installDir.exists()) {
                     if(canCreate(installDir)) {
                         if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
@@ -180,11 +181,11 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                                 AddServerLocationPanel.class, "ERR_CannotCreate", locationStr));
                         return false;
                     }
-                } else if(!isValidV3Install(installDir)) {
+                } else if(!isValidV3Install(installDir, glassfishDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
                     return false;
-                } else if(!isValidV3Domain(getDefaultDomain(installDir))) {
+                } else if(!isValidV3Domain(getDefaultDomain(glassfishDir))) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
                     return false;
@@ -205,7 +206,8 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 }
 
                 wizard.putProperty(PROP_ERROR_MESSAGE, null);
-                wizardIterator.setHk2HomeLocation(locationStr);
+                wizardIterator.setInstallRoot(locationStr);
+                wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
                 wizardIterator.setHttpPort(httpPort);
                 wizardIterator.setHttpsPort(httpsPort);
                 wizardIterator.setAdminPort(adminPort);
@@ -262,24 +264,18 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     public void storeSettings(Object settings) {
     }
     
-    private boolean isValidV3Install(File installDir) {
-        
-        File jar = ServerUtilities.getJarName(installDir.getAbsolutePath(), ServerUtilities.GFV3_PREFIX_JAR_NAME);
-        
-        if (jar==null){
-           return false;          
-        }
-         if(!jar.exists()) {
-             return false;
-            
+    private boolean isValidV3Install(File installRoot, File glassfishRoot) {
+        File jar = ServerUtilities.getJarName(glassfishRoot.getAbsolutePath(), ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        if(jar == null || !jar.exists()) {
+            return false;          
         }
         
-        File containerRef = new File(installDir, "config" + File.separator + "glassfish.container");
+        File containerRef = new File(glassfishRoot, "config" + File.separator + "glassfish.container");
         if(!containerRef.exists()) {
             return false;
         }
         
-        File domainRef = new File(installDir, "domains" + File.separator + "domain1");
+        File domainRef = getDefaultDomain(glassfishRoot);
         if(!domainRef.exists()) {
             return false;
         }
@@ -289,6 +285,14 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     
     private boolean isValidV3Domain(File domainDir) {
         return readServerConfiguration(domainDir);
+    }
+    
+    private File getGlassfishRoot(File installRoot) {
+        File glassfishRoot = new File(installRoot, "glassfish");
+        if(!glassfishRoot.exists()) {
+            glassfishRoot = installRoot;
+        }
+        return glassfishRoot;
     }
     
     private File getDefaultDomain(File installDir) {
@@ -319,10 +323,10 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                             boolean enabled = "true".equals(attributes.getValue("enabled"));
                             if(enabled) {
                                 HttpData data = new HttpData(id, port, secure);
-                                Logger.getLogger("glassfish").log(Level.FINE, " Adding " + data);
+                                Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
                                 httpMap.put(id, data);
                             } else {
-                                Logger.getLogger("glassfish").log(Level.FINE, "http-listener " + id + " is not enabled and won't be used.");
+                                Logger.getLogger("glassfish").log(Level.FINER, "http-listener " + id + " is not enabled and won't be used.");
                             }
                         } else {
                             Logger.getLogger("glassfish").log(Level.FINEST, "http-listener found with no name");

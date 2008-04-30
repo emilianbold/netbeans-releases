@@ -101,8 +101,16 @@ public class Hk2PluginProperties {
      *
      * @return
      */
-    public String getHk2JHomeLocation() {
-        return ip.getProperty(GlassfishModule.HOME_FOLDER_ATTR);
+    public String getInstallRoot() {
+        return ip.getProperty(GlassfishModule.INSTALL_FOLDER_ATTR);
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public String getGlassfishRoot() {
+        return ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
     }
 
     /**
@@ -138,7 +146,7 @@ public class Hk2PluginProperties {
      */
     public List<URL> getClasses() {
         List<URL> list = new ArrayList<URL>();
-        File serverDir = new File(getHk2JHomeLocation());
+        File serverDir = new File(getGlassfishRoot());
         try {
 
             File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), "javax.javaee-10.0");

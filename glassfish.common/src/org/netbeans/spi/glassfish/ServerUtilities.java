@@ -156,8 +156,8 @@ public final class ServerUtilities {
      * 
      * @return the File with full path of the jar or null
      */
-   public static File getJarName(String AppServerInstallDir, String jarNamePrefix) {
-        File modulesDir = new File(AppServerInstallDir + File.separatorChar + GFV3_MODULES_DIR_NAME);
+   public static File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
         File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
         
         if(candidates != null && candidates.length > 0) {

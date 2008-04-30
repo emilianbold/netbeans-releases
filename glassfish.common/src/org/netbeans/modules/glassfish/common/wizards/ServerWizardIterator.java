@@ -121,7 +121,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         Set<ServerInstance> result = new HashSet<ServerInstance>();
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
-                glassfishHomeLocation, httpPort, adminPort);
+                installRoot, glassfishRoot, httpPort, adminPort);
         GlassfishInstanceProvider.getDefault().addServerInstance(instance);
         result.add(instance.getCommonInstance());
         return result;
@@ -207,7 +207,8 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
 //    private String userName;
 //    private String password;
-    private String glassfishHomeLocation;
+    private String installRoot;
+    private String glassfishRoot;
     
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
@@ -229,12 +230,16 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
 //        this.password = password;
 //    }
     
-    public void setHk2HomeLocation(String homeLocation) {
-        this.glassfishHomeLocation = homeLocation;
+    public void setInstallRoot(String installRoot) {
+        this.installRoot = installRoot;
+    }
+    
+    public void setGlassfishRoot(String glassfishRoot) {
+        this.glassfishRoot = glassfishRoot;
     }
     
     public String getHk2HomeLocation() {
-        return glassfishHomeLocation;
+        return glassfishRoot;
     }
     
 }

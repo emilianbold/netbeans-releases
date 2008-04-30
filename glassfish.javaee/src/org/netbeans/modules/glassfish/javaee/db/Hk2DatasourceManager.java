@@ -106,10 +106,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     public Set<Datasource> getDatasources() throws ConfigurationException {
         GlassfishModule commonSupport = dm.getCommonServerSupport();
-        String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.HOME_FOLDER_ATTR);
+        String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
 
         // XXX Fix to work with current server domain, not just default domain.
-        File domainXml = new File(installRoot, DEFAULT_DOMAIN_DIR + "/" + DOMAIN_XML_PATH);
+        File domainXml = new File(installRoot, DEFAULT_DOMAIN_DIR + File.separatorChar + DOMAIN_XML_PATH);
         return readDatasources(domainXml, "/domain/", null);
     }
 

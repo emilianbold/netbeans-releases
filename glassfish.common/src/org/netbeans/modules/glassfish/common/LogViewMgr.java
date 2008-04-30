@@ -73,6 +73,8 @@ import org.openide.windows.InputOutput;
  * checks for changes at the specified intervals and outputs the changes to
  * the given I/O panel in NetBeans
  *
+ * FIXME Refactor: LogViewMgr should be a special case of SimpleIO
+ * 
  * @author Michal Mocnak
  * @author Peter Williams
  */
@@ -109,7 +111,7 @@ public class LogViewMgr {
         // clear the old output
         try {
             io.getOut().reset();
-        } catch (IOException ioe) {
+        } catch (IOException ex) {
             // no op
         }
         
@@ -142,7 +144,7 @@ public class LogViewMgr {
     public void readInputStreams(InputStream... inputStreams) {
         RequestProcessor rp = RequestProcessor.getDefault();
         for(InputStream inputStream : inputStreams){
-            rp.post(new LoggerRunnable(inputStream));
+            rp.post(new LoggerRunnable(inputStream, false));
         }
     }
     
@@ -156,7 +158,7 @@ public class LogViewMgr {
         for(File file : files) {
             try {
                 // LoggerRunnable will close the stream.
-                rp.post(new LoggerRunnable(new FileInputStream(file)));
+                rp.post(new LoggerRunnable(new FileInputStream(file), true));
             } catch (FileNotFoundException ex) {
                 Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage());
             }
@@ -181,10 +183,12 @@ public class LogViewMgr {
     
     private class LoggerRunnable implements Runnable {
         
-        private InputStream inputStream;
+        private final InputStream inputStream;
+        private final boolean ignoreEof;
         
-        public LoggerRunnable(InputStream inputStream) {
+        public LoggerRunnable(InputStream inputStream, boolean ignoreEof) {
             this.inputStream = inputStream;
+            this.ignoreEof = ignoreEof;
         }
         
         /**
@@ -192,35 +196,53 @@ public class LogViewMgr {
          * performed
          */
         public void run() {
+            final String originalName = Thread.currentThread().getName();
+            
             try {
+                Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream);
+                
                 // create a reader from the input stream
                 Reader reader = new BufferedReader(new InputStreamReader(inputStream));
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
-                while (true) {
-                    // while there is something in the stream to be read - read that
-                    while (reader.ready()) {
-                        write(new String(chars, 0, reader.read(chars)));
-                        selectIO();
+                int len = 0;
+                while(len != -1) {
+                    if(ignoreEof) {
+                        // For file streams, only read if there is something there.
+                        while(reader.ready()) {
+                            write(new String(chars, 0, reader.read(chars)));
+                            selectIO();
+                        }
+                    } else {
+                        // For process streams, check for EOF every <DELAY> interval.
+                        while((len = reader.read(chars)) != -1) {
+                            write(new String(chars, 0, len));
+                            selectIO();
+
+                            if(!reader.ready()) {
+                                break;
+                            }
+                        }
                     }
                     
-                    // when the stream is empty - sleep for a while
+                    // sleep for a while when the stream is empty
                     try {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {
-                        // do nothing
+                        // ignore
                     }
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             } finally {
-                // close the opened stream
                 try {
                     inputStream.close();
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                 }
+                
+                Thread.currentThread().setName(originalName);
             }
         }
     }

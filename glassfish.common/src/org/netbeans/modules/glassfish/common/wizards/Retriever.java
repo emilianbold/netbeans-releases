@@ -271,7 +271,7 @@ public class Retriever implements Runnable {
             final InputStream entryStream = jarStream;
             JarEntry entry;
             while(!shutdown && (entry = (JarEntry) jarStream.getNextEntry()) != null) {
-                String entryName = stripGlassfish(entry.getName());
+                String entryName = entry.getName();
                 if(entryName == null || entryName.length() == 0) {
                     continue;
                 }
@@ -338,8 +338,15 @@ public class Retriever implements Runnable {
             return;
         }
 
-        File binDir = new File(installDir, "bin");
-        if(!binDir.exists()) {
+        List<File> binList = new ArrayList<File>();
+        for(String binPath: new String[] { "bin", "glassfish/bin", "javadb/bin" }) {
+            File dir = new File(installDir, binPath);
+            if(dir.exists()) {
+                binList.add(dir);
+            }
+        }
+        
+        if(binList.size() == 0) {
             return;
         }
 
@@ -354,38 +361,32 @@ public class Retriever implements Runnable {
 
         if(chmod.isFile()) {
             try {
-                List<String> argv = new ArrayList<String>();
-                argv.add(chmod.getAbsolutePath());
-                argv.add("u+rx"); // NOI18N
+                for(File binDir: binList) {
+                    List<String> argv = new ArrayList<String>();
+                    argv.add(chmod.getAbsolutePath());
+                    argv.add("u+rx"); // NOI18N
 
-                String[] files = binDir.list();
+                    String[] files = binDir.list();
 
-                for(String file : files) {
-                    argv.add(file);
-                }
+                    for(String file : files) {
+                        if(file.indexOf('.') == -1) {
+                            argv.add(file);
+                        }
+                    }
 
-                ProcessBuilder pb = new ProcessBuilder(argv);
-                pb.directory(binDir);
-                Process process = pb.start();
-                int chmoded = process.waitFor();
-                
-                if(chmoded != 0) {
-                    throw new IOException("could not run " + argv + " : Exit value=" + chmoded); // NOI18N
+                    ProcessBuilder pb = new ProcessBuilder(argv);
+                    pb.directory(binDir);
+                    Process process = pb.start();
+                    int chmoded = process.waitFor();
+
+                    if(chmoded != 0) {
+                        throw new IOException("could not run " + argv + " : Exit value=" + chmoded); // NOI18N
+                    }
                 }
             } catch (Exception ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
-    }
-    
-    private String stripGlassfish(String name) {
-        if(name.startsWith("glassfish")) {
-            name = name.substring(9);
-            if(name.startsWith("/") || name.startsWith("\\")) {
-                name = name.substring(1);
-            }
-        }
-        return name;
     }
     
     private File backupInstallDir(File installDir) throws IOException {

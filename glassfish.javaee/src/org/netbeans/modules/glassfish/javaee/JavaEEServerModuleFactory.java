@@ -114,7 +114,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 }
                 
                 final String installRoot = commonModule.getInstanceProperties().get(
-                        GlassfishModule.HOME_FOLDER_ATTR);
+                        GlassfishModule.GLASSFISH_FOLDER_ATTR);
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         ensureEclipseLinkSupport(installRoot);

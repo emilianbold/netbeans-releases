@@ -186,7 +186,7 @@ public class StartTask extends BasicTask<OperationState> {
     private NbProcessDescriptor createProcessDescriptor() {
         String startScript = System.getProperty("java.home") + 
                 File.separatorChar + "bin" + File.separatorChar + "java";
-        String serverHome = ip.get(GlassfishModule.HOME_FOLDER_ATTR);
+        String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
         File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
         if(jar == null) {
             fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
@@ -255,7 +255,7 @@ public class StartTask extends BasicTask<OperationState> {
         if(pd != null) {
             try {
                 process = pd.exec(null, createEnvironment(), true, new File(
-                        ip.get(GlassfishModule.HOME_FOLDER_ATTR)));
+                        ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
             } catch (java.io.IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 fireOperationStateChanged(OperationState.FAILED, 
@@ -274,11 +274,11 @@ public class StartTask extends BasicTask<OperationState> {
         Map<String, String> argMap = new LinkedHashMap<String, String>();
         Map<String, String> varMap = new HashMap<String, String>();
         
-        varMap.put("com.sun.aas.installRoot", ip.get(GlassfishModule.HOME_FOLDER_ATTR));
+        varMap.put("com.sun.aas.installRoot", ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
         varMap.put("com.sun.aas.instanceRoot", domainRoot.getAbsolutePath());
         varMap.put("com.sun.aas.javaRoot", System.getProperty("java.home"));
         varMap.put("com.sun.aas.derbyRoot", 
-                ip.get(GlassfishModule.HOME_FOLDER_ATTR) + File.separatorChar + "javadb");
+                ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb");
         
         File domainXml = new File(domainRoot, "config/domain.xml");
 

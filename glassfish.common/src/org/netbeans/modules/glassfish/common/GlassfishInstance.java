@@ -122,7 +122,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     private void updateModuleSupport() {
         // !PW FIXME this is unstable
         Properties asenvProps = new Properties();
-        String homeFolder = commonSupport.getHomeFolder();
+        String homeFolder = commonSupport.getGlassfishRoot();
         File asenvConf = new File(homeFolder, "config/asenv.conf");
         InputStream is = null;
         try {
@@ -160,10 +160,12 @@ public class GlassfishInstance implements ServerInstanceImplementation {
      * @param adminPort admin port for this server instance.
      * @return GlassfishInstance object for this server instance.
      */
-    public static GlassfishInstance create(String displayName, String homeFolder, int httpPort, int adminPort) {
+    public static GlassfishInstance create(String displayName, String installRoot, 
+            String glassfishRoot, int httpPort, int adminPort) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
-        ip.put(GlassfishModule.HOME_FOLDER_ATTR, homeFolder);
+        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
+        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         GlassfishInstance result = new GlassfishInstance(ip);
@@ -176,7 +178,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         result.commonInstance = ServerInstanceFactory.createServerInstance(result);
         return result;
     }
-
+    
     public ServerInstance getCommonInstance() {
         return commonInstance;
     }
@@ -189,8 +191,12 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         return commonSupport.getDeployerUri();
     }
     
-    public String getHomeFolder() {
-        return commonSupport.getHomeFolder();
+    public String getInstallRoot() {
+        return commonSupport.getInstallRoot();
+    }
+    
+    public String getGlassfishRoot() {
+        return commonSupport.getGlassfishRoot();
     }
     
     public Lookup getLookup() {

@@ -207,9 +207,16 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private GlassfishInstance readInstanceFromFile(FileObject instanceFO) throws IOException {
         GlassfishInstance instance = null;
 
-        String homeFolder = getStringAttribute(instanceFO, GlassfishModule.HOME_FOLDER_ATTR);
+        String installRoot = getStringAttribute(instanceFO, GlassfishModule.INSTALL_FOLDER_ATTR);
+        String glassfishRoot = getStringAttribute(instanceFO, GlassfishModule.GLASSFISH_FOLDER_ATTR);
+        
+        // Existing installs may lack "installRoot", but glassfishRoot and 
+        // installRoot are the same in that case.
+        if(installRoot == null) {
+            installRoot = glassfishRoot;
+        }
 
-        if(isValidHomeFolder(homeFolder)) {
+        if(isValidHomeFolder(installRoot) && isValidGlassfishFolder(glassfishRoot)) {
             // collect attributes and pass to create()
             Map<String, String> ip = new HashMap<String, String>();
             Enumeration<String> iter = instanceFO.getAttributes();
@@ -229,8 +236,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private void writeInstanceToFile(GlassfishInstance instance) throws IOException {
-        String homeFolder = instance.getHomeFolder();
-        if(homeFolder == null) {
+        String glassfishRoot = instance.getGlassfishRoot();
+        if(glassfishRoot == null) {
             getLogger().log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder"));
             return;
         }
@@ -311,6 +318,16 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private static boolean isValidHomeFolder(String folderName) {
+        boolean result = false;
+        if(folderName != null) {
+            File f = new File(folderName);
+            // !PW FIXME better heuristics to identify a valid V3 install
+            result = f.exists();
+        }
+        return result;    
+    }
+    
+    private static boolean isValidGlassfishFolder(String folderName) {
         boolean result = false;
         if(folderName != null) {
             File f = new File(folderName);

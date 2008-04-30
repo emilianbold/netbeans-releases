@@ -55,7 +55,8 @@ public interface GlassfishModule {
     
     // Attribute keys for InstanceProperties map
     public static final String URL_ATTR = "url"; // NOI18N
-    public static final String HOME_FOLDER_ATTR = "homefolder"; // NOI18N
+    public static final String INSTALL_FOLDER_ATTR = "installfolder"; // NOI18N
+    public static final String GLASSFISH_FOLDER_ATTR = "homefolder"; // NOI18N
     public static final String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
     public static final String USERNAME_ATTR = "username"; // NOI18N
     public static final String PASSWORD_ATTR = "password"; // NOI18N

@@ -92,13 +92,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     CommonServerSupport(Map<String, String> ip) {
         String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
-        String homeFolder = updateString(ip, GlassfishModule.HOME_FOLDER_ATTR, "");
+        String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
         updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, GlassfishInstance.GLASSFISH_SERVER_NAME);
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = "[" + homeFolder + "]" + URI_PREFIX + ":" + 
+            String deployerUrl = "[" + glassfishRoot + "]" + URI_PREFIX + ":" + 
                     hostName + ":" + httpPort;
             ip.put(URL_ATTR, deployerUrl);
         }
@@ -153,8 +153,12 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return null;
     }
     
-    public String getHomeFolder() {
-        return properties.get(HOME_FOLDER_ATTR);
+    public String getInstallRoot() {
+        return properties.get(INSTALL_FOLDER_ATTR);
+    }
+    
+    public String getGlassfishRoot() {
+        return properties.get(GLASSFISH_FOLDER_ATTR);
     }
     
     public String getDisplayName() {
@@ -392,7 +396,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             Future<OperationState> result = execute(command);
             try {
                 if(result.get(3, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                    String installRoot = getHomeFolder();
+                    String installRoot = getGlassfishRoot();
                     String targetInstallRoot = command.getInstallRoot();
                     if(installRoot != null && targetInstallRoot != null) {
                         File installDir = FileUtil.normalizeFile(new File(installRoot));
