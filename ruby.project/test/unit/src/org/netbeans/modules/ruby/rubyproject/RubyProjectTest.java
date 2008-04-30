@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -57,10 +58,10 @@ public class RubyProjectTest extends RubyProjectTestBase {
         project.open();
         FileObject rakeFile = project.getRakeFile();
         assertNotNull("has rake file", rakeFile);
-        int origSize = RakeTargetsAction.getRakeTargets(project).size();
+        int origSize = RakeSupport.getRakeTaskTree(project).size();
         appendToFile(rakeFile, "", "desc 'Says hey'", "task :hey");
         // no clearer way to check now (?)
-        while(RakeTargetsAction.getRakeTargets(project).size() != (origSize + 1)) {
+        while(RakeSupport.getRakeTaskTree(project).size() != (origSize + 1)) {
             Thread.sleep(250);
         }
     }

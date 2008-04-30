@@ -51,6 +51,7 @@ import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -61,6 +62,7 @@ import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Reference;
@@ -88,6 +90,30 @@ public final class Validator extends BpelValidator {
   public void visit(Process process)
   {
     processEntity(process);
+  }
+
+  @Override
+  public void visit(Import imp) {
+    Model model = getModel(imp);
+
+    if (model == null) {
+      addError("FIX_Not_Well_Formed_Import", imp); // NOI18N
+      return;
+    }
+    if (isComplete()) {
+//out();
+//out("Vadlidate model: " + model);
+      validate(model);
+    }
+  }
+ 
+  private Model getModel(Import imp) {
+    Model model = ImportHelper.getWsdlModel(imp, false);
+
+    if (model != null) {
+      return model;
+    }
+    return ImportHelper.getSchemaModel(imp, false);
   }
 
   private void processEntity(BpelEntity entity) {

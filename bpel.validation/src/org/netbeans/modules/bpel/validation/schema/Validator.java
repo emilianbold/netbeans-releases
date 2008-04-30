@@ -68,9 +68,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends XsdBasedValidator {
 
   @Override
-  public ValidationResult validate(Model model, final Validation validation, final Validation.ValidationType validationType) {
+  public ValidationResult validate(Model model, Validation validation, Validation.ValidationType validationType) {
     if ( !(model instanceof BpelModel)) {
-        return null;
+      return null;
     }
     startTime();
     ValidationResult result = Validator.super.validate((BpelModel) model, validation, validationType);

@@ -42,8 +42,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileUtils;
@@ -156,6 +162,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
         private NbiTextPane messagePaneRegistration;                                 
         private NbiCheckBox checkBoxRegistration;                                    
         private NbiPanel spacer;
+        private NbiTextPane messagePaneMySQL;
 
         public NbPostInstallSummaryPanelSwingUi(
                 final NbPostInstallSummaryPanel component,
@@ -245,6 +252,38 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             
             products.addAll(registry.getProducts(INSTALLED_SUCCESSFULLY));
             products.addAll(registry.getProducts(INSTALLED_WITH_WARNINGS));
+            
+            messagePaneMySQL.setContentType(DEFAULT_MESSAGE_MYSQL_CONTENT_TYPE);
+            messagePaneMySQL.setText("");
+            for (Product product : products) {
+                if (product.getUid().equals("mysql")) {
+                    messagePaneMySQL.setText(
+                            StringUtils.format(SystemUtils.isWindows() ? 
+                                DEFAULT_MYSQL_MESSAGE_WINDOWS : 
+                                DEFAULT_MYSQL_MESSAGE_UNIX,
+                            product.getInstallationLocation()));
+                    messagePaneMySQL.addHyperlinkListener(new HyperlinkListener() {
+
+                        public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                            if (EventType.ACTIVATED == hlevt.getEventType()) {
+                                final URL url = hlevt.getURL();
+                                if (url != null) {
+                                    try {
+                                        NbRegistrationAction.openBrowser(url.toURI());
+                                    } catch (IOException e) {
+                                        LogManager.log(e);
+                                    } catch (URISyntaxException e) {
+                                        LogManager.log(e);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    break;
+                }
+            }
+            
+            
             
             messagePaneNetBeans.setContentType(DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE);
             messagePaneNetBeans.setText("");
@@ -359,7 +398,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
 
             // spacer
             spacer = new NbiPanel();
-            
+
+            messagePaneMySQL = new NbiTextPane();
             // this /////////////////////////////////////////////////////////////////
             add(messagePaneInstall, new GridBagConstraints(
                     0, 0,                             // x, y
@@ -377,16 +417,26 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            add(messagePaneNetBeans, new GridBagConstraints(
+            add(messagePaneMySQL, new GridBagConstraints(
                     0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(11, 11, 11, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+
+            add(messagePaneNetBeans, new GridBagConstraints(
+                    0, 3,                             // x, y
                     1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 11, 11),       // padding
                     0, 0));                           // padx, pady - ???
+
             add(messagePaneRegistration, new GridBagConstraints(
-                    0, 3, // x, y
+                    0, 4, // x, y
                     1, 1, // width, height
                     1.0, 1.0, // weight-x, weight-y
                     GridBagConstraints.PAGE_START, // anchor
@@ -394,7 +444,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     new Insets(11, 11, 11, 11), // padding
                     0, 0));                           // padx, pady - ???
             add(checkBoxRegistration, new GridBagConstraints(
-                    0, 4, // x, y
+                    0, 5, // x, y
                     1, 1, // width, height
                     1.0, 1.0, // weight-x, weight-y
                     GridBagConstraints.PAGE_START, // anchor
@@ -402,7 +452,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     new Insets(0, 11, 11, 11), // padding
                     0, 0));                           // padx, pady - ???
             add(spacer, new GridBagConstraints(
-                    0, 5, // x, y
+                    0, 6, // x, y
                     1, 1, // width, height
                     1.0, 10.0, // weight-x, weight-y
                     GridBagConstraints.CENTER, // anchor
@@ -512,6 +562,9 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE = 
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.netbeans.content.type"); // NOI18N
+    public static final String DEFAULT_MESSAGE_MYSQL_CONTENT_TYPE =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.mysql.content.type"); // NOI18N
     public static final String DEFAULT_MESSAGE_REGISTRATION_TEXT =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.registration.text"); // NOI18N
@@ -538,6 +591,12 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             "NPoISP.message.registration.content.type");//NOI18N    
     public static final String ALLOW_SERVICETAG_REGISTRATION_PROPERTY =
             "servicetag.allow.register";
+    public static final String DEFAULT_MYSQL_MESSAGE_WINDOWS = 
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,            
+	    "NPoISP.message.using.mysql.windows");
+    public static final String DEFAULT_MYSQL_MESSAGE_UNIX = 
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.using.mysql.unix");
 
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
             NbPostInstallSummaryPanel.class,

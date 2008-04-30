@@ -75,7 +75,12 @@ public final class Validator extends XsltValidator {
   {
 //out();
 //out("callTemplate: " + callTemplate);
-    checkReference(callTemplate, callTemplate.getName());
+
+// todo a    
+checkReference(callTemplate, callTemplate.getName());
+//todo r
+//addError("FIX_Reference", callTemplate);
+
   }
 
   @Override

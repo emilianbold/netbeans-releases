@@ -452,7 +452,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         
-        <folder name="Number" >
+        <folder name="Number">
             <attr name="DisplayName" stringvalue="LBL_Number"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Math.png"/>

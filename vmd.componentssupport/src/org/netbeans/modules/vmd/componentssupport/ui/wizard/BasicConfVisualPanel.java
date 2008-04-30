@@ -41,134 +41,228 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.Locale;
+import java.util.StringTokenizer;
+
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.openide.ErrorManager;
+
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author ads
  */
 final class BasicConfVisualPanel extends JPanel {
+
+    private static final String BASIC_CONF_ERR_PREFIX 
+                                              = "BasicConfVisualPanel_err_";// NOI18N 
+    private static final String XML           = ".xml";                    // NOI18N 
+    private static final String LAYER         = "layer";                   // NOI18N 
+    private static final String PROPS         = ".properties";             // NOI18N 
+    private static final String BUNDLE        = "bundle";                  // NOI18N 
     
-    static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
+    private static final String MSG_INVALID_CNB 
+                                              = "MSG_InvalidCNB";          // NOI18N 
+    private static final String ACS_LAYER_VALUE 
+                                              = "ACS_CTL_LayerValue";      // NOI18N 
+    private static final String ACS_DISPLAY_NAME_VALUE 
+                                              = "ACS_CTL_DisplayNameValue";// NOI18N
+    private static final String ACS_CODE_NAME_BASE_VALUE 
+                                              = "ACS_CTL_CodeNameBaseValue";// NOI18N
+    private static final String ACS_BUNDLE_VALUE 
+                                              = "ACS_CTL_BundleValue";      // NOI18N
+    private static final String ACS_DESC      = "ACS_BasicConfVisualPanel"; // NOI18N
+
+    private static final long serialVersionUID = -7699370587627049750L;
     
-    private boolean wasBundleUpdated;
+    private static final String VALID         = "valid";                    // NOI18N
+    private static final String ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
+    private static final String BUNDLE_PROPERTIES 
+                                              = "/Bundle.properties";       // NOI18N
     
-    private boolean listenersAttached;
-    /*private final DocumentListener cnbDL;
-    private final DocumentListener layerDL;
-    private final DocumentListener bundleDL;*/
-    
-    public BasicConfVisualPanel() {
+    public BasicConfVisualPanel( ) {
         initComponents();
         initAccessibility();
-        /*cnbDL = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }
+        myCodeBaseNameListener = new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) { 
+                checkCodeNameBase(); 
+                }
         };
-        
-        bundleDL = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { wasBundleUpdated = true; checkBundle(); }
-        };*/
+        myLayerListener = new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                checkLayer();
+            }
+        };
+        myBundleListener = new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) { 
+                isBundleUpdated = true; 
+                checkBundle(); 
+                }
+        };
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicConfVisualPanel"));
-        bundleValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BundleValue"));
-        codeNameBaseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CodeNameBaseValue"));
-        displayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayNameValue"));
-        layerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LayerValue"));
+        this.getAccessibleContext().setAccessibleDescription(
+                getMessage(ACS_DESC));
+        bundleValue.getAccessibleContext().setAccessibleDescription(
+                getMessage(ACS_BUNDLE_VALUE));
+        codeNameBaseValue.getAccessibleContext().setAccessibleDescription(
+                getMessage(ACS_CODE_NAME_BASE_VALUE));
+        displayNameValue.getAccessibleContext().setAccessibleDescription(
+                getMessage(ACS_DISPLAY_NAME_VALUE));
+        layerValue.getAccessibleContext().setAccessibleDescription(
+                getMessage(ACS_LAYER_VALUE));
         
         bundleValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_CTL_BundleValue"));
+                getMessage(ACS_BUNDLE_VALUE));
         codeNameBaseValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_CTL_CodeNameBaseValue"));
+                getMessage(ACS_CODE_NAME_BASE_VALUE));
         displayNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_CTL_DisplayNameValue"));
+                getMessage(ACS_DISPLAY_NAME_VALUE));
         layerValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_CTL_LayerValue"));
+                getMessage(ACS_LAYER_VALUE));
+    }
+    
+    public static boolean isValidJavaFQN(String name) {
+        if (name.length() == 0) {
+            return false;
+        }
+        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (delimExpected ^ namePart.equals(".")) { // NOI18N
+                return false;
+            }
+            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
+                return false;
+            }
+            delimExpected = !delimExpected;
+        }
+        return delimExpected;
+    }
+    
+    public static String normalizeCNB(String value) {
+        StringTokenizer tk = new StringTokenizer(
+                value.toLowerCase(Locale.ENGLISH), ".", true); // NOI18N
+        StringBuffer normalizedCNB = new StringBuffer();
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (!delimExpected) {
+                if (namePart.equals(".")) { //NOI18N
+                    continue;
+                }
+                for (int i = 0; i < namePart.length(); i++) {
+                    char c = namePart.charAt(i);
+                    if (i == 0) {
+                        if (!Character.isJavaIdentifierStart(c)) {
+                            continue;
+                        }
+                    } else {
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            continue;
+                        }
+                    }
+                    normalizedCNB.append(c);
+                }
+            } else {
+                if (namePart.equals(".")) { //NOI18N
+                    normalizedCNB.append(namePart);
+                }
+            }
+            delimExpected = !delimExpected;
+        }
+        // also be sure there is no '.' left at the end of the cnb
+        return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
     }
     
     private void checkCodeNameBase() {
         String dotName = getCodeNameBaseValue();
-        /*if (!Util.isValidJavaFQN(dotName)) {
-            setError(getMessage("MSG_InvalidCNB"));
-        } else if (getData().isSuiteComponent() && cnbIsAlreadyInSuite(getData().getSuiteRoot(), dotName)) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", dotName));
+        if (!isValidJavaFQN(dotName)) {
+            setError(getMessage(MSG_INVALID_CNB));
         } else {
             markValid();
             // update layer and bundle from the cnb
             String slashName = dotName.replace('.', '/');
-            if (!wasBundleUpdated) {
-                bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
-                wasBundleUpdated = false;
+            if (!isBundleUpdated) {
+                bundleValue.setText(slashName + BUNDLE_PROPERTIES); // NOI18N
+                isBundleUpdated = false;
             }
-            if (getData().isNetBeansOrg()) {
-                // Ensure that official naming conventions are respected.
-                String cnbShort = abbreviate(dotName);
-                String name = getData().getProjectName();
-                if (!name.equals(cnbShort)) {
-                    setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_wrong_nborg_name", cnbShort));
-                }
-            }
-        }*/
-    }
-    
-    private static String abbreviate(String cnb) {
-        return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
-                   replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
-                   replaceFirst("^org\\.netbeans\\.", "o.n."). // NOI18N
-                   replaceFirst("^org\\.openide\\.", "openide."). // NOI18N
-                   replaceFirst("^org\\.", "o."). // NOI18N
-                   replaceFirst("^com\\.sun\\.", "c.s."). // NOI18N
-                   replaceFirst("^com\\.", "c."); // NOI18N
+        }
     }
     
     private void checkBundle() {
-        checkEntry(getBundleValue(), "bundle", ".properties"); // NOI18N
+        checkEntry(getBundleValue(), BUNDLE, PROPS); // NOI18N
     }
     
     private void checkLayer() {
         String layerPath = getLayerValue();
         if (layerPath != null) {
-            checkEntry(layerPath, "layer", ".xml"); // NOI18N
+            checkEntry(layerPath, LAYER, XML); // NOI18N
         }
     }
     
     /** Used for Layer and Bundle entries. */
     private void checkEntry(String path, String resName, String extension) {
-        /*if (path.length() == 0) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_empty"));
+        if (path.length() == 0) {
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, 
+                    BASIC_CONF_ERR_PREFIX + resName + "_empty"));
             return;
         }
         if (path.indexOf('/') == -1) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_def_pkg"));
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, 
+                    BASIC_CONF_ERR_PREFIX + resName + "_def_pkg"));
             return;
         }
         if (!path.endsWith(extension)) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_ext", extension));
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, 
+                    BASIC_CONF_ERR_PREFIX + resName + "_ext", extension));
             return;
-        }*/
-        //markValid();
+        }
+        markValid();
     }
     
-    void refreshData() {
-        /*String cnb = getData().getCodeNameBase();
+    void refreshData( WizardDescriptor settings) {
+        mySettings = settings;
+        String cnb = getCodeNameBase();
         codeNameBaseValue.setText(cnb);
         if (cnb.startsWith(EXAMPLE_BASE_NAME)) {
             codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
         }
-        String dn = getData().getProjectDisplayName();
+        String dn = getProjectDisplayName();
         displayNameValue.setText(dn);
-        checkCodeNameBase();*/
+        checkCodeNameBase();
     }
     
+    private String getProjectDisplayName() {
+        String projectName = (String)mySettings.getProperty( 
+                CustomComponentWizardIterator.PROJECT_NAME);
+        String displayName = (String)mySettings.getProperty( 
+                CustomComponentWizardIterator.DISPLAY_NAME);
+        if ( displayName == null ){
+            displayName = projectName;
+        }
+        return displayName;
+    }
+
+    private String getCodeNameBase() {
+        String codeBaseName = (String)mySettings.getProperty( 
+                CustomComponentWizardIterator.CODE_BASE_NAME);
+        String projectName = (String)mySettings.getProperty( 
+                CustomComponentWizardIterator.PROJECT_NAME);
+        if ( codeBaseName == null ){
+            String dotName = EXAMPLE_BASE_NAME + projectName;
+            codeBaseName = normalizeCNB(dotName);
+        }
+        return codeBaseName;
+    }
+
     /** Stores collected data into model. */
     void storeData( WizardDescriptor descriptor ) {
         descriptor.putProperty( CustomComponentWizardIterator.CODE_BASE_NAME, 
@@ -198,6 +292,11 @@ final class BasicConfVisualPanel extends JPanel {
         }
     }
     
+    protected final void setError(String message) {
+        assert message != null;
+        setMessage(message);
+        setValid(false);
+    }
     
     public @Override void addNotify() {
         super.addNotify();
@@ -211,25 +310,35 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private void attachDocumentListeners() {
-/*        if (!listenersAttached) {
-            codeNameBaseValue.getDocument().addDocumentListener(cnbDL);
-            bundleValue.getDocument().addDocumentListener(bundleDL);
-            if (!isLibraryWizard()) {
-                layerValue.getDocument().addDocumentListener(layerDL);
-            }
+        if (!listenersAttached) {
+            codeNameBaseValue.getDocument().addDocumentListener(
+                    myCodeBaseNameListener);
+            bundleValue.getDocument().addDocumentListener(myBundleListener);
+            layerValue.getDocument().addDocumentListener( myLayerListener );
             listenersAttached = true;
-        }*/
+        }
+    }
+    
+    private final void setValid(boolean valid) {
+        firePropertyChange(VALID, null, valid); // NOI18N
+    }
+    
+    private void markValid() {
+        setMessage(null);
+        setValid(true);
+    }
+    
+    private final void setMessage(String message) {
+        mySettings.putProperty(ERROR_MESSAGE, message);
     }
     
     private void removeDocumentListeners() {
-/*        if (listenersAttached) {
-            codeNameBaseValue.getDocument().removeDocumentListener(cnbDL);
-            bundleValue.getDocument().removeDocumentListener(bundleDL);
-            if (!isLibraryWizard()) {
-                layerValue.getDocument().removeDocumentListener(layerDL);
-            }
+        if (listenersAttached) {
+            codeNameBaseValue.getDocument().removeDocumentListener(myCodeBaseNameListener);
+            bundleValue.getDocument().removeDocumentListener(myBundleListener);
+            layerValue.getDocument().removeDocumentListener( myLayerListener );
             listenersAttached = false;
-        }*/
+        }
     }
     
     private static String getMessage(String key) {
@@ -349,5 +458,19 @@ final class BasicConfVisualPanel extends JPanel {
     private javax.swing.JLabel layer;
     private javax.swing.JTextField layerValue;
     // End of variables declaration//GEN-END:variables
+    
+    abstract static class DocumentAdapter implements DocumentListener {
+        public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
+        public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
+    }
+    
+    private boolean isBundleUpdated;
+    private boolean listenersAttached;
+    
+    private final DocumentListener myCodeBaseNameListener;
+    private final DocumentListener myLayerListener;
+    private final DocumentListener myBundleListener;
+    
+    private WizardDescriptor mySettings;
     
 }

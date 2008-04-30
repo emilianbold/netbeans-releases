@@ -184,7 +184,8 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             retVal = false;
         } else if (retVal) {
             Object oldPlatformLoc = wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
-            if (!location.equals(oldPlatformLoc) || getAIVPP().getDomainsListModel().getSize() < 1) {
+            // correct these if the platform location field has changed to a new value.
+            if (!location.equals(oldPlatformLoc)) {
                 Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location),location);
                 getAIVPP().setDomainsList(domainsList,true);
                 if (ServerLocationManager.getAppServerPlatformVersion(location) !=

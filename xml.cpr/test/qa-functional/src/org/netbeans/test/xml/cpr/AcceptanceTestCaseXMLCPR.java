@@ -85,6 +85,7 @@ import org.netbeans.jellytools.OutputTabOperator;
 
 public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
+    protected final String PURCHASE_SCHEMA_FILE_PATH = "Process Files";
     protected final String PURCHASE_SCHEMA_FILE_NAME = "purchaseOrder.xsd";
 
     protected final String LOAN_SCHEMA_FILE_NAME_ORIGINAL = "newLoanApplication.xsd";
@@ -395,8 +396,12 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     protected void ImportReferencedSchemaInternal(
-        String sSample,
-        String sModule,
+        String sDestinationProject, // sSample
+        String sDestinationPath,    // Process Files
+        String sDestinationFile,    // PURCHASE_SCHEMA_FILE_NAME
+
+        String sSourceProject, // sModule
+
         boolean bShort,
         CImportClickData[] aimpData
       )
@@ -404,21 +409,21 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+          sDestinationProject + "|" + sDestinationPath + "|" + sDestinationFile
         );
       prn.select( );
 
       JTreeOperator tree = pto.tree( );
       tree.clickOnPath(
-          tree.findPath( sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME ),
+          tree.findPath( sDestinationProject + "|" + sDestinationPath + "|" + sDestinationFile ),
           2
         );
 
       // Check was it opened or no
-      EditorOperator eoSchemaEditor = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      EditorOperator eoSchemaEditor = new EditorOperator( sDestinationFile );
       if( null == eoSchemaEditor )
       {
-        fail( PURCHASE_SCHEMA_FILE_NAME + " was not opened after double click." );
+        fail( sDestinationFile + " was not opened after double click." );
       }
 
       // Switch to schema view
@@ -427,7 +432,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // ^ - remove???
 
       // Select first column
-      SchemaMultiView opMultiView = WaitSchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      SchemaMultiView opMultiView = WaitSchemaMultiView( sDestinationFile );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -461,15 +466,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         if( cli.inshort || !bShort )
           ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
-        // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
-        // ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
-        // ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
-        // ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
-        // ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
-
-        // if( !bShort )
-        //   ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
       }
 
       // Close
@@ -499,11 +495,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
           // Check text
           String[] asRequiredLines =
           {
-           "<xs:import schemaLocation=\"" + sModule + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+           "<xs:import schemaLocation=\"" + sSourceProject + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
             "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
           };
 
-          EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+          EditorOperator eoXMLSource = new EditorOperator( sDestinationFile );
           int iLineNumber = eoXMLSource.getLineNumber( );
           String sChoosenLine = eoXMLSource.getText( iLineNumber );
           for( int j = 0; j < asRequiredLines.length; j++ )
@@ -603,6 +599,9 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         //opFindProgress.waitClosed( );
       }
 
+      // Sleep to make painting comepleted
+      try { Thread.sleep( 3000 ); } catch( InterruptedException ex ) { }
+
       // Check result
       //FindUsagesOperator fuop = new FindUsagesOperator( );
       TopComponentOperator top = new TopComponentOperator( "Usages" );
@@ -622,6 +621,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     protected void AddItInternal(
+        String sFileName,
         String sItName,
         String sMenuToAdd,
         String sRadioName,
@@ -633,7 +633,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
 
       // Select first column, Attributes
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      SchemaMultiView opMultiView = new SchemaMultiView( sFileName );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -874,6 +874,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     {
       // Add one more attribute
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Attributes",
           "Add Attribute",
           null, 
@@ -1008,6 +1009,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     {
       // Add one more attribute
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Simple Types",
           "Add Simple Type",
           null, 
@@ -1404,6 +1406,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     protected void DeployCompositeApplicationInternal( String sName )
     {
       // TEMP : start GF first
+      /*
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Services");
       TopComponentOperator top = new TopComponentOperator( "Services" );
       JTreeOperator jt = new JTreeOperator( top, 0 );
@@ -1425,6 +1428,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
           System.out.println( "**** GF IN PROGRESS ****" );
         }
       }
+      */
       ////////////////////////////////////////////////////////////////////
       
 
@@ -1464,6 +1468,9 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         }
         catch( JemmyException ex )
         {
+          OutputOperator out = new OutputOperator( );
+          if( -1 != out.getText( ).indexOf( "BUILD FAILED" ) )
+            throw ex;
           System.out.println( "**** DEPLOY IN PROGRESS ****" );
         }
       }
@@ -1576,11 +1583,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       op.close( );
     }
 
-    public void RunNewTestInternal( String sApplication )
+    public void RunTestInternal( String sApplication, String sTestName )
     {
       // Get tree
       ProjectsTabOperator pto = new ProjectsTabOperator( );
-      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Test|TestCase1" );
+      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Test|" + sTestName );
       prn.select( );
       // Click create new test
       prn.performPopupActionNoBlock( "Run" );
@@ -1616,7 +1623,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       // Run
       pto = new ProjectsTabOperator( );
-      prn = pto.getProjectRootNode( sApplication + "|Test|TestCase1" );
+      prn = pto.getProjectRootNode( sApplication + "|Test|" + sTestName );
       prn.select( );
       // Click create new test
       //prn.performPopupActionNoBlock( "Run" );
@@ -1632,11 +1639,13 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // Check result
       // "JUnit Test Results"
       // "Passed. Threads count Success: <1> Error: <0> Not completed: <0>"
+      // TODO
+      TopComponentOperator top = new TopComponentOperator( "JUnit Test Results" );
+      //J
       
     }
 
     public void tearDown() {
         new SaveAllAction().performAPI();
     }
-
 }

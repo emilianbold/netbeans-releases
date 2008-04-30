@@ -59,7 +59,7 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.ruby.rubyproject.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;

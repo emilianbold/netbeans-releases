@@ -196,6 +196,7 @@ public abstract class UIUtil {
        if (indexed) {
            strBuf.append("<tr> <td>&nbsp; Indexed </td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
        }
+       
        if(!isNullable){
            strBuf.append("<tr> <td>&nbsp; Nullable </td> <td> &nbsp; : &nbsp; <b> No </b> </td> </tr>");
        }
@@ -306,6 +307,7 @@ public abstract class UIUtil {
            }
            strBuf.append("</b> </td> </tr>");
        }
+       
        DBConnectionDefinition conDef = table.getParent().getConnectionDefinition();
        
        String name = conDef.getName();
@@ -317,11 +319,11 @@ public abstract class UIUtil {
            strBuf.append(name).append("</b> </td> </tr>");
        }
        }
-
+       
        String URL = conDef.getConnectionURL();
        if(!StringUtil.isNullString(URL)) {
            strBuf.append("<tr> <td>&nbsp; ConnectionURL </td> <td> &nbsp; : &nbsp; <b>");
-           if (URL.length() > 40) {
+       if (URL.length() > 40) {
            strBuf.append("...").append(URL.substring(URL.length() - 40));
        } else {
            strBuf.append(URL).append("</b> </td> </tr>");
