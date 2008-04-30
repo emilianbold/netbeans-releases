@@ -111,7 +111,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
 
     private boolean isExpanded(Object node) {
         synchronized (this) {
-            return expandedNodes.contains(node);
+            return expandedNodes.contains(node) || expandedExplicitely.contains(node);
         }
     }
 
