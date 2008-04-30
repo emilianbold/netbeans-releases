@@ -220,9 +220,36 @@ public class SettingsTest extends NbTestCase {
             checkSetting(MyInitializer3.CLASH_PROP, String.class, "value_from_preferences.xml");
             
             // writing
-            Settings.setValue(MyKit2.class, "newly-written-setting", 0.1f);
+            Settings.setValue(MyKit2.class, "newly-written-setting-1", 0.1f);
             Preferences prefs = MimeLookup.getLookup(new MyKit2().getContentType()).lookup(Preferences.class);
-            assertEquals("Value was not written", 0.1f, prefs.getFloat("newly-written-setting", -1f));
+            assertEquals("Value was not written", 0.1f, prefs.getFloat("newly-written-setting-1", -1f));
+            checkSetting("newly-written-setting-1", Float.class, new Float(0.1f));
+        } finally {
+            Settings.removeInitializer(MyInitializer3.NAME);
+        }        
+    }
+    
+    public void testPrefsFromPrefs() {
+        Settings.addInitializer(new MyInitializer3());
+        try {
+            Preferences prefs = MimeLookup.getLookup("text/x-type-B").lookup(Preferences.class);
+            
+            // settings supplied from preferences.xml
+            assertEquals("test-prop-A", 123, prefs.getInt("test-prop-A", -1));
+            assertEquals("test-prop-B", "Hello", prefs.get("test-prop-B", null));
+            assertEquals("test-prop-C", true, prefs.getBoolean("test-prop-C", false));
+            assertEquals("test-prop-D", 3.1415927D, prefs.getDouble("test-prop-D", 0));
+            
+            // settings supplied from MyInitializer3
+            assertEquals(MyInitializer3.PROP_A, MyInitializer3.PROP_A + "_value", prefs.get(MyInitializer3.PROP_A, null));
+            
+            // settings supplied from both
+            assertEquals(MyInitializer3.CLASH_PROP, "value_from_preferences.xml", prefs.get(MyInitializer3.CLASH_PROP, null));
+            
+            // writing
+            prefs.putFloat("newly-written-setting-2", 1.23f);
+            assertEquals("Value was not written", 1.23f, prefs.getFloat("newly-written-setting-2", -1f));
+            checkSetting("newly-written-setting-2", Float.class, new Float(1.23f));
         } finally {
             Settings.removeInitializer(MyInitializer3.NAME);
         }        
