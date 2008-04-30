@@ -93,6 +93,7 @@ class Commandline {
         Logger.getLogger(Commandline.class.getName()).fine("cli: Process destroyed");
     }
     
+    // XXX set env vars
     public void exec(SvnCommand command) throws IOException {        
 
         command.prepareCommand();
