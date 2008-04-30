@@ -41,6 +41,7 @@ package org.netbeans.modules.css.gsf;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -121,7 +122,7 @@ public class CSSGSFParser implements Parser, PositionManager {
                             from, from, Severity.ERROR);
 
                     job.listener.error(error);
-
+                    
                 }
 
                 //do some semantic checking of the parse tree
