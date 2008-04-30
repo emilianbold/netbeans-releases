@@ -2445,6 +2445,7 @@ try {StringBuffer sb = new StringBuffer();
  try {ParseException e = generateParseException();
     //System.err.println("** error_skipdecl **\n" + e.toString());
 
+  getNextToken();
   Token t = getToken(1);
   while (t.kind != SEMICOLON && t.kind != RBRACE && t.kind != EOF ) {
       getNextToken();

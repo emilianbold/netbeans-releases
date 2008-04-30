@@ -1,0 +1,273 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.subversion.client.cli;
+
+import java.io.File;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+
+/**
+ *
+ * @author tomas
+ */
+public class AddTest extends AbstractCLITest {
+    
+    public AddTest(String testName) throws Exception {
+        super(testName);
+    }
+    
+    public void testAddFile() throws Exception {
+        File file = createFile("file");        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+
+        ISVNClientAdapter c = getNbClient();
+        c.addFile(file);        
+        
+        assertStatus(SVNStatusKind.ADDED, file);        
+        assertNotifiedFiles(file);
+    }
+    
+    public void testAddAddedFile() throws Exception {
+        File file = createFile("file");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+        
+        ISVNClientAdapter c = getNbClient();
+        
+        c.addFile(file);        
+        
+        assertStatus(SVNStatusKind.ADDED, file);
+        
+        c.addFile(file);        
+        assertStatus(SVNStatusKind.ADDED, file);
+        
+        assertNotifiedFiles(file);
+    }
+    
+    public void testAddNoFile() throws Exception {
+        File file = new File(getWC(), "fail");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+
+        ISVNClientAdapter c = getNbClient();
+        
+//        SVNClientException e = null;        
+//        try {
+            c.addFile(file);
+//        } catch (SVNClientException ex) {
+//            e = ex;
+//        }
+//        assertNotNull(e);
+        
+//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
+            
+          assertNotifiedFiles(new File[]{});  
+    }
+
+    public void testAddUnversionedFile() throws Exception {
+        File folder = createFolder("folder");
+        File file = new File(folder, "fail");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+
+        ISVNClientAdapter c = getNbClient();
+        SVNClientException e = null;        
+        try {
+            c.addFile(file);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }
+        assertNotNull(e);
+                        
+        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
+        assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);        
+        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1);        
+        
+        assertNotifiedFiles(new File[]{});  
+    }
+    
+    public void testAddFileRecursivelly() throws Exception {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        
+        ISVNClientAdapter c = getNbClient();
+        
+        c.addFile(new File[] {folder}, true);      
+
+        assertStatus(SVNStatusKind.ADDED, folder);        
+        assertStatus(SVNStatusKind.ADDED, file);
+        
+        assertNotifiedFiles(new File[]{file, folder});
+    }
+    
+    public void testAddFileNonRecursivelly() throws Exception {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        
+        ISVNClientAdapter c = getNbClient();
+        c.addFile(new File[] {folder}, false);      
+                
+        assertStatus(SVNStatusKind.ADDED, folder);
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+        
+        assertNotifiedFiles(folder);
+    }
+    
+    public void testAddDirectory() throws Exception {
+        File folder = createFolder("folder");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        ISVNClientAdapter c = getNbClient();
+        c.addDirectory(folder, false);        
+        assertStatus(SVNStatusKind.ADDED, folder);
+        
+        assertNotifiedFiles(folder);
+    }
+    
+    public void testAddAddedFolder() throws Exception {
+        File folder = createFolder("folder");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        ISVNClientAdapter c = getNbClient();
+        c.addDirectory(folder, false);        
+        assertStatus(SVNStatusKind.ADDED, folder);
+        
+        c.addFile(folder);        
+        assertStatus(SVNStatusKind.ADDED, folder);
+        
+        assertNotifiedFiles(new File[] { folder });
+    }
+    
+    public void testAddNoDirectory() throws Exception {
+        File file = new File(getWC(), "fail");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+                
+//        SVNClientException e = null;        
+//        try {
+            ISVNClientAdapter c = getNbClient();
+            c.addDirectory(file, false);
+//        } catch (SVNClientException ex) {
+//            e = ex;
+//        }
+//        assertNotNull(e);
+        
+//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
+            
+         assertNotifiedFiles(new File[] {});
+    }
+
+    public void testAddUnversionedDirectory() throws Exception {
+        File parentFolder = createFolder("folder");
+        File folder = createFolder(parentFolder, "fail");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+                
+        SVNClientException e = null;        
+        try {
+            getNbClient().addFile(folder);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }
+        assertNotNull(e);
+                        
+        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
+        assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);        
+        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1);        
+        
+        assertNotifiedFiles(new File[]{});  
+    }
+    
+    public void testAddFolderRecursivelly() throws Exception {
+        File folder = createFolder("folder");
+        File file = createFolder(folder, "folder");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        
+        ISVNClientAdapter c = getNbClient();                 
+        c.addDirectory(folder, true);      
+
+        assertStatus(SVNStatusKind.ADDED, folder);        
+        assertStatus(SVNStatusKind.ADDED, file);
+        
+        assertNotifiedFiles(new File[] {folder, file});
+    }
+    
+    public void testAddFolderRecursivellyForced() throws Exception {
+        File parentFolder = createFolder("folder");
+        File folder = createFolder(parentFolder, "folder");
+                
+        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        
+        ISVNClientAdapter c = getNbClient();
+        c.addDirectory(parentFolder, true, true);      
+
+        assertStatus(SVNStatusKind.ADDED, parentFolder);        
+        assertStatus(SVNStatusKind.ADDED, folder);
+        
+        assertNotifiedFiles(new File[] { parentFolder, folder });
+    }
+    
+    public void testAddFolderNonRecursivelly() throws Exception {
+        File parentFolder = createFolder("folder");
+        File folder = createFolder(parentFolder, "file");
+        
+        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);        
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+        
+        ISVNClientAdapter c = getNbClient();
+        c.addDirectory(parentFolder, false);      
+                
+        assertStatus(SVNStatusKind.ADDED, parentFolder);
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
+        
+        assertNotifiedFiles(parentFolder );
+    }
+}
