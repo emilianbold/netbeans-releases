@@ -71,13 +71,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         return 0; // XXX: Return something more specific
     }
 
-    /**
-     * XXX: To take care of filter() and canFilter() methods to shortcircuit calls to query
-     * every time user types a key with completion open
-     */
     private static class SpringXMLConfigCompletionQuery extends AsyncCompletionQuery {
-
-        private static final Logger LOGGER = Logger.getLogger(SpringXMLConfigCompletionQuery.class.getName());
         
         private int queryType;
         private int caretOffset;
