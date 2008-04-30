@@ -434,23 +434,24 @@ public class TaskProcessor {
                                             currentResult = SourceAccessor.getINSTANCE().getResult(source);
                                         }
                                     }
-                                    if (currentResult == null) {
-                                        final Parser parser = ParserManagerImpl.getParser(source);
-                                        assert parser != null;
-                                        currentResult = parser.parse(source);
-                                        synchronized (source) {                                                
-                                            final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);                                            
-                                            if (tmpResult == null) {
-                                                SourceAccessor.getINSTANCE().setResult(source, tmpResult);
-                                            }
-                                            else {
-                                                currentResult = tmpResult;
-                                            }
-                                        }
-                                    }
-                                    assert currentResult != null;
                                     parserLock.lock();
                                     try {
+                                        if (currentResult == null) {
+                                            final Parser parser = ParserManagerImpl.getParser(source);
+                                            assert parser != null;
+                                            currentResult = parser.parse(source);
+                                            synchronized (source) {                                                
+                                                final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);                                            
+                                                if (tmpResult == null) {
+                                                    SourceAccessor.getINSTANCE().setResult(source, tmpResult);
+                                                }
+                                                else {
+                                                    currentResult = tmpResult;
+                                                }
+                                            }
+                                        }
+                                        assert currentResult != null;
+                                        //tzezula: Ideally the parserLock should be aquired here, but it will call parse outside critical section
                                         boolean shouldCall;                                            
                                         synchronized (source) {
                                             shouldCall = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
