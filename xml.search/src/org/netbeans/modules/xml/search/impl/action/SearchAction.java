@@ -41,10 +41,11 @@
 package org.netbeans.modules.xml.search.impl.action;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 import javax.swing.Action;
 
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 import org.netbeans.modules.xml.search.impl.output.View;
@@ -74,14 +75,12 @@ public final class SearchAction extends IconAction {
   }
 
   private SearchProvider getProvider(Node node) {
-    List<SearchProvider> providers = getInstances(SearchProvider.class);
+    DataObject data = getDataObject(node);
 
-    for (SearchProvider provider : providers) {
-      if (provider.isApplicable(node)) {
-        return provider;
-      }
+    if (data == null) {
+      return null;
     }
-    return null;
+    return data.getLookup().lookup(SearchProvider.class);
   }
 
   @Override

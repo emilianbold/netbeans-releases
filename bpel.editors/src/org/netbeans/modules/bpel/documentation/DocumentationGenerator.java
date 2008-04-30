@@ -347,7 +347,7 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String getInfo(BpelEntity entity) {
-    String info = EditorUtil.getType(entity);
+    String info = getType(entity);
     String name = getName(entity);
 
     if (name != null) {
@@ -361,6 +361,16 @@ public class DocumentationGenerator implements ReportCookie {
       }
     }
     return info;
+  }
+
+  private String getType(BpelEntity entity) {
+    String type = entity.getElementType().getName();
+    int k = type.lastIndexOf("."); // NOI18N
+
+    if (k == -1) {
+      return type;
+    }
+    return type.substring(k + 1);
   }
 
   private String getName(BpelEntity entity) {

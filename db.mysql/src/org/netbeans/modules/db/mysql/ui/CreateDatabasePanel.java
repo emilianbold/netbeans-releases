@@ -6,6 +6,8 @@
 
 package org.netbeans.modules.db.mysql.ui;
 
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.modules.db.mysql.util.Utils;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.KeyEvent;
@@ -22,7 +24,9 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.*;
-import org.netbeans.modules.db.mysql.ServerInstance.SampleName;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.SampleManager;
+import org.netbeans.modules.db.mysql.impl.SampleManager.SampleName;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -39,7 +43,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             CreateDatabasePanel.class.getName());
 
     DialogDescriptor descriptor;
-    final ServerInstance server;
+    final DatabaseServer server;
     private Color nbErrorForeground;
 
     private void validatePanel(String databaseName) {
@@ -65,7 +69,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     }
         
-    public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
+    public static DatabaseConnection showCreateDatabaseDialog(DatabaseServer server) {
         assert SwingUtilities.isEventDispatchThread();
         
         CreateDatabasePanel panel = new CreateDatabasePanel(server);
@@ -114,7 +118,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
      * @return the database connection to the newly created database or 
      *         <code>null</code> if a connection to the database was not created.
      */
-    private static DatabaseConnection createDatabase(ServerInstance server,
+    private static DatabaseConnection createDatabase(DatabaseServer server,
             String dbname, DatabaseUser grantUser) {
         
         boolean dbCreated = false;
@@ -138,8 +142,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                
             result = createConnection(server, dbname, user);
             
-            if ( result != null && ServerInstance.isSampleName(dbname) ) {
-                server.createSample(dbname, result);
+            if ( result != null && SampleManager.isSampleName(dbname) ) {
+                SampleManager.createSample(dbname, result);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
@@ -149,7 +153,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return result;
     }
         
-    private static void displayCreateFailure(ServerInstance server,
+    private static void displayCreateFailure(DatabaseServer server,
             DatabaseException ex, String dbname, boolean dbCreated) {
         Utils.displayError(NbBundle.getMessage(CreateDatabasePanel.class,
                 "CreateDatabasePanel.MSG_CreateFailed"), ex);
@@ -186,7 +190,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
      * @return true if it's OK to continue or false to cancel
      */
     private static boolean checkDeleteExistingDatabase(
-            ServerInstance server, String dbname) throws DatabaseException {
+            DatabaseServer server, String dbname) throws DatabaseException {
         if ( ! server.databaseExists(dbname)) {
             return true;
         }
@@ -210,7 +214,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     private static DatabaseConnection createConnection(
-            ServerInstance server, String dbname, String grantUser) {
+            DatabaseServer server, String dbname, String grantUser) {
         
         List<DatabaseConnection> conns = DatabaseUtils.
                 findDatabaseConnections(server.getURL(dbname));
@@ -237,7 +241,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
 
     /** Creates new form CreateDatabasePanel */
-    public CreateDatabasePanel(ServerInstance server) {
+    public CreateDatabasePanel(DatabaseServer server) {
         this.server = server;
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
@@ -315,7 +319,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return chkGrantAccess.isSelected();
     }
         
-    private ServerInstance getServer() {
+    private DatabaseServer getServer() {
         return server;
     }
 
@@ -501,7 +505,7 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
         }
 
         public Object getElementAt(int index) {
-            return  samplePrefix + SAMPLES[index].toString();
+            return samplePrefix + SAMPLES[index].toString();
         }
 
         public void addListDataListener(ListDataListener listener) {
@@ -513,12 +517,12 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
     }
     
     private static class UsersComboModel implements ComboBoxModel {
-        final ServerInstance server;
+        final DatabaseServer server;
 
         ArrayList<DatabaseUser> users= new ArrayList<DatabaseUser>();
         DatabaseUser selected;
                 
-        public UsersComboModel(ServerInstance server) {
+        public UsersComboModel(DatabaseServer server) {
             this.server = server;
                         
             try {            

@@ -41,6 +41,9 @@
 
 package startup;
 
+import java.io.IOException;
+import org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase;
+
 /**
  * Measure startup time by org.netbeans.core.perftool.StartLog.
  * Number of starts with new userdir is defined by property
@@ -53,7 +56,7 @@ package startup;
  *
  * @author mmirilovic@netbeans.org
  */
-public class OutOfTheBoxStartupWTK extends org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase {
+public class OutOfTheBoxStartupWTK extends MeasureStartupTimeTestCase {
     
     /** Define testcase
      * @param testName name of the testcase
@@ -69,7 +72,8 @@ public class OutOfTheBoxStartupWTK extends org.netbeans.performance.test.utiliti
         String performanceDataName = "Startup Time with WTK";
         
         // don't report first run, try to have still the same testing conditions
-        runIDE(getIdeHome(),new java.io.File(getWorkDir(),"ideuserdir_prepare"),getMeasureFile(0,0),1000);
+        runIDE(MeasureStartupTimeTestCase.getIdeHome(),
+                new java.io.File(getWorkDir(),"ideuserdir_prepare"), getMeasureFile(0,0),1000);
         
         for (int n=1;n <= repeatNewUserdir; n++){
             for (int i=1; i <= repeat; i++) {

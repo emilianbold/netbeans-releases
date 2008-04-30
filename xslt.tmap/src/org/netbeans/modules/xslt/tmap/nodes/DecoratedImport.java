@@ -55,7 +55,7 @@ public class DecoratedImport extends DecoratedTMapComponentAbstract<Import>{
         
         if (namespace != null) {
             addon = (addon == null ? TMapComponentNode.EMPTY_STRING 
-                    : addon+TMapComponentNode.WHITE_SPACE)+ namespace; // NOI18N
+                    : addon+TMapComponentNode.WHITE_SPACE)+ TMapComponentNode.WHITE_SPACE+namespace; // NOI18N
         }
         
         return Util.getGrayString(super.getHtmlDisplayName(), addon);

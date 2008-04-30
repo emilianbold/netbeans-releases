@@ -83,6 +83,12 @@ public interface SearchElement {
   void gotoVisual();
 
   /**
+   * Returns true if element is deleted.
+   * @return true if element is deleted
+   */
+  boolean isDeleted();
+
+  /**
    * Highlights element.
    */
   void highlight();
@@ -116,6 +122,10 @@ public interface SearchElement {
 
     public SearchElement getParent() {
       return myParent;
+    }
+
+    public boolean isDeleted() {
+      return false;
     }
 
     public void gotoSource() {}

@@ -325,6 +325,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileUtils.writeFile(new File(directory, JTB_LICENSE),
                     ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
                     cl));
+            FileUtils.writeFile(new File(directory, JTB_THIRDPARTY_README),
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTY_README,
+                    cl));   
+            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION),
+                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
+                    cl));    
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.legal.creation"), // NOI18N
@@ -739,4 +745,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "org/netbeans/installer/products/sjsas/jtblegal/";
     public static final String JTB_LICENSE =
             "Java_EE_5_Tools_Bundle_U5_License.txt";//NOI18N
+    public static final String JTB_THIRDPARTY_README =
+            "Tools_Bundle_Update5_THIRDPARTYREADME.txt";//NOI18N
+    public static final String JTB_DISTRIBUTION =
+            "Tools_Bundle_Update5_DISTRIBUTION.txt";//NOI18N    
 }

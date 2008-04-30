@@ -20,7 +20,6 @@
 set -e
 
 script_dir=`dirname "$0"`
-. "$script_dir"/env.sh
 
 #add Product ID
 "$script_dir"/addproduct_id.sh "JAVA"

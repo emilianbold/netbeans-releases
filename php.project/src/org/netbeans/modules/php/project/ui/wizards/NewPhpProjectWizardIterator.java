@@ -56,7 +56,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -209,8 +208,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // configure
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                PhpProjectSharedConstants.PHP_PROJECT_NAME);
+        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         helper.putPrimaryConfigurationData(data, true);

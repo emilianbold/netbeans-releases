@@ -136,13 +136,7 @@ public final class UI {
   }
 
   public static JButton createButton(Action action) {
-    JButton button = (JButton) createAbstractButton(new JButton(), action);
-    Object name = action.getValue(Action.NAME);
-
-    if (name == null) {
-      setButtonSize(button);
-    }
-    return button;
+    return (JButton) createAbstractButton(new JButton(), action);
   }
 
   public static JCheckBox createCheckBox(Action action) {
@@ -328,7 +322,7 @@ public final class UI {
 
   public static Node [] getSelectedNodes() {
 //out();
-    TopComponent top = getActivateTopComponent();
+    TopComponent top = getActiveTopComponent();
 //out("top: " + top);
     if (top == null) {
       return null;
@@ -342,7 +336,7 @@ public final class UI {
     return nodes;
   }
 
-  public static TopComponent getActivateTopComponent() {
+  public static TopComponent getActiveTopComponent() {
     return TopComponent.getRegistry().getActivated();
   }
   
@@ -411,17 +405,11 @@ public final class UI {
     }
   }
 
-  public static DataObject getDataObject(Node node) {
-    if (node == null) {
+  public static DataObject getDataObject(Object object) {
+    if ( !(object instanceof Node)) {
       return null;
     }
-    return (DataObject) node.getLookup().lookup(DataObject.class);
-  }
-
-  private static void setButtonSize(JButton button) {
-    button.setMaximumSize(BUTTON_SIZE);
-    button.setMinimumSize(BUTTON_SIZE);
-    button.setPreferredSize(BUTTON_SIZE);
+    return (DataObject) ((Node) object).getLookup().lookup(DataObject.class);
   }
 
   public static JComponent getResizable(JPanel panel) {
@@ -438,7 +426,6 @@ public final class UI {
     return p;
   }
 
-
   public static String removeHtml(String value) {
     if (value == null) {
       return null;
@@ -453,7 +440,6 @@ public final class UI {
   public static String getHtml(String value) {
     return "<html>" + value + "</html>"; // NOI18N
   }
-
   
   public static <T> List<T> getInstances(Class<T> clazz) {
     Collection<? extends T> collection = Lookup.getDefault().lookupAll(clazz);
@@ -854,7 +840,6 @@ public final class UI {
   public static final int MEDIUM_INSET = 13; // the 7-th Fibonacci number
 
   private static final double MILLIS = 1000.0;
-  private static final Dimension BUTTON_SIZE = new Dimension(24, 24);
 
   public static final String UH = System.getProperty("user.home"); // NOI18N
   public static final String LS = System.getProperty("line.separator"); // NOI18N

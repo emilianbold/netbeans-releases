@@ -15,7 +15,7 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private DatabaseTableSelectionVisualPanel3 component;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -82,6 +82,21 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
     }
 
     public void storeSettings(Object settings) {
+        WizardDescriptor wiz = (WizardDescriptor) settings;
+        
+        String pollingInterval = component.getPollingInterval();
+        String timeUnit = component.getPollingTimeUnit();
+        String pollingRecordSize = component.getPollingRecordSize();
+        String jndiName = component.getJNDIName();
+        boolean isDeleteRecords = component.isDeleteRecords();
+        String isDeleteRecordsString = Boolean.toString(isDeleteRecords);
+        
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL, pollingInterval);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT, timeUnit);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE, pollingRecordSize);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME, jndiName);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS, isDeleteRecordsString);
+        
     }
 }
 

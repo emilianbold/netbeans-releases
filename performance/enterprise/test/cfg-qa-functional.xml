@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions" prio="1"
+    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions or gc" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -106,6 +106,14 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
+    <testbag testattribs="all or gc" prio="2"
+             executor="ide_performance" name="GC" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureGC.class/Test GC of Schema View"/>
+            </patternset>
+        </testset>
+    </testbag>
 <!-- no enteprise specific menus/dialogs tests so far    <testbag testattribs="all or ui_responsiveness or dialogs" prio="3"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
@@ -129,7 +137,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -197,7 +205,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="130172"/>
             </patternset>
         </testset>
     </testbag>

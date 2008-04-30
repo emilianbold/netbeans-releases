@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -50,6 +51,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -208,20 +210,22 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         FileObject rakeFile = getRakeFile();
         if (rakeFile != null) {
             rakeFile.addFileChangeListener(new FileChangeAdapter() {
-                public @Override void fileChanged(FileEvent fe) { updateRakeTargets(); }
-                public @Override void fileDeleted(FileEvent fe) { updateRakeTargets(); }
-                public @Override void fileRenamed(FileRenameEvent fe) { updateRakeTargets(); }
+                public @Override void fileChanged(FileEvent fe) { updateRakeTasks(); }
+                public @Override void fileDeleted(FileEvent fe) { updateRakeTasks(); }
+                public @Override void fileRenamed(FileRenameEvent fe) { updateRakeTasks(); }
             });
         }
-        updateRakeTargets();
+        updateRakeTasks();
     }
 
-    private void updateRakeTargets() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                RakeTargetsAction.refreshTargets(RubyBaseProject.this);
-            }
-        });
+    private void updateRakeTasks() {
+        if (RubyPlatform.platformFor(this).showWarningIfInvalid()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    RakeSupport.refreshTasks(RubyBaseProject.this);
+                }
+            });
+        }
     }
     
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {

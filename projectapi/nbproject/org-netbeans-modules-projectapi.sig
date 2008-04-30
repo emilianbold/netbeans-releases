@@ -1,5 +1,8 @@
 #API master signature file
-#Version 1.13.1
+#Version 1.14
+CLSS public static abstract interface org.openide.filesystems.FileSystem$AtomicAction
+meth public abstract void org.openide.filesystems.FileSystem$AtomicAction.run() throws java.io.IOException
+supr null
 CLSS public static abstract org.openide.util.Lookup$Item
 cons public Item()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

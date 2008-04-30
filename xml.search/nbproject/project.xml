@@ -138,12 +138,14 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.soa.validation</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.validation</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <package>org.netbeans.modules.xml.search.api</package>

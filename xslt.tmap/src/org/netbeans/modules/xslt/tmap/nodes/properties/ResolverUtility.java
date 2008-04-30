@@ -18,29 +18,19 @@
  */
 package org.netbeans.modules.xslt.tmap.nodes.properties;
 
-import javax.xml.namespace.NamespaceContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
-import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
-import org.openide.util.NbBundle;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -52,6 +42,8 @@ import org.openide.util.NbBundle;
  * @author nk160297
  */
 public final class ResolverUtility {
+    
+    private static final Logger LOGGER = Logger.getLogger(ResolverUtility.class.getName());
     
     /**
      * Calculate a String to display from a QName.
@@ -92,7 +84,151 @@ public final class ResolverUtility {
         String retValue = prefix + qValue.getLocalPart();
         return retValue;
     }
+//    
+//    public static String getDisplayName(Component comp) {
+//        return getDisplayName(comp, null);
+//    }
+//    
+//    public static String getDisplayName(Component comp, TMapComponent relativeTo) {
+//        String targetNamespace = null;
+//        String prefix = null;
+//        String compName = null;
+//        //
+//        if (comp instanceof TMapComponent) {
+//            targetNamespace = ((TMapComponent)comp).getModel().
+//                    getTransformMap().getNamespaceContext().;
+//            if (comp instanceof NamedElement) {
+//                compName = ((NamedElement)comp).getName();
+//            }
+//        } else if (comp instanceof WSDLComponent) {
+//            targetNamespace = ((WSDLComponent)comp).getModel().
+//                    getDefinitions().getTargetNamespace();
+//            if (comp instanceof Named) {
+//                compName = ((Named)comp).getName();
+//            }
+//        } else if (comp instanceof SchemaComponent) {
+//            targetNamespace = ((SchemaComponent)comp).getModel().
+//                    getSchema().getTargetNamespace();
+//            if (comp instanceof Named) {
+//                compName = ((Named)comp).getName();
+//            }
+//        }
+//        //
+//        assert compName != null :
+//            "Impossible to calculate the name for a component which hasn't a name!"; // NOI18N
+//        //
+//        if (targetNamespace != null && targetNamespace.length() > 0) {
+//            if (relativeTo != null) {
+//                NamespaceContext nc = relativeTo.getNamespaceContext();
+//                prefix = nc.getPrefix(targetNamespace);
+//            }
+//            if (prefix == null || prefix.length() == 0) {
+//                return targetNamespace + Constants.COLON + compName;
+//            } else {
+//                return prefix + Constants.COLON + compName;
+//            }
+//        } else {
+//            return compName;
+//        }
+//    }
+//    
+//    /**
+//     * Returns projectSource related to the given bpelModel which is in lookup
+//     * Could return null
+//     */ 
+//    public static FileObject getProjectSource(Lookup lookup) {
+//        BpelModel bpelModel = lookup.lookup(BpelModel.class);
+//        if (bpelModel == null) {
+//            return null;
+//        }
+//        FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
+//        if (bpelFo == null) {
+//            return null;
+//        }
+//        Sources sources = safeGetSources(safeGetProject(bpelModel));
+//        if (sources == null) {
+//            return null;
+//        }
+//        
+//        String bpelFoPath = bpelFo.getPath();
+//        SourceGroup[] sourceGroupArr = sources.getSourceGroups(
+//                ProjectConstants.SOURCES_TYPE_BPELPRO);
+//        for (SourceGroup srcGroup : sourceGroupArr) {
+//            String srcFolderName = srcGroup.getRootFolder().getPath();
+//            //
+//            if (bpelFoPath.startsWith(srcFolderName)) {
+//                return srcGroup.getRootFolder();
+//            }
+//        }
+//        return null;
+//    }
+//    
+    public static String encodeLocation(String location){
+        return location.replace(" ", "%20"); // NOI18N
+    }
+    
+    public static String decodeLocation(String location){
+        return location.replace("%20", " "); // NOI18N
+    }
 
+//    /**
+//     * Returns the FileObject which points to the folder where the specified
+//     * BPEL Process is located.
+//     *
+//     * This method can return null;
+//     */
+//    public static FileObject getBpelProcessFolder(BpelModel bpelModel) {
+//        if (bpelModel != null) {
+//            ModelSource bpelMS = bpelModel.getModelSource();
+//            if (bpelMS != null) {
+//                Lookup bpelLookup = bpelMS.getLookup();
+//                if (bpelLookup != null) {
+//                    FileObject bpelFo = bpelLookup.lookup(FileObject.class);
+//                    if (bpelFo != null) {
+//                        FileObject bpelFolderFo = bpelFo.getParent();
+//                        return bpelFolderFo;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//    
+    /**
+     * Check if the specified model is imported to the current transformmap.
+     */
+    public static boolean isModelImported(Model model, Lookup lookup) {
+        TMapModel tMapModel = lookup.lookup(TMapModel.class);
+        return isModelImported(model, tMapModel);
+    }
+    
+    /**
+     * Check if the specified model is imported to the current transformmap.
+     */
+    public static boolean isModelImported(Model model, TMapModel tMapModel) {
+        if (model == SchemaModelFactory.getDefault().getPrimitiveTypesModel()) {
+            // the primitive types' model considered as imported implicitly.
+            return true;
+        }
+        
+        for (Import imp : tMapModel.getTransformMap().getImports()) {
+            try {
+            if (model == imp.getImportModel()) {
+                return true;
+            }
+            } catch (CatalogModelException ex) {
+                LOGGER.log(Level.INFO, "exception on imported model resolving");
+                return false;
+            }
+        }
+        
+        return false;
+    }
+
+    
+    /**
+     * Tries to resolve the reference and take it's name.
+     */
     public static String getNameByRef(Reference ref)  {
         if (ref == null) {
             return null;
@@ -120,4 +256,108 @@ public final class ResolverUtility {
         //
         return result;
     }
+//    
+//    public static ModelSource getImportedModelSource(Import importObj) {
+//        if (Import.SCHEMA_IMPORT_TYPE.equals(importObj.getImportType())) {
+//            SchemaModel schemaModel = ImportHelper.getSchemaModel(importObj, false);
+//            if (schemaModel != null) {
+//                return schemaModel.getModelSource();
+//            }
+//        } else if (Import.WSDL_IMPORT_TYPE.equals(importObj.getImportType())) {
+//            WSDLModel wsdlModel = ImportHelper.getWsdlModel(importObj, false);
+//            if (wsdlModel != null) {
+//                return wsdlModel.getModelSource();
+//            }
+//        }
+//        
+//        return null;
+//    }
+//    
+//    public static FileObject getImportedFileObject(Import importObj) {
+//        ModelSource modelSource = getImportedModelSource(importObj);
+//        
+//        if (modelSource != null) {
+//            return modelSource.getLookup().lookup(FileObject.class);
+//        } else {
+//            return null;
+//        }
+//    }
+//    
+//    /* 
+//     * Description is shown in e.g. TypeChooserPanel. It's either a path
+//     * to the imported file or a message that a file doesn't exist.
+//     */
+//    public static String getImportDescription(Import importObj) {
+//        FileObject fo = getImportedFileObject(importObj);
+//        if (fo != null && fo.isValid()) {
+//            return fo.getPath();
+//        } else {
+//            //No valid Model or ModelSource or FileObject found - return warning
+//            String importInfo = importObj.getLocation();
+//            if (importInfo == null || importInfo.length() == 0) {
+//                importInfo = importObj.getNamespace();
+//            }
+//            return NbBundle.getMessage(FormBundle.class,
+//                    "ERR_IMPORT_FILE_DOESNT_EXIST", // NOI18N
+//                    ResolverUtility.decodeLocation(importInfo), "");
+//        }
+//    }
+//    
+//    /**
+//     * Returns the project Sources for the specified bpel process.
+//     * Use the following line to access the SourceGroup array.
+//     *  SourceGroup[] sourceGroup =
+//     *  sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
+//     */
+//    public static Sources safeGetSources(Project project) {
+//        if (project != null) {
+//            return ProjectUtils.getSources(project);
+//        } else {
+//            return null;
+//        }
+//    }
+//    
+//    public static Project safeGetProject(BpelModel bpelModel) {
+//        FileObject fo = Util.getFileObjectByModel(bpelModel);
+//        if (fo != null && fo.isValid()) {
+//            return FileOwnerQuery.getOwner(fo);
+//        } else {
+//            return null;
+//        }
+//    }
+//    
+//    /*
+//     * Returns the relative path of a given FileObject in a given Project.
+//     * Returns null if either of the parameters is null or given FileObject
+//     * is not in the given Project.
+//     */
+//    public static String safeGetRelativePath(FileObject fo, Project project) {
+//        if (fo == null || !fo.isValid() || project == null) {
+//            return null;
+//        }
+//        
+//        if (FileOwnerQuery.getOwner(fo) != project) {
+//            return null;
+//        }
+//        
+//        String targetFoPath = fo.getPath();
+//        //
+//        Sources sources = safeGetSources(project);
+//        if (sources != null) {
+//            SourceGroup[] sourceGroupArr = sources.getSourceGroups(
+//                    ProjectConstants.SOURCES_TYPE_BPELPRO);
+//            //
+//            for (SourceGroup srcGroup : sourceGroupArr) {
+//                String srcFolderName = srcGroup.getRootFolder().getPath();
+//                //
+//                if (targetFoPath.startsWith(srcFolderName)) {
+//                    return targetFoPath.substring(srcFolderName.length());
+//                }
+//            }
+//        }
+//        //TODO:it's strange that we are here since we have already checked that
+//        //our FileObject belongs to our Project, but still we couldn't calculate the
+//        //relative path. Should we assert?
+//        return null;
+//    }
 }

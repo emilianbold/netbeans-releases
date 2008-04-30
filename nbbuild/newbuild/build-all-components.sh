@@ -113,7 +113,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 # J2EE UI validation tests
 for i in 1 2 3; do
-    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
+    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=$GLASSFISH_HOME -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
     if [ $ERROR_CODE = 0 ]; then
         break;
@@ -165,6 +165,7 @@ if [ $ERROR_CODE != 0 ]; then
     TEST_CODE=1;
 fi
 
+ant -f nbbuild/build.xml commit-validation-junit-format
 if [ -n $WORKSPACE ]; then
     cp -r $NB_ALL/xtest/instance/results $WORKSPACE
 fi

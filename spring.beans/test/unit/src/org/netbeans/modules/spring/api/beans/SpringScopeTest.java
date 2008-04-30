@@ -75,12 +75,12 @@ public class SpringScopeTest extends ConfigFileTestCase {
         ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl());
         SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
 
-        FileObject configFO = FileUtil.toFileObject(configFile);
+        final FileObject configFO = FileUtil.toFileObject(configFile);
         SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
         final int[] beanCount = { 0 };
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {
-                beanCount[0] = beans.getBeans(configFile).size();
+                beanCount[0] = beans.getFileBeans(configFO).getBeans().size();
             }
         });
         assertEquals(1, beanCount[0]);
@@ -106,12 +106,12 @@ public class SpringScopeTest extends ConfigFileTestCase {
         final ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl(group));
         SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
 
-        FileObject configFO = FileUtil.toFileObject(configFile);
+        final FileObject configFO = FileUtil.toFileObject(configFile);
         SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
         final Set<String> beanNames = new HashSet<String>();
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {
-                for (SpringBean bean : beans.getBeans(configFile)) {
+                for (SpringBean bean : beans.getFileBeans(configFO).getBeans()) {
                     beanNames.add(bean.getId());
                 }
             }
@@ -119,10 +119,11 @@ public class SpringScopeTest extends ConfigFileTestCase {
         assertEquals(1, beanNames.size());
         assertTrue(beanNames.contains("foo"));
 
+        final FileObject configFO2 = FileUtil.toFileObject(configFile2);
         beanNames.clear();
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {
-                for (SpringBean bean : beans.getBeans(configFile2)) {
+                for (SpringBean bean : beans.getFileBeans(configFO2).getBeans()) {
                     beanNames.add(bean.getId());
                 }
             }
@@ -147,7 +148,6 @@ public class SpringScopeTest extends ConfigFileTestCase {
         SpringConfigModel anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
         assertSame(model, anotherModel);
 
-        FileObject configFO2 = FileUtil.toFileObject(configFile2);
         anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO2);
         assertSame(model, anotherModel);
 

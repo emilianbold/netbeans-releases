@@ -60,8 +60,8 @@ made subject to such option by the copyright holder.
             <patternset>
                 <include name="gui/UMLMeasureActions.class"/>
                 <include name="gui/UMLMeasureActions.class/Create Class Diagram From Multiple Nodes" expectedFail="133098"/>
-                <include name="gui/UMLMeasureActions.class/Create Sequence Diagram From Multiple Nodes" expectedFail="133115"/>
-                <include name="gui/UMLMeasureActions.class/Generate Dependency Diagram" expectedFail="133118"/>                                
+                <include name="gui/UMLMeasureActions.class/Create Sequence Diagram From Multiple Nodes" expectedFail="133115 except Solaris"/>
+                <include name="gui/UMLMeasureActions.class/Generate Dependency Diagram" expectedFail="133118 except Solaris"/>                                
                 <include name="gui/UMLMeasureActions.class/Open UML Diagram" expectedFail="108274"/>                                
                 <exclude name="gui/UMLMeasureActions.class/Open UML Project"/>
                 <exclude name="gui/UMLMeasureActions.class/Reverse Engineering"/>
@@ -101,8 +101,8 @@ made subject to such option by the copyright holder.
             <patternset>
                 <include name="gui/UMLMeasureActions.class"/>
                 <include name="gui/UMLMeasureActions.class/Create Class Diagram From Multiple Nodes" expectedFail="133098"/>
-                <include name="gui/UMLMeasureActions.class/Create Sequence Diagram From Multiple Nodes" expectedFail="133115"/>
-                <include name="gui/UMLMeasureActions.class/Generate Dependency Diagram" expectedFail="133118"/>                                
+                <include name="gui/UMLMeasureActions.class/Create Sequence Diagram From Multiple Nodes" expectedFail="133115 except Solaris"/>
+                <include name="gui/UMLMeasureActions.class/Generate Dependency Diagram" expectedFail="133118 except Solaris"/>                                
                 <include name="gui/UMLMeasureActions.class/Open UML Diagram" expectedFail="108274"/>                                
                 <exclude name="gui/UMLMeasureActions.class/Open UML Project"/>
                 <exclude name="gui/UMLMeasureActions.class/Reverse Engineering"/>
@@ -141,8 +141,8 @@ made subject to such option by the copyright holder.
             <patternset>
                 <include name="gui/UMLMeasureActions.class"/>
                 <include name="gui/UMLMeasureActions.class/Create Class Diagram From Multiple Nodes" expectedFail="133098"/>
-                <include name="gui/UMLMeasureActions.class/Create Sequence Diagram From Multiple Nodes" expectedFail="133115"/>
-                <include name="gui/UMLMeasureActions.class/Generate Dependency Diagram" expectedFail="133118"/>                                
+                <include name="gui/UMLMeasureActions.class/Create Sequence Diagram From Multiple Nodes" expectedFail="133115 except Solaris"/>
+                <include name="gui/UMLMeasureActions.class/Generate Dependency Diagram" expectedFail="133118 except Solaris"/>                                
                 <include name="gui/UMLMeasureActions.class/Open UML Diagram" expectedFail="108274"/>                                
                 <exclude name="gui/UMLMeasureActions.class/Open UML Project"/>
                 <exclude name="gui/UMLMeasureActions.class/Reverse Engineering"/>

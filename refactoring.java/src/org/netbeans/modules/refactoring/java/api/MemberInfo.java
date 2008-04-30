@@ -138,6 +138,9 @@ public final class MemberInfo<H> {
         } else if (el.getKind() == ElementKind.METHOD) {
             format += ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE; // NOI18N
             g=Group.METHOD;
+        } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
+            format += ElementHeaders.PARAMETERS;
+            g=Group.METHOD;
         } 
 
         MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), ElementHeaders.getHeader(el, c, format), ElementIcons.getElementIcon(el.getKind(), el.getModifiers()));

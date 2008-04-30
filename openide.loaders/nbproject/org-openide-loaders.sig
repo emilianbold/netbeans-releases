@@ -1,5 +1,5 @@
 #API master signature file
-#Version 6.7.1
+#Version 6.9
 CLSS protected abstract java.awt.Component$AccessibleAWTComponent
 cons protected AccessibleAWTComponent(java.awt.Component)
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
@@ -3605,6 +3605,64 @@ meth public void java.awt.event.MouseAdapter.mouseExited(java.awt.event.MouseEve
 meth public void org.openide.awt.MouseUtils$PopupMouseAdapter.mousePressed(java.awt.event.MouseEvent)
 meth public void org.openide.awt.MouseUtils$PopupMouseAdapter.mouseReleased(java.awt.event.MouseEvent)
 supr java.awt.event.MouseAdapter
+CLSS protected final org.openide.awt.SpinButton$RepeatThread
+fld  public static final int java.lang.Thread.MAX_PRIORITY
+fld  public static final int java.lang.Thread.MIN_PRIORITY
+fld  public static final int java.lang.Thread.NORM_PRIORITY
+intf java.lang.Runnable
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.StackTraceElement; java.lang.Thread.getStackTrace()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean java.lang.Thread.isInterrupted()
+meth public final boolean java.lang.Thread.isDaemon()
+meth public final int java.lang.Thread.getPriority()
+meth public final java.lang.String java.lang.Thread.getName()
+meth public final java.lang.ThreadGroup java.lang.Thread.getThreadGroup()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void java.lang.Thread.checkAccess()
+meth public final void java.lang.Thread.join() throws java.lang.InterruptedException
+meth public final void java.lang.Thread.resume()
+meth public final void java.lang.Thread.setDaemon(boolean)
+meth public final void java.lang.Thread.setName(java.lang.String)
+meth public final void java.lang.Thread.setPriority(int)
+meth public final void java.lang.Thread.stop()
+meth public final void java.lang.Thread.suspend()
+meth public java.lang.ClassLoader java.lang.Thread.getContextClassLoader()
+meth public java.lang.String java.lang.Thread.toString()
+meth public java.lang.Thread$State java.lang.Thread.getState()
+meth public java.lang.Thread$UncaughtExceptionHandler java.lang.Thread.getUncaughtExceptionHandler()
+meth public long java.lang.Thread.getId()
+meth public native final boolean java.lang.Thread.isAlive()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public native int java.lang.Thread.countStackFrames()
+meth public static boolean java.lang.Thread.interrupted()
+meth public static int java.lang.Thread.activeCount()
+meth public static int java.lang.Thread.enumerate([Ljava.lang.Thread;)
+meth public static java.lang.Thread$UncaughtExceptionHandler java.lang.Thread.getDefaultUncaughtExceptionHandler()
+meth public static java.util.Map java.lang.Thread.getAllStackTraces()
+meth public static native boolean java.lang.Thread.holdsLock(java.lang.Object)
+meth public static native java.lang.Thread java.lang.Thread.currentThread()
+meth public static native void java.lang.Thread.sleep(long) throws java.lang.InterruptedException
+meth public static native void java.lang.Thread.yield()
+meth public static void java.lang.Thread.dumpStack()
+meth public static void java.lang.Thread.setDefaultUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)
+meth public static void java.lang.Thread.sleep(long,int) throws java.lang.InterruptedException
+meth public synchronized final void java.lang.Thread.join(long) throws java.lang.InterruptedException
+meth public synchronized final void java.lang.Thread.join(long,int) throws java.lang.InterruptedException
+meth public synchronized final void java.lang.Thread.stop(java.lang.Throwable)
+meth public synchronized void java.lang.Thread.start()
+meth public void java.lang.Thread.destroy()
+meth public void java.lang.Thread.interrupt()
+meth public void java.lang.Thread.setContextClassLoader(java.lang.ClassLoader)
+meth public void java.lang.Thread.setUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)
+meth public void org.openide.awt.SpinButton$RepeatThread.run()
+supr java.lang.Thread
 CLSS public static org.openide.awt.SplittedPanel$EmptySplitter
 cons public EmptySplitter()
 cons public EmptySplitter(int)
@@ -13173,6 +13231,7 @@ fld  public static final int java.awt.image.ImageObserver.HEIGHT
 fld  public static final int java.awt.image.ImageObserver.PROPERTIES
 fld  public static final int java.awt.image.ImageObserver.SOMEBITS
 fld  public static final int java.awt.image.ImageObserver.WIDTH
+innr protected final org.openide.awt.SpinButton$RepeatThread
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Serializable
@@ -16582,7 +16641,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.InstanceDataObject.getCookie(java.lang.Class)
 meth public org.openide.util.HelpCtx org.openide.loaders.InstanceDataObject.getHelpCtx()
-meth public org.openide.util.Lookup org.openide.loaders.DataObject.getLookup()
+meth public org.openide.util.Lookup org.openide.loaders.InstanceDataObject.getLookup()
 meth public static boolean org.openide.loaders.InstanceDataObject.remove(org.openide.loaders.DataFolder,java.lang.String,java.lang.Class)
 meth public static boolean org.openide.loaders.InstanceDataObject.remove(org.openide.loaders.DataFolder,java.lang.String,java.lang.String)
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
@@ -17878,7 +17937,7 @@ meth public final void org.openide.text.CloneableEditorSupport.removePropertyCha
 meth public java.io.InputStream org.openide.text.CloneableEditorSupport.getInputStream() throws java.io.IOException
 meth public java.lang.String java.lang.Object.toString()
 meth public javax.swing.text.StyledDocument org.openide.text.CloneableEditorSupport.getDocument()
-meth public javax.swing.text.StyledDocument org.openide.text.CloneableEditorSupport.openDocument() throws java.io.IOException
+meth public javax.swing.text.StyledDocument org.openide.text.DataEditorSupport.openDocument() throws java.io.IOException
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()

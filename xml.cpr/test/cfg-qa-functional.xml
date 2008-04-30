@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
 <mconfig name="Schema support qa-functional test config">
 
-    <testbag testattribs="stable,commit,bpel" executor="ide" name="Acceptance BPEL">
+    <testbag testattribs="all,stable,bpel" executor="ide" name="Acceptance BPEL">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/cpr/AcceptanceTestCaseBPEL2BPEL.class"/>
@@ -52,8 +52,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <!--
-    <testbag testattribs="stable,commit,java" executor="ide" name="Acceptance Java">
+    <testbag testattribs="all,stable,java" executor="ide" name="Acceptance Java">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/cpr/AcceptanceTestCaseBPEL2JAVAAPP.class"/>
@@ -61,7 +60,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="stable,commit,sql" executor="ide" name="Acceptance SQL">
+    <testbag testattribs="stable,all,sql" executor="ide" name="Acceptance SQL">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/cpr/AcceptanceTestCaseBPEL2MYSQL.class"/>
@@ -69,7 +68,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="stable,commit,web" executor="ide" name="Acceptance Web">
+    <testbag testattribs="all,stable,web" executor="ide" name="Acceptance Web">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/cpr/AcceptanceTestCaseBPEL2WEBAPP.class"/>
@@ -77,7 +76,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="stable,commit,ejb" executor="ide" name="Acceptance Ejb">
+    <testbag testattribs="all,stable,ejb" executor="ide" name="Acceptance Ejb">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/cpr/AcceptanceTestCaseBPEL2EJB.class"/>
@@ -85,14 +84,21 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="stable,commit,xslt" executor="ide" name="Acceptance Xslt">
+    <testbag testattribs="all,xslt" executor="ide" name="Acceptance Xslt">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/cpr/AcceptanceTestCaseBPEL2XSLT.class"/>
         </patternset>
       </testset>
     </testbag>
-    -->
+
+    <testbag testattribs="all,type" executor="ide" name="Type Migration Test">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/cpr/TypeMigrationTest.class"/>
+        </patternset>
+      </testset>
+    </testbag>
 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>

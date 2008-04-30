@@ -119,6 +119,8 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     	List<ColumnInfo> selectedColumns = component.getSelectedColumns();
     	
     	wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS, selectedColumns);
+        String joinCondition = component.getJoinCondition();
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION, joinCondition);
     }
 }
 

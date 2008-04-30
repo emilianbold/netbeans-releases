@@ -47,8 +47,11 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -86,11 +89,14 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         WAIT_AFTER_OPEN=4000;
     }
     
+    @Override
     public void initialize(){
         category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
         project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle", "LBL_BPEL_Wizard_Title"); // "BPEL Module"
         project_type="BPELModule";
         index=1;
+        
+        runGC(2);
         
         MainWindowOperator.getDefault().maximize();
     }
@@ -100,20 +106,28 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         for(int attempt = 1; ; attempt++) {
             log("Attempt " + attempt + " to open New Project Wizard");
             new EventTool().waitNoEvent(3000);
-            try {
+            Timeouts old_timeouts = JemmyProperties.getCurrentTimeouts().cloneThis();
+            try {                
+                JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 150000);
+                JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 150000);
                 wizard = NewProjectWizardOperator.invoke();
                 break;
             } catch (RuntimeException exc) {
                 if (attempt < 5) {
                     log("Attempt failed with exception: " + exc);
+                    exc.printStackTrace(getLog());
                     continue;
                 }
+                Dumper.dumpAll(getLog("dump.xml"));
                 throw exc;
+            } finally {
+                JemmyProperties.setCurrentTimeouts(old_timeouts);
             }
         }   
         wizard.selectCategory(category);
         wizard.selectProject(project);
-        wizard.move(0, 0);
+        wizard.move(0, 0);    
+        new EventTool().waitNoEvent(1000);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
@@ -135,10 +149,11 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         return null;
     }
     
+    @Override
     public void close(){
         closeAllModal(); // This is necessary in case open failed
         ProjectSupport.closeProject(project_name);
-//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        runGC(1);
     }
     
     public static void main(java.lang.String[] args) {

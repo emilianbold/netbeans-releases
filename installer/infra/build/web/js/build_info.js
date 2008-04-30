@@ -46,8 +46,7 @@ var JDK_LATEST_UPDATE = "6";
 var LOAD_OMNITURE_CODE = 0;
 
 function add_download_tabs() {
-	add_download_tab("6.0.1", "http://download.netbeans.org/netbeans/6.0/final/");
-	add_download_tab("6.1 RC","http://download.netbeans.org/netbeans/6.1/rc/");
+	add_download_tab("6.1", "http://download.netbeans.org/netbeans/6.1/final/");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

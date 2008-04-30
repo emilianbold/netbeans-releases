@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.9.1
+#Version 1.11
 CLSS public final org.netbeans.api.editor.completion.Completion
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -70,6 +70,7 @@ meth public void org.netbeans.spi.editor.completion.CompletionResultSet.finish()
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setAnchorOffset(int)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setDocumentation(org.netbeans.spi.editor.completion.CompletionDocumentation)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setHasAdditionalItems(boolean)
+meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setHasAdditionalItemsText(java.lang.String)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setTitle(java.lang.String)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setToolTip(javax.swing.JToolTip)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setWaitText(java.lang.String)

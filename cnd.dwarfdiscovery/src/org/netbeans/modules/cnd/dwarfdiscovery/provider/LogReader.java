@@ -168,11 +168,11 @@ public class LogReader {
         return false;
     }
     
-    private enum CompilerType {
+    /*package-local*/ enum CompilerType {
         CPP, C, UNKNOWN;
     };
     
-    private class LineInfo {
+    /*package-local*/ static class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
         
@@ -189,7 +189,7 @@ public class LogReader {
     private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
     private static final String MAKE_DELIMITER = ";"; //NOI18N
     
-    private LineInfo testCompilerInvocation(String line) {
+    /*package-local*/ static LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
         int start = 0, end = -1;
 //        if (li.compilerType == CompilerType.UNKNOWN) {
@@ -201,6 +201,7 @@ public class LogReader {
 //        } 
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_GNU_C);
+            //TODO: can fail on gcc calls with -shared-libgcc
             if (start>=0) {
                 li.compilerType = CompilerType.C;
                 end = start + INVOKE_GNU_C.length();
@@ -283,7 +284,7 @@ public class LogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, li.compilerType == CompilerType.CPP);
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
            return true;
        }
        return false;
@@ -308,7 +309,7 @@ public class LogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
@@ -317,7 +318,7 @@ public class LogReader {
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, userIncludes, userMacros);
+        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros);
         if (what == null){
             return false;
         }

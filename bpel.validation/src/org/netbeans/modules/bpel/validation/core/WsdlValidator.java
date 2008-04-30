@@ -51,12 +51,12 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 
+import org.netbeans.modules.soa.validation.core.Validator;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import static org.netbeans.modules.xml.ui.UI.*;
@@ -65,30 +65,30 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.15
  */
-public abstract class WsdlValidator extends CoreValidator {
+public abstract class WsdlValidator extends Validator {
 
-  public abstract WSDLVisitor getVisitor();
+  protected abstract WSDLVisitor getVisitor();
 
-  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    if ( !(model instanceof WSDLModel)) {
+  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+    if ( !(m instanceof WSDLModel)) {
       return null;
     }
 //out();
 //out("VALIDATE WSDL");
-    WSDLModel wsdlModel = (WSDLModel) model;
+    WSDLModel model = (WSDLModel) m;
 
-    if (wsdlModel.getState() == Model.State.NOT_WELL_FORMED) {
+    if (model.getState() == Model.State.NOT_WELL_FORMED) {
 //out("11");
       return null;
     }
 //out("22");
     init(validation, type);
 
-    if ( !isValidationComplete()) {
+    if ( !isComplete()) {
 //out("33");
       return null;
     }
-    Definitions definitions = wsdlModel.getDefinitions();
+    Definitions definitions = model.getDefinitions();
 //out("44");
 
     if (definitions == null) {
@@ -100,6 +100,6 @@ public abstract class WsdlValidator extends CoreValidator {
     definitions.accept(getVisitor());
     endTime(getDisplayName());
 
-    return new ValidationResult(getResultItems(), Collections.singleton(model));
+    return createValidationResult(model);
   }
 }

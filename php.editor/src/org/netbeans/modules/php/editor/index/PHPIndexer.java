@@ -172,7 +172,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.3.0"; // NOI18N
+        return "0.4.1"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -270,6 +270,7 @@ public class PHPIndexer implements Indexer {
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
             StringBuilder classSignature = new StringBuilder();
+            classSignature.append(classDeclaration.getName().getName().toLowerCase() + ";"); //NOI18N
             classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
             
@@ -337,8 +338,14 @@ public class PHPIndexer implements Indexer {
                                 if (firstChar == constName.charAt(constName.length() - 1) 
                                         && firstChar == '\'' || firstChar == '\"') {
                                     String defineVal = PHPIndex.dequote(constName);
-
-                                    document.addPair(FIELD_CONST, defineVal + ";" + invocation.getStartOffset() + ";", true);
+                                    StringBuilder signature = new StringBuilder();
+                                    signature.append(defineVal.toLowerCase());
+                                    signature.append(';');
+                                    signature.append(defineVal);
+                                    signature.append(';');
+                                    signature.append(invocation.getStartOffset());
+                                    signature.append(';');
+                                    document.addPair(FIELD_CONST,  signature.toString(), true);
                                 }
                             }
                         }
@@ -348,8 +355,10 @@ public class PHPIndexer implements Indexer {
         }
 
         private void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document) {
-            String signature = getBaseSignatureForFunctionDeclaration(functionDeclaration);
-            document.addPair(FIELD_BASE, signature, true);
+            StringBuilder signature = new StringBuilder(functionDeclaration.getFunctionName().getName().toLowerCase() + ";");
+            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
+
+            document.addPair(FIELD_BASE, signature.toString(), true);
         }
         
         private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {

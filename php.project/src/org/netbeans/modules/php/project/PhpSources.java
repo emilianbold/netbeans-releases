@@ -39,7 +39,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -58,6 +57,21 @@ import org.openide.util.NbBundle;
  * @author avk
  */
 public class PhpSources implements Sources, ChangeListener, PropertyChangeListener {
+
+    /**
+     * <p>Specific php sources type.
+     * <p>Should be used in <pre>Sources_instance.getSourceGroups(String)</pre> 
+     * to retrieve php project source folders. 
+     * General {@link  org.netbeans.api.project.Sources#TYPE_GENERIC} 
+     * will not return php source folders.
+     * <pre>
+     * Sources sources = ProjectUtils.getSources(phpProject);
+     *  //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+     *  SourceGroup[] groups = sources.getSourceGroups(PhpSources.TYPE_PHP);
+     * </pre>
+     * <p>is now used in "PHP Runtime Explorer" and in "PHP Project "modules
+     */
+    public static final String TYPE_PHP = "PHPSOURCE"; // NOI18N
 
     private final AntProjectHelper myHelper;
     private PropertyEvaluator myEvaluator;
@@ -117,7 +131,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         readSources(labels, roots);
         for (int i = 0; i < labels.size(); i++) {
             sourcesHelper.addPrincipalSourceRoot(roots.get(i), labels.get(i), null, null);
-            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProjectSharedConstants.SOURCES_TYPE_PHP, labels.get(i), null, null);
+            sourcesHelper.addTypedSourceRoot(roots.get(i), TYPE_PHP, labels.get(i), null, null);
         }
 
 

@@ -28,6 +28,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -53,6 +54,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.text.Line;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
@@ -168,9 +170,9 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
                     }
                 }
 
-//TODO a                
                 // Set annotation or select element in the multiview.
 //                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+//TODO a                
 //                if (mvp.preferredID().equals("tmap-designer")) {
 //                    List<TopComponent> list = getAssociatedTopComponents();
 //                    for (TopComponent topComponent : list) {
@@ -205,23 +207,15 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
 //                            selectElement.select(XSLTComponent);
 //                        }
 //                    }
-//                } else if (mvp.preferredID().equals(
-//                        XSLTSourceMultiViewElementDesc.PREFERED_ID)) {
-//                        
-//                    // Get the line number.
-//                    int lineNum;
-//                    if(resultItem.getComponents() != null) {
-//                        lineNum = getLineNumber((XSLTComponent)resultItem.getComponents());
-//                    } else {
-//                        lineNum = resultItem.getLineNumber() - 1;
+//                } else 
+//                if (mvp.preferredID().equals(
+//                        TMapSourceMultiViewElementDesc.PREFERED_ID)) 
+//                {
+//                    Line line = LineUtil.getLine(resultItem);
+//
+//                    if (line != null) {
+//                      line.show(Line.SHOW_GOTO);
 //                    }
-//                    if (lineNum < 1) {
-//                        return;
-//                    }
-//                    Line l = lc.getLineSet().getCurrent(lineNum);
-//                    l.show(Line.SHOW_GOTO);
-//                    annotation.show(l, resultItem.getDescription());
-//                    
 //                }
             }
         });

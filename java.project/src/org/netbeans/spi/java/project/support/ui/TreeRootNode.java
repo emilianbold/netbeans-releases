@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -142,10 +143,14 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent ev) {
         // XXX handle SourceGroup.rootFolder change too
-        fireNameChange(null, null);
-        fireDisplayNameChange(null, null);
-        fireIconChange();
-        fireOpenedIconChange();
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                fireNameChange(null, null);
+                fireDisplayNameChange(null, null);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
 
     /** Copied from PhysicalView and PackageRootNode. */

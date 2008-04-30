@@ -78,7 +78,6 @@ import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -106,6 +105,7 @@ public class FileObjects {
     public static final String HTML  = "html"; //NOI18N
     public static final String SIG   = "sig";  //NOI18N
     public static final String RS    = "rs";   //NOI18N
+    public static final String RX    = "rx";   //NOI18N
     
     
     /** Creates a new instance of FileObjects */
@@ -238,7 +238,7 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      */
     public static JavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name, CharSequence content) {
-        return memoryFileObject(pkg, name, System.currentTimeMillis(), content);
+        return memoryFileObject(pkg, name, null, System.currentTimeMillis(), content);
     }
     /**
      * Creates virtual {@link JavaFileObject} with given name and content.
@@ -246,12 +246,14 @@ public class FileObjects {
      * use this method.
      * @param pkg packageName     
      * @param name the name of the {@link JavaFileObject}
+     * @param URI uri of the {@link JavaFileObject}, if null the relative URI
+     * in the form binaryName.extension is generated.
      * @param lastModified mtime of the virtual file
      * @param content the content of the {@link JavaFileObject}
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
-        long lastModified, CharSequence content) {
+    public static FileObjects.InferableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
+        final URI uri, final long lastModified, final CharSequence content) {
         Parameters.notNull("pkg", pkg);
         Parameters.notNull("name", name);
         Parameters.notNull("content", content);
@@ -259,10 +261,10 @@ public class FileObjects {
         final String nameStr = (name instanceof String) ? (String) name : name.toString();        
         int length = content.length();        
         if ( length != 0 && Character.isWhitespace( content.charAt( length - 1 ) ) ) {
-            return new MemoryFileObject(pkgStr, nameStr, lastModified, CharBuffer.wrap( content ) );
+            return new MemoryFileObject(pkgStr, nameStr, uri, lastModified, CharBuffer.wrap( content ) );
         }
         else {
-            return new MemoryFileObject(pkgStr, nameStr, lastModified, (CharBuffer)CharBuffer.allocate( length + 1 ).append( content ).append( ' ' ).flip() );
+            return new MemoryFileObject(pkgStr, nameStr, uri, lastModified, (CharBuffer)CharBuffer.allocate( length + 1 ).append( content ).append( ' ' ).flip() );
         }        
     }        
     
@@ -556,7 +558,11 @@ public class FileObjects {
         
         public String getExt () {
             return this.ext;
-        }    
+        }
+        
+        public boolean isVirtual () {
+            return false;
+        }
         
         public final String inferBinaryName () {
             final StringBuilder sb = new StringBuilder ();
@@ -1090,11 +1096,16 @@ public class FileObjects {
         
         private final long lastModified;
         private final CharBuffer cb;
+        private final URI uri;
+        private final boolean isVirtual;
         
-        public MemoryFileObject( String packageName, String fileName, long lastModified, CharBuffer cb ) {            
+        public MemoryFileObject(final String packageName, final String fileName,
+                final URI uri, final long lastModified, final CharBuffer cb ) {            
             super (packageName, fileName);    //NOI18N
             this.cb = cb;
             this.lastModified = lastModified;
+            this.uri = uri;
+            this.isVirtual = uri != null;
         }
         
 
@@ -1114,7 +1125,17 @@ public class FileObjects {
         }        
 
         public URI toUri () {
-            return URI.create (convertPackage2Folder(this.pkgName) + '/' + this.nameWithoutExt);    //NOI18N
+            if (this.uri != null) {
+                return this.uri;
+            }
+            else {
+                return URI.create (convertPackage2Folder(this.pkgName) + '/' + this.nameWithoutExt);    //NOI18N
+            }
+        }
+        
+        @Override
+        public boolean isVirtual () {
+            return isVirtual;
         }
 
         public long getLastModified() {

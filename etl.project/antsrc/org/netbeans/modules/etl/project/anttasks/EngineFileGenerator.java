@@ -112,7 +112,8 @@ public class EngineFileGenerator {
     public void generateEngine(File etlFile, File buildDir) throws Exception {
 
         String etlFileName = etlFile.getName().substring(0, etlFile.getName().indexOf(".etl"));
-        String engineFile = buildDir + "/" + etlFileName + "_engine.xml";
+        String projectName = buildDir.getParentFile().getName();
+        String engineFile = buildDir + "/" + projectName + "_" + etlFileName + "_engine.xml";
 
         DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
         Element root = f.newDocumentBuilder().parse(etlFile).getDocumentElement();
@@ -133,9 +134,9 @@ public class EngineFileGenerator {
         sqlDefinition.overrideCatalogNamesForDb(dbCatalogOverrideMapMap);
         sqlDefinition.overrideSchemaNamesForDb(dbSchemaOverrideMapMap);
         ETLProcessFlowGenerator flowGen = ETLProcessFlowGeneratorFactory.getCollabFlowGenerator(sqlDefinition, true);
-        flowGen.setWorkingFolder(sqlDefinition.getDBWorkingFolder());
-        flowGen.setInstanceDBName(sqlDefinition.getDbInstanceName());
-        flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefinition.getDBWorkingFolder(), sqlDefinition.getDbInstanceName()));
+        flowGen.setWorkingFolder(sqlDefinition.getAxiondbWorkingDirectory());
+        flowGen.setInstanceDBName("instancedb");
+        flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder());
         //flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder());
         flowGen.setMonitorDBName(def.getDisplayName());
         flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(def.getDisplayName(), ETLDeploymentConstants.PARAM_APP_DATAROOT));
@@ -148,6 +149,7 @@ public class EngineFileGenerator {
             flowGen.applyConnectionDefinitions(connDefs, this.dbNamePoolNameMap, internalDBConfigParams);
         }
         ETLEngine engine = flowGen.getScript();
+        engine.setDisplayName(projectName+"_"+etlFileName);
 
         sqlDefinition.clearOverride(true, true);
 
@@ -264,13 +266,13 @@ public class EngineFileGenerator {
         List srcDbmodels = def.getSourceDatabaseModels();
         Iterator iterator = srcDbmodels.iterator();
         while (iterator.hasNext()) {
-            initMetaData(iterator, "source");
+            initMetaData(iterator);
         }
 
         List trgDbmodels = def.getTargetDatabaseModels();
         iterator = trgDbmodels.iterator();
         while (iterator.hasNext()) {
-            initMetaData(iterator, "target");
+            initMetaData(iterator);
         }
 
         //System.out.println(connDefs);
@@ -285,7 +287,7 @@ public class EngineFileGenerator {
      * @param string
      */
     @SuppressWarnings(value = "unchecked")
-    private void initMetaData(Iterator iterator, String dbtable) {
+    private void initMetaData(Iterator iterator) {
 
         SQLDBModel element = (SQLDBModel) iterator.next();
         String oid = getSQDBModelOid(element);
@@ -303,7 +305,7 @@ public class EngineFileGenerator {
 
             setConnectionParams(conndef);
 
-            String key = originalConndef.getName() + "-" + dbtable;
+            String key = originalConndef.getName();
             conndef.setName(key);
             connDefs.put(key, conndef);
             dbNamePoolNameMap.put(oid, key);
@@ -313,7 +315,7 @@ public class EngineFileGenerator {
         } else {
             // jdbc connection
             SQLDBConnectionDefinition conndef = originalConndef;
-            String key = originalConndef.getName() + "-" + dbtable;
+            String key = originalConndef.getName();
             conndef.setName(key);
             connDefs.put(key, conndef);
             dbNamePoolNameMap.put(oid, key);

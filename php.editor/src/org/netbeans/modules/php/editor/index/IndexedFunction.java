@@ -49,11 +49,13 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author Tor Norbye
  */
 public class IndexedFunction extends IndexedElement implements FunctionElement {
+    private String arguments;
     private String[] args;
     private List<String> parameters;
     
-    public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
+        super(name, in, index, fileUrl, offset, flags, kind);
+        this.arguments = arguments;
     }
     
     @Override
@@ -63,7 +65,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public String getSignature() {
-        if (signature == null) {
+        if (textSignature == null) {
             StringBuilder sb = new StringBuilder();
             if (in != null) {
                 sb.append(in);
@@ -81,21 +83,18 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
                 }
             }
             sb.append(")");
-            signature = sb.toString();
+            textSignature = sb.toString();
         }
 
-        return signature;
+        return textSignature;
     }
 
     public String[] getArgs() {
         if (args == null) {
-            int argIndex = getAttributeSection(ARG_INDEX);
-            int endIndex = attributes.indexOf(';', argIndex);
-            if (endIndex > argIndex) {
-                String argsPortion = attributes.substring(argIndex, endIndex);
-                args = argsPortion.split(","); // NOI18N
+            if(arguments == null || arguments.length() == 0) {
+                return new String[0];
             } else {
-                args = new String[0];
+                args = arguments.split(","); // NOI18N
             }
         }
 
@@ -122,19 +121,6 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     public boolean isDeprecated() {
         return false;
-    }
-
-    @Override
-    public int getOffset() {
-        int argIndex = getAttributeSection(OFFSET_INDEX);
-        int endIndex = attributes.indexOf(';', argIndex);
-        
-        if (endIndex > argIndex){
-            String offsetStr = attributes.substring(argIndex, endIndex);
-            return Integer.parseInt(offsetStr);
-        }
-        
-        return super.getOffset();
     }
 
     @Override

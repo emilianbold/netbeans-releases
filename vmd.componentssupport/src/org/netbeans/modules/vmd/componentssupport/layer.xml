@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="J2ME">
+                <file name="CustomComponentProject.zip" url="nbresloc:/org/netbeans/modules/vmd/componentssupport/templates/CustomComponentProject.zip">
+                    <attr name="position" intvalue="450"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentIcon.gif"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentDescription.html"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

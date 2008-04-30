@@ -64,9 +64,8 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
      * @see org.netbeans.spi.debugger.DebuggerEngineProvider#getEngineTypeID()
      */
     @Override
-    public String getEngineTypeID()
-    {
-        return Debugger.ENGINE_ID;
+    public String getEngineTypeID() {
+        return DebuggerImpl.ENGINE_ID;
     }
 
     /* (non-Javadoc)

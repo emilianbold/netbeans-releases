@@ -72,7 +72,6 @@ public class BuiltInDiffProviderTest extends NbTestCase {
     
     private static DiffProvider createDiffProvider() {
         BuiltInDiffProvider provider = new BuiltInDiffProvider();
-        provider.setTrimLines(false);
         return provider;
         // Use CmdlineDiffProvider as a reference to check the test is O.K.
         //return org.netbeans.modules.diff.cmdline.CmdlineDiffProvider.createDefault();

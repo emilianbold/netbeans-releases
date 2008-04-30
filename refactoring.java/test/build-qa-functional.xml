@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
-    <property name="xtest.ide.open.project" location="${xtest.data}/projects/Refactoring"/>
+    <property name="xtest.ide.open.project" location="${xtest.data}/projects/RefactoringTest"/>
     
 </project>

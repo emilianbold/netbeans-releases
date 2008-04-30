@@ -1136,9 +1136,8 @@ public class Reformatter implements ReformatTask {
                 newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
-                blankLines(0);
+                appendToDiff("\n" + getIndent() + "}"); //NOI18N
                 col = indent + 1;
-                appendToDiff("}"); //NOI18N
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
@@ -2493,8 +2492,6 @@ public class Reformatter implements ReformatTask {
                         break;
                     case LINE_COMMENT:
                         if (lastToken != null) {
-                            if (count >= 0 && tokens.index() > 1 && after != 1)
-                                count++;
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             int idx = 0;

@@ -120,6 +120,10 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
     	this.jTextArea1.setText(joinCondition);
     }
     
+    public String getJoinCondition() {
+        return this.jTextArea1.getText();
+    }
+    
     public List<ColumnInfo> getSelectedColumns() {
     	return this.mExistingColumnNames;
     }

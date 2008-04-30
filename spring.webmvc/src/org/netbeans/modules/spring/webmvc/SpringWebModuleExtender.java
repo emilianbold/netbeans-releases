@@ -296,10 +296,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
-            FileObject viewFile;
-            viewFile = createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index"); // NOI18N
-            addFileToOpen(viewFile);
-            newFiles.add(FileUtil.toFile(viewFile));
+            addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
