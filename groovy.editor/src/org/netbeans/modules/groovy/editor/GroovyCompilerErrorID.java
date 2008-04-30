@@ -44,5 +44,5 @@ package org.netbeans.modules.groovy.editor;
  * @author schmidtm
  */
 public enum GroovyCompilerErrorID {
-    FAILURE1, FAILURE2, FAILURE3
+    FAILURE1, CLASS_NOT_FOUND
 }

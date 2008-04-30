@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,73 +20,71 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.groovy.editor.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.codehaus.groovy.control.messages.Message;
+import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.hints.spi.Description;
+import org.netbeans.modules.groovy.editor.hints.spi.ErrorRule;
 import org.netbeans.modules.groovy.editor.hints.spi.HintSeverity;
 import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
-import org.netbeans.modules.groovy.editor.hints.spi.SelectionRule;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.hints.spi.Fix;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.openide.util.Exceptions;
 
-public class CommentOutRule implements SelectionRule {
-    
+
+/**
+ *
+ * @author schmidtm
+ */
+public class ClassNotFoundRule implements ErrorRule{
+
     public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
+    String DESC = "Fix imports";
+
+    public ClassNotFoundRule() {
+        LOG.setLevel(Level.FINEST);
+    }
     
-    String bulbDesc = "Comment out selected text";
+    public Set<GroovyCompilerErrorID> getCodes() {
+        Set<GroovyCompilerErrorID> result = new HashSet<GroovyCompilerErrorID>();
+        result.add(GroovyCompilerErrorID.CLASS_NOT_FOUND);
+        return result;
+    }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RuleContext context, Message error, List<Description> result) {
+        LOG.log(Level.FINEST, "run()");
         CompilationInfo info = context.compilationInfo;
-        int start = context.selectionStart;
-        int end = context.selectionEnd;
-        
-        assert start < end;
-        
-        BaseDocument doc;
-        try {
-            doc = (BaseDocument) info.getDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        
-        if (end > doc.getLength()) {
-            return;
-        }
-
-        if (end-start > 1000) {
-            // Avoid doing tons of work when the user does a Ctrl-A to select all in a really
-            // large buffer.
-            return;
-        }
-        
-        ASTNode root = AstUtilities.getRoot(info);
-        
-        if (root == null) {
-            return;
-        }
-        
-        // this is just a dummy fix to see the lightbulb ...
-        Fix fix = new SimpleFix(bulbDesc);
-        OffsetRange range = new OffsetRange(start, end);
+        Fix fix = new SimpleFix(DESC);
         
         List<Fix> fixList = new ArrayList<Fix>(1);
         fixList.add(fix);
+        
+        OffsetRange range = new OffsetRange(1,2);
         Description desc = new Description(this, fix.getDescription(), info.getFileObject(), range,
                 fixList, 292);
         result.add(desc);
@@ -99,7 +97,7 @@ public class CommentOutRule implements SelectionRule {
     }
 
     public String getDisplayName() {
-        return bulbDesc;
+        return DESC;
     }
 
     public boolean showInTasklist() {
@@ -107,10 +105,10 @@ public class CommentOutRule implements SelectionRule {
     }
 
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+        return HintSeverity.ERROR;
     }
     
-    private class SimpleFix implements Fix {
+        private class SimpleFix implements Fix {
         
         String desc;
 
@@ -135,7 +133,6 @@ public class CommentOutRule implements SelectionRule {
         }
         
     }
-    
     
 
 }
