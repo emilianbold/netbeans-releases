@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.glassfish.common.ui;
 
+import java.io.File;
 import java.util.Map;
 import org.netbeans.spi.glassfish.GlassfishModule;
 
@@ -61,7 +62,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         Map<String, String> ip = commonSupport.getInstanceProperties();
         textLocation.setText(ip.get(GlassfishModule.HOSTNAME_ATTR) + ":" + 
                 ip.get(GlassfishModule.HTTPPORT_ATTR));
-        textDomainsFolder.setText(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) + "/domains"); // NOI18N
+        textDomainsFolder.setText(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) + File.separatorChar + "domains"); // NOI18N
         textDomainName.setText("domain1"); // NOI18N
         
 //        boolean cometEnabled = Boolean.parseBoolean(ip.get(GlassfishModule.COMET_FLAG));
