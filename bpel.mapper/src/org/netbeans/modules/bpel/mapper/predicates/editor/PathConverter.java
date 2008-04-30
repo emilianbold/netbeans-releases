@@ -42,7 +42,6 @@ import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
-import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
@@ -146,44 +145,41 @@ public class PathConverter {
     /**
      * Constructs a new list, which contains the schema elements, predicates, 
      * special steps, cast objects, part and variable from the specified iterator pathItr. 
-     * The first object taken from iterator will be at the beginning of the list 
-     * if the parameter sameOrder is true. The order will be oposite otherwise.
+     * The first object taken from iterator will be at the beginning of the list. 
      * If the iterator has incompatible content then the null is returned. 
      * 
      * @param pathItr
      * @return
      */
     public static List<Object> constructObjectLocationtList(
-            RestartableIterator<Object> pathItr, boolean sameOrder) {
+            RestartableIterator<Object> pathItr) {
         //
         pathItr.restart();
         //
-        LinkedList<Object> treeItemList = new LinkedList<Object>();
+        ArrayList<Object> treeItemList = new ArrayList<Object>();
         //
         // Process the path
         ParsingStage stage = null;
-        boolean needBreak = false;
         while (pathItr.hasNext()) {
             Object obj = pathItr.next();
-            Object toAdd = null;
             if (obj instanceof SchemaComponent) {
                 if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
                 stage = ParsingStage.SCHEMA;
-                toAdd = obj;
+                treeItemList.add(obj);
             } else if (stage != null && obj instanceof AbstractPredicate) {
                 if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
                 stage = ParsingStage.SCHEMA;
-                toAdd = obj;
+                treeItemList.add(obj);
             } else if (obj instanceof Part) {
                 if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
                 stage = ParsingStage.PART;
-                toAdd = obj;
+                treeItemList.add(obj);
             } else if (obj instanceof AbstractVariableDeclaration) {
                 if (!(stage == null || 
                         stage == ParsingStage.SCHEMA || 
@@ -205,28 +201,14 @@ public class PathConverter {
                 }
                 //
                 stage = ParsingStage.VARIABLE;
-                toAdd = varDecl;
+                treeItemList.add(varDecl);
                 //
                 // Everything found!
-                needBreak = true;
+                break;
             } else {
                 if (stage == null) {
                     return null;
                 }
-                needBreak = true;
-            }
-            //
-            if (toAdd == null) {
-                needBreak = true;
-            } else {
-                if (sameOrder) {
-                    treeItemList.addFirst(toAdd); 
-                } else {
-                    treeItemList.addLast(toAdd);
-                }
-            }
-            //
-            if (needBreak) {
                 break;
             }
         }
@@ -326,44 +308,53 @@ public class PathConverter {
     public static XPathExpression constructXPath(BpelEntity base, 
             RestartableIterator<Object> pathItr) {
         //
-        // It's necessary to have the order, oposite to the iterator. 
-        // It's required for correct buildeing the XPath expression
-        List<Object> objList = constructObjectLocationtList(pathItr, false);
-        //
-        if (objList == null || objList.isEmpty()) {
-            return null;
-        }
-        //
         XPathModel xPathModel = BpelXPathModelFactory.create(base);
         XPathModelFactory factory = xPathModel.getFactory();
+        pathItr.restart();
         //
         VariableDeclaration varDecl = null;
         Part part = null;
         LinkedList<LocationStep> stepList = new LinkedList<LocationStep>();
-        SchemaModelsStack sms = new SchemaModelsStack();
         //
         // Process the path
-        for (Object obj : objList) {
-            SchemaComponent sComp = null;
+        ParsingStage stage = null;
+        while (pathItr.hasNext()) {
+            Object obj = pathItr.next();
             if (obj instanceof SchemaComponent) {
-                sComp = (SchemaComponent)obj;
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
+                    return null;
+                }
+                stage = ParsingStage.SCHEMA;
                 StepNodeNameTest nodeTest = 
-                        new StepNodeNameTest(xPathModel, sComp, sms);
+                        new StepNodeNameTest(xPathModel, (SchemaComponent)obj);
                 LocationStep ls = factory.newLocationStep(null, nodeTest, null);
                 stepList.add(0, ls);
             } else if (obj instanceof AbstractPredicate) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
+                    return null;
+                }
+                stage = ParsingStage.SCHEMA;
                 AbstractPredicate pred = (AbstractPredicate)obj;
-                sComp = pred.getSComponent();
                 StepNodeNameTest nodeTest = 
-                        new StepNodeNameTest(xPathModel, sComp, sms);
+                        new StepNodeNameTest(xPathModel, pred.getSComponent());
                 LocationStep ls = factory.newLocationStep(
                         null, nodeTest, pred.getPredicates());
                 stepList.add(0, ls);
             } else if (obj instanceof LocationStep) {
                 stepList.add(0, (LocationStep)obj);
             } else if (obj instanceof Part) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
+                    return null;
+                }
+                stage = ParsingStage.PART;
                 part = (Part)obj;
             } else if (obj instanceof AbstractVariableDeclaration) {
+                if (!(stage == null || 
+                        stage == ParsingStage.SCHEMA || 
+                        stage == ParsingStage.PART)) {
+                    return null;
+                }
+                //
                 AbstractVariableDeclaration var = (AbstractVariableDeclaration)obj;
                 //
                 if (var instanceof VariableDeclaration) {
@@ -375,14 +366,16 @@ public class PathConverter {
                 if (varDecl == null) {
                     return null;
                 }
-            } else {
+                //
+                stage = ParsingStage.VARIABLE;
+                //
+                // Everything found!
                 break;
-            }
-            //
-            if (sComp != null) {
-                sms.appendSchemaComponent(sComp);
             } else {
-                sms.discard();
+                if (stage == null) {
+                    return null;
+                }
+                break;
             }
         }
         //

@@ -99,17 +99,14 @@ public class AddCastAction extends MapperAction<RestartableIterator<Object>> {
         // The  iterator points to the casted component
         RestartableIterator<Object> itr = getActionSubject();
         SyntheticTypeCast newTypeCast = new SyntheticTypeCast(itr, subtype);
-        boolean castAdded = castManager.addTypeCast(itr, newTypeCast);
+        castManager.addTypeCast(itr, newTypeCast);
         //
+        // Update tree
         TreePath parentPath = mTreePath.getParentPath();
-        if (castAdded) {
-            //
-            // Update tree
-            int childIndex = treeModel.getIndexOfChild(
-                    parentPath.getLastPathComponent(), 
-                    mTreePath.getLastPathComponent());
-            treeModel.insertChild(parentPath, childIndex + 1, newTypeCast);
-        }
+        int childIndex = treeModel.getIndexOfChild(
+                parentPath.getLastPathComponent(), 
+                mTreePath.getLastPathComponent());
+        treeModel.insertChild(parentPath, childIndex + 1, newTypeCast);
         //
         // Set selection to the added predicate item
         TreeFinderProcessor findProc = new TreeFinderProcessor(treeModel);

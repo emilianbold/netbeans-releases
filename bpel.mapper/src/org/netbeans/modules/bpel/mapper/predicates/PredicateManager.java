@@ -96,7 +96,7 @@ public class PredicateManager {
             AbstractPredicate pred) {
         //
         List<Object> parentPath = 
-                PathConverter.constructObjectLocationtList(parentItr, true);
+                PathConverter.constructObjectLocationtList(parentItr);
         //
         if (parentPath != null) {
             return addPredicate(parentPath, pred);
