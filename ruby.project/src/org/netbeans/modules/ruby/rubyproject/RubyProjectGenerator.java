@@ -56,6 +56,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,8 +113,8 @@ public final class RubyProjectGenerator {
         createFileWithContent(dirFO, "README", "TXT_README_Content", prjName); // NOI18N
         createFileWithContent(dirFO, "LICENSE", "TXT_LICENSE_Content", prjName); // NOI18N
         
-        // Run Rake -T silently to determine the available targets and write into private area
-        RakeTargetsAction.refreshTargets(project);
+        // Run Rake -T silently to determine the available tasks and write into private area
+        RakeSupport.refreshTasks(project);
         
         return helper;
     }

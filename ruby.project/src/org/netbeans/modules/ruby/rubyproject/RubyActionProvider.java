@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;

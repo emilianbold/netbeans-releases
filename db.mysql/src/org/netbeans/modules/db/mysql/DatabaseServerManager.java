@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.util.Collection;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -55,13 +54,10 @@ public class DatabaseServerManager {
 
 
     private static synchronized DatabaseServer lookupDatabaseServer() {
-        @SuppressWarnings("unchecked")
-        Collection<DatabaseServer> servers = 
-                (Collection<DatabaseServer>)
+        return (DatabaseServer)
                 Lookups.forPath(SERVER_PROVIDER_PATH)
-                    .lookupAll(DatabaseServer.class);
+                    .lookup(DatabaseServer.class);
 
-        return servers.toArray(new DatabaseServer[0])[0];       
     }
     
     public static DatabaseServer getDatabaseServer() {

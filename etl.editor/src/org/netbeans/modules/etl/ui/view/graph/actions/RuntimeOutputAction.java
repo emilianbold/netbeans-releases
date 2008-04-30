@@ -81,7 +81,7 @@ public class RuntimeOutputAction extends GraphAction {
         //action tooltip
         String nbBundle2 = mLoc.t("BUND032: Add/Edit Runtime Outputs");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-
+        // Acceleratot Shift-U
     }
 
     /**

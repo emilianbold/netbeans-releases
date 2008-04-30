@@ -65,8 +65,14 @@ public class NewProjectTest extends JellyTestCase{
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new NewProjectTest("testNewProjectCategories"));
         suite.addTest(new NewProjectTest("testNewProjectsJava"));
-//        suite.addTest(new NewProjectTest("testNewProjectsJava"));
-//        suite.addTest(new NewProjectTest("testNewProjectsJava"));
+        suite.addTest(new NewProjectTest("testNewProjectsWeb"));
+        suite.addTest(new NewProjectTest("testNewProjectsEnterprise"));
+        suite.addTest(new NewProjectTest("testNewProjectsMobility"));
+        suite.addTest(new NewProjectTest("testNewProjectsUML"));
+        suite.addTest(new NewProjectTest("testNewProjectsSOA"));
+        suite.addTest(new NewProjectTest("testNewProjectsRuby"));
+        suite.addTest(new NewProjectTest("testNewProjectsCpp"));
+        suite.addTest(new NewProjectTest("testNewProjectsNetBeansPluginModules"));
         return suite;
     }
     
@@ -163,7 +169,71 @@ public class NewProjectTest extends JellyTestCase{
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Java", npwo);
         npwo.cancel();
-        assertTrue(assertResults.assertString, assertResults.assertValue);        
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+    
+    public void testNewProjectsWeb(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("Web", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+    
+    public void testNewProjectsEnterprise(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("Enterprise", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+
+    public void testNewProjectsMobility(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("Mobility", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+    
+    public void testNewProjectsUML(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("UML", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+
+    public void testNewProjectsSOA(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("SOA", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }    
+    
+    public void testNewProjectsRuby(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("Ruby", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+    
+    public void testNewProjectsCpp(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("C/C++","Cpp", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    } 
+    
+    public void testNewProjectsNetBeansPluginModules(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("NetBeans Plugin Modules","NetBeansPluginModules", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue); 
     }
     
     private ComparationReturnValues compareStringArrays(Iterator<String> itPermanentArrayList,Iterator<String> itArrayList){
@@ -197,19 +267,36 @@ public class NewProjectTest extends JellyTestCase{
         return new ComparationReturnValues(assertvalue, assertString);
     }
     
+    /**
+     * For categories with simple names, which can be used as filename of the golden file.
+     * @param categoryName - name of the category = name of the godlen file
+     * @param newProjectOperator
+     * @return
+     */
     private ComparationReturnValues oneCategoryTest(String categoryName, NewProjectWizardOperator newProjectOperator){
+        return oneCategoryTest(categoryName,categoryName,newProjectOperator);
+    }
+    
+    /**
+     * This method should be used when category is too complicated and couldn't be used as golden file's filename.
+     * @param categoryName
+     * @param goldenFileName
+     * @param newProjectOperator
+     * @return
+     */
+    private ComparationReturnValues oneCategoryTest(String categoryName, String goldenFileName, NewProjectWizardOperator newProjectOperator){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         boolean assertValue = true;
         String assertString = "";
-        String goldenfile = this.getClass().getResource(getCategoryGoldenFile(categoryName)).getFile();
+        String goldenfile = this.getClass().getResource(getCategoryGoldenFile(goldenFileName)).getFile();
         ArrayList<String> permanentProjects = Utilities.parseFileByLines(goldenfile);        
         newProjectOperator.selectCategory(categoryName);        
         JListOperator jlo = newProjectOperator.lstProjects();
         ArrayList<String> actualProjects = getProjectsList(jlo);
         
         System.out.println("======== Permanent UI projects in this category: ========");
-        for(String actual: permanentProjects){
-            System.out.println(actual);
+        for (int i = 1; i < permanentProjects.size(); i++) { // skip the category name
+            System.out.println(permanentProjects.get(i));            
         }
         
         System.out.println("======== Actual projects in this category: ========");

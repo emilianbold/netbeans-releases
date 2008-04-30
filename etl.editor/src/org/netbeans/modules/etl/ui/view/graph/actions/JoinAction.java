@@ -88,7 +88,7 @@ public class JoinAction extends GraphAction {
         String nbBundle2 = mLoc.t("BUND023: Create New Join (Ctrl+Shift+J)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
-        // Acceleratot Ctrl+Shift+J
+        // Acceleratot Shift-J
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('J', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
     }
 
