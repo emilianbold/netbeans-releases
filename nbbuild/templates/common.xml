@@ -379,7 +379,7 @@ made subject to such option by the copyright holder.
         <test-init test.type="qa-functional"/>
     </target>
 
-    <target name="test-build" depends="jar,test-dep-build,do-test-build,test-build-datajar" description="Compile and package all tests."/>
+    <target name="test-build" depends="netbeans,test-dep-build,do-test-build,test-build-datajar" description="Compile and package all tests."/>
 
     <macrodef name="test-dep-build">
         <attribute name="test.type"/>
