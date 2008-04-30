@@ -424,7 +424,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
                 ModelEvent.NodeChanged.ICON_MASK |
                 ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
-                ModelEvent.NodeChanged.CHILDREN_MASK);
+                ModelEvent.NodeChanged.CHILDREN_MASK |
+                ModelEvent.NodeChanged.EXPANSION_MASK);
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
