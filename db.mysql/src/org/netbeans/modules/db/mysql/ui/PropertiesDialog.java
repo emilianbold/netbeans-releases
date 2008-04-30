@@ -181,7 +181,7 @@ public class PropertiesDialog  {
             provider.setRegistered(true);
             
         } else if ( needsReconnect ) {
-            server.connectAsync();
+            server.reconnectAsync();
         }
     }
 

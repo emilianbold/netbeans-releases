@@ -371,7 +371,6 @@ made subject to such option by the copyright holder.
             <Property name="sourceConnections" valueType="java.lang.String" position="3" readOnly="true" customEditor="true"/>
             <Property name="targetConnections" valueType="java.lang.String" position="4" readOnly="true" customEditor="true"/>
             <Property name="axiondbWorkingDirectory" valueType="java.lang.String" position="5"/>
-            <Property name="axiondbDataDirectory" valueType="java.lang.String" position="6"/>
         </PropertyGroup>
     </Template>
     

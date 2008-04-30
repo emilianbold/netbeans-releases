@@ -139,6 +139,18 @@ public class SQLCollaborationProperties {
     public String getAxiondbDataDirectory() {
         return this.sqlDef.getAxiondbDataDirectory();
     }
+    public boolean isDynamicFlatFile() {
+        return this.sqlDef.isDynamicFlatFile();
+    }
+    
+    public boolean getDynamicFlatFile() {
+        return isDynamicFlatFile();
+    }
+    
+    public void setDynamicFlatFile(boolean flag) {
+        this.sqlDef.setDynamicFlatFile(flag);
+    }
+    
 
     public String getSourceConnections() throws BaseException {
         String conNames = "";
