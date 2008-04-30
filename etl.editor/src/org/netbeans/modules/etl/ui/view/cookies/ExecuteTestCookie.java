@@ -260,6 +260,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                     engine.getContext().putValue("AXIONDB_DATA_DIR", sqlDefn.getAxiondbDataDirectory());
                     engine.getContext().putValue("DESIGN_TIME_ATTRS", engine.getInputAttrMap());
 
+
                     //RIT print out the content of etl engine file
                     //System.out.println("printing etl engine file content: \n" + engine.toXMLString());
 

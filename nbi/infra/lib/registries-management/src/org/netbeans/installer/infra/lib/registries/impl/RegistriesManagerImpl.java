@@ -695,7 +695,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
         final List<String> hidden = Arrays.asList(
                 "nb-platform",
                 //"nb-base",
-                "nb-php",
+                //"nb-php",
                 "openesb",
                 "sjsam",
                 "jdk");
