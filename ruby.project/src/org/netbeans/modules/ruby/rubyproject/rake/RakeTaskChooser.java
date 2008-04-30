@@ -43,11 +43,14 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -56,16 +59,16 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
-public class RakeTaskChooser extends JPanel {
+public final class RakeTaskChooser extends JPanel {
 
+    private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
 
     /**
@@ -73,17 +76,46 @@ public class RakeTaskChooser extends JPanel {
      */
     static TaskDescriptor select(final RubyBaseProject project) {
         assert EventQueue.isDispatchThread() : "must be called from EDT";
-        RakeTaskChooser panel = new RakeTaskChooser(project);
-        String title = NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.title", ProjectUtils.getInformation(project).getDisplayName());
-        DialogDescriptor descriptor = new DialogDescriptor(panel, title);
+        final RakeTaskChooser chooserPanel = new RakeTaskChooser(project);
+        String title = getMessage("RakeTaskChooser.title", ProjectUtils.getInformation(project).getDisplayName());
+
+        final JButton runButton = new JButton(getMessage("RakeTaskChooser.runButton"));
+        runButton.getAccessibleContext().setAccessibleDescription (getMessage("RakeTaskChooser.runButton.accessibleDescription"));
+
+        final JButton refreshButton = new JButton();
+        Mnemonics.setLocalizedText(refreshButton, getMessage("RakeTaskChooser.refreshButton"));
+        refreshButton.getAccessibleContext().setAccessibleDescription (getMessage("RakeTaskChooser.refreshButton.accessibleDescription"));
+        refreshButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                refreshButton.setEnabled(false);
+                runButton.setEnabled(false);
+                chooserPanel.reloadTasks(new Runnable() {
+                    public void run() {
+                        assert EventQueue.isDispatchThread() : "is EDT";
+                        refreshButton.setEnabled(true);
+                        runButton.setEnabled(true);
+                    }
+                });
+            }
+        });
+
+        Object[] options = new Object[]{
+            refreshButton,
+            runButton,
+            DialogDescriptor.CANCEL_OPTION
+        };
+
+        DialogDescriptor descriptor = new DialogDescriptor(chooserPanel, title, true,
+                options, runButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        descriptor.setClosingOptions(new Object[] { runButton, DialogDescriptor.CANCEL_OPTION });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.accessibleName"));
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.accessibleDescription"));
+        dialog.getAccessibleContext().setAccessibleName(getMessage("RakeTaskChooser.accessibleName"));
+        dialog.getAccessibleContext().setAccessibleDescription(getMessage("RakeTaskChooser.accessibleDescription"));
         dialog.setVisible(true);
         
-        if (descriptor.getValue() == NotifyDescriptor.OK_OPTION) {
-            RakeTask task = (RakeTask) panel.matchingTaskList.getSelectedValue();
-            return new TaskDescriptor(task, panel.debugCheckbox.isSelected());
+        if (descriptor.getValue() == runButton) {
+            RakeTask task = (RakeTask) chooserPanel.matchingTaskList.getSelectedValue();
+            return new TaskDescriptor(task, chooserPanel.debugCheckbox.isSelected());
         }
         return null;
     }
@@ -108,10 +140,10 @@ public class RakeTaskChooser extends JPanel {
     }
     
     private RakeTaskChooser(RubyBaseProject project) {
-        initComponents();
-        List<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
         this.allTasks = new ArrayList<RakeTask>();
-        addTasks(allTasks, taskTree);
+        this.project = project;
+        initComponents();
+        reloadAllTasks();
         refreshTaskList();
         matchingTaskList.setCellRenderer(new RakeTaskChooser.RakeTaskRenderer());
         rakeTaskField.getDocument().addDocumentListener(new DocumentListener() {
@@ -131,6 +163,16 @@ public class RakeTaskChooser extends JPanel {
         }
     }
 
+    /** Reloads all tasks for the current project. */
+    private void reloadAllTasks() {
+        List<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
+        List<RakeTask> tasks = new ArrayList<RakeTask>();
+        addTasks(tasks, taskTree);
+        allTasks.clear();
+        allTasks.addAll(tasks);
+    }
+
+    /** Refreshes Rake tasks list view. */
     private void refreshTaskList() {
         String filter = rakeTaskField.getText().trim();
         DefaultListModel model = new DefaultListModel();
@@ -142,7 +184,43 @@ public class RakeTaskChooser extends JPanel {
         matchingTaskList.setModel(model);
         matchingTaskList.setSelectedIndex(0);
     }
+    
+    private void reloadTasks(final Runnable uiFinishAction) {
+        final Object task = matchingTaskList.getSelectedValue();
+        final JComponent[] comps = new JComponent[] {
+            matchingTaskSP, matchingTaskLabel, matchingTaskLabel,
+            rakeTaskLabel, rakeTaskField, debugCheckbox
+        };
+        setEnabled(comps, false);
+        matchingTaskList.setListData(new Object[]{getMessage("RakeTaskChooser.reloading.tasks")});
+        new Thread(new Runnable() {
+            public void run() {
+                RakeSupport.refreshTasks(project);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        reloadAllTasks();
+                        refreshTaskList();
+                        matchingTaskList.setSelectedValue(task, true);
+                        uiFinishAction.run();
+                        setEnabled(comps, true);
+                        rakeTaskField.requestFocus();
+                    }
+                });
+            }
+        }, "Rake Tasks Refresher").start(); // NOI18N
+    }
+    
+    private void setEnabled(final JComponent[] comps, final boolean enabled) {
+        for (JComponent comp : comps) {
+            comp.setEnabled(enabled);
+        }
+        
+    }
 
+    private static String getMessage(final String key, final String... args) {
+        return NbBundle.getMessage(RakeTaskChooser.class, key, args);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -231,11 +309,11 @@ public class RakeTaskChooser extends JPanel {
         int modelSize = model.getSize();
 
         // Wrap around
-        if ("selectNextRow".equals(actionKey) && selectedIndex == modelSize - 1) {
+        if ("selectNextRow".equals(actionKey) && selectedIndex == modelSize - 1) { // NOI18N
             matchingTaskList.setSelectedIndex(0);
             matchingTaskList.ensureIndexIsVisible(0);
             return;
-        } else if ("selectPreviousRow".equals(actionKey) && selectedIndex == 0) {
+        } else if ("selectPreviousRow".equals(actionKey) && selectedIndex == 0) { // NOI18N
             int last = modelSize - 1;
             matchingTaskList.setSelectedIndex(last);
             matchingTaskList.ensureIndexIsVisible(last);
@@ -267,14 +345,18 @@ public class RakeTaskChooser extends JPanel {
                 setForeground(list.getForeground());
             }
 
-            RakeTask task = ((RakeTask) value);
-            StringBuilder text = new StringBuilder("<html>");
-            text.append("<b>").append(task.getTask()).append("</b>");
-            if (task.getDescription() != null) {
-                text.append(" : ").append(task.getDescription());
+            if (value instanceof RakeTask) {
+                RakeTask task = ((RakeTask) value);
+                StringBuilder text = new StringBuilder("<html>"); // NOI18N
+                text.append("<b>").append(task.getTask()).append("</b>"); // NOI18N
+                if (task.getDescription() != null) {
+                    text.append(" : ").append(task.getDescription()); // NOI18N
+                }
+                text.append("</html>"); // NOI18N
+                setText(text.toString());
+            } else {
+                setText(value.toString());
             }
-            text.append("</html>");
-            setText(text.toString());
 
             return this;
         }
