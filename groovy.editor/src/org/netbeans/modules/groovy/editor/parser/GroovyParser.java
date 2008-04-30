@@ -522,7 +522,8 @@ public class GroovyParser implements Parser {
         FileObject fo = context.file.getFileObject();
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath);
+        ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
         
         ClassLoader parentLoader = cp.getClassLoader(true);
         
@@ -530,7 +531,6 @@ public class GroovyParser implements Parser {
         GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
         
         if (javaSource == null) {
-            ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             ClasspathInfo cpInfo = ClasspathInfo.create(
                     // we should try to load everything by javac instead of classloader,
                     // but for now it is faster to use javac only for sources
