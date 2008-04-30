@@ -67,9 +67,9 @@ import org.openide.util.Utilities;
  */
 public class Retriever implements Runnable {
 
-    public static final int LOCATION_DOWNLOAD_TIMEOUT = 3000;
+    public static final int LOCATION_DOWNLOAD_TIMEOUT = 20000;
     public static final int LOCATION_TRIES = 3;
-    public static final int ZIP_DOWNLOAD_TIMEOUT = 30000;
+    public static final int ZIP_DOWNLOAD_TIMEOUT = 120000;
     
     public static final int STATUS_START = 0;
     public static final int STATUS_CONNECTING = 1;
@@ -271,7 +271,7 @@ public class Retriever implements Runnable {
             final InputStream entryStream = jarStream;
             JarEntry entry;
             while(!shutdown && (entry = (JarEntry) jarStream.getNextEntry()) != null) {
-                String entryName = entry.getName();
+                String entryName = stripTopLevelDir(entry.getName());
                 if(entryName == null || entryName.length() == 0) {
                     continue;
                 }
@@ -387,6 +387,29 @@ public class Retriever implements Runnable {
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
+    }
+    
+    private static final String TOP_LEVEL_PREFIX = "glassfishv3"; // NOI18N
+    
+    private String stripTopLevelDir(String name) {
+        if(name.startsWith(TOP_LEVEL_PREFIX)) {
+            int slashIndex = slashIndexOf(name, TOP_LEVEL_PREFIX.length());
+            if(slashIndex >= 0) {
+                name = name.substring(slashIndex + 1);
+            }
+        }
+        return name;
+    }
+    
+    private static int slashIndexOf(String s, int offset) {
+        int len = s.length();
+        for(int i = offset; i < len; i++) {
+            char c = s.charAt(i);
+            if(c == '/' || c == '\\') {
+                return i;
+            }
+        }
+        return -1;
     }
     
     private File backupInstallDir(File installDir) throws IOException {
