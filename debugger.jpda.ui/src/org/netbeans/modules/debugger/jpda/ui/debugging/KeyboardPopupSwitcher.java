@@ -287,7 +287,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             descr.setClosingOptions(new Object [0]);
             
             InputMap inputMap = pTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), "escape");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.CTRL_DOWN_MASK, true), "escape");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, true), "escape");
             inputMap.put(KeyStroke.getKeyStroke(releaseKey, 0, true), "close");
             inputMap.put(KeyStroke.getKeyStroke(releaseKey, KeyEvent.SHIFT_DOWN_MASK, true), "close");
             inputMap.put(KeyStroke.getKeyStroke(triggerKey, KeyEvent.CTRL_DOWN_MASK), "triggerKeyPressed");
@@ -343,8 +344,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run () {
-                    WindowManager.getDefault().getMainWindow().
-                            addWindowFocusListener(KeyboardPopupSwitcher.this);
+                    //WindowManager.getDefault().getMainWindow().addWindowFocusListener(KeyboardPopupSwitcher.this);
+                    popup.addWindowFocusListener(KeyboardPopupSwitcher.this);
                 }
             });
             
@@ -535,7 +536,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             shown = false;
             hits = 0;
             // part of #82743 fix
-            WindowManager.getDefault().getMainWindow().removeWindowFocusListener(KeyboardPopupSwitcher.this);
+            toHide.removeWindowFocusListener(KeyboardPopupSwitcher.this);
+            // WindowManager.getDefault().getMainWindow().removeWindowFocusListener(KeyboardPopupSwitcher.this);
         }
     }
     
