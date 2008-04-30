@@ -44,7 +44,10 @@ import java.util.Collection;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.CurrentDocumentTaskScheduller;
 import org.netbeans.modules.parsing.impl.CursorSensitiveTaskScheduller;
+import org.netbeans.modules.parsing.impl.Scheduler;
 import org.netbeans.modules.parsing.impl.SelectedNodesTaskScheduller;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /**
@@ -61,6 +64,8 @@ import org.netbeans.modules.parsing.impl.SelectedNodesTaskScheduller;
  * @author Jan Jancura
  */
 public abstract class TaskScheduler {
+    
+    private Collection<Source> sources;
     
     /**
      * This implementations of {@link TaskScheduler} reschedules all tasks when:
@@ -92,9 +97,11 @@ public abstract class TaskScheduler {
      * {@link ParserResultTask#getScheduler()}.
      */
     public final void scheduleTasks () {
-        
+        scheduleTasks (sources);
     }
 
+    private Task task;
+    
     /**
      * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
      * {@link ParserResultTask#getScheduler()}, and sets new {@link Source}s for them.
@@ -102,8 +109,19 @@ public abstract class TaskScheduler {
      * @param sources       A collection of {@link Source}s.
      */
     public final void scheduleTasks (Collection<Source> sources) {
-        
+        if (task != null)
+            task.cancel ();
+        this.sources = sources;
+        task = RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources);
+            }
+        });
     }
 }
+
+
+
+
 
 

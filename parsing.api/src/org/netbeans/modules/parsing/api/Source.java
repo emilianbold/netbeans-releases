@@ -42,12 +42,9 @@ package org.netbeans.modules.parsing.api;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.parsing.impl.SourceAccessor;
@@ -92,21 +89,19 @@ public final class Source {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
     }
     
-    private CharSequence    text;
     private String          mimeType;
     private Document        document;
     private FileObject      fileObject;
-    private final Set<SourceFlags> flags = EnumSet.noneOf(SourceFlags.class);
-    private Parser.Result result;
+    private final Set<SourceFlags> 
+                            flags = EnumSet.noneOf(SourceFlags.class);
+    private Parser.Result   result;
     
    
-    private Source (
-        CharSequence        text, 
+    Source (
         String              mimeType, 
         Document            document,
         FileObject          fileObject
     ) {
-        this.text =         text;
         this.mimeType =     mimeType;
         this.document =     document;
         this.fileObject =   fileObject;
@@ -132,11 +127,11 @@ public final class Source {
                 result = ref.get();
             }
             if (result == null) {
-                result = new Source(
-                        null,
-                        fileObject.getMIMEType(),
-                        null, 
-                        fileObject);
+                result = new Source (
+                    fileObject.getMIMEType (),
+                    null, 
+                    fileObject
+                );
                 ref = new WeakReference<Source>(result);
                 instances.put(fileObject, ref);
             }
@@ -154,95 +149,11 @@ public final class Source {
     public static Source create (
         Document            document
     ) {
-        if (document instanceof AbstractDocument)
-            ((AbstractDocument) document).readLock ();
-        try {
-            return new Source (
-                document.getText (0, document.getLength ()),
-                (String) document.getProperty ("mimeType"),
-                document,
-                null
-            );
-        } catch (BadLocationException ex) {
-            ex.printStackTrace ();
-            return new Source (
-                "",
-                (String) document.getProperty ("mimeType"),
-                document,
-                null
-            );
-        } finally {
-            if (document instanceof AbstractDocument)
-                ((AbstractDocument) document).readUnlock ();
-        }
-    }
-    
-    /**
-     * Creates a new source form part of this source defined by offset and length.
-     * The new source has the same Document and FileObjet property values, 
-     * but mimeType should be different than original one. 
-     * 
-     * @param offset        A start offset of the new source. Start offset
-     *                      is relative to the current source.
-     * @param length        A length of the new source.
-     * @param mimeType      Mime type of the new source.
-     * @return              The new source.
-     * @throws IndexOutOfBoundsException when bounds of the new source exceeds 
-     *                      original source.
-     */
-    public Source create (
-        int                 offset, 
-        int                 length, 
-        String              mimeType
-    ) {
         return new Source (
-            getText ().subSequence (offset, offset + length),
-            mimeType,
-            getDocument (),
-            getFileObject ()
+            (String) document.getProperty ("mimeType"),
+            document,
+            null
         );
-    }
-    
-    /**
-     * Creates a new source for given charSequence. 
-     * The new source has the same Document and FileObjet property values, 
-     * but mimeType should be different than original one. 
-     * 
-     * @param charSequence  A text of new source.
-     * @param mimeType      Mime type of the new source.
-     * @return              The new source.
-     */
-    public Source create (
-        CharSequence        charSequence, 
-        String              mimeType
-    ) {
-        return null;
-    }
-    
-    /**
-     * Creates source from a parts of this source. New source contains one 
-     * or more blocks of text from this source. All sources must have the same
-     * DataObject and Document like this document. All sources must have the
-     * same mime type, but this mime type have to be different than current
-     * source mime type.
-     * 
-     * @param sources       A list of some sources created from this source.
-     * @return              A new source compound from given pieces.
-     */
-    public Source create (
-        List<Source>        sources 
-    ) {
-        return null;
-    }
-    
-    /**
-     * Returns content of source.
-     * 
-     * @return              text of this source
-     */
-    public CharSequence getText (
-    ) {
-        return text;
     }
 
     /**
@@ -253,21 +164,6 @@ public final class Source {
     public String getMimeType (
     ) {
         return mimeType;
-    }
-    
-    /**
-     * Returns position of given offset in the original document or file, 
-     * or <code>-1</code>. <code>-1</code> is returned if the text on 
-     * the given position is "virtual" - generated by some preprocessor, 
-     * and it has no representation in the top level code.
-     * 
-     * @param offset        a offset related to this source
-     * @return              position of given offset in original document or file
-     */
-    public int getOriginalOffset (
-        int                 offset
-    ) {
-        return -1;
     }
     
     /**
@@ -285,9 +181,14 @@ public final class Source {
      * @return              a file.
      */
     public FileObject getFileObject () {
-        return null;
+        return fileObject;
     }
-    
+
+    public Snapshot createSnapshot () {
+        return new Snapshot (
+            mimeType, this, mimeType, new int[][] {new int[] {0, 0}}
+        );
+    }
     
     private static class MySourceAccessor extends SourceAccessor {
 
@@ -316,9 +217,6 @@ public final class Source {
                 source.flags.remove(SourceFlags.INVALID);
             }            
         }
-        
-        
-        
     }
 }
 

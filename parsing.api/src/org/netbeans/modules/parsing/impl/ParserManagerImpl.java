@@ -60,11 +60,9 @@ import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.EmbeddingProviderFactory;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserBasedEmbeddingProvider;
-import org.netbeans.modules.parsing.spi.ParserBasedEmbeddingProviderFactory;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.Task;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -99,179 +97,179 @@ public class ParserManagerImpl {
         return null;
     }
     
-    
-    static void setDocument (Document document) {
-    }
-    
-    
-    private class DocumentManager {
-
-        private Document        document;
-        private List<Parser>    parsers;
-        private List<ATask>     tasks = new ArrayList<ATask> ();
-        
-        
-        public DocumentManager (final Document document) {
-            this.document = document;
-            String mimeType = (String) document.getProperty ("mimeType");
-            lookupInstances (document, mimeType);
-            parse ();
-        }
-        
-        private void lookupInstances (Document document, String mimeType) {
-            FileSystem fileSystem = Repository.getDefault ().getDefaultFileSystem ();
-            FileObject fileObject1 = fileSystem.findResource ("Editors");
-            DataFolder dataFolder1 = fileObject1 == null ? null : DataFolder.findFolder (fileObject1);
-            FileObject fileObject2 = fileSystem.findResource ("Editors/" + mimeType);
-            DataFolder dataFolder2 = fileObject2 == null ? null : DataFolder.findFolder (fileObject2);
-            Lookup lookup = dataFolder2 == null ? 
-                (Lookup) (dataFolder1 == null ? 
-                    Lookup.EMPTY :
-                    new FolderLookup (dataFolder1)) :
-                new ProxyLookup (
-                    new FolderLookup (dataFolder1).getLookup (),
-                    new FolderLookup (dataFolder2).getLookup ()
-                );
-            final Lookup.Result<ParserFactory> parsersResult = lookup.lookupResult (ParserFactory.class);
-            setParsers (parsersResult.allInstances ());
-            parsersResult.addLookupListener (new LookupListener () {
-                public void resultChanged (LookupEvent ev) {
-                    setParsers (parsersResult.allInstances ());
-                }
-            });
-            final Lookup.Result<TaskFactory> tasksResult = lookup.lookupResult (TaskFactory.class);
-            setTaskFactories (tasksResult.allInstances ());
-            parsersResult.addLookupListener (new LookupListener () {
-                public void resultChanged (LookupEvent ev) {
-                    setTaskFactories (tasksResult.allInstances ());
-                }
-            });
-            final Lookup.Result<EmbeddingProviderFactory> embeddingsResult = lookup.lookupResult (EmbeddingProviderFactory.class);
-            setEmbeddingProviderFactories (embeddingsResult.allInstances ());
-            parsersResult.addLookupListener (new LookupListener () {
-                public void resultChanged (LookupEvent ev) {
-                    setEmbeddingProviderFactories (embeddingsResult.allInstances ());
-                }
-            });
-            final Lookup.Result<ParserBasedEmbeddingProviderFactory> parserEmbeddingsResult = lookup.lookupResult (ParserBasedEmbeddingProviderFactory.class);
-            setParserbasedEmbeddingProviderFactories (parserEmbeddingsResult.allInstances ());
-            parsersResult.addLookupListener (new LookupListener () {
-                public void resultChanged (LookupEvent ev) {
-                    setParserbasedEmbeddingProviderFactories (parserEmbeddingsResult.allInstances ());
-                }
-            });
-        }
-        
-        private void parse () {
-            
-        }
-        
-        private void setParsers (Collection<? extends ParserFactory> parserFactories) {
-            parsers = new ArrayList<Parser> ();
-            for (ParserFactory parserFactory : parserFactories) {
-                Parser parser = parserFactory.createParser (document);
-                if (parser != null)
-                    parsers.add (parser);
-            }
-        }
-        
-        private void setTaskFactories (Collection<? extends TaskFactory> taskFactories) {
-            for (TaskFactory taskFactory : taskFactories) {
-                for (Parser parser : parsers) {
-                    Collection<Task> tasks = taskFactory.create (parser, document);
-                    for (Task task : tasks) {
-                        this.tasks.add (new TaskTask (parser, task));
-                    }
-                }
-            }
-        }
-        
-        private void setEmbeddingProviderFactories (Collection<? extends EmbeddingProviderFactory> embeddingFactories) {
-            for (EmbeddingProviderFactory taskFactory : embeddingFactories) {
-                EmbeddingProvider tasks = taskFactory.create (document);
-                this.tasks.add (new EmbeddingProviderTask (parser, task));
-            }
-        }
-    }
-    
-    private static abstract class ATask {
-        abstract int getPriority ();
-        abstract boolean needsParserResult ();
-        abstract void run (Source source, Map<Parser,Result> results);
-    }
-    
-    private static class TaskTask extends ATask {
-
-        private Parser      parser;
-        private Task        task;
-        
-        public TaskTask (Parser parser, Task task) {
-            this.parser = parser;
-            this.task = task;
-        }
-        
-        
-        int getPriority () {
-            return task.getPriority ();
-        }
-
-        boolean needsParserResult () {
-            return true;
-        }
-
-        void run (Source source, Map<Parser, Result> results) {
-            task.run (results.get (parser), source);
-        }
-    }
-    
-    private static class EmbeddingProviderTask extends ATask {
-
-        private EmbeddingProvider      embeddingProvider;
-        
-        public EmbeddingProviderTask (EmbeddingProvider embeddingProvider) {
-            this.embeddingProvider = embeddingProvider;
-        }
-        
-        
-        int getPriority () {
-            return embeddingProvider.getPriority ();
-        }
-
-        boolean needsParserResult () {
-            return false;
-        }
-
-        void run (Source source, Map<Parser, Result> results) {
-            embeddingProvider.getEmbeddings (source);
-        }
-    }
-    
-    private static class ParserBasedEmbeddingProviderTask extends ATask {
-
-        private Parser                            parser;
-        private ParserBasedEmbeddingProvider      embeddingProvider;
-        
-        public ParserBasedEmbeddingProviderTask (
-            Parser                          parser,
-            ParserBasedEmbeddingProvider    embeddingProvider
-        ) {
-            this.parser = parser;
-            this.embeddingProvider = embeddingProvider;
-        }
-        
-        
-        int getPriority () {
-            return embeddingProvider.getPriority ();
-        }
-
-        boolean needsParserResult () {
-            return false;
-        }
-
-        void run (Source source, Map<Parser, Result> results) {
-            embeddingProvider.getSources (results.get (parser), source);
-        }
-    }
+//    
+//    static void setDocument (Document document) {
+//    }
+//    
+//    
+//    private class DocumentManager {
+//
+//        private Document        document;
+//        private List<Parser>    parsers;
+//        private List<ATask>     tasks = new ArrayList<ATask> ();
+//        
+//        
+//        public DocumentManager (final Document document) {
+//            this.document = document;
+//            String mimeType = (String) document.getProperty ("mimeType");
+//            lookupInstances (document, mimeType);
+//            parse ();
+//        }
+//        
+//        private void lookupInstances (Document document, String mimeType) {
+//            FileSystem fileSystem = Repository.getDefault ().getDefaultFileSystem ();
+//            FileObject fileObject1 = fileSystem.findResource ("Editors");
+//            DataFolder dataFolder1 = fileObject1 == null ? null : DataFolder.findFolder (fileObject1);
+//            FileObject fileObject2 = fileSystem.findResource ("Editors/" + mimeType);
+//            DataFolder dataFolder2 = fileObject2 == null ? null : DataFolder.findFolder (fileObject2);
+//            Lookup lookup = dataFolder2 == null ? 
+//                (Lookup) (dataFolder1 == null ? 
+//                    Lookup.EMPTY :
+//                    new FolderLookup (dataFolder1)) :
+//                new ProxyLookup (
+//                    new FolderLookup (dataFolder1).getLookup (),
+//                    new FolderLookup (dataFolder2).getLookup ()
+//                );
+//            final Lookup.Result<ParserFactory> parsersResult = lookup.lookupResult (ParserFactory.class);
+//            setParsers (parsersResult.allInstances ());
+//            parsersResult.addLookupListener (new LookupListener () {
+//                public void resultChanged (LookupEvent ev) {
+//                    setParsers (parsersResult.allInstances ());
+//                }
+//            });
+//            final Lookup.Result<TaskFactory> tasksResult = lookup.lookupResult (TaskFactory.class);
+//            setTaskFactories (tasksResult.allInstances ());
+//            parsersResult.addLookupListener (new LookupListener () {
+//                public void resultChanged (LookupEvent ev) {
+//                    setTaskFactories (tasksResult.allInstances ());
+//                }
+//            });
+//            final Lookup.Result<EmbeddingProviderFactory> embeddingsResult = lookup.lookupResult (EmbeddingProviderFactory.class);
+//            setEmbeddingProviderFactories (embeddingsResult.allInstances ());
+//            parsersResult.addLookupListener (new LookupListener () {
+//                public void resultChanged (LookupEvent ev) {
+//                    setEmbeddingProviderFactories (embeddingsResult.allInstances ());
+//                }
+//            });
+//            final Lookup.Result<ParserBasedEmbeddingProviderFactory> parserEmbeddingsResult = lookup.lookupResult (ParserBasedEmbeddingProviderFactory.class);
+//            setParserbasedEmbeddingProviderFactories (parserEmbeddingsResult.allInstances ());
+//            parsersResult.addLookupListener (new LookupListener () {
+//                public void resultChanged (LookupEvent ev) {
+//                    setParserbasedEmbeddingProviderFactories (parserEmbeddingsResult.allInstances ());
+//                }
+//            });
+//        }
+//        
+//        private void parse () {
+//            
+//        }
+//        
+//        private void setParsers (Collection<? extends ParserFactory> parserFactories) {
+//            parsers = new ArrayList<Parser> ();
+//            for (ParserFactory parserFactory : parserFactories) {
+//                Parser parser = parserFactory.createParser (document);
+//                if (parser != null)
+//                    parsers.add (parser);
+//            }
+//        }
+//        
+//        private void setTaskFactories (Collection<? extends TaskFactory> taskFactories) {
+//            for (TaskFactory taskFactory : taskFactories) {
+//                for (Parser parser : parsers) {
+//                    Collection<Task> tasks = taskFactory.create (parser, document);
+//                    for (Task task : tasks) {
+//                        this.tasks.add (new TaskTask (parser, task));
+//                    }
+//                }
+//            }
+//        }
+//        
+//        private void setEmbeddingProviderFactories (Collection<? extends EmbeddingProviderFactory> embeddingFactories) {
+//            for (EmbeddingProviderFactory taskFactory : embeddingFactories) {
+//                EmbeddingProvider tasks = taskFactory.create (document);
+//                this.tasks.add (new EmbeddingProviderTask (parser, task));
+//            }
+//        }
+//    }
+//    
+//    private static abstract class ATask {
+//        abstract int getPriority ();
+//        abstract boolean needsParserResult ();
+//        abstract void run (Source source, Map<Parser,Result> results);
+//    }
+//    
+//    private static class TaskTask extends ATask {
+//
+//        private Parser      parser;
+//        private Task        task;
+//        
+//        public TaskTask (Parser parser, Task task) {
+//            this.parser = parser;
+//            this.task = task;
+//        }
+//        
+//        
+//        int getPriority () {
+//            return task.getPriority ();
+//        }
+//
+//        boolean needsParserResult () {
+//            return true;
+//        }
+//
+//        void run (Source source, Map<Parser, Result> results) {
+//            task.run (results.get (parser), source);
+//        }
+//    }
+//    
+//    private static class EmbeddingProviderTask extends ATask {
+//
+//        private EmbeddingProvider      embeddingProvider;
+//        
+//        public EmbeddingProviderTask (EmbeddingProvider embeddingProvider) {
+//            this.embeddingProvider = embeddingProvider;
+//        }
+//        
+//        
+//        int getPriority () {
+//            return embeddingProvider.getPriority ();
+//        }
+//
+//        boolean needsParserResult () {
+//            return false;
+//        }
+//
+//        void run (Source source, Map<Parser, Result> results) {
+//            embeddingProvider.getEmbeddings (source);
+//        }
+//    }
+//    
+//    private static class ParserBasedEmbeddingProviderTask extends ATask {
+//
+//        private Parser                            parser;
+//        private ParserBasedEmbeddingProvider      embeddingProvider;
+//        
+//        public ParserBasedEmbeddingProviderTask (
+//            Parser                          parser,
+//            ParserBasedEmbeddingProvider    embeddingProvider
+//        ) {
+//            this.parser = parser;
+//            this.embeddingProvider = embeddingProvider;
+//        }
+//        
+//        
+//        int getPriority () {
+//            return embeddingProvider.getPriority ();
+//        }
+//
+//        boolean needsParserResult () {
+//            return false;
+//        }
+//
+//        void run (Source source, Map<Parser, Result> results) {
+//            embeddingProvider.getSources (results.get (parser), source);
+//        }
+//    }
 }
     
     

@@ -44,13 +44,14 @@ import java.beans.PropertyChangeListener;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 
 
 /**
  *
  * @author Jan Jancura
  */
-public abstract class CurrentEditorTaskScheduller extends FileObjectsTaskScheduller {
+public abstract class CurrentEditorTaskScheduller extends TaskScheduler {
     
     private JTextComponent  currentEditor;
     

@@ -12,15 +12,7 @@ import org.openide.modules.ModuleInstall;
  */
 public class Installer extends ModuleInstall {
 
-    private static DocumentListener documentListener;
-    
     public void restored () {
-        System.out.println("\nIntaller.restored");
-        documentListener = new DocumentListener ();
-    }
-    
-    public void close () {
-        System.out.println("\nIntaller.close");
-        documentListener.remove ();
+        Scheduler.init ();
     }
 }

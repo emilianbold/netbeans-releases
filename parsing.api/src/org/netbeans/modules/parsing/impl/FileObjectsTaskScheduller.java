@@ -60,8 +60,4 @@ public class FileObjectsTaskScheduller extends TaskScheduler {
     
     public void setFileObjects (Collection<FileObject> fileObject) {
     }
-    
-    @Override
-    public void scheduleTasks () {
-    }
 }
