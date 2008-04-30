@@ -466,17 +466,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             JPDAThread t = tr.get();
             if (t != null) {
-                synchronized (this) {
-                    if (task == null) {
-                        task = new RequestProcessor("Debugger Threads Refresh").create(new Refresher());
-                    }
-                    task.schedule(100);
-                }
                 if (JPDAThread.PROP_BREAKPOINT.equals(evt.getPropertyName()) &&
                     t.isSuspended() && t.getCurrentBreakpoint() != null) {
                     synchronized (this) {
                         shouldExpand = true;
                     }
+                }
+                synchronized (this) {
+                    if (task == null) {
+                        task = new RequestProcessor("Debugger Threads Refresh").create(new Refresher());
+                    }
+                    task.schedule(100);
                 }
             }
         }
