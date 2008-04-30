@@ -141,9 +141,9 @@ public abstract class GraphView extends JGoView implements IGraphView {
         //set default primary and secondary selection colors
         resetSelectionColors();
         //satelliteView = new BirdsEyeView();
+        //setObserved(this);
         //set GraphDocument
-        this.setDocument(new GraphDocument());
-        //setObserved(this); //For Navigator
+        this.setDocument(new GraphDocument());        
     }
 
     /**
@@ -1193,9 +1193,9 @@ public abstract class GraphView extends JGoView implements IGraphView {
     public JGoObject getSelectedObject() {
         return GraphView.selectedObject;
     }
-    
+
     //For Navigator
-    /*public void setObserved(JGoView observed) {
+   /* public void setObserved(JGoView observed) {
         satelliteView.setObserved(this);
         satelliteView.requestFocus();
     }

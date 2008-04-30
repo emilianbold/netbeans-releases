@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.openide.util.Lookup;
 
@@ -65,6 +68,11 @@ public abstract class CsmFunctionDefinitionResolver {
      */
     public abstract CsmReference getFunctionDefinition(CsmFunction referencedFunction);
     
+    /**
+     * Returns collection of function declarations by name
+     */
+    public abstract Collection<CsmOffsetableDeclaration> findDeclarationByName(CsmProject project, String name);
+    
     //
     // Implementation of the default resolver
     //
@@ -79,6 +87,17 @@ public abstract class CsmFunctionDefinitionResolver {
         public CsmReference getFunctionDefinition(CsmFunction referencedFunction) {
             for (CsmFunctionDefinitionResolver resolver : res.allInstances()) {
                 CsmReference out = resolver.getFunctionDefinition(referencedFunction);
+                if (out != null) {
+                    return out;
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        public Collection<CsmOffsetableDeclaration> findDeclarationByName(CsmProject project, String name) {
+            for (CsmFunctionDefinitionResolver resolver : res.allInstances()) {
+                Collection<CsmOffsetableDeclaration> out = resolver.findDeclarationByName(project, name);
                 if (out != null) {
                     return out;
                 }

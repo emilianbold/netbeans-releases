@@ -74,10 +74,15 @@ class EtlproActionProvider implements ActionProvider {
     public EtlproActionProvider(EtlproProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
+
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
+
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
+
         commands.put(EtlproProject.COMMAND_GENWSDL, new String[]{"gen-wsdl"}); // NOI18N
+
         commands.put(EtlproProject.COMMAND_SCHEMA, new String[]{"gen-schema"}); // NOI18N
+
         commands.put(EtlproProject.COMMAND_BULK_LOADER, new String[]{"etl_bulkloader"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
@@ -117,7 +122,7 @@ class EtlproActionProvider implements ActionProvider {
                 try {
                     DatabaseConnection dconn = it.next();
                     if (dconn.getDriverClass().contains("AxionDriver")) {
-                    DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                        DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
                     }
                 } catch (AxionException ex) {
                     //ignore
@@ -133,7 +138,7 @@ class EtlproActionProvider implements ActionProvider {
                 try {
                     DatabaseConnection dconn = it.next();
                     if (dconn.getDriverClass().contains("AxionDriver")) {
-                    DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                        DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
                     }
                 } catch (AxionException ex) {
                     //ignore

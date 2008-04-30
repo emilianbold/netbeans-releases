@@ -202,4 +202,8 @@ public interface XslVisitor {
      */
     void visit( ApplyImports impt );
     
+    void visit(TypeSpec typeSpec);
+    void visit(UseAttributesSetsSpec useAttributesSetsSpec);
+    void visit(UseCharacterMapsSpec useCharacterMapsSpec);
+    void visit(WithParam withParam);
 }

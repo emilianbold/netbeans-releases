@@ -126,7 +126,7 @@ class PanelProjectAppVisual
 ///        projectNameTextField.requestFocus();
     }
 
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    public boolean valid(WizardDescriptor wizardDescriptor) {
 ///        if (projectNameTextField.getText().length() == 0) {
 ///            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
 ///            return false; // Display name not specified
@@ -144,7 +144,7 @@ class PanelProjectAppVisual
         return true;
     }
 
-    void store(WizardDescriptor d) {
+    public void store(WizardDescriptor d) {
 ///        String name = projectNameTextField.getText().trim();
 
 ///        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
@@ -156,7 +156,7 @@ class PanelProjectAppVisual
 ///        }
     }
 
-    void read (WizardDescriptor settings) {
+    public void read (WizardDescriptor settings) {
 ///        File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
 ///        if (projectLocation == null)
 ///            projectLocation = ProjectChooser.getProjectsFolder();

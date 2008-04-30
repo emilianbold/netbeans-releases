@@ -43,7 +43,7 @@ import java.util.Properties;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.sql.framework.common.utils.MigrationUtils;
 import org.openide.nodes.BeanNode;
 import org.openide.util.NbBundle;
 
@@ -203,7 +203,7 @@ public class AxionDBConfiguration {
     public static File getConfigFile() {
         String nbUsrDir = null;
         String netbeansHome = null;
-        if (DBExplorerUtil.isCmdLine) {
+        if (MigrationUtils.isCmdLine) {
             nbUsrDir = System.getProperty("user.dir") + File.separator + ".." + File.separator + "usrdir";
             netbeansHome = System.getProperty("user.dir") + File.separator + ".." + File.separator + ".." + File.separator + ".." + File.separator + "netbeans" + File.separator + "bin";
         } else {

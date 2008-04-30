@@ -41,14 +41,18 @@
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Component;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
+import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -56,29 +60,36 @@ import org.openide.util.HelpCtx;
  *
  */
 class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
+    
+    JavaMELibsWizardPanel(){
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();
+    }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
-    public void addChangeListener( ChangeListener arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void addChangeListener( ChangeListener listener ) {
+        myListeners.add( listener );
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#getComponent()
      */
     public Component getComponent() {
-        // TODO Auto-generated method stub
-        return new JPanel();
+        if (myComponent == null) {
+            myComponent = new JavaMELibsVisualPanel();
+            myComponent.setName(
+                    NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
+                    CustomComponentWizardIterator.LBL_LIBRARIES));
+        }
+        return myComponent;
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#getHelp()
      */
     public HelpCtx getHelp() {
-        // TODO Auto-generated method stub
-        return null;
+        return new HelpCtx( JavaMELibsWizardPanel.class);
     }
 
     /* (non-Javadoc)
@@ -100,9 +111,8 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
      */
-    public void removeChangeListener( ChangeListener arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void removeChangeListener( ChangeListener listener  ) {
+        myListeners.remove( listener );
     }
 
     /* (non-Javadoc)
@@ -120,5 +130,9 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
         // TODO Auto-generated method stub
         
     }
+    
+    private List<ChangeListener> myListeners; 
+    private WizardDescriptor myWizardDescriptor;
+    private JavaMELibsVisualPanel myComponent;
 
 }
