@@ -107,13 +107,13 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
 
             switch (context.getCompletionType()) {
                 case ATTRIBUTE_VALUE:
-                    CompletionManager.getDefault().completeAttributeValues(resultSet, context);
+                    CompletorRegistry.getDefault().completeAttributeValues(resultSet, context);
                     break;
                 case ATTRIBUTE:
-                    CompletionManager.getDefault().completeAttributes(resultSet, context);
+                    CompletorRegistry.getDefault().completeAttributes(resultSet, context);
                     break;
                 case TAG:
-                    CompletionManager.getDefault().completeElements(resultSet, context);
+                    CompletorRegistry.getDefault().completeElements(resultSet, context);
                     break;
             }
 

@@ -76,22 +76,23 @@ import org.openide.util.NbBundle;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public final class CompletionManager {
+public final class CompletorRegistry {
 
     private static Map<String, CompletorFactory> completorFactories = new HashMap<String, CompletorFactory>();
 
-    private CompletionManager() {
+    private CompletorRegistry() {
         setupCompletors();
     }
 
     private void setupCompletors() {
 
         String[] defaultAutoWireItems = new String[]{
-            "no", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_no"), // NOI18N
-            "byName", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byName"), // NOI18N
-            "byType", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byType"), // NOI18N
-            "constructor", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_constructor"), // NOI18N
-            "autodetect", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_autodetect") // NOI18N
+            "no", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_no"), // NOI18N
+            "byName", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_byName"), // NOI18N
+            "byType", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_byType"), // NOI18N
+            "constructor", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_constructor"), // NOI18N
+            "autodetect", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_autodetect") // NOI18N
+         // NOI18N
         };
         AttributeValueCompletorFactory completorFactory = new AttributeValueCompletorFactory(defaultAutoWireItems);
         registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_AUTOWIRE, completorFactory);
@@ -133,10 +134,10 @@ public final class CompletionManager {
         registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_MERGE, completorFactory);
         
         String[] defaultDepCheckItems = new String[] {
-            "none", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_none"), // NOI18N
-            "simple", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_simple"), // NOI18N
-            "objects", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_objects"), // NOI18N
-            "all", NbBundle.getMessage(CompletionManager.class, "DESC_def_dep_check_all"), // NOI18N
+            "none", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_none"), // NOI18N
+            "simple", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_simple"), // NOI18N
+            "objects", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_objects"), // NOI18N
+            "all", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_all"), // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(defaultDepCheckItems);
         registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_DEPENDENCY_CHECK, completorFactory);
@@ -219,9 +220,9 @@ public final class CompletionManager {
                 = new GenericCompletorFactory(PNamespaceBeanRefCompletor.class);
         registerCompletorFactory(BeansElements.BEAN, null, pNamespaceBeanRefCompletorFactory);
     }
-    private static CompletionManager INSTANCE = new CompletionManager();
+    private static CompletorRegistry INSTANCE = new CompletorRegistry();
 
-    public static CompletionManager getDefault() {
+    public static CompletorRegistry getDefault() {
         return INSTANCE;
     }
 
