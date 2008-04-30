@@ -124,6 +124,19 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     fi
 fi
 
+$Handle PHP already built bits
+rm -f $DIST/bundles/*-php-*
+rm -f $DIST/zip/*-php.zip
+cp ${PHP_EA_LOCATION}/bundles/* $DIST/bundles/
+cp ${PHP_EA_LOCATION}/zip/*-php.zip $DIST/zip/
+
+if [ $ML_BUILD == 1 ]; then
+    rm -f $DIST/ml/bundles/*-php-*
+    rm -f $DIST/ml/zip/*-php.zip
+    cp ${PHP_EA_LOCATION}/bundles/* $DIST/ml/bundles/
+    cp ${PHP_EA_LOCATION}/zip/*-php.zip $DIST//ml/zip/
+fi
+
 cd $DIST
 bash ${SCRIPTS_DIR}/files-info.sh bundles zip
 ERROR_CODE=$?
