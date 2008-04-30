@@ -67,11 +67,13 @@ import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
+import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SQLObject;
+import org.netbeans.modules.sql.framework.model.SQLPredicate;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
@@ -410,6 +412,7 @@ class DataViewWorkerThread extends SwingWorker {
                 }
             }
             String joinSql = "";
+            String srcFiltersStr = "";
             StringBuilder buf = null;
             if (isSameDB) {
                 conn = DBExplorerUtil.createConnection(connDef.getDriverClass(), connDef.getConnectionURL(), connDef.getUserName(), connDef.getPassword());
@@ -418,6 +421,7 @@ class DataViewWorkerThread extends SwingWorker {
                 context.setUseSourceTableAliasName(true);
                 buf = new StringBuilder(db.getStatements().getSelectStatement(joinView, context).getSQL());
                 joinSql = joinSql + db.getGeneratorFactory().generate(joinView.getRootJoin(), context);
+                srcFiltersStr = getSourceWhereCondition(db, joinView.getSourceTables(), context);
             } else {
                 try {
                     Thread.currentThread().getContextClassLoader().loadClass(AxionExternalConnectionProvider.class.getName());
@@ -457,6 +461,7 @@ class DataViewWorkerThread extends SwingWorker {
                 joinContext.setUsingUniqueTableName(true);
                 buf = new StringBuilder(db.getStatements().getSelectStatement(joinView, joinContext).getSQL());
                 joinSql = joinSql + db.getGeneratorFactory().generate(joinView.getRootJoin(), joinContext);
+                srcFiltersStr = getSourceWhereCondition(db, joinView.getSourceTables(), joinContext);
             }
             stmt = conn.createStatement();
             rs = stmt.executeQuery(buf.toString().trim());
@@ -465,7 +470,7 @@ class DataViewWorkerThread extends SwingWorker {
             rs.close();
             stmt.close();
             try {
-                ResultSet cntRs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + joinSql.trim());
+                ResultSet cntRs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + joinSql.trim() + srcFiltersStr.trim());
                 dataOutputPanel.setTotalCount(cntRs);
                 cntRs.close();
             } catch (SQLException e) {
@@ -476,5 +481,27 @@ class DataViewWorkerThread extends SwingWorker {
         } finally {
             shutdownConnection(conn);
         }
+    }
+    
+    private String getSourceWhereCondition(DB db, List sTables, StatementContext context) throws Exception {
+        StringBuilder sourceCondition = new StringBuilder(50);
+        Iterator it = sTables.iterator();
+        int cnt = 0;
+
+        while (it.hasNext()) {
+            SourceTable sTable = (SourceTable) it.next();
+            SQLCondition condition = sTable.getExtractionCondition();
+            SQLPredicate predicate = condition.getRootPredicate();
+
+            if (predicate != null && !"full".equalsIgnoreCase(sTable.getExtractionType())) {
+                if (cnt != 0) {
+                    sourceCondition.append(" AND ");
+                }
+                sourceCondition.append(db.getGeneratorFactory().generate(predicate, context));
+                cnt++;
+            }
+        }
+
+        return StringUtil.isNullString(sourceCondition.toString()) ? "" : " WHERE " + sourceCondition.toString();
     }
 }

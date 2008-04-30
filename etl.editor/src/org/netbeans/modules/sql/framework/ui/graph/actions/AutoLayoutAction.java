@@ -74,6 +74,8 @@ public class AutoLayoutAction extends GraphAction {
         String nbBundle1 = mLoc.t("BUND312: AutoLayout All Graph Objects");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
 
+        // Acceleratot Shift-L
+
     }
 
     /**

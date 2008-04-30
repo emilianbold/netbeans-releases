@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,11 +55,11 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
@@ -176,8 +176,8 @@ public class RailsProjectGenerator {
             }
         }
 
-        // Run Rake -T silently to determine the available targets and write into private area
-        RakeTargetsAction.refreshTargets(p);
+        // Run Rake -T silently to determine the available tasks and write into private area
+        RakeSupport.refreshTasks(p);
         
         return h;
     }

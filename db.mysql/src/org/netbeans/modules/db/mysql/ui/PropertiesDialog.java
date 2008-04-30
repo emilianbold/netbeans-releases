@@ -44,9 +44,9 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -65,9 +65,9 @@ public class PropertiesDialog  {
     private final JTabbedPane tabbedPane;
     private final BasePropertiesPanel basePanel;
     private final AdminPropertiesPanel adminPanel;
-    private final ServerInstance server;
+    private final DatabaseServer server;
 
-    public PropertiesDialog(ServerInstance server) {
+    public PropertiesDialog(DatabaseServer server) {
         this.server = server;
         
         basePanel = new BasePropertiesPanel(server);
@@ -181,7 +181,7 @@ public class PropertiesDialog  {
             provider.setRegistered(true);
             
         } else if ( needsReconnect ) {
-            server.connectAsync();
+            server.reconnectAsync();
         }
     }
 

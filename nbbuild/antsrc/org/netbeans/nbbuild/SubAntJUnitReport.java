@@ -46,7 +46,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Ant;
@@ -87,14 +89,34 @@ public class SubAntJUnitReport extends Task {
             ant.init();
             ant.setTarget(targetToRun);
             ant.setDir(dir);
+            final StringBuilder errors = new StringBuilder();
+            BuildListener listener = new BuildListener() {
+                String task = null;
+                public void messageLogged(BuildEvent ev) {
+                    if (task != null && ev.getPriority() <= Project.MSG_WARN) {
+                        errors.append('\n').append(ev.getMessage());
+                    }
+                }
+                public void taskStarted(BuildEvent ev) {
+                    task = ev.getTask().getTaskName();
+                }
+                public void taskFinished(BuildEvent ev) {
+                    task = null;
+                }
+                public void buildStarted(BuildEvent ev) {}
+                public void buildFinished(BuildEvent ev) {}
+                public void targetStarted(BuildEvent ev) {}
+                public void targetFinished(BuildEvent ev) {}
+            };
             String msg = null;
+            getProject().addBuildListener(listener);
             try {
                 ant.execute();
             } catch (BuildException x) {
                 if (failOnError) {
                     throw x;
                 } else {
-                    msg = x.getMessage().replaceFirst("(?s).*The following error occurred while executing this line:\r?\n", "");
+                    msg = x.getMessage().replaceFirst("(?s).*The following error occurred while executing this line:\r?\n", "") + errors;
                 }
             } catch (Throwable x) {
                 if (failOnError) {
@@ -104,6 +126,8 @@ public class SubAntJUnitReport extends Task {
                     x.printStackTrace(new PrintWriter(sw));
                     msg = sw.toString();
                 }
+            } finally {
+                getProject().removeBuildListener(listener);
             }
             pseudoTests.put(path, msg);
             if (msg != null) {

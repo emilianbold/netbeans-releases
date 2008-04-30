@@ -55,7 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.ruby.rubyproject.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;

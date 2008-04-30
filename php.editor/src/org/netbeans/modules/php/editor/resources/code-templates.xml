@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cls" abbreviation="cls">
         <code>
 <![CDATA[class ${class_name} {
-    function ${class_name}() {
+    function __construct() {
         ${cursor};
     }
 }]]>
