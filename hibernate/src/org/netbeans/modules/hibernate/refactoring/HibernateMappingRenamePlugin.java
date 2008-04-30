@@ -64,6 +64,7 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
 
     private RenameRefactoring refactoring;
     private FileObject fo;
+    private String oldResourceName, newResourceName;
 
     public HibernateMappingRenamePlugin(RenameRefactoring refactoring) {
         this.refactoring = refactoring;
@@ -79,8 +80,6 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
     }
 
     public Problem fastCheckParameters() {
-        // TODO: verify the new name here. Make sure it is valid and unique
-        
         Problem fastCheckProblem = null;
     
         String oldName = fo.getName();
@@ -96,10 +95,21 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
                      true, NbBundle.getMessage(HibernateMappingRenamePlugin.class,"MSG_Invalid_Name"));
          }
         
-        if(HibernateRefactoringUtil.nameNotUnique(newName)){
+         // Get the old and new resource name
+        getOldNewResourceName();
+        if(oldResourceName == null || newResourceName == null) {
+            fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem, 
+                    true, NbBundle.getMessage(HibernateMappingRenamePlugin.class, "MSG_Invalid_Name"));
+        }
+        
+        // Make sure the name is unique
+        Project project = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
+        HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+        List<String> mappingFiles = hibernateEnv.getAllHibernateMappings();
+        if(mappingFiles.contains(newResourceName)){
             fastCheckProblem = HibernateRefactoringUtil.createProblem(fastCheckProblem, 
                     true, NbBundle.getMessage(HibernateMappingRenamePlugin.class, "MSG_NameNotUnique"));
-        }
+        } 
 
         return fastCheckProblem;
     }
@@ -115,13 +125,6 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
             return null;
         }
 
-        // Get the old and new resource name
-        String[] names = getOldNewResourceName();
-        if (names == null || names[0] == null || names[1] == null) {
-            //TODO: return a Problem
-            return null;
-        }
-
         // Get the configuration files
         Project proj = FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
@@ -130,40 +133,36 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
             return null;
         
         Map<FileObject, List<OccurrenceItem>> occurrences =
-                HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, names[0]);
+                HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, oldResourceName);
 
         for (FileObject mappingFile : occurrences.keySet()) {
             List<OccurrenceItem> foundPlaces = occurrences.get(mappingFile);
             for (OccurrenceItem foundPlace : foundPlaces) {
                 HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mappingFile,
-                        names[0],
-                        names[1],
+                        oldResourceName,
+                        newResourceName,
                         foundPlace.getLocation(),
                         foundPlace.getText());
                 refactoringElements.add(refactoring, elem);
             }
         }
-        refactoringElements.registerTransaction(new HibernateMappingRenameTransaction(occurrences.keySet(), names[0], names[1]));
+        refactoringElements.registerTransaction(new HibernateMappingRenameTransaction(
+                occurrences.keySet(), oldResourceName, newResourceName));
 
         return null;
     }
 
-    private String[] getOldNewResourceName() {
-        String names[] = new String[2]; // [oldName, newName]
+    private void getOldNewResourceName() {
         Project project = FileOwnerQuery.getOwner(fo);
         SourceGroup[] grp = SourceGroups.getJavaSourceGroups(project);
         if (grp.length == 0) {
-            return null;
+            return;
         }
 
         String srcRoot = grp[0].getRootFolder().getPath();
         String oldPath = fo.getPath();
-        String oldResource = oldPath.substring(srcRoot.length() + 1);
-        String pkgPath = oldResource.substring(0, oldResource.lastIndexOf("/") + 1);
-
-        names[0] = oldResource;
-        names[1] = pkgPath + refactoring.getNewName() + ".xml"; // NOI18N
-
-        return names;
+        oldResourceName = oldPath.substring(srcRoot.length() + 1);
+        String pkgPath = oldResourceName.substring(0, oldResourceName.lastIndexOf("/") + 1);
+        newResourceName = pkgPath + refactoring.getNewName() + ".xml"; // NOI18N
     }
 }

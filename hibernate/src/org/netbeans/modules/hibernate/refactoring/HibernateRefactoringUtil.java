@@ -690,8 +690,13 @@ public class HibernateRefactoringUtil {
         return true;
     }
     
-    public static boolean nameNotUnique(String name) {
-        //TODO: checking here
-        return false;
+    public static boolean nameNotUnique(String name, Project project) {
+        HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+        List<String> mappingFiles = hibernateEnv.getAllHibernateMappings();
+        if(mappingFiles.contains(name)){
+            return true;
+        } else {
+            return false;
+        }
     }
 }
