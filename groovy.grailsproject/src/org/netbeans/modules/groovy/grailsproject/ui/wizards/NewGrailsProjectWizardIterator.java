@@ -117,6 +117,12 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
                } else {
                    resultSet.add(dir);
                    GrailsProjectSettings.getDefault().setNewProjectCount(baseCount);
+                   
+                   File parentDir = dirF.getParentFile();
+                   
+                   if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
+                       GrailsProjectSettings.getDefault().setLastUsedArtifactFolder(dirF.getParentFile());
+                   }
                }
            }
 

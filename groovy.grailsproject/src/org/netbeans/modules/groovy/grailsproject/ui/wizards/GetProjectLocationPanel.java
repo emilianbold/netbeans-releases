@@ -26,7 +26,7 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
  */
 public class GetProjectLocationPanel extends WizardSettingsPanel implements DocumentListener {
     GetProjectLocationStep parentStep;
-    
+    String projectsFolderPath;
         
     boolean valid(WizardDescriptor settings) {
         
@@ -42,7 +42,14 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     void read (WizardDescriptor d) {
         Integer count = (Integer) d.getProperty("WizardPanel_GrailsProjectCounter");
         String formater = NbBundle.getMessage(GetProjectLocationPanel.class, "TXT_GrailsApplication");
-        String newPrjName = MessageFormat.format(formater, count.intValue());
+        
+        int baseCount = count.intValue();
+        String newPrjName = "";
+        
+        while ((newPrjName = validFreeProjectName(new File(projectsFolderPath), formater, baseCount)) == null) {
+            baseCount++;
+            }
+        
         projectNameTextField.setText(newPrjName);
         
     }
@@ -69,7 +76,14 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         
         // set the default project directory 
         
-        String projectsFolderPath = ProjectChooser.getProjectsFolder().getPath();
+        File lastFolder = GrailsProjectSettings.getDefault().getLastUsedArtifactFolder();
+        
+        if(lastFolder.exists() && lastFolder.isDirectory()){
+            projectsFolderPath = lastFolder.getPath();
+        } else{
+            projectsFolderPath = ProjectChooser.getProjectsFolder().getPath();
+        }
+        
         projectLocationTextField.setText(projectsFolderPath);
         projectFolderTextField.setText( projectsFolderPath + File.separatorChar + projectNameTextField.getText() );
         
@@ -227,6 +241,12 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
 
     public javax.swing.JTextField getProjectFolderTextField() {
         return projectFolderTextField;
+    }
+    
+    private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
+        String name = MessageFormat.format(formater, index);
+        File file = new File (parentFolder, name);
+        return file.exists() ? null : name;
     }
     
 }
