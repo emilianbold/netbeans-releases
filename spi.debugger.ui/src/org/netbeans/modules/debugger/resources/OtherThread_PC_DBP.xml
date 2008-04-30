@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     <combination order='100'>
         <combine annotationtype='DisabledBreakpoint' absorb_all='true'/>
         <combine annotationtype='CurrentPC'/>
-        <combine annotationtype='OtherThread'/>
+        <combine annotationtype='OtherThread' absorb_all='true'/>
     </combination>
     <!--<combination order='200'>
         <combine annotationtype='CondBreakpoint'/>
