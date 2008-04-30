@@ -111,7 +111,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
 
     private boolean isExpanded(Object node) {
         synchronized (this) {
-            return expandedNodes.contains(node);
+            return expandedNodes.contains(node) || expandedExplicitely.contains(node);
         }
     }
 
@@ -132,6 +132,11 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
         }
         synchronized (this) {
             if (expandedExplicitely.contains(node)) {
+                return true;
+            }
+        }
+        if (node instanceof JPDAThread) {
+            if (((JPDAThread) node).getCurrentBreakpoint() != null) {
                 return true;
             }
         }

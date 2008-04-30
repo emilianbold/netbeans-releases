@@ -627,7 +627,12 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     public List<MonitorInfo> getOwnedMonitors() {
-        List<MonitorInfo> threadMonitors = getThread().getOwnedMonitorsAndFrames();
+        List<MonitorInfo> threadMonitors;
+        try {
+            threadMonitors = getThread().getOwnedMonitorsAndFrames();
+        } catch (InvalidStackFrameException itsex) {
+            threadMonitors = Collections.emptyList();
+        }
         if (threadMonitors.size() == 0) {
             return threadMonitors;
         }
