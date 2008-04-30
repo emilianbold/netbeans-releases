@@ -104,7 +104,7 @@ public class MergeTest extends AbstractCLITest {
         assertFalse(file1.exists());
         assertFalse(folder1.exists());
         
-        ISVNLogMessage[] log = getLog(getFileUrl(folder));
+        ISVNLogMessage[] log = getCompleteLog(getFileUrl(folder));
         c.merge(getFileUrl(foldercopy), log[0].getRevision(), getFileUrl(foldercopy), SVNRevision.HEAD, folder, false, false);
         assertTrue(file.exists());
         assertFalse(file1.exists());
@@ -152,7 +152,7 @@ public class MergeTest extends AbstractCLITest {
         assertFalse(file1.exists());
         assertFalse(file2.exists());
         
-        ISVNLogMessage[] log = getLog(getFileUrl(foldercopy1));
+        ISVNLogMessage[] log = getCompleteLog(getFileUrl(foldercopy1));
         c.merge(getFileUrl(foldercopy1), log[0].getRevision(), getFileUrl(foldercopy2), SVNRevision.HEAD, folder, true, true);
         assertTrue(file1.exists());
         assertTrue(file2.exists());
@@ -190,7 +190,7 @@ public class MergeTest extends AbstractCLITest {
         assertFalse(file1.exists());
         assertFalse(folder1.exists());
         
-        ISVNLogMessage[] log = getLog(getFileUrl(folder));
+        ISVNLogMessage[] log = getCompleteLog(getFileUrl(folder));
         c.merge(getFileUrl(foldercopy), log[0].getRevision(), getFileUrl(foldercopy), SVNRevision.HEAD, folder, false, true);
         assertTrue(file.exists());
         assertTrue(file1.exists());

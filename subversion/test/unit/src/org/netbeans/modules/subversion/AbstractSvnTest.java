@@ -306,8 +306,12 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return getClient().getInfo(url);
     }
     
-    protected ISVNLogMessage[] getLog(SVNUrl url) throws SVNClientException {
+    protected ISVNLogMessage[] getCompleteLog(SVNUrl url) throws SVNClientException {
         return getClient().getLogMessages(url, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+    }
+    
+    protected ISVNLogMessage[] getLog(SVNUrl url) throws SVNClientException {
+        return getClient().getLogMessages(url, SVNRevision.HEAD, SVNRevision.HEAD);
     }
     
     protected InputStream getContent(SVNUrl url) throws SVNClientException {
