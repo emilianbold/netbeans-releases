@@ -91,7 +91,7 @@ public class DBExplorerUtil {
                 urlParts[0] =  urlParts[0].toUpperCase();
                 String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME.toUpperCase()) ? urlParts[0] : ETLEditorSupport.PRJ_NAME.toUpperCase() + "_" + urlParts[0];
                 url = AXION_URL_PREFIX + adjustedName + ":" + urlParts[1];
-            } else if (urlParts[1].startsWith(relativePath)) {
+            }else if (urlParts[1].startsWith(relativePath)) {
                 url = AXION_URL_PREFIX + urlParts[0] + ":" + ETLEditorSupport.PRJ_PATH + urlParts[1];
             }
         }
