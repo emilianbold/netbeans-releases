@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.spring.beans.completion;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,12 +65,18 @@ public abstract class Completor {
     }
     
     public final List<SpringXMLConfigCompletionItem> complete(CompletionContext context) {
-        caretOffset = context.getCaretOffset();
-        computeCompletionItems(context, progress);
+        try {
+            caretOffset = context.getCaretOffset();
+            computeCompletionItems(context, progress);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            items = Collections.<SpringXMLConfigCompletionItem>emptyList();
+        }
+        
         return items;
     }
     
-    protected abstract void computeCompletionItems(CompletionContext context, QueryProgress progress);
+    protected abstract void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException;
 
     public final boolean canFilter(CompletionContext context) {
         int newCaretOffset = context.getCaretOffset();

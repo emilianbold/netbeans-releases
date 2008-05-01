@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
+import java.io.IOException;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.QueryProgress;
@@ -60,7 +61,7 @@ public class AttributeValueCompletor extends Completor {
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
         int caretOffset = context.getCaretOffset();
         String typedChars = context.getTypedPrefix();
         

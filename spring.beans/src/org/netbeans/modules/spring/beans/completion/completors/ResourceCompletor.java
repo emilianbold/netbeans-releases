@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
@@ -56,7 +57,7 @@ public class ResourceCompletor extends Completor {
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
         FileObject fileObject = context.getFileObject().getParent();
         String typedChars = context.getTypedPrefix();
 

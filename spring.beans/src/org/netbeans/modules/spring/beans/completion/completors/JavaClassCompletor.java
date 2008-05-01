@@ -65,7 +65,6 @@ import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,22 +80,18 @@ public class JavaClassCompletor extends Completor {
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
-        try {
-            final String typedChars = context.getTypedPrefix();
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
+        final String typedChars = context.getTypedPrefix();
 
-            JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
-            if (js == null) {
-                return;
-            }
+        JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
+        if (js == null) {
+            return;
+        }
 
-            if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
-                doNormalJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1);
-            } else { // Switch to smart class path completion
-                doSmartJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1, context.getQueryType());
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
+            doNormalJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1);
+        } else { // Switch to smart class path completion
+            doSmartJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1, context.getQueryType());
         }
     }
     

@@ -55,7 +55,6 @@ import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,57 +63,53 @@ import org.openide.util.Exceptions;
 public class PNamespaceCompletor extends Completor {
 
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) {
-        try {
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
             final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
-            if (js == null) {
-                return;
-            }
+        if (js == null) {
+            return;
+        }
 
-            final String typedPrefix = context.getTypedPrefix();
-            final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
-            final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
-            js.runUserActionTask(new Task<CompilationController>() {
+        final String typedPrefix = context.getTypedPrefix();
+        final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
+        final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
+        js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController cc) throws Exception {
-                    String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()),
-                            context.getFileObject()).findImplementationClass();
-                    if (className == null) {
-                        return;
+            public void run(CompilationController cc) throws Exception {
+                String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()),
+                        context.getFileObject()).findImplementationClass();
+                if (className == null) {
+                    return;
+                }
+                TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
+                if (te == null) {
+                    return;
+                }
+                ElementUtilities eu = cc.getElementUtilities();
+                Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
+
+                for (Property prop : props) {
+                    if (prop.getSetter() == null) {
+                        continue;
                     }
-                    TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
-                    if (te == null) {
-                        return;
+                    String attribName = pNamespacePrefix + ":" + prop.getName(); // NOI18N
+
+                    if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                        SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                attribName, prop);
+                        addItem(item);
                     }
-                    ElementUtilities eu = cc.getElementUtilities();
-                    Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
+                    attribName += "-ref"; // NOI18N
 
-                    for (Property prop : props) {
-                        if (prop.getSetter() == null) {
-                            continue;
-                        }
-                        String attribName = pNamespacePrefix + ":" + prop.getName(); // NOI18N
+                    if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                        SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                attribName, prop); // NOI18N
 
-                        if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
-                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
-                                    attribName, prop);
-                            addItem(item);
-                        }
-                        attribName += "-ref"; // NOI18N
-
-                        if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
-                            SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
-                                    attribName, prop); // NOI18N
-
-                            addItem(refItem);
-                        }
+                        addItem(refItem);
                     }
                 }
-            }, true);
+            }
+        }, true);
 
-            setAnchorOffset(substitutionOffset);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        setAnchorOffset(substitutionOffset);
     }
 }

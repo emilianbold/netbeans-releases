@@ -57,7 +57,6 @@ import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,84 +68,81 @@ public class PropertyCompletor extends Completor {
     }
 
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) {
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
         final String propertyPrefix = context.getTypedPrefix();
         final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
         if (js == null) {
             return;
         }
 
-        try {
-            // traverse the properties
-            final int dotIndex = propertyPrefix.lastIndexOf("."); // NOI18N
+        // traverse the properties
+        final int dotIndex = propertyPrefix.lastIndexOf("."); // NOI18N
 
-            js.runUserActionTask(new Task<CompilationController>() {
+        js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController cc) throws Exception {
-                    Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
-                    String className = new BeanClassFinder(
-                            SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
-                            context.getFileObject()).findImplementationClass();
-                    if (className == null) {
-                        return;
-                    }
-                    TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
-                    if (te == null) {
-                        return;
-                    }
-                    TypeMirror startType = te.asType();
-                    ElementUtilities eu = cc.getElementUtilities();
-
-                    // property chain
-                    if (dotIndex != -1) {
-                        String getterChain = propertyPrefix.substring(0, dotIndex);
-                        StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
-                        while (tokenizer.hasMoreTokens() && startType != null) {
-                            String propertyName = tokenizer.nextToken();
-                            Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
-
-                            // no matching element found
-                            if (props.length == 0 || props[0].getGetter() == null) {
-                                startType = null;
-                                break;
-                            }
-
-                            TypeMirror retType = props[0].getGetter().getReturnType();
-                            if (retType.getKind() == TypeKind.DECLARED) {
-                                startType = retType;
-                            } else {
-                                startType = null;
-                            }
-                        }
-                    }
-
-                    if (startType == null) {
-                        return;
-                    }
-
-                    String setterPrefix = "";
-                    if (dotIndex != propertyPrefix.length() - 1) {
-                        setterPrefix = propertyPrefix.substring(dotIndex + 1);
-                    }
-
-                    Property[] props = new PropertyFinder(startType, setterPrefix, eu).findProperties();
-                    int substitutionOffset = context.getCurrentToken().getOffset() + 1;
-                    if (dotIndex != -1) {
-                        substitutionOffset += dotIndex + 1;
-                    }
-
-                    for (Property prop : props) {
-                        if (prop.getSetter() == null) {
-                            continue;
-                        }
-                        addItem(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
-                    }
-
-                    setAnchorOffset(substitutionOffset);
+            public void run(CompilationController cc) throws Exception {
+                Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
+                String className = new BeanClassFinder(
+                        SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
+                        context.getFileObject()).findImplementationClass();
+                if (className == null) {
+                    return;
                 }
-            }, false);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+                TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
+                if (te == null) {
+                    return;
+                }
+                TypeMirror startType = te.asType();
+                ElementUtilities eu = cc.getElementUtilities();
+
+                // property chain
+                if (dotIndex != -1) {
+                    String getterChain = propertyPrefix.substring(0, dotIndex);
+                    StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
+
+                    while (tokenizer.hasMoreTokens() && startType != null) {
+                        String propertyName = tokenizer.nextToken();
+                        Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
+
+                        // no matching element found
+                        if (props.length == 0 || props[0].getGetter() == null) {
+                            startType = null;
+                            break;
+                        }
+
+                        TypeMirror retType = props[0].getGetter().getReturnType();
+                        if (retType.getKind() == TypeKind.DECLARED) {
+                            startType = retType;
+                        } else {
+                            startType = null;
+                        }
+                    }
+                }
+
+                if (startType == null) {
+                    return;
+                }
+
+                String setterPrefix = "";
+                if (dotIndex != propertyPrefix.length() - 1) {
+                    setterPrefix = propertyPrefix.substring(dotIndex + 1);
+                }
+
+                Property[] props = new PropertyFinder(startType, setterPrefix, eu).findProperties();
+                int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+                if (dotIndex != -1) {
+                    substitutionOffset += dotIndex + 1;
+                }
+
+                for (Property prop : props) {
+                    if (prop.getSetter() == null) {
+                        continue;
+                    }
+                    addItem(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
+                }
+
+                setAnchorOffset(substitutionOffset);
+            }
+        }, false);
     }
 }

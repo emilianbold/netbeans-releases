@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
+import java.io.IOException;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
@@ -54,7 +55,7 @@ public class PNamespaceBeanRefCompletor extends Completor {
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
         TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
         if (attribToken == null) {
             return;

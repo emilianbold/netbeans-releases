@@ -56,7 +56,6 @@ import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionIte
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,7 +70,7 @@ public class BeansRefCompletor extends Completor {
     }
 
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) {
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
         final FileObject fo = context.getFileObject();
         SpringConfigModel model = SpringConfigModel.forFileObject(fo);
         if (model == null) {
@@ -98,47 +97,43 @@ public class BeansRefCompletor extends Completor {
             return;
         }
         
-        try {
-            model.runReadAction(new Action<SpringBeans>() {
+        model.runReadAction(new Action<SpringBeans>() {
 
-                public void run(SpringBeans sb) {
-                    List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getFileBeans(fo).getBeans();
-                    Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
+            public void run(SpringBeans sb) {
+                List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getFileBeans(fo).getBeans();
+                Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
 
-                    for (String beanName : name2Bean.keySet()) {
-                        if (!beanName.startsWith(prefix) || cNames.contains(beanName)) {
-                            continue;
+                for (String beanName : name2Bean.keySet()) {
+                    if (!beanName.startsWith(prefix) || cNames.contains(beanName)) {
+                        continue;
+                    }
+                    SpringBean bean = name2Bean.get(beanName);
+                    SpringXMLConfigCompletionItem item =
+                            SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1,
+                            beanName, bean, fo);
+                    addItem(item);
+                }
+            }
+
+            private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
+                Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
+                for (SpringBean bean : beans) {
+                    String beanId = bean.getId();
+                    if (beanId != null) {
+                        name2Bean.put(beanId, bean);
+                    }
+                    if (addNames) {
+                        List<String> beanNames = bean.getNames();
+                        for (String beanName : beanNames) {
+                            name2Bean.put(beanName, bean);
                         }
-                        SpringBean bean = name2Bean.get(beanName);
-                        SpringXMLConfigCompletionItem item =
-                                SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1,
-                                beanName, bean, fo);
-                        addItem(item);
                     }
                 }
 
-                private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
-                    Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
-                    for (SpringBean bean : beans) {
-                        String beanId = bean.getId();
-                        if (beanId != null) {
-                            name2Bean.put(beanId, bean);
-                        }
-                        if (addNames) {
-                            List<String> beanNames = bean.getNames();
-                            for (String beanName : beanNames) {
-                                name2Bean.put(beanName, bean);
-                            }
-                        }
-                    }
+                return name2Bean;
+            }
+        });
 
-                    return name2Bean;
-                }
-            });
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
     }
 }

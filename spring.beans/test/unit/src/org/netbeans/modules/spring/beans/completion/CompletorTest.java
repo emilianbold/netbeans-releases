@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.spring.beans.completion;
 
+import java.io.IOException;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
 
@@ -66,7 +67,11 @@ public class CompletorTest extends TestCase {
         final QueryProgress progress = new QueryProgress();
         Thread t = new Thread(new Runnable() {
             public void run() {
-                completor.computeCompletionItems(null, progress);
+                try {
+                    completor.computeCompletionItems(null, progress);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
         
@@ -83,7 +88,7 @@ public class CompletorTest extends TestCase {
         private int exitCount = 100;
         
         @Override
-        protected void computeCompletionItems(CompletionContext context, QueryProgress progress) {
+        protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
             try {
                 for (int i = 0; i < 100; i++) {
                     if(progress.isCancelled()) {
