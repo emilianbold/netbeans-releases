@@ -62,11 +62,6 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -84,8 +79,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Supports Rake related operations.
@@ -105,14 +98,6 @@ public final class RakeSupport {
 
     public RakeSupport(Project project) {
         this.project = project;
-    }
-
-    /**
-     * Set whether the rake task should be run as a test (through the test
-     * runner etc.)
-     */
-    public void setTest(boolean test) {
-        this.test = test;
     }
 
     /**
@@ -202,9 +187,50 @@ public final class RakeSupport {
         return sb.toString();
     }
 
-    public static List<RakeTask> getRakeTaskTree(RubyBaseProject project) {
+    /**
+     * Returns namespace-task tree for the given project.
+     */
+    public static List<RakeTask> getRakeTaskTree(final RubyBaseProject project) {
         RakeTaskReader rtreader = new RakeTaskReader(project);
         return rtreader.getRakeTaskTree();
+    }
+
+    /**
+     * Returns flat, namespace-ignoring, list of Rake tasks for the given
+     * project.
+     */
+    static List<RakeTask> getRakeTasks(final RubyBaseProject project) {
+        List<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
+        List<RakeTask> tasks = new ArrayList<RakeTask>();
+        addTasks(tasks, taskTree);
+        return tasks;
+    }
+
+    private static void addTasks(final List<RakeTask> flatAccumulator, final List<RakeTask> taskTree) {
+        for (RakeTask task : taskTree) {
+            if (task.isNameSpace()) {
+                addTasks(flatAccumulator, task.getChildren());
+            } else {
+                flatAccumulator.add(task);
+            }
+        }
+    }
+
+    /**
+     * Returns {@link RakeTask} for the give <tt>task</tt>.
+     *
+     * @param project Ruby project
+     * @param task task to be find
+     * @return <tt>null</tt> if not found; {@link RakeTask} instance othewise
+     */
+    public static RakeTask getRakeTask(final RubyBaseProject project, final String task) {
+        List<RakeTask> tasks = getRakeTasks(project);
+        for (RakeTask rakeTask : tasks) {
+            if (rakeTask.getTask().equals(task)) {
+                return rakeTask;
+            }
+        }
+        return null;
     }
 
     private static String hiddenRakeRunner(RubyPlatform platform, String rakeCmd, File pwd, String rakeArg) {
@@ -281,7 +307,6 @@ public final class RakeSupport {
         return sb.toString();
     }
 
-
     static void writeRakeTasks(Project project, final String rakeTOutput) {
         final FileObject projectDir = project.getProjectDirectory();
 
@@ -305,143 +330,6 @@ public final class RakeSupport {
             });
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
-        }
-    }
-
-    /**
-     * Run rake in the given directory. Optionally, run the given rakefile.
-     *
-     * @param pwd If you specify the rake file, you can pass null as the
-     *   directory, and the directory containing the rakeFile will be used,
-     *   otherwise it specifies the dir to run rake in
-     * @param warn If true, produce popups if Ruby or Rake are not configured
-     *   correctly.
-     * @param rakeFile The filename to be run
-     * @param displayName The displayname to be shown in the output window
-     * @param fileLocator The file locator to be used to resolve output
-     *   hyperlinks
-     * @param rakeParameters Additional parameters to pass to rake
-     */
-    public void runRake(File pwd, FileObject rakeFile, String displayName,
-        FileLocator fileLocator, boolean warn, boolean debug, String... rakeParameters) {
-        if (pwd == null) {
-            assert rakeFile != null : "rakefile cannot be null";
-            pwd = FileUtil.toFile(rakeFile.getParent());
-        }
-
-        if (!RubyPlatform.hasValidRake(project, warn)) {
-            return;
-        }
-        
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-
-        String rake = gemManager.getRake();
-        ExecutionDescriptor desc;
-
-        List<String> additionalArgs = new ArrayList<String>();
-
-        if (rakeFile != null) {
-            additionalArgs.add("-f"); // NOI18N
-            additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
-        }
-
-        if ((rakeParameters != null) && (rakeParameters.length > 0)) {
-            for (String parameter : rakeParameters) {
-                additionalArgs.add(parameter);
-            }
-        }
-        
-        String charsetName = null;
-        String classPath = null;
-        String extraArgs = null;
-        String jrubyProps = null;
-        
-        if (project != null) {
-            PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
-            if (evaluator != null) {
-                charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
-                classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
-                extraArgs = evaluator.getProperty(SharedRubyProjectProperties.RAKE_ARGS);
-                jrubyProps = evaluator.getProperty(RubyProjectProperties.JRUBY_PROPS);
-            }
-        }
-        
-        if (extraArgs != null) {
-            String[] args = Utilities.parseParameters(extraArgs);
-            if (args != null) {
-                for (String arg : args) {
-                    additionalArgs.add(arg);
-                }
-            }
-        }
-
-        if (!additionalArgs.isEmpty()) {
-            desc = new ExecutionDescriptor(platform, displayName, pwd, rake).additionalArgs(
-                    additionalArgs.toArray(new String[additionalArgs.size()]));
-        } else {
-            desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
-        }
-        
-        desc.allowInput();
-        desc.classPath(classPath); // Applies only to JRuby
-        desc.jrubyProperties(jrubyProps);
-        desc.fileLocator(fileLocator);
-        desc.addStandardRecognizers();
-
-        if (platform.isJRuby()) {
-            desc.appendJdkToPath(true);
-        }
-
-        if (test) {
-            desc.addOutputRecognizer(new TestNotifier(true, true));
-        }
-        
-        desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName)).debug(debug);
-
-        new RubyExecution(desc, charsetName).run();
-    }
-
-    private class RakeErrorRecognizer extends OutputRecognizer implements Runnable {
-        
-        private final ExecutionDescriptor desc;
-        private final String charsetName;
-
-        RakeErrorRecognizer(ExecutionDescriptor desc, String charsetName) {
-            this.desc = desc;
-            this.charsetName = charsetName;
-        }
-
-        @Override
-        public RecognizedOutput processLine(String line) {
-            if (line.indexOf("(See full trace by running task with --trace)") != -1) {
-                return new OutputRecognizer.ActionText(new String[] { line }, 
-                        new String[] { NbBundle.getMessage(RakeSupport.class, "RakeSupport.RerunRakeWithTrace") }, 
-                        new Runnable[] { RakeErrorRecognizer.this }, null);
-            }
-
-            return null;
-        }
-
-        public void run() {
-            String[] additionalArgs = desc.getAdditionalArgs();
-            if (additionalArgs != null) {
-                List<String> args = new ArrayList<String>();
-                boolean found = false;
-                for (String s : additionalArgs) {
-                    args.add(s);
-                    if (s.equals("--trace")) {
-                        found = true;
-                    }
-                }
-                if (!found) {
-                    args.add(0, "--trace");
-                }
-                desc.additionalArgs(args.toArray(new String[args.size()]));
-            } else {
-                desc.additionalArgs("--trace");
-            }
-            new RubyExecution(desc, charsetName).run();
         }
     }
 
