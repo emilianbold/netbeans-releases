@@ -81,6 +81,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     private final CopyFilesVisual copyFilesVisual;
     private final boolean originalCopySrcFiles;
     private final String originalCopySrcTarget;
+    private final String originalSources;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -91,6 +92,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         initEncoding();
         LocalServer sources = initSources();
+        originalSources = sources.getSrcRoot();
         originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
         LocalServer[] copyTargets = getCopyTargets(copyTarget);
@@ -222,7 +224,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                 return;
             }
             err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
-                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath()), true);
+                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath(), srcDir.getAbsolutePath()), true);
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -289,8 +291,9 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         return FileUtil.normalizeFile(new File(srcRoot));
     }
 
-    private boolean allowNonEmptyDirectory(String copyTargetDir) {
-        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir);
+    private boolean allowNonEmptyDirectory(String copyTargetDir, String srcDir) {
+        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir)
+                && originalSources.equals(srcDir); // #133109
     }
 
     /** This method is called from within the constructor to
