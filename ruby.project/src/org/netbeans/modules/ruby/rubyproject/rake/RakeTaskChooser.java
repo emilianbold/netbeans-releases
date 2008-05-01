@@ -153,23 +153,10 @@ public final class RakeTaskChooser extends JPanel {
         });
     }
 
-    private static void addTasks(final List<RakeTask> flatAccumulator, final List<RakeTask> taskTree) {
-        for (RakeTask task : taskTree) {
-            if (task.isNameSpace()) {
-                addTasks(flatAccumulator, task.getChildren());
-            } else {
-                flatAccumulator.add(task);
-            }
-        }
-    }
-
     /** Reloads all tasks for the current project. */
     private void reloadAllTasks() {
-        List<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
-        List<RakeTask> tasks = new ArrayList<RakeTask>();
-        addTasks(tasks, taskTree);
         allTasks.clear();
-        allTasks.addAll(tasks);
+        allTasks.addAll(RakeSupport.getRakeTasks(project));
     }
 
     /** Refreshes Rake tasks list view. */

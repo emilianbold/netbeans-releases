@@ -459,11 +459,6 @@ final class BasicConfVisualPanel extends JPanel {
     private javax.swing.JTextField layerValue;
     // End of variables declaration//GEN-END:variables
     
-    abstract static class DocumentAdapter implements DocumentListener {
-        public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-        public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
-    }
-    
     private boolean isBundleUpdated;
     private boolean listenersAttached;
     

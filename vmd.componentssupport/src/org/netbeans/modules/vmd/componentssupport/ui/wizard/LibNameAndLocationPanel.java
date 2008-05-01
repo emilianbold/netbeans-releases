@@ -44,11 +44,11 @@ import java.awt.Component;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
 import org.openide.util.HelpCtx;
@@ -59,12 +59,56 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
+class LibNameAndLocationPanel implements Panel, FinishablePanel,
+        ValidatingPanel
+{
+    LibNameAndLocationPanel() {
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();   
+    }
     
-    JavaMELibsWizardPanel(){
-        myListeners = new CopyOnWriteArrayList<ChangeListener>();
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#getComponent()
+     */
+    public Component getComponent() {
+        if (myComponent == null) {
+            myComponent = new NameAndLocationVisualPanel( );
+            myComponent.setName(
+                    NbBundle.getMessage(NewLibraryDescriptor.class, 
+                            NewLibraryDescriptor.NAME_LOCATION_STEP));
+        }
+        return myComponent;    
     }
 
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#getHelp()
+     */
+    public HelpCtx getHelp() {
+        return new HelpCtx( LibNameAndLocationPanel.class);
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#isValid()
+     */
+    public boolean isValid() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
+     */
+    public void readSettings( Object settings ) {
+        WizardDescriptor descriptor = (WizardDescriptor)settings;
+        myComponent.readData( descriptor );
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
+     */
+    public void removeChangeListener( ChangeListener listener ) {
+        myListeners.remove( listener );
+    }
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
@@ -73,54 +117,18 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     }
 
     /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getComponent()
-     */
-    public Component getComponent() {
-        if (myComponent == null) {
-            myComponent = new JavaMELibsVisualPanel( );
-            myComponent.setName(
-                    NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
-                    CustomComponentWizardIterator.LBL_LIBRARIES));
-        }
-        return myComponent;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getHelp()
-     */
-    public HelpCtx getHelp() {
-        return new HelpCtx( JavaMELibsWizardPanel.class);
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#isValid()
-     */
-    public boolean isValid() {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
-     */
-    public void readSettings( Object settings  ) {
-        myWizardDescriptor = (WizardDescriptor)settings;
-        myComponent.readData( myWizardDescriptor );
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
-     */
-    public void removeChangeListener( ChangeListener listener  ) {
-        myListeners.remove( listener );
-    }
-
-    /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     public void storeSettings( Object settings ) {
-        //myWizardDescriptor = (WizardDescriptor)settings;
-        myComponent.storeData( myWizardDescriptor );
+        WizardDescriptor descriptor = (WizardDescriptor)settings;
+        myComponent.storeData( descriptor );
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
+     */
+    public boolean isFinishPanel() {
+        return true;
     }
 
     /* (non-Javadoc)
@@ -128,11 +136,11 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
      */
     public void validate() throws WizardValidationException {
         // TODO Auto-generated method stub
-        
+
     }
     
     private List<ChangeListener> myListeners; 
     private WizardDescriptor myWizardDescriptor;
-    private JavaMELibsVisualPanel myComponent;
+    private NameAndLocationVisualPanel myComponent;
 
 }

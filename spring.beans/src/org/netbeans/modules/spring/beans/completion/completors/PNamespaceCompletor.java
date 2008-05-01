@@ -36,13 +36,11 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -52,38 +50,32 @@ import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
 
 /**
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Rohan Ranade
  */
-public class PropertyCompletor extends Completor {
-
-    public PropertyCompletor() {
-    }
+public class PNamespaceCompletor extends Completor {
 
     @Override
     protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
-        final String propertyPrefix = context.getTypedPrefix();
-        final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
+            final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
         if (js == null) {
             return;
         }
 
-        // traverse the properties
-        final int dotIndex = propertyPrefix.lastIndexOf("."); // NOI18N
-
+        final String typedPrefix = context.getTypedPrefix();
+        final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
+        final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
         js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController cc) throws Exception {
-                Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
-                String className = new BeanClassFinder(
-                        SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
+                String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()),
                         context.getFileObject()).findImplementationClass();
                 if (className == null) {
                     return;
@@ -92,57 +84,32 @@ public class PropertyCompletor extends Completor {
                 if (te == null) {
                     return;
                 }
-                TypeMirror startType = te.asType();
                 ElementUtilities eu = cc.getElementUtilities();
-
-                // property chain
-                if (dotIndex != -1) {
-                    String getterChain = propertyPrefix.substring(0, dotIndex);
-                    StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
-
-                    while (tokenizer.hasMoreTokens() && startType != null) {
-                        String propertyName = tokenizer.nextToken();
-                        Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
-
-                        // no matching element found
-                        if (props.length == 0 || props[0].getGetter() == null) {
-                            startType = null;
-                            break;
-                        }
-
-                        TypeMirror retType = props[0].getGetter().getReturnType();
-                        if (retType.getKind() == TypeKind.DECLARED) {
-                            startType = retType;
-                        } else {
-                            startType = null;
-                        }
-                    }
-                }
-
-                if (startType == null) {
-                    return;
-                }
-
-                String setterPrefix = "";
-                if (dotIndex != propertyPrefix.length() - 1) {
-                    setterPrefix = propertyPrefix.substring(dotIndex + 1);
-                }
-
-                Property[] props = new PropertyFinder(startType, setterPrefix, eu).findProperties();
-                int substitutionOffset = context.getCurrentToken().getOffset() + 1;
-                if (dotIndex != -1) {
-                    substitutionOffset += dotIndex + 1;
-                }
+                Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
 
                 for (Property prop : props) {
                     if (prop.getSetter() == null) {
                         continue;
                     }
-                    addItem(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
-                }
+                    String attribName = pNamespacePrefix + ":" + prop.getName(); // NOI18N
 
-                setAnchorOffset(substitutionOffset);
+                    if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                        SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                attribName, prop);
+                        addItem(item);
+                    }
+                    attribName += "-ref"; // NOI18N
+
+                    if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                        SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                attribName, prop); // NOI18N
+
+                        addItem(refItem);
+                    }
+                }
             }
-        }, false);
+        }, true);
+
+        setAnchorOffset(substitutionOffset);
     }
 }
