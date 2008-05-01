@@ -146,6 +146,10 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
         libs.add( myWizard.getProperty(LIBRARY));
         libNames.add(myWizard.getProperty(LIB_NAME));
         names.add(myWizard.getProperty(DISPLAY_NAME));
+        
+        // TODO : notify JList model in main wizard second UI panel
+        // about changes.
+        
         return Collections.EMPTY_SET;
     }
 
