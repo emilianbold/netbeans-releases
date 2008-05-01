@@ -53,13 +53,25 @@ public class DatabaseServerManager {
             "Databases/MySQL/Servers"; // NOI18N
 
 
-    private static synchronized DatabaseServer lookupDatabaseServer() {
+    private static DatabaseServer lookupDatabaseServer() {
         return Lookups.forPath(SERVER_PROVIDER_PATH)
-                    .lookup(DatabaseServer.class);
-
+                .lookup(DatabaseServer.class);
+        
     }
     
     public static DatabaseServer getDatabaseServer() {
+        if ( SERVER == null ) {
+            // Don't do the lookup in a synchronized block, it causes trouble
+            // because the DB Explorer may also be looking up the db.mysql
+            // layer file at the same time.
+            DatabaseServer server = lookupDatabaseServer();
+            
+            synchronized(DatabaseServerManager.class) {
+                if ( SERVER == null ) {
+                    SERVER = server;
+                }
+            }
+        }
         return SERVER;
     }
 
