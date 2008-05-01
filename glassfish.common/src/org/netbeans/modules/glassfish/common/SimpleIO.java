@@ -117,7 +117,7 @@ public class SimpleIO {
      * Closes the output panel
      */
     public synchronized void closeIO() {
-        io.closeInputOutput();
+//        io.closeInputOutput();
         process.set(null);
         cancelAction.updateEnabled();
     }

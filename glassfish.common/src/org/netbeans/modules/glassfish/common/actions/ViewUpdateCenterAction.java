@@ -107,7 +107,7 @@ public class ViewUpdateCenterAction extends NodeAction {
                     public void run() {
                         try {
                             if(isUCInstalled(serverName, serverUrl, installDir, launcher)) {
-                                new NbProcessDescriptor(launcher.getPath(), "").exec();
+                                new NbProcessDescriptor(launcher.getPath(), "").exec(null, null, launcher.getParentFile());
                             }
                         } catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
@@ -138,7 +138,7 @@ public class ViewUpdateCenterAction extends NodeAction {
             if(updateCenterBin.exists()) {
                 String launcher = "updatetool"; // NOI18N
                 if(Utilities.isWindows()) {
-                    launcher += ".BAT"; // NOI18N
+                    launcher += ".bat"; // NOI18N
                 }
                 File launcherPath = new File(updateCenterBin, launcher);
                 result = (launcherPath.exists()) ? launcherPath : null;
@@ -161,7 +161,7 @@ public class ViewUpdateCenterAction extends NodeAction {
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
             Writer writer = null;
             try {
-                Process process = new NbProcessDescriptor(launcher.getPath(), "").exec();
+                Process process = new NbProcessDescriptor(launcher.getPath(), "").exec(null, null, launcher.getParentFile());
                 synchronized(taskMap) {
                     taskMap.put(serverUrl, process);
                 }
