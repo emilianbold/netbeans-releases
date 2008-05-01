@@ -106,10 +106,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
             completor = CompletorRegistry.getDefault().getCompletor(context);
             if(completor != null) {
                 List<SpringXMLConfigCompletionItem> items = completor.complete(context);
-                resultSet.addAllItems(items);
-                if (completor.getAnchorOffset() != -1) {
-                    resultSet.setAnchorOffset(completor.getAnchorOffset());
-                }
+                populateResultSet(resultSet, completor, items);
             }
 
             resultSet.finish();
@@ -130,11 +127,21 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
             CompletionContext context = new CompletionContext(component.getDocument(), 
                     component.getCaretPosition(), queryType);
             List<SpringXMLConfigCompletionItem> filteredItems = completor.filter(context);
-            resultSet.addAllItems(filteredItems);
-            if(completor.getAnchorOffset() != -1) {
+            populateResultSet(resultSet, completor, filteredItems);
+            resultSet.finish();
+        }
+        
+        private void populateResultSet(CompletionResultSet resultSet, Completor completor,
+                List<SpringXMLConfigCompletionItem> items) {
+            resultSet.addAllItems(items);
+            if (completor.getAnchorOffset() != -1) {
                 resultSet.setAnchorOffset(completor.getAnchorOffset());
             }
-            resultSet.finish();
+            
+            if(completor.hasAdditionalItems()) {
+                resultSet.setHasAdditionalItems(true);
+                resultSet.setHasAdditionalItemsText(completor.getAdditionalItemsText());
+            }
         }
     }
 }

@@ -57,6 +57,8 @@ public abstract class Completor {
     private int anchorOffset = -1;
     private int caretOffset;
     private QueryProgress progress = new QueryProgress();
+    private boolean additionalItems = false;
+    private String additionalItemsText = "";
     
     protected Completor() {
     }
@@ -163,5 +165,21 @@ public abstract class Completor {
         }
         
         return -1;
+    }
+    
+    public final boolean hasAdditionalItems() {
+        return additionalItems;
+    }
+    
+    protected final void setAdditionalItems(boolean additionalItems) {
+        this.additionalItems = additionalItems;
+    }
+
+    protected final void setAdditionalItemsText(String additionalItemsText) {
+        this.additionalItemsText = additionalItemsText;
+    }
+
+    public final String getAdditionalItemsText() {
+        return additionalItemsText;
     }
 }

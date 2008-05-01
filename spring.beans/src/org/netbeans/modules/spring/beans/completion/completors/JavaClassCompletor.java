@@ -64,7 +64,9 @@ import org.netbeans.modules.spring.beans.completion.LazyTypeCompletionItem;
 import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -72,6 +74,9 @@ import org.openide.util.Exceptions;
  */
 public class JavaClassCompletor extends Completor {
 
+    private static final Set<SearchScope> ALL = EnumSet.allOf(SearchScope.class);
+    private static final Set<SearchScope> LOCAL = EnumSet.of(SearchScope.SOURCE);
+    
     public JavaClassCompletor() {
     }
 
@@ -88,7 +93,7 @@ public class JavaClassCompletor extends Completor {
             if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
                 doNormalJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1);
             } else { // Switch to smart class path completion
-                doSmartJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1);
+                doSmartJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1, context.getQueryType());
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -115,7 +120,7 @@ public class JavaClassCompletor extends Completor {
 
                     packName = typedPrefix.substring(0, dotIndex);
                 }
-                addPackages(ci, progress, typedPrefix, index);
+                addPackages(ci, progress, typedPrefix, index, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
 
                 if(progress.isCancelled()) {
                     return;
@@ -146,7 +151,7 @@ public class JavaClassCompletor extends Completor {
     }
 
     private void doSmartJavaCompletion(final JavaSource js, final QueryProgress progress,
-            final String typedPrefix, final int substitutionOffset) throws IOException {
+            final String typedPrefix, final int substitutionOffset, final int queryType) throws IOException {
         js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController cc) throws Exception {
@@ -158,14 +163,21 @@ public class JavaClassCompletor extends Completor {
                 
                 ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
                 // add packages
-                addPackages(ci, progress, typedPrefix, substitutionOffset);
+                addPackages(ci, progress, typedPrefix, substitutionOffset, queryType);
                 if(progress.isCancelled()) {
                     return;
                 }
                 
-                // add classes 
-                Set<ElementHandle<TypeElement>> matchingTypes = ci.getDeclaredTypes(typedPrefix,
-                        NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
+                // add classes
+                Set<ElementHandle<TypeElement>> matchingTypes;
+                if(queryType == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
+                    matchingTypes = ci.getDeclaredTypes(typedPrefix, NameKind.CASE_INSENSITIVE_PREFIX, ALL);
+                } else {
+                    matchingTypes = ci.getDeclaredTypes(typedPrefix, NameKind.CASE_INSENSITIVE_PREFIX, LOCAL);
+                    setAdditionalItems(true);
+                    setAdditionalItemsText(NbBundle.getMessage(JavaClassCompletor.class, "MESG_AdditionalItems"));
+                }
+                
                 for (ElementHandle<TypeElement> eh : matchingTypes) {
                     if(progress.isCancelled()) {
                         return;
@@ -186,8 +198,9 @@ public class JavaClassCompletor extends Completor {
         return (nestingKind == NestingKind.TOP_LEVEL) || (nestingKind == NestingKind.MEMBER && te.getModifiers().contains(Modifier.STATIC));
     }
 
-    private void addPackages(ClassIndex ci, QueryProgress progress, String typedPrefix, int substitutionOffset) {
-        Set<String> packages = ci.getPackageNames(typedPrefix, true, EnumSet.allOf(SearchScope.class));
+    private void addPackages(ClassIndex ci, QueryProgress progress, String typedPrefix, int substitutionOffset, int queryType) {
+        Set<SearchScope> scope = (queryType == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) ? ALL : LOCAL;
+        Set<String> packages = ci.getPackageNames(typedPrefix, true, scope);
         for (String pkg : packages) {
             if (pkg.length() > 0) {
                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPackageItem(substitutionOffset, pkg, false);
