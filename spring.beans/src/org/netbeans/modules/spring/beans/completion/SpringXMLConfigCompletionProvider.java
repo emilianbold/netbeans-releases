@@ -42,7 +42,6 @@
 package org.netbeans.modules.spring.beans.completion;
 
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
@@ -108,6 +107,9 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
             if(completor != null) {
                 List<SpringXMLConfigCompletionItem> items = completor.complete(context);
                 resultSet.addAllItems(items);
+                if (completor.getAnchorOffset() != -1) {
+                    resultSet.setAnchorOffset(completor.getAnchorOffset());
+                }
             }
 
             resultSet.finish();
