@@ -36,43 +36,25 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion.completors;
 
-import java.io.IOException;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.spring.beans.completion.CompletionContext;
-import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
-import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+package org.netbeans.modules.spring.beans.completion;
 
 /**
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Rohan Ranade
  */
-public class PNamespaceBeanRefCompletor extends Completor {
+public final class QueryProgress {
 
-    public PNamespaceBeanRefCompletor() {
+    private volatile boolean state = false;
+    
+    public QueryProgress() {
     }
 
-    @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
-        TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
-        if (attribToken == null) {
-            return;
-        }
-
-        String attribName = attribToken.getImage();
-        if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
-            return;
-        }
-
-        if (!attribName.endsWith("-ref")) { // NOI18N
-            return;
-        }
-
-        // XXX: Ideally find out the property name and it's expected type
-        // to list bean proposals intelligently
-        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
-        beansRefCompletor.computeCompletionItems(context, progress);
+    public boolean isCancelled() {
+        return state;
+    }
+    
+    public void cancel() {
+        state = true;
     }
 }
