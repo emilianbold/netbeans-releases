@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -59,6 +60,8 @@ import java.util.logging.Level;
  */
 public class StreamInputThread extends Thread {
 
+    private static final AtomicInteger COUNTER = new AtomicInteger(0);
+    
     /** Input stream where to read */
     private OutputStream os;
      
@@ -76,6 +79,7 @@ public class StreamInputThread extends Thread {
     private  final Logger LOG = Logger.getLogger(StreamInputThread.class.getName());
     
     public StreamInputThread(OutputStream os, Reader rd) {
+        super("Stream Input Thread " + COUNTER.incrementAndGet());
         this.os = os;
         this.rd = rd;
     }
@@ -87,20 +91,27 @@ public class StreamInputThread extends Thread {
         try {
             
             BufferedReader br = new BufferedReader(rd);
-            OutputStreamWriter outw = new OutputStreamWriter(os);
-            
-            int b;
-            String line; 
-            
-            while ( (line = br.readLine()) != null) {
-                
-                // LOG.log(Level.WARNING, "Input: " + line);
+            try {
+                OutputStreamWriter outw = new OutputStreamWriter(os);
+                try {
+                    int b;
+                    String line; 
 
-                outw.write(line);
-                outw.write("\n");
-                outw.flush();
-                
+                    while ((line = br.readLine()) != null && !this.isInterrupted()) {
+
+                        // LOG.log(Level.WARNING, "Input: " + line);
+
+                        outw.write(line);
+                        outw.write("\n");
+                        outw.flush();
+
+                    }
+                } finally {
+                    outw.close();
                 }
+            } finally {
+                br.close();
+            }
         } catch (IOException ioe) {
             // if we are getting a java.io.IOException: Broken pipe
             // this is most likely caused while shutting down the InputOutput tab.

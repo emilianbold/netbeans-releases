@@ -84,10 +84,17 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
             progressHandle = ProgressHandleFactory.createHandle(taskName, this);
             progressHandle.start();
         }
+
+        Thread inputThread = null;
+        Thread errorThread = null;
+        Thread outputThread = null;
+
         try {
             // FIXME will be repaced with output API
-            new StreamInputThread(process.getOutputStream(), io.getIn()).start();
-            new StreamRedirectThread(process.getErrorStream(), io.getErr()).start();
+            inputThread = new StreamInputThread(process.getOutputStream(), io.getIn());
+            errorThread = new StreamRedirectThread(process.getErrorStream(), io.getErr());
+            inputThread.start();
+            errorThread.start();
 
             if (snooper != null) {
                 BufferedReader reader = new BufferedReader(
@@ -109,7 +116,8 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
                     }
                 }
             } else {
-                new StreamRedirectThread(process.getInputStream(), io.getOut()).start();
+                outputThread = new StreamRedirectThread(process.getInputStream(), io.getOut());
+                outputThread.start();
             }
 
             process.waitFor();
@@ -122,6 +130,16 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
                 "Problem creating Process: " + ex.getLocalizedMessage(),
                 NotifyDescriptor.Message.WARNING_MESSAGE));
         } finally {
+            if (inputThread != null) {
+                inputThread.interrupt();
+            }
+            if (errorThread != null) {
+                errorThread.interrupt();
+            }
+            if (outputThread != null) {
+                outputThread.interrupt();
+            }
+
             finishProgress();
             finish();
         }

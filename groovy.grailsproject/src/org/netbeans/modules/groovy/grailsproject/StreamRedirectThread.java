@@ -45,10 +45,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.openide.util.Exceptions;
 import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /** 
  * This class is a thread used for listening a redirecting
@@ -59,6 +59,8 @@ import java.util.logging.Level;
  */
 public class StreamRedirectThread extends Thread {
 
+    private static final AtomicInteger COUNTER = new AtomicInteger(0);
+    
     /** Input stream where to read */
     private InputStream is;
      
@@ -78,7 +80,7 @@ public class StreamRedirectThread extends Thread {
     
     
     public StreamRedirectThread(InputStream is, OutputWriter ow) {
-        
+        super("Stream Redirect Thread " + COUNTER.incrementAndGet());
         
         this.is = is;
         this.ow = ow;
@@ -92,22 +94,24 @@ public class StreamRedirectThread extends Thread {
     public void run() {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-           
-            int input;
-            while ( (input = br.read()) != -1) {
-                // LOG.log(Level.WARNING, "Output: " + input);
-                
-                if (input == 10) {
-                    ow.print("\n");
-                    }
-                else {
-                    ow.write(input);
-                    }
-                
+            try {
+                int input;
+                while ((input = br.read()) != -1 && !this.isInterrupted()) {
+                    // LOG.log(Level.WARNING, "Output: " + input);
+
+                    if (input == 10) {
+                        ow.print("\n");
+                    } else {
+                        ow.write(input);
+                    }  
                 }
+            } finally {
+                br.close();
+            }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        } finally {
+            ow.close();
         }
-        ow.close();
     }
 }

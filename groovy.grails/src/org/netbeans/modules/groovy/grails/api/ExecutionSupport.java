@@ -62,9 +62,7 @@ import org.openide.util.Utilities;
  */
 public final class ExecutionSupport {
 
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1);
-
-    private static final Logger LOGGER = Logger.getLogger(ExecutionSupport.class.getName());
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
     private static ExecutionSupport instance;
 
@@ -77,25 +75,6 @@ public final class ExecutionSupport {
             instance = new ExecutionSupport();
         }
         return instance;
-    }
-
-    public static Thread createThread(final Process process, final Runnable whenFinished) {
-        Thread thread = new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    process.waitFor();
-                } catch (InterruptedException ex) {
-                    process.destroy();
-                }
-                if (whenFinished != null) {
-                    whenFinished.run();
-                }
-            }
-        };
-
-        return thread;
     }
 
     public Process executeCreateApp(File directory) throws Exception {
