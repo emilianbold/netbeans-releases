@@ -38,13 +38,12 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.Enumeration;
-import java.util.List;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.openide.filesystems.FileObject;
 
@@ -57,8 +56,8 @@ public class ResourceCompletor extends Completor {
     public ResourceCompletor() {
     }
 
-    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
-        List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+    @Override
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
         FileObject fileObject = context.getFileObject().getParent();
         String typedChars = context.getTypedPrefix();
 
@@ -78,7 +77,7 @@ public class ResourceCompletor extends Completor {
         }
 
         if (fileObject == null) {
-            return Collections.emptyList();
+            return;
         }
 
         if (prefix == null) {
@@ -89,7 +88,7 @@ public class ResourceCompletor extends Completor {
         while (folders.hasMoreElements()) {
             FileObject fo = folders.nextElement();
             if (fo.getName().startsWith(prefix)) {
-                results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
+                addItem(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
                         fo));
             }
         }
@@ -99,12 +98,10 @@ public class ResourceCompletor extends Completor {
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             if (fo.getName().startsWith(prefix) && SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
-                results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
+                addItem(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
             }
         }
 
         setAnchorOffset(context.getCaretOffset() - prefix.length());
-
-        return results;
     }
 }

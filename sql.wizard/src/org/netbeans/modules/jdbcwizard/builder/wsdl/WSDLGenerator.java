@@ -26,11 +26,16 @@ import java.util.HashMap;
 
 import java.net.URL;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLWriter;
 import javax.wsdl.xml.WSDLReader;
@@ -904,17 +909,29 @@ public class WSDLGenerator {
             writer.writeWSDL(this.def, sink);
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
-			try{
-            final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
-            final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
-            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
-            writer.writeWSDL(this.def, sink);
-            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
-			} catch (Exception uee){
-				uee.printStackTrace();
-			}
+           if(e instanceof UnsupportedEncodingException){
+                //System.out.println(e.getMessage()+"UnsupportedEncodingException");
+               try{ 
+               final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+               final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
+               java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+               final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+               writer.writeWSDL(this.def, sink);
+               }catch(Exception ex){
+                   ex.printStackTrace();
+               }
+            }
+            if(e instanceof FileNotFoundException){
+                System.out.println(e.getMessage()+"FileNotFoundException");
+            }
+            if(e instanceof IOException){
+                    System.out.println(e.getMessage()+"IOException");
+            }
+            if(e instanceof UnsupportedCharsetException){ 
+                   System.out.println(((UnsupportedCharsetException)e).getCharsetName());
+            }
         }
 
     }
+    
 }

@@ -488,7 +488,7 @@ public class ChosenColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(40);
     }
 
     public void addColumnTable(final List testList) {
@@ -502,7 +502,7 @@ public class ChosenColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(40);
         this.tableScroll = new JScrollPane(this.metaDataTColumn);
         final javax.swing.border.Border inside = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(3, 3, 3,
                 3), BorderFactory.createLineBorder(Color.GRAY));

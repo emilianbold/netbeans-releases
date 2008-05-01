@@ -36,43 +36,75 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion.completors;
+package org.netbeans.modules.spring.beans.completion;
 
 import java.io.IOException;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.spring.beans.completion.CompletionContext;
-import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
-import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+import junit.framework.TestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Rohan Ranade
  */
-public class PNamespaceBeanRefCompletor extends Completor {
+public class CompletorTest extends TestCase {
 
-    public PNamespaceBeanRefCompletor() {
+    public CompletorTest(String testName) {
+        super(testName);
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
-        TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
-        if (attribToken == null) {
-            return;
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    public void testCompletorHaltOnFilter() throws Exception {
+        final TestCompletor completor = new TestCompletor();
+        final QueryProgress progress = new QueryProgress();
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    completor.computeCompletionItems(null, progress);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        
+        t.start();
+        Thread.currentThread().sleep(400);
+        progress.cancel();
+        t.join();
+        
+        assertFalse(String.valueOf(completor.getExitCount()), completor.getExitCount() == 100);
+    }
+
+    private static final class TestCompletor extends Completor {
+
+        private int exitCount = 100;
+        
+        @Override
+        protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
+            try {
+                for (int i = 0; i < 100; i++) {
+                    if(progress.isCancelled()) {
+                        exitCount = i;
+                        return;
+                    }
+                    Thread.currentThread().sleep(100);
+                    String text = String.valueOf(i);
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
-        String attribName = attribToken.getImage();
-        if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
-            return;
+        public int getExitCount() {
+            return exitCount;
         }
-
-        if (!attribName.endsWith("-ref")) { // NOI18N
-            return;
-        }
-
-        // XXX: Ideally find out the property name and it's expected type
-        // to list bean proposals intelligently
-        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
-        beansRefCompletor.computeCompletionItems(context, progress);
     }
 }
