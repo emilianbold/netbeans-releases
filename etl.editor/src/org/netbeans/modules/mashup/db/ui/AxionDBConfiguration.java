@@ -228,7 +228,8 @@ public class AxionDBConfiguration {
         nbHomeDir = driver.getAbsolutePath();        
         String DEFAULT_DB_LOCATION = nbUsrDir + File.separator + "MashupDatabases" + File.separator;        
         nbUsrDir = nbUsrDir + File.separator + "config" + File.separator + "Databases" + File.separator + "MashupDB";
-        File conf = new File(nbUsrDir);        
+        File conf = new File(nbUsrDir);
+        java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("**************** conf.exists() =  " + conf.exists());
         if (!conf.exists()) {
             conf.mkdirs();
         }
@@ -249,12 +250,12 @@ public class AxionDBConfiguration {
 
                     out.close();
                 } catch (FileNotFoundException ex) {
-                   java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("FileNotFoundException =  " + ex.getMessage());
+                   java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************FileNotFoundException =  " + ex.getMessage());
                 } catch (IOException ioEx) {
-                   java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("IOException =  " + ioEx.getMessage());
+                   java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************IOException =  " + ioEx.getMessage());
                 }
             } catch (IOException ex) {
-                java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("IOException =  " + ex.getMessage());
+                java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************IOException =  " + ex.getMessage());
                 conf = null;
             }
         }

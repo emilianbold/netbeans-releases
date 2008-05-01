@@ -250,19 +250,18 @@ public class ExecuteTestCookie implements Node.Cookie {
                     ETLProcessFlowGenerator flowGen = ETLProcessFlowGeneratorFactory.getCollabFlowGenerator(execModel.getSQLDefinition(), false);
                     flowGen.setWorkingFolder(sqlDefn.getAxiondbWorkingDirectory());
                     flowGen.setInstanceDBName("instancedb");
-                     flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefn.getAxiondbWorkingDirectory()));
-                    //flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder());
-                    flowGen.setMonitorDBName("monitordb");
-                    flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(ETLDeploymentConstants.MONITOR_DB, sqlDefn.getAxiondbWorkingDirectory()));
-                    //flowGen.applyConnectionDefinitions();
-                    flowGen.applyConnectionDefinitions();
+                    flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefn.getAxiondbWorkingDirectory()));
+                    flowGen.setMonitorDBName(sqlDefn.getDisplayName());
+                    flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(sqlDefn.getDisplayName(), sqlDefn.getAxiondbWorkingDirectory()));
+                    mLogger.infoNoloc("setting montior folder" + flowGen.getMonitorDBFolder());
+                    flowGen.applyConnectionDefinitions(true, false);
                     engine = flowGen.getScript();
                     engine.getContext().putValue("AXIONDB_DATA_DIR", sqlDefn.getAxiondbDataDirectory());
                     engine.getContext().putValue("DESIGN_TIME_ATTRS", engine.getInputAttrMap());
 
 
                     //RIT print out the content of etl engine file
-                    //System.out.println("printing etl engine file content: \n" + engine.toXMLString());
+                    mLogger.infoNoloc("printing etl engine file content: \n" + engine.toXMLString());
 
                     UIEngineListener listener = new UIEngineListener();
 
