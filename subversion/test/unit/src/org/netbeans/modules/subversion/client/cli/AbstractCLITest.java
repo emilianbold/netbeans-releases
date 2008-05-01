@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -248,6 +251,41 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
             }
         }        
     }
+
+    protected void write(File file, String str) throws IOException {
+        FileWriter w = null;
+        try {            
+            w = new FileWriter(file);            
+            w.write(str);
+            w.flush();
+        } finally {
+            if (w != null) {
+                w.close();
+            }
+        }        
+    }
+    
+    protected String read(File file) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        BufferedReader r = null;
+        try {            
+            r = new BufferedReader(new FileReader(file));
+            String s = r.readLine();
+            while( true ) {
+                sb.append(s);
+                s = r.readLine();
+                if (s == null) break;
+                sb.append('\n');
+            }
+        } finally {
+            if (r != null) {
+                r.close();
+            }
+        }        
+        return sb.toString();
+    }
+    
+    
     
     protected void assertContents(File file, int contents) throws FileNotFoundException, IOException {        
         assertContents(new FileInputStream(file), contents);
@@ -278,5 +316,16 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         }        
     }
 
+    protected void assertInfo(File file, SVNUrl url) throws SVNClientException {
+        ISVNInfo info = getInfo(file);
+        assertNotNull(info);
+        assertEquals(url, info.getUrl());
+    }
+    
+    protected void assertCopy(SVNUrl url) throws SVNClientException {
+        ISVNInfo info = getInfo(url);
+        assertNotNull(info);
+        assertEquals(url, info.getUrl());
+    }    
     
 }

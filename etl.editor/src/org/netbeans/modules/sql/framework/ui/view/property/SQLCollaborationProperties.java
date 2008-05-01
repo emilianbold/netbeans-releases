@@ -86,7 +86,7 @@ public class SQLCollaborationProperties {
         }
         return null;
     }
-
+    
     /**
      * Gets display name of this table.
      * 
@@ -139,6 +139,7 @@ public class SQLCollaborationProperties {
     public String getAxiondbDataDirectory() {
         return this.sqlDef.getAxiondbDataDirectory();
     }
+    
     public boolean isDynamicFlatFile() {
         return this.sqlDef.isDynamicFlatFile();
     }

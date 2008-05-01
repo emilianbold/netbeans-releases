@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,71 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli.commands;
+package org.netbeans.modules.spring.beans;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Andrei Badea
  */
-public class GetPropertiesCommand extends SvnCommand {
+public abstract class SpringConfigModelAccessor {
 
-    private List<String> output = new ArrayList<String>();
-    private final File file;
-    private final boolean rec;
+    private static volatile SpringConfigModelAccessor accessor;
 
-    public GetPropertiesCommand(File file, boolean rec) {
-        this.file = file;
-        this.rec = rec;
-    }
-    
-    @Override
-    public void prepareCommand(Arguments arguments) throws IOException {
-        // XXX what if empty url list?
-        arguments.add("proplist");
-        if (rec) {
-            arguments.add("-R");
-        }			
-        arguments.add(file);
-    }
-
-    @Override
-    public void outputText(String lineString) {
-        if(lineString == null || lineString.trim().equals("") || lineString.startsWith("Properties on '")) {
-            return;
+    public static void setDefault(SpringConfigModelAccessor accessor) {
+        if (SpringConfigModelAccessor.accessor != null) {
+            throw new IllegalStateException();
         }
-        output.add(lineString.trim());
-    }
-    
-    public List<String> getPropertyNames() throws SVNClientException {        
-        return output;
+        SpringConfigModelAccessor.accessor = accessor;
     }
 
+    public static SpringConfigModelAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+        try {
+            Class.forName(SpringConfigModel.class.getName(), true, SpringConfigModel.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+        return accessor;
+    }
+
+    public abstract SpringConfigModel createSpringConfigModel(SpringConfigFileModelManager fileModelManager, ConfigFileGroup configFileGroup);
+    
+    public abstract ConfigFileGroup getConfigFileGroup(SpringConfigModel model);
+
+    public abstract DocumentAccess createDocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc);
 }

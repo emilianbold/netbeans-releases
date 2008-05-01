@@ -46,6 +46,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -156,5 +157,10 @@ public final class Util {
         String extension = extIndex == -1 ? "" : fileName.substring(extIndex);
         return ext.equals(extension) ? fileName.substring(0, extIndex) : fileName;
     }
-    
+
+    public static String getProjectNameWarning(final String projectNameTextField) {
+        // XXX provide non-hack solution - Project API anywhere for this?
+        // dashes are OK and usual in the project's directory name
+        return RubyUtils.getIdentifierWarning(projectNameTextField.replace('-', '_'), 0);
+    }
 }
