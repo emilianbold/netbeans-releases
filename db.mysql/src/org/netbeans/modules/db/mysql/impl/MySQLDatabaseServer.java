@@ -475,7 +475,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 Utils.displayError(message, dbe);
                 
                 PropertiesDialog dlg = new PropertiesDialog(instance);
-                return new Boolean(dlg.displayDialog());
+                return Boolean.valueOf(dlg.displayDialog());
             }
         });
         
@@ -736,14 +736,6 @@ public class MySQLDatabaseServer implements DatabaseServer {
         private Connection conn;
         
         private AdminConnection() {
-        }
-        
-        private synchronized void setConn(Connection conn) {
-            this.conn = conn;
-        }
-        
-        private synchronized Connection getConn() {
-            return conn;
         }
         
         Connection getConnection() throws DatabaseException {

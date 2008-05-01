@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,48 +37,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-package org.netbeans.modules.db.mysql;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-import org.openide.util.lookup.Lookups;
-
-/**
- * 
- *
- * @author David Van Couvering
- */
-public class DatabaseServerManager {
-    private static DatabaseServer SERVER = lookupDatabaseServer();
-    
-    private static final String SERVER_PROVIDER_PATH = 
-            "Databases/MySQL/Servers"; // NOI18N
-
-
-    private static DatabaseServer lookupDatabaseServer() {
-        return Lookups.forPath(SERVER_PROVIDER_PATH)
-                .lookup(DatabaseServer.class);
-        
-    }
-    
-    public static DatabaseServer getDatabaseServer() {
-        if ( SERVER == null ) {
-            // Don't do the lookup in a synchronized block, it causes trouble
-            // because the DB Explorer may also be looking up the db.mysql
-            // layer file at the same time.
-            DatabaseServer server = lookupDatabaseServer();
-            
-            synchronized(DatabaseServerManager.class) {
-                if ( SERVER == null ) {
-                    SERVER = server;
-                }
-            }
-        }
-        return SERVER;
-    }
-
+abstract class DocumentAdapter implements DocumentListener {
+    public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
+    public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
 }

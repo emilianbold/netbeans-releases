@@ -61,7 +61,8 @@ import org.openide.util.NbBundle;
 class SelectLibraryPanel implements Panel, ValidatingPanel {
         
     public SelectLibraryPanel() {
-        myListeners = new CopyOnWriteArrayList<ChangeListener>();    }
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();    
+    }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
@@ -95,7 +96,7 @@ class SelectLibraryPanel implements Panel, ValidatingPanel {
      */
     public boolean isValid() {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     /* (non-Javadoc)
@@ -117,8 +118,7 @@ class SelectLibraryPanel implements Panel, ValidatingPanel {
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     public void storeSettings( Object settings ) {
-        // TODO Auto-generated method stub
-
+        myComponent.storeData();
     }
 
     /* (non-Javadoc)

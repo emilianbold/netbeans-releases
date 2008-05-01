@@ -126,6 +126,9 @@
           <ResourceString bundle="org/netbeans/modules/vmd/componentssupport/ui/wizard/Bundle.properties" key="ACSN_LibRemove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removePressed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
