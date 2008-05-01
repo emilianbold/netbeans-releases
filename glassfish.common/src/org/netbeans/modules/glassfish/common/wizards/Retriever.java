@@ -453,13 +453,13 @@ public class Retriever implements Runnable {
         } else if(time == 0) {
             builder.append("no time at all");
         } else {
-            if(time > 360000) {
-                int hours = time / 360000;
-                time %= 360000;
+            if(time >= 3600000) {
+                int hours = time / 3600000;
+                time %= 3600000;
                 builder.append(hours);
                 builder.append(hours > 1 ? " hours" : " hour");
             }
-            if(time > 60000) {
+            if(time >= 60000) {
                 if(builder.length() > 0) {
                     builder.append(", ");
                 }
@@ -468,7 +468,7 @@ public class Retriever implements Runnable {
                 builder.append(minutes);
                 builder.append(minutes > 1 ? " minutes" : " minute");
             }
-            if(time > 1000 || builder.length() > 0) {
+            if(time >= 1000 || builder.length() > 0) {
                 if(builder.length() > 0) {
                     builder.append(", ");
                 }
