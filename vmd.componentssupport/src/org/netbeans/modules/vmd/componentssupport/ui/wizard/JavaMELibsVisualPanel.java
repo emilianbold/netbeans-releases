@@ -44,19 +44,43 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Dialog;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JPanel;
+
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Iterator;
 
 /**
  *
- * @author  den
+ * @author  ads
  */
-public class JavaMELibsVisualPanel extends javax.swing.JPanel {
+public class JavaMELibsVisualPanel extends JPanel {
 
+    private static final String CONTENT_NUMBERED  = "WizardPanel_contentNumbered";  // NOI18N
+    private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+    private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
+    
     /** Creates new form JavaMELibsVisualPanel */
     public JavaMELibsVisualPanel() {
         initComponents();
+        
+        myLibDescList.setModel( new DefaultListModel() );
+    }
+
+    void readData( WizardDescriptor settings ) {
+        myWizardDescriptor = settings;
+    }
+
+    void storeData( WizardDescriptor settings ) {
+        /*
+         * I set here only flag that should be used in main iterator
+         * for checking. If it is set then one need to use 
+         * special properties that are set in instantiate() method
+         * of another ( child iterator : NewLibraryDescriptor ).
+         */
+        settings.putProperty( CustomComponentWizardIterator.JAVA_LIB_ACCEPTED, 
+                true );
     }
 
     /** This method is called from within the constructor to
@@ -89,6 +113,11 @@ public class JavaMELibsVisualPanel extends javax.swing.JPanel {
         });
 
         myRemoveButton.setText(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "BTN_LibRemove")); // NOI18N
+        myRemoveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removePressed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -130,14 +159,19 @@ public class JavaMELibsVisualPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPressed
-    Iterator iterator = new NewLibraryDescriptor();
-    WizardDescriptor desc = new WizardDescriptor( iterator );
-    desc.putProperty( "WizardPanel_autoWizardStyle", true );
-    desc.putProperty( "WizardPanel_contentDisplayed", true );
-    desc.putProperty( "WizardPanel_contentNumbered", true );
-    Dialog dialog = DialogDisplayer.getDefault().createDialog( desc );
+    Iterator iterator = new NewLibraryDescriptor( myWizardDescriptor );
+    myInnerDescriptor = new WizardDescriptor( iterator );
+    myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
+    myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
+    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );
+    Dialog dialog = DialogDisplayer.getDefault().createDialog( myInnerDescriptor );
     dialog.setVisible( true );
 }//GEN-LAST:event_addPressed
+
+private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
+    int index = myLibDescList.getSelectedIndex();
+    ((DefaultListModel)myLibDescList.getModel()).remove(index);
+}//GEN-LAST:event_removePressed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -147,5 +181,8 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
     private javax.swing.JList myLibDescList;
     private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
+
+    private WizardDescriptor myWizardDescriptor;
+    private WizardDescriptor myInnerDescriptor;
 
 }
