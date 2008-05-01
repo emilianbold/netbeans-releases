@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
-import org.netbeans.modules.groovy.grails.api.GrailsServerState;
+import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
 import java.awt.Image;

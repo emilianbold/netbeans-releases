@@ -58,7 +58,7 @@ import org.openide.util.Cancellable;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsServerState;
+import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 
 
 /**
@@ -238,7 +238,12 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerState;
                 GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
 
                 if (serverState != null) {
-                    serverState.destroy();
+                    //serverState.destroy();
+                    synchronized (serverState) {
+                        Process process = serverState.getProcess();
+                        serverState.setProcess(null);
+                        process.destroy();
+                    }
                 } else {
                     LOG.log(Level.WARNING, "Could not get serverState through lookup");
                 }

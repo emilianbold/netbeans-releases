@@ -28,7 +28,7 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.net.MalformedURLException;
-import org.netbeans.modules.groovy.grails.api.GrailsServerState;
+import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import java.io.IOException;
@@ -38,16 +38,17 @@ import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URL;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grailsproject.GrailsProcessRunnable;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputListener;
 
 public class RunGrailsServerCommandAction extends AbstractAction implements OutputListener, LineSnooper {
 
-    Project prj;
-    GrailsServerState serverState = null;
-    Logger LOG = Logger.getLogger(RunGrailsServerCommandAction.class.getName());
-    OutputWriter writer = null;
-    PublicSwingWorker psw;
+    private final Project prj;
+    private static final Logger LOG = Logger.getLogger(RunGrailsServerCommandAction.class.getName());
 
     public RunGrailsServerCommandAction(Project prj) {
         super("Run Application");
@@ -56,31 +57,44 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
 
     @Override
     public boolean isEnabled() {
-        serverState = prj.getLookup().lookup(GrailsServerState.class);
+        GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
         return !serverState.isRunning();
     }
 
     public void actionPerformed(ActionEvent e) {
-        psw = new PublicSwingWorker(prj, "run-app", this);
-        psw.start();
+        try {
+            final GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+            if (serverState != null && serverState.isRunning()) {
+                return;
+            }
+
+            Process process = ExecutionSupport.getInstance().executeRunApp(
+                    GrailsProjectConfig.forProject(prj));
+            serverState.setProcess(process);
+            Runnable runnable = new GrailsProcessRunnable(process, this, prj.getProjectDirectory().getName()) {
+
+                @Override
+                public void finish() {
+                    serverState.setProcess(null);
+                }
+            };
+            // FIXME
+            RequestProcessor.getDefault().post(runnable);
+        } catch (Exception ex) {
+            // FIXME
+            LOG.log(Level.WARNING, null, ex);
+        }
     }
 
     public void lineFilter(String line) throws IOException {
-        if (writer == null) {
-            writer = psw.getWriter();
-        }
-
-        if (line.contains("Server running")) {
-            GrailsServerState state = prj.getLookup().lookup(GrailsServerState.class);
-            if (state != null) {
-                state.setRunning(true);
-            }
-        }
+//        if (line.contains("Server running")) {
+//            GrailsServerState state = prj.getLookup().lookup(GrailsServerState.class);
+//            if (state != null) {
+//                state.setRunning(true);
+//            }
+//        }
         if (line.contains("Browse to http:/")) {
-            writer.println(line, this);
             startBrowserWithUrl(line);
-        } else {
-            writer.println(line);
         }
     }
 

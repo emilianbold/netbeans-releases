@@ -40,7 +40,6 @@
 package org.netbeans.modules.groovy.grails.api;
 
 import java.io.File;
-import java.nio.Buffer;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.Callable;

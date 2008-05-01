@@ -26,7 +26,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails.api;
+package org.netbeans.modules.groovy.grailsproject;
 
 import org.netbeans.api.project.Project;
 
@@ -41,8 +41,6 @@ public class GrailsServerState {
     private final String name;
 
     /** <i>GuardedBy("this")</i> */
-    private boolean running = false;
-
     private Process process;
 
     public GrailsServerState (Project prj, String name){
@@ -50,26 +48,16 @@ public class GrailsServerState {
         this.project = prj;
     }
 
-    public synchronized boolean isRunning() {
-        return running;
+    public boolean isRunning() {
+        return process != null;
     }
 
-    public synchronized void setRunning(boolean running) {
-        this.running = running;
-    }
-
-    public Process getProcess() {
+    public synchronized Process getProcess() {
         return process;
     }
 
-    public void setProcess(Process process) {
+    public synchronized void setProcess(Process process) {
         this.process = process;
     }
 
-    public void destroy() {
-        if (process != null) {
-            process.destroy();
-        }
-        setRunning(false);
-    }
 }

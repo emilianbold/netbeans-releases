@@ -28,13 +28,21 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grailsproject.GrailsProcessRunnable;
+import org.openide.util.RequestProcessor;
 
 public class ShellAction extends AbstractAction {
 
-    Project prj;
+    private static final Logger LOG = Logger.getLogger(ShellAction.class.getName());
+
+    private final Project prj;
 
     public ShellAction(Project prj) {
         super("Open Shell");
@@ -46,6 +54,14 @@ public class ShellAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        new PublicSwingWorker(prj, "shell").start();
+        try {
+            Process process = ExecutionSupport.getInstance().executeSimpleCommand(
+                    "shell", GrailsProjectConfig.forProject(prj));
+            Runnable runnable = new GrailsProcessRunnable(process, null, prj.getProjectDirectory().getName());
+            // FIXME
+            RequestProcessor.getDefault().post(runnable);
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
     }
 }
