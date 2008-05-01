@@ -77,7 +77,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
             RubyBaseProject p = (RubyBaseProject) ProjectManager.getDefault().findProject(prjDirFO);
             assertNotNull("has project", p);
             List<?> tasks = RakeSupport.getRakeTaskTree(p);
-            assertSame("correct Rakefile", 10, tasks.size());
+            assertSame("correct Rakefile", 11, tasks.size());
 
             // test main class without extension in the next run
             name = "another_script";
@@ -85,7 +85,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
             appName = "RubyApp1";
         }
     }
-    
+
     public void testGeneratedSourceRoots() throws Exception {
         RubyProject project = createTestProject();
         FileObject projectDir = project.getProjectDirectory();
@@ -98,5 +98,14 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
         assertEquals("two test roots", 2, testRoots.length);
         assertEquals("has test", testRoots[0], projectDir.getFileObject("test"));
         assertEquals("has spec", testRoots[1], projectDir.getFileObject("spec"));
+    }
+
+    public void testGeneratedRakeFile() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        List<?> tasks = RakeSupport.getRakeTaskTree(project);
+        assertSame("correct Rakefile", 11, tasks.size());
+        assertNotNull("has 'spec' task", RakeSupport.getRakeTask(project, "spec"));
+        assertNotNull("has 'test' task", RakeSupport.getRakeTask(project, "test"));
     }
 }

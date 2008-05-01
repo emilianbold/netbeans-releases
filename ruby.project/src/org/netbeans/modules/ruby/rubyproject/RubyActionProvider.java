@@ -122,12 +122,11 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_AUTOTEST,
         COMMAND_RDOC,
         COMMAND_IRB_CONSOLE,
-        //        COMMAND_COMPILE_SINGLE,
         COMMAND_RUN,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
-        //        COMMAND_TEST,
+        COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         COMMAND_DELETE,
@@ -521,11 +520,11 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             RakeRunner runner = new RakeRunner(project);
             runner.showWarnings(true);
             if (COMMAND_REBUILD.equals(command)) {
-                runner.run("clean", "gem");
+                runner.run("clean", "gem"); // NOI18N
             } else if (COMMAND_BUILD.equals(command)) {
-                runner.run("gem");
+                runner.run("gem"); // NOI18N
             } else { // if(COMMAND_CLEAN.equals(command)) {
-                runner.run("clean");
+                runner.run("clean"); // NOI18N
             }
             return;
         }
@@ -560,7 +559,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
             new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd).
                     //gemManager.getRDoc()).
-                    additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end").
+                    additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end"). // NOI18N
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
                     addStandardRecognizers(),
@@ -619,14 +618,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_TEST.equals(command)) {
-            if (!platform.isValidRuby(true)) {
-                return;
-            }
-
-            FileObject[] files = findTestSourcesForSources(context);
-
-            //return;
-            throw new RuntimeException("Not yet implemented");
+            File pwd = FileUtil.toFile(project.getProjectDirectory());
+            RakeRunner runner = new RakeRunner(project);
+            runner.setPWD(pwd);
+            runner.setFileLocator(new RubyFileLocator(context, project));
+            runner.showWarnings(true);
+            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+            runner.run("test"); // NOI18N
+            return;
         }
         
         if (COMMAND_IRB_CONSOLE.equals(command)) {

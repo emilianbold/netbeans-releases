@@ -234,18 +234,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
             File pwd = FileUtil.toFile(project.getProjectDirectory());
             RakeRunner runner = new RakeRunner(project);
             runner.setPWD(pwd);
             runner.setFileLocator(new RailsFileLocator(context, project));
             runner.showWarnings(true);
             runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
-            runner.run();
+            runner.run("test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
@@ -327,7 +322,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 runner.setFileLocator(new RailsFileLocator(context, project));
                 runner.showWarnings(true);
                 runner.setParameters("VERSION=" + version); // NOI18N
-                runner.run("db:migrate");
+                runner.run("db:migrate"); // NOI18N
                 return;
             }
             
