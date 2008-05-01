@@ -146,9 +146,10 @@ public class CopyFilesVisual extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(copyFilesCheckBox)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(localServerLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(copyFilesComboBox, 0, 180, Short.MAX_VALUE)
+                .add(copyFilesComboBox, 0, 168, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(copyFilesButton))
         );
@@ -158,9 +159,9 @@ public class CopyFilesVisual extends JPanel {
                 .add(copyFilesCheckBox)
                 .add(9, 9, 9)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(localServerLabel)
                     .add(copyFilesButton)
-                    .add(copyFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(copyFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(localServerLabel)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
