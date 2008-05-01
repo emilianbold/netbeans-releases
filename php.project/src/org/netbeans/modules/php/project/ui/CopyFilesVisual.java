@@ -67,7 +67,7 @@ public class CopyFilesVisual extends JPanel {
 
         copyFilesCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                localServerController.setEnabled(copyFilesCheckBox.isSelected());
+                copyFilesCheckBoxChanged();
                 changeSupport.fireChange();
             }
         });
@@ -76,6 +76,12 @@ public class CopyFilesVisual extends JPanel {
                 changeSupport.fireChange();
             }
         });
+    }
+
+    void copyFilesCheckBoxChanged() {
+        boolean selected = copyFilesCheckBox.isSelected();
+        localServerLabel.setEnabled(selected);
+        localServerController.setEnabled(selected);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -92,7 +98,7 @@ public class CopyFilesVisual extends JPanel {
 
     public void setCopyFiles(boolean copyFiles) {
         copyFilesCheckBox.setSelected(copyFiles);
-        localServerController.setEnabled(copyFiles);
+        copyFilesCheckBoxChanged();
     }
 
     public LocalServer getLocalServer() {
@@ -133,6 +139,7 @@ public class CopyFilesVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(copyFilesCheckBox, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
+        localServerLabel.setEnabled(false);
 
         copyFilesComboBox.setEditable(true);
         copyFilesComboBox.setEnabled(false);
