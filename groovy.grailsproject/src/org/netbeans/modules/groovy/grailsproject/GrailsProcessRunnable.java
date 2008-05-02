@@ -66,18 +66,25 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
     private final LineSnooper snooper;
 
     private final String taskName;
+    
+    private final InputOutput io;
 
     private ProgressHandle progressHandle;
 
     // FIXME snooper will be replaced with output API
+    
     public GrailsProcessRunnable(Process process, LineSnooper snooper, String taskName) {
+        this(process, snooper, taskName, IOProvider.getDefault().getIO(taskName, true));
+    }
+    
+    public GrailsProcessRunnable(Process process, LineSnooper snooper, String taskName, InputOutput io) {
         this.process = process;
         this.taskName = taskName;
         this.snooper = snooper;
+        this.io = io;
     }
 
     public final void run() {
-        InputOutput io = IOProvider.getDefault().getIO(taskName, true);
         io.select();
 
         synchronized (this) {

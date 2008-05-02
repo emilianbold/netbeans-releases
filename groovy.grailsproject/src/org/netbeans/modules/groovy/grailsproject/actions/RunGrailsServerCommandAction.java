@@ -34,7 +34,6 @@ import javax.swing.AbstractAction;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URL;
@@ -71,7 +70,9 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
             Process process = ExecutionSupport.getInstance().executeRunApp(
                     GrailsProjectConfig.forProject(prj));
             serverState.setProcess(process);
-            Runnable runnable = new GrailsProcessRunnable(process, this, prj.getProjectDirectory().getName()) {
+            String name = prj.getProjectDirectory().getName();
+            Runnable runnable = new GrailsProcessRunnable(
+                    process, this, name) {
 
                 @Override
                 public void finish() {

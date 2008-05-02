@@ -82,9 +82,9 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
         return Collections.singletonList(ServerInstanceFactory.createServerInstance(grailsInstance));
     }
 
-    public List<Project> getRunningProjects() {
+    public Map<Process, Project> getRunningProjects() {
         synchronized (this) {
-            return new ArrayList<Project>(running.values());
+            return new HashMap<Process, Project>(running);
         }
     }
 

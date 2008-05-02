@@ -40,11 +40,10 @@
 package org.netbeans.modules.groovy.grails.server;
 
 import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -117,26 +116,7 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         }
     }
 
-    private static class GrailsRunningNode extends AbstractNode {
-
-        public GrailsRunningNode(Project project) {
-            super(Children.LEAF);
-            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-            ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-            setDisplayName(NbBundle.getMessage(
-                    GrailsInstance.class, "GrailsInstance.appDisplayName", info.getDisplayName(), config.getPort()));
-            setIconBaseWithExtension(
-                    "org/netbeans/modules/groovy/grails/resources/GrailsIcon.png"); // NOI18N
-        }
-
-        // FIXME put stop action here
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[] {};
-        }
-    }
-
-    private static class GrailsChildFactory extends ChildFactory<Project> {
+    private static class GrailsChildFactory extends ChildFactory<Map.Entry<Process, Project>> {
 
         private final GrailsInstanceProvider provider;
 
@@ -149,13 +129,15 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         }
 
         @Override
-        protected Node createNodeForKey(Project key) {
-            return new GrailsRunningNode(key);
+        protected Node createNodeForKey(Map.Entry<Process, Project> key) {
+            return new ApplicationNode(key.getValue(), key.getKey());
         }
 
         @Override
-        protected boolean createKeys(List<Project> toPopulate) {
-            toPopulate.addAll(provider.getRunningProjects());
+        protected boolean createKeys(List<Map.Entry<Process, Project>> toPopulate) {
+            for (Map.Entry<Process, Project> entry : provider.getRunningProjects().entrySet()) {
+                toPopulate.add(entry);
+            }
             return true;
         }
     }
