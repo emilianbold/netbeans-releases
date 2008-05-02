@@ -56,7 +56,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- *
+ * SearchProvider for all actions. 
  * @author  Jan Becicka
  */
 public class ActionsSearchProvider implements SearchProvider {
@@ -68,7 +68,7 @@ public class ActionsSearchProvider implements SearchProvider {
     /**
      * Returns List (ShortcutAction) of all global and editor actions.
      */
-    public Set<ShortcutAction> getActions() {
+    private Set<ShortcutAction> getActions() {
         Set<ShortcutAction> actions = new HashSet<ShortcutAction>();
         for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
             for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
@@ -81,7 +81,7 @@ public class ActionsSearchProvider implements SearchProvider {
     }
 
     public SearchResultGroup evaluate(String pattern) {
-        MyResult r = new MyResult(pattern);
+        ActionsResultGroup r = new ActionsResultGroup(pattern);
         for (ShortcutAction a:getActions()) {
             if (a.getDisplayName().startsWith(pattern)) {
                 r.addAction(a);
@@ -90,11 +90,11 @@ public class ActionsSearchProvider implements SearchProvider {
         return r;
     }
     
-    private static class MyResult implements SearchResultGroup {
+    private static class ActionsResultGroup implements SearchResultGroup {
 
         private String command;
         private Collection<SearchResult> items;
-        public MyResult(String command) {
+        public ActionsResultGroup(String command) {
             this.command = command;
             items = new ArrayList<SearchResult>();
         }
@@ -111,17 +111,17 @@ public class ActionsSearchProvider implements SearchProvider {
             return items.size();
         }
         
-        public void addAction(ShortcutAction a) {
-            items.add(new MyAction(a, this));
+        void addAction(ShortcutAction a) {
+            items.add(new ActionResult(a, this));
         }
 
     }
     
-    private static class MyAction implements SearchResult {
+    private static class ActionResult implements SearchResult {
         private ShortcutAction command;
         private SearchResultGroup group;
         
-        public MyAction(ShortcutAction command, SearchResultGroup group) {
+        public ActionResult(ShortcutAction command, SearchResultGroup group) {
             this.command = command;
             this.group = group;
         }

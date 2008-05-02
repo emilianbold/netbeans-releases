@@ -59,6 +59,10 @@ public interface SearchResultGroup {
      */
     public String getCategory();
     
+    /**
+     * Not sure if this method should be here
+     * @return
+     */
     int getSize();
 
 }

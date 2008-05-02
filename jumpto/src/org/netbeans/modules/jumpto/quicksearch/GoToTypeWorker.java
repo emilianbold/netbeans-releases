@@ -52,7 +52,7 @@ import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.util.Lookup;
 
 /**
- *
+ * Copy/paste from GoToTypeAction
  * @author  Jan Becicka
  */
 public class GoToTypeWorker implements Runnable {

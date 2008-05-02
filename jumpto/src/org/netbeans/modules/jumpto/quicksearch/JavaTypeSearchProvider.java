@@ -60,18 +60,18 @@ public class JavaTypeSearchProvider implements SearchProvider {
     public SearchResultGroup evaluate(String pattern) {
         GoToTypeWorker worker = new GoToTypeWorker(pattern);
         worker.run();
-        MyResult r = new MyResult(pattern);
+        GoToTypeGroup r = new GoToTypeGroup(pattern);
         for (TypeDescriptor ts:worker.getTypes()) {
             r.addCommand(ts);
         }
         return r;
     }
     
-    private static class MyResult implements SearchResultGroup {
+    private static class GoToTypeGroup implements SearchResultGroup {
 
         private String command;
         private Collection<SearchResult> items;
-        public MyResult(String command) {
+        public GoToTypeGroup(String command) {
             this.command = command;
             items = new ArrayList<SearchResult>();
         }
@@ -89,16 +89,16 @@ public class JavaTypeSearchProvider implements SearchProvider {
         }
         
         public void addCommand(TypeDescriptor td) {
-            items.add(new MyCommand(td, this));
+            items.add(new GoToTypeCommand(td, this));
         }
 
     }
     
-    private static class MyCommand implements SearchResult {
+    private static class GoToTypeCommand implements SearchResult {
         private TypeDescriptor command;
         private SearchResultGroup group;
         
-        public MyCommand(TypeDescriptor command, SearchResultGroup group) {
+        public GoToTypeCommand(TypeDescriptor command, SearchResultGroup group) {
             this.command = command;
             this.group = group;
         }

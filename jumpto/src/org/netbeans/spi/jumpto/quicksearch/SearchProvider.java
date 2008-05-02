@@ -41,11 +41,21 @@
 package org.netbeans.spi.jumpto.quicksearch;
 
 /**
- *
+ * Search Provider.
+ * Implement to provide new group of results for quick search
  * @author  Jan Becicka
  */
 public interface SearchProvider {
-    
+    /**
+     * prefix for this group
+     * @return
+     */
     String getCommandPrefix();
+    
+    /**
+     * find result matching given pattern
+     * @param pattern
+     * @return
+     */
     SearchResultGroup evaluate(String pattern);
 }

@@ -43,7 +43,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 /**
- *
+ * QuickSearch Action provides toolbar presenter
  * @author  Jan Becicka
  */
 public final class QuickSearchAction extends CallableSystemAction {
@@ -51,9 +51,7 @@ public final class QuickSearchAction extends CallableSystemAction {
    QuickSearchComboBar retValue = new QuickSearchComboBar();
    
    public void performAction() {
-       System.out.println("test");
        retValue.requestFocus();
-        // TODO implement action body
     }
 
     public String getName() {
@@ -74,6 +72,7 @@ public final class QuickSearchAction extends CallableSystemAction {
         return false;
     }
 
+    @Override
     public java.awt.Component getToolbarPresenter() {
         return retValue;
     }

@@ -40,35 +40,18 @@
 
 package org.netbeans.modules.jumpto.quicksearch;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.util.ArrayList;
-import java.util.Iterator;
-import javax.swing.AbstractListModel;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.jumpto.quicksearch.CommandEval;
 import org.netbeans.spi.jumpto.quicksearch.SearchResult;
-import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
 
 /**
- *
+ * Component representing drop down for quick search
  * @author  Jan Becicka
  */
 public class QuickSearchPopup extends javax.swing.JPanel {
 
-    private static final int MAX_RESULTS = 5;
     /** Creates new form SilverPopup */
     public QuickSearchPopup() {
         initComponents();
-        jList1.setCellRenderer(new CommandRenderer());
+        jList1.setCellRenderer(new SearchResultRender());
     }
 
     void invoke() {
@@ -84,99 +67,8 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     }
 
     void update(String text) {
-        jList1.setModel(new SearchModel(text));
-    }
-    
-    public class CommandRenderer extends JLabel implements ListCellRenderer {
-
-        public Component getListCellRendererComponent(JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
-            
-            if (value==null) {
-                JPanel c = new JPanel();
-                c.setBackground(Color.GRAY);
-                c.setPreferredSize(new Dimension(c.getPreferredSize().width, 1));
-                return c;
-            }
-            JLabel jLabel1 = new javax.swing.JLabel();
-
-            JPanel panel = new JPanel();
-            jLabel1.setText("XXXXXXXXXXXXXX");
-            jLabel1.setFont(jLabel1.getFont().deriveFont(Font.BOLD));
-            jLabel1.setBorder(new EmptyBorder(0,5,0,0));
-            
-            panel.setLayout(new java.awt.BorderLayout());
-            jLabel1.setOpaque(true);
-            panel.add(jLabel1, BorderLayout.WEST);
-            jLabel1.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
-            jLabel1.setForeground(Color.GRAY);
-
-            Component c = null;
-            if (value == null) {
-                c = new JPanel();
-            } else if (value instanceof Component) {
-                c = (Component) value;
-            } else if (value instanceof SearchResult) {
-                JLabel p = new JLabel(((SearchResult) value).getDisplayName());
-                p.setBorder(new EmptyBorder(0,5,0,0));
-                if (isFirst((SearchResult) value)) {
-                    jLabel1.setText(((SearchResult) value).getResultGroup().getCategory());
-                } else {
-                    jLabel1.setText("");
-                }
-                c=p;
-            } else {
-                c = new JLabel(value.toString());
-            }
-
-            panel.add(c, BorderLayout.CENTER);
-
-            if (isSelected) {
-                c.setBackground(list.getSelectionBackground());
-                c.setForeground(list.getSelectionForeground());
-            } else {
-                c.setBackground(list.getBackground());
-                c.setForeground(list.getForeground());
-            }
-            ((JComponent)c).setOpaque(true);
-
-            panel.setOpaque(true);
-
-            return panel;
-        }
-        
-        private boolean isFirst(SearchResult result) {
-            return result.equals(result.getResultGroup().getItems().iterator().next());
-            //TODO: this is horrible hack. Should be rewritten.
-        }
-    }
-
-    private class SearchModel extends AbstractListModel {
-        private Iterable<? extends SearchResultGroup> results;
-        private ArrayList ar = new ArrayList();
-        public SearchModel(String text) {
-            results = CommandEval.evaluate(text);
-            for (SearchResultGroup cr:results) {
-                Iterator<? extends SearchResult> it= cr.getItems().iterator();
-                for (int i = 0; i< Math.min(cr.getSize(), MAX_RESULTS);i++) {
-                    ar.add(it.next());
-                }
-                ar.add(null);
-            }
-        }
-
-        public int getSize() {
-            int size = 0;
-            for (SearchResultGroup cr:results) {
-                size+=Math.min(MAX_RESULTS, cr.getSize());
-                size++;
-            }
-            return size-1;
-        }
-
-        public Object getElementAt(int arg0) {
-            return ar.get(arg0);
-        }
+        //should update existing, not create new
+        jList1.setModel(new SearchListModel(text));
     }
     
 

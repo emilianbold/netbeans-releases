@@ -45,7 +45,21 @@ package org.netbeans.spi.jumpto.quicksearch;
  */
 
 public interface SearchResult {
+    /**
+     * Implement what happens on Enter
+     */
     public void invoke();
+    
+    /**
+     * Display name of result.
+     * String is maybe not enough. What about icon?
+     * @return
+     */
     public String getDisplayName();
+    
+    /**
+     * Which group is this result member of 
+     * @return
+     */
     public SearchResultGroup getResultGroup();
 }

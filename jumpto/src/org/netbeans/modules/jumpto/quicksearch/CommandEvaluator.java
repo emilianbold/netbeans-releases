@@ -42,23 +42,45 @@ package org.netbeans.modules.jumpto.quicksearch;
 import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.spi.jumpto.quicksearch.SearchProvider;
 import org.openide.util.Lookup;
 
 /**
- *
+ * Command Evaluator. It evaluates commands from toolbar and creates results
  * @author Jan Becicka
  */
-public class CommandEval {
+public class CommandEvaluator {
     
+    /**
+     * command pattern is:
+     * "command arguments"
+     */
+    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
+    
+    /**
+     * if command is in form "command arguments" then only providers registered 
+     * for given command are called. Otherwise all providers are called.
+     * @param command
+     * @return 
+     */
     public static Iterable<? extends SearchResultGroup> evaluate(String command) {
         
-        List< SearchResultGroup> l = new ArrayList< SearchResultGroup>();
-        for (SearchProvider provider:Lookup.getDefault().lookupAll(SearchProvider.class)) {
-            l.add(provider.evaluate(command));
+         List<SearchResultGroup> l = new ArrayList<SearchResultGroup>();
+        Matcher m = COMMAND_PATTERN.matcher(command);
+        boolean isCommand = m.matches();
+        for (SearchProvider provider : Lookup.getDefault().lookupAll(SearchProvider.class)) {
+            if (isCommand) {
+                if (provider.getCommandPrefix().equalsIgnoreCase(m.group(1))) {
+                    l.add(provider.evaluate(m.group(3)));
+                }
+            } else {
+                l.add(provider.evaluate(command));
+            }
         }
+
         return l;
-       
     }
 
 }

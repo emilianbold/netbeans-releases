@@ -51,7 +51,7 @@ import javax.swing.text.BadLocationException;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * Quick search toolbar component
  * @author  Jan Becicka
  */
 public class QuickSearchComboBar extends javax.swing.JPanel {
@@ -154,9 +154,9 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
-//    if (popup!=null)
-//        popup.hide();
-//    popup = null;
+    if (popup!=null)
+        popup.hide();
+    popup = null;
 }//GEN-LAST:event_formFocusLost
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
