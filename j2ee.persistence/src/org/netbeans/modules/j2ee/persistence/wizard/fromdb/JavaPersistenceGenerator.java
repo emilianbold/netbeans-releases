@@ -753,8 +753,23 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     namedQueryAnnotations.add(genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
                 }
             }
+           
+            protected void addFindAllNamedQueryAnnotation() {
+                // Add NamedQuery findAll here
+                List<ExpressionTree> namedQueryAnnArguments = new ArrayList<ExpressionTree>();
+                namedQueryAnnArguments.add(genUtils.createAnnotationArgument("name", entityClassName + ".findAll")); // NOI18N
+
+                char firstLetter = entityClassName.toLowerCase().charAt(0);
+                String queryString = "SELECT " + firstLetter + " FROM " + entityClassName + " " + firstLetter; // NOI18N
+                namedQueryAnnArguments.add(genUtils.createAnnotationArgument("query", queryString)); // NOI18N
+                
+                // Have the findAll as the first NameQuery
+                namedQueryAnnotations.add(0, genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
+            }
 
             protected void afterMembersGenerated() {
+                addFindAllNamedQueryAnnotation();
+                
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
                         Collections.singletonList(genUtils.createAnnotationArgument(null, namedQueryAnnotations))));
             }
