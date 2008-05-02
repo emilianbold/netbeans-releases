@@ -95,8 +95,21 @@ public class ParserManagerImpl {
      */
     static Parser getParser (final Source source) {
         assert source != null;
-        ParserFactory pf = null;    //Get parser factory for givem MIME Type
-        return pf.createParser(source);
+        Parser parser;
+        synchronized (source) {
+            parser = SourceAccessor.getINSTANCE().getParser(source);            
+        }
+        if (parser == null) {
+            ParserFactory pf = null;    //Get parser factory for givem MIME Type
+            parser = pf.createParser(source);
+            assert parser != null : "Factory: " + pf.getClass().getName()+" returned null parser for: " + source;   //NOI18N
+        }
+        synchronized (source) {
+            if (SourceAccessor.getINSTANCE().getParser(source)==null) {
+                SourceAccessor.getINSTANCE().setParser(source, parser);
+            }
+        }
+        return parser;
     }
     
 //    

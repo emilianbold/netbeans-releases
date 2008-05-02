@@ -95,6 +95,7 @@ public final class Source {
     private final Set<SourceFlags> 
                             flags = EnumSet.noneOf(SourceFlags.class);
     private Parser.Result   result;
+    private volatile Parser          cachedParser;
     
    
     Source (
@@ -200,6 +201,7 @@ public final class Source {
         
         @Override
         public Parser.Result getResult (Source source) {
+            assert source != null;
             synchronized (source) {
                 if (source.flags.contains(SourceFlags.INVALID)) {
                     return null;
@@ -212,10 +214,30 @@ public final class Source {
 
         @Override
         public void setResult(Source source, Result result) {
+            assert source != null;
+            assert result != null;
             synchronized (source) {                
                 source.result = result;
                 source.flags.remove(SourceFlags.INVALID);
             }            
+        }
+
+        @Override
+        public Parser getParser(Source source) {
+            assert source != null;
+            return source.cachedParser;
+        }
+
+        @Override
+        public void setParser(Source source, Parser parser) throws IllegalStateException {
+            assert source != null;
+            assert parser != null;
+            synchronized (source) {
+                if (source.cachedParser != null) {
+                    throw new IllegalStateException();
+                }
+                source.cachedParser = parser;
+            }
         }
     }
 }

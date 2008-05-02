@@ -83,6 +83,28 @@ public abstract class SourceAccessor {
      */
     public abstract Parser.Result getResult (Source source);
     
-    
+    /**
+     * Sets a cached {@link Parser.Result}.
+     * Used only by {@link TaskProcessor}
+     * @param source for which the parser result should be set
+     * @param the result
+     */
     public abstract void setResult (Source source, Parser.Result result);
+    
+    /**
+     * Returns cached {@link Parser} when available
+     * @param source for which the parser should be obtained
+     * @return the {@link Parser} or null
+     */
+    public abstract Parser getParser (Source source);
+    
+    /**
+     * Sets a cached {@link Parser}.
+     * Used only by ParserManagerImpl
+     * @param source for which the parser should be set
+     * @param the parser
+     * @throws IllegalStateException when the given source is already associated
+     * with a parser.
+     */
+    public abstract void setParser (Source source, Parser parser) throws IllegalStateException;
 }
