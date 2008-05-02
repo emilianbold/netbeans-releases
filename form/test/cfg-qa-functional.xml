@@ -57,6 +57,7 @@ made subject to such option by the copyright holder.
             <patternset>
                 <include name="org/netbeans/qa/form/beans/*.*"/>
                 <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>
+                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
                 <include name="org/netbeans/qa/form/options/*.*"/>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
             </patternset>
