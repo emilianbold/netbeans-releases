@@ -67,7 +67,7 @@ public class Logger implements Serializable {
     static final String COMPLETION_ACTION="completion-action";
     
     static final long serialVersionUID = 8269484241745322111L;
-    static final String PERFORMING="Performing";
+    public static final String PERFORMING="Performing";
     static final String LOGGING="Logging";
     
     private Vector actions = new Vector();

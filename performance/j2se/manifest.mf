@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.performance.j2se
+OpenIDE-Module-Layer: org/netbeans/performance/j2se/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/performance/j2se/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

@@ -69,7 +69,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.test.ide.WatchProjects;
 
 /**
  * Overall validation suite for j2ee cluster.
@@ -138,7 +138,7 @@ public class J2EEValidation extends JellyTestCase {
         // wait index.jsp is opened in editor
         EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
         
         // not display browser on run
         

@@ -48,10 +48,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
@@ -131,6 +132,7 @@ public final class NbModuleProject implements Project {
             Utilities.loadImage(NB_PROJECT_ICON_PATH));
     
     public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
+    static final String[] COMMON_TEST_TYPES = {"unit", "qa-functional"}; // NOI18N
     
     private final AntProjectHelper helper;
     private final Evaluator eval;
@@ -159,54 +161,30 @@ public final class NbModuleProject implements Project {
             throw new IOException("netbeans.org-type module not in a complete netbeans.org source root: " + this); // NOI18N
         }
         eval = new Evaluator(this, typeProvider);
-        FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
-        if (supportsUnitTests()) {
-            fileBuilt = helper.createGlobFileBuiltQuery(eval, new String[] {
-                "${src.dir}/*.java", // NOI18N
-                "${test.unit.src.dir}/*.java", // NOI18N
-            }, new String[] {
-                "${build.classes.dir}/*.class", // NOI18N
-                "${build.test.unit.classes.dir}/*.class", // NOI18N
-            });
-        } else {
-            fileBuilt = helper.createGlobFileBuiltQuery(eval, new String[] {
-                "${src.dir}/*.java", // NOI18N
-            }, new String[] {
-                "${build.classes.dir}/*.class", // NOI18N
-            });
+        List<String> from = new ArrayList<String>();
+        List<String> to = new ArrayList<String>();
+        from.add("${src.dir}/*.java"); // NOI18N
+        to.add("${build.classes.dir}/*.class"); // NOI18N
+        for (String type : supportedTestTypes()) {
+            from.add("${test." + type + ".src.dir}/*.java"); // NOI18N
+            to.add("${build.test." + type + ".classes.dir}/*.class"); // NOI18N
         }
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(
+                eval,from.toArray(new String[0]), to.toArray(new String[0]));
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, eval);
         // Temp build dir is always internal; NBM build products go elsewhere, but
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
         sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages"), null, null); // #56457
-        sourcesHelper.addPrincipalSourceRoot("${test.unit.src.dir}", NbBundle.getMessage(NbModuleProject.class, "LBL_unit_test_packages"), null, null); // #68727
+        for (String type : supportedTestTypes()) {
+            sourcesHelper.addPrincipalSourceRoot("${test." + type + ".src.dir}", NbBundle.getMessage(NbModuleProject.class, "LBL_" + type + "_test_packages"), null, null); // #68727
+        }
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages"), null, null);
         // XXX other principal source roots, as needed...
-        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_unit_test_packages"), null, null);
-        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_functional_test_packages"), null, null);
-        sourcesHelper.addTypedSourceRoot("${test.qa-performance.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_performance_test_packages"), null, null);
-        // #42332: also any other misc. test dirs (just add source roots, no CP etc. for now)
-        FileObject testDir = helper.getProjectDirectory().getFileObject("test"); // NOI18N
-        if (testDir != null) {
-            Enumeration<? extends FileObject> kids = testDir.getChildren(false);
-            while (kids.hasMoreElements()) {
-                FileObject testSubdir = (FileObject) kids.nextElement();
-                if (!testSubdir.isFolder()) {
-                    continue;
-                }
-                String name = testSubdir.getNameExt();
-                if (testDir.getFileObject("build-" + name + ".xml") == null) { // NOI18N
-                    continue;
-                }
-                if (name.equals("unit") || name.equals("qa-functional") || name.equals("qa-performance")) { // NOI18N
-                    // Already handled specially.
-                    continue;
-                }
-                sourcesHelper.addTypedSourceRoot("test/" + name + "/src", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_unknown_test_packages", name), null, null);
-            }
+        for (String type : supportedTestTypes()) {
+            sourcesHelper.addTypedSourceRoot("${test." + type + ".src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_" + type + "_test_packages"), null, null);
         }
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
@@ -380,16 +358,8 @@ public final class NbModuleProject implements Project {
         return getDir("src.dir"); // NOI18N
     }
     
-    public FileObject getTestSourceDirectory() {
-        return getDir("test.unit.src.dir"); // NOI18N
-    }
-    
-    public FileObject getFunctionalTestSourceDirectory() {
-        return getDir("test.qa-functional.src.dir"); // NOI18N
-    }
-    
-    public FileObject getPerformanceTestSourceDirectory() {
-        return getDir("test.qa-performance.src.dir"); // NOI18N
+    public FileObject getTestSourceDirectory(String type) {
+        return getDir("test." + type + ".src.dir"); // NOI18N
     }
     
     public File getClassesDirectory() {
@@ -397,8 +367,8 @@ public final class NbModuleProject implements Project {
         return helper.resolveFile(classesDir);
     }
     
-    public File getTestClassesDirectory() {
-        String testClassesDir = evaluator().getProperty("build.test.unit.classes.dir"); // NOI18N
+    public File getTestClassesDirectory(String type) {
+        String testClassesDir = evaluator().getProperty("build.test." + type + ".classes.dir"); // NOI18N
         return helper.resolveFile(testClassesDir);
     }
     
@@ -619,8 +589,15 @@ public final class NbModuleProject implements Project {
         return pubPkgs != null && !Util.findSubElements(pubPkgs).isEmpty();
     }
     
-    public boolean supportsUnitTests() {
-        return getTestSourceDirectory() != null;
+    public List<String> supportedTestTypes() {
+        List<String> types = new ArrayList<String>();
+        for (String type : COMMON_TEST_TYPES) {
+            if (getTestSourceDirectory(type) != null && !Boolean.parseBoolean(evaluator().getProperty("disable." + type + ".tests"))) {
+                types.add(type);
+            }
+        }
+        // XXX could look for others in project.xml, in which case fix Evaluator to use that
+        return types;
     }
     
     /**
