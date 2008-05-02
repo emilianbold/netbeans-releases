@@ -31,6 +31,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.util.Context;
+import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
@@ -44,9 +45,12 @@ public class ElementHeaderFormater {
     private ElementHeaderFormater() {
     }
     
-    public static String getMethodHeader(MethodTree tree, CompilationInfo info, String s) {
+    public static String getMethodHeader(MethodTree tree, Name enclosingClassName, CompilationInfo info, String s) {
         Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
         VeryPretty veryPretty = new VeryPretty(context);
+        if (enclosingClassName != null) {
+            veryPretty.enclClassName = (com.sun.tools.javac.util.Name) enclosingClassName;
+        }
         return veryPretty.getMethodHeader(tree, s);
     }
 

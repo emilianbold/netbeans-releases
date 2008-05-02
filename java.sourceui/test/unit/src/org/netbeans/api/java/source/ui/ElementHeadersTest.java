@@ -43,6 +43,8 @@ public class ElementHeadersTest extends NbTestCase {
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
         
+        FileUtil.refreshAll();
+        
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
@@ -97,5 +99,9 @@ public class ElementHeadersTest extends NbTestCase {
         performTest("test/Test.java", "package test; public class Test { int aa; }", 39, ElementHeaders.NAME, "aa");
         performTest("test/Test.java", "package test; public class Test { int aa; }", 39, ElementHeaders.NAME, "aa");
         performTest("test/Test.java", "package test; public class Test { int aa; }", 39, ElementHeaders.NAME, "aa");
+    }
+    
+    public void testConstructor133774() throws Exception {
+        performTest("test/Test.java", "package test; public class Test { public Test() {}}", 43, ElementHeaders.NAME, "Test");
     }
 }
