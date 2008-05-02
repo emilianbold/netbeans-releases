@@ -750,6 +750,22 @@ public class ElementJavadoc {
                 par.append("<br>"); //NOI18N            
             }
         }
+        StringBuilder tpar = new StringBuilder();
+        ParamTag[] tpTags = doc.typeParamTags();
+        if (tpTags.length > 0) {
+            for (ParamTag pTag : tpTags) {
+                tpar.append("<code>").append(pTag.parameterName()).append("</code>"); //NOI18N
+                Tag[] its = pTag.inlineTags();
+                if (its.length > 0) {
+                    CharSequence cs = inlineTags(eu, doc, its);
+                    if (cs.length() > 0) {
+                        tpar.append(" - "); //NOI18N
+                        tpar.append(cs);
+                    }
+                }
+                tpar.append("<br>"); //NOI18N            
+            }
+        }
         StringBuilder thr = new StringBuilder();
         if (throwsTags != null) {
             for (ThrowsTag throwsTag : throwsTags) {
@@ -808,6 +824,9 @@ public class ElementJavadoc {
         StringBuilder sb = new StringBuilder();
         if (par.length() > 0) {
             sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-params")).append("</b><blockquote>").append(par).append("</blockquote>"); //NOI18N
+        }
+        if (tpar.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-typeparams")).append("</b><blockquote>").append(tpar).append("</blockquote>"); //NOI18N
         }
         if (ret.length() > 0) {
             sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-returns")).append("</b><blockquote>").append(ret).append("</blockquote>"); //NOI18N
