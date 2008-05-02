@@ -265,6 +265,7 @@ public class NbModuleSuite {
             modules.add("org.netbeans.core.startup");
             modules.add("org.netbeans.bootstrap");
             turnModules(ud, modules, config.moduleRegExp, platform);
+            turnClassPathModules(ud, NbTestSuite.class.getClassLoader());
 
             StringBuilder sb = new StringBuilder();
             String sep = "";
@@ -395,8 +396,9 @@ public class NbModuleSuite {
             }
             return clusters.toArray(new File[0]);
         }
-
+        
         private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
+        private static Pattern VERSION = Pattern.compile("OpenIDE-Module-Specification-Version: *([0-9\\.]*)", Pattern.MULTILINE);
         /** Looks for all modules on classpath of given loader and builds 
          * their list from them.
          */
@@ -415,6 +417,49 @@ public class NbModuleSuite {
 
             return cnbs;
         }
+        private static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
+            Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
+            while (en.hasMoreElements()) {
+                URL url = en.nextElement();
+                String manifest = asString(url.openStream(), true);
+                Matcher m = CODENAME.matcher(manifest);
+                if (m.find()) {
+                    String cnb = m.group(1);
+                    Matcher v = VERSION.matcher(manifest);
+                    if (!v.find()) {
+                        throw new IllegalStateException("Cannot find version:\n" + manifest);
+                    }
+                    String xml =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
+"                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n" +
+"<module name=\"" + cnb + "\">\n" +
+"    <param name=\"autoload\">false</param>\n" +
+"    <param name=\"eager\">false</param>\n" +
+"    <param name=\"enabled\">true</param>\n" +
+"    <param name=\"jar\">" + extractURL(url) + "</param>\n" +
+"    <param name=\"reloadable\">false</param>\n" +
+"    <param name=\"specversion\">" + v.group(1) + "</param>\n" +
+"</module>\n";
+                    
+                    File conf = new File(new File(ud, "config"), "Modules");
+                    conf.mkdirs();
+                    File f = new File(conf, cnb.replace('.', '-') + ".xml");
+                    writeModule(f, xml);
+                }
+            }
+        }
+        
+        private static Pattern MANIFEST = Pattern.compile("jar:file:(.*)!/META-INF/MANIFEST.MF", Pattern.MULTILINE);
+        private static String extractURL(URL u) {
+            Matcher m = MANIFEST.matcher(u.toExternalForm());
+            if (m.matches()) {
+                return m.group(1);
+            } else {
+                throw new IllegalStateException(u.toExternalForm());
+            }
+        }
+
         
         static void preparePatches(String path, Properties prop) {
             Pattern tests = Pattern.compile(".*" + File.separator + "([^" + File.separator + "]+)" + File.separator + "tests.jar");
@@ -489,7 +534,7 @@ public class NbModuleSuite {
 
         private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
         private static Pattern AUTO = Pattern.compile("<param name=[\"']autoload[\"']>([^<]*)</param>", Pattern.MULTILINE);
-
+        
         private static void turnModules(File ud, TreeSet<String> modules, String regExp, File... clusterDirs) throws IOException {
             File config = new File(new File(ud, "config"), "Modules");
             config.mkdirs();
@@ -497,7 +542,11 @@ public class NbModuleSuite {
             Pattern modPattern = regExp == null ? null : Pattern.compile(regExp);
             for (File c : clusterDirs) {
                 File modulesDir = new File(new File(c, "config"), "Modules");
-                for (File m : modulesDir.listFiles()) {
+                File[] allModules = modulesDir.listFiles();
+                if (allModules == null) {
+                    continue;
+                }
+                for (File m : allModules) {
                     String n = m.getName();
                     if (n.endsWith(".xml")) {
                         n = n.substring(0, n.length() - 4);
@@ -513,45 +562,40 @@ public class NbModuleSuite {
                     if (!contains) {
                         continue;
                     }
-                    
-                    boolean toEnable = false;
-                    { 
-                        Matcher matcherEnabled = ENABLED.matcher(xml);
-                        if (matcherEnabled.find()) {
-                            toEnable = "false".equals(matcherEnabled.group(1));
-                        }
-                        if (toEnable) {
-                            assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
-                            try {
-                                String out =
-                                        xml.substring(0, matcherEnabled.start(1)) +
-                                        (contains ? "true" : "false") +
-                                        xml.substring(matcherEnabled.end(1));
-                                writeModule(new File(config, m.getName()), out);
-                            } catch (IllegalStateException ex) {
-                                throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
-                            }
-                        }
+                    enableModule(xml, contains, new File(config, m.getName()));
+                }
+            }
+        }
+        
+        private static void enableModule(String xml, boolean enable, File target) throws IOException {
+            boolean toEnable = false;
+            {
+                Matcher matcherEnabled = ENABLED.matcher(xml);
+                if (matcherEnabled.find()) {
+                    toEnable = "false".equals(matcherEnabled.group(1));
+                }
+                if (toEnable) {
+                    assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
+                    try {
+                        String out = xml.substring(0, matcherEnabled.start(1)) + (enable ? "true" : "false") + xml.substring(matcherEnabled.end(1));
+                        writeModule(target, out);
+                    } catch (IllegalStateException ex) {
+                        throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
                     }
-                    {
-                        Matcher matcherEager = AUTO.matcher(xml);
-                        if (matcherEager.find()) {
-                            int begin = xml.indexOf("<param name=\"autoload");
-                            int end = xml.indexOf("<param name=\"jar");
-                            String middle = 
-                                "<param name=\"autoload\">false</param>\n" +
-                                "    <param name=\"eager\">false</param>\n" +
-                                "    <param name=\"enabled\">true</param>\n" +
-                                "    ";
-                            String out = xml.substring(0, begin) + middle + xml.substring(end);
-                            try {
-                                writeModule(new File(config, m.getName()), out);
-                            } catch (IllegalStateException ex) {
-                                throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
-                            }
-                        }
+                }
+            }
+            {
+                Matcher matcherEager = AUTO.matcher(xml);
+                if (matcherEager.find()) {
+                    int begin = xml.indexOf("<param name=\"autoload");
+                    int end = xml.indexOf("<param name=\"jar");
+                    String middle = "<param name=\"autoload\">false</param>\n" + "    <param name=\"eager\">false</param>\n" + "    <param name=\"enabled\">true</param>\n" + "    ";
+                    String out = xml.substring(0, begin) + middle + xml.substring(end);
+                    try {
+                        writeModule(target, out);
+                    } catch (IllegalStateException ex) {
+                        throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
                     }
-
                 }
             }
         }

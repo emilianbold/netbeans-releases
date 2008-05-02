@@ -63,7 +63,7 @@ public class NbModuleTestingTest extends TestBase {
 
     @Override
     protected Level logLevel() {
-        return Level.WARNING;
+        return Level.INFO;
     }
 
     protected void setUp() throws Exception {
@@ -124,7 +124,6 @@ public class NbModuleTestingTest extends TestBase {
         FileObject buildScript = fo.getFileObject("build.xml"); 
         assertNotNull(buildScript);
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{
-            "netbeans", // Jesse needs to fix harness to build config/Modules/*.xml when test is executed
             "test"
         }, null);
         et.waitFinished();
