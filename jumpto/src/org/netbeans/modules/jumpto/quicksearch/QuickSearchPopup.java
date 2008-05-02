@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.AbstractListModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -63,7 +64,7 @@ import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
  */
 public class QuickSearchPopup extends javax.swing.JPanel {
 
-    
+    private static final int MAX_RESULTS = 5;
     /** Creates new form SilverPopup */
     public QuickSearchPopup() {
         initComponents();
@@ -156,8 +157,9 @@ public class QuickSearchPopup extends javax.swing.JPanel {
         public SearchModel(String text) {
             results = CommandEval.evaluate(text);
             for (SearchResultGroup cr:results) {
-                for (SearchResult c:cr.getItems()) {
-                    ar.add(c);
+                Iterator<? extends SearchResult> it= cr.getItems().iterator();
+                for (int i = 0; i< Math.min(cr.getSize(), MAX_RESULTS);i++) {
+                    ar.add(it.next());
                 }
                 ar.add(null);
             }
@@ -166,7 +168,7 @@ public class QuickSearchPopup extends javax.swing.JPanel {
         public int getSize() {
             int size = 0;
             for (SearchResultGroup cr:results) {
-                size+=cr.getSize();
+                size+=Math.min(MAX_RESULTS, cr.getSize());
                 size++;
             }
             return size-1;
