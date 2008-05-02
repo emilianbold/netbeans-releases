@@ -39,9 +39,15 @@
 
 package org.netbeans.modules.groovy.grails.server;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceProvider;
@@ -52,23 +58,49 @@ import org.netbeans.spi.server.ServerInstanceProvider;
  */
 public final class GrailsInstanceProvider implements ServerInstanceProvider {
 
+    private static final ExecutorService PROCESS_EXECUTOR = Executors.newCachedThreadPool();
+
     private static GrailsInstanceProvider instance;
 
-    private final GrailsInstance grailsInstance;
+    private final Map<Process, Project> running = new HashMap<Process, Project>();
+
+    private GrailsInstance grailsInstance;
 
     private GrailsInstanceProvider() {
-        grailsInstance = new GrailsInstance();
+        super();
     }
 
     public static synchronized GrailsInstanceProvider getInstance() {
         if (instance == null) {
             instance = new GrailsInstanceProvider();
+            instance.grailsInstance = GrailsInstance.forProvider(instance);
         }
         return instance;
     }
 
     public List<ServerInstance> getInstances() {
         return Collections.singletonList(ServerInstanceFactory.createServerInstance(grailsInstance));
+    }
+
+    public List<Project> getRunningProjects() {
+        synchronized (this) {
+            return new ArrayList<Project>(running.values());
+        }
+    }
+
+    public void serverStarted(Project project, Process process) {
+        synchronized (this) {
+            running.put(process, project);
+            PROCESS_EXECUTOR.submit(new ProcessHandler(this, process));
+        }
+        grailsInstance.refresh();
+    }
+
+    public void serverStopped(Process process) {
+        synchronized (this) {
+            running.remove(process);
+        }
+        grailsInstance.refresh();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -79,4 +111,26 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
         // never changes
     }
 
+    private static class ProcessHandler implements Runnable {
+
+        private final GrailsInstanceProvider provider;
+
+        private final Process serverProcess;
+
+        public ProcessHandler(GrailsInstanceProvider provider, Process serverProcess) {
+            this.provider = provider;
+            this.serverProcess = serverProcess;
+        }
+
+        public void run() {
+            try {
+                serverProcess.waitFor();
+            } catch (InterruptedException ex) {
+                serverProcess.destroy();
+            } finally {
+                provider.serverStopped(serverProcess);
+            }
+        }
+
+    }
 }

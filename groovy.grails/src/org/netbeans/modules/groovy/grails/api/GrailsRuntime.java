@@ -45,9 +45,13 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.KillableProcess;
+import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -95,12 +99,8 @@ public final class GrailsRuntime {
             return false;
         }
 
-        return checkForGrailsExecutable(new File(grailsBase));
-    }
-
-    private boolean checkForGrailsExecutable(File pathToGrails) {
         String pathToBinary = Utilities.isWindows() ? WIN_EXECUTABLE : NIX_EXECUTABLE;
-        return new File(pathToGrails, pathToBinary).isFile();
+        return new File(new File(grailsBase), pathToBinary).isFile();
     }
 
     private static String createJvmArguments(Properties properties) {
@@ -132,6 +132,16 @@ public final class GrailsRuntime {
             builder.append(arguments[i]);
         }
         return builder.toString();
+    }
+
+    private static void checkForServer(CommandDescriptor descriptor, Process process) {
+        if ("run-app".equals(descriptor.getName()) || "run-app-https".equals(descriptor.getName())) { // NOI18N
+            Project project = FileOwnerQuery.getOwner(
+                    FileUtil.toFileObject(descriptor.getDirectory()));
+            if (project != null) {
+                GrailsInstanceProvider.getInstance().serverStarted(project, process);
+            }
+        }
     }
 
     public static final class CommandDescriptor {
@@ -226,9 +236,12 @@ public final class GrailsRuntime {
             String[] envp = new String[] {"GRAILS_HOME=" // NOI18N
                     + GrailsSettings.getInstance().getGrailsBase()};
 
-            return new KillableProcess(
+            Process process = new KillableProcess(
                     grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
                     descriptor.getDirectory());
+
+            checkForServer(descriptor, process);
+            return process;
         }
 
     }

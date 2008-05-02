@@ -39,25 +39,42 @@
 
 package org.netbeans.modules.groovy.grails.server;
 
+import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Petr Hejl
  */
-public class GrailsInstance implements ServerInstanceImplementation {
+public final class GrailsInstance implements ServerInstanceImplementation {
+
+    private final GrailsChildFactory childFactory;
+
+    private GrailsInstance(GrailsInstanceProvider provider) {
+        this.childFactory = new GrailsChildFactory(provider);
+    }
+
+    public static final GrailsInstance forProvider(GrailsInstanceProvider provider) {
+        return new GrailsInstance(provider);
+    }
 
     public Node getBasicNode() {
-        return new BasicNode();
+        return new GrailsNode(Children.LEAF);
     }
 
     public Node getFullNode() {
-        return new BasicNode();
+        return new GrailsNode(Children.create(childFactory, false));
     }
 
     public JComponent getCustomizer() {
@@ -72,6 +89,10 @@ public class GrailsInstance implements ServerInstanceImplementation {
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.serverDisplayName");
     }
 
+    public void refresh() {
+        childFactory.refresh();
+    }
+
     public boolean isRemovable() {
         return false;
     }
@@ -80,13 +101,63 @@ public class GrailsInstance implements ServerInstanceImplementation {
         // noop
     }
 
-    private static class BasicNode extends AbstractNode {
+    private static class GrailsNode extends AbstractNode {
 
-        public BasicNode() {
-            super(Children.LEAF);
-            setDisplayName(NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", ""));
-            setIconBaseWithExtension("org/netbeans/modules/groovy/grails/resources/GrailsIcon.png");
+        public GrailsNode(Children children) {
+            super(children);
+            // FIXME get version from runtime
+            setDisplayName(NbBundle.getMessage(
+                    GrailsInstance.class, "GrailsInstance.displayName", "N/A"));
+            setIconBaseWithExtension(
+                    "org/netbeans/modules/groovy/grails/resources/GrailsIcon.png"); // NOI18N
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {};
+        }
+    }
+
+    private static class GrailsRunningNode extends AbstractNode {
+
+        public GrailsRunningNode(Project project) {
+            super(Children.LEAF);
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
+            setDisplayName(NbBundle.getMessage(
+                    GrailsInstance.class, "GrailsInstance.appDisplayName", info.getDisplayName(), config.getPort()));
+            setIconBaseWithExtension(
+                    "org/netbeans/modules/groovy/grails/resources/GrailsIcon.png"); // NOI18N
+        }
+
+        // FIXME put stop action here
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {};
+        }
+    }
+
+    private static class GrailsChildFactory extends ChildFactory<Project> {
+
+        private final GrailsInstanceProvider provider;
+
+        public GrailsChildFactory(GrailsInstanceProvider provider) {
+            this.provider = provider;
+        }
+
+        public void refresh() {
+            super.refresh(false);
+        }
+
+        @Override
+        protected Node createNodeForKey(Project key) {
+            return new GrailsRunningNode(key);
+        }
+
+        @Override
+        protected boolean createKeys(List<Project> toPopulate) {
+            toPopulate.addAll(provider.getRunningProjects());
+            return true;
+        }
     }
 }

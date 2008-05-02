@@ -57,6 +57,12 @@ public class GrailsRuntimeTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        super.tearDown();
+    }
+
     public void testConfigured() throws IOException {
         final GrailsSettings settings = GrailsSettings.getInstance();
         final GrailsRuntime runtime = GrailsRuntime.getInstance();

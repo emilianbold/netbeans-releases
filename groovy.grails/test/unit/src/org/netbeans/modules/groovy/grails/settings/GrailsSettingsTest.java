@@ -55,9 +55,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hejl
  */
-public class SettingsTest extends NbTestCase {
+public class GrailsSettingsTest extends NbTestCase {
 
-    public SettingsTest(String name) {
+    public GrailsSettingsTest(String name) {
         super(name);
     }
 
