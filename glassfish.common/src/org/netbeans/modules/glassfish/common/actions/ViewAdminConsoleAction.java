@@ -68,8 +68,8 @@ public class ViewAdminConsoleAction extends NodeAction {
                 try {
                     Map<String, String> ip = commonSupport.getInstanceProperties();
                     String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-                    String adminPort = ip.get(GlassfishModule.ADMINPORT_ATTR);
-                    URL url = new URL("http://" + host + ":" + adminPort + "/admin");
+                    String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+                    URL url = new URL("http://" + host + ":" + httpPort + "/admin");
                     URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
                     Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
