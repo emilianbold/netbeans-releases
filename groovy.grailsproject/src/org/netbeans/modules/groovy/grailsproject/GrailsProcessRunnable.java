@@ -96,28 +96,25 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
             inputThread.start();
             errorThread.start();
 
-            if (snooper != null) {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(process.getInputStream()));
-                try {
-                    String lineString;
-                    // while stdout gets filtered through the snooper
-                    while ((lineString = reader.readLine()) != null) {
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            try {
+                String lineString;
+                // FIXME use the output API
+                while ((lineString = reader.readLine()) != null) {
+                    if (snooper != null) {
                         snooper.lineFilter(lineString);
-                        io.getOut().println(lineString);
                     }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } finally {
-                    try {
-                        reader.close();
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.FINE, null, ex);
-                    }
+                    io.getOut().println(lineString);
                 }
-            } else {
-                outputThread = new StreamRedirectThread(process.getInputStream(), io.getOut());
-                outputThread.start();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } finally {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
             }
 
             process.waitFor();

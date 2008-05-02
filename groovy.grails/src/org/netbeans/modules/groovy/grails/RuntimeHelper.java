@@ -39,20 +39,38 @@
 
 package org.netbeans.modules.groovy.grails;
 
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
-
-import org.openide.modules.ModuleInstall;
+import java.io.File;
+import org.openide.util.Utilities;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Petr Hejl
  */
-public class Installer extends ModuleInstall {
+public final class RuntimeHelper {
 
-    private GrailsSettings settings;
+    public static final String WIN_EXECUTABLE = "\\bin\\grails.bat"; // NOI18N
 
-    @Override
-    public void restored() {
-        settings = GrailsSettings.getInstance();
+    public static final String NIX_EXECUTABLE = "/bin/grails"; // NOI18N
+
+    private RuntimeHelper() {
+        super();
+    }
+
+    public static boolean isValidRuntime(File grailsBase) {
+        String pathToBinary = Utilities.isWindows() ? WIN_EXECUTABLE : NIX_EXECUTABLE;
+        return new File(grailsBase, pathToBinary).isFile();
+    }
+
+    public static File getSystemDefaultRuntime() {
+        String grailsHome = System.getenv("GRAILS_HOME"); // NOI18N
+        if (grailsHome == null) {
+            return null;
+        }
+        File grailsBase = new File(grailsHome);
+        if (isValidRuntime(grailsBase)) {
+            return grailsBase;
+        }
+
+        return null;
     }
 }
