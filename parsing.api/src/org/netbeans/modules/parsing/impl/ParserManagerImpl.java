@@ -94,7 +94,9 @@ public class ParserManagerImpl {
      * @return a parser
      */
     static Parser getParser (final Source source) {
-        return null;
+        assert source != null;
+        ParserFactory pf = null;    //Get parser factory for givem MIME Type
+        return pf.createParser(source);
     }
     
 //    
