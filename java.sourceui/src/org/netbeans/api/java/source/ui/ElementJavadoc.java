@@ -99,6 +99,7 @@ public class ElementJavadoc {
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
     private static final String LINKPLAIN_TAG = "@linkplain"; //NOI18N
     private static final String CODE_TAG = "@code"; //NOI18N
+    private static final String LITERAL_TAG = "@literal"; //NOI18N
     private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
     private static final String VALUE_TAG = "@value"; //NOI18N
     
@@ -978,9 +979,15 @@ public class ElementJavadoc {
                     if (mdoc != null)
                         sb.append(inlineTags(eu, mdoc, mdoc.inlineTags()));
                 }
+            } else if (LITERAL_TAG.equals(tag.kind())) {
+                try {
+                    sb.append(XMLUtil.toElementContent(tag.text()));
+                } catch (IOException ioe){}
             } else if (CODE_TAG.equals(tag.kind())) {
                 sb.append("<code>"); //NOI18N
-                sb.append(tag.text());
+                try {
+                    sb.append(XMLUtil.toElementContent(tag.text()));
+                } catch (IOException ioe){}
                 sb.append("</code>"); //NOI18N
             } else {
                 sb.append(tag.text());
