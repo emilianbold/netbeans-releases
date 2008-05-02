@@ -37,22 +37,56 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails;
+package org.netbeans.modules.groovy.grails.server;
 
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
-
-import org.openide.modules.ModuleInstall;
+import javax.swing.JComponent;
+import org.netbeans.spi.server.ServerInstanceImplementation;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Petr Hejl
  */
-public class Installer extends ModuleInstall {
+public class GrailsInstance implements ServerInstanceImplementation {
 
-    private GrailsSettings settings;
+    public Node getBasicNode() {
+        return new BasicNode();
+    }
 
-    @Override
-    public void restored() {
-        settings = GrailsSettings.getInstance();
+    public Node getFullNode() {
+        return new BasicNode();
+    }
+
+    public JComponent getCustomizer() {
+        return null;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", "");
+    }
+
+    public String getServerDisplayName() {
+        return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.serverDisplayName");
+    }
+
+    public boolean isRemovable() {
+        return false;
+    }
+
+    public void remove() {
+        // noop
+    }
+
+    private static class BasicNode extends AbstractNode {
+
+        public BasicNode() {
+            super(Children.LEAF);
+            setDisplayName(NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", ""));
+            setIconBaseWithExtension("org/netbeans/modules/groovy/grails/resources/GrailsIcon.png");
+        }
+
     }
 }

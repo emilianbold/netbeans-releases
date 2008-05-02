@@ -37,22 +37,46 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails;
+package org.netbeans.modules.groovy.grails.server;
 
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
-
-import org.openide.modules.ModuleInstall;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.spi.server.ServerInstanceFactory;
+import org.netbeans.spi.server.ServerInstanceProvider;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Petr Hejl
  */
-public class Installer extends ModuleInstall {
+public final class GrailsInstanceProvider implements ServerInstanceProvider {
 
-    private GrailsSettings settings;
+    private static GrailsInstanceProvider instance;
 
-    @Override
-    public void restored() {
-        settings = GrailsSettings.getInstance();
+    private final GrailsInstance grailsInstance;
+
+    private GrailsInstanceProvider() {
+        grailsInstance = new GrailsInstance();
     }
+
+    public static synchronized GrailsInstanceProvider getInstance() {
+        if (instance == null) {
+            instance = new GrailsInstanceProvider();
+        }
+        return instance;
+    }
+
+    public List<ServerInstance> getInstances() {
+        return Collections.singletonList(ServerInstanceFactory.createServerInstance(grailsInstance));
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        // never changes
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        // never changes
+    }
+
 }

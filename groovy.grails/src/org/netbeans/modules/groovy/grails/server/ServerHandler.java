@@ -37,22 +37,28 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails;
-
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
-
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.groovy.grails.server;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Petr Hejl
  */
-public class Installer extends ModuleInstall {
+public class ServerHandler implements Runnable {
 
-    private GrailsSettings settings;
+    private final Process serverProcess;
 
-    @Override
-    public void restored() {
-        settings = GrailsSettings.getInstance();
+    public ServerHandler(Process serverProcess) {
+        this.serverProcess = serverProcess;
     }
+
+    public void run() {
+        try {
+            serverProcess.waitFor();
+        } catch (InterruptedException ex) {
+            serverProcess.destroy();
+        } finally {
+            
+        }
+    }
+
 }
