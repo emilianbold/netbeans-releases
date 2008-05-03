@@ -70,4 +70,8 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///docs/hibernate-3.2.5-src.zip!/</resource>
     </volume>
     -->
+    <volume>
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/org/hibernate/hibernate/3.2.5.ga/hibernate-3.2.5.ga.pom</resource>
+    </volume>
 </library>
