@@ -78,7 +78,7 @@ public class SelectTableAction extends GraphAction {
         String nbBundle2 = mLoc.t("BUND034: Select Source And Target Tables (Ctrl+Shift-T)");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle2.substring(15));
 
-        // Acceleratot Ctrl+Shift-T
+        // Acceleratot Shift-S
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('T', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
     }
 

@@ -46,8 +46,6 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
 
-import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -108,7 +106,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Validator extends BpelValidator {
 
-  protected void init() {
+  @Override
+  protected final void init()
+  {
     myErrored = new ArrayList<Component>();
   }
 
@@ -983,30 +983,6 @@ public final class Validator extends BpelValidator {
       return true;
     }
     return hasParentTerminationHandler(component.getParent());
-  }
-
-  @Override
-  public void visit(Import imp) {
-    Model model = getModel(imp);
-
-    if (model == null) {
-      addError("FIX_Not_Well_Formed_Import", imp); // NOI18N
-      return;
-    }
-    if (isValidationComplete()) {
-//out();
-//out("Vadlidate model: " + model);
-      validate(model);
-    }
-  }
-
-  private Model getModel(Import imp) {
-    Model model = ImportHelper.getWsdlModel(imp, false);
-
-    if (model != null) {
-      return model;
-    }
-    return ImportHelper.getSchemaModel(imp, false);
   }
 
   private void addErrorCheck(String key, Component component, String name1, String name2) {

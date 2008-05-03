@@ -694,7 +694,7 @@ void error_skipdecl() {
     ParseException e = generateParseException();
     //System.err.println("** error_skipdecl **\n" + e.toString());
 
-  Token t = getToken(1);
+  Token t = getNextToken();
   while (t.kind != SEMICOLON && t.kind != RBRACE && t.kind != EOF ) {
       getNextToken();
       t = getToken(1);

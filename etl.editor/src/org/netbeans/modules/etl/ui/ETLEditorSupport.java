@@ -82,7 +82,6 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 
-
 /**
  *
  * @author Ahimanikya Satapathy
@@ -372,13 +371,6 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
         }
     }
-    
-      /**
-     * This method allows the close behavior of CloneableEditorSupport to be
-     * invoked from the SourceMultiViewElement. The close method of
-     * CloneableEditorSupport at least clears the undo queue and releases the
-     * swing document.
-     */
     public boolean silentClose() {
         return super.close(false);
     }
@@ -691,7 +683,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                     updateTitles();
                 }
             });
-    }
+        }
     public void setUpdatedDuringLoad(boolean val) {
         updatedDuringLoad = val;
     }

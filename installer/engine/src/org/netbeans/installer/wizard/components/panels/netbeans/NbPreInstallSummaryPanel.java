@@ -279,7 +279,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                         base.getDisplayName()));
                                 text.append(StringUtils.LF);
                                 text.append("    " + nbLocation);
-                                text.append(StringUtils.LF);
+                                text.append(StringUtils.LF);                                
                             }
                             break;
                         }
@@ -295,11 +295,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 product.getUid().equals("nb-base") ?
                                     INSTALLATION_FOLDER_NETBEANS_PROPERTY :
                                     INSTALLATION_FOLDER_PROPERTY);
+                        text.append(StringUtils.LF);
                         text.append(StringUtils.format(property,
                                 product.getDisplayName()));
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
-                        text.append(StringUtils.LF);
+                        text.append(StringUtils.LF);                        
                     }
                 } catch (InitializationException e) {
                     ErrorManager.notifyError(
@@ -312,7 +313,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 text.append(StringUtils.format(
                         panel.getProperty(NB_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnNb)));
-                text.append(StringUtils.LF);
+                text.append(StringUtils.LF);                
             }
             // at the end add glassfish components record
             if (dependentOnGf.size() > 0) {
@@ -320,14 +321,14 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 text.append(StringUtils.format(
                         panel.getProperty(GF_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnGf)));
-                text.append(StringUtils.LF);
+                text.append(StringUtils.LF);                
             }
             if (dependentOnAs.size() > 0) {
                 text.append(StringUtils.LF);
                 text.append(StringUtils.format(
                         panel.getProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnAs)));
-                text.append(StringUtils.LF);
+                text.append(StringUtils.LF);                
             }
             locationsPane.setText(text);
             

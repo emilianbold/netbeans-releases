@@ -70,9 +70,7 @@ if [ -d "/Library/Receipts/glassfish.pkg" ] ; then
 fi
 
 #Fix for 132115
-sed -i -e "s/never/TUE/" $2/updatecenter/config/config.xml
+sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml
 
 #add Product ID
-if [ -e "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/"${NB_CLUSTER_DIR}"/config/productid ] ; then
-    "$script_dir"/addproduct_id.sh "GLASSFISH"
-fi
+"$script_dir"/addproduct_id.sh "GLASSFISH"

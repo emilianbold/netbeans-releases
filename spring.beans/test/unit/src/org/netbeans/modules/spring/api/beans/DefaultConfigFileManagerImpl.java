@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.spring.beans.ConfigFileManagerImplementation;
@@ -58,10 +60,26 @@ import org.openide.util.Mutex;
 public class DefaultConfigFileManagerImpl implements ConfigFileManagerImplementation {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private List<File> files;
+    private List<File> files = new ArrayList<File>();
     private List<ConfigFileGroup> groups = new ArrayList<ConfigFileGroup>();
 
     public DefaultConfigFileManagerImpl(ConfigFileGroup... groups) {
+        Set<File> allFiles = new TreeSet<File>();
+        for (ConfigFileGroup group : groups) {
+            this.groups.add(group);
+            for (File file : group.getFiles()) {
+                allFiles.add(file);
+            }
+        }
+        for (File file : allFiles) {
+            files.add(file);
+        }
+    }
+
+    public DefaultConfigFileManagerImpl(File[] files, ConfigFileGroup[] groups) {
+        for (File file : files) {
+            this.files.add(file);
+        }
         for (ConfigFileGroup group : groups) {
             this.groups.add(group);
         }
