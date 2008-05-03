@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -472,6 +472,7 @@ public class EditorOperator extends TopComponentOperator {
      * Pushes key of requested key code.
      * @param keyCode key code
      */
+    @Override
     public void pushKey(int keyCode) {
         // need to request focus before any key push
         this.requestFocus();
@@ -589,19 +590,26 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationShortDescription
      * @see #getAnnotationType
      */
-    public Object[] getAnnotations(int lineNumber) {
-        ArrayList<Object> result = new ArrayList<Object>();
-        try {
-            Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
-            Method getLineAnnotationsMethod = annotationsClass.getDeclaredMethod("getLineAnnotations", new Class[] {int.class});
-            getLineAnnotationsMethod.setAccessible(true);
-            Object lineAnnotations = getLineAnnotationsMethod.invoke(getAnnotationsInstance(), new Object[] {new Integer(lineNumber-1)});
-            if(lineAnnotations != null) {
-                result = getAnnotations(lineAnnotations);
+    public Object[] getAnnotations(final int lineNumber) {
+        // run in dispatch thread
+        @SuppressWarnings("unchecked")
+        ArrayList<Object> result = (ArrayList<Object>)getQueueTool().invokeSmoothly(new QueueTool.QueueAction("getAnnotations") {    // NOI18N
+            public Object launch() {
+                ArrayList<Object> result = new ArrayList<Object>();
+                try {
+                    Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
+                    Method getLineAnnotationsMethod = annotationsClass.getDeclaredMethod("getLineAnnotations", new Class[]{int.class});
+                    getLineAnnotationsMethod.setAccessible(true);
+                    Object lineAnnotations = getLineAnnotationsMethod.invoke(getAnnotationsInstance(), new Object[]{new Integer(lineNumber - 1)});
+                    if (lineAnnotations != null) {
+                        result = getAnnotations(lineAnnotations);
+                    }
+                } catch (Exception e) {
+                    throw new JemmyException("getAnnotations failed.", e);
+                }
+                return result;
             }
-        } catch (Exception e) {
-            throw new JemmyException("getAnnotations failed.", e);
-        }
+        });    
         return result.toArray(new Annotation[result.size()]);
     }
     
@@ -612,19 +620,26 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationType
      */
     public Object[] getAnnotations() {
-        ArrayList<Object> result = new ArrayList<Object>();
-        try {
-            Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
-            Field lineAnnotationsArrayField = annotationsClass.getDeclaredField("lineAnnotationsArray");
-            lineAnnotationsArrayField.setAccessible(true);
-            ArrayList lineAnnotationsArray = (ArrayList)lineAnnotationsArrayField.get(getAnnotationsInstance());
-            // loop through all lines
-            for(int i=0;i<lineAnnotationsArray.size();i++) {
-                result.addAll(getAnnotations(lineAnnotationsArray.get(i)));
+        // run in dispatch thread
+        @SuppressWarnings("unchecked")
+        ArrayList<Object> result = (ArrayList<Object>)getQueueTool().invokeSmoothly(new QueueTool.QueueAction("getAnnotations") {    // NOI18N
+            public Object launch() {
+                ArrayList<Object> result = new ArrayList<Object>();
+                try {
+                    Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
+                    Field lineAnnotationsArrayField = annotationsClass.getDeclaredField("lineAnnotationsArray");
+                    lineAnnotationsArrayField.setAccessible(true);
+                    ArrayList lineAnnotationsArray = (ArrayList) lineAnnotationsArrayField.get(getAnnotationsInstance());
+                    // loop through all lines
+                    for (int i = 0; i < lineAnnotationsArray.size(); i++) {
+                        result.addAll(getAnnotations(lineAnnotationsArray.get(i)));
+                    }
+                } catch (Exception e) {
+                    throw new JemmyException("getAnnotations failed.", e);
+                }
+                return result;
             }
-        } catch (Exception e) {
-            throw new JemmyException("getAnnotations failed.", e);
-        }
+        });    
         return result.toArray(new Annotation[result.size()]);
     }
     
@@ -975,6 +990,7 @@ public class EditorOperator extends TopComponentOperator {
     /** Saves content of this Editor by API. If it is not applicable or content 
      * is not modified, it does nothing.
      */
+    @Override
     public void save() {
         super.save();
         if (getVerification()) {
