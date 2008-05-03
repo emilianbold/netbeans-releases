@@ -245,7 +245,10 @@ public class Util {
     public static ArrayList<FileObject> getConfigFiles(Project project) {
         ArrayList<FileObject> files = new ArrayList<FileObject>();
         Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (projectSources == null) {
+            javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        }
         for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);

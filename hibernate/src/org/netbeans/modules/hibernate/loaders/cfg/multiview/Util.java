@@ -119,6 +119,10 @@ public class Util {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         if (proj==null) return new SourceGroup[]{};
         Sources sources = ProjectUtils.getSources(proj);
+        SourceGroup[] toRet = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (toRet != null) {
+            return toRet;
+        }
         return sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
     

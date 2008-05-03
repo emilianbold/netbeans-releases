@@ -88,6 +88,8 @@ public class HibernateEditorUtil {
         }
         // XXX this only works correctly with projects with a single sourcepath,
         // but we don't plan to support another kind of projects anyway (what about Maven?).
+        // mkleint: Maven has just one sourceroot for java sources, the config files are placed under
+        // different source root though. JavaProjectConstants.SOURCES_TYPE_RESOURCES
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup sourceGroup : sourceGroups) {
             return JavaSource.create(ClasspathInfo.create(sourceGroup.getRootFolder()));

@@ -145,7 +145,11 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
         Sources sources = ProjectUtils.getSources(enclosingProject);
         try {
             SourceGroup[] javaSourceGroup = sources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+            if (javaSourceGroup == null) {
+                javaSourceGroup = sources.getSourceGroups(
+                        JavaProjectConstants.SOURCES_TYPE_JAVA);
+            }
             if (javaSourceGroup != null && javaSourceGroup.length != 0) {
                 FileObject targetFolder = javaSourceGroup[0].getRootFolder();
                 CreateHibernateConfiguration createHibernateConfiguration =

@@ -151,10 +151,7 @@ public class HibernateUtil {
      */
     public static ArrayList<FileObject> getAllHibernateConfigFileObjects(Project project) {
         ArrayList<FileObject> configFiles = new ArrayList<FileObject>();
-        Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA
-                );
+        SourceGroup[] javaSourceGroup = getSourceGroups(project);
         
         for(SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
@@ -178,11 +175,7 @@ public class HibernateUtil {
      */
     public static ArrayList<FileObject> getAllHibernateMappingFileObjects(Project project) {
         ArrayList<FileObject> mappingFiles = new ArrayList<FileObject>();
-        Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA
-                );
-        
+        SourceGroup[] javaSourceGroup = getSourceGroups(project);
         for(SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
@@ -195,6 +188,17 @@ public class HibernateUtil {
         }
         return mappingFiles;
     }
+    
+    private static SourceGroup[] getSourceGroups(Project project) {
+        Sources projectSources = ProjectUtils.getSources(project);
+        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (javaSourceGroup == null) {
+            javaSourceGroup = projectSources.getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+        }
+        return javaSourceGroup;
+    }
 
     /**
      * Seaches mapping files under the given project and returns the list of 
@@ -206,10 +210,7 @@ public class HibernateUtil {
      */
     public static ArrayList<String> getAllHibernateMappingsRelativeToSourcePath(Project project) {
         ArrayList<String> mappingFiles = new ArrayList<String>();
-        Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA
-                );
+        SourceGroup[] javaSourceGroup = getSourceGroups(project);
         
         for(SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();

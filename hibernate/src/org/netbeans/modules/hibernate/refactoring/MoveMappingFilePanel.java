@@ -311,7 +311,10 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     
     private void updateRoots() {
         Sources sources = ProjectUtils.getSources(project);
-        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (groups == null) {
+            groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        }
 
         int preselectedItem = 0;
         for( int i = 0; i < groups.length; i++ ) {
