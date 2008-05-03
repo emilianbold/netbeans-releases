@@ -244,18 +244,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected FileObject generateJaxbOutputWrapper() throws IOException {
-        MimeType mimeType = getBean().getMimeTypes()[0];
-
-        if (mimeType == MimeType.JSON || mimeType == MimeType.XML) {
-            FileObject converterFolder = getConverterFolder();
-            String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-            getBean().setOutputWrapperPackageName(packageName);
-            String[] returnTypeNames = getBean().getOutputTypes();
-            XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(converterFolder, getBean().getOutputWrapperName(), packageName, returnTypeNames);
-
-            return gen.generate();
-        }
-        
+  
         return null;
     }
 

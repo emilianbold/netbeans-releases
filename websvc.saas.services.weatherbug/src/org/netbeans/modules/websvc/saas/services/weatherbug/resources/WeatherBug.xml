@@ -61,15 +61,11 @@
         <group name="WeatherBug">
         </group>
 
-        <authentication profile="SaaSServices/WeatherBug/profile.properties">
+        <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="ACode"/>
         </authentication>
 
     </saas-metadata>
-
-    <!--
-    <methods>
-        <method name="liveWeatherRSS" href="#WeatherBug.LiveWeatherRSS"/>
-    </methods>
-    -->
+    
+    <methods/>
 </saas-services>

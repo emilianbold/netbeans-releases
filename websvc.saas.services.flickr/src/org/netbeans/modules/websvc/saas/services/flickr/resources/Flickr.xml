@@ -68,7 +68,7 @@
                     url="Templates/SaaSServices/FlickrCallback.java"/>
             </artifacts>
         </code-gen>
-        <authentication profile="SaaSServices/Flickr/profile.properties">
+        <authentication profile="Templates/SaaSServices/sessionkey.properties">
             <session-key api-id="api_key" session-id="auth_token" sig-id="api_sig">
                 <sign id="sig">
                     <params>

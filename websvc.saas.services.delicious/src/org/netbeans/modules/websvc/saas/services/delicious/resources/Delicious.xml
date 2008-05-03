@@ -71,7 +71,7 @@
                     url="Templates/SaaSServices/HttpBasicCallback.java"/>
             </artifacts>
         </code-gen>
-        <authentication profile="SaaSServices/Delicious/profile.properties">
+        <authentication profile="Templates/SaaSServices/httpbasic.properties">
             <http-basic username="username" password="password">
                 <authenticator>
                     <use-templates>
