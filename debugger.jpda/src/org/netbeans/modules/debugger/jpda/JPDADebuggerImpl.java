@@ -108,6 +108,7 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 
+import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -164,6 +165,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ExpressionPool              expressionPool;
     private ThreadsCache                threadsCache;
     private DeadlockDetector            deadlockDetector;
+    private ThreadsCollector            threadsCollector;
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -1687,6 +1689,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
         return false;
+    }
+
+    @Override
+    public synchronized ThreadsCollector getThreadsCollector() {
+        if (threadsCollector == null) {
+            threadsCollector = new ThreadsCollectorImpl(this);
+        }
+        return threadsCollector;
     }
 
     @Override

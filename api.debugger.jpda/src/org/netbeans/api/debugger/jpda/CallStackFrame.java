@@ -66,6 +66,8 @@ public interface CallStackFrame {
      * @return line number associated with this this stack frame
      */
     public abstract int getLineNumber (String struts);
+    
+    public abstract int getFrameDepth();
 
     /**
      * Returns the current operation (if any) at the location of this call stack frame.

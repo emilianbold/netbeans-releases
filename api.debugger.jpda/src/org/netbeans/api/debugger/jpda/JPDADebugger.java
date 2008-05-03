@@ -508,6 +508,10 @@ public abstract class JPDADebugger {
         throw new UnsupportedOperationException("Not supported.");
     }
     
+    public ThreadsCollector getThreadsCollector() {
+        return null;
+    }
+    
     /**
      * Creates a deadlock detector.
      * @return deadlock detector with automatic detection of deadlock among suspended threads

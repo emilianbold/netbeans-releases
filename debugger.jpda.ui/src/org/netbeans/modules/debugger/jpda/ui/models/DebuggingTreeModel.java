@@ -63,6 +63,7 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -103,6 +104,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private PreferenceChangeListener prefListener;
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
+    private PropertyChangeListener otherThreadsListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
@@ -373,6 +375,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (!threadStateListeners.containsKey(t)) {
                 threadStateListeners.put(t, new ThreadStateListener(t));
             }
+            if (otherThreadsListener == null) {
+                otherThreadsListener = new OtherThreadsListener();
+                debugger.getThreadsCollector().addPropertyChangeListener(WeakListeners.propertyChange(otherThreadsListener, debugger.getThreadsCollector()));
+            }
         }
     }
     
@@ -409,6 +415,24 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 }
             }
         }
+    }
+    
+    
+    private class OtherThreadsListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if (ThreadsCollector.PROP_THREAD_RESUMED.equals(propertyName)) {
+                Set<JPDAThread> threadsToRefresh;
+                synchronized (threadStateListeners) {
+                    threadsToRefresh = new HashSet(threadStateListeners.keySet());
+                }
+                for (JPDAThread t : threadsToRefresh) {
+                    fireThreadStateChanged(t);
+                }
+            }
+        }
+        
     }
     
     

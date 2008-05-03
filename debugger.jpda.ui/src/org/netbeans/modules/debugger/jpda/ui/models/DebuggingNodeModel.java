@@ -504,7 +504,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         
         private Reference<JPDAThread> lastCurrentThreadRef = new WeakReference<JPDAThread>(null);
         //private Reference<CallStackFrame> lastCurrentFrameRef = new WeakReference<CallStackFrame>(null);
-        private CallStackFrame lastCurrentFrame = null;
+        //private CallStackFrame lastCurrentFrame = null;
+        private Reference<JPDAThread> lastCurrentFrameThreadRef = new WeakReference<JPDAThread>(null);
+        private int lastCurrentFrameDepth;
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (JPDADebugger.PROP_CURRENT_THREAD.equals(evt.getPropertyName())) {
@@ -523,11 +525,25 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             }
             if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
                 CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
-                CallStackFrame lastcurrentFrame;
+                CallStackFrame lastcurrentFrame = null;
                 synchronized (this) {
-                    lastcurrentFrame = lastCurrentFrame;//Ref.get();
+                    JPDAThread lastCurrentFrameThread = lastCurrentFrameThreadRef.get();
+                    if (lastCurrentFrameThread != null) {
+                        try {
+                            CallStackFrame[] frames = lastCurrentFrameThread.getCallStack(lastCurrentFrameDepth, lastCurrentFrameDepth + 1);
+                            lastcurrentFrame = frames[0];
+                        } catch (AbsentInformationException aiex) {}
+                    }
+                    //lastcurrentFrame = lastCurrentFrame;//Ref.get();
                     //lastCurrentFrameRef = new WeakReference(currentFrame);
-                    lastCurrentFrame = currentFrame;
+                    //lastCurrentFrame = currentFrame;
+                    if (currentFrame != null) {
+                        lastCurrentFrameThreadRef = new WeakReference(currentFrame.getThread());
+                        lastCurrentFrameDepth = currentFrame.getFrameDepth();
+                    } else {
+                        lastCurrentFrameThreadRef = new WeakReference(null);
+                        lastCurrentFrameDepth = 0;
+                    }
                 }
                 if (lastcurrentFrame != null) {
                     fireNodeChanged(lastcurrentFrame);
