@@ -11,6 +11,8 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
+import org.openide.util.NbBundle;
+
 public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
 
     
@@ -22,14 +24,14 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #3";
+        return NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3_SPECIFY_POLLING_CONFIGURATION");
     }
 
     private void init() {
         DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector(DatabaseTableWizardConstants.getTimeUnitInfos()));
         pollingTimeUnitComboBox.setModel(model);
-        
-        
+        pollingTimeUnitComboBox.setSelectedItem(DatabaseTableWizardConstants.TIMEUNIT_SECOND);
+
     }
     
     /** This method is called from within the constructor to
