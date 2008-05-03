@@ -48,6 +48,7 @@ import com.sun.jdi.InternalException;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
@@ -87,6 +88,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     private JPDADebuggerImpl    debugger;
     //private AST                 ast;
     private Operation           currentOperation;
+    private EqualsInfo          equalsInfo;
     private boolean             valid;
     
     public CallStackFrameImpl (
@@ -98,6 +100,7 @@ public class CallStackFrameImpl implements CallStackFrame {
         this.sf = sf;
         this.depth = depth;
         this.debugger = debugger;
+        equalsInfo = new EqualsInfo(debugger, sf, depth);
         this.valid = true; // suppose we're valid when we're new
     }
 
@@ -585,45 +588,11 @@ public class CallStackFrameImpl implements CallStackFrame {
             return false;
         }
         CallStackFrameImpl frame = (CallStackFrameImpl) o;
-        boolean valid;
-        synchronized (this) {
-            valid = this.valid;
-        }
-        if (valid) {
-            synchronized (frame) {
-                valid = frame.valid;
-            }
-        }
-        if (!valid) {
-            //System.err.println(" FRAMES INVALID (#"+hashCode()+", #"+o.hashCode()+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+super.equals(o));//(sf == ((CallStackFrameImpl) o).sf));
-            //return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
-            return this == o;
-        }
-        try {
-            //System.err.println(" FRAMES (#"+hashCode()+":"+getLineNumber(null)+", #"+o.hashCode()+":"+frame.getLineNumber(null)+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+
-            //        ((sf.equals (frame.sf) && getFrameDepth() == frame.getFrameDepth()) ? "T" : "F"));
-            return  sf.equals (frame.sf) && getFrameDepth() == frame.getFrameDepth();
-        } catch (InvalidStackFrameException isfex) {
-            //System.err.println(" FRAMES Invalid (#"+hashCode()+", #"+o.hashCode()+") (S#"+System.identityHashCode(this)+", S#"+System.identityHashCode(o)+") equals = "+super.equals(o));//(sf == ((CallStackFrameImpl) o).sf));
-            //return super.equals(o);//sf == ((CallStackFrameImpl) o).sf;
-            return this == o;
-        }
+        return equalsInfo.equals(frame.equalsInfo);
     }
     
-    private Integer hashCode;
-    
     public synchronized int hashCode () {
-        if (hashCode == null) {
-            try {
-                hashCode = new Integer(sf.hashCode() << 4 + getFrameDepth());// + getLineNumber(null));
-            } catch (InvalidStackFrameException isfex) {
-                valid = false;
-                hashCode = new Integer(super.hashCode());
-            }
-            
-            //System.err.println("CREATED  HASH CODE: "+hashCode+"   line = "+getLineNumber(null)+", valid = "+valid);
-        }
-        return hashCode.intValue();
+        return equalsInfo.hashCode();
     }
 
     public List<MonitorInfo> getOwnedMonitors() {
@@ -643,6 +612,45 @@ public class CallStackFrameImpl implements CallStackFrame {
             }
         }
         return Collections.unmodifiableList(frameMonitors);
+    }
+    
+    private final static class EqualsInfo {
+        
+        private JPDAThread thread;
+        private int depth;
+        private ReferenceType locationType;
+        private String locationMethodName;
+        private String locationMethodSignature;
+        private long locationCodeIndex;
+        
+        public EqualsInfo(JPDADebuggerImpl debugger, StackFrame sf, int depth) {
+            thread = debugger.getThread(sf.thread());
+            this.depth = depth;
+            locationType = sf.location().declaringType();
+            locationMethodName = sf.location().method().name();
+            locationMethodSignature = sf.location().method().signature();
+            locationCodeIndex = sf.location().codeIndex();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof EqualsInfo)) {
+                return false;
+            }
+            EqualsInfo ei = (EqualsInfo) obj;
+            return thread == ei.thread &&
+                   depth == ei.depth &&
+                   locationType.equals(ei.locationType) &&
+                   locationMethodName.equals(ei.locationMethodName) &&
+                   locationMethodSignature.equals(ei.locationMethodSignature) &&
+                   locationCodeIndex == ei.locationCodeIndex;
+        }
+
+        @Override
+        public int hashCode() {
+            return (thread.hashCode() << 8 + depth + locationType.hashCode() << 4 + locationCodeIndex);
+        }
+        
     }
 }
 
