@@ -2015,7 +2015,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/>
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2031,7 +2031,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2046,7 +2046,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2061,7 +2061,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2076,7 +2076,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2091,7 +2091,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
