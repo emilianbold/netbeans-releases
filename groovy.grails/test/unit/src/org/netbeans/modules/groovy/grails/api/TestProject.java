@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,75 +34,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.grails.api;
 
+import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
-
+import org.netbeans.api.project.ProjectInformation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class GrailsProjectConfig {
+public class TestProject implements Project {
 
-    private static final String DEFAULT_PORT = "8080"; // NOI18N
+    private final FileObject directory;
 
-    private final Project prj;
+    private final Lookup lookup;
 
-    private final GrailsSettings settings = GrailsSettings.getInstance();
-
-    private GrailsProjectConfig(Project prj) {
-        this.prj = prj;
+    public TestProject(String name, FileObject directory) {
+        this.directory = directory;
+        lookup = Lookups.fixed(new TestProjectInformation(this, name));
     }
 
-    public static GrailsProjectConfig forProject(Project project) {
-        return new GrailsProjectConfig(project);
+    public Lookup getLookup() {
+        return lookup;
     }
 
-    public Project getProject() {
-        return prj;
+    public FileObject getProjectDirectory() {
+        return directory;
     }
 
-    public String getPort() {
-        String port = settings.getPortForProject(prj);
-        if (port == null) {
-            port = DEFAULT_PORT;
+    private static class TestProjectInformation implements ProjectInformation {
+
+        private final Project project;
+
+        private final String name;
+
+        public TestProjectInformation(Project project, String name) {
+            this.project = project;
+            this.name = name;
         }
-        return port;
-    }
 
-    public void setPort(String port) {
-        assert port != null;
-        settings.setPortForProject(prj, port);
-    }
+        public String getName() {
+            return name;
+        }
 
-    public GrailsEnvironment getEnvironment() {
-        return settings.getEnvForProject(prj);
-    }
+        public Project getProject() {
+            return project;
+        }
 
-    public void setEnvironment(GrailsEnvironment env) {
-        assert env != null;
-        settings.setEnvForProject(prj, env);
-    }
+        public String getDisplayName() {
+            return name;
+        }
 
-    public String getDeployDir() {
-        return settings.getDeployDirForProject(prj);
-    }
+        public Icon getIcon() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
-    public void setDeployDir(String dir) {
-        assert dir != null;
-        settings.setDeployDirForProject(prj, dir);
-    }
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
 
-    public boolean getAutoDeployFlag() {
-        return settings.getAutoDeployFlagForProject(prj);
-    }
+        }
 
-    public void setAutoDeployFlag(boolean flag) {
-        settings.setAutoDeployFlagForProject(prj, flag);
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+        }
+
     }
 }

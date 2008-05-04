@@ -39,17 +39,12 @@
 
 package org.netbeans.modules.groovy.grails.settings;
 
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.groovy.grails.api.TestProject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -112,62 +107,5 @@ public class GrailsSettingsTest extends NbTestCase {
         assertEquals("directory1", settings.getDeployDirForProject(project));
         settings.setDeployDirForProject(project, "directory2");
         assertEquals("directory2", settings.getDeployDirForProject(project));
-    }
-
-    private static class TestProject implements Project {
-
-        private final FileObject directory;
-
-        private final Lookup lookup;
-
-        public TestProject(String name, FileObject directory) {
-            this.directory = directory;
-            lookup = Lookups.fixed(new TestProjectInformation(this, name));
-        }
-
-        public Lookup getLookup() {
-            return lookup;
-        }
-
-        public FileObject getProjectDirectory() {
-            return directory;
-        }
-    }
-
-    private static class TestProjectInformation implements ProjectInformation {
-
-        private final Project project;
-
-        private final String name;
-
-        public TestProjectInformation(Project project, String name) {
-            this.project = project;
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Project getProject() {
-            return project;
-        }
-
-        public String getDisplayName() {
-            return name;
-        }
-
-        public Icon getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-
-        }
-
     }
 }
