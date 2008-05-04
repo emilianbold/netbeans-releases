@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks.cli;
+package org.netbeans.modules.xslt.project.anttasks;
 
 import java.lang.reflect.Method;
 import org.apache.tools.ant.AntClassLoader;
@@ -46,10 +46,9 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
-import org.netbeans.modules.bpel.project.anttasks.util.Util;
 import org.netbeans.modules.soa.validation.util.LineUtil;
 
-public class CliValidateBpelProjectTask extends Task {
+public class CliValidateProjectTask extends Task {
     
     private String mSourceDirectory = null;
     private String mBuildDirectory = null;
@@ -59,7 +58,7 @@ public class CliValidateBpelProjectTask extends Task {
     private String mBuildDependentProjectFilesDirectory;
     private boolean mAllowBuildWithError = false;
     
-    public CliValidateBpelProjectTask() {}
+    public CliValidateProjectTask() {}
     
     public void setBuildDependentProjectDir(String dependentProjectFilesDir) {
         this.mBuildDependentProjectFilesDirectory = dependentProjectFilesDir;
@@ -108,7 +107,7 @@ public class CliValidateBpelProjectTask extends Task {
             mClassLoader = new AntClassLoader();
             initClassLoader();
             
-            Class antTaskClass = Class.forName("org.netbeans.modules.bpel.project.anttasks.cli.CliValidateBpelProjectDelegate", true, mClassLoader);
+            Class antTaskClass = Class.forName("org.netbeans.modules.xslt.project.anttasks.CliValidateProjectDelegate", true, mClassLoader);
             Thread.currentThread().setContextClassLoader(mClassLoader);
             Object validateObj = antTaskClass.newInstance();
             

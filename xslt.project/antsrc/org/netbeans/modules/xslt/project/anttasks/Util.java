@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks.util;
+package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -52,42 +52,6 @@ public final class Util {
 
   private Util() {}
 
-  public static void copyFile(File source, File destination) throws IOException {
-      if (!source.exists() || !source.isFile()) {
-          throw new IOException("Source is not valid for copying.");
-      }
-      
-      if (!destination.exists()) {
-          destination.getParentFile().mkdirs();
-          destination.createNewFile();
-      }
-      
-      final File realDest = destination.isDirectory() ? 
-          new File(destination, source.getName()) : 
-          destination;
-      
-      FileInputStream input = null;
-      FileOutputStream output = null;
-      
-      try {
-          input = new FileInputStream(source);
-          output = new FileOutputStream(realDest);
-          
-          byte[] buffer = new byte[4096];
-          while (input.available() > 0) {
-              output.write(buffer, 0, input.read(buffer));
-          }
-      } finally {
-          if (input != null) {
-              input.close();
-          }
-          
-          if (output != null) {
-              output.close();
-          }
-      }
-  }
-  
   public static String getRelativePath(File home, File f){
       return matchPathLists(getPathList(home), getPathList(f));
   }
@@ -108,7 +72,7 @@ public final class Util {
       }
       return l;
   }
-  
+
   private static String matchPathLists(List r, List f) {
       int i;
       int j;
@@ -139,27 +103,8 @@ public final class Util {
       s += f.get(j);
       return s;
   }
-  
-  public static class ProjectFileFilter implements FileFilter {
 
-      public boolean accept(File pathname) {
-          boolean result = false;
-
-          String fileName = pathname.getName();
-          String fileExtension = null;
-          int dotIndex = fileName.lastIndexOf('.');
-
-          if (dotIndex != -1) {
-              fileExtension = fileName.substring(dotIndex + 1);
-          }
-          if (fileExtension != null && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION) || fileExtension.equalsIgnoreCase(XSD_FILE_EXTENSION))) {
-              result = true;
-          }
-          return result;
-      }
-  }
-  
-  public static class BpelFileFilter implements FileFilter {
+  public static class XsltFileFilter implements FileFilter {
 
       public boolean accept(File pathname) {
           if (pathname.isDirectory()) {
@@ -175,32 +120,16 @@ public final class Util {
           if (fileExtension == null) {
               return false;
           }
-          if (fileExtension.equalsIgnoreCase(BPEL_FILE_EXTENSION)) {
+          if (fileExtension.equalsIgnoreCase(XSL_FILE_EXTENSION)) {
+            return true;
+          }
+          if (fileExtension.equalsIgnoreCase(XSLT_FILE_EXTENSION)) {
             return true;
           }
           return false;
       }
   }
   
-  public static class WsdlFileFilter implements FileFilter {
-
-      public boolean accept(File pathname) {
-          boolean result = false;
-          String fileName = pathname.getName();
-          String fileExtension = null;
-          int dotIndex = fileName.lastIndexOf('.');
-
-          if (dotIndex != -1) {
-              fileExtension = fileName.substring(dotIndex + 1);
-          }
-          if (fileExtension != null && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION))) {
-              result = true;
-          }
-          return result;
-      }
-  }
-  
-  private static final String WSDL_FILE_EXTENSION = "wsdl"; // NOI18N
-  private static final String XSD_FILE_EXTENSION = "xsd"; // NOI18N
-  private static final String BPEL_FILE_EXTENSION = "bpel"; // NOI18N
+  private static final String XSL_FILE_EXTENSION = "xsl"; // NOI18N
+  private static final String XSLT_FILE_EXTENSION = "xslt"; // NOI18N
 }

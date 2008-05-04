@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks.cli;
+package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,9 +63,9 @@ import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.model.spi.XslModelFactory;
+import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
@@ -74,16 +74,17 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup;
 
-public class CliBpelCatalogModel implements CatalogModel {
+public class CliXslCatalogModel implements CatalogModel {
     
-    static CliBpelCatalogModel singletonCatMod = null;
+    static CliXslCatalogModel singletonCatMod = null;
     static File projectCatalogFileLocation = null;
         
     /**
      * Constructor
      */
-    public CliBpelCatalogModel() {
-      URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectCatalogUri();
+    public CliXslCatalogModel() {
+      URI catalogFileLocPath = CommandlineXsltProjectXmlCatalogProvider.getInstance().getProjectCatalogUri();
+
       if (catalogFileLocPath != null) {
           projectCatalogFileLocation = new File(catalogFileLocPath);
       }
@@ -93,9 +94,9 @@ public class CliBpelCatalogModel implements CatalogModel {
      * Gets the instance of this class internal API
      * @return current class instance
      */
-    public static CliBpelCatalogModel getDefault(){
+    public static CliXslCatalogModel getDefault(){
         if (singletonCatMod == null){
-            singletonCatMod = new CliBpelCatalogModel();
+            singletonCatMod = new CliXslCatalogModel();
         }
         return singletonCatMod;
     }
@@ -108,7 +109,7 @@ public class CliBpelCatalogModel implements CatalogModel {
             return null;
         }
     }    
-    
+
     public ModelSource getModelSource(URI locationURI) throws CatalogModelException {
        List<File> catalogFileList = new ArrayList<File>();
        File file = null;
@@ -148,6 +149,7 @@ public class CliBpelCatalogModel implements CatalogModel {
         if(locationURI == null) {
             return null;
         }
+        
         URI resolvedURI = locationURI;
         
         if(modelSourceOfSourceDocument != null) {
@@ -166,7 +168,11 @@ public class CliBpelCatalogModel implements CatalogModel {
         
         return null;
     }
-
+    /**
+     * Implementation of CatalogModel
+     * @param file 
+     * @return 
+     */
      protected Document getDocument(File file) throws CatalogModelException{
         Document result = null;
 
@@ -176,6 +182,8 @@ public class CliBpelCatalogModel implements CatalogModel {
 
             FileInputStream fis = new FileInputStream(file);
             byte buffer[] = new byte[fis.available()];
+//                result = new org.netbeans.editor.BaseDocument(
+//                        org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
             result = new javax.swing.text.PlainDocument();
             result.remove(0, result.getLength());
             fis.read(buffer);
@@ -190,14 +198,16 @@ public class CliBpelCatalogModel implements CatalogModel {
         return result;
     }   
     
-    private BpelModelFactory getModelFactory() {
-        BpelModelFactory factory =null;
+    private XslModelFactory getModelFactory() {
+        XslModelFactory factory =null;
+
         try {
-            factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
+            factory = (XslModelFactory) Lookup.getDefault().lookup(XslModelFactory.class);
         }catch (Exception cnfe) {
             throw new RuntimeException(cnfe);
         }
         return factory;
+        
     }
     
      public ModelSource createModelSource(File file, boolean readOnly) throws CatalogModelException{
@@ -212,9 +222,9 @@ public class CliBpelCatalogModel implements CatalogModel {
          return new ModelSource(lookup, readOnly);
      }
     
-    public BpelModel getBPELModel(URI locationURI) throws Exception {
+    public XslModel getXslModel(URI locationURI) throws Exception {
         ModelSource source = getDefault().getModelSource(locationURI);
-        BpelModel model = getModelFactory().getModel (source);
+        XslModel model = getModelFactory().getModel (source);
         model.sync();
         return model;
     }

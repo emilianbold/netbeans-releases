@@ -38,39 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks.ide;
+package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
 
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-/**
- * This class helps project to obtain the Bpel model given a File URI
- * @author Sreenivasan Genipudi
- */
-public class IdeBpelCatalogModel {
+public class IdeXslCatalogModel {
 
-    static IdeBpelCatalogModel singletonCatMod = null;
+    static IdeXslCatalogModel singletonCatMod = null;
 
-    public IdeBpelCatalogModel() {
-    }
+    public IdeXslCatalogModel () {}
 
-    public static IdeBpelCatalogModel getDefault() {
+    public static IdeXslCatalogModel getDefault() {
         if (singletonCatMod == null) {
-            singletonCatMod = new IdeBpelCatalogModel();
+            singletonCatMod = new IdeXslCatalogModel();
         }
         return singletonCatMod;
     }
 
-    public BpelModel getBPELModel(File file) throws Exception {
+    public XslModel getXslModel(File file) throws Exception {
         ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
-        BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
-        BpelModel model = factory.getModel(source);
+        XslModelFactory factory = (XslModelFactory) Lookup.getDefault().lookup(XslModelFactory.class);
+        XslModel model = factory.getModel(source);
         model.sync();
         return model;
     }
