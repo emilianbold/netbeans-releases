@@ -77,11 +77,15 @@ public final class GrailsInstance implements ServerInstanceImplementation {
     }
 
     public Node getBasicNode() {
-        return new FilterNode(node, Children.LEAF);
+        synchronized (this) {
+            return new FilterNode(node, Children.LEAF);
+        }
     }
 
     public Node getFullNode() {
-        return node;
+        synchronized (this) {
+            return node;
+        }
     }
 
     public JComponent getCustomizer() {
@@ -100,8 +104,14 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.serverDisplayName");
     }
 
-    public final void refresh() {
+    public final void refreshChildren() {
         childFactory.refresh();
+    }
+
+    public final void refreshNode() {
+        synchronized (this) {
+            node.setDisplayName(getDisplayName());
+        }
     }
 
     public final boolean isRemovable() {
@@ -139,7 +149,6 @@ public final class GrailsInstance implements ServerInstanceImplementation {
 
         public GrailsNode(Children children, String displayName) {
             super(children);
-            // FIXME get version from runtime
             setDisplayName(displayName);
             setIconBaseWithExtension(
                     "org/netbeans/modules/groovy/grails/resources/GrailsIcon.png"); // NOI18N

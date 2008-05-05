@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.groovy.grails.server;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +51,8 @@ import java.util.concurrent.Executors;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
@@ -67,6 +71,7 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    // instance for single runtime - when more runtimes allowed this need to be changed
     private GrailsInstance grailsInstance;
 
     private GrailsInstanceProvider() {
@@ -82,6 +87,9 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
     }
 
     public List<ServerInstance> getInstances() {
+        if (!GrailsRuntime.getInstance().isConfigured()) {
+            return Collections.emptyList();
+        }
         return Collections.singletonList(ServerInstanceFactory.createServerInstance(grailsInstance));
     }
 
@@ -96,14 +104,14 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
             running.put(process, project);
             PROCESS_EXECUTOR.submit(new ProcessHandler(this, process));
         }
-        grailsInstance.refresh();
+        grailsInstance.refreshChildren();
     }
 
     public void serverStopped(Process process) {
         synchronized (this) {
             running.remove(process);
         }
-        grailsInstance.refresh();
+        grailsInstance.refreshChildren();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -112,6 +120,17 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    public void runtimeChanged() {
+        synchronized (this) {
+            // FIXME do we really want this
+            // TODO we should go through open projects and check the grails
+            // version and server state maybe
+            running.clear();
+        }
+        grailsInstance.refreshNode();
+        changeSupport.fireChange();
     }
 
     private static class ProcessHandler implements Runnable {

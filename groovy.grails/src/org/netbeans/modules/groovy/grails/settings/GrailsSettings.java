@@ -84,9 +84,7 @@ public final class GrailsSettings {
             oldValue = getGrailsBase();
             getPreferences().put(GRAILS_HOME_KEY, path);
         }
-        if(oldValue != path && (oldValue == null || !oldValue.equals(path))) {
-            propertyChangeSupport.firePropertyChange(GRAILS_BASE_PROPERTY, oldValue, oldValue);
-        }
+        propertyChangeSupport.firePropertyChange(GRAILS_BASE_PROPERTY, oldValue, path);
     }
 
     // Which port should we run on

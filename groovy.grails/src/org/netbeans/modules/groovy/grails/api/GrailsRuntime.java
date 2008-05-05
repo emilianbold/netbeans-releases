@@ -95,6 +95,7 @@ public final class GrailsRuntime {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (GrailsSettings.GRAILS_BASE_PROPERTY.equals(evt.getPropertyName())) {
                         instance.reload();
+                        GrailsInstanceProvider.getInstance().runtimeChanged();
                     }
                 }
             });
