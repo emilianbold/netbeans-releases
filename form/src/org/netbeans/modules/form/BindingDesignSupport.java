@@ -225,6 +225,12 @@ public class BindingDesignSupport {
                 PropertyDescriptor desc = new PropertyDescriptor("value", JSpinner.class); // NOI18N
                 descs.add(desc);                
             } else if (JFormattedTextField.class.isAssignableFrom(clazz)) {
+                for (PropertyDescriptor pd : descs) {
+                    if ("text".equals(pd.getName())) { // NOI18N
+                        descs.remove(pd);
+                        break;
+                    }
+                }
                 PropertyDescriptor desc = new PropertyDescriptor("value", JFormattedTextField.class); // NOI18N
                 descs.add(desc);
             }
@@ -444,13 +450,14 @@ public class BindingDesignSupport {
                 } catch (IOException ioex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
                 }
-            } while (!Object.class.equals(superClass[0]));
+            } while (!Object.class.getName().equals(superClass[0]));
             typesFromSource = types;
         }
         List<BindingDescriptor>[] list = new List[] {Collections.emptyList(), typesFromSource, Collections.emptyList()};
         Class clazz = (type.getType() == null) ? binarySuperClass : FormUtils.typeToClass(type);
         if ((clazz != null) && !clazz.getName().startsWith("java.lang.") // NOI18N
                 && !Collection.class.isAssignableFrom(clazz)
+                && !java.util.Date.class.isAssignableFrom(clazz)
                 && !clazz.isArray()) {
             try {
                 BeanInfo beanInfo = FormUtils.getBeanInfo(clazz);

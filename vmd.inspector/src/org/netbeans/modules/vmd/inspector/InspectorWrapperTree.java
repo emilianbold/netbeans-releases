@@ -435,9 +435,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         if (parentWrapper.getChildren() != null) {
             for (InspectorFolderWrapper wrapper : parentWrapper.getChildren()) {
                 updateTreeStructureView(wrapper);
-                if (foldersToUpdate.contains(wrapper)) {
-                    wrapper.resolveFolder(document);
-                }
+                wrapper.resolveFolder(document);
             }
         }
         if (parentWrapper.getChildren() == null || parentWrapper.getChildren().isEmpty()) {

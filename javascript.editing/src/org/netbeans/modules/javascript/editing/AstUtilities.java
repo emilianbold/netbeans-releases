@@ -40,12 +40,10 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node.LabelledNode;
@@ -53,10 +51,8 @@ import org.mozilla.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
@@ -67,7 +63,6 @@ import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -143,7 +138,7 @@ public final class AstUtilities {
     public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, Node node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-        if (lexOffset == -1) {
+        if (lexOffset == -1 || lexOffset > doc.getLength()) {
             return null;
         }
         

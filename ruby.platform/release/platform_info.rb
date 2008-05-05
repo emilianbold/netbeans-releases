@@ -5,8 +5,9 @@ require 'rbconfig'
 # java.util.Properties
 
 # Interpreter info
-jruby = defined?(JRUBY_VERSION)
-$stdout.printf "ruby_kind=#{jruby ? "JRuby" : "Ruby"}\n"
+jruby = defined?(JRUBY_VERSION) || (defined?(RUBY_ENGINE) && 'jruby' == RUBY_ENGINE)
+rubinius = defined?(RUBY_ENGINE) && 'rbx' == RUBY_ENGINE
+$stdout.printf "ruby_kind=#{jruby ? "JRuby" : (rubinius ? "Rubinius" : "Ruby")}\n"
 $stdout.printf "ruby_version=#{RUBY_VERSION}\n"
 $stdout.printf "jruby_version=#{JRUBY_VERSION}\n" if jruby
 $stdout.printf "ruby_patchlevel=#{RUBY_PATCHLEVEL}\n" if defined? RUBY_PATCHLEVEL

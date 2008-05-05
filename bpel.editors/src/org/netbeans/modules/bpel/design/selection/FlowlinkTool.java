@@ -89,7 +89,7 @@ public class FlowlinkTool implements DnDTool {
 
         startElement = e;
 
-        getDesignView().getDecorationManager().decorationChanged();
+       // getDesignView().getDecorationManager().decorationChanged();
     }
 
     public void move(FPoint fp) {

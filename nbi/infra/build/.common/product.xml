@@ -343,7 +343,10 @@
         </for-each>
         
         <!-- fetch and repackage installation data zips -->
-        <for-each from="1" to="${product.data.length}" property="i">
+        <set property="current.product.data.length" 
+             value="${product.data.length}"/>
+
+        <for-each from="1" to="${current.product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
             <set 

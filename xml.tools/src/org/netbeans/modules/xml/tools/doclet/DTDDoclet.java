@@ -99,7 +99,7 @@ public class DTDDoclet {
     /**
      * @return a String representing XHTML content
      */
-    public String createDoclet (TreeDTD dtd) {
+    public String createDoclet (TreeDTD dtd, String encoding) {
         if (dtd == null)
             return ""; // NOI18N
         
@@ -109,7 +109,7 @@ public class DTDDoclet {
         s.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"); // NOI18N
         
         s.appendStartTag(ROOT).append("\n<head>\n<title>" + NbBundle.getMessage(DTDDoclet.class, "PAGE_TITLE") + "</title>\n"); // NOI18N
-        s.append("<meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=UTF-8\" />\n");
+        s.append("<meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=" + encoding + "\" />\n");
         s.append("</head>\n");
         s.append("\n<!-- Generated on " + DateFormat.getDateInstance().format(new Date()) + " by NetBeans XML module. -->\n"); // NOI18N
         s.appendStartTag(BODY);

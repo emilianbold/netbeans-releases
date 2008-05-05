@@ -175,12 +175,15 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 for (File when : log.listFiles()) {
                     if (when.isDirectory()) {
                         for (File l : when.listFiles()) {
-                            if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
-                                if (latest == null){
-                                    latest = l.getAbsolutePath();
+                            String current = l.getAbsolutePath();
+                            if (current.endsWith("/nightly.log")) { // NOI18N
+                                if (latest == null) {
+                                    latest = current;
                                 } else {
-                                    if (latest.compareTo(l.getAbsolutePath())<0) {
-                                        latest = l.getAbsolutePath();
+                                    String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                    String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
+                                    if (folder1.compareTo(folder2) < 0) {
+                                        latest = current;
                                     }
                                 }
                                 break;

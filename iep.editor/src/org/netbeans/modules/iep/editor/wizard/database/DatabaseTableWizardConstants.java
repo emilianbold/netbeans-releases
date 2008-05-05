@@ -39,6 +39,12 @@
 
 package org.netbeans.modules.iep.editor.wizard.database;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author radval
@@ -57,8 +63,15 @@ public class DatabaseTableWizardConstants {
     
     public static final String PROP_POLLING_INTERVAL_TIME_UNIT = "PROP_POLLING_INTERVAL_TIME_UNIT";
     
+    public static final String PROP_POLLING_RECORD_SIZE = "PROP_POLLING_RECORD_SIZE";
+    
     public static final String PROP_JNDI_NAME = "PROP_JNDI_NAME";
     
+    public static final String PROP_IS_DELETE_RECORDS = "PROP_IS_DELETE_RECORDS";
+    
+    public static final String NANOSECOND = "nanosecond"; //NO I18N
+    
+    public static final String MICROSECOND = "microsecond"; //NO I18N
     
     public static final String MILLISECOND = "millisecond"; //NO I18N
     
@@ -75,4 +88,78 @@ public class DatabaseTableWizardConstants {
     public static final String MONTH = "month"; //NO I18N
     
     public static final String YEAR = "year"; //NO I18N
+    
+    private static List<TimeUnitInfo> mTimeUnitInfoList = new ArrayList<TimeUnitInfo>();
+    
+    public static TimeUnitInfo TIMEUNIT_NANOSECOND = new TimeUnitInfo("nanosecond", DatabaseTableWizardConstants.NANOSECOND);
+    public static TimeUnitInfo TIMEUNIT_MICROSECOND = new TimeUnitInfo("microsecond", DatabaseTableWizardConstants.MICROSECOND);
+    public static TimeUnitInfo TIMEUNIT_MILLISECOND = new TimeUnitInfo("millisecond", DatabaseTableWizardConstants.MILLISECOND);
+    public static TimeUnitInfo TIMEUNIT_SECOND = new TimeUnitInfo("second", DatabaseTableWizardConstants.SECOND);
+    public static TimeUnitInfo TIMEUNIT_MINUTE = new TimeUnitInfo("minute", DatabaseTableWizardConstants.MINUTE);
+    public static TimeUnitInfo TIMEUNIT_HOUR = new TimeUnitInfo("hour", DatabaseTableWizardConstants.HOUR);
+    public static TimeUnitInfo TIMEUNIT_DAY = new TimeUnitInfo("day", DatabaseTableWizardConstants.DAY);
+    public static TimeUnitInfo TIMEUNIT_WEEK = new TimeUnitInfo("week", DatabaseTableWizardConstants.WEEK);
+    
+    static {
+        mTimeUnitInfoList.add(TIMEUNIT_NANOSECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_MICROSECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_MILLISECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_SECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_MINUTE);
+        mTimeUnitInfoList.add(TIMEUNIT_HOUR);
+        mTimeUnitInfoList.add(TIMEUNIT_DAY);
+        mTimeUnitInfoList.add(TIMEUNIT_WEEK);
+//        mTimeUnitInfoList.add(new TimeUnitInfo("months", DatabaseTableWizardConstants.MONTH));
+//        mTimeUnitInfoList.add(new TimeUnitInfo("years", DatabaseTableWizardConstants.YEAR));
+    }
+    
+    public static List<TimeUnitInfo> getTimeUnitInfos() {
+        return mTimeUnitInfoList;        
+    }
+    
+    public static List<String> getTimeUnitInfosDisplayName() {
+        List<String> timeUnitDisplayNames = new ArrayList<String>();
+        Iterator<TimeUnitInfo> it = mTimeUnitInfoList.iterator();
+        while(it.hasNext()) {
+            TimeUnitInfo info = it.next();
+            timeUnitDisplayNames.add(info.getDisplayName());
+        }
+        
+        return timeUnitDisplayNames;
+    }
+    
+    public static List<String> getTimeUnitInfosCodeName() {
+        List<String> timeUnitCodeNames = new ArrayList<String>();
+        Iterator<TimeUnitInfo> it = mTimeUnitInfoList.iterator();
+        while(it.hasNext()) {
+            TimeUnitInfo info = it.next();
+            timeUnitCodeNames.add(info.getCodeName());
+        }
+        
+        return timeUnitCodeNames;
+    }
+    
+    public static class TimeUnitInfo {
+        private String mDisplayName;
+        
+        private String mCodeName;
+        
+        TimeUnitInfo(String displayName, String codeName) {
+            this.mDisplayName = displayName;
+            this.mCodeName = codeName;
+        }
+        
+        
+        public String getDisplayName() {
+            return this.mDisplayName;
+        }
+        
+        public String getCodeName() {
+            return this.mCodeName;
+        }
+        
+        public String toString() {
+            return this.mCodeName;
+        }
+    }
 }

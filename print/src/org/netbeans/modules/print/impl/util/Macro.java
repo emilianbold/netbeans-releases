@@ -44,7 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JButton;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

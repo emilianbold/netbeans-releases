@@ -911,7 +911,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     /** Apply changes */
     public void applyChanges() {
-        if (changed) {
+        if (changed || isChangedInOtherPanels()) {
 //            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
@@ -1201,6 +1201,27 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         for (ChangeListener l : listenerModified) {
             l.stateChanged(ev);
         }
+    }
+    
+    static Set<IsChangedListener> listenerIsChanged = new HashSet();
+    
+    public static void addIsChangedListener(IsChangedListener l) {
+        listenerIsChanged.add(l);
+    }
+    
+    public static void removeIsChangedListener(IsChangedListener l) {
+        listenerIsChanged.remove(l);
+    }
+    
+    private boolean isChangedInOtherPanels() {
+        boolean isChanged = false;
+        for (IsChangedListener l : listenerIsChanged) {
+            if (l.isChanged()) {
+                isChanged = true;
+                break;
+            }
+        }
+        return isChanged;
     }
     
     // implement ActionListener

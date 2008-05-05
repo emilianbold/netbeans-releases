@@ -61,16 +61,14 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-
-// XXX remove package org.netbeans.modules.php.project.customizer and make this class package private
 import org.openide.util.NbBundle;
+
 /**
  * @author Tomas Mysik
  */
 public class PhpProjectProperties {
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
-    public static final String TMP_FILE_POSTFIX   = "~"; // NOI18N
     public static final String COMMAND_PATH = "command.path"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
@@ -78,7 +76,6 @@ public class PhpProjectProperties {
     public static final String URL = "url"; // NOI18N
     public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
-    // XXX will be replaced with global ide include path
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
 
     private final PhpProject project;

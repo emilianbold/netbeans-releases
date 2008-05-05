@@ -45,8 +45,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.dbgp.api.DebuggerFactory;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
+import org.openide.filesystems.FileObject;
 
 
 /**

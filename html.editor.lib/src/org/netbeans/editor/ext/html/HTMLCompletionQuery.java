@@ -284,6 +284,15 @@ public class HTMLCompletionQuery  {
                 
                 if( elem == null ) return null;
                 
+                if( elem.getElementOffset() == offset) {
+                    //we are at the border between two syntax elements, 
+                    //but need to use the previous one
+                    //
+                    //for example: < a hre|<td>...</td>
+                    
+                    elem = sup.getElementChain(offset - 1);
+                }
+                
                 if( elem.getType() == SyntaxElement.TYPE_TAG ) { // not endTags
                     SyntaxElement.Tag tagElem = (SyntaxElement.Tag)elem;
                     

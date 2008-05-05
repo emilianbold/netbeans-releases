@@ -40,6 +40,7 @@
 package org.netbeans.modules.spring.java;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  *
@@ -84,5 +85,13 @@ public class Property {
         }
         
         return null; // Should never occur
+    }
+    
+    public TypeMirror getImplementationType() {
+        if(getter != null) {
+            return getter.getReturnType();
+        }
+
+        return setter.getParameters().get(0).asType();
     }
 }

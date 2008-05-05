@@ -79,6 +79,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -240,21 +241,11 @@ public final class ElementUtilities {
             Elements elements = JavacElements.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
-                    HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
-                    Types types = JavacTypes.instance(ctx);
                     TypeElement te = (TypeElement)((DeclaredType)type).asElement();
                     for (Element member : elements.getAllMembers(te)) {
                         if (acceptor == null || acceptor.accept(member, type)) {
-                            CharSequence name = member.getSimpleName();
-                            ArrayList<Element> h = hiders.get(name);
-                            if (!isHidden(member, h, types)) {
+                            if (!isHidden(member, members, elements))
                                 members.add(member);
-                                if (h == null) {
-                                    h = new ArrayList<Element>();
-                                    hiders.put(name, h);
-                                }
-                                h.add(member);
-                            }
                         }
                     }
                     if (te.getKind().isClass()) {
@@ -475,6 +466,21 @@ public final class ElementUtilities {
         return false;
     }
     
+    private boolean isHidden(Element member, List<Element> members, Elements elements) {
+        for (ListIterator<Element> it = members.listIterator(); it.hasNext();) {
+            Element hider = it.next();
+            if (hider == member)
+                return true;
+            if (hider.getSimpleName() == member.getSimpleName()) {
+                if (elements.hides(hider, member))
+                    return true;
+                if (elements.hides(member, hider))
+                    it.remove();
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns true if the element is declared (directly or indirectly) local
      * to a method or variable initializer.  Also true for fields of inner 

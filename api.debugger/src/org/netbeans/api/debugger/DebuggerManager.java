@@ -514,13 +514,15 @@ public final class DebuggerManager implements ContextProvider {
         Breakpoint breakpoint
     ) {
         if (initBreakpoints (breakpoint)) {
-            registerBreakpoint(breakpoint);
-            breakpoints.addElement (breakpoint);
-            fireBreakpointCreated (breakpoint, null);
+            // do not add one breakpoint more than once.
+            if (registerBreakpoint(breakpoint)) {
+                breakpoints.addElement (breakpoint);
+                fireBreakpointCreated (breakpoint, null);
+            }
         }
     }
     
-    private void registerBreakpoint(Breakpoint breakpoint) {
+    private boolean registerBreakpoint(Breakpoint breakpoint) {
         Class c = breakpoint.getClass();
         ClassLoader cl = c.getClassLoader();
         synchronized (breakpointsByClassLoaders) {
@@ -530,7 +532,7 @@ public final class DebuggerManager implements ContextProvider {
                 breakpointsByClassLoaders.put(cl, lb);
                 //moduleUnloadListeners.listenOn(cl);
             }
-            lb.add(breakpoint);
+            return lb.add(breakpoint);
         }
     }
     

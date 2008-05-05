@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
 <mconfig name="Schema support qa-functional test config">
 
-    <testbag testattribs="stable,commit" executor="ide" name="Acceptance">
+    <testbag testattribs="stable,all,xsd" executor="ide" name="Acceptance">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/jaxb/AcceptanceTestCaseXSD.class"/>
@@ -52,8 +52,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <!--
-    <testbag testattribs="stable,commit" executor="ide" name="Acceptance">
+    <testbag testattribs="all,wsdl" executor="ide" name="Acceptance">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/jaxb/AcceptanceTestCaseWSDL.class"/>
@@ -61,14 +60,13 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="stable,commit" executor="ide" name="Acceptance">
+    <testbag testattribs="all,dtd" executor="ide" name="Acceptance">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/jaxb/AcceptanceTestCaseDTD.class"/>
         </patternset>
       </testset>
     </testbag>
-    -->
 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>

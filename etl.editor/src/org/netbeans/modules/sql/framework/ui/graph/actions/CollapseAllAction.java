@@ -73,7 +73,7 @@ public class CollapseAllAction extends GraphAction {
         //action tooltip
         String nbBundle1 = mLoc.t("BUND314: Collapse All Graph Objects (Ctrl+Shift+C)");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-
+       // Acceleratot Shift-C
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('C', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
     }
 

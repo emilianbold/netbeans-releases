@@ -58,6 +58,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
 /**
@@ -202,7 +203,7 @@ public class SQLDBSynchronizationValidationVisitor {
         // compare getPrecision
         if (collabCol.getPrecision() != newCol.getPrecision()) {
             return -1;
-        }
+            }
         }
 
         // compare getOrdinalPosition
@@ -219,9 +220,9 @@ public class SQLDBSynchronizationValidationVisitor {
     }
 
     private void compareCollabTableWithDatabaseTable(SQLDBTable collabTable, DBMetaDataFactory meta) throws Exception {
-        if (meta.isTableOrViewExist(collabTable.getCatalog(), collabTable.getSchema(), collabTable.getName())) {
+        if (meta.isTableOrViewExist(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable))) {
             // Get the table from database
-            Table newTable = new Table(collabTable.getName(), collabTable.getCatalog(), collabTable.getSchema());
+            Table newTable = new Table(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable));
             meta.populateColumns(newTable);
 
             List collabColumns = collabTable.getColumnList();
@@ -251,9 +252,13 @@ public class SQLDBSynchronizationValidationVisitor {
 
         // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
         } else {
+            boolean createIfNotExists = false;
+            if (collabTable instanceof TargetTable) {
+                createIfNotExists = ((TargetTable) collabTable).isCreateTargetTable();
+            }
             String nbBundle3 = mLoc.t("BUND299: Table {0} is removed or renamed in Database", collabTable.getName());
             String desc = nbBundle3.substring(15) + " " + meta.getDBName();
-            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
+            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, createIfNotExists ? ValidationInfo.VALIDATION_WARNING : ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(vInfo);
             return;
         }

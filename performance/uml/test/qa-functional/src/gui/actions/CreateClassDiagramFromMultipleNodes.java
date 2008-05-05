@@ -114,10 +114,10 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
         selectMenu.pushMenu("Create Diagram From Selected Elements");
 
         create_diag = new NbDialogOperator("Create New Diagram");
+        create_diag.move(0, 0);
         new EventTool().waitNoEvent(1000);
         JListOperator diag_type = new JListOperator(create_diag, 1);
         diag_type.selectItem("Class Diagram");
-        create_diag.move(0, 0);
         JComboBoxOperator spaceCombo = new JComboBoxOperator(create_diag);
         spaceCombo.selectItem("jEdit-Model");
     }
