@@ -38,45 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.hibernate.loaders.reveng;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.hibernate.wizards.support;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.api.project.Project;
 
 /**
+ * Describes a source for tables and can save and retrieve the source
+ * for a given project.
  *
- * @author gowri
+ * <p>The source for tables consists of the type (data source,
+ * database connection or dbschema file) and the name of the source,
+ * whose meaning is: the JNDI name for the data source, the
+ * {@link org.netbeans.api.db.explorer.DatabaseConnection#getName() name}
+ * of the database connection or the absolute path of the dbschema file.</p>
+ *
+ * @author Andrei Badea, gowri
  */
-public class HibernateRevengDataLoader extends UniFileLoader {
+public class TableSource {
 
-    public static final String REQUIRED_MIME = "text/x-hibernate-reveng+xml";
-    private static final long serialVersionUID = 1L;
+    public enum Type { DATA_SOURCE, CONNECTION, SCHEMA_FILE };
 
-    public HibernateRevengDataLoader() {
-        super("org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataObject");
+    private final static Map<Project, TableSource> PROJECT_TO_SOURCE = new WeakHashMap<Project, TableSource>();
+
+    private final Type type;
+    private final String name;
+
+    public static TableSource get(Project project) {
+        synchronized (TableSource.class) {
+            return PROJECT_TO_SOURCE.get(project);
+        }
     }
 
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(HibernateRevengDataLoader.class, "LBL_HibernateReveng_loader_name");
+    public static void put(Project project, TableSource tableSource) {
+        synchronized (TableSource.class) {
+            PROJECT_TO_SOURCE.put(project, tableSource);
+        }
     }
 
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
+    public TableSource(String name, Type type) {
+        assert name != null;
+        assert type != null;
+
+        this.name = name;
+        this.type = type;
     }
 
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new HibernateRevengDataObject(primaryFile, this);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+    public Type getType() {
+        return type;
     }
 }

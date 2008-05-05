@@ -38,45 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.hibernate.loaders.reveng;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.hibernate.wizards.support;
+
+import java.awt.Component;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import org.netbeans.api.project.SourceGroup;
 
 /**
  *
- * @author gowri
+ * @author Andrei Badea, gowri
  */
-public class HibernateRevengDataLoader extends UniFileLoader {
-
-    public static final String REQUIRED_MIME = "text/x-hibernate-reveng+xml";
-    private static final long serialVersionUID = 1L;
-
-    public HibernateRevengDataLoader() {
-        super("org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataObject");
+public class SourceGroupUISupport {
+    
+    private SourceGroupUISupport() {
     }
-
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(HibernateRevengDataLoader.class, "LBL_HibernateReveng_loader_name");
+    
+    public static void connect(JComboBox comboBox, SourceGroup[] sourceGroups) {
+        comboBox.setModel(new DefaultComboBoxModel(sourceGroups));
+        comboBox.setRenderer(new SourceGroupRenderer());
     }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
-    }
-
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new HibernateRevengDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+    
+    private static final class SourceGroupRenderer extends DefaultListCellRenderer {
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Object displayName = null;
+            
+            if (value instanceof SourceGroup) {
+                displayName = ((SourceGroup)value).getDisplayName();
+            } else {
+                displayName = value;
+            }
+            
+            return super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
+        }
     }
 }

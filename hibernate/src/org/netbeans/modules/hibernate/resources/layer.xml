@@ -271,7 +271,7 @@ made subject to such option by the copyright holder.
             <file name="Hibernate.reveng.xml" url="HibernateReveng.xml">
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
-                <!--attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateMappingWizard.create"/-->
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateRevengWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateRevengFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>         
