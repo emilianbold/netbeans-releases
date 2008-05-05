@@ -46,12 +46,21 @@ package org.netbeans.modules.php.project.api;
  * @since 1.2
  */
 public final class PhpOptions {
+    private static final PhpOptions INSTANCE = new PhpOptions();
 
     private PhpOptions() {
     }
 
+    public static PhpOptions getInstance() {
+        return INSTANCE;
+    }
+
     private org.netbeans.modules.php.project.ui.options.PhpOptions getPhpOptions() {
         return org.netbeans.modules.php.project.ui.options.PhpOptions.getInstance();
+    }
+
+    public String getPhpInterpreter() {
+        return getPhpOptions().getPhpInterpreter();
     }
 
     public int getDebuggerPort() {
