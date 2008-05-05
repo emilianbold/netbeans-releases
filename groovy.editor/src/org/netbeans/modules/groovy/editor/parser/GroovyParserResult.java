@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
-import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
@@ -50,6 +49,7 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.groovy.editor.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.codehaus.groovy.control.ErrorCollector;
 
 /**
  *
@@ -63,11 +63,18 @@ public class GroovyParserResult extends ParserResult {
     private String sanitizedContents;
     private StructureAnalyzer.AnalysisResult analysisResult;
     private GroovyParser.Sanitize sanitized;
+    private ErrorCollector errorCollector;  // keep track of pending errors (if any)
 
-    public GroovyParserResult(GroovyParser parser, ParserFile parserFile, AstRootElement rootElement, AstTreeNode ast) {
+    public GroovyParserResult(GroovyParser parser, ParserFile parserFile, AstRootElement rootElement, 
+            AstTreeNode ast, ErrorCollector errorCollector) {
         super(parser, parserFile, GroovyTokenId.GROOVY_MIME_TYPE);
         this.rootElement = rootElement;
         this.ast = ast;
+        this.errorCollector = errorCollector;
+    }
+
+    public ErrorCollector getErrorCollector() {
+        return errorCollector;
     }
 
     public AstRootElement getRootElement() {
