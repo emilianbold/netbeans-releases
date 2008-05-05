@@ -970,19 +970,9 @@ public final class Validator extends BpelValidator {
   // # 111409
   @Override
   public void visit(Throw _throw) {
-    if (hasParentTerminationHandler(_throw.getParent())) {
-      addError("FIX_Throw_in_TerminationHandler", _throw); // NOI18N
+    if (_throw.getParent() instanceof TerminationHandler) {
+      addError("FIX_Throw_in_TerminationHandler", _throw, _throw.getName()); // NOI18N
     }
-  }
-
-  private boolean hasParentTerminationHandler(Component component) {
-    if (component == null) {
-      return false;
-    }
-    if (component instanceof TerminationHandler) {
-      return true;
-    }
-    return hasParentTerminationHandler(component.getParent());
   }
 
   private void addErrorCheck(String key, Component component, String name1, String name2) {

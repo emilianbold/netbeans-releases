@@ -46,13 +46,12 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Radek Matous
  */
-public interface  XDebugStarter {
+public interface XDebugStarter {
     /**
      * @param project
-     * @param run code that should initiate connection. Is called after listening 
-     * on defined port(typically 9000) started.
-     * should be initiated.
-     * @param startFile file to debug
+     * @param run code that should initiate connection. Is called after listening
+     *            on defined port (typically 9000) started.
+     * @param startFile file to debug.
      */
-    public void start(Project project, Runnable run, FileObject startFile);
+    void start(Project project, Runnable run, FileObject startFile);
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,58 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.xslt.project.anttasks;
 
-import java.net.MalformedURLException;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Exceptions;
+import java.io.File;
+
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- * @author Radek Matous
- */
-public class DebugCommand extends Command implements Displayable {
+public class IdeXslCatalogModel {
 
-    public static final String ID = ActionProvider.COMMAND_DEBUG;
+    static IdeXslCatalogModel singletonCatMod = null;
 
-    public DebugCommand(PhpProject project) {
-        super(project);
-    }
+    public IdeXslCatalogModel () {}
 
-    @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    showURLForDebugProjectFile();
-                } catch (MalformedURLException ex) {
-                    //TODO improve error handling
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        };
-        //temporary; after narrowing deps. will be changed
-        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-        if (dbgStarter != null) {
-            dbgStarter.start(getProject(), runnable, fileForProject());
+    public static IdeXslCatalogModel getDefault() {
+        if (singletonCatMod == null) {
+            singletonCatMod = new IdeXslCatalogModel();
         }
+        return singletonCatMod;
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return XDebugStarterFactory.getInstance() != null;
-    }
-
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");
-
+    public XslModel getXslModel(File file) throws Exception {
+        ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
+        XslModelFactory factory = (XslModelFactory) Lookup.getDefault().lookup(XslModelFactory.class);
+        XslModel model = factory.getModel(source);
+        model.sync();
+        return model;
     }
 }

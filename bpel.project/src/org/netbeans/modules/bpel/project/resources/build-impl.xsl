@@ -170,7 +170,7 @@
         <xsl:attribute name="depends">init,-pre-dist</xsl:attribute>
         <mkdir dir="${{build.dir}}"/>
         
-        <xsl:comment> run the validation task here</xsl:comment>
+        <xsl:comment>validation</xsl:comment>
         <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath" allowBuildWithError="${{allow.build.with.error}}"/>
         
         <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>

@@ -38,58 +38,76 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package gui.actions;
 
-import java.net.MalformedURLException;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.WizardOperator;
+
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+
+import org.netbeans.junit.ide.ProjectSupport;
 
 /**
- * @author Radek Matous
+ * Test Open Mobile project
+ *
+ * @author  rashid@netbeans.org
  */
-public class DebugCommand extends Command implements Displayable {
+public class OpenMobileProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
-    public static final String ID = ActionProvider.COMMAND_DEBUG;
+    private static String projectName = "MobileApplicationVisualMIDlet_Open";
+    private JButtonOperator openButton;
 
-    public DebugCommand(PhpProject project) {
-        super(project);
+    /**
+     * Creates a new instance of OpenMobileProject
+     * @param testName the name of the test
+     */
+    public OpenMobileProject(String testName) {
+        super(testName);
+        expectedTime = 10000;
+        WAIT_AFTER_OPEN = 4000;
+    }
+
+    /**
+     * Creates a new instance of OpenMobileProject
+     * @param testName the name of the test
+     * @param performanceDataName measured values will be saved under this name
+     */
+    public OpenMobileProject(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = 10000;
+        WAIT_AFTER_OPEN = 4000;
     }
 
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    showURLForDebugProjectFile();
-                } catch (MalformedURLException ex) {
-                    //TODO improve error handling
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        };
-        //temporary; after narrowing deps. will be changed
-        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-        if (dbgStarter != null) {
-            dbgStarter.start(getProject(), runnable, fileForProject());
-        }
+    public void initialize() {
+    }
+
+    public void prepare() {
+        new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
+
+        WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
+
+        JTextComponentOperator path = new JTextComponentOperator(opd, 1);
+        openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
+
+        String paths = (System.getProperty("xtest.tmpdir") + java.io.File.separator + projectName);
+        path.setText(paths);
+    }
+
+    public ComponentOperator open() {
+        openButton.pushNoBlock();
+        return null;
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return XDebugStarterFactory.getInstance() != null;
+    public void close() {
+        ProjectSupport.closeProject(projectName);
+
     }
 
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");
-
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new OpenMobileProject("measureTime"));
     }
 }

@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks.ide;
+package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -53,10 +53,8 @@ import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Reference;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
-import org.netbeans.modules.bpel.project.anttasks.util.Util;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -66,7 +64,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.soa.validation.util.LineUtil;
 
-public class IdeValidateBpelProjectTask extends Task {
+public class IdeValidateProjectTask extends Task {
 
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
@@ -121,7 +119,7 @@ public class IdeValidateBpelProjectTask extends Task {
         
         try {
             this.mSourceDir = new File(this.mSourceDirectory);
-            CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+            CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
         } catch (Exception ex) {
             throw new BuildException("Failed to get File object for project source directory " + this.mSourceDirectory, ex);
         }
@@ -131,14 +129,12 @@ public class IdeValidateBpelProjectTask extends Task {
         } catch (Exception ex) {
             throw new BuildException("Failed to get File object for project build directory " + this.mBuildDirectory, ex);
         }
-        
-        myMyFiles = new ArrayList<MyFile>();
         processFilesFolderInBuildDir(this.mBuildDir);
         processSourceDirs(Arrays.asList(this.mSourceDir));
     }
 
     private void processFilesFolderInBuildDir(File folder) {
-        File files[] = folder.listFiles(new Util.BpelFileFilter());
+        File files[] = folder.listFiles(new Util.XsltFileFilter());
 
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
@@ -176,7 +172,7 @@ public class IdeValidateBpelProjectTask extends Task {
     }
 
     private void processFolder(File fileDir) {
-        File[] files = fileDir.listFiles(new Util.BpelFileFilter());
+        File[] files = fileDir.listFiles(new Util.XsltFileFilter());
         processFiles(files);
     }
 
@@ -192,33 +188,14 @@ public class IdeValidateBpelProjectTask extends Task {
 
     // vlv # 100036
     private void processFile(File file) throws BuildException {
-        BpelModel model = null;
+        XslModel model = null;
 
         try {
-            model = IdeBpelCatalogModel.getDefault().getBPELModel(file);
+            model = IdeXslCatalogModel.getDefault().getXslModel(file);
         } catch (Exception e) {
             throw new RuntimeException("Error while trying to get Model", e);
         }
-        Process process = model.getProcess();
-
-        if (process != null) {
-            String qName = process.getName() + ", " + process.getTargetNamespace(); // NOI18N
-            MyFile current = new MyFile(file, mSourceDir, qName);
-
-            for (MyFile mFile : myMyFiles) {
-                if (mFile.getQName().equals(qName)) {
-                    if (!myAllowBuildWithError) { // # 106342
-                        throw new BuildException(
-                                " \n" +
-                                "BPEL files " + mFile.getName() + " and " + current.getName() + "\n" +
-                                "have the same bpel process name and targetname space:\n" +
-                                qName + " \n \n");
-                    }
-                }
-            }
-            myMyFiles.add(current);
-        }
-        if (isModified(file)) {
+        if (isFileModified(file)) {
             try {
                 validateFile(file);
             }
@@ -230,13 +207,13 @@ public class IdeValidateBpelProjectTask extends Task {
         }
     }
 
-    private boolean isModified(File file) {
+    private boolean isFileModified(File file) {
         boolean modified = true;
         String relativePath = Util.getRelativePath(this.mSourceDir, file);
-        File fileInBuildDir = (File) this.myFileNamesToFileInBuildDir.get(relativePath);
+        File mFileInBuildDir = (File) this.myFileNamesToFileInBuildDir.get(relativePath);
 
-        if (fileInBuildDir != null) {
-            if (fileInBuildDir.lastModified() == file.lastModified()) {
+        if (mFileInBuildDir != null) {
+            if (mFileInBuildDir.lastModified() == file.lastModified()) {
                 modified = false;
             }
         }
@@ -245,7 +222,7 @@ public class IdeValidateBpelProjectTask extends Task {
 
     private void validateFile(File file) throws BuildException {
       try {
-        Model model = IdeBpelCatalogModel.getDefault().getBPELModel(file);
+        Model model = IdeXslCatalogModel.getDefault().getXslModel(file);
         boolean isError = new Controller(model).ideValidate(file);
 
         if (isError) {
@@ -258,32 +235,6 @@ public class IdeValidateBpelProjectTask extends Task {
       }
     }
 
-    // ----------------------------
-    private static class MyFile {
-
-        public MyFile(File file, File project, String qName) {
-            myFile = file;
-            myProject = project;
-            myQName = qName;
-        }
-
-        public String getQName() {
-            return myQName;
-        }
-
-        public String getName() {
-            String file = myFile.toString();
-            String path = myProject.toString();
-
-            if (file.startsWith(path)) {
-                return file.substring(path.length() + 1);
-            }
-            return file;
-        }
-        private File myFile;
-        private File myProject;
-        private String myQName;
-    }
     private String mSourceDirectory;
     private String mProjectClassPath;
     private String mBuildDirectory;
@@ -293,5 +244,4 @@ public class IdeValidateBpelProjectTask extends Task {
     private Map myFileNamesToFileInBuildDir = new HashMap();
     private boolean isFoundErrors = false;
     private boolean myAllowBuildWithError = false;
-    private List<MyFile> myMyFiles;
 }

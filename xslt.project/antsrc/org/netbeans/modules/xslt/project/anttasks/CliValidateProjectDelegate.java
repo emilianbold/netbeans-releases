@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks.cli;
+package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
 import java.util.HashMap;
@@ -48,16 +48,15 @@ import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Reference;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
-import org.netbeans.modules.bpel.project.anttasks.util.Util;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.soa.validation.core.Controller;
 
-public class CliValidateBpelProjectDelegate extends Task {
+public class CliValidateProjectDelegate extends Task {
     
     private String mSourceDirectory;
     private String mProjectClassPath;
@@ -69,7 +68,7 @@ public class CliValidateBpelProjectDelegate extends Task {
     private boolean myIsFoundErrors = false;
     private boolean myAllowBuildWithError = false;
     
-    public CliValidateBpelProjectDelegate() {}
+    public CliValidateProjectDelegate() {}
     
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
@@ -125,7 +124,7 @@ public class CliValidateBpelProjectDelegate extends Task {
 
         try {
             this.mSourceDir = new File(this.mSourceDirectory);
-            CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+            CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
 
         } catch (Exception ex) {
             throw new BuildException("Failed to get File object for project source directory " + this.mSourceDirectory, ex);
@@ -142,7 +141,7 @@ public class CliValidateBpelProjectDelegate extends Task {
     }
     
     private void processBuildDir(File folder) {
-        final File files[] = folder.listFiles(new Util.BpelFileFilter());
+        final File files[] = folder.listFiles(new Util.XsltFileFilter());
         
         if (files == null) return;
         
@@ -159,7 +158,7 @@ public class CliValidateBpelProjectDelegate extends Task {
     
     private void validateFile(File file) throws BuildException {
       try {
-        Model model = CliBpelCatalogModel.getDefault().getBPELModel(file.toURI());
+        Model model = CliXslCatalogModel.getDefault().getXslModel(file.toURI());
         boolean isError = new Controller(model).cliValidate(file, myAllowBuildWithError);
 
         if (isError) {
@@ -186,7 +185,7 @@ public class CliValidateBpelProjectDelegate extends Task {
 
     private void processSourceDir(File file) {
         if (file.isDirectory()) {
-            final File[] children = file.listFiles(new Util.BpelFileFilter());
+            final File[] children = file.listFiles(new Util.XsltFileFilter());
             
             if (children == null) return;
             
