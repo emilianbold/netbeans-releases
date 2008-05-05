@@ -39,7 +39,13 @@
 
 package org.netbeans.modules.groovy.grails;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Utilities;
 
 /**
@@ -52,6 +58,8 @@ public final class RuntimeHelper {
 
     public static final String NIX_EXECUTABLE = "/bin/grails"; // NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(RuntimeHelper.class.getName());
+
     private RuntimeHelper() {
         super();
     }
@@ -59,6 +67,35 @@ public final class RuntimeHelper {
     public static boolean isValidRuntime(File grailsBase) {
         String pathToBinary = Utilities.isWindows() ? WIN_EXECUTABLE : NIX_EXECUTABLE;
         return new File(grailsBase, pathToBinary).isFile();
+// leave following for future
+//                && new File(grailsBase, "dist").isDirectory() // NOI18N
+//                && new File(grailsBase, "lib").isDirectory() // NOI18N
+//                && new File(grailsBase, "build.properties").isFile(); // NOI18N
+    }
+
+    public static String getRuntimeVersion(File grailsBase) {
+        if (!isValidRuntime(grailsBase)) {
+            return null;
+        }
+        Properties props = new Properties();
+        try {
+            BufferedInputStream is = new BufferedInputStream(new FileInputStream(
+                    new File(grailsBase, "build.properties"))); // NOI18N
+            try {
+                props.load(is);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
+        }
+
+        return props.getProperty("grails.version"); // NOI18N
     }
 
     public static File getSystemDefaultRuntime() {
@@ -73,4 +110,5 @@ public final class RuntimeHelper {
 
         return null;
     }
+
 }

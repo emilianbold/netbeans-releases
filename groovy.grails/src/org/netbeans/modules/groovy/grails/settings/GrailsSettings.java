@@ -27,6 +27,8 @@
  */
 package org.netbeans.modules.groovy.grails.settings;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -39,13 +41,17 @@ import org.openide.util.NbPreferences;
  */
 public final class GrailsSettings {
 
+    public static final String GRAILS_BASE_PROPERTY = "grailsBase"; // NOI18N
+
+    private static final String GRAILS_HOME_KEY = "grailsHome"; // NOI18N
+    private static final String GRAILS_PORT_KEY = "grailsPrj-Port-"; // NOI18N
+    private static final String GRAILS_ENV_KEY = "grailsPrj-Env-"; // NOI18N
+    private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-"; // NOI18N
+    private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-"; // NOI18N
+
     private static GrailsSettings instance;
 
-    private static final String GRAILS_HOME_KEY = "grailsHome";
-    private static final String GRAILS_PORT_KEY = "grailsPrj-Port-";
-    private static final String GRAILS_ENV_KEY = "grailsPrj-Env-";
-    private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-";
-    private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-";
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     private GrailsSettings() {
         super();
@@ -58,12 +64,29 @@ public final class GrailsSettings {
         return instance;
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
     public String getGrailsBase() {
-        return getPreferences().get(GRAILS_HOME_KEY, null);
+        synchronized (this) {
+            return getPreferences().get(GRAILS_HOME_KEY, null);
+        }
     }
 
     public void setGrailsBase(String path) {
-        getPreferences().put(GRAILS_HOME_KEY, path);
+        String oldValue = null;
+        synchronized (this) {
+            oldValue = getGrailsBase();
+            getPreferences().put(GRAILS_HOME_KEY, path);
+        }
+        if(oldValue != path && (oldValue == null || !oldValue.equals(path))) {
+            propertyChangeSupport.firePropertyChange(GRAILS_BASE_PROPERTY, oldValue, oldValue);
+        }
     }
 
     // Which port should we run on

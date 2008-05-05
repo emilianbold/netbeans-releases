@@ -70,15 +70,17 @@ public class GrailsRuntimeTest extends NbTestCase {
     public void testConfigured() throws IOException {
         final GrailsSettings settings = GrailsSettings.getInstance();
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
+
         String path = getWorkDirPath();
+        FileObject workDir = FileUtil.createFolder(FileUtil.normalizeFile(getWorkDir()));
 
         assertFalse(runtime.isConfigured());
         settings.setGrailsBase(path);
         assertFalse(runtime.isConfigured());
 
-        FileObject dir = FileUtil.createFolder(FileUtil.normalizeFile(new File(getWorkDir(), "bin")));
+        FileObject dir = workDir.createFolder("bin");
         assertFalse(runtime.isConfigured());
-        FileObject executable = dir.createData(Utilities.isWindows() ? "grails.bat" : "grails");
+        dir.createData(Utilities.isWindows() ? "grails.bat" : "grails");
         assertTrue(runtime.isConfigured());
     }
 
