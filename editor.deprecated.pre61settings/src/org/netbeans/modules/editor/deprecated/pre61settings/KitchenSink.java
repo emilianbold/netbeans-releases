@@ -45,8 +45,11 @@ import java.awt.Insets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.util.Lookup;
 
 /**
@@ -172,5 +175,17 @@ public final class KitchenSink {
             }
         }
     }
-    
+
+    // -----------------------------------------------------------------------
+    // 'indentEngine' setting
+    // -----------------------------------------------------------------------
+
+    /** This factory method is here to produce value for 'indentEngine' settings,
+     * which is still supplied (thru BaseOptions.getDefaultIndentEngineClass) by some modules.
+     */
+    public static final Object getIndentEngineValue(MimePath mimePath, String settingName) {
+        assert settingName.equals(NbEditorDocument.INDENT_ENGINE) : "The getIndentEngineValue factory called for '" + settingName + "'"; //NOI18N
+        BaseOptions bo = MimeLookup.getLookup(mimePath).lookup(BaseOptions.class);
+        return bo != null ? bo.getIndentEngine() : null;
+    }
 }

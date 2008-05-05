@@ -906,19 +906,19 @@ public class BaseOptions extends OptionSupport {
     // IndentEngines related stuff
     // ------------------------------------------------------------------------
     
+    private static final String INDENT_ENGINE_HANDLE = "indent-engine-handle"; //NOI18N
     public IndentEngine getIndentEngine() {
         if (!BASE.equals(getTypeName())) {
             Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
-            String handle = prefs.get(INDENT_ENGINE_PROP, null);
+            String handle = prefs.get(INDENT_ENGINE_HANDLE, null);
             if (handle != null) {
                 Object instance = null;
-                String handleString = (String) handle;
 
-                if (handleString.equals(NO_INDENT_ENGINE)) {
+                if (handle.equals(NO_INDENT_ENGINE)) {
                     return IndentEngine.getDefault();
                 }
 
-                Lookup.Template tmp = new Lookup.Template(null, handleString, null);
+                Lookup.Template tmp = new Lookup.Template(null, handle, null);
                 Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
                 if (item != null) {
                     instance = item.getInstance();
@@ -972,7 +972,7 @@ public class BaseOptions extends OptionSupport {
             if (id == null) {
                 id = NO_INDENT_ENGINE;
             } 
-            prefs.put(INDENT_ENGINE_PROP, id);
+            prefs.put(INDENT_ENGINE_HANDLE, id);
         }
 
         refreshIndentEngineSettings();

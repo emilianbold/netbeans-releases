@@ -43,6 +43,14 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
+    <folder name="Editors">
+        <folder name="Preferences">
+            <folder name="Defaults">
+                <file name="org-netbeans-modules-editor-deprecated-pre61settings-preferences.xml" url="preferences.xml"/>
+            </folder>
+        </folder>
+    </folder>
+        
     <folder name="UI">
       <folder name="Services">
         <folder name="Editing">
