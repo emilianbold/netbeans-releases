@@ -34,11 +34,12 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 /**
 * @author Radek Matous
  */
-public class DeleteCommand extends GlobalCommand{
-    public DeleteCommand(PhpProject project){
+public class DeleteCommand extends GlobalCommand {
+
+    public DeleteCommand(PhpProject project) {
         super(project);
     }
-    
+
     @Override
     protected void invokeAction() {
         DefaultProjectOperations.performDefaultDeleteOperation(getProject());

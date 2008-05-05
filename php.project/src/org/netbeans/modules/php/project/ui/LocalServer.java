@@ -285,7 +285,7 @@ public class LocalServer implements Comparable<LocalServer> {
         public ComboBoxModel(LocalServer... defaultLocalServers) {
             if (defaultLocalServers == null || defaultLocalServers.length == 0) {
                 // prevent NPE
-                defaultLocalServers = new LocalServer[] { new LocalServer("") }; // NOI18N
+                defaultLocalServers = new LocalServer[] {new LocalServer("")}; // NOI18N
             }
             for (LocalServer localServer : defaultLocalServers) {
                 addElement(localServer);

@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
@@ -70,15 +72,11 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.ErrorManager;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -100,6 +98,7 @@ import org.openide.util.lookup.Lookups;
  * @author ads, Tomas Mysik
  */
 class PhpLogicalViewProvider implements LogicalViewProvider {
+    private static final Logger LOGGER = Logger.getLogger(PhpLogicalViewProvider.class.getName());
     static final Image PACKAGE_BADGE = Utilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
 
@@ -265,11 +264,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    // XXX verify all the implemented interfaces
-    private class LogicalViewChildren extends Children.Keys<SourceGroup>
-            implements /*FileChangeListener, */ChangeListener, PropertyChangeListener
-            //,FileStatusListener
-    {
+    private class LogicalViewChildren extends Children.Keys<SourceGroup> implements ChangeListener,
+            PropertyChangeListener {
 
         private ChangeListener sourcesListener;
         private java.util.Map<SourceGroup, PropertyChangeListener> groupsListeners;
@@ -278,14 +274,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
         @Override
         protected void addNotify() {
             super.addNotify();
-            //project.getHelper().getProjectDirectory().addFileChangeListener(this);
             createNodes();
         }
 
         @Override
         protected void removeNotify() {
             setKeys(Collections.<SourceGroup>emptySet());
-            //project.getHelper().getProjectDirectory().removeFileChangeListener(this);
             super.removeNotify();
         }
 
@@ -306,34 +300,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             return node == null ? new Node[]{} : new Node[]{node};
         }
 
-        public void fileAttributeChanged(FileAttributeEvent arg0) {
-        }
-
-        public void fileChanged(FileEvent arg0) {
-        }
-
-        public void fileDataCreated(FileEvent arg0) {
-        }
-
-        public void fileDeleted(FileEvent arg0) {
-        }
-
-        public void fileFolderCreated(FileEvent arg0) {
-            // is it useful for us? looks like copied from Enterprise/bpel
-            // should invoke createNodes() only if updated file is not a source file
-            //createNodes();
-        }
-
-        public void fileRenamed(FileRenameEvent arg0) {
-            // is it useful for us? looks like copied from Enterprise/bpel
-            // should invoke createNodes() only if updated file is not a source file
-            //createNodes();
-        }
-
-        /*
-         * @see javax.swing.event.ChangeListener(javax.swing.event.ChangeEvent)
-         * sources change
-         */
         public void stateChanged(ChangeEvent e) {
             // #132877 - discussed with tomas zezula
             SwingUtilities.invokeLater(new Runnable() {
@@ -358,11 +324,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-        /*
-         * @see org.openide.filesystems.FileStatusListener#annotationChanged(org.openide.filesystems.FileStatusEvent)
-         * file system change
-         */
-        private void createNodes() {
+        void createNodes() {
             // update Sources listeners
             Sources sources = ProjectUtils.getSources(project);
             updateSourceListeners(sources);
@@ -426,7 +388,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                     DataFolder dataFolder = DataFolder.findFolder(fileObject);
                     return dataFolder;
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    LOGGER.log(Level.INFO, null, ex);
                 }
             }
             return null;

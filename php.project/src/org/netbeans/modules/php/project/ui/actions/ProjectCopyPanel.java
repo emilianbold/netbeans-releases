@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.ui.actions;
 import java.awt.CardLayout;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
@@ -58,22 +59,23 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * copied from org.netbeans.modules.project.uiapi to redefine 
+ * copied from org.netbeans.modules.project.uiapi to redefine
  * hasExternalSources behaviour
- * 
- * @ see #hasExternalSources()
+ *
+ * @see #hasExternalSources()
  * @author Jan Lahoda
- * 
+ *
  */
-public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentListener, PhpProjectOperationsImplementation.InvalidablePanel {
-    
+public class ProjectCopyPanel extends JPanel implements DocumentListener,
+        PhpProjectOperationsImplementation.InvalidablePanel {
+
     private Project project;
     private boolean isMove;
     private boolean invalid;
-    
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ProgressHandle handle;
-    
+
     /**
      * Creates new form ProjectCopyPanel
      */
@@ -81,31 +83,31 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         this.project = project;
         this.isMove = isMove;
         this.handle = handle;
-        
-        
+
+
         initComponents();
         setProject();
         projectName.getDocument().addDocumentListener(this);
         projectLocation.getDocument().addDocumentListener(this);
-        
+
         if (isMove) {
             nameLabel.setVisible(false);
             projectName.setVisible(false);
         }
-        
-        if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
-            ((CardLayout) progress.getLayout()).show(progress, "progress");
+
+        if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) { // NOI18N
+            ((CardLayout) progress.getLayout()).show(progress, "progress"); // NOI18N
         }
     }
-    
+
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
-    
+
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -274,16 +276,16 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
         File current = new File(projectLocation.getText());
         JFileChooser chooser = new JFileChooser(current);
-        
+
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        
+
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             projectLocation.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_browseActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browse;
     private javax.swing.JLabel errorMessage;
@@ -301,49 +303,50 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private javax.swing.JTextField projectLocation;
     private javax.swing.JTextField projectName;
     // End of variables declaration//GEN-END:variables
-    
+
     private String lastComputedName;
-    
+
     private String computeValidProjectName(String projectLocation, String projectNamePrefix) {
         File location = new File(projectLocation);
-        
+
         if (!location.exists()) {
             lastComputedName = projectNamePrefix;
             return projectNamePrefix;
         }
-        
+
         int num = 1;
         String projectName = projectNamePrefix;
         if (new File(location, projectName).exists()) {
-            while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) {
+            while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) { // NOI18N
                 num++;
             }
         }
         lastComputedName = projectName;
         return projectName;
     }
-    
+
     private void setProject() {
         FileObject parent = project.getProjectDirectory().getParent();
         File parentFile = FileUtil.toFile(parent);
-        
+
         projectLocation.setText(parentFile.getAbsolutePath());
-        
+
         if (isMove) {
             projectName.setText(ProjectUtils.getInformation(project).getName());
         } else {
-            projectName.setText(computeValidProjectName(parentFile.getAbsolutePath(), ProjectUtils.getInformation(project).getName()));
+            projectName.setText(computeValidProjectName(parentFile.getAbsolutePath(),
+                    ProjectUtils.getInformation(project).getName()));
         }
-        
+
         updateProjectFolder();
         validateDialog();
-        
+
         if (hasExternalSources() && !isMove) {
             extSourcesWarning.setText(NbBundle.getMessage(ProjectCopyPanel.class, "WRN_External_Sources"));
             invalid = true;
         }
     }
-    
+
     private boolean hasExternalSources() {
         FileObject projectDir = project.getProjectDirectory();
         for (FileObject file : ProjectOperations.getDataFiles(project)) {
@@ -354,45 +357,45 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         }
         return false;
     }
-    
+
     public String getNewName() {
         return projectName.getText();
     }
-    
+
     public String getProjectFolderName() {
         return project.getProjectDirectory().getNameExt();
     }
-    
+
     public File getNewDirectory() {
         return new File(projectLocation.getText());
     }
-    
+
     public void changedUpdate(DocumentEvent e) {
         //ignored
     }
-    
+
     public void insertUpdate(DocumentEvent e) {
         if (e.getDocument().equals(projectLocation.getDocument())) {
             if (lastComputedName != null && lastComputedName.equals(projectName.getText())) {
-                projectName.setText(computeValidProjectName(new File(projectLocation.getText()).getAbsolutePath(), 
+                projectName.setText(computeValidProjectName(new File(projectLocation.getText()).getAbsolutePath(),
                         ProjectUtils.getInformation(project).getName()));
-            }            
+            }
         }
         updateProjectFolder();
         validateDialog();
     }
-    
+
     public void removeUpdate(DocumentEvent e) {
         if (e.getDocument().equals(projectLocation.getDocument())) {
             if (lastComputedName != null && lastComputedName.equals(projectName.getText())) {
-                projectName.setText(computeValidProjectName(new File(projectLocation.getText()).getAbsolutePath(), 
+                projectName.setText(computeValidProjectName(new File(projectLocation.getText()).getAbsolutePath(),
                         ProjectUtils.getInformation(project).getName()));
-            }            
+            }
         }
         updateProjectFolder();
         validateDialog();
     }
-    
+
     private void updateProjectFolder() {
         final File location = new File(projectLocation.getText());
         File projectFolderFile = location;
@@ -403,7 +406,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         }
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
-    
+
     public boolean isPanelValid() {
         return " ".equals(errorMessage.getText()) && !invalid;
     }
@@ -411,34 +414,35 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private void validateDialog() {
         if (invalid) {
             //no reason to do anything:
-            return ;
+            return;
         }
-        
+
         String newError = computeError();
         boolean changed = false;
         String currentError = errorMessage.getText();
-        
+
         newError = newError != null ? newError : " ";
         changed = !currentError.equals(newError);
-        
+
         errorMessage.setText(newError);
-        
+
         if (changed) {
             changeSupport.fireChange();
         }
     }
-    
+
     private String computeError() {
         File location = new File(projectLocation.getText());
-        return PhpProjectOperationsImplementation.computeError(location, projectName.getText(), projectFolder.getText(), false);
+        return PhpProjectOperationsImplementation.computeError(location, projectName.getText(),
+                projectFolder.getText(), false);
     }
-    
+
     public void showProgress() {
         projectFolder.setEnabled(false);
         projectLocation.setEnabled(false);
         projectName.setEnabled(false);
         browse.setEnabled(false);
-        
-        ((CardLayout) progress.getLayout()).show(progress, "progress");
+
+        ((CardLayout) progress.getLayout()).show(progress, "progress"); // NOI18N
     }
 }
