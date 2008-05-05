@@ -140,6 +140,9 @@ public final class GrailsRuntime {
         }
     }
 
+    /**
+     * <i>Immutable</i>
+     */
     public static final class CommandDescriptor {
 
         private final String name;
