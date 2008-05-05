@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.java.source;
+package org.netbeans.modules.java.source.parsing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -58,9 +58,12 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -71,23 +74,23 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-final class CompilationInfoImpl {
+public final class CompilationInfoImpl {
     
     private JavaSource.Phase phase = JavaSource.Phase.MODIFIED;
     private CompilationUnitTree compilationUnit;    
     
     private JavacTaskImpl javacTask;
     private final PositionConverter binding;
-    Pair<JavaSource.DocPositionRegion,MethodTree> changedMethod;
+    Pair<DocPositionRegion,MethodTree> changedMethod;
     final JavaFileObject jfo;    
-    final JavaSource javaSource;        
+    final Source source;        
     boolean needsRestart;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
         
     
-    CompilationInfoImpl (final JavaSource javaSource, final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
-        assert javaSource != null;        
-        this.javaSource = javaSource;
+    CompilationInfoImpl (final Source source, final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
+        assert source != null;        
+        this.source = source;
         this.binding = binding;
         this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.javaSource.rootFo, this.binding.getFilter()) : null;
         this.javacTask = javacTask;
@@ -98,11 +101,11 @@ final class CompilationInfoImpl {
      * Returns the current phase of the {@link JavaSource}.
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
-    JavaSource.Phase getPhase() {
+    public JavaSource.Phase getPhase() {
         return this.phase;
     }
     
-    Pair<JavaSource.DocPositionRegion,MethodTree> getChangedTree () {
+    public Pair<DocPositionRegion,MethodTree> getChangedTree () {
         return this.changedMethod;
     }
     
@@ -112,7 +115,7 @@ final class CompilationInfoImpl {
      * java source file. 
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
-    CompilationUnitTree getCompilationUnit() {
+    public CompilationUnitTree getCompilationUnit() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
@@ -125,7 +128,7 @@ final class CompilationInfoImpl {
      * Returns the content of the file represented by the {@link JavaSource}.
      * @return String the java source
      */
-    String getText() {
+    public String getText() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
@@ -142,7 +145,7 @@ final class CompilationInfoImpl {
      * Returns the {@link TokenHierarchy} for the file represented by the {@link JavaSource}.
      * @return lexer TokenHierarchy
      */
-    TokenHierarchy<?> getTokenHierarchy() {
+    public TokenHierarchy<?> getTokenHierarchy() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
@@ -159,7 +162,7 @@ final class CompilationInfoImpl {
      * Returns the errors in the file represented by the {@link JavaSource}.
      * @return an list of {@link Diagnostic} 
      */
-    List<Diagnostic> getDiagnostics() {
+    public List<Diagnostic> getDiagnostics() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
@@ -182,18 +185,18 @@ final class CompilationInfoImpl {
                    
                 
     /**
-     * Returns {@link JavaSource} for which this {@link CompilationInfoImpl} was created.
-     * @return JavaSource
+     * Returns {@link Source} for which this {@link CompilationInfoImpl} was created.
+     * @return the Source
      */
-    JavaSource getJavaSource() {
-        return javaSource;
+    public Source getSource() {
+        return source;
     }
     
     /**
      * Returns {@link ClasspathInfo} for which this {@link CompilationInfoImpl} was created.
      * @return ClasspathInfo
      */
-    ClasspathInfo getClasspathInfo() {
+    public ClasspathInfo getClasspathInfo() {
 	return javaSource.getClasspathInfo();
     }
     

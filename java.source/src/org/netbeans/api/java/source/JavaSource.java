@@ -265,7 +265,7 @@ public final class JavaSource {
     
     /**Used by unit tests*/
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
-    
+                
     /**
      * Helper map mapping the {@link Phase} to message for performance logger
      */
@@ -275,7 +275,7 @@ public final class JavaSource {
     private static class InternalLock {};
     
     private static final Object INTERNAL_LOCK = new InternalLock ();
-    
+                            
     /**
      * Init the maps
      */
@@ -1227,7 +1227,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             messager.error(pos, "duplicate.class", c.fullname);
         }
     }
-
+                
     /**
      * Not synchronized, only the CompilationJob's thread can call it!!!!
      *
@@ -2445,7 +2445,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
     }
-    
+            
     private static class LMListener implements LowMemoryListener {                
         private AtomicBoolean lowMemory = new AtomicBoolean (false);
         
@@ -2644,7 +2644,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public void close() throws IOException {
         }
     }
-    
+            
     private static class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
         
         final Document doc;
@@ -2937,7 +2937,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
     
     
-    
+                    
     static final class DocPositionRegion extends PositionRegion {
         
         private final Document doc;
