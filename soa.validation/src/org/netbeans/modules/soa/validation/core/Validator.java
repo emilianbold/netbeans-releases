@@ -153,7 +153,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
     myValidationResult.add(new QuickFixable(this, type, component, message, quickFix));
   }
 
-  protected final boolean isValidationComplete() {
+  protected final boolean isComplete() {
     return myType == ValidationType.COMPLETE;
   }
 
@@ -254,6 +254,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
           myGlobalType = type;
         }
       }
+
       @Override
       public void visit(GlobalComplexType type) {
 //out(" see GLOBAL Complex TYPE : " + type.getName());
@@ -263,6 +264,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
         }
       }
     });
+
     return myGlobalType;
   }
 

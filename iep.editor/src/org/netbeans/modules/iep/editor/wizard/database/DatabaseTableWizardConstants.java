@@ -69,6 +69,10 @@ public class DatabaseTableWizardConstants {
     
     public static final String PROP_IS_DELETE_RECORDS = "PROP_IS_DELETE_RECORDS";
     
+    public static final String NANOSECOND = "nanosecond"; //NO I18N
+    
+    public static final String MICROSECOND = "microsecond"; //NO I18N
+    
     public static final String MILLISECOND = "millisecond"; //NO I18N
     
     public static final String SECOND = "second"; //NO I18N
@@ -87,15 +91,26 @@ public class DatabaseTableWizardConstants {
     
     private static List<TimeUnitInfo> mTimeUnitInfoList = new ArrayList<TimeUnitInfo>();
     
+    public static TimeUnitInfo TIMEUNIT_NANOSECOND = new TimeUnitInfo("nanosecond", DatabaseTableWizardConstants.NANOSECOND);
+    public static TimeUnitInfo TIMEUNIT_MICROSECOND = new TimeUnitInfo("microsecond", DatabaseTableWizardConstants.MICROSECOND);
+    public static TimeUnitInfo TIMEUNIT_MILLISECOND = new TimeUnitInfo("millisecond", DatabaseTableWizardConstants.MILLISECOND);
+    public static TimeUnitInfo TIMEUNIT_SECOND = new TimeUnitInfo("second", DatabaseTableWizardConstants.SECOND);
+    public static TimeUnitInfo TIMEUNIT_MINUTE = new TimeUnitInfo("minute", DatabaseTableWizardConstants.MINUTE);
+    public static TimeUnitInfo TIMEUNIT_HOUR = new TimeUnitInfo("hour", DatabaseTableWizardConstants.HOUR);
+    public static TimeUnitInfo TIMEUNIT_DAY = new TimeUnitInfo("day", DatabaseTableWizardConstants.DAY);
+    public static TimeUnitInfo TIMEUNIT_WEEK = new TimeUnitInfo("week", DatabaseTableWizardConstants.WEEK);
+    
     static {
-        mTimeUnitInfoList.add(new TimeUnitInfo("millisecond", DatabaseTableWizardConstants.MILLISECOND));
-        mTimeUnitInfoList.add(new TimeUnitInfo("second", DatabaseTableWizardConstants.SECOND));
-        mTimeUnitInfoList.add(new TimeUnitInfo("minute", DatabaseTableWizardConstants.MINUTE));
-        mTimeUnitInfoList.add(new TimeUnitInfo("hour", DatabaseTableWizardConstants.HOUR));
-        mTimeUnitInfoList.add(new TimeUnitInfo("day", DatabaseTableWizardConstants.DAY));
-        mTimeUnitInfoList.add(new TimeUnitInfo("week", DatabaseTableWizardConstants.WEEK));
-        mTimeUnitInfoList.add(new TimeUnitInfo("month", DatabaseTableWizardConstants.MONTH));
-        mTimeUnitInfoList.add(new TimeUnitInfo("year", DatabaseTableWizardConstants.YEAR));
+        mTimeUnitInfoList.add(TIMEUNIT_NANOSECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_MICROSECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_MILLISECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_SECOND);
+        mTimeUnitInfoList.add(TIMEUNIT_MINUTE);
+        mTimeUnitInfoList.add(TIMEUNIT_HOUR);
+        mTimeUnitInfoList.add(TIMEUNIT_DAY);
+        mTimeUnitInfoList.add(TIMEUNIT_WEEK);
+//        mTimeUnitInfoList.add(new TimeUnitInfo("months", DatabaseTableWizardConstants.MONTH));
+//        mTimeUnitInfoList.add(new TimeUnitInfo("years", DatabaseTableWizardConstants.YEAR));
     }
     
     public static List<TimeUnitInfo> getTimeUnitInfos() {
@@ -124,7 +139,7 @@ public class DatabaseTableWizardConstants {
         return timeUnitCodeNames;
     }
     
-    static class TimeUnitInfo {
+    public static class TimeUnitInfo {
         private String mDisplayName;
         
         private String mCodeName;

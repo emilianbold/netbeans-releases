@@ -2015,7 +2015,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/>
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2031,7 +2031,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2046,7 +2046,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2061,7 +2061,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2076,7 +2076,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2091,7 +2091,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <!--<component uid="nb-php" version="${nb.full.version}"/>-->
+            <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -2254,7 +2254,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="generate-mysql-bundles" if="do.build.mysql">
+    <target name="init-mysql-bundles" if="do.build.mysql">
+        <antcall target="build-netbeans-engine">
+		<param name="netbeans.engine.branding.kit" value="mysql"/>
+	</antcall>
+    </target>
+
+
+    <target name="generate-mysql-bundles" depends="init-mysql-bundles" if="do.build.mysql">
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-windows.exe">
@@ -2266,6 +2273,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql" version="5.0.51.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
         </create-bundle>
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -2278,6 +2286,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql" version="5.0.51.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
         </create-bundle>
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
@@ -2290,6 +2299,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql" version="5.0.51.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
         </create-bundle>
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
@@ -2302,8 +2312,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql" version="5.0.51.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
         </create-bundle>
-
+        <!--
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip">
@@ -2315,6 +2326,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql" version="5.0.51.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
         </create-bundle>
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
@@ -2327,6 +2339,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql" version="5.0.51.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
         </create-bundle>
         <antcall target="zip-to-dmg">
             <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip"/>
@@ -2345,6 +2358,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<include name="${nb.bundle.files.prefix}-mysql-macosx*zip"/>
             </fileset>
         </delete>
+	-->
     </target>
 
     <target name="get-bundled-jvms" if="do.build.jdk">

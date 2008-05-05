@@ -79,7 +79,7 @@ public class RuntimeInputAction extends GraphAction {
         //action tooltip
         String nbBundle2 = mLoc.t("BUND030: Add/Edit Runtime Inputs");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-        
+        // Acceleratot Shift-I
     }
 
     /**

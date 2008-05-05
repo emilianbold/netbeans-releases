@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * @author ads
- *
  */
 public final class Utils {
 
@@ -60,7 +59,7 @@ public final class Utils {
     public static SourceGroup[] getSourceGroups(Project phpProject) {
         Sources sources = ProjectUtils.getSources(phpProject);
         //SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        SourceGroup[] groups = sources.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
+        SourceGroup[] groups = sources.getSourceGroups(PhpSources.TYPE_PHP);
         return groups;
     }
     public static FileObject[] getSourceObjects(Project phpProject) {

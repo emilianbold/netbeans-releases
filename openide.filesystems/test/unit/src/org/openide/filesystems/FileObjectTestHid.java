@@ -407,6 +407,9 @@ public class FileObjectTestHid extends TestBaseHid {
     }
 
     private void testWriteReadExclusion(final boolean deadlockInWrite) throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         checkSetUp();
         FileObject fold = getTestFolder1(root);
         final FileObject fo1 = getTestFile1(fold);

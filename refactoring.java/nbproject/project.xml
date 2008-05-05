@@ -226,6 +226,10 @@
             <test-dependencies>
                 <test-type>
                     <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <recursive/>
+                    </test-dependency>                        
                 </test-type>
             </test-dependencies>
             <public-packages>

@@ -66,7 +66,7 @@ public class DebugCommand extends Command implements Displayable {
                 try {
                     showURLForDebugProjectFile();
                 } catch (MalformedURLException ex) {
-                    //TODO: improve error handling
+                    //TODO improve error handling
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -80,7 +80,7 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return true && XDebugStarterFactory.getInstance() != null;
+        return XDebugStarterFactory.getInstance() != null;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class DebugCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");//NOI18N
+        return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");
 
     }
 }

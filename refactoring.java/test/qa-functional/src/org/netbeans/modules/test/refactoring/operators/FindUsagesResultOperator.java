@@ -39,10 +39,154 @@
 
 package org.netbeans.modules.test.refactoring.operators;
 
+import java.awt.Component;
+import java.util.Hashtable;
+import java.util.ResourceBundle;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JSplitPaneOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.test.refactoring.RefactoringTestCase;
+
 /**
  *
- * @author jp159440
+ * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public class FindUsagesResultOperator {
+public class FindUsagesResultOperator extends TopComponentOperator{
+
+    private JButton refresh;
+    private JToggleButton collapse;
+    private JToggleButton logical;
+    private JToggleButton physical;
+    private JButton prev;
+    private JButton next;
+    
+    public FindUsagesResultOperator() {
+        super(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+    }
+    
+    public void selectTab(String name) {
+        JComponent content = getContent();        
+        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) {
+            throw new  IllegalArgumentException("There are no tabs");
+        } else if(content instanceof JTabbedPane) {
+            JTabbedPaneOperator jtpo = new JTabbedPaneOperator((JTabbedPane)content);
+            jtpo.selectPage(name);            
+        } else {
+            throw new  IllegalArgumentException("Wrong structure");
+        }
+    }
+    
+    public JPanel getRefactoringPanel() {
+        JComponent content = getContent();
+        
+        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) return (JPanel) content;
+        if(content instanceof JTabbedPane) {
+            JTabbedPane tab = (JTabbedPane) content;
+            return (JPanel) tab.getSelectedComponent();
+        }
+        test(content);
+        throw new IllegalArgumentException("Wrong structure "+ content.getClass().getName());
+        
+    }
+    
+    private JComponent getContent() {
+        Component source = this.getSource();        
+        Component[] components = ((JComponent) source).getComponents();
+        return (JComponent) components[0];
+    }
+    
+    
+    private void dumpChilds(Object root, int indentation,JTreeOperator jto) {
+        Object[] children = jto.getChildren(root);
+        if(children.length==0) return;
+        for (int i = 0; i < children.length; i++) {
+            Object child = children[i];
+            for (int j = 0; j < indentation; j++) System.out.print(" ");
+            System.out.println(child.toString());     
+            dumpChilds(child, indentation+4, jto);                           
+        }
+    }
+           
+    public void test(Component source) {        
+        Component[] components = ((JComponent) source).getComponents();
+        for (int i = 0; i < components.length; i++) {
+            Component component = components[i];
+            System.out.println(component.getClass().getName());
+        }                                
+    }
+    
+    public JToolBar getJToolbar() {
+        JPanel refactoringPanel = getRefactoringPanel();
+        ContainerOperator ct = new ContainerOperator(refactoringPanel);
+        JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
+        JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
+        JToolBar toolbar = (JToolBar) leftComponent.getComponent(0);
+        return toolbar;                        
+    }
+    
+    public JTree getPreviewTree() {
+        JPanel refactoringPanel = getRefactoringPanel();
+        ContainerOperator ct = new ContainerOperator(refactoringPanel);
+        JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
+        JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
+        JScrollPane jScrollPane = (JScrollPane) leftComponent.getComponent(1);                
+        JViewport viewport = jScrollPane.getViewport();        
+        return (JTree) viewport.getComponent(0);        
+    }
+    
+    public JButton getRefresh() {
+        if(refresh==null) {
+            refresh = (JButton) getJToolbar().getComponent(0);
+        }
+        return refresh;
+    }
+    
+    public JToggleButton getCollapse() {
+        if(collapse==null) {
+            collapse = (JToggleButton) getJToolbar().getComponent(1);
+        }
+        return collapse;
+    }
+
+    public JToggleButton getLogical() {
+        if(logical==null) {
+            logical = (JToggleButton) getJToolbar().getComponent(2);
+        }
+        return logical;
+    }
+
+    public JToggleButton getPhysical() {
+        if(physical==null) {
+            physical = (JToggleButton) getJToolbar().getComponent(3);
+        }
+        return physical;
+    }
+
+    public JButton getPrev() {
+        if(prev==null) {
+            prev = (JButton) getJToolbar().getComponent(4);
+        }
+        return prev;
+    }
+
+    public JButton getNext() {
+        if(next==null) {
+            next = (JButton) getJToolbar().getComponent(5);
+        }
+        return next;
+    }
+    
 
 }

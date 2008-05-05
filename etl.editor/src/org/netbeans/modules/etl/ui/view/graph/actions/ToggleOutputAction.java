@@ -77,6 +77,7 @@ public class ToggleOutputAction extends GraphAction {
         String nbBundle2 = mLoc.t("BUND037: Toggle Output View");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
+        // Acceleratot Shift-O
     }
 
     /**

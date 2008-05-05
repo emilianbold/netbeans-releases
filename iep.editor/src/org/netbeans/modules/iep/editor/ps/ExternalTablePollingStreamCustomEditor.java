@@ -72,7 +72,10 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
     
     private String mWhereClause;
     
-           
+    private String[] mTimeUnitDisplayName = new String[] {};
+            
+    private String[] mTimeUnitCodeName = new String[] {};
+    
     
     /** Creates a new instance of InvokeStreamCustomEditor */
     public ExternalTablePollingStreamCustomEditor() {
@@ -161,6 +164,88 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mNamePanel.component[1], gbc);
             
+            // polling interval
+            Property pollingInterval = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_INTERVAL);
+            String pollingIntervalLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.POLLING_INTERVAL");
+//            List attributeList = mSelectPanel.getQuantityAttributeList();
+//            attributeList.add(0, "");
+//            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
+            mPollingIntervalPanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(pollingIntervalLabel, pollingInterval, false);
+            
+            gbc.gridx = 2;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(mPollingIntervalPanel.component[0], gbc);
+            
+            gbc.gridx = 3;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 1.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(mPollingIntervalPanel.component[1], gbc);
+            
+            //polling interval time unit
+
+            Property pollingIntervalTimeUnit = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_INTERVAL_TIME_UNIT);
+            String pollingIntervalTimeUnitLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.POLLING_INTERVAL_TIME_UNIT");
+//            List attributeList = mSelectPanel.getQuantityAttributeList();
+//            attributeList.add(0, "");
+//            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
+            mTimeUnitDisplayName = DatabaseTableWizardConstants.getTimeUnitInfosDisplayName().toArray(mTimeUnitDisplayName);
+            mTimeUnitCodeName = DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(mTimeUnitCodeName);
+            
+            mPollingIntervalTimeUnitPanel = PropertyPanel.createComboBoxPanel(pollingIntervalTimeUnitLabel, 
+                                                                              pollingIntervalTimeUnit, 
+                                                                              DatabaseTableWizardConstants.getTimeUnitInfosDisplayName().toArray(mTimeUnitDisplayName), 
+                                                                              DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(mTimeUnitCodeName), 
+                                                                              false);
+            if(pollingIntervalTimeUnit.getValue() == null || pollingIntervalTimeUnit.getValue().equals("")) {
+            	mPollingIntervalTimeUnitPanel.setStringValue(DatabaseTableWizardConstants.TIMEUNIT_SECOND.getCodeName());
+            }
+            
+//            gbc.gridx = 3;
+//            gbc.gridy = 1;
+//            gbc.gridwidth = 1;
+//            gbc.gridheight = 1;
+//            gbc.anchor = GridBagConstraints.WEST;
+//            gbc.weightx = 0.0D;
+//            gbc.weighty = 0.0D;
+//            gbc.fill = GridBagConstraints.NONE;
+//            pane.add(mPollingIntervalTimeUnitPanel.component[0], gbc);
+            
+            gbc.gridx = 4;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 1.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(mPollingIntervalTimeUnitPanel.component[1], gbc);
+
+            JButton selectIEPProcessButton = new JButton(NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.SELECT_TABLES"));
+            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
+            //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
+            gbc.gridx = 5;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(selectIEPProcessButton, gbc);
+            
+            //second row
+            
             // output schema
             Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
@@ -205,68 +290,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            gbc.fill = GridBagConstraints.NONE;
 //            pane.add(Box.createHorizontalStrut(20), gbc);
 //            
-            // polling interval
-            Property pollingInterval = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_INTERVAL);
-            String pollingIntervalLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.POLLING_INTERVAL");
-//            List attributeList = mSelectPanel.getQuantityAttributeList();
-//            attributeList.add(0, "");
-//            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
-            mPollingIntervalPanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(pollingIntervalLabel, pollingInterval, false);
-            
-            gbc.gridx = 3;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(mPollingIntervalPanel.component[0], gbc);
-            
-            gbc.gridx = 4;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 1.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(mPollingIntervalPanel.component[1], gbc);
-            
-            //polling interval time unit
-
-            Property pollingIntervalTimeUnit = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_INTERVAL_TIME_UNIT);
-            String pollingIntervalTimeUnitLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.POLLING_INTERVAL_TIME_UNIT");
-//            List attributeList = mSelectPanel.getQuantityAttributeList();
-//            attributeList.add(0, "");
-//            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
-            String[] timeUnitDisplayName = new String[] {};
-            String[] timeUnitCodeName = new String[] {};
-            mPollingIntervalTimeUnitPanel = PropertyPanel.createComboBoxPanel(pollingIntervalTimeUnitLabel, 
-                                                                              pollingIntervalTimeUnit, 
-                                                                              DatabaseTableWizardConstants.getTimeUnitInfosDisplayName().toArray(timeUnitDisplayName), 
-                                                                              DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(timeUnitCodeName), 
-                                                                              false);
-            
-            gbc.gridx = 3;
-            gbc.gridy = 1;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(mPollingIntervalTimeUnitPanel.component[0], gbc);
-            
-            gbc.gridx = 4;
-            gbc.gridy = 1;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 1.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(mPollingIntervalTimeUnitPanel.component[1], gbc);
             
             //polling record size
             Property pollingRecordSize = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_RECORD_SIZE);
@@ -276,8 +299,8 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
             mPollingRecordSizePanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(pollingRecordSizeLabel, pollingRecordSize, false);
             
-            gbc.gridx = 0;
-            gbc.gridy = 2;
+            gbc.gridx = 2;
+            gbc.gridy = 1;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
             gbc.anchor = GridBagConstraints.WEST;
@@ -286,8 +309,8 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mPollingRecordSizePanel.component[0], gbc);
             
-            gbc.gridx = 1;
-            gbc.gridy = 2;
+            gbc.gridx = 3;
+            gbc.gridy = 1;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
             gbc.anchor = GridBagConstraints.WEST;
@@ -297,6 +320,25 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             pane.add(mPollingRecordSizePanel.component[1], gbc);
             
             
+            //is delete records after polling
+            Property isDeleteRecords = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_IS_DELETE_RECORDS);
+            String isDeleteRecordsLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.IS_DELETE_RECORDS");
+//            List attributeList = mSelectPanel.getQuantityAttributeList();
+//            attributeList.add(0, "");
+//            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
+            mIsDeleteRecordsPanel = PropertyPanel.createCheckBoxPanel(isDeleteRecordsLabel, isDeleteRecords);
+            
+            gbc.gridx = 4;
+            gbc.gridy = 1;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(mIsDeleteRecordsPanel.input[0], gbc);
+            
+            //row 3
             //database jndi name
             Property databaseJndiName = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_DATABASE_JNDI_NAME);
             String databaseJndiNameLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.DATABASE_JNDI_NAME");
@@ -305,7 +347,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
             mDatabaseJndiNamePanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(databaseJndiNameLabel, databaseJndiName, false);
             
-            gbc.gridx = 3;
+            gbc.gridx = 0;
             gbc.gridy = 2;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
@@ -315,7 +357,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mDatabaseJndiNamePanel.component[0], gbc);
             
-            gbc.gridx = 4;
+            gbc.gridx = 1;
             gbc.gridy = 2;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
@@ -325,23 +367,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mDatabaseJndiNamePanel.component[1], gbc);
             
-            //is delete records after polling
-            Property isDeleteRecords = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_IS_DELETE_RECORDS);
-            String isDeleteRecordsLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.IS_DELETE_RECORDS");
-//            List attributeList = mSelectPanel.getQuantityAttributeList();
-//            attributeList.add(0, "");
-//            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
-            mIsDeleteRecordsPanel = PropertyPanel.createCheckBoxPanel(isDeleteRecordsLabel, isDeleteRecords);
-            
-            gbc.gridx = 5;
-            gbc.gridy = 2;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(mIsDeleteRecordsPanel.input[0], gbc);
+           
             
 //            gbc.gridx = 6;
 //            gbc.gridy = 2;
@@ -355,18 +381,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            
             
                     
-            JButton selectIEPProcessButton = new JButton("...");
-            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
-            //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
-            gbc.gridx = 11;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(selectIEPProcessButton, gbc);
             
             // glue
 //            gbc.gridx = 5;
@@ -482,6 +496,9 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     mDatabaseJndiNamePanel.setStringValue(databaseJNDIName);
                     mIsDeleteRecordsPanel.setStringValue(isDeleteRecords);
                     
+                    if(pollingIntervalUnit != null) {
+                        mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
+                    }
                     
                     Iterator<TableInfo> tableIt = tables.iterator();
                     List<String> fromList = new ArrayList<String>(); 
@@ -503,9 +520,33 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         SchemaAttribute sa = factory.createSchemaAttribute(model);
                         String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
                         sa.setAttributeName(attrName);
-                        sa.setAttributeType(column.getColumnDataType());
-                        sa.setAttributeSize(""+column.getPrecision());
-                        sa.setAttributeScale(""+column.getScale());
+                        String dataType = column.getColumnDataType();
+                        sa.setAttributeType(dataType);
+                        
+                        int precision = column.getPrecision();
+                        int scale = column.getScale();
+                        sa.setAttributeSize("");
+                        sa.setAttributeScale("");
+                        
+                        if(dataType.equalsIgnoreCase("CHAR")
+                           || dataType.equalsIgnoreCase("VARCHAR")
+                           || dataType.equalsIgnoreCase("DECIMAL") 
+                           || dataType.equalsIgnoreCase("REAL")
+                           || dataType.equalsIgnoreCase("DOUBLE")
+                           ) {
+                            if(precision != 0) {
+                                sa.setAttributeSize(""+column.getPrecision());
+                            } 
+                        }
+                        
+                        if(dataType.equalsIgnoreCase("DECIMAL") 
+                           || dataType.equalsIgnoreCase("REAL")
+                           || dataType.equalsIgnoreCase("DOUBLE")
+                           ) {
+                            if(scale != 0) {
+                                sa.setAttributeScale(""+column.getScale());
+                            } 
+                        }
                         
                         
                         attrs.add(sa);
@@ -619,7 +660,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
     	
     	@Override
     	public boolean isCellEditable(int row, int column) {
-    		if(column == 0) {
+    		if(column == 0 || column == 1) {
     			return true;
     		}
     		return false;

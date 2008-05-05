@@ -100,11 +100,12 @@ public final class QuickFixAction extends IconAction {
       return;
     }
     for (QuickFix quickFix: quickFixes) {
-      if (quickFix.canFix()) {
-        quickFix.doFix();
+      String description = quickFix.doFix();
+
+      if (description != null) {
+        out.println();
+        out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", description)); // NOI18N
       }
-      out.println();
-      out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", quickFix.getDescription())); // NOI18N
     }
   }
 

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.soa.validation.core;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,13 +87,13 @@ public final class Controller implements ComponentListener {
   }
 
   public void addListener(Listener listener) {
-    synchronized(myListeners) {
+    synchronized (myListeners) {
       myListeners.put(listener, null);
     }
   }
   
   public void removeListener(Listener listener) {
-    synchronized(myListeners) {
+    synchronized (myListeners) {
       myListeners.remove(listener);
     }
   }
@@ -119,7 +120,8 @@ public final class Controller implements ComponentListener {
     log("TIMER-TRIGGER"); // NOI18N
     log();
 
-    cancelTimer();
+    cancelValidation();
+
     myTimer.schedule(new TimerTask() {
       public void run() {
         doValidation(false, false);
@@ -128,20 +130,62 @@ public final class Controller implements ComponentListener {
     DELAY);
   }
 
-  private synchronized void doValidation(boolean isComplete, boolean isOutput) {
-    cancelTimer();
+  public boolean cliValidate(File file, boolean allowBuildWithError) {
+    boolean isError = false;
+    List<ResultItem> result = validate(ValidationType.COMPLETE);
+      
+    for (ResultItem item : result) {
+      if ( !allowBuildWithError) {
+        if (item.getType() == Validator.ResultType.ERROR) {
+          System.out.println(LineUtil.getValidationError(file, item));
+          System.out.println();
+        }
+      }
+      if (item.getType() == Validator.ResultType.ERROR) {
+        isError = true;
+      }
+    }
+    return isError;
+  }
+
+  public boolean ideValidate(File file) {
+    boolean isError = false;
+    List<ResultItem> result = validate(ValidationType.COMPLETE);
+
+    for (ResultItem item : result) {
+      System.err.println(LineUtil.getValidationError(file, item));
+      System.err.println();
+
+      if (item.getType() == Validator.ResultType.ERROR) {
+        isError = true;
+      }
+    }
+    return isError;
+  }
+
+  private List<ResultItem> validate(ValidationType type) {
+    Validation validation = new Validation();
+    validation.validate(myModel, type);
+    return validation.getValidationResult();
+  }
+
+  private void doValidation(boolean isComplete, boolean isOutput) {
+    cancelValidation();
 
     List<ResultItem> items;
     ValidationType type;
+    int priority;
 
     if (isComplete) {
-      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
       type = ValidationType.COMPLETE;
+      priority = Thread.MAX_PRIORITY;
     }
     else {
-      Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
       type = ValidationType.PARTIAL;
+      priority = Thread.MIN_PRIORITY;
     }
+    Thread.currentThread().setPriority(priority);
+
     log();
     log("VALIDATION: " + type); // NOI18N
     startTimeln();
@@ -156,20 +200,19 @@ public final class Controller implements ComponentListener {
         items = new ValidationOutputWindowController().validate(myModel);
       }
       else {
-        Validation validation = new Validation();
-        validation.validate(myModel, type);
-        items = validation.getValidationResult();
+        items = validate(type);
       }
     }
     endTime("validation"); // NOI18N
-    log("."); // NOI18N
+    log("end: " + type); // NOI18N
 
     notifyListeners(items);
   }
 
-  private void cancelTimer() {
+  private void cancelValidation() {
     myTimer.cancel();
     myTimer = new Timer();
+//  Validation.stop(); todo a
   }
 
   private void notifyListeners(List<ResultItem> items) {

@@ -343,7 +343,7 @@ public class SQLObjectUtil {
                 rtInput.addColumn(arg);
                 return arg;
             }
-            }
+        }
         return null;
     }
 
@@ -368,7 +368,7 @@ public class SQLObjectUtil {
         srcColumn.setEditable(false); // the name is not editable
         srcColumn.setVisible(false); // the column is not visible in canvas
 
-        // set default value if not flatfile
+        // set default value
         srcColumn.setDefaultValue(getFileNameFromDB(sTable, connDef));
         return srcColumn;
     }

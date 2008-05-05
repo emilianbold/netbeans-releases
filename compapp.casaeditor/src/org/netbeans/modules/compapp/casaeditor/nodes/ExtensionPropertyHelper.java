@@ -145,6 +145,7 @@ public class ExtensionPropertyHelper {
                     if (extElement.getName().equals(eeLocalName)) {
                         Sheet.Set extPropertySet =
                                 node.getPropertySet(sheet, extInfo.getDisplayName());
+                        extPropertySet.setShortDescription(extInfo.getDescription());
                         createExistingProperties(node, document, extElement,
                                 extPropertySet, casaExtPoint,
                                 ee, ee, namespace, extInfo.getProvider());
@@ -172,6 +173,7 @@ public class ExtensionPropertyHelper {
 
             // For each extension, create a new property sheet
             Sheet.Set extPropertySet = node.getPropertySet(sheet, extInfo.getDisplayName());
+            extPropertySet.setShortDescription(extInfo.getDescription());
 
             String namespace = extInfo.getNameSpace();
 

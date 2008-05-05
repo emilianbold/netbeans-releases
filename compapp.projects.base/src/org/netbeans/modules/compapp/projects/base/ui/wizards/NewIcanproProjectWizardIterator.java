@@ -49,7 +49,7 @@ public class NewIcanproProjectWizardIterator
     
     private static final long serialVersionUID = 1L;
     
-    private WizardDescriptor.Panel[] createPanels() {
+    protected WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(getDefaultName(), getDefaultTitle()),
             //need this after EA1

@@ -168,11 +168,11 @@ public class LogReader {
         return false;
     }
     
-    private enum CompilerType {
+    /*package-local*/ enum CompilerType {
         CPP, C, UNKNOWN;
     };
     
-    private class LineInfo {
+    /*package-local*/ static class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
         
@@ -189,7 +189,7 @@ public class LogReader {
     private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
     private static final String MAKE_DELIMITER = ";"; //NOI18N
     
-    private LineInfo testCompilerInvocation(String line) {
+    /*package-local*/ static LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
         int start = 0, end = -1;
 //        if (li.compilerType == CompilerType.UNKNOWN) {
@@ -201,6 +201,7 @@ public class LogReader {
 //        } 
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_GNU_C);
+            //TODO: can fail on gcc calls with -shared-libgcc
             if (start>=0) {
                 li.compilerType = CompilerType.C;
                 end = start + INVOKE_GNU_C.length();
