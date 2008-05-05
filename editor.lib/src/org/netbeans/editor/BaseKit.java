@@ -940,8 +940,12 @@ public class BaseKit extends DefaultEditorKit {
     protected Action[] getCustomActions() {
         MimePath mimePath = MimePath.parse(getContentType());
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        Action[] customActions = (Action []) SettingsConversions.callFactory(prefs, mimePath, "custom-action-list", null); //NOI18N
-        return customActions;
+        
+        @SuppressWarnings("unchecked")
+        List<? extends Action> customActions = (List<? extends Action>) SettingsConversions.callFactory(
+                prefs, mimePath, "custom-action-list", null); //NOI18N
+        
+        return customActions == null ? null : customActions.toArray(new Action[customActions.size()]);
     }
     
     /**
