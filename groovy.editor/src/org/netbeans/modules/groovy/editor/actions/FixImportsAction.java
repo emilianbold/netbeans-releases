@@ -39,7 +39,6 @@
 package org.netbeans.modules.groovy.editor.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -53,7 +52,6 @@ import org.netbeans.modules.groovy.editor.parser.GroovyParserManager;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -75,6 +73,7 @@ import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,12 +82,12 @@ import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 public class FixImportsAction extends AbstractAction implements EditorAction {
 
     private final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
-    String NAME = "Fix-Imports";
+    String NAME = NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString");
 
     public FixImportsAction() {
-        super("Fix-Imports");
+        super(NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString"));
         putValue("PopupMenuText", NAME);
-        LOG.setLevel(Level.FINEST);
+        // LOG.setLevel(Level.FINEST);
     }
 
     @Override
@@ -103,6 +102,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction {
 
         assert comp != null;
         Document doc = comp.getDocument();
+        List<String> importDone = new ArrayList<String>();
 
         if (doc != null) {
             DataObject dob = NbEditorUtilities.getDataObject(doc);
@@ -152,10 +152,16 @@ public class FixImportsAction extends AbstractAction implements EditorAction {
                                                             LOG.log(Level.FINEST, importCandidates.toString());
                                                             
                                                             String fqnName = importCandidates.get(0);
-                                                            edits.replace(firstFreePosition, 0,
-                                                                    "import " + fqnName + ";\n", false, 0);
                                                             
-                                                            edits.apply();
+                                                            if (!importDone.contains(fqnName)) {
+                                                                
+                                                                edits.replace(firstFreePosition, 0,
+                                                                        "import " + fqnName + ";\n", false, 0);
+                                                                
+                                                                edits.apply();
+                                                                
+                                                                importDone.add(fqnName);
+                                                            }
                                                             
                                                         } else {
                                                             LOG.log(Level.FINEST, "Present Chooser between: ");
@@ -292,7 +298,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction {
         // nothing set:
         if(importEnd == 0 && packageOffset == 0){
             // place imports in the first line
-            return 1;
+            return 0;
         
         }
         // only package set:
