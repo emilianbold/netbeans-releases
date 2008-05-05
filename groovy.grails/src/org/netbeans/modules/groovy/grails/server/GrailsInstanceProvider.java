@@ -130,6 +130,7 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
             running.clear();
         }
         grailsInstance.refreshNode();
+        grailsInstance.refreshChildren();
         changeSupport.fireChange();
     }
 
