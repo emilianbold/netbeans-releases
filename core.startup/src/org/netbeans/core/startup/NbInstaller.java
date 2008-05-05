@@ -41,17 +41,10 @@
 
 package org.netbeans.core.startup;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -80,7 +73,6 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
@@ -935,6 +927,19 @@ final class NbInstaller extends ModuleInstaller {
                 if ("org/openide/explorer/".equals (pkg)) return true; // NOI18N
                 if ("org/openide/util/".equals (pkg)) return true; // NOI18N
             }
+
+        } else if (pkg.startsWith("org/netbeans/editor")) { //NOI18N
+            // Settings & the rest of the editor.lib
+            if ("org/netbeans/editor/".equals (pkg)) return true; // NOI18N
+            // Ext. Settings & the rest of the editor.lib
+            if ("org/netbeans/editor/ext".equals (pkg)) return true; // NOI18N
+            
+        } else if (pkg.startsWith("org/netbeans/modules/editor")) { //NOI18N
+            // BaseOptions & Annotations
+            if ("org/netbeans/modules/editor/options".equals (pkg)) return true; // NOI18N
+            // BaseOptions icons & the rest of the editor resources
+            if ("org/netbeans/modules/editor/resources".equals (pkg)) return true; // NOI18N
+            
         }
 
         if (isSpecialResourceFromSystemProperty(pkg)) {
