@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -63,6 +64,8 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
     private static GrailsInstanceProvider instance;
 
     private final Map<Process, Project> running = new HashMap<Process, Project>();
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private GrailsInstance grailsInstance;
 
@@ -104,11 +107,11 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
     }
 
     public void addChangeListener(ChangeListener listener) {
-        // never changes
+        changeSupport.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        // never changes
+        changeSupport.removeChangeListener(listener);
     }
 
     private static class ProcessHandler implements Runnable {

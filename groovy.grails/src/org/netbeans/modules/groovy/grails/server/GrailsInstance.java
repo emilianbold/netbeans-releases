@@ -49,6 +49,7 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -62,9 +63,12 @@ public final class GrailsInstance implements ServerInstanceImplementation {
 
     private final GrailsRuntime runtime;
 
+    private final Node node;
+
     private GrailsInstance(GrailsInstanceProvider provider, GrailsRuntime runtime) {
         this.childFactory = new GrailsChildFactory(provider);
         this.runtime = runtime;
+        this.node = new GrailsNode(Children.create(childFactory, false), getDisplayName());
     }
 
     public static final GrailsInstance forProvider(GrailsInstanceProvider provider) {
@@ -73,18 +77,18 @@ public final class GrailsInstance implements ServerInstanceImplementation {
     }
 
     public Node getBasicNode() {
-        return new GrailsNode(Children.LEAF, getDisplayName());
+        return new FilterNode(node, Children.LEAF);
     }
 
     public Node getFullNode() {
-        return new GrailsNode(Children.create(childFactory, false), getDisplayName());
+        return node;
     }
 
     public JComponent getCustomizer() {
         return null;
     }
 
-    public String getDisplayName() {
+    public final String getDisplayName() {
         String version = Accessor.DEFAULT.getVersion(runtime);
         if (version == null) {
             version = NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.unknownVersion");
@@ -92,19 +96,19 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version);
     }
 
-    public String getServerDisplayName() {
+    public final String getServerDisplayName() {
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.serverDisplayName");
     }
 
-    public void refresh() {
+    public final void refresh() {
         childFactory.refresh();
     }
 
-    public boolean isRemovable() {
+    public final boolean isRemovable() {
         return false;
     }
 
-    public void remove() {
+    public final void remove() {
         // noop
     }
 

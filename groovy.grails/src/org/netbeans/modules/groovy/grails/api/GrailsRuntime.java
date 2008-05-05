@@ -94,11 +94,11 @@ public final class GrailsRuntime {
 
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (GrailsSettings.GRAILS_BASE_PROPERTY.equals(evt.getPropertyName())) {
-                        instance.reloadRuntime();
+                        instance.reload();
                     }
                 }
             });
-            instance.reloadRuntime();
+            instance.reload();
         }
         return instance;
     }
@@ -139,7 +139,7 @@ public final class GrailsRuntime {
     /**
      * Reloads the runtime instance variables.
      */
-    private void reloadRuntime() {
+    private void reload() {
         synchronized (this) {
             initialized = false;
         }
