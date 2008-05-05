@@ -28,6 +28,7 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -36,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProcessRunnable;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 public class ShellAction extends AbstractAction {
@@ -57,7 +59,8 @@ public class ShellAction extends AbstractAction {
         try {
             Process process = ExecutionSupport.getInstance().executeSimpleCommand(
                     "shell", GrailsProjectConfig.forProject(prj));
-            Runnable runnable = new GrailsProcessRunnable(process, null, prj.getProjectDirectory().getName());
+            Runnable runnable = new GrailsProcessRunnable(process, null,
+                    prj.getProjectDirectory().getName(), new File[] {FileUtil.toFile(prj.getProjectDirectory())});
             // FIXME
             RequestProcessor.getDefault().post(runnable);
         } catch (Exception ex) {

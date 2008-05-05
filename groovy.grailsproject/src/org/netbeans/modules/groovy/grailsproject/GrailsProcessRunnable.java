@@ -40,6 +40,7 @@
 package org.netbeans.modules.groovy.grailsproject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
@@ -49,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.groovy.grailsproject.actions.LineSnooper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -66,21 +68,24 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
     private final LineSnooper snooper;
 
     private final String taskName;
-    
+
+    private final File[] toRefresh;
+
     private final InputOutput io;
 
     private ProgressHandle progressHandle;
 
     // FIXME snooper will be replaced with output API
-    
-    public GrailsProcessRunnable(Process process, LineSnooper snooper, String taskName) {
-        this(process, snooper, taskName, IOProvider.getDefault().getIO(taskName, true));
+
+    public GrailsProcessRunnable(Process process, LineSnooper snooper, String taskName, File[] toRefresh) {
+        this(process, snooper, taskName, toRefresh, IOProvider.getDefault().getIO(taskName, true));
     }
-    
-    public GrailsProcessRunnable(Process process, LineSnooper snooper, String taskName, InputOutput io) {
+
+    public GrailsProcessRunnable(Process process, LineSnooper snooper, String taskName, File[] toRefresh, InputOutput io) {
         this.process = process;
         this.taskName = taskName;
         this.snooper = snooper;
+        this.toRefresh = toRefresh.clone();
         this.io = io;
     }
 
@@ -144,6 +149,7 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
                 outputThread.interrupt();
             }
 
+            FileUtil.refreshFor(toRefresh);
             finishProgress();
             finish();
         }

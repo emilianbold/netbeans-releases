@@ -30,6 +30,7 @@ package org.netbeans.modules.groovy.grailsproject.actions;
 import java.net.MalformedURLException;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import javax.swing.AbstractAction;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
@@ -41,6 +42,7 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProcessRunnable;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputListener;
 
@@ -72,7 +74,7 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
             serverState.setProcess(process);
             String name = prj.getProjectDirectory().getName();
             Runnable runnable = new GrailsProcessRunnable(
-                    process, this, name) {
+                    process, this, name, new File[] {FileUtil.toFile(prj.getProjectDirectory())}) {
 
                 @Override
                 public void finish() {
