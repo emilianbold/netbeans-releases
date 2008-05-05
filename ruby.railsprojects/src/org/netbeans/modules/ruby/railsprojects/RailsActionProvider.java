@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
@@ -58,7 +59,7 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.ruby.rubyproject.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -73,6 +74,7 @@ import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -86,13 +88,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** 
  * Action provider of the Ruby project. This is the place where to do
  * strange things to Ruby actions. E.g. compile-single.
  */
 public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
-    
+
     /**
      * Standard command for running rdoc on a project.
      * @see org.netbeans.spi.project.ActionProvider
@@ -140,6 +144,8 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
+    
+    private static final Logger LOGGER = Logger.getLogger(RailsActionProvider.class.getName());
     
     public RailsActionProvider( RailsProject project, UpdateHelper updateHelper ) {
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
@@ -228,16 +234,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-            RakeSupport rake = new RakeSupport(project);
-            rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
-            rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, false, "test"); // NOI18N
+            RakeRunner runner = new RakeRunner(project);
+            runner.setPWD(pwd);
+            runner.setFileLocator(new RailsFileLocator(context, project));
+            runner.showWarnings(true);
+            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+            runner.run("test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
@@ -292,8 +295,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (RakeSupport.isRakeFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                RakeRunner runner = new RakeRunner(project);
+                runner.setRakeFile(file);
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run();
                 return;
             }
             
@@ -310,8 +317,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (isMigrationFile(file)) {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(FileUtil.toFile(project.getProjectDirectory()), null, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand, "db:migrate", "VERSION=" + version); // NOI18N
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setParameters("VERSION=" + version); // NOI18N
+                runner.run("db:migrate"); // NOI18N
                 return;
             }
             
@@ -562,6 +573,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                 ).
                 run();
+                
+        // request focus for the output window - see #133519
+        final String outputWindowId = "output"; //NOI18N
+        TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
+        // outputWindow should not be null as the output window id is not likely to change, but 
+        // checking for null anyway since we are not relying on an API.
+        if (outputWindow != null) {
+            outputWindow.requestActive();
+        } else {
+            LOGGER.info("Could not find the output window using id " + outputWindowId);
+        }
     }
     
     private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,

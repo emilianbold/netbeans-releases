@@ -47,18 +47,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
 
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
-import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.mapper.model.customitems.BpelXPathCustomFunction;
 import org.netbeans.modules.bpel.mapper.model.customitems.WrapServiceRefHandler;
 import org.netbeans.modules.soa.mappercore.Mapper;
@@ -75,7 +70,6 @@ public final class Palette {
 
   public Palette(Mapper mapper) {
     myMapper = mapper;
-    myIsCollapsed = true;
   }
 
   public JPanel getPanel() {
@@ -109,35 +103,6 @@ public final class Palette {
     myBar.setBorder(new Border());
     
     return myBar;
-  }
-
-  private JButton createCollapseExpandAllButton() {
-    JButton button = createButton(new ButtonAction(
-      icon(Palette.class, "expose"), // NOI18N
-      i18n(Palette.class, "TLT_Collapse_Expand")) { // NOI18N
-      public void actionPerformed(ActionEvent event) {
-//out("DO: " + myIsCollapsed);
-        if (myIsCollapsed) {
-          myMapper.expandNonEmptyGraphs();
-        }
-        else {
-          myMapper.collapseAll(COLLAPSE_LEVEL);
-        }
-        myIsCollapsed = !myIsCollapsed;
-      }
-    });
-    a11y(button, i18n(Palette.class, "ACS_Collapse_Expand")); // NOI18N
-    
-    return button;
-  }
-
-  private JButton createPrintPreviewButton() {
-    Action action = Lookup.getDefault().lookup(Action.class);
-    
-    if (action == null) {
-      return null;
-    }
-    return createButton(action);
   }
 
   public void hideMenu() {
@@ -303,6 +268,4 @@ public final class Palette {
 
   private JMenuBar myBar;
   private Mapper myMapper;
-  private boolean myIsCollapsed;
-  private static final int COLLAPSE_LEVEL = 2;
 }

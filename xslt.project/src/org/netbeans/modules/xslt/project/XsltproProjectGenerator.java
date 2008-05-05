@@ -233,7 +233,6 @@ public class XsltproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
-// todo r
         ep.setProperty(VALIDATION_FLAG, "false");
 
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");
@@ -260,7 +259,7 @@ public class XsltproProjectGenerator {
                 NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
         
         // todo r
-        ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N
+        ep.setProperty("jbi.se.type", "sun-xslt-engine"); // NOI18N
         ep.setProperty("jbi.service-unit.description", 
                 NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
 

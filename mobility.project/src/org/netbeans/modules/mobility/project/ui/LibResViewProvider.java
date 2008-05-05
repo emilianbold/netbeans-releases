@@ -147,50 +147,52 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         public void propertyChange(final PropertyChangeEvent evt) {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
-                    final String oldV=(String)evt.getOldValue();
-                    final String newV=(String)evt.getNewValue();
-                    final String prop=evt.getPropertyName();
-                    int pos;
-                    Node parentNode=null;
-                    String confName;
-                    final String defName=project.getConfigurationHelper().getDefaultConfiguration().getDisplayName();
+                    synchronized (ConfPropChangeListener.this){
+                        final String oldV=(String)evt.getOldValue();
+                        final String newV=(String)evt.getNewValue();
+                        final String prop=evt.getPropertyName();
+                        int pos;
+                        Node parentNode=null;
+                        String confName;
+                        final String defName=project.getConfigurationHelper().getDefaultConfiguration().getDisplayName();
 
-                    if ((pos=prop.indexOf(DefaultPropertiesDescriptor.LIBS_CLASSPATH))!=-1)
-                    {
-                        if (pos==0)
+                        if ((pos=prop.indexOf(DefaultPropertiesDescriptor.LIBS_CLASSPATH))!=-1)
                         {
-                            confName=defName;
-                        }
-                        else
-                        {
-                           final int begin=J2MEProjectProperties.CONFIG_PREFIX.length();
-                           final int end=pos-1;
-                           confName=prop.substring(begin,end);
-                        }
-                        parentNode=node.getChildren().findChild(confName);
-                        if (parentNode != null)
-                        {
-                            final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
-                            children.refreshNode("Resources");
-                        }
-
-                        //We must refresh resources of all "default resources" configurations
-                        if (pos==0)
-                        {
-                            final ProjectConfiguration confs[]=project.getConfigurationHelper().getConfigurations().toArray(new ProjectConfiguration[0]);
-                            final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
-                            for (int i=0;i<confs.length;i++)
+                            if (pos==0)
                             {
-                                if (!confs[i].getDisplayName().equals(defName))
+                                confName=defName;
+                            }
+                            else
+                            {
+                               final int begin=J2MEProjectProperties.CONFIG_PREFIX.length();
+                               final int end=pos-1;
+                               confName=prop.substring(begin,end);
+                            }
+                            parentNode=node.getChildren().findChild(confName);
+                            if (parentNode != null)
+                            {
+                                final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
+                                children.refreshNode("Resources");
+                            }
+
+                            //We must refresh resources of all "default resources" configurations
+                            if (pos==0)
+                            {
+                                final ProjectConfiguration confs[]=project.getConfigurationHelper().getConfigurations().toArray(new ProjectConfiguration[0]);
+                                final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                                for (int i=0;i<confs.length;i++)
                                 {
-                                    final String libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+confs[i].getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
-                                    if (libs==null)
+                                    if (!confs[i].getDisplayName().equals(defName))
                                     {
-                                        parentNode=node.getChildren().findChild(confs[i].getDisplayName());
-                                        if (parentNode != null)
+                                        final String libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+confs[i].getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+                                        if (libs==null)
                                         {
-                                            final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
-                                            children.refreshNode("Resources");
+                                            parentNode=node.getChildren().findChild(confs[i].getDisplayName());
+                                            if (parentNode != null)
+                                            {
+                                                final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
+                                                children.refreshNode("Resources");
+                                            }
                                         }
                                     }
                                 }

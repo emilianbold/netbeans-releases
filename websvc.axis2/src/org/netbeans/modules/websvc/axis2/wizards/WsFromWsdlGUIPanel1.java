@@ -66,7 +66,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
     public WsFromWsdlGUIPanel1(WsFromWsdlPanel1 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("Code Generator Options");
+        setName("Code Generator Options"); // NOI18N
         jComboBox3.setModel(new javax.swing.DefaultComboBoxModel(WizardProperties.DATA_BINDING));
         ItemListener cbListener = new CBListener();
         jComboBox1.addItemListener(cbListener);
@@ -78,21 +78,21 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
             public void insertUpdate(DocumentEvent e) {
                 Document doc = e.getDocument();
                 try {
-                    changeOption("-p", doc.getText(0, doc.getLength()));
+                    changeOption("-p", doc.getText(0, doc.getLength())); // NOI18N
                 } catch (BadLocationException ex){}
             }
 
             public void removeUpdate(DocumentEvent e) {
                 Document doc = e.getDocument();
                 try {
-                    changeOption("-p", doc.getText(0, doc.getLength()));
+                    changeOption("-p", doc.getText(0, doc.getLength())); // NOI18N
                 } catch (BadLocationException ex){}
             }
 
             public void changedUpdate(DocumentEvent e) {
                 Document doc = e.getDocument();
                 try {
-                    changeOption("-p", doc.getText(0, doc.getLength()));
+                    changeOption("-p", doc.getText(0, doc.getLength())); // NOI18N
                 } catch (BadLocationException ex){}
             }
             
@@ -312,7 +312,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         boolean first=true;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            buf.append(first ? token : " "+token);
+            buf.append(first ? token : " "+token); // NOI18N
             if (first) first = false;
         }
         return buf.toString();
@@ -344,7 +344,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
                     jCheckBox1.setEnabled(true);
                     jTextArea2.setOpaque(true);
                     jTextArea2.setEditable(true);
-                    changeOption("-d", db);
+                    changeOption("-d", db); // NOI18N
                 }
                 wizardPanel.fireChange();
             } else if (jCheckBox1 == source) {
@@ -364,15 +364,15 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         boolean foundOption = false;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            if ("-p".equals(token)) buf.append("\n");
-            else buf.append(" ");
+            if ("-p".equals(token)) buf.append("\n"); // NOI18N
+            else buf.append(" "); // NOI18N
             if (option.equals(token)) {
                 // string options
                 if (value instanceof String) {
                     buf.append(token);
                     // skip next token
                     token = tokens.nextToken();
-                    buf.append(" "+(String)value);
+                    buf.append(" "+(String)value); // NOI18N
                 }
                 // boolean option
                 else if (value instanceof Boolean) {
@@ -387,7 +387,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         }
         if ((value instanceof Boolean) && !foundOption) {
             if (((Boolean)value).booleanValue()) {
-                buf.append(" "+option);
+                buf.append(" "+option); // NOI18N
             }
         }
         jTextArea1.setText(buf.toString());

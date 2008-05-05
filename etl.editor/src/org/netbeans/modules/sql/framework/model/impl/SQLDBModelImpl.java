@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.sql.framework.model.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -72,11 +74,13 @@ import java.io.File;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -817,7 +821,40 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             }
         }
 
+        String connNamePrefix = type == SQLConstants.SOURCE_DBMODEL?"SourceConnection":"TargetConnection";
+        if (!name.startsWith(connNamePrefix)) {
+            String modelName = generateDBModelName(type == SQLConstants.SOURCE_DBMODEL);
+            name = modelName;
+            ((SQLDBConnectionDefinitionImpl) connectionDefinition).setName(name);
+                DataObjectProvider.getProvider().getActiveDataObject().getETLEditorSupport().setUpdatedDuringLoad(true);        
+        }
     }
+    
+        
+     private String generateDBModelName(boolean isSource) {
+        int cnt = 1;
+        String connNamePrefix = isSource ? "SourceConnection" : "TargetConnection";
+        String aName = connNamePrefix + cnt;
+        while (isDBModelNameExist(isSource, aName)) {
+            cnt++;
+            aName = connNamePrefix + cnt;
+        }
+
+        return aName;
+    }
+    
+     private boolean isDBModelNameExist(boolean isSource, String aName) {
+        Iterator<SQLDBModel> it  = ((SQLDefinition) this.getParentObject()).getAllDatabases().iterator();
+        while (it.hasNext()) {
+            SQLDBModel dbModel = it.next();
+            String dbName = dbModel.getModelName();
+            if (dbName != null && dbName.equals(aName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public void setConnectionDefinition(DBConnectionDefinition dbConnectionDef) {
         this.connectionDefinition = new SQLDBConnectionDefinitionImpl(dbConnectionDef);

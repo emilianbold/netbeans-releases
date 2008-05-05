@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.11.1
+#Version 1.12
 CLSS public abstract org.openide.windows.IOProvider
 cons protected IOProvider()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

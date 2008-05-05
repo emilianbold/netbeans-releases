@@ -74,10 +74,14 @@ public class JsModel {
 
     private static final Logger LOGGER = Logger.getLogger(JsModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-    private final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    private final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
-    private final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+    
+    private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+    
+    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ ";
+    
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
     private String rubyCode;
@@ -226,10 +230,9 @@ public class JsModel {
                 
                 if (state.in_inlined_javascript || state.in_javascript) {
                     int sourceStart = tokenSequence.offset();
-                    String text = " __UNKNOWN__ "; // NOI18N
                     int sourceEnd = sourceStart + token.length();
                     int generatedStart = buffer.length();
-                    buffer.append(text);
+                    buffer.append(GENERATED_IDENTIFIER);
                     int generatedEnd = buffer.length();
                     CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
                             generatedEnd);
@@ -269,10 +272,9 @@ public class JsModel {
                     if (token.id().name().equals("T_INLINE_HTML")) {
                         //we are out of php code
                         tokenSequence.movePrevious();
-                        String text = " __PHP_CODE__ "; // NOI18N
                         int sourceEnd = sourceStart + token.length();
                         int generatedStart = buffer.length();
-                        buffer.append(text);
+                        buffer.append(GENERATED_IDENTIFIER);
                         int generatedEnd = buffer.length();
                         CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
                                 generatedEnd);
@@ -308,6 +310,7 @@ public class JsModel {
 //        // Erubis uses _buf; I've seen eruby using something else (_erbout?)
 //        buffer.append("_buf='';"); // NOI18N
 //        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
+/* This could be a huge bottleneck - see http://www.netbeans.org/issues/show_bug.cgi?id=134329
         FileObject fo = NbUtilities.findFileObject(doc);
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
@@ -334,6 +337,7 @@ public class JsModel {
                 }
             }
         }
+*/
 
         JsAnalyzerState state = new JsAnalyzerState();
 
@@ -384,10 +388,9 @@ public class JsModel {
                 // TODO - make sure it's NOT an erb comment!!!
                 if (state.in_inlined_javascript || state.in_javascript) {
                     int sourceStart = tokenSequence.offset();
-                    String text = " __UNKNOWN__ "; // NOI18N
                     int sourceEnd = sourceStart + token.length();
                     int generatedStart = buffer.length();
-                    buffer.append(text);
+                    buffer.append(GENERATED_IDENTIFIER);
                     int generatedEnd = buffer.length();
                     CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
                             generatedEnd);
@@ -759,6 +762,10 @@ public class JsModel {
         return null;
     }
 
+    public static boolean isGeneratedIdentifier(String ident) {
+        return GENERATED_IDENTIFIER.trim().equals(ident);
+    }
+    
     static class JsAnalyzerState {
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;

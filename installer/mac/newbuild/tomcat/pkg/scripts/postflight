@@ -36,9 +36,8 @@ chmod a+w logs
 "$script_dir"/perm.sh
 
 #add Product ID
-if [ -e "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/"${NB_CLUSTER_DIR}"/config/productid ] ; then
-    "$script_dir"/addproduct_id.sh "TOMCAT"
-fi
+"$script_dir"/addproduct_id.sh "TOMCAT"
+
 
 if [ -d "/Library/Receipts/tomcat.pkg" ] ; then
     rm -rf "/Library/Receipts/tomcat.pkg"

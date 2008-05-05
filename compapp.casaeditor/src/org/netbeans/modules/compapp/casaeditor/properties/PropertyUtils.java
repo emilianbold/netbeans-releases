@@ -276,6 +276,9 @@ public abstract class PropertyUtils {
      * @param description   description of the attribute
      * @param choiceMap     a map mapping choice element names to pre-built 
      *                      extensibility elements
+     * @param choiceDisplayNameBiDiMap  a fake bi-directonal map mapping choice
+     *                      element name to display name and display name
+     *                      to element name
      * @param defaultChoice default choice
      */
     public static void installChoiceExtensionProperty(
@@ -290,6 +293,7 @@ public abstract class PropertyUtils {
             String displayName,
             String description,
             Map<String, CasaExtensibilityElement> choiceMap,
+            Map<String, String> choiceDisplayNameMap,
             String defaultChoice) {
 
         assert valueType == String.class;
@@ -305,6 +309,7 @@ public abstract class PropertyUtils {
                     displayName,
                     description,
                     choiceMap,
+                    choiceDisplayNameMap,
                     defaultChoice);
 
             propertySet.put(property);

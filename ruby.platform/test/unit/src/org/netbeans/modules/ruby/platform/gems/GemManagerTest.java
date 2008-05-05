@@ -78,24 +78,25 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("righ gem dir", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }
     
-    public void testGemFetching() {
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        GemManager gm = jruby.getGemManager();
-        
-        List<String> errors = new ArrayList<String>();
-        List<Gem> available = gm.getRemoteGems(errors);
-        assertNotNull("gem not null", available);
-        System.out.println("available: " + available.size());
-        assertTrue("no errros: " + errors, errors.isEmpty());
-        
-        List<Gem> installed = gm.getInstalledGems(errors);
-        assertNotNull("gem not null", installed);
-        System.out.println("installed: " + installed.size());
-        assertTrue("no errros", errors.isEmpty());
-        
-        gm.reloadIfNeeded(errors);
-        assertTrue("no errros", errors.isEmpty());
-    }
+    // XXX: (Try to) reenable with JRuby 1.1.2+
+//    public void testGemFetching() {
+//        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+//        GemManager gm = jruby.getGemManager();
+//        
+//        List<String> errors = new ArrayList<String>();
+//        List<Gem> available = gm.getRemoteGems(errors);
+//        assertNotNull("gem not null", available);
+//        System.out.println("available: " + available.size());
+//        assertTrue("no errros: " + errors, errors.isEmpty());
+//        
+//        List<Gem> installed = gm.getInstalledGems(errors);
+//        assertNotNull("gem not null", installed);
+//        System.out.println("installed: " + installed.size());
+//        assertTrue("no errros", errors.isEmpty());
+//        
+//        gm.reloadIfNeeded(errors);
+//        assertTrue("no errros", errors.isEmpty());
+//    }
 
     public void testIsValidGemHome() throws Exception {
         assertFalse("not valid", GemManager.isValidGemHome(getWorkDir()));
@@ -168,10 +169,22 @@ public class GemManagerTest extends RubyTestBase {
         String version = "0.10.0";
         installFakeGem("ruby-debug-base", version, platform);
         assertEquals("native fast debugger available", version, gemManager.getLatestVersion("ruby-debug-base"));
-        assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
+        assertFalse("no jruby fast debugger available", gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0"));
         uninstallFakeGem("ruby-debug-base", version, platform);
         installFakeGem("ruby-debug-base", version, "java", platform);
-        assertEquals("no jruby fast debugger available", version, gemManager.getVersionForPlatform("ruby-debug-base"));
+        assertEquals("no jruby fast debugger available", true, gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0"));
+    }
+    
+    public void testIsGemInstalledForPlatform() throws IOException {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        for (String version : new String[]{"0.10.0", "0.10.1"}) {
+            installFakeGem("ruby-debug-base", version, platform);
+        }
+        GemManager gemManager = platform.getGemManager();
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0", false));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0", true));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", false));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", true));
     }
     
     public void testCompareGemVersions() {

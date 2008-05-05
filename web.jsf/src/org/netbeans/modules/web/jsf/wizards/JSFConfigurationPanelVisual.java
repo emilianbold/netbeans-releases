@@ -114,6 +114,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfLibraries.clear();
         List<URL> content;
         for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(library.getType())) { // NOI18N
+                continue;
+            }
+
             content = library.getContent("classpath"); //NOI18N
             try {
                 if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {

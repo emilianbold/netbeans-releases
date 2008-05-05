@@ -3427,7 +3427,9 @@ protected Token jjFillToken()
    endLine = input_stream.getEndLine();
    endColumn = input_stream.getEndColumn();
    t = Token.newToken(jjmatchedKind, tokenImage);
+
    t.offset = input_stream.offset();
+   
    t.beginLine = beginLine;
    t.endLine = endLine;
    t.beginColumn = beginColumn;

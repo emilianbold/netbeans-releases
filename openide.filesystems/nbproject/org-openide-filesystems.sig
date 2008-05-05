@@ -1,5 +1,5 @@
 #API master signature file
-#Version 7.3.1
+#Version 7.8
 CLSS public static abstract interface org.openide.filesystems.AbstractFileSystem$Attr
 fld  constant public static final long org.openide.filesystems.AbstractFileSystem$Attr.serialVersionUID
 intf java.io.Serializable
@@ -729,6 +729,9 @@ meth public static boolean org.openide.filesystems.FileUtil.affectsOrder(org.ope
 meth public static boolean org.openide.filesystems.FileUtil.isArchiveFile(java.net.URL)
 meth public static boolean org.openide.filesystems.FileUtil.isArchiveFile(org.openide.filesystems.FileObject)
 meth public static boolean org.openide.filesystems.FileUtil.isParentOf(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject)
+meth public static final void org.openide.filesystems.FileUtil.runAtomicAction(java.lang.Runnable)
+meth public static final void org.openide.filesystems.FileUtil.runAtomicAction(org.openide.filesystems.FileSystem$AtomicAction) throws java.io.IOException
+meth public static java.io.File org.openide.filesystems.FileUtil.archiveOrDirForURL(java.net.URL)
 meth public static java.io.File org.openide.filesystems.FileUtil.normalizeFile(java.io.File)
 meth public static java.io.File org.openide.filesystems.FileUtil.toFile(org.openide.filesystems.FileObject)
 meth public static java.lang.String org.openide.filesystems.FileUtil.findFreeFileName(org.openide.filesystems.FileObject,java.lang.String,java.lang.String)
@@ -740,6 +743,7 @@ meth public static java.lang.String org.openide.filesystems.FileUtil.getMIMEType
 meth public static java.lang.String org.openide.filesystems.FileUtil.getRelativePath(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject)
 meth public static java.net.URL org.openide.filesystems.FileUtil.getArchiveFile(java.net.URL)
 meth public static java.net.URL org.openide.filesystems.FileUtil.getArchiveRoot(java.net.URL)
+meth public static java.net.URL org.openide.filesystems.FileUtil.urlForArchiveOrDir(java.io.File)
 meth public static java.net.URLStreamHandler org.openide.filesystems.FileUtil.nbfsURLStreamHandler()
 meth public static java.util.List org.openide.filesystems.FileUtil.getOrder(java.util.Collection,boolean) throws java.lang.IllegalArgumentException
 meth public static org.openide.filesystems.FileChangeListener org.openide.filesystems.FileUtil.weakFileChangeListener(org.openide.filesystems.FileChangeListener,java.lang.Object)
@@ -756,10 +760,14 @@ meth public static org.openide.filesystems.FileObject org.openide.filesystems.Fi
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.toFileObject(java.io.File)
 meth public static org.openide.filesystems.FileStatusListener org.openide.filesystems.FileUtil.weakFileStatusListener(org.openide.filesystems.FileStatusListener,java.lang.Object)
 meth public static org.openide.filesystems.FileSystem org.openide.filesystems.FileUtil.createMemoryFileSystem()
+meth public static transient void org.openide.filesystems.FileUtil.refreshFor([Ljava.io.File;)
+meth public static void org.openide.filesystems.FileUtil.addFileChangeListener(org.openide.filesystems.FileChangeListener)
 meth public static void org.openide.filesystems.FileUtil.copy(java.io.InputStream,java.io.OutputStream) throws java.io.IOException
 meth public static void org.openide.filesystems.FileUtil.copyAttributes(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject) throws java.io.IOException
 meth public static void org.openide.filesystems.FileUtil.extractJar(org.openide.filesystems.FileObject,java.io.InputStream) throws java.io.IOException
 meth public static void org.openide.filesystems.FileUtil.preventFileChooserSymlinkTraversal(javax.swing.JFileChooser,java.io.File)
+meth public static void org.openide.filesystems.FileUtil.refreshAll()
+meth public static void org.openide.filesystems.FileUtil.removeFileChangeListener(org.openide.filesystems.FileChangeListener)
 meth public static void org.openide.filesystems.FileUtil.setMIMEType(java.lang.String,java.lang.String)
 meth public static void org.openide.filesystems.FileUtil.setOrder(java.util.List) throws java.io.IOException,java.lang.IllegalArgumentException
 supr java.lang.Object

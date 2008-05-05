@@ -35,16 +35,16 @@ public class Axis2ConfigurationPanel extends javax.swing.JPanel {
         initComponents();
         axisDeployTf.setText(axisDeploy);
         Preferences preferences = AxisUtils.getPreferences();
-        String axisUrl = preferences.get("AXIS_URL","");
+        String axisUrl = preferences.get("AXIS_URL",""); // NOI18N
         axisUrlTf.setText(axisUrl.length() == 0 ? "http://localhost:8080/axis2" : axisUrl); //NOI18N
-        String tomcatUser = preferences.get("TOMCAT_MANAGER_USER","");
+        String tomcatUser = preferences.get("TOMCAT_MANAGER_USER",""); // NOI18N
         if (tomcatUser.length() > 0) {
             tfTomcatUser.setEditable(true);
             tfTomcatPassword.setEditable(true);
             cbTomcatManager.setSelected(true);
             tfTomcatUser.setText(tomcatUser);
         }
-        String tomcatPassword = preferences.get("TOMCAT_MANAGER_PASSWORD","");
+        String tomcatPassword = preferences.get("TOMCAT_MANAGER_PASSWORD",""); // NOI18N
         if (tomcatPassword.length() > 0) tfTomcatPassword.setText(tomcatPassword);
         cbTomcatManager.addItemListener(new ItemListener() {
 
@@ -226,7 +226,7 @@ private void browseButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
             @Override
             public String getDescription() {
-                return "Folder or War File";
+                return org.openide.util.NbBundle.getMessage(Axis2ConfigurationPanel.class, "DESC_FileFilter");
             }
             
         };

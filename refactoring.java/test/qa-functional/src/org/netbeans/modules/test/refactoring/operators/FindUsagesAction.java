@@ -43,11 +43,12 @@ import java.awt.event.KeyEvent;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  *
- * @author jp159440
+ * @author Jiri Prox Jiri.Prox@Sun.COM
  */
 public class FindUsagesAction extends Action {
     
@@ -60,11 +61,9 @@ public class FindUsagesAction extends Action {
     }
     
     public void performPopup(EditorOperator editor) {
-        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);
+        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);        
         JPopupMenuOperator jpmo = new JPopupMenuOperator();
-        jpmo.pushMenu(new String[]{popupPath});        
+        jpmo.pushMenuNoBlock(new String[]{popupPath});        
     }
     
-    
-
 }

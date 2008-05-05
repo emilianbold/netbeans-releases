@@ -182,9 +182,30 @@ public final class ModuleDeactivator extends Object {
             f.deleteOnExit ();
         }
         f = f.getParentFile ();
-        while (f != null && f.delete ()) {
+        while (f != null && doDeleteEmptyDirectory (f)) {
             f = f.getParentFile (); // remove empty dirs too
         }
+    }
+    
+    private static boolean doDeleteEmptyDirectory (File d) {
+        assert d != null : d + " cannot be null";
+        
+        boolean res = false;
+        if (d.isDirectory ()) { // #132673: remove .lastModified as well if the directory is empty
+            List<File> files = Arrays.asList (d.listFiles ());
+            if (files.size () == 1) {
+                File f = files.get (0);
+                if (UpdaterDispatcher.LAST_MODIFIED.endsWith (f.getName ())) {
+                    if (f.delete ()) {
+                        res = d.delete ();
+                    }
+                }
+            }
+            res = d.delete ();
+        } else {
+            res = d.delete ();
+        }
+        return res;
     }
 
     private static Set<File> readFilesMarkedForDeleteInCluster (File cluster) {

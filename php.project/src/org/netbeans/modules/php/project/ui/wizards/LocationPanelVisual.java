@@ -206,17 +206,14 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
                 .add(urlInfoLabel))
         );
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/wizards/Bundle"); // NOI18N
-        projectNameLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Name")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleName("Project Name");
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectName_A11YDesc")); // NOI18N
-        projectLocationLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Location")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription("null");
         projectLocationTextField.getAccessibleContext().setAccessibleName("Project Location");
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectLocation_A11YDesc")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription("null");
         browseButton.getAccessibleContext().setAccessibleName("Browse Project Location");
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_BrowseLocation_A11YDesc")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription("null");
         createdFolderTextField.getAccessibleContext().setAccessibleName("Project Folder");
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_CreatedProjectFolder_A11YDesc")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

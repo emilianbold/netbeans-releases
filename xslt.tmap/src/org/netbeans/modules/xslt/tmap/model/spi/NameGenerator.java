@@ -97,7 +97,7 @@ public abstract class NameGenerator {
             while (uniqueName == null) {
                 uniqueName = namePrefix + i;
                 for (Service tmpService : services) {
-                    if (namePrefix.equalsIgnoreCase(tmpService.getName())) {
+                    if (uniqueName.equalsIgnoreCase(tmpService.getName())) {
                         i++;
                         uniqueName = null;
                         break;
@@ -170,7 +170,7 @@ public abstract class NameGenerator {
             while (uniqueName == null) {
                 uniqueName = namePrefix + i;
                 for (Invoke tmpInvoke : invokes) {
-                    if (namePrefix.equalsIgnoreCase(tmpInvoke.getName())) {
+                    if (uniqueName.equalsIgnoreCase(tmpInvoke.getName())) {
                         i++;
                         uniqueName = null;
                         break;
@@ -243,7 +243,7 @@ public abstract class NameGenerator {
             while (uniqueName == null) {
                 uniqueName = namePrefix + i;
                 for (Transform tmpTransform : transforms) {
-                    if (namePrefix.equalsIgnoreCase(tmpTransform.getName())) {
+                    if (uniqueName.equalsIgnoreCase(tmpTransform.getName())) {
                         i++;
                         uniqueName = null;
                         break;

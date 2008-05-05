@@ -50,7 +50,9 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.test.xml.schema.lib.util.Helpers;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-
+import org.netbeans.jellytools.ProjectsTabOperator;
+import javax.swing.tree.TreeNode;
+import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
@@ -76,7 +78,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "ImportReferencedSchema",
         "ImportReferencedSchema2",
         "DeleteReferencedSchema",
-        "FindUsages", // TODO : How to find find usages output?
+        "FindUsages",
         "ValidateAndBuild",
         "AddAttribute",
         "ExploreAttribute",
@@ -95,15 +97,19 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
         "ValidateAndBuild",
 
-        // Move, fix
+        "MoveSchema",
+
+        // Move : TODO
+        // Fix (customize) : TODO
 
         "ValidateAndBuild",
         "BuildCompositeApplication",
-        //"DeployCompositeApplication", // This will failed, followed skipped
-        //"CreateNewTest",
-        //"RunNewTest",
+        "DeployCompositeApplication", // This will failed, followed skipped
+        "CreateNewTest",
+        "RunNewTest",
     };
 
     static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
@@ -228,6 +234,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
 
       ImportReferencedSchemaInternal(
           SAMPLE_NAME,
+          PURCHASE_SCHEMA_FILE_PATH,
+          PURCHASE_SCHEMA_FILE_NAME,
           MODULE_NAME,
           false,
           acliImport
@@ -253,6 +261,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
 
       ImportReferencedSchemaInternal(
           SAMPLE_NAME,
+          PURCHASE_SCHEMA_FILE_PATH,
+          PURCHASE_SCHEMA_FILE_NAME,
           MODULE_NAME,
           true,
           acliImport
@@ -265,7 +275,26 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      FindUsagesInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          5
+        );
 
       endTest( );
     }
@@ -347,6 +376,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Attributes",
           "Add Attribute",
           null, 
@@ -385,6 +415,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Complex Types",
           "Add Complex Type",
           "Use Existing Definition", 
@@ -432,6 +463,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Elements",
           "Add Element",
           "Use Existing Type",
@@ -479,6 +511,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Simple Types",
           "Add Simple Type",
           null, 
@@ -539,11 +572,81 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
+    public void MoveSchema( )
+    {
+      startTest( );
+
+      // Ensure correct file usages exists
+      FindUsagesInternal(
+          SAMPLE_NAME,
+          "Process Files",
+          "purchaseOrder.xsd",
+          12
+        );
+
+      // Select file
+      //SAMPLE_NAME | Process Files | purchaseOrder.xsd
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+      JTreeOperator tree = pto.tree();
+
+      Node nodeDestination = new Node(
+          tree,
+          MODULE_NAME + "|" + SAMPLE_SCHEMA_PATH
+        );
+      nodeDestination.select( );
+      TreePath path = tree.getSelectionPath( );
+      Point poDestination = tree.getPointToClick( path );
+
+      Node nodeSource = new Node(
+          tree,
+          SAMPLE_NAME + "|Process Files|purchaseOrder.xsd"
+        );
+      nodeSource.select( );
+      path = tree.getSelectionPath( );
+      Point poSource= tree.getPointToClick( path );
+
+      System.out.println( "*** " + poSource.x + " " + poSource.y + " / " + poDestination.x + " " + poDestination.y + " ***" );
+      
+      // Get coordinates of source and destination
+      Point po = tree.getPointToClick( path );
+
+      // Press mouse down in source
+      pto.dragNDrop(
+          poSource.x,
+          poSource.y,
+          poDestination.x,
+          poDestination.y
+        );
+      /*
+      tree.moveMouse( poSource.x, poSource.y );
+      tree.pressMouse( poSource.x, poSource.y );
+
+      // Drag to destination
+      tree.dragMouse( poDestination.x, poDestination.y );
+
+      // Release mouse in destination
+      tree.releaseMouse( poDestination.x, poDestination.y );
+      */
+
+      // Refactoring
+      JDialogOperator jdMove = new JDialogOperator( "Move File" );
+      jdMove.close( );
+      WaitDialogClosed( jdMove );
+
+      // Check new tree path to file
+
+      endTest( );
+    }
+
     public void BuildCompositeApplication( )
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
 
       endTest( );
     }
@@ -561,7 +664,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      CreateNewTestInternal( SAMPLE_NAME, COMPOSITE_APPLICATION_NAME );
 
       endTest( );
     }
@@ -570,7 +673,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      RunTestInternal( COMPOSITE_APPLICATION_NAME, "TestCase1" );
 
       endTest( );
     }

@@ -69,6 +69,14 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import org.netbeans.test.xml.cpr.lib.FindUsagesOperator;
+
+import org.netbeans.jellytools.TopComponentOperator;
+
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import org.netbeans.jellytools.OutputTabOperator;
 
 /**
  *
@@ -77,6 +85,7 @@ import java.awt.event.InputEvent;
 
 public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
+    protected final String PURCHASE_SCHEMA_FILE_PATH = "Process Files";
     protected final String PURCHASE_SCHEMA_FILE_NAME = "purchaseOrder.xsd";
 
     protected final String LOAN_SCHEMA_FILE_NAME_ORIGINAL = "newLoanApplication.xsd";
@@ -339,12 +348,30 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         String error
       )
     {
-      //table.selectCell( row, col );
+      // Normal version
+      // just click
       table.clickOnCell( row, col, count );
-      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+      table.pushKey( KeyEvent.VK_RIGHT );
+
+      // HaCk version
+      /*
+      Point pt = table.getPointToClick( row, col );
+      //table.enterMouse( );
+      //try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.pressMouse( pt.x, pt.y );
+      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.releaseMouse( pt.x, pt.y );
+      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.pressMouse( pt.x, pt.y );
+      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
+      table.releaseMouse( pt.x, pt.y );
+      */
+
+      try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
       int iRows = table.getRowCount( );
       if( result != iRows )
         fail( error + iRows );
+
       return;
     }
 
@@ -369,8 +396,12 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     }
 
     protected void ImportReferencedSchemaInternal(
-        String sSample,
-        String sModule,
+        String sDestinationProject, // sSample
+        String sDestinationPath,    // Process Files
+        String sDestinationFile,    // PURCHASE_SCHEMA_FILE_NAME
+
+        String sSourceProject, // sModule
+
         boolean bShort,
         CImportClickData[] aimpData
       )
@@ -378,21 +409,21 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
+          sDestinationProject + "|" + sDestinationPath + "|" + sDestinationFile
         );
       prn.select( );
 
       JTreeOperator tree = pto.tree( );
       tree.clickOnPath(
-          tree.findPath( sSample + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME ),
+          tree.findPath( sDestinationProject + "|" + sDestinationPath + "|" + sDestinationFile ),
           2
         );
 
       // Check was it opened or no
-      EditorOperator eoSchemaEditor = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      EditorOperator eoSchemaEditor = new EditorOperator( sDestinationFile );
       if( null == eoSchemaEditor )
       {
-        fail( PURCHASE_SCHEMA_FILE_NAME + " was not opened after double click." );
+        fail( sDestinationFile + " was not opened after double click." );
       }
 
       // Switch to schema view
@@ -401,7 +432,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       // ^ - remove???
 
       // Select first column
-      SchemaMultiView opMultiView = WaitSchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      SchemaMultiView opMultiView = WaitSchemaMultiView( sDestinationFile );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -435,15 +466,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         if( cli.inshort || !bShort )
           ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
-        // ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
-        // ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
-        // ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
-        // ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
-        // ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
-
-        // if( !bShort )
-        //   ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
-        // ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
       }
 
       // Close
@@ -473,11 +495,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
           // Check text
           String[] asRequiredLines =
           {
-           "<xs:import schemaLocation=\"" + sModule + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+           "<xs:import schemaLocation=\"" + sSourceProject + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
             "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
           };
 
-          EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+          EditorOperator eoXMLSource = new EditorOperator( sDestinationFile );
           int iLineNumber = eoXMLSource.getLineNumber( );
           String sChoosenLine = eoXMLSource.getText( iLineNumber );
           for( int j = 0; j < asRequiredLines.length; j++ )
@@ -542,18 +564,23 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       jCancel.push( );
     }
 
-    public void FindUsagesInternal( String sModule, String sPath )
+    public void FindUsagesInternal(
+        String sModule,
+        String sPath,
+        String sFileName,
+        int iRows
+      )
     {
       // Select schema
-      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
+          sModule + "|" + sPath + "|" + sFileName
         );
       prn.select( );
 
       // Refactor rename
-      prn.performPopupAction( "Find Usages" );
+      prn.performPopupActionNoBlock( "Find Usages" );
 
       // Wait window
       JDialogOperator opFindProgress = null;
@@ -568,16 +595,33 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       if( null != opFindProgress )
       {
         System.out.println( "****** USAGES HERE" );
-        opFindProgress.waitClosed( );
+        WaitDialogClosed( opFindProgress );
+        //opFindProgress.waitClosed( );
       }
+
+      // Sleep to make painting comepleted
+      try { Thread.sleep( 3000 ); } catch( InterruptedException ex ) { }
 
       // Check result
       //FindUsagesOperator fuop = new FindUsagesOperator( );
-      
-      //System.out.println( "******" + ( null == fuop ) );
+      TopComponentOperator top = new TopComponentOperator( "Usages" );
+      JTreeOperator jt = new JTreeOperator( top );
+      int rows = jt.getRowCount( );
+      if( iRows != rows )
+      {
+        fail(
+            "Find usages shows incorrect tree: "
+            + rows + " found, "
+            + iRows + " required."
+          );
+      }
+
+      top.close( );
+      //System.out.println( "******" + jt.getRowCount( ) + "/" + jt.getVisibleRowCount( ) );
     }
 
     protected void AddItInternal(
+        String sFileName,
         String sItName,
         String sMenuToAdd,
         String sRadioName,
@@ -589,7 +633,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
 
       // Select first column, Attributes
-      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      SchemaMultiView opMultiView = new SchemaMultiView( sFileName );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -810,10 +854,27 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       GotoSourceSchema( sName );
     }
 
+    protected void WaitDialogClosed( JDialogOperator jd )
+    {
+      for( int i = 0; i < 3; i++ )
+      {
+        try
+        {
+          jd.waitClosed( );
+          return;
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( ex.getMessage( ) );
+        }
+      }
+    }
+
     public void ManipulateAttributeInternal( String sSample )
     {
       // Add one more attribute
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Attributes",
           "Add Attribute",
           null, 
@@ -867,7 +928,9 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       JDialogOperator jsafe = new JDialogOperator( "Safe Delete" );
       JButtonOperator jbut = new JButtonOperator( jsafe, "Refactor" );
       jbut.push( );
-      jsafe.waitClosed( );
+      // Set longer timeout for window closing
+      WaitDialogClosed( jsafe );
+      //jsafe.waitClosed( );
 
       // Check number of remained items
       int iSize = opList.getModel( ).getSize( );
@@ -946,6 +1009,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     {
       // Add one more attribute
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Simple Types",
           "Add Simple Type",
           null, 
@@ -1002,7 +1066,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       JDialogOperator jsafe = new JDialogOperator( "Safe Delete" );
       JButtonOperator jbut = new JButtonOperator( jsafe, "Refactor" );
       jbut.push( );
-      jsafe.waitClosed( );
+      WaitDialogClosed( jsafe );
+      //jsafe.waitClosed( );
 
       // Check number of remained items
       int iSize = opList.getModel( ).getSize( );
@@ -1193,7 +1258,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       JButtonOperator jbRef = new JButtonOperator( jdRefactor, "Refactor" );
       jbRef.push( );
 
-      jdRefactor.waitClosed( );
+      WaitDialogClosed( jdRefactor );
+      //jdRefactor.waitClosed( );
 
       // Check result
       pto = new ProjectsTabOperator( );
@@ -1246,6 +1312,15 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     protected void ValidateAndBuildInternal( String sSample )
     {
+      ValidateAndBuildInternal( sSample, false, "dist_se" );
+    }
+
+    protected void ValidateAndBuildInternal(
+        String sSample,
+        boolean bWarnings,
+        String sBuildName
+      )
+    {
       // Set focus to file for validation to ensure Validate menu enabled
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
       
@@ -1275,6 +1350,8 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
 
       // Build
+      BuildInternal( sSample, bWarnings, sBuildName );
+      /*
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
@@ -1288,8 +1365,29 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       prn.performPopupActionNoBlock( "Build" );
 
-      // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (dist_se)." );
+      if( bWarnings )
+      {
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
+      }
+
+      for( int i = 0; i < 3; i++ )
+      {
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
+      }
       stt.stop( );
 
       // Get output
@@ -1298,14 +1396,42 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
         fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( BUILD_FAILED ) )
-        fail( "BUILD FAILED mark fopund:\n" + sText + "\n" );
+        fail( "BUILD FAILED mark found:\n" + sText + "\n" );
 
       // Close output
       out.close( );
+      */
     }
 
     protected void DeployCompositeApplicationInternal( String sName )
     {
+      // TEMP : start GF first
+      /*
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Services");
+      TopComponentOperator top = new TopComponentOperator( "Services" );
+      JTreeOperator jt = new JTreeOperator( top, 0 );
+      Node node = new Node( jt, "Servers|GlassFish" );
+      node.select( );
+      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
+      node.performPopupActionNoBlock( "Start" );
+      OutputOperator ogf = new OutputOperator( );
+      OutputTabOperator otgf = ogf.getOutputTab( "GlassFish" );
+      for( int i = 0; i < 8; i++ )
+      {
+        try
+        {
+          otgf.waitText( "Application server startup complete." );
+          i = 8;
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( "**** GF IN PROGRESS ****" );
+        }
+      }
+      */
+      ////////////////////////////////////////////////////////////////////
+      
+
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -1333,7 +1459,21 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
 
       // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (run)." );
+      for( int i = 0; i < 5; i++ )
+      {
+        try
+        {
+          stt.waitText( "Finished building build.xml (run)." );
+          i = 5;
+        }
+        catch( JemmyException ex )
+        {
+          OutputOperator out = new OutputOperator( );
+          if( -1 != out.getText( ).indexOf( "BUILD FAILED" ) )
+            throw ex;
+          System.out.println( "**** DEPLOY IN PROGRESS ****" );
+        }
+      }
       stt.stop( );
 
       // Check output for BUILD SUCCESSFUL
@@ -1347,7 +1487,11 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         fail( "BUILD FAILED mark found for deploy CA:\n" + sText + "\n" );
     }
 
-    public void BuildCompositeApplicationInternal( String sName )
+    public void BuildInternal(
+        String sName,
+        boolean bWarnings,
+        String sBuildName
+      )
     {
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
@@ -1360,23 +1504,148 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       stt.start( );
 
       prn.performPopupActionNoBlock( "Build" );
+      OutputOperator out = OutputOperator.invoke( );
 
-      // Wait till JAXB really created
-      stt.waitText( "Finished building build.xml (jbi-build)." );
+      if( bWarnings )
+      {
+        for( int i = 0; i < 2; i++ )
+        {
+          JDialogOperator jwarn = new JDialogOperator( "Warning" );
+          JButtonOperator jok = new JButtonOperator( jwarn, "OK" );
+          jok.push( );
+          jwarn.waitClosed( );
+        }
+      }
+
+      for( int i = 0; i < 3; i++ )
+      {
+        // Wait till JAXB really created
+        try
+        {
+          stt.waitText( "Finished building build.xml (" + sBuildName + ")." );
+        }
+        catch( JemmyException ex )
+        {
+          // Check after exception anyway to avoid some fails.
+        }
+      }
       stt.stop( );
 
-      // Check output for BUILD SUCCESSFUL
       // Get output
-      OutputOperator out = OutputOperator.invoke( );
+      out = new OutputOperator( );
       String sText = out.getText( );
       if( -1 == sText.indexOf( BUILD_SUCCESSFUL ) )
-        fail( "Unable to build composite application.\n" + sText + "\n" );
+        fail( "Unable to find BUILD SUCCESSFUL mark.\n" );
       if( -1 != sText.indexOf( BUILD_FAILED ) )
-        fail( "BUILD FAILED mark found for build CA:\n" + sText + "\n" );
+        fail( "BUILD FAILED mark found:\n" + sText + "\n" );
+
+      // Close output
+      out.close( );
+    }
+
+    public void CreateNewTestInternal( String sSample, String sApplication )
+    {
+      // Get tree
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Test" );
+      prn.select( );
+      // Click create new test
+      prn.performPopupActionNoBlock( "New Test Case" );
+      JDialogOperator jnew = new JDialogOperator( "New Test Case" );
+      JButtonOperator jbut = new JButtonOperator( jnew, "Next" );
+      jbut.pushNoBlock( );
+      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
+      jnew = new JDialogOperator( "New Test Case" );
+      JTreeOperator jt = new JTreeOperator( jnew, 0 );
+      TreePath path = jt.findPath( sSample + " - Source Packages|POService" );
+      jt.clickOnPath( path );
+      jbut = new JButtonOperator( jnew, "Next" );
+      jbut.pushNoBlock( );
+      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
+      System.out.println( "**** find page ****" );
+      jnew = new JDialogOperator( "New Test Case" );
+      System.out.println( "**** find tree ****" );
+      jt = new JTreeOperator( jnew, 0 );
+      System.out.println( "**** find  ****" );
+      jt.pushKey( KeyEvent.VK_DOWN );
+      jt.pushKey( KeyEvent.VK_DOWN );
+      //path = jt.findPath( "purchaseOrderPort|sendPurchaseOrder" );
+      //jt.clickOnPath( path );
+      jbut = new JButtonOperator( jnew, "Finish" );
+      jbut.pushNoBlock( );
+      WaitDialogClosed( jnew );
+
+      // Check result
+      //prn = pto.getProjectRootNode( sApplication + "|Test|TestCase1" );
+      //prn.select( );
+
+      EditorOperator op = new EditorOperator( "Input.xml" );
+      op.close( );
+    }
+
+    public void RunTestInternal( String sApplication, String sTestName )
+    {
+      // Get tree
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Test|" + sTestName );
+      prn.select( );
+      // Click create new test
+      prn.performPopupActionNoBlock( "Run" );
+
+      // Select server
+      try
+      {
+        JDialogOperator warn = new JDialogOperator( "Warning - Select Server" );
+        JButtonOperator jok = new JButtonOperator( warn, "OK" );
+        jok.push( );
+        WaitDialogClosed( warn );
+      }
+      catch( JemmyException ex )
+      {
+      }
+
+      // Warning x2
+      /*
+      for( int i = 0; i < 2; i++ )
+      {
+        JDialogOperator warn = new JDialogOperator( "Warning" );
+        JButtonOperator jok = new JButtonOperator( warn, "OK" );
+        jok.push( );
+        WaitDialogClosed( warn );
+      }
+      */
+
+      // Overwrite Empty Output
+      JDialogOperator empty = new JDialogOperator( "Overwrite Empty Output" );
+      JButtonOperator jyes = new JButtonOperator( empty, "Yes" );
+      jyes.push( );
+      WaitDialogClosed( empty );
+
+      // Run
+      pto = new ProjectsTabOperator( );
+      prn = pto.getProjectRootNode( sApplication + "|Test|" + sTestName );
+      prn.select( );
+      // Click create new test
+      //prn.performPopupActionNoBlock( "Run" );
+
+      // "Finished building build.xml (test-single)."
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      prn.performPopupActionNoBlock( "Run" );
+      stt.waitText( "Finished building build.xml (test-single)." );
+      stt.stop( );
+
+      // Check result
+      // "JUnit Test Results"
+      // "Passed. Threads count Success: <1> Error: <0> Not completed: <0>"
+      // TODO
+      TopComponentOperator top = new TopComponentOperator( "JUnit Test Results" );
+      //J
+      
     }
 
     public void tearDown() {
         new SaveAllAction().performAPI();
     }
-
 }

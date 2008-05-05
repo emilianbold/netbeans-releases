@@ -161,9 +161,11 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // left attribute pane
             if (mHasExpressionColumn) {
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
-                mInputPanel = new InputSchemaTreePanel(model, mComponent);
-                mInputPanel.setPreferredSize(new Dimension(200, 400));
-                ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
+                mInputPanel = createInputSchemaTreePanel(model, mComponent);
+                if(mInputPanel != null) {
+                	 mInputPanel.setPreferredSize(new Dimension(200, 400));
+                    ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
+                }
             }
             
             // right attribute pane
@@ -253,6 +255,12 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
     	return new SelectPanel(model, component);
     }
+    
+    protected InputSchemaTreePanel createInputSchemaTreePanel(IEPModel model, OperatorComponent component) {
+        mInputPanel = new InputSchemaTreePanel(model, mComponent);
+        return mInputPanel;
+    }
+    
     protected JPanel createPropertyPanel() throws Exception {
         JPanel pane = new JPanel();
         String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.DETAILS");

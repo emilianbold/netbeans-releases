@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.25.1
+#Version 1.26.0
 CLSS public static abstract org.netbeans.lib.editor.util.AbstractCharSequence$StringLike
 cons public StringLike()
 innr public static abstract org.netbeans.lib.editor.util.AbstractCharSequence$StringLike
@@ -506,7 +506,7 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
-meth public synchronized org.netbeans.api.lexer.TokenHierarchy org.netbeans.spi.lexer.TokenHierarchyControl.tokenHierarchy()
+meth public org.netbeans.api.lexer.TokenHierarchy org.netbeans.spi.lexer.TokenHierarchyControl.tokenHierarchy()
 meth public void org.netbeans.spi.lexer.TokenHierarchyControl.rebuild()
 meth public void org.netbeans.spi.lexer.TokenHierarchyControl.setActive(boolean)
 meth public void org.netbeans.spi.lexer.TokenHierarchyControl.textModified(int,int,java.lang.CharSequence,int)

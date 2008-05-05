@@ -367,7 +367,7 @@ public final class Utils {
 
     private static class UnknownCharset extends Charset {
 
-        UnknownCharset (String name) {
+        UnknownCharset(String name) {
             super(name, new String[0]);
         }
 

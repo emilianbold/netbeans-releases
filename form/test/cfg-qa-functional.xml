@@ -56,6 +56,8 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/beans/*.*"/>
+                <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>
+                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
                 <include name="org/netbeans/qa/form/options/*.*"/>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
             </patternset>
@@ -146,6 +148,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenForm.class"/>
+                <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>
             </patternset>
         </testset>
     </testbag>
@@ -158,14 +161,6 @@ made subject to such option by the copyright holder.
     </testbag> 
     
     
-    <!-- Jana Maleckova -->
-    <testbag testattribs="openforms" executor="ide" name="testbag_opentempl_defaultpack">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>
-            </patternset>
-        </testset>
-    </testbag>
     <testbag testattribs="test" executor="ide" name="testbag_bean">
         <testset dir="qa-functional/src">
             <patternset>
