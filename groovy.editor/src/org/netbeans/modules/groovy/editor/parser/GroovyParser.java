@@ -45,10 +45,6 @@ import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -93,17 +89,13 @@ import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -149,8 +141,29 @@ public class GroovyParser implements Parser {
         return positions;
     }
 
-    protected GroovyParserResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast) {
-        return new GroovyParserResult(this, file, rootElement, ast);
+    protected GroovyParserResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, ErrorCollector errorCollector) {
+        
+        GroovyParserResult parserResult = new GroovyParserResult(this, file, rootElement, ast, errorCollector);
+        
+        // Register parsing result with parsing-manager:
+        
+        Lookup lkp = Lookup.getDefault();
+        
+        if(lkp != null){
+            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
+            if(parserManager != null){
+                FileObject fo = file.getFileObject();
+                if (fo != null) {
+                    parserManager.registerParsing(fo, parserResult);
+                }
+            } else {
+                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
+            }
+        } else {
+            LOG.log(Level.FINEST, "Couldn't get global lookup");
+        }
+        
+        return parserResult;
     }
     
     private boolean sanitizeSource(Context context, Sanitize sanitizing) {
@@ -354,7 +367,7 @@ public class GroovyParser implements Parser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.file, null, null);
+            return createParseResult(context.file, null, null, null);
 
         case NONE:
 
@@ -412,7 +425,7 @@ public class GroovyParser implements Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.file, null, null);
+            return createParseResult(context.file, null, null, null);
         }
     }
 
@@ -607,7 +620,7 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            if (!ignoreErrors && filterError(errorMessage, context)) {
+            if (!ignoreErrors) {
                 notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
             }
         }
@@ -630,7 +643,7 @@ public class GroovyParser implements Parser {
             context.sanitized = sanitizing;
             AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), module);
             AstNodeAdapter ast = new AstNodeAdapter(null, module, context.document);
-            GroovyParserResult r = createParseResult(context.file, astRootElement, ast);
+            GroovyParserResult r = createParseResult(context.file, astRootElement, ast, compilationUnit.getErrorCollector());
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             return r;
         } else {
@@ -698,83 +711,6 @@ public class GroovyParser implements Parser {
         }
     }
     
-    
-    List<String> getImportCandidate(FileObject fo, String missingClass) {
-        LOG.log(Level.FINEST, "Looking for class: " + missingClass);
-
-        List<String> result = new ArrayList<String>();
-
-        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-
-        if (bootPath == null || compilePath == null || srcPath == null) {
-            LOG.log(Level.FINEST, "bootPath    : " + bootPath);
-            LOG.log(Level.FINEST, "compilePath : " + compilePath);
-            LOG.log(Level.FINEST, "srcPath     : " + srcPath);
-            return result;
-        }
-
-        ClasspathInfo pathInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
-
-        Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
-
-        typeNames = pathInfo.getClassIndex().getDeclaredTypes(missingClass, NameKind.SIMPLE_NAME,
-                EnumSet.allOf(ClassIndex.SearchScope.class));
-
-        for (org.netbeans.api.java.source.ElementHandle<TypeElement> typeName : typeNames) {
-            javax.lang.model.element.ElementKind ek = typeName.getKind();
-
-            if (ek == javax.lang.model.element.ElementKind.CLASS ||
-                    ek == javax.lang.model.element.ElementKind.INTERFACE) {
-                String fqnName = typeName.getQualifiedName();
-                LOG.log(Level.FINEST, "Found     : " + fqnName);
-                result.add(fqnName);
-            }
-
-        }
-
-        return result;
-
-    }
-    
-    
-    /**
-     * We filter all errors through this method to feed the Hinting System.
-     * At the moment, we only look for "unable to resolve class " messages
-     * to provide the user with some candidates to import.
-     */
-    private boolean filterError(String errorMessage, Context context) {
-        String ERR_PREFIX = "unable to resolve class ";
-                
-        LOG.log(Level.FINEST, "errorMessage: " + errorMessage);
-        
-        if (errorMessage.startsWith(ERR_PREFIX)) { // NOI18N
-            FileObject fo = context.file.getFileObject();
-
-            String missingClass = errorMessage.substring(ERR_PREFIX.length());
-            int idx = missingClass.indexOf(" ");
-            
-            if(idx != -1){
-                missingClass = missingClass.substring(0, idx);
-                List<String> importCandidates = getImportCandidate(fo, missingClass);
-                
-                if(!importCandidates.isEmpty()){
-                    if(importCandidates.size() == 1){
-                        // just do the import ...
-                        LOG.log(Level.FINEST, "Importing class!");
-                    } else {
-                        LOG.log(Level.FINEST, "Present Chooser between: ");
-                        LOG.log(Level.FINEST, importCandidates.toString());
-                    }
-                }
-            }
-            
-        }
-
-        return true;
-    }
-
     private static ASTNode find(ASTNode oldRoot, ASTNode oldObject, ASTNode newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
         @SuppressWarnings("unchecked")
