@@ -57,6 +57,7 @@ public class CLITest extends NbTestCase {
         TestSuite suite = new TestSuite();
         
         suite.addTestSuite(AddTest.class);                
+        suite.addTestSuite(BlameTest.class);                
         suite.addTestSuite(CatTest.class);                
         suite.addTestSuite(CheckoutTest.class);                
         suite.addTestSuite(CommitTest.class);                
@@ -65,6 +66,7 @@ public class CLITest extends NbTestCase {
         suite.addTestSuite(ImportTest.class);                
         suite.addTestSuite(InfoTest.class);                  
         suite.addTestSuite(ListTest.class);                              
+        suite.addTestSuite(LogTest.class);                              
         suite.addTestSuite(MergeTest.class);                        
         suite.addTestSuite(MkdirTest.class);                        
         suite.addTestSuite(MoveTest.class);                         

@@ -55,6 +55,32 @@ public class ListTest extends AbstractCLITest {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {        
+        if(getName().equals("testListNullAuthor")) {
+            setAnnonWriteAccess();
+            String[] cmd = new String[]{"svnserve", "-d"};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();   
+        }                        
+        super.setUp();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        if(getName().equals("testListNullAuthor")) {        
+            restoreAuthSettings();
+        }
+        super.tearDown();
+    }    
+    
+    @Override
+    protected String getRepoURLProtocol() {
+        if(getName().equals("testListNullAuthor")) {        
+            return "svn://localhost/";
+        }
+        return super.getRepoURLProtocol();
+    }                
 
     public void testListWrongFile() throws Exception {                                
                         
@@ -119,4 +145,17 @@ public class ListTest extends AbstractCLITest {
         assertEntryArrays(entries1, entries2);                
     }
    
+    public void testListNullAuthor() throws Exception {                                        
+        File file = createFile("file");
+                
+        add(file);                               
+        commit(getWC());
+                        
+        ISVNClientAdapter c = getNbClient();        
+        ISVNDirEntry[] entries = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
+                
+        assertNull(entries[0].getLastCommitAuthor());
+        
+    }      
+    
 }
