@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.io.IOException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -70,6 +71,8 @@ public final class PhpOptions {
     // global include path
     private static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
 
+    private boolean phpInterpreterSearched = false;
+
     private PhpOptions() {
     }
 
@@ -82,7 +85,15 @@ public final class PhpOptions {
     }
 
     public String getPhpInterpreter() {
-        return getPreferences().get(PHP_INTERPRETER, null);
+        String phpInterpreter = getPreferences().get(PHP_INTERPRETER, null);
+        if (phpInterpreter == null && !phpInterpreterSearched) {
+            phpInterpreterSearched = true;
+            phpInterpreter = PhpEnvironment.get().getAnyPhpInterpreter();
+            if (phpInterpreter != null) {
+                setPhpInterpreter(phpInterpreter);
+            }
+        }
+        return phpInterpreter;
     }
 
     public void setPhpInterpreter(String phpInterpreter) {
