@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.deprecated.pre61settings.NbEditorSettingsInitializer;
 import org.netbeans.modules.editor.impl.KitsTracker;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.FilterNode;
@@ -68,7 +67,6 @@ public class AllOptionsNode extends FilterNode {
     /** Creates new AllOptionsNode as BeanNode with Children.Array */
     public AllOptionsNode() throws IntrospectionException {
         super(new BeanNode(AllOptionsFolder.getDefault()), new EditorSubnodes());
-        NbEditorSettingsInitializer.init();
     }
     
     /** Gets display name of all options node from bundle */

@@ -29,13 +29,16 @@ package org.netbeans.editor;
 
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 
 /**
@@ -255,6 +258,53 @@ public class SettingsTest extends NbTestCase {
         }        
     }
     
+    public void testComplexValueSettingFromSettings() {
+        Settings.addInitializer(new MyInitializer4());
+        try {
+            {
+            MimePath mimePath = MimePath.parse("text/x-type-B");
+            Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+            assertNotNull("factory ref for " + MyInitializer4.COMPLEX_PROP, prefs.get(MyInitializer4.COMPLEX_PROP, null));
+            
+            Object valueFromP = SettingsConversions.callFactory(prefs, mimePath, MyInitializer4.COMPLEX_PROP, null);
+            assertNotNull(MyInitializer4.COMPLEX_PROP, valueFromP);
+            assertTrue("Wrong value type", valueFromP instanceof List);
+            assertEquals("Wrong value", 1, ((List) valueFromP).size());
+            assertEquals("Wrong value", "VALUE", ((List) valueFromP).get(0));
+            }
+            {
+            Object valueFromS = Settings.getValue(MyKit2.class, MyInitializer4.COMPLEX_PROP);
+            assertNotNull(MyInitializer4.COMPLEX_PROP, valueFromS);
+            assertTrue("Wrong value type", valueFromS instanceof List);
+            assertEquals("Wrong value", 1, ((List) valueFromS).size());
+            assertEquals("Wrong value", "VALUE", ((List) valueFromS).get(0));
+            }
+        } finally {
+            Settings.removeInitializer(MyInitializer4.NAME);
+        }        
+    }
+    
+    public void testComplexValueSettingFromPrefs() {
+        {
+        MimePath mimePath = MimePath.parse("text/x-type-A");
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        assertNotNull("factory ref for " + ANOTHER_COMPLEX_PROP, prefs.get(ANOTHER_COMPLEX_PROP, null));
+        
+        Object valueFromP = SettingsConversions.callFactory(prefs, mimePath, ANOTHER_COMPLEX_PROP, null);
+        assertNotNull(ANOTHER_COMPLEX_PROP, valueFromP);
+        assertTrue("Wrong value type", valueFromP instanceof Acceptor);
+        assertTrue("Wrong value for 'a'", ((Acceptor) valueFromP).accept('a'));
+        assertFalse("Wrong value for 'b'", ((Acceptor) valueFromP).accept('b'));
+        }
+        {
+        Object valueFromS = Settings.getValue(MyKit.class, ANOTHER_COMPLEX_PROP);
+        assertNotNull(ANOTHER_COMPLEX_PROP, valueFromS);
+        assertTrue("Wrong value type", valueFromS instanceof Acceptor);
+        assertTrue("Wrong value for 'a'", ((Acceptor) valueFromS).accept('a'));
+        assertFalse("Wrong value for 'b'", ((Acceptor) valueFromS).accept('b'));
+        }
+    }
+    
     public static final class MyKit extends BaseKit {
         public MyKit() {
             super();
@@ -345,7 +395,36 @@ public class SettingsTest extends NbTestCase {
             settingsMap.put(PROP_A, PROP_A + "_value");
             settingsMap.put(CLASH_PROP, "value_from_MyInitializer3");
         }
-    } // End of MyInitializer class
+    } // End of MyInitializer3 class
+    
+    private static final class MyInitializer4 extends Settings.AbstractInitializer {
+
+        public static final String NAME = "MyInitializer4";
+        public static final String COMPLEX_PROP = "complex-prop";
+        
+        public MyInitializer4() {
+            super(NAME);
+        }
+        
+        public void updateSettingsMap(Class kitClass, Map settingsMap) {
+            if (kitClass == BaseKit.class) {
+                settingsMap.put(COMPLEX_PROP, Arrays.asList(new String [] { "VALUE" })); //NOI18N
+            }
+        }
+    } // End of MyInitializer4 class
+    
+    private static final String ANOTHER_COMPLEX_PROP = "another-complex-prop";
+    public static Object complexValueSettingFactory(MimePath mimePath, String settingName) {
+        if (settingName.equals(ANOTHER_COMPLEX_PROP)) {
+            return new Acceptor() {
+                public boolean accept(char ch) {
+                    return ch == 'a';
+                }
+            };
+        } else {
+            return null;
+        }
+    }
     
     private static void checkSetting(String name, Class javaType, Object expectedValue) {
         Object value = Settings.getValue(MyKit2.class, name);

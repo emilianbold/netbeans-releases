@@ -371,13 +371,11 @@ public final class ColoringMap {
     }
     
     private static List<? extends TokenContext> findSyntaxLanguage(MimePath mimePath) {
-        List<? extends TokenContext> languages = null;
-        
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        String  factoryRef = prefs.get("token-context-list", null); //NOI18N
-        if (factoryRef != null) {
-            languages = (List<? extends TokenContext>) SettingsConversions.callFactory(factoryRef, mimePath);
-        }
+        
+        @SuppressWarnings("unchcecked")
+        List<? extends TokenContext> languages = (List<? extends TokenContext>) SettingsConversions.callFactory(
+                prefs, mimePath, "token-context-list", null); //NOI18N
         
         return languages;
     }

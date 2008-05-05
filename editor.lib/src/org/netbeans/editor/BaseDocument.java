@@ -499,40 +499,22 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
 
             if (key == null || IDENTIFIER_ACCEPTOR.equals(key)) {
-                Acceptor acceptor = null;
-                String acceptorFactory = prefs.get(IDENTIFIER_ACCEPTOR, null);
-                if (acceptorFactory != null) {
-                    acceptor = (Acceptor) SettingsConversions.callFactory(acceptorFactory, MimePath.parse(mimeType));
-                }
-                identifierAcceptor = acceptor != null ? acceptor : AcceptorFactory.LETTER_DIGIT;
+                identifierAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), IDENTIFIER_ACCEPTOR, AcceptorFactory.LETTER_DIGIT);
             }
 
             if (key == null || WHITESPACE_ACCEPTOR.equals(key)) {
-                Acceptor acceptor = null;
-                String acceptorFactory = prefs.get(WHITESPACE_ACCEPTOR, null);
-                if (acceptorFactory != null) {
-                    acceptor = (Acceptor) SettingsConversions.callFactory(acceptorFactory, MimePath.parse(mimeType));
-                }
-                whitespaceAcceptor = acceptor != null ? acceptor : AcceptorFactory.WHITESPACE;
+                whitespaceAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), WHITESPACE_ACCEPTOR, AcceptorFactory.WHITESPACE);
             }
 
             boolean stopOnEOL = prefs.getBoolean(WORD_MOVE_NEWLINE_STOP, true);
             
             if (key == null || NEXT_WORD_FINDER.equals(key)) {
-                Finder finder = null;
-                String finderFactory = prefs.get(NEXT_WORD_FINDER, null);
-                if (finderFactory != null) {
-                    finder = (Finder) SettingsConversions.callFactory(finderFactory, MimePath.parse(mimeType));
-                }
+                Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), NEXT_WORD_FINDER, null);
                 putProperty(NEXT_WORD_FINDER, finder != null ? finder : new FinderFactory.NextWordFwdFinder(BaseDocument.this, stopOnEOL, false));
             }
 
             if (key == null || PREVIOUS_WORD_FINDER.equals(key)) {
-                Finder finder = null;
-                String finderFactory = prefs.get(PREVIOUS_WORD_FINDER, null);
-                if (finderFactory != null) {
-                    finder = (Finder) SettingsConversions.callFactory(finderFactory, MimePath.parse(mimeType));
-                }
+                Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), PREVIOUS_WORD_FINDER, null);
                 putProperty(PREVIOUS_WORD_FINDER, finder != null ? finder : new FinderFactory.PreviousWordBwdFinder(BaseDocument.this, stopOnEOL, false));
             }
 
@@ -676,10 +658,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     public Formatter getLegacyFormatter() {
         if (formatter == null) {
-            String formatterFactory = prefs.get(FORMATTER, null);
-            if (formatterFactory != null) {
-                formatter = (Formatter) SettingsConversions.callFactory(formatterFactory, MimePath.parse(mimeType));
-            }
+            formatter = (Formatter) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), FORMATTER, null);
             if (formatter == null) {
                 formatter = Formatter.getFormatter(mimeType);
             }

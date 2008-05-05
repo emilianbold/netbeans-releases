@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Lookup;
 
@@ -159,23 +160,31 @@ public final class SettingsConversions {
         }
     }
     
-    public static Object callFactory(String factoryRef, MimePath mimePath) {
-        int lastDot = factoryRef.lastIndexOf('.'); //NOI18N
-        assert lastDot != -1 : "Need fully qualified name of class with the setting factory method."; //NOI18N
+    public static Object callFactory(Preferences prefs, MimePath mimePath, String settingName, Object defaultValue) {
+        String factoryRef = prefs.get(settingName, null);
+        
+        if (factoryRef != null) {
+            int lastDot = factoryRef.lastIndexOf('.'); //NOI18N
+            assert lastDot != -1 : "Need fully qualified name of class with the static setting factory method."; //NOI18N
 
-        String classFqn = factoryRef.substring(0, lastDot);
-        String methodName = factoryRef.substring(lastDot + 1);
+            String classFqn = factoryRef.substring(0, lastDot);
+            String methodName = factoryRef.substring(lastDot + 1);
 
-        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-        try {
-            Class factoryClass = loader.loadClass(classFqn);
-            Method factoryMethod = factoryClass.getDeclaredMethod(methodName, MimePath.class);
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            try {
+                Class factoryClass = loader.loadClass(classFqn);
+                Method factoryMethod = factoryClass.getDeclaredMethod(methodName, MimePath.class, String.class);
 
-            return factoryMethod.invoke(null, mimePath);
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, null, e);
-            return null;
+                Object value = factoryMethod.invoke(null, mimePath, settingName);
+                if (value != null) {
+                    return value;
+                }
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+            }
         }
+
+        return defaultValue;
     }
 
     private static volatile boolean noSettingsChangeCalls = false;

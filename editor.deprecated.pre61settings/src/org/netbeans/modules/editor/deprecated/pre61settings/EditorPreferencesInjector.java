@@ -44,10 +44,13 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
@@ -65,10 +68,6 @@ import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
  */
 public final class EditorPreferencesInjector extends StorageFilter<String, TypedValue> implements PropertyChangeListener {
 
-    private static final Logger LOG = Logger.getLogger(EditorPreferencesInjector.class.getName());
-    
-    private final ThreadLocal<Map> currentSettingsMap = new ThreadLocal<Map>();
-    
     public EditorPreferencesInjector() {
         super("Preferences"); //NOI18N
         // Settings uses WeakListenerList and holds all listeners by WeakReference
@@ -129,6 +128,7 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
         
         for(Object key : map.keySet()) {
             if (!(key instanceof String)) {
+                // wrong key, this should not normally happen, but who knows what crap the initializers may supply
                 continue;
             }
 
@@ -139,6 +139,11 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
             }
 
             Object value = map.get(settingName);
+            if (value == null) {
+                // null value means the setting is not set
+                continue;
+            }
+            
             if (value instanceof Boolean) {
                 preferences.put(settingName, new TypedValue(
                         ((Boolean) value).toString(), Boolean.class.getName()));
@@ -174,6 +179,17 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
             } else if (value instanceof String) {
                 preferences.put(settingName, new TypedValue(
                         (String) value, String.class.getName()));
+            } else {
+                synchronized (COMPLEX) {
+                    Map<String, Object> settings = COMPLEX.get(mimePath);
+                    if (settings == null) {
+                        settings = new HashMap<String, Object>();
+                        COMPLEX.put(mimePath, settings);
+                    }
+                    settings.put(settingName, value);
+                }
+                preferences.put(settingName, new TypedValue(
+                        getClass().getName() + ".getComplexSettingValue", "methodvalue")); //NOI18N
             }
         }
     }
@@ -193,4 +209,51 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Complex value settings factory
+    // ------------------------------------------------------------------------
+    
+    public static Object getComplexSettingValue(MimePath mimePath, String settingName) {
+        List<String> paths = null;
+        if (mimePath.size() > 0) {
+            try {
+                Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
+                m.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                List<String> ret = (List<String>) m.invoke(mimePath, null, null);
+                paths = ret;
+                assert paths.size() > 1 : "Wrong getInheritedPaths result size: " + paths.size(); //NOI18N
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
+            }
+        }
+        
+        if (paths == null) {
+            paths = Collections.singletonList(mimePath.getPath());
+        }
+        
+        synchronized (COMPLEX) {
+            for (String path : paths) {
+                Map<String, Object> settings = COMPLEX.get(MimePath.parse(path));
+                if (settings != null) {
+                    Object value = settings.get(settingName);
+                    if (value != null) {
+                        return value;
+                    }
+               }
+            }
+            
+            return null;
+        }
+    }
+    
+    // ------------------------------------------------------------------------
+    // private implementation
+    // ------------------------------------------------------------------------
+    
+    private static final Logger LOG = Logger.getLogger(EditorPreferencesInjector.class.getName());
+
+    private static final Map<MimePath, Map<String, Object>> COMPLEX = new WeakHashMap<MimePath, Map<String, Object>>();
+    private final ThreadLocal<Map> currentSettingsMap = new ThreadLocal<Map>();
+    
 } // End of EditorPreferencesInjector class

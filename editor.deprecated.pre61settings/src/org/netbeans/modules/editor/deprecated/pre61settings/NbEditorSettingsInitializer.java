@@ -41,35 +41,16 @@
 
 package org.netbeans.modules.editor.deprecated.pre61settings;
 
-import java.awt.event.InputEvent;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.BaseSettingsInitializer;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.editor.ext.ExtSettingsInitializer;
-import org.netbeans.modules.editor.options.OptionUtilities;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.impl.KitsTracker;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.openide.util.Utilities;
 
 /**
-* Customized settings for NetBeans editor
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
-
+ * Does nothing.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ */
 public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 
     // -J-Dorg.netbeans.modules.editor.NbEditorSettingsInitializer.level=FINE
@@ -77,18 +58,19 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
     
     public static final String NAME = "nb-editor-settings-initializer"; // NOI18N
 
-    private static boolean mainInitDone;
-
-    public static void init() {
-        if (!mainInitDone) {
-            mainInitDone = true;
-            Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
-            Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
-            Settings.addInitializer(new NbEditorSettingsInitializer());
-
-            Settings.reset();
-        }
-    }
+// XXX: remove
+//    private static boolean mainInitDone;
+//
+//    public static void init() {
+//        if (!mainInitDone) {
+//            mainInitDone = true;
+//            Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
+//            Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
+//            Settings.addInitializer(new NbEditorSettingsInitializer());
+//
+//            Settings.reset();
+//        }
+//    }
 
     public NbEditorSettingsInitializer() {
         super(NAME);
@@ -102,47 +84,48 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
     *   that updates it or if no previous initializers updated it.
     */
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        if (kitClass == BaseKit.class) {
-            settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
-            settingsMap.put(BaseOptions.LINE_NUMBER_VISIBLE_PROP, SettingsDefaults.defaultLineNumberVisible);
-            
-	    //Fix for IZ bug #53744:
-	    //On MAC OS X, Ctrl+left click has the same meaning as the right-click.
-	    //The hyperlinking should be enabled for the Command key on MAC OS X, for Ctrl on others:
-            int activationMask;
-            
-            activationMask = Utilities.isMac()? InputEvent.META_MASK: InputEvent.CTRL_DOWN_MASK;
-            settingsMap.put(SettingsNames.HYPERLINK_ACTIVATION_MODIFIERS, Integer.valueOf(activationMask));
-        }
-
-        if (kitClass == NbEditorKit.class) {
-            // init popup menu items from layer folder
-            if (AllOptionsFolder.getDefault().baseInitialized()){
-                // put to the settings map only if base options has been initialized. See #19470
-                settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-                    OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems())
-                );
-            }
-        }
-
-        List mimeTypes = KitsTracker.getInstance().getMimeTypesForKitClass(kitClass);
-        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
-            String mimeType = (String) i.next();
-            
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Initializing settings for '" + mimeType + "', " + kitClass); //NOI18N
-            }
-            
-            // Lookup BaseOptions for the given mime type so that it can hook up its
-            // own settings initializer.
-            MimePath mimePath = MimePath.parse(mimeType);
-            BaseOptions bo = (BaseOptions) MimeLookup.getLookup(mimePath).lookup(BaseOptions.class);
-            if (bo == null) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Top level mime type '" + mimeType + "' with no BaseOptions."); //NOI18N
-                }
-            }
-        }
+// XXX: remove
+//
+//        if (kitClass == BaseKit.class) {
+//            settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
+//            settingsMap.put(BaseOptions.LINE_NUMBER_VISIBLE_PROP, SettingsDefaults.defaultLineNumberVisible);
+//            
+//	    //Fix for IZ bug #53744:
+//	    //On MAC OS X, Ctrl+left click has the same meaning as the right-click.
+//	    //The hyperlinking should be enabled for the Command key on MAC OS X, for Ctrl on others:
+//            int activationMask;
+//            
+//            activationMask = Utilities.isMac()? InputEvent.META_MASK: InputEvent.CTRL_DOWN_MASK;
+//            settingsMap.put(SettingsNames.HYPERLINK_ACTIVATION_MODIFIERS, Integer.valueOf(activationMask));
+//        }
+//
+//        if (kitClass == NbEditorKit.class) {
+//            // init popup menu items from layer folder
+//            if (AllOptionsFolder.getDefault().baseInitialized()){
+//                // put to the settings map only if base options has been initialized. See #19470
+//                settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
+//                    OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems())
+//                );
+//            }
+//        }
+//
+//        List mimeTypes = KitsTracker.getInstance().getMimeTypesForKitClass(kitClass);
+//        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
+//            String mimeType = (String) i.next();
+//            
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("Initializing settings for '" + mimeType + "', " + kitClass); //NOI18N
+//            }
+//            
+//            // Lookup BaseOptions for the given mime type so that it can hook up its
+//            // own settings initializer.
+//            MimePath mimePath = MimePath.parse(mimeType);
+//            BaseOptions bo = (BaseOptions) MimeLookup.getLookup(mimePath).lookup(BaseOptions.class);
+//            if (bo == null) {
+//                if (LOG.isLoggable(Level.FINE)) {
+//                    LOG.fine("Top level mime type '" + mimeType + "' with no BaseOptions."); //NOI18N
+//                }
+//            }
+//        }
     }
 }

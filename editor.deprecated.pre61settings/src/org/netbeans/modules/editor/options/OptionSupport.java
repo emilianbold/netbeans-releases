@@ -70,6 +70,8 @@ public class OptionSupport extends SystemOption {
 
     private final Class kitClass;
     private final String typeName;
+    
+    private MimePath mimePath = null;
     private Preferences prefs = null;
 
     private static final HashMap kitClass2Type = new HashMap();
@@ -107,7 +109,7 @@ public class OptionSupport extends SystemOption {
      * @param settingName name of the setting to get.
      */
     public Object getSettingValue(String settingName) {
-        return KitchenSink.getValueFromPrefs(settingName, getPreferences());
+        return KitchenSink.getValueFromPrefs(settingName, getPreferences(), mimePath);
     }
 
     /** Get the value of the boolean setting from the <code>Settings</code>
@@ -140,7 +142,7 @@ public class OptionSupport extends SystemOption {
     }
 
     public void doSetSettingValue(String settingName, Object newValue, String propertyName) {
-        KitchenSink.setValueToPreferences(settingName, newValue, getPreferences());
+        KitchenSink.setValueToPreferences(settingName, newValue, getPreferences(), mimePath);
     }
     
     /** Enables easier handling of the boolean settings.
@@ -187,7 +189,7 @@ public class OptionSupport extends SystemOption {
 
     /* package */ Preferences getPreferences() {
         if (prefs == null) {
-            MimePath mimePath = kitClass.equals(BaseKit.class) ? MimePath.EMPTY : MimePath.parse(getCTImpl());
+            mimePath = kitClass.equals(BaseKit.class) ? MimePath.EMPTY : MimePath.parse(getCTImpl());
             prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
         }
         return prefs;

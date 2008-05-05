@@ -64,13 +64,18 @@ made subject to such option by the copyright holder.
                         <file name="abc.xml" url="macros.xml"/>
                     </folder>
                 </folder>
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="prefs-A.xml" url="preferences-A.xml"/>
+                    </folder>
+                </folder>
             </folder>
             
             <folder name="x-type-B">
                 <file name="org-netbeans-editor-SettingsTest$MyKit2.instance"/>
                 <folder name="Preferences">
                     <folder name="Defaults">
-                        <file name="123-prefs.xml" url="preferences.xml"/>
+                        <file name="123-prefs.xml" url="preferences-B.xml"/>
                     </folder>
                 </folder>
             </folder>

@@ -425,7 +425,7 @@ public class Settings {
             
             // check if there is actually some value
             if (prefs != null && null != prefs.get(settingName, null)) {
-                value = KitchenSink.getValueFromPrefs(settingName, prefs);
+                value = KitchenSink.getValueFromPrefs(settingName, prefs, mimePath);
             } else {
                 // Fallback on to the kitmaps
                 List allKitMaps = getAllKitMaps(kitClass);
@@ -546,7 +546,7 @@ public class Settings {
                 Preferences prefs = findPreferences(mimePath);
                 
                 if (prefs != null) {
-                    useKitMaps = !KitchenSink.setValueToPreferences(settingName, newValue, prefs);
+                    useKitMaps = !KitchenSink.setValueToPreferences(settingName, newValue, prefs, mimePath);
                 } else {
                     useKitMaps = true;
                 }

@@ -114,7 +114,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     private static final String REINDENT_WITH_TEXT_BEFORE = "reindent-with-text-before"; // NOI18N
     
     /** Map that contains the requested [setting-name, setting-value] pairs */
-    private HashMap settingsMap = new HashMap();
+    private final HashMap settingsMap = new HashMap();
 
     private Acceptor indentHotCharsAcceptor;
     private boolean reindentWithTextBefore;
@@ -125,14 +125,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt == null ? null : evt.getKey();
             if (key == null || INDENT_HOT_CHARS_ACCEPTOR.equals(key)) {
-                Acceptor acceptor = null;
-                
-                String factoryRef = prefs.get(INDENT_HOT_CHARS_ACCEPTOR, null);
-                if (factoryRef != null) {
-                    acceptor = (Acceptor) SettingsConversions.callFactory(factoryRef, MimePath.parse(mimeType));
-                }
-                
-                indentHotCharsAcceptor = acceptor != null ? acceptor : AcceptorFactory.FALSE;
+                indentHotCharsAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), INDENT_HOT_CHARS_ACCEPTOR, AcceptorFactory.FALSE);
             }
 
             if (key == null || REINDENT_WITH_TEXT_BEFORE.equals(key)) {

@@ -940,14 +940,8 @@ public class BaseKit extends DefaultEditorKit {
     protected Action[] getCustomActions() {
         MimePath mimePath = MimePath.parse(getContentType());
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        String customActionListFactory = prefs.get("custom-action-list", null); //NOI18N
-        
-        if (customActionListFactory != null) {
-            Action[] customActions = (Action []) SettingsConversions.callFactory(customActionListFactory, mimePath);
-            return customActions;
-        }
-        
-        return null;
+        Action[] customActions = (Action []) SettingsConversions.callFactory(prefs, mimePath, "custom-action-list", null); //NOI18N
+        return customActions;
     }
     
     /**

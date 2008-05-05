@@ -42,11 +42,9 @@
 package org.netbeans.modules.editor.options;
 
 import java.util.Map;
-import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.deprecated.pre61settings.NbEditorSettingsInitializer;
 import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
 
@@ -73,14 +71,14 @@ public class BasePrintOptions extends OptionSupport {
     public BasePrintOptions() {
         this(BaseKit.class, BASE);
     }
-
-    private transient Settings.Initializer printColoringMapInitializer;
+// XXX: remove
+//    private transient Settings.Initializer printColoringMapInitializer;
     
     public BasePrintOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
     }
 
-    public String displayName() {
+    public @Override String displayName() {
 
         String name;
         try {
@@ -101,52 +99,52 @@ public class BasePrintOptions extends OptionSupport {
         ContextOptionsListener.processExistingAndListen(ps);
     }    
 
-    public HelpCtx getHelpCtx () {
+    public @Override HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
     }
 
     /** Get the name of the <code>Settings.Initializer</code> related
      * to these options.
      */
-    protected String getSettingsInitializerName() {
+    protected @Override String getSettingsInitializerName() {
         return getTypeName() + "-print-options-initalizer"; // NOI18N
     }
 
-    protected void updateSettingsMap(Class kitClass, Map settingsMap) {
-        super.updateSettingsMap(kitClass, settingsMap);
-
-        if (printColoringMapInitializer != null) {
-            printColoringMapInitializer.updateSettingsMap(kitClass, settingsMap);
-        }
-    }
+// XXX: remove
+//    protected @Override void updateSettingsMap(Class kitClass, Map settingsMap) {
+//        super.updateSettingsMap(kitClass, settingsMap);
+//
+//        if (printColoringMapInitializer != null) {
+//            printColoringMapInitializer.updateSettingsMap(kitClass, settingsMap);
+//        }
+//    }
     
-
     public boolean getPrintLineNumberVisible() {
-        return ((Boolean)getSettingValue(SettingsNames.LINE_NUMBER_VISIBLE)).booleanValue();
+        return getSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE);
     }
     public void setPrintLineNumberVisible(boolean b) {
     }
 
     public Map getPrintColoringMap() {
-        NbEditorSettingsInitializer.init();
         Map cm = SettingsUtil.getColoringMap(getKitClass(), true, true);
         cm.put(null, getKitClass().getName() ); // add kit class
         return cm;
     }
     public void setPrintColoringMap(Map coloringMap) {
-        NbEditorSettingsInitializer.init();
-        if (coloringMap != null) {
-            coloringMap.remove(null); // remove kit class
-            SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );
-
-            printColoringMapInitializer = SettingsUtil.getColoringMapInitializer(
-                getKitClass(), coloringMap, true,
-                getTypeName() + "-print-coloring-map-initializer" // NOI18N
-            );
-
-
-            firePropertyChange(PRINT_COLORING_MAP_PROP, null, null);
-        }
+        throw new UnsupportedOperationException("Use Editor Settings Storage API instead"); //NOI18N
+// XXX: remove
+//        if (coloringMap != null) {
+//            coloringMap.remove(null); // remove kit class
+//            SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );
+//
+//            printColoringMapInitializer = SettingsUtil.getColoringMapInitializer(
+//                getKitClass(), coloringMap, true,
+//                getTypeName() + "-print-coloring-map-initializer" // NOI18N
+//            );
+//
+//
+//            firePropertyChange(PRINT_COLORING_MAP_PROP, null, null);
+//        }
     }
 
 }

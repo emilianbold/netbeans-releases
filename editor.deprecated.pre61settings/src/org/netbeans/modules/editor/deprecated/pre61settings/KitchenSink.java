@@ -45,6 +45,7 @@ import java.awt.Insets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 
@@ -66,7 +67,7 @@ public final class KitchenSink {
      * 
      * @return The value or <code>null</code>
      */
-    public static Object getValueFromPrefs(String settingName, Preferences prefs) {
+    public static Object getValueFromPrefs(String settingName, Preferences prefs, MimePath mimePath) {
         Object value = null;
         
         if (prefs != null && null != prefs.get(settingName, null)) {
@@ -78,7 +79,9 @@ public final class KitchenSink {
             }
 
             if (type != null) {
-                if (type.equals(Boolean.class)) {
+                if (type.equals(SettingsConversions.class)) {
+                    value = SettingsConversions.callFactory(prefs, mimePath, settingName, null);
+                } else if (type.equals(Boolean.class)) {
                     value = prefs.getBoolean(settingName, false);
                 } else if (type.equals(Integer.class)) {
                     value = prefs.getInt(settingName, 0);
@@ -121,7 +124,7 @@ public final class KitchenSink {
      * 
      * @return <code>true</code> if the value was set successfully, otherwise <code>false</code>.
      */
-    public static boolean setValueToPreferences(String settingName, Object value, Preferences prefs) {
+    public static boolean setValueToPreferences(String settingName, Object value, Preferences prefs, MimePath mimePath) {
         if (value != null) {
             if (value instanceof Boolean) {
                 prefs.putBoolean(settingName, (Boolean) value);
@@ -157,12 +160,16 @@ public final class KitchenSink {
     }
     
     private static Class typeFromString(String javaType) {
-        try {
-            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
-            return classLoader == null ? null : classLoader.loadClass(javaType);
-        } catch (ClassNotFoundException cnfe) {
-            LOG.log(Level.WARNING, null, cnfe);
-            return null;
+        if ("methodvalue".equals(javaType)) { //NOI18N
+            return SettingsConversions.class;
+        } else {
+            try {
+                ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                return classLoader == null ? null : classLoader.loadClass(javaType);
+            } catch (ClassNotFoundException cnfe) {
+                LOG.log(Level.WARNING, null, cnfe);
+                return null;
+            }
         }
     }
     

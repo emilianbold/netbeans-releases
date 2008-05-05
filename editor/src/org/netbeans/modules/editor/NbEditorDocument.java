@@ -133,12 +133,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             public Object getValue() {
                 MimePath mimePath = MimePath.parse((String) getProperty(MIME_TYPE_PROP));
                 Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-                String factoryRef = prefs.get(INDENT_ENGINE, null);
-                if (factoryRef != null) {
-                    return SettingsConversions.callFactory(factoryRef, mimePath);
-                } else {
-                    return null;
-                }
+                return SettingsConversions.callFactory(prefs, mimePath, INDENT_ENGINE, null);
             }
         });
     }
