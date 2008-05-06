@@ -141,6 +141,22 @@ final class NodeListener implements MouseListener, KeyListener,
             }
         }
     }
+
+    /**
+     * Checks whether all given tree paths are of the expected length.
+     * @param  paths  paths to be checked
+     * @param  expLength  expected length of the paths
+     * @return  {@code true} if all the paths are of the expected length,
+     *          {@code false} otherwise
+     */
+    private static boolean checkPathCounts(TreePath[] paths, int expLength) {
+        for (TreePath path : paths) {
+            if (path.getPathCount() != expLength) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     private void popupTriggerEventFired(MouseEvent e) {
         final JTree tree = (JTree) e.getSource();
@@ -151,9 +167,13 @@ final class NodeListener implements MouseListener, KeyListener,
         if (!isPathSelected(path, tree)) {
             tree.setSelectionPath(path);
         }
-        if (tree.getSelectionCount() >= 1) {
+
+        int selCount = tree.getSelectionCount();
+        if (selCount >= 1) {
             final ResultModel resultModel = getResultModel(tree);
-            if (!isInsideCheckBox(tree, path, resultModel, e)) {
+            if (selCount > 1) {
+                showPopup(tree, null, resultModel, e);
+            } else if (!isInsideCheckBox(tree, path, resultModel, e)) {
                 showPopup(tree, path, resultModel, e);
             }
         }
@@ -208,7 +228,8 @@ final class NodeListener implements MouseListener, KeyListener,
      * given by a tree path.
      * 
      * @param  tree  tree in which the menu should be displayed
-     * @param  path  tree path specification of a node
+     * @param  path  tree path specification of a node,
+     *               or {@code null} if there are multiple nodes selected
      * @param  resultModel  data model of the tree
      * @param  e  mouse event which triggered display of the pop-up menu,
      *            or {@code null} if it was something else than a mouse
@@ -218,16 +239,22 @@ final class NodeListener implements MouseListener, KeyListener,
                            final TreePath path,
                            final ResultModel resultModel,
                            final MouseEvent e) {
-        final int pathCount = path.getPathCount();
-        if (tree.getSelectionCount() > 1) {
-            // check if path depth is same for all selected nodes
-            for (TreePath tp : tree.getSelectionPaths()) {
-                if (tp.getPathCount() != 2) {
-                    // no popup-menu for multiple selection of various depth
-                    return;
-                }
+        final int pathCount;
+        final TreePath[] paths;
+        if (path != null) {
+            paths = null;
+            pathCount = path.getPathCount();
+        } else {
+            paths = tree.getSelectionPaths();
+            assert paths.length > 1;
+            if (checkPathCounts(paths, 2)) {
+                pathCount = 2;
+            } else {
+                // no popup-menu for multiple selection of various depth
+                return;
             }
         }
+
         if (pathCount == 1) {               //root node
             //no popup-menu for the root node
         } else if (pathCount == 2) {
@@ -330,8 +357,16 @@ final class NodeListener implements MouseListener, KeyListener,
                                               MouseEvent e) {
         if (e != null) {
             return new Point(e.getX(), e.getY());
-        } else {
+        } else if (path != null) {
             return tree.getPathBounds(path).getLocation();
+        } else {
+            Point pos = tree.getMousePosition();
+            if (pos == null) {
+                java.awt.Rectangle r = tree.getVisibleRect();
+                pos = new Point(r.x + r.width / 2,
+                                r.y + r.height / 2);
+            }
+            return pos;
         }
     }
     
@@ -765,10 +800,15 @@ final class NodeListener implements MouseListener, KeyListener,
                    && (e.getModifiersEx() == 0)) {
             e.consume();
             JTree tree = (JTree) e.getSource();
-            if (tree.getSelectionCount() == 1) {
-                TreePath path = tree.getSelectionPath();
+            int selCount = tree.getSelectionCount();
+            if (selCount >= 1) {
                 ResultModel resultModel = getResultModel(tree);
-                showPopup(tree, path, resultModel, null);
+                if (selCount > 1) {
+                    showPopup(tree, null, resultModel, null);
+                } else {
+                    TreePath path = tree.getSelectionPath();
+                    showPopup(tree, path, resultModel, null);
+                }
             }
         }
     }
