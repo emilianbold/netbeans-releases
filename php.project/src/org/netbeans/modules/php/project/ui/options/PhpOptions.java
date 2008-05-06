@@ -84,7 +84,7 @@ public final class PhpOptions {
         return NbPreferences.forModule(PhpOptions.class);
     }
 
-    public String getPhpInterpreter() {
+    public synchronized String getPhpInterpreter() {
         String phpInterpreter = getPreferences().get(PHP_INTERPRETER, null);
         if (phpInterpreter == null && !phpInterpreterSearched) {
             phpInterpreterSearched = true;
