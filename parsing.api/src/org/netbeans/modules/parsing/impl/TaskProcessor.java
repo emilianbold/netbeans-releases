@@ -170,7 +170,7 @@ public class TaskProcessor {
                     if (parser == null) {
                         throw new IllegalAccessException();
                     }                    
-                    currentResult = parser.parse(source);
+                    currentResult = parser.parse(source, userTask);
                     if (shared) {
                         synchronized (source) {
                             final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);
@@ -439,7 +439,7 @@ public class TaskProcessor {
                                         if (currentResult == null) {
                                             final Parser parser = ParserManagerImpl.getParser(source);
                                             assert parser != null;
-                                            currentResult = parser.parse(source);
+                                            currentResult = parser.parse(source, r.task);
                                             synchronized (source) {                                                
                                                 final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);                                            
                                                 if (tmpResult == null) {
