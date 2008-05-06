@@ -351,12 +351,14 @@ public class BaseTest extends JellyTestCase {
         log("undo 12");
         undo(12);
 
-        Action saveAction;
-        saveAction = new Action("File|Save", null);
-        saveAction.perform();
+//        Action saveAction;
+//        saveAction = new Action("File|Save", null);
+//        saveAction.perform();
         
         editor = new EditorOperator(FILE_NAME);
-        editor.close(true);
+        editor.close(false);
+//        ewo = new EditorWindowOperator();
+//        ewo.closeDiscard();
 
     }
     
