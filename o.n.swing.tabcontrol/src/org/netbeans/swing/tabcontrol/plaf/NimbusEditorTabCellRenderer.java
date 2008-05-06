@@ -104,9 +104,19 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     
     private static final Insets INSETS = new Insets(0, 2, 0, 10);
     
-    private static void paintTabBackground (Graphics g, int index, int state,
+    private static void paintTabBackground (Graphics g, int index, Component c,
     int x, int y, int w, int h) {
-        Object o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
+        NimbusEditorTabCellRenderer ren = (NimbusEditorTabCellRenderer) c;
+        Object o = null;
+        if (ren.isSelected()) {
+            if (ren.isActive()) {
+                o = UIManager.get("TabbedPane:TabbedPaneTab[Pressed+Selected].backgroundPainter");
+            } else {
+                o = UIManager.get("TabbedPane:TabbedPaneTab[Selected].backgroundPainter");
+            }
+        } else {
+            o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
+        }
         if ((o != null) && (o instanceof Painter)) {
             Painter painter = (Painter) o;
             BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -120,7 +130,8 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     }
     
     private static int getHeightDifference (NimbusEditorTabCellRenderer ren) {
-        return ren.isSelected() ? ren.isActive() ? 0 : 1 : 2;
+        return 0;
+        //return ren.isSelected() ? ren.isActive() ? 0 : 1 : 2;
     }
     
     private static class NimbusPainter implements TabPainter {
@@ -164,11 +175,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void paintInterior(Graphics g, Component c) {
             NimbusEditorTabCellRenderer ren = (NimbusEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            int state = ren.isSelected() ? ren.isActive() ? SynthConstants.FOCUSED 
-                    : SynthConstants.SELECTED : SynthConstants.DEFAULT;
+
             Rectangle bounds = p.getBounds();
             int yDiff = getHeightDifference(ren);
-            paintTabBackground(g, 0, state, bounds.x, bounds.y + yDiff, 
+            paintTabBackground(g, 0, c, bounds.x, bounds.y + yDiff, 
                     bounds.width, bounds.height - yDiff);
             
             if (!supportsCloseButton((JComponent)c)) {
@@ -268,11 +278,9 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void paintInterior(Graphics g, Component c) {
             NimbusEditorTabCellRenderer ren = (NimbusEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            int state = ren.isSelected() ? ren.isActive() ? SynthConstants.FOCUSED 
-                    : SynthConstants.SELECTED : SynthConstants.DEFAULT;
             Rectangle bounds = p.getBounds();
             int yDiff = getHeightDifference(ren);
-            paintTabBackground(g, 0, state, bounds.x, bounds.y + yDiff, 
+            paintTabBackground(g, 0, c, bounds.x, bounds.y + yDiff, 
                     bounds.width, bounds.height - yDiff);
         }
 
@@ -329,11 +337,9 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             NimbusEditorTabCellRenderer ren = (NimbusEditorTabCellRenderer) c;
             
             Polygon p = getInteriorPolygon(c);
-            int state = ren.isSelected() ? ren.isActive() ? SynthConstants.FOCUSED 
-                    : SynthConstants.SELECTED : SynthConstants.DEFAULT;
             Rectangle bounds = p.getBounds();
             int yDiff = getHeightDifference(ren);
-            paintTabBackground(g, 0, state, bounds.x, bounds.y + yDiff, 
+            paintTabBackground(g, 0, c, bounds.x, bounds.y + yDiff, 
                     bounds.width, bounds.height - yDiff);
         }
 

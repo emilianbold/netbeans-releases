@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -209,19 +210,19 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         FileObject rakeFile = getRakeFile();
         if (rakeFile != null) {
             rakeFile.addFileChangeListener(new FileChangeAdapter() {
-                public @Override void fileChanged(FileEvent fe) { updateRakeTargets(); }
-                public @Override void fileDeleted(FileEvent fe) { updateRakeTargets(); }
-                public @Override void fileRenamed(FileRenameEvent fe) { updateRakeTargets(); }
+                public @Override void fileChanged(FileEvent fe) { updateRakeTasks(); }
+                public @Override void fileDeleted(FileEvent fe) { updateRakeTasks(); }
+                public @Override void fileRenamed(FileRenameEvent fe) { updateRakeTasks(); }
             });
         }
-        updateRakeTargets();
+        updateRakeTasks();
     }
 
-    private void updateRakeTargets() {
+    private void updateRakeTasks() {
         if (RubyPlatform.platformFor(this).showWarningIfInvalid()) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    RakeTargetsAction.refreshTargets(RubyBaseProject.this);
+                    RakeSupport.refreshTasks(RubyBaseProject.this);
                 }
             });
         }

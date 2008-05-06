@@ -53,8 +53,8 @@ public class SQLOptions  {
     private static SQLOptions INSTANCE = new SQLOptions();
     private static final String PROP_FETCH_STEP = "fetchStep"; // NOI18N
     private static final int DEFAULT_FETCH_STEP = 200;
-    private static final String PROP_MAXROWS = "maxrows";
-    private static final int DEFAULT_MAXROWS = 200000;
+    private static final String PROP_MAX_ROWS = "maxRows";
+    private static final int DEFAULT_MAX_ROWS = 200000;
 
 
     public static SQLOptions getDefault() {
@@ -78,11 +78,11 @@ public class SQLOptions  {
     }   
     
     public int getMaxRows() {
-        return NbPreferences.forModule(SQLOptions.class).getInt(PROP_MAXROWS, DEFAULT_MAXROWS);
+        return getPreferences().getInt(PROP_MAX_ROWS, DEFAULT_MAX_ROWS);
     }
     
     public void setMaxRows(int rows) {
-        NbPreferences.forModule(SQLOptions.class).putInt(PROP_MAXROWS, rows);
+        getPreferences().putInt(PROP_MAX_ROWS, rows);
     }
 
 }

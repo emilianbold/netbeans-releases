@@ -72,12 +72,14 @@
         <antcall target="clean-platform">
             <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
+	<!--
         <antcall target="clean-platform">
             <param name="product.platforms" value="macosx-x86"/>
         </antcall>
         <antcall target="clean-platform">
             <param name="product.platforms" value="macosx-ppc"/>
         </antcall>
+	-->
     </target>
     
     <!--
@@ -99,13 +101,14 @@
         <antcall target="build-platform">
             <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
+	<!--
         <antcall target="build-platform">
             <param name="product.platforms" value="macosx-x86"/>
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="macosx-ppc"/>
         </antcall>
-
+        -->
     </target>
     
     <!--
@@ -127,13 +130,14 @@
         <antcall target="release-platform">
             <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
+	<!--
         <antcall target="release-platform">
             <param name="product.platforms" value="macosx-x86"/>
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="macosx-ppc"/>
         </antcall>
-
+        -->
     </target>
     
     <!--
@@ -172,27 +176,39 @@
     
 
     <target name="-pre-package">
-	<condition property="move.data.up.level" value="true">
-		<not>
-			<equals arg1="windows" arg2="${product.platforms}"/>
-		</not>
-        </condition>
 
-        <if property="move.data.up.level" value="true">
-	    <set property="up.dir" value="${product.data.1.subdir}"/>
+        <if property="i" value="1">
+		<condition property="move.data.up.level" value="true">
+			<not>
+				<equals arg1="windows" arg2="${product.platforms}"/>
+			</not>
+	        </condition>
 
-            <exec executable="sh" failonerror="true" dir="${data.directory}">
-		<arg value="-c"/>
-		<arg value="mv ${up.dir}/* ."/>
-            </exec>
+	        <if property="move.data.up.level" value="true">
+		    <set property="up.dir" value="${product.data.1.subdir}"/>
+	
+	            <exec executable="sh" failonerror="true" dir="${data.directory}">
+			<arg value="-c"/>
+			<arg value="mv ${up.dir}/* ."/>
+	            </exec>
 
-	    <delete includeemptydirs="true">
-        	    <fileset dir="${data.directory}">
-			<include name="${up.dir}"/>
-			<include name="${up.dir}/**"/>
-        	    </fileset>
-	    </delete>
+		    <delete includeemptydirs="true">
+	        	    <fileset dir="${data.directory}">
+				<include name="${up.dir}"/>
+				<include name="${up.dir}/**"/>
+	        	    </fileset>
+	    	</delete>
+            </if>
         </if>
+
+        <if property="i" value="2">
+		<mkdir dir="${data.directory}/bin"/>
+		<move todir="${data.directory}/bin">
+			<fileset dir="${data.directory}">
+				<include name="MySQLInstanceConfig.exe"/>
+			</fileset>
+           	</move>
+	</if>
     </target>
     <!-- ============================================================================
       Default

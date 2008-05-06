@@ -9,6 +9,8 @@ import java.awt.BorderLayout;
 import java.util.List;
 import javax.swing.JPanel;
 
+import org.openide.util.NbBundle;
+
 public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
 
     private DatabaseTableColumnSelectionPanel mDBTableColumnSelectionPanel;
@@ -21,7 +23,7 @@ public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #2";
+        return NbBundle.getMessage(DatabaseTableSelectionVisualPanel2.class, "DatabaseTableSelectionVisualPanel2_SELECT_TABLE_COLUMNS");
     }
     
     private void init() {

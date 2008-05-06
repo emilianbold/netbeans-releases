@@ -64,7 +64,7 @@ public class ETLCodegenUtil {
     public static String getMonitorDBDir(String deployable, String workspaceDir) throws BaseException {
         String monitorDBFolder = null;
         try {
-            String repOID = UUID.randomUUID().toString();
+            String repOID = String.valueOf(System.currentTimeMillis());
 
             // Use "/" for maximum portability as codegen OS may be different than  OS on
             // which service is deployed.
@@ -154,9 +154,10 @@ public class ETLCodegenUtil {
      * @throws BaseException
      */
     public static String getEngineInstanceWorkingFolder(String appWorkspaceDirectory) {
+        String repOID = String.valueOf(System.currentTimeMillis());
         String engineInstanceDBFolder = null;
         // Use "/" as codegen OS may be different than OS on which deployed.
-        engineInstanceDBFolder = appWorkspaceDirectory + "/" + ETL_FOLDER + "/i/" + ETLDeploymentConstants.PARAM_INSTANCE_DB_NAME + "/";
+        engineInstanceDBFolder = appWorkspaceDirectory + "/" + ETL_FOLDER + "/i/" + repOID + "/" + ETLDeploymentConstants.INSTANCE_DB + "/";
         return engineInstanceDBFolder;
     }
 
@@ -165,10 +166,12 @@ public class ETLCodegenUtil {
      * @return Parameterized engine instance DB path.
      * @throws BaseException
      */
-    public static String getEngineInstanceWorkingFolder(String appWorkspaceDirectory, String dbInstanceName) {
+    public static String getUniqueEngineInstanceWorkingFolder(String appWorkspaceDirectory, String dbInstanceName) {
         String engineInstanceDBFolder = null;
+        String repoID = String.valueOf(System.currentTimeMillis());
+
         // Use "/" as codegen OS may be different than OS on which deployed.
-        engineInstanceDBFolder = appWorkspaceDirectory + "/" + ETL_FOLDER + "/i/" + dbInstanceName + "/";
+        engineInstanceDBFolder = ETLDeploymentConstants.PARAM_APP_DATAROOT + "/" + ETL_FOLDER + "/i/" + repoID + "/" + dbInstanceName + "/";
         return engineInstanceDBFolder;
     }
 

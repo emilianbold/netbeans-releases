@@ -201,7 +201,7 @@ public class NbRegistrationAction extends WizardAction {
      * Opens a browser for JDK product registration.
      * @param url Registration Webapp URL
      */
-    private boolean openBrowser(URI uri) throws IOException {
+    public static boolean openBrowser(URI uri) throws IOException {
         LogManager.log("... opening in the browser: " + uri);
         boolean result = false;
         try {
@@ -226,7 +226,7 @@ public class NbRegistrationAction extends WizardAction {
         new NbRegistrationAction();
     }
 
-    private boolean openBrowserFallback(URI uri) {
+    private static boolean openBrowserFallback(URI uri) {
         try {
             if (SystemUtils.isWindows()) {
                 WindowsNativeUtils wnu = (WindowsNativeUtils) SystemUtils.getNativeUtils();
@@ -304,7 +304,7 @@ public class NbRegistrationAction extends WizardAction {
         return null;
     }
 
-    private boolean browseUnix(URI uri) throws IOException {
+    private static boolean browseUnix(URI uri) throws IOException {
         File browser = getUnixBrowser();
         if (browser != null) {
             LogManager.log("... using browser: " + browser);

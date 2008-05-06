@@ -1,7 +1,44 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Component;
@@ -18,8 +55,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -43,6 +82,9 @@ public class CustomComponentWizardIterator implements
                                             = "code-name-base";                  // NOI18N
     private static final String DATA        = "data";                            // NOI18N
     private static final String PROJECT_XML = "nbproject/project.xml";           // NOI18N
+    private static final String BUILD_IMPL_XML 
+                                            = "nbproject/build-impl.xml";        // NOI18N
+    private static final String BUILD_XML   = "build.xml";                       // NOI18N
 
     public static final String WIZARD_PANEL_ERROR_MESSAGE 
                                             = "WizardPanel_errorMessage";        // NOI18N
@@ -56,49 +98,51 @@ public class CustomComponentWizardIterator implements
     // steps
     public static final String STEP_BASIC_PARAMS 
                                             = "LBL_BasicProjectParamsStep";      // NOI18N
-    private static final String LBL_LIBRARIES 
-                                            = "LBL_LibrariesDescStep";
-    private static final String LBL_COMPONENT_DESC 
-                                            = "LBL_ComponentsDescStep";
-    private static final String FINAL_STEP  = "LBL_FinalStep";
+    public static final String LBL_LIBRARIES 
+                                            = "LBL_LibrariesDescStep";           // NOI18N 
+    public static final String LBL_COMPONENT_DESC 
+                                            = "LBL_ComponentsDescStep";          // NOI18N
+    public static final String FINAL_STEP   = "LBL_FinalStep";                   // NOI18N
 
     // properties
     public static final String PROJECT_DIR  = "projdir";                         // NOI18N
     public static final String PROJECT_NAME = "projname";                        // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
+    public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
+    public static final String JAVA_LIB_ACCEPTED
+                                            = "javaLibsAccepted";                // NOI18N
     public static final String CODE_BASE_NAME
                                             = "codeBaseName";                    // NOI18N
+    public static final String DISPLAY_NAME = "displayName";                     // NOI18N
+    
+    public static final String LIBRARIES    = "library";                         // NOI18N
+    public static final String DISPLAY_NAMES= "displayName";                     // NOI18N
+    public static final String LIB_NAMES    = "libName";                         // NOI18N
 
 
     // parameters for project
     private static final String CODE_NAME_PARAM 
                                             = "_CODE_NAME_";                     // NOI18N
-    private static final String LAYER_PATH_PARAM    
-                                            = "_LAYER_PATH_";                    // NOI18N
     private static final String BUNDLE_PATH_PARAM 
                                             = "_BUNDLE_PATH_";                   // NOI18N
     private static final String PROJECT_NAME_PARAM 
                                             = "_PROJECT_NAME_";                  // NOI18N
 
     // names of templates
-    private static final String BUNDLE_NAME = "src/Bundle.properties";           // NOI18N
-    private static final String LAYER_NAME  = "src/layer.xml";                   // NOI18N
+    private static final String SRC         = "src/";                            // NOI18N
+    private static final String BUNDLE_NAME = SRC + "Bundle.properties";         // NOI18N
+    private static final String LAYER_NAME  = SRC + "layer.xml";                 // NOI18N
     private static final String MANIFEST    = "manifest.mf";                     // NOI18N
+    private static final String LAYER       = "OpenIDE-Module-Layer: ";          // NOI18N
 
-    private int index;
-
-    private WizardDescriptor.Panel[] panels;
-
-    private WizardDescriptor wiz;
-
-    public CustomComponentWizardIterator() {
+    private CustomComponentWizardIterator() {
     }
 
     public static CustomComponentWizardIterator createIterator() {
         return new CustomComponentWizardIterator();
     }
 
-    private WizardDescriptor.Panel[] createPanels() {
+    WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] { new CustomComponentWizardPanel(), 
               new JavaMELibsWizardPanel(),
               new DescriptorsWizardPanel(),
@@ -122,13 +166,13 @@ public class CustomComponentWizardIterator implements
             throws IOException
     {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz
+        File dirF = FileUtil.normalizeFile((File) myWizard
                 .getProperty(PROJECT_DIR));
         dirF.mkdirs();
 
-        FileObject template = Templates.getTemplate(wiz);
+        FileObject template = Templates.getTemplate(myWizard);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir , wiz );
+        unZipFile(template.getInputStream(), dir , myWizard );
 
         // Always open top dir as a project:
         resultSet.add(dir);
@@ -145,12 +189,18 @@ public class CustomComponentWizardIterator implements
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
+        
+        if ( myWizard.getProperty( JAVA_LIB_ACCEPTED )!= null && 
+                (Boolean)myWizard.getProperty( JAVA_LIB_ACCEPTED ) )
+        {
+            configureJavaMELibs();
+        }
 
         return resultSet;
     }
 
     public void initialize( WizardDescriptor wiz ) {
-        this.wiz = wiz;
+        myWizard = wiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -175,9 +225,9 @@ public class CustomComponentWizardIterator implements
     }
 
     public void uninitialize( WizardDescriptor wiz ) {
-        this.wiz.putProperty(PROJECT_DIR, null);
-        this.wiz.putProperty(PROJECT_NAME, null);
-        this.wiz = null;
+        wiz.putProperty(PROJECT_DIR, null);
+        wiz.putProperty(PROJECT_NAME, null);
+        wiz = null;
         panels = null;
     }
 
@@ -220,6 +270,15 @@ public class CustomComponentWizardIterator implements
 
     public final void removeChangeListener( ChangeListener l ) {
     }
+    
+    /*
+     * Adds library descriptor generated from template "libdescripttemplate.xml"
+     * and generate necessary files, change Bundle.properties, layer.xml if needed.   
+     */
+    private void configureJavaMELibs() {
+        // TODO Auto-generated method stub
+        
+    }
 
     private static void unZipFile( InputStream source, FileObject projectRoot ,
             WizardDescriptor wizard )
@@ -228,31 +287,42 @@ public class CustomComponentWizardIterator implements
         try {
             ZipInputStream zipIS = new ZipInputStream(source);
             ZipEntry entry;
-            String layerPath = (String)wizard.getProperty(LAYER_PATH);
             while ((entry = zipIS.getNextEntry()) != null) {
                 if (entry.isDirectory()) {
                     FileUtil.createFolder(projectRoot, entry.getName());
                 }
                 else {
-                    FileObject fo = FileUtil.createData(projectRoot, entry
-                            .getName());
+                    FileObject fo = null;
                     if (PROJECT_XML.equals(entry.getName())) {
                         // Special handling for setting name of Ant-based
                         // projects; customize as needed:
+                        fo = FileUtil.createData(projectRoot, entry
+                                .getName());
                         filterProjectXML(fo, zipIS, (String)wizard.getProperty( 
                                 CODE_BASE_NAME ));
                     }
                     else if ( MANIFEST.equals(entry.getName())){
+                        fo = FileUtil.createData(projectRoot, entry
+                                .getName());
                         filterManifest( fo , zipIS, wizard );
                     }
                     else if ( LAYER_NAME.equals(entry.getName())){
-                        copyLayer( fo , zipIS , wizard );
+                        copyLayer( projectRoot , zipIS , wizard );
                     }
                     else if ( BUNDLE_NAME.equals(entry.getName()) ) {
-                        filterBundle( fo , zipIS, (String)wizard.getProperty( 
+                        filterBundle( projectRoot , zipIS, wizard );
+                    }
+                    else if ( BUILD_XML.equals(entry.getName()) 
+                            || BUILD_IMPL_XML.equals(entry.getName())) 
+                    {
+                        fo = FileUtil.createData(projectRoot, entry
+                                .getName());
+                        filterBuild( fo , zipIS, (String)wizard.getProperty( 
                                 CODE_BASE_NAME ) );
                     }
                     else {
+                        fo = FileUtil.createData(projectRoot, entry
+                                .getName());
                         writeFile(zipIS, fo);
                     }
                 }
@@ -263,25 +333,88 @@ public class CustomComponentWizardIterator implements
         }
     }
 
-    private static void filterBundle( FileObject fo, ZipInputStream is,
-            String property )
+    private static void filterBuild( FileObject fo, ZipInputStream zipIS,
+            String codeBaseName ) throws IOException
     {
-        // TODO Auto-generated method stub
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copy( zipIS , baos);
+        String content = baos.toString(UTF_8);
         
+        content = content.replace( CODE_NAME_PARAM , codeBaseName );
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(content
+                .getBytes(UTF_8));
+        OutputStream out = fo.getOutputStream();
+        try {
+            FileUtil.copy(inputStream, out);
+        }
+        finally {
+            out.close();
+        }    
     }
 
-    private static void copyLayer( FileObject fo, ZipInputStream is,
-            WizardDescriptor wizard )
+    private static void filterBundle( FileObject projectRoot, ZipInputStream is,
+            WizardDescriptor wizardDescriptor ) throws IOException
     {
-        // TODO Auto-generated method stub
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copy(is, baos);
+        String content = baos.toString(UTF_8);
         
+        content = content.replace( PROJECT_NAME_PARAM , 
+                (String)wizardDescriptor.getProperty( DISPLAY_NAME ) );
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(content
+                .getBytes(UTF_8));
+        FileObject fileObject = FileUtil.createData(projectRoot, 
+                SRC + (String)wizardDescriptor.getProperty( BUNDLE_PATH) );
+        OutputStream out = fileObject.getOutputStream();
+        try {
+            FileUtil.copy(inputStream, out);
+        }
+        finally {
+            out.close();
+        }                
+    }
+
+    private static void copyLayer( FileObject projectRoot, ZipInputStream is,
+            WizardDescriptor wizard ) throws IOException
+    {
+        String layer = (String)wizard.getProperty( LAYER_PATH);
+        if ( layer == null || layer.length() ==0 ){
+            return;
+        }
+        FileObject fileObject = FileUtil.createData(projectRoot, SRC + layer );
+        writeFile(is, fileObject );
     }
 
     private static void filterManifest( FileObject fo, ZipInputStream is,
-            WizardDescriptor wizard )
+            WizardDescriptor wizard ) throws IOException
     {
-        // TODO Auto-generated method stub
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copy(is, baos);
+        String content = baos.toString(UTF_8);
         
+        content = content.replace( CODE_NAME_PARAM , (String)wizard.getProperty( 
+                CODE_BASE_NAME ));
+        content = content.replace( BUNDLE_PATH_PARAM, (String)wizard.getProperty( 
+                BUNDLE_PATH));
+        StringBuilder builder = new StringBuilder( content );
+        String layer = (String)wizard.getProperty( LAYER_PATH);
+        if ( layer != null){
+            builder.append( LAYER );
+            builder.append( layer );
+            builder.append( "\n" );
+        }
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                builder.toString().getBytes(UTF_8));
+        OutputStream out = fo.getOutputStream();
+        try {
+            FileUtil.copy(inputStream, out);
+        }
+        finally {
+            out.close();
+        }        
     }
 
     private static void writeFile( ZipInputStream is, FileObject fo )
@@ -335,4 +468,8 @@ public class CustomComponentWizardIterator implements
         }
 
     }
+    
+    private int index;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor myWizard;
 }

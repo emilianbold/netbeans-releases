@@ -322,7 +322,12 @@ public class ElementNode extends AbstractNode {
             sb.append("("); // NOI18N
             for(Iterator<? extends VariableElement> it = e.getParameters().iterator(); it.hasNext(); ) {
                 VariableElement param = it.next();
-                sb.append(print(param.asType()));
+                if (!it.hasNext() && e.isVarArgs() && param.asType().getKind() == TypeKind.ARRAY) {
+                    sb.append(print(((ArrayType) param.asType()).getComponentType()));
+                    sb.append("...");
+                } else {
+                    sb.append(print(param.asType()));
+                }
                 sb.append(" "); // NOI18N
                 sb.append(param.getSimpleName());
                 if (it.hasNext()) {

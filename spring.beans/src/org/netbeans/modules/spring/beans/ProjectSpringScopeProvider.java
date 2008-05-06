@@ -60,8 +60,8 @@ public class ProjectSpringScopeProvider {
 
     public synchronized SpringScope getSpringScope() {
         if (springScope == null) {
-            ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new ProjectConfigFileManagerImpl(project));
-            springScope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
+            ConfigFileManager manager = ConfigFileManagerAccessor.getDefault().createConfigFileManager(new ProjectConfigFileManagerImpl(project));
+            springScope = SpringScopeAccessor.getDefault().createSpringScope(manager);
         }
         return springScope;
     }

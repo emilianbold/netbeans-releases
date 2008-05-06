@@ -34,7 +34,7 @@ public final class TestRunAction extends GraphAction {
         String nbBundle2 = mLoc.t("BUND036: Run Collaboration (Alt+Shift+N)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
-        // Acceleratot Alt+Shift+N
+        // Acceleratot Shift-N
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('N', InputEvent.SHIFT_DOWN_MASK+InputEvent.ALT_MASK));
     }
 

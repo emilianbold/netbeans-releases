@@ -54,6 +54,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -504,7 +505,7 @@ final class NodeListener implements MouseListener, KeyListener,
         return ((ResultTreeModel) tree.getPathForRow(0).getPathComponent(0))
                .resultModel;
     }
-    
+
     /**
      * Returns a NetBeans explorer node corresponding to the given object.
      * 
@@ -732,16 +733,34 @@ final class NodeListener implements MouseListener, KeyListener,
                    && (e.getModifiersEx() == 0)) {
             final JTree tree = (JTree) e.getSource();
             final TreeSelectionModel selectionModel = tree.getSelectionModel();
-            if (selectionModel.getSelectionCount() != 1) {
+            if (selectionModel.getSelectionCount() == 0) {
                 return;
             }
-            final TreePath selectedPath = selectionModel.getLeadSelectionPath();
-            if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
-                // empty selection or root node selected
-                return;
+
+            ResultModel resultModel = getResultModel(tree);
+            List<TreePath> mainNodes;
+            if (selectionModel.getSelectionCount() == 1) {
+                final TreePath selectedPath = selectionModel.getLeadSelectionPath();
+                if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
+                    // empty selection or root node selected
+                    return;
+                }
+                mainNodes = Collections.<TreePath>singletonList(selectedPath);
+            } else {
+                TreePath[] selectedPaths = selectionModel.getSelectionPaths();
+                if ((selectedPaths == null) || (selectedPaths.length < 2)) {
+                    // this should not happen because (selectionCount >= 2)
+                    assert false;
+                    return;
+                }
+                mainNodes = NodeSelector.selectMainNodes(
+                                                selectedPaths,
+                                                resultModel.canHaveDetails());
             }
-            Node nbNode = getNbNode(selectedPath, getResultModel(tree));
-            callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+            for (TreePath mainNode : mainNodes) {
+                Node nbNode = getNbNode(mainNode, resultModel);
+                callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+            }
         } else if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
                    && (e.getModifiersEx() == 0)) {
             e.consume();

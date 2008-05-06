@@ -55,6 +55,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
 import org.netbeans.modules.sql.framework.model.Index;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
+import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.DefaultPropertyEditor;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
@@ -82,6 +83,8 @@ public class TableProperties {
     protected SQLBasicTableArea gNode;
 
     private SQLDBTable table;
+    
+    private SQLDefinition def;
 
     /**
      * Gets the alias name for this table.
