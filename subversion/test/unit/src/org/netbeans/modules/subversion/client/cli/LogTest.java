@@ -64,9 +64,9 @@ public class LogTest extends AbstractCLITest {
     }
 
     @Override
-    protected void setUp() throws Exception {        
-        if(getName().equals("testLogNullAuthor")) {
-            setAnnonWriteAccess();
+    protected void setUp() throws Exception {                   
+        if(getName().equals("testLogNullAuthor")) {            
+            setAnnonWriteAccess();            
             String[] cmd = new String[]{"svnserve", "-d"};
             Process p = Runtime.getRuntime().exec(cmd);
             p.waitFor();   
@@ -78,8 +78,8 @@ public class LogTest extends AbstractCLITest {
     protected void tearDown() throws Exception {
         if(getName().equals("testLogNullAuthor")) {        
             restoreAuthSettings();
-        }
-        super.tearDown();
+        }        
+        super.tearDown();        
     }    
 
     @Override
@@ -90,80 +90,112 @@ public class LogTest extends AbstractCLITest {
         return super.getRepoURLProtocol();
     }    
         
-//    public void testLogWrong() throws Exception {                                
-//        // no file
-//        File file = new File(getWC(), "file");
-//        
-//        ISVNClientAdapter c = getReferenceClient();
-//        
-//        SVNClientException e = null;        
-//        try {
-//            c.getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD);
-//        } catch (SVNClientException ex) {
-//            e = ex;
-//        }                        
-//        assertNotNull(e);
-//        
-//        // unversioned file
-//        file = createFile("file");
-//        e = null;        
-//        try {
-//            c.getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD);
-//        } catch (SVNClientException ex) {
-//            e = ex;
-//        }                        
-//        assertNotNull(e);
-//        
-//        // wrong url
-//        file = createFile("file");
-//        e = null;        
-//        try {
-//            c.getLogMessages(getFileUrl(file), new SVNRevision.Number(0), SVNRevision.HEAD);
-//        } catch (SVNClientException ex) {
-//            e = ex;
-//        }                        
-//        assertNotNull(e);
-//    }
-//    
-//    public void testLogFileChangePaths() throws Exception {                                
-//        log(Log.file, true, false);
-//    }
-//    
-//    public void testLogUrlChangePaths() throws Exception {                                
-//        log(Log.url, true, false);
-//    }    
-//    
-//    public void testLogFileChangePathsStopCopy() throws Exception {                                
-//        log(Log.file, true, true);
-//    }
-//    
-//    public void testLogUrlChangePathsStopCopy() throws Exception {                                
-//        log(Log.url, true, true);
-//    }
-//    
-//    public void testLogFileNoChangePaths() throws Exception {                                
-//        log(Log.file, false, false);
-//    }
-//    
-//    public void testLogUrlNoChangePaths() throws Exception {                                
-//        log(Log.url, false, false);
-//    }
-//    
-//    public void testLogFileNoChangePathsStopCopy() throws Exception {                                
-//        log(Log.file, false, true);
-//    }
-//    
-//    public void testLogUrlNoChangePathsStopCopy() throws Exception {                                
-//        log(Log.url, false, true);
-//    }
-//    
-//    public void testLogFileLimit() throws Exception {                                
-//        logLimit(Log.file);
-//    }
-//    
-//    public void testLogUrlLimit() throws Exception {                                
-//        logLimit(Log.url);
-//    }
+    public void testLogWrong() throws Exception {                                
+        // no file
+        File file = new File(getWC(), "file");
+        
+        ISVNClientAdapter c = getReferenceClient();
+        
+        SVNClientException e = null;        
+        try {
+            c.getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }                        
+        assertNotNull(e);
+        
+        // unversioned file
+        file = createFile("file");
+        e = null;        
+        try {
+            c.getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }                        
+        assertNotNull(e);
+        
+        // wrong url
+        file = createFile("file");
+        e = null;        
+        try {
+            c.getLogMessages(getFileUrl(file), new SVNRevision.Number(0), SVNRevision.HEAD);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }                        
+        assertNotNull(e);
+    }
+    
+    public void testLogNullAuthor() throws Exception {
+        File file = createFile("file");
+        add(file);   
+        write(file, "hira bancha");        
+        commit(file, "hira bancha");
+        ISVNInfo info1 = getInfo(file);        
+        
+        write(file, "bancha muso");        
+        commit(file, "bancha muso");
+        ISVNInfo info2 = getInfo(file);        
+
+        ISVNLogMessage[] logsRef = getReferenceClient().getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);
+        ISVNLogMessage[] logsNb = getReferenceClient().getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);    
+        
+        // test 
+        assertEquals(2, logsNb.length);       
+        assertEquals("", logsNb[0].getAuthor());
+        assertEquals("", logsNb[1].getAuthor());
+
+        assertEquals("", logsNb[0].getAuthor());
+        assertEquals(info1.getLastChangedDate(), logsNb[0].getDate());
+        assertEquals("hira bancha", logsNb[0].getMessage());
+        assertEquals(info1.getRevision(), logsNb[0].getRevision());
+        
+        assertEquals("", logsNb[1].getAuthor());
+        assertEquals(info2.getLastChangedDate(), logsNb[1].getDate());
+        assertEquals("bancha muso", logsNb[1].getMessage());
+        assertEquals(info2.getRevision(), logsNb[1].getRevision());
+        
+        assertLogs(logsRef, logsNb);
+    }
+            
+    public void testLogFileChangePaths() throws Exception {                                
+        log(Log.file, true, false);
+    }
+    
+    public void testLogUrlChangePaths() throws Exception {                                
+        log(Log.url, true, false);
+    }    
+    
+    public void testLogFileChangePathsStopCopy() throws Exception {                                
+        log(Log.file, true, true);
+    }
+    
+    public void testLogUrlChangePathsStopCopy() throws Exception {                                
+        log(Log.url, true, true);
+    }
+    
+    public void testLogFileNoChangePaths() throws Exception {                                
+        log(Log.file, false, false);
+    }
+    
+    public void testLogUrlNoChangePaths() throws Exception {                                
+        log(Log.url, false, false);
+    }
+    
+    public void testLogFileNoChangePathsStopCopy() throws Exception {                                
+        log(Log.file, false, true);
+    }
+    
+    public void testLogUrlNoChangePathsStopCopy() throws Exception {                                
+        log(Log.url, false, true);
+    }
+    
+    public void testLogFileLimit() throws Exception {                                
+        logLimit(Log.file);
+    }
+    
+    public void testLogUrlLimit() throws Exception {                                
+        logLimit(Log.url);
+    }
     
     public void testLogPaths() throws Exception {                                
         File folder1 = createFolder("folder1");
@@ -236,7 +268,6 @@ public class LogTest extends AbstractCLITest {
                 new ChangePath('A', changePath2, null, null) 
             }
         );
-        //assertLogMessage(info12, logsNb[0], "msg1",  new ISVNLogMessageChangePath[] { new ChangePath('A', changePath2, null, null) });
         assertLogMessage(
             info21, 
             logsNb[1], 
@@ -255,7 +286,6 @@ public class LogTest extends AbstractCLITest {
                 new ChangePath('M', changePath2, null, null) 
             }
         );
-        //assertLogMessage(info22, logsNb[1], "msg2",  new ISVNLogMessageChangePath[] { new ChangePath('M', changePath2, null, null) });
         assertLogMessage(
             info31, 
             logsNb[2], 
@@ -277,7 +307,7 @@ public class LogTest extends AbstractCLITest {
                 
         assertLogs(logsRef, logsNb);
     }
-    
+        
     private void log(Log log, boolean changePaths, boolean stopOnCopy) throws Exception {                                
         File file = createFile("file");
         add(file);
