@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -976,19 +977,22 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return data directory
      */
     public File getDataDir() {
+        // XXX should this be deprecated?
         String xtestData = System.getProperty("xtest.data");
         if(xtestData != null) {
             return Manager.normalizeFile(new File(xtestData));
         } else {
-            // property not set (probably run from IDE) => try to find it
-            String className = getClass().getName();
-            URL url = this.getClass().getResource(className.substring(className.lastIndexOf('.')+1)+".class"); // NOI18N
-            File dataDir = new File(url.getFile()).getParentFile();
-            int index = 0;
-            while((index = className.indexOf('.', index)+1) > 0) {
-                dataDir = dataDir.getParentFile();
+            // property not set => try to find it
+            URL codebase = getClass().getProtectionDomain().getCodeSource().getLocation();
+            if (!codebase.getProtocol().equals("file")) {
+                throw new Error("Cannot find data directory from " + codebase);
             }
-            dataDir = new File(dataDir.getParentFile(), "data"); //NOI18N
+            File dataDir;
+            try {
+                dataDir = new File(new File(codebase.toURI()).getParentFile(), "data");
+            } catch (URISyntaxException x) {
+                throw new Error(x);
+            }
             return Manager.normalizeFile(dataDir);
         }
     }

@@ -78,8 +78,8 @@ public class LibrariesNodeFactory implements NodeFactory {
         public List<String> keys() {
             List<String> toRet = new ArrayList<String>();
             toRet.add(LibrariesNode.LIBRARIES_NAME);
-            if(resolveFileObjectFromProperty("test.unit.src.dir") != null) { //NOI18N
-                toRet.add(UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME);
+            for (String testType : project.supportedTestTypes()) {
+                toRet.add(testType);
             }
             return toRet;
         }
@@ -101,10 +101,9 @@ public class LibrariesNodeFactory implements NodeFactory {
         public Node node(String key) {
             if (key == LibrariesNode.LIBRARIES_NAME) {
                 return  new LibrariesNode(project);
-            } else if (key == UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME) {
-                return new UnitTestLibrariesNode(project);
+            } else {
+                return new UnitTestLibrariesNode(key, project);
             }
-            throw new AssertionError("Unknown key: " + key);
         }
 
         public void addNotify() {

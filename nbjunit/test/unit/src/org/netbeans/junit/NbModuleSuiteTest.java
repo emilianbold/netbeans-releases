@@ -39,9 +39,15 @@
 
 package org.netbeans.junit;
 
+import java.io.File;
+import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
+import java.lang.reflect.Field;
+import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import org.netbeans.insane.scanner.ObjectMap;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -52,6 +58,11 @@ public class NbModuleSuiteTest extends TestCase {
     public NbModuleSuiteTest(String testName) {
         super(testName);
     }            
+    
+    public static Test suite() {
+        //return new NbModuleSuiteTest("testAccessExtraDefinedAutoload");
+        return new NbTestSuite(NbModuleSuiteTest.class);
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -63,22 +74,95 @@ public class NbModuleSuiteTest extends TestCase {
         super.tearDown();
     }
 
-    /**
-     * Test of run method, of class NbModuleSuite.
-     */
     public void testRun() {
-        Test instance = NbModuleSuite.create(T.class, null, null);
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(T.class).gui(false));
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
+        assertProperty("netbeans.full.hack", "true");
     }
+    
+    public void testPreparePathes() {
+        Properties p = new Properties();
+        
+        NbModuleSuite.S.preparePatches(
+            File.separator + "x" + File.separator + "c:org-openide-util.jar" + File.pathSeparator + 
+            File.separator + "x" + File.separator + "org-openide-nodes.jar" + File.pathSeparator +
+            File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar" + File.pathSeparator +
+            File.separator + "x" + File.separator + "org-openide-filesystems.jar", p);
+        
+        
+        assertEquals(
+            File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar",
+            p.getProperty("netbeans.patches.org.openide.util")
+        );
+    }
+
+    public void testAccessToInsane() {
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(Ins.class).gui(false));
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "OK");
+    }
+
+    public void testOneCanEnumerateMethodsFromTheSuite() {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+
+        
+        
+        
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(Ins.class).addTest("testOne").
+            addTest("testThree").gui(false)
+        );
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "OK");
+        assertProperty("ins.two", "No");
+        assertProperty("ins.three", "OK");
+    }
+    
+    private static void assertProperty(String name, String value) {
+        String v = System.getProperty(name);
+        assertEquals("Property " + name, value, v);
+    }
+
+    public void testAccessExtraDefinedAutoload() {
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
+        NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
+        Test instance = NbModuleSuite.create(addEnum.gui(false));
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("OK", System.getProperty("en.one"));
+    }
+    /*
+    public void testAccessClassPathDefinedAutoload() {
+        
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(En.class);
+        String manifest =
+"Manifest-Version: 1.0\n" +
+"OpenIDE-Module-Module-Dependencies: org.openide.util.enumerations>1.5\n" +
+"OpenIDE-Module: org.netbeans.modules.test.nbjunit\n" +
+"OpenIDE-Module-Specification-Version: 1.0\n";
+                
+        ClassLoader loader = new ManifestClassLoader(config.parentClassLoader, manifest);
+        NbModuleSuite.Configuration load = config.classLoader(loader);
+        Test instance = NbModuleSuite.create(load);
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("OK", System.getProperty("en.one"));
+    }
+     */
     
     public void testModulesForCL() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(ClassLoader.getSystemClassLoader());
         s.remove("org.netbeans.modules.nbjunit");
-        assertEquals("Two modules left: " + s, 2, s.size());
+        assertEquals("Two modules left: " + s, 3, s.size());
         
         assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("junit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
     
@@ -106,12 +190,65 @@ public class NbModuleSuiteTest extends TestCase {
     public void testModulesForMe() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(getClass().getClassLoader());
         s.remove("org.netbeans.modules.nbjunit");
-        assertEquals("Two modules left: " + s, 2, s.size());
+        assertEquals("Two modules left: " + s, 3, s.size());
         
         assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
-    
+/*    
+    private static class ManifestClassLoader extends ClassLoader {
+        private final String manifest;
+        public ManifestClassLoader(ClassLoader parent, String manifest) {
+            super(parent);
+            this.manifest = manifest;
+        }
+
+        @Override
+        protected URL findResource(String name) {
+            try {
+                class H extends URLStreamHandler {
+
+                    @Override
+                    protected URLConnection openConnection(URL u) throws IOException {
+                        return new C(u);
+                    }
+
+                    class C extends URLConnection {
+
+                        StringBufferInputStream buf;
+
+                        public C(URL url) {
+                            super(url);
+                            buf = new StringBufferInputStream(url.getHost());
+                        }
+
+                        @Override
+                        public InputStream getInputStream() throws IOException {
+                            return buf;
+                        }
+
+                        @Override
+                        public void connect() throws IOException {
+                        }
+                    }
+                }
+
+                URL u = new URL("text:", manifest, 0, "", new H());
+                return u;
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            return Collections.enumeration(Collections.singleton(findResource(name)));
+        }
+        
+    }
+*/    
     public static class T extends TestCase {
         public T(String t) {
             super(t);
@@ -119,6 +256,49 @@ public class NbModuleSuiteTest extends TestCase {
 
         public void testOne() {
             System.setProperty("t.one", "OK");
+        }
+
+        public void testFullhack() {
+            System.setProperty("t.hack", System.getProperty("netbeans.full.hack"));
+        }
+    }
+
+    public static class Ins extends TestCase 
+    implements org.netbeans.insane.scanner.Visitor {
+        public Ins(String t) {
+            super(t);
+        }
+
+        public void testOne() {
+            try {
+                Class<?> access = Class.forName("org.netbeans.insane.model.Support");
+                System.setProperty("ins.one", "OK");
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        public void testSecond() {
+            System.setProperty("ins.two", "OK");
+        }
+
+        public void testThree() {
+            System.setProperty("ins.three", "OK");
+        }
+
+        public void visitClass(Class cls) {
+        }
+
+        public void visitObject(ObjectMap map, Object object) {
+        }
+
+        public void visitObjectReference(ObjectMap map, Object from, Object to, Field ref) {
+        }
+
+        public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
+        }
+
+        public void visitStaticReference(ObjectMap map, Object to, Field ref) {
         }
     }
     

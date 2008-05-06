@@ -100,10 +100,4 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 	return result;
     }
     
-    protected static void writeFile(File file, String text) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileOutputStream(file));
-        writer.append(text);
-        writer.close();
-    }
-    
 }
