@@ -138,7 +138,7 @@ public class HibernateRevengDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new HibernateRevengDataNode(this/*, getLookup()*/);
+        return new HibernateRevengDataNode(this);
     }
 
     @Override

@@ -77,7 +77,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private HibernateRevengDbTablesWizardDescriptor dbTablesDescriptor;
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
-    private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.reveng";
+    private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng";
     private final String ATTRIBUTE_NAME = "match-schema";
     private final String MATCH_NAME = "match-name";
 
@@ -254,9 +254,9 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         // and not like : hibernate.reveng<i>.xml.
         if (wiz instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> configFiles = hibernateEnv.getAllHibernateConfigFileObjects();
-            String targetName = DEFAULT_CONFIGURATION_FILENAME;
-            if (!configFiles.isEmpty() && foundConfigFileInProject(configFiles, DEFAULT_CONFIGURATION_FILENAME)) {
+            ArrayList<FileObject> configFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
+            String targetName = DEFAULT_REVENG_FILENAME;
+            if (!configFiles.isEmpty() && foundConfigFileInProject(configFiles, DEFAULT_REVENG_FILENAME)) {
                 int configFilesCount = configFiles.size();
                 targetName = "hibernate" + (configFilesCount++) + ".reveng";
                 while (foundConfigFileInProject(configFiles, targetName)) {
