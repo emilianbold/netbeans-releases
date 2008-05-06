@@ -154,7 +154,7 @@ made subject to such option by the copyright holder.
     </testbag>
     <testbag testattribs="undo_redo" executor="ide" name="testbag_undoredo">
         <testset dir="qa-functional/src">
-            <patternset>
+            <patternset>              
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
             </patternset>
         </testset>
