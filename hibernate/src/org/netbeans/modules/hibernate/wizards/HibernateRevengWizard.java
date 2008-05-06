@@ -196,9 +196,9 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         return res;
     }
 
-    private boolean foundConfigFileInProject(ArrayList<FileObject> configFiles, String configFileName) {
-        for (FileObject fo : configFiles) {
-            if (fo.getName().equals(configFileName)) {
+    private boolean foundRevengFileInProject(ArrayList<FileObject> revengFiles, String revengFileName) {
+        for (FileObject fo : revengFiles) {
+            if (fo.getName().equals(revengFileName)) {
                 return true;
             }
         }
@@ -256,11 +256,11 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
             ArrayList<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
             String targetName = DEFAULT_REVENG_FILENAME;
-            if (!revengFiles.isEmpty() && foundConfigFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
-                int configFilesCount = revengFiles.size();
-                targetName = "hibernate" + (configFilesCount++) + ".reveng";
-                while (foundConfigFileInProject(revengFiles, targetName)) {
-                    targetName = "hibernate" + (configFilesCount++) + ".reveng";
+            if (!revengFiles.isEmpty() && foundRevengFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
+                int revengFilesCount = revengFiles.size();
+                targetName = "hibernate" + (revengFilesCount++) + ".reveng";
+                while (foundRevengFileInProject(revengFiles, targetName)) {
+                    targetName = "hibernate" + (revengFilesCount++) + ".reveng";
                 }
             }
             ((TemplateWizard) wiz).setTargetName(targetName);
