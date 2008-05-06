@@ -439,6 +439,7 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     int add(LayoutInterval interval, int index) {
+        assert getParent() != interval;
         if (index < 0) {
             index = subIntervals.size();
         }
