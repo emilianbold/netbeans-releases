@@ -43,6 +43,7 @@ import java.util.prefs.Preferences;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -94,6 +95,24 @@ public final class ComplexValueSettingsFactory {
         }
         
         return null;
+    }
+
+    // -----------------------------------------------------------------------
+    // 'identifier-acceptor' setting
+    // -----------------------------------------------------------------------
+    
+    public static final Object getIdentifierAcceptorValue(MimePath mimePath, String settingName) {
+        assert settingName.equals("identifier-acceptor") : "The getIdentifierAcceptorValue factory called for '" + settingName + "'"; //NOI18N
+        return AcceptorFactory.LETTER_DIGIT;
+    }
+    
+    // -----------------------------------------------------------------------
+    // 'whitespace-acceptor' setting
+    // -----------------------------------------------------------------------
+    
+    public static final Object getWhitespaceAcceptorValue(MimePath mimePath, String settingName) {
+        assert settingName.equals("whitespace-acceptor") : "The getWhitespaceAcceptorValue factory called for '" + settingName + "'"; //NOI18N
+        return AcceptorFactory.WHITESPACE;
     }
     
 }
