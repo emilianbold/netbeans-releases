@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.xtest.plugin.ide;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
+package org.netbeans.modules.java.hints.errors;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
- * @author mrkam@netbeans.org
+ * @author Jan Lahoda
  */
-public class BlacklistedClassesViolationException extends java.lang.Exception {
+public class NewUncaughtExceptionTest extends ErrorHintsTestBase {
 
-    private String instantiator;
-
-    public BlacklistedClassesViolationException(String instantiator) {
-        super("Instantiator: " + instantiator);
-        this.instantiator = instantiator;
+    public NewUncaughtExceptionTest(String name) {
+        super(name);
+    }
+    
+    public void test131870() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "    interface Foo<E extends Exception> { void f() throws E; }\n" +
+                            "    class Test implements Foo<InstantiationException> {\n" +
+                            "        public void f() {\n" +
+                            "            |throw new InstantiationException();\n" +
+                            "        }\n" +
+                            "    }",
+                            "Add throws clause for java.lang.InstantiationException",
+                            "Surround Statement with try-catch",
+                            "Surround Block with try-catch");
+    }
+    
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new UncaughtException().run(info, null, pos, path, null);
     }
 
-    public String getInstantiator() {
-        return instantiator;
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
     }
 
-    public void printStackTrace() {
-        printStackTrace(System.out);
-    }
-
-    public void printStackTrace(PrintStream s) {
-        printStackTrace(new PrintWriter(s));
-    }
-
-    public void printStackTrace(PrintWriter s) {
-        s.println("      Instantiator: " + instantiator);
-        s.println("        Stack trace:");
-        final StackTraceElement[] stackTrace = getStackTrace();
-        for (int i = 0; i < stackTrace.length; i++) {
-            s.println("          " + stackTrace[i]);
-        }
-    }
 }
