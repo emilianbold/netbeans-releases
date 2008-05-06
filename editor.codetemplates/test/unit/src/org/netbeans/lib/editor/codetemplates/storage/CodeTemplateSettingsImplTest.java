@@ -133,7 +133,7 @@ public class CodeTemplateSettingsImplTest extends NbTestCase {
         
         // Force loading from the files
         //Map<String, CodeTemplateDescription> loadedMap = CodeTemplatesStorage.load(mimePath, false);
-        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage());
+        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage(), null);
         Map<String, CodeTemplateDescription> loadedMap = storage.load(mimePath, null, false);
         
         assertNotNull("Can't load the map", loadedMap);
@@ -154,7 +154,7 @@ public class CodeTemplateSettingsImplTest extends NbTestCase {
         
         // Force loading from the files
         //Map<String, CodeTemplateDescription> loadedMap = CodeTemplatesStorage.load(mimePath, false);
-        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage());
+        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage(), null);
         Map<String, CodeTemplateDescription> loadedMap = storage.load(mimePath, null, false);
         
         assertNotNull("Can't load the map", loadedMap);

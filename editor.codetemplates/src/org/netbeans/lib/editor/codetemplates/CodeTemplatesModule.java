@@ -40,11 +40,10 @@
  */
 
 package org.netbeans.lib.editor.codetemplates;
-import javax.swing.Action;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.openide.modules.ModuleInstall;
 
 
@@ -55,52 +54,37 @@ import org.openide.modules.ModuleInstall;
  */
 public final class CodeTemplatesModule extends ModuleInstall {
 
-    public void restored () {
-        Settings.addInitializer(new AbbrevSettingsInitializer());
+    public @Override void restored () {
+        EditorRegistry.addPropertyChangeListener(editorsTracker);
     }
     
     /**
      * Called when all modules agreed with closing and the IDE will be closed.
      */
-    public void close() {
+    public @Override void close() {
         finish();
     }
     
     /**
      * Called when module is uninstalled.
      */
-    public void uninstalled() {
+    public @Override void uninstalled() {
         finish();
     }
     
-    private void finish() {
-        Settings.removeInitializer(AbbrevSettingsInitializer.NAME);
-        Settings.reset();
-        
-        // XXX: Go through components and clear the AbbrevDetection.class property
-    }
-
-    private static final class AbbrevSettingsInitializer extends Settings.AbstractInitializer {
-        
-        static final String NAME = "codetemplates-settings-initializer"; // NOI18N
-        
-        AbbrevSettingsInitializer() {
-            super(NAME);
-        }
-
-        public void updateSettingsMap(Class kitClass, java.util.Map settingsMap) {
-            if (kitClass == BaseKit.class) {
-                SettingsUtil.updateListSetting(settingsMap,
-                        SettingsNames.CUSTOM_ACTION_LIST,
-                        new Object[] { AbbrevKitInstallAction.INSTANCE }
-                );
-                SettingsUtil.updateListSetting(settingsMap,
-                        SettingsNames.KIT_INSTALL_ACTION_NAME_LIST,
-                        new Object[] { AbbrevKitInstallAction.INSTANCE.getValue(Action.NAME) }
-                );
+    private PropertyChangeListener editorsTracker = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == null || EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                AbbrevDetection.get((JTextComponent) evt.getNewValue());
             }
         }
-        
-    } // End of AbbrevSettingsInitializer class
+    };
     
+    private void finish() {
+        EditorRegistry.removePropertyChangeListener(editorsTracker);
+        for(JTextComponent jtc : EditorRegistry.componentList()) {
+            AbbrevDetection.remove(jtc);
+        }
+    }
+
 }
