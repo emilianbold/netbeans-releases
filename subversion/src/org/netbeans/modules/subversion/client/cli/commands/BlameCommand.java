@@ -69,6 +69,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class BlameCommand extends SvnCommand {
 
+    // XXX merge
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     static {        
         dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));       
@@ -166,20 +167,18 @@ public class BlameCommand extends SvnCommand {
 	<!ELEMENT date (#PCDATA)>  <!-- date as "yyyy-mm-ddThh:mm:ss.ssssssZ"-->         
         */
         
-        private static final String BLAME_ELEMENT_NAME      = "blame";   // NOI18N
-        private static final String TARGET_ELEMENT_NAME     = "target";  // NOI18N
-        private static final String ENTRY_ELEMENT_NAME      = "entry";   // NOI18N
-        private static final String COMMIT_ELEMENT_NAME     = "commit"; // NOI18N
-        private static final String AUTHOR_ELEMENT_NAME     = "author"; // NOI18N        
-        private static final String DATE_ELEMENT_NAME       = "date";   // NOI18N        
+        private static final String BLAME_ELEMENT_NAME      = "blame";          // NOI18N
+        private static final String TARGET_ELEMENT_NAME     = "target";         // NOI18N
+        private static final String ENTRY_ELEMENT_NAME      = "entry";          // NOI18N
+        private static final String COMMIT_ELEMENT_NAME     = "commit";         // NOI18N
+        private static final String AUTHOR_ELEMENT_NAME     = "author";         // NOI18N        
+        private static final String DATE_ELEMENT_NAME       = "date";           // NOI18N        
         
-        private static final String PATH_ATTRIBUTE          = "path";   // NOI18N        
-        private static final String LINE_NUMBER_ATTRIBUTE   = "line-number";   // NOI18N        
-        private static final String REVISION_ATTRIBUTE      = "revision";   // NOI18N
+        private static final String PATH_ATTRIBUTE          = "path";           // NOI18N        
+        private static final String LINE_NUMBER_ATTRIBUTE   = "line-number";    // NOI18N        
+        private static final String REVISION_ATTRIBUTE      = "revision";       // NOI18N
 
-        private String REVISION_ATTR                        = "revision_attr";
-        private String KIND_ATTR                            = "kind_attr";
-        private String PATH_ATTR                            = "path_attr";;
+        private String REVISION_ATTR                        = "revision_attr";  // NOI18N
         
         private List<Annotation> annotations = new ArrayList<Annotation>();        
         
@@ -191,8 +190,7 @@ public class BlameCommand extends SvnCommand {
         public void startElement(String uri, String localName, String qName, Attributes elementAttributes) throws SAXException {            
             tag = qName.trim();                
             if (TARGET_ELEMENT_NAME.equals(qName)) {                        
-                values = new HashMap<String, String>();
-                values.put(KIND_ATTR, elementAttributes.getValue(PATH_ATTRIBUTE));
+                values = new HashMap<String, String>();                
             } else if (COMMIT_ELEMENT_NAME.equals(qName)) {                                
                 values.put(REVISION_ATTR, elementAttributes.getValue(REVISION_ATTRIBUTE));
             } else if (ENTRY_ELEMENT_NAME.equals(qName)) {                                
