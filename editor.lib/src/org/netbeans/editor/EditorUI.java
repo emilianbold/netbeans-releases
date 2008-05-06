@@ -582,7 +582,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
         } 
         
         if (propName == null || ColoringMap.PROP_COLORING_MAP.equals(propName)) {
-            settingsChangeImpl(null);
+            listener.preferenceChange(null);
         }
     }
 
@@ -1522,9 +1522,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
     private class Listener implements PreferenceChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
-            settingsChangeImpl(evt == null ? null : evt.getKey());
+            String settingName = evt == null ? null : evt.getKey();
+            settingsChangeImpl(settingName);
             
-            if (evt == null || SimpleValueNames.LINE_NUMBER_VISIBLE.equals(evt.getKey())) {
+            if (settingName == null || SimpleValueNames.LINE_NUMBER_VISIBLE.equals(settingName)) {
                 lineNumberVisibleSetting = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
                 lineNumberVisible = lineNumberEnabled && lineNumberVisibleSetting;
 
@@ -1539,11 +1540,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
             BaseDocument doc = getDocument();
             if (doc != null) {
 
-                if (evt == null || SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH.equals(evt.getKey())) {
+                if (settingName == null || SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH.equals(settingName)) {
                     textLeftMarginWidth = prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, 2);
                 }
 
-                if (evt == null || SimpleValueNames.LINE_HEIGHT_CORRECTION.equals(evt.getKey())) {
+                if (settingName == null || SimpleValueNames.LINE_HEIGHT_CORRECTION.equals(settingName)) {
                     float newLineHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, 1.0f);
                     if (newLineHeightCorrection != lineHeightCorrection){
                         lineHeightCorrection = newLineHeightCorrection;
@@ -1551,29 +1552,29 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                     }
                 }
 
-                if (evt == null || SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE.equals(evt.getKey())) {
+                if (settingName == null || SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE.equals(settingName)) {
                     textLimitLineVisible = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
                 }
 
-                if (evt == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(evt.getKey())) {
+                if (settingName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(settingName)) {
                     textLimitWidth = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
                 }
 
                 // component only properties
                 if (component != null) {
-                    if (evt == null || SimpleValueNames.SCROLL_JUMP_INSETS.equals(evt.getKey())) {
+                    if (settingName == null || SimpleValueNames.SCROLL_JUMP_INSETS.equals(settingName)) {
                         String value = prefs.get(SimpleValueNames.SCROLL_JUMP_INSETS, null);
                         Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
                         scrollJumpInsets = insets != null ? insets : NULL_INSETS;
                     }
 
-                    if (evt == null || SimpleValueNames.SCROLL_FIND_INSETS.equals(evt.getKey())) {
+                    if (settingName == null || SimpleValueNames.SCROLL_FIND_INSETS.equals(settingName)) {
                         String value = prefs.get(SimpleValueNames.SCROLL_FIND_INSETS, null);
                         Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
                         scrollFindInsets = insets != null ? insets : NULL_INSETS;
                     }
 
-                    if (evt == null || "component-size-increment".equals(evt.getKey())) { //NOI18N
+                    if (settingName == null || "component-size-increment".equals(settingName)) { //NOI18N
                         String value = prefs.get("component-size-increment", null); //NOI18N
                         Dimension increment = value != null ? SettingsConversions.parseDimension(value) : null;
                         componentSizeIncrement = increment != null ? increment : NULL_DIMENSION;

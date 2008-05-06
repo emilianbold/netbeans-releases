@@ -49,12 +49,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.text.BadLocationException;
 import java.awt.FontMetrics;
 import java.awt.Point;
-import java.awt.event.InputEvent;
 import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
@@ -79,6 +76,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -167,6 +165,15 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     private GutterMouseListener gutterMouseListener;
     private FoldHierarchy foldHierarchy;
 
+    private ColoringMap coloringMap;
+    private final PropertyChangeListener coloringMapListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == null || ColoringMap.PROP_COLORING_MAP.equals(evt.getPropertyName())) {
+                update();
+            }
+        }
+    };
+    
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
@@ -212,6 +219,9 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         setOpaque (true);
         
         String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent());
+        coloringMap = ColoringMap.get(mimeType);
+        coloringMap.addPropertyChangeListener(WeakListeners.propertyChange(coloringMapListener, coloringMap));
+
         prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
         prefsListener.preferenceChange(null);
