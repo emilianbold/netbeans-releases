@@ -111,6 +111,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="j2eePlatformLookup">
+	    <api name="plugins"/>
+	    <summary>
+                Add Lookup to J2eePlatformImpl to make it extensible.
+	    </summary>
+	    <version major="1" minor="44"/>
+	    <date day="6" month="5" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    J2eePlatform should provide Lookup containing support for
+                    other technologies the server can provide (such as web services).
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="J2eePlatformImpl"/>
+            <issue number="133853"/>
+	</change>
         <change id="removeDefaultServerAPI">
             <api name="j2eeserver"/>
             <summary>

@@ -37,41 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.api;
+package org.netbeans.modules.j2ee.deployment.devmodules.api;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
 
 /**
- * Helper class to get actual PHP properties like debugger port etc.
- * Use {@link #getInstance()} to get class instance.
- * @author Tomas Mysik
- * @since 1.2
+ *
+ * @author Petr Hejl
  */
-public final class PhpOptions {
-    private static final PhpOptions INSTANCE = new PhpOptions();
+public class J2eePlatformTest extends ServerRegistryTestBase {
 
-    private PhpOptions() {
+    private static final String TEST_URL = "fooservice:j2eePlatformTest";
+
+    private static final String TEST_USERNAME = "username";
+
+    private static final String TEST_PASSWORD = "password";
+
+    private static final String TEST_DISPLAY_NAME = "j2eePlatformTest";
+
+    public J2eePlatformTest(String name) {
+        super(name);
     }
 
-    public static PhpOptions getInstance() {
-        return INSTANCE;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(DepManager.PLATFORM_ROOT_PROPERTY, getWorkDirPath());
+
+        InstanceProperties.createInstanceProperties(TEST_URL,
+                TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
     }
 
-    private org.netbeans.modules.php.project.ui.options.PhpOptions getPhpOptions() {
-        return org.netbeans.modules.php.project.ui.options.PhpOptions.getInstance();
-    }
-
-    public String getPhpInterpreter() {
-        return getPhpOptions().getPhpInterpreter();
-    }
-
-    public int getDebuggerPort() {
-        return getPhpOptions().getDebuggerPort();
-    }
-
-    public boolean isDebuggerStoppedAtTheFirstLine() {
-        return getPhpOptions().isDebuggerStoppedAtTheFirstLine();
-    }
-
-    public String getPhpGlobalIncludePath() {
-        return getPhpOptions().getPhpGlobalIncludePath();
+    public void testLookup() {
+        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(TEST_URL);
+        assertNotNull(platform.getLookup());
     }
 }

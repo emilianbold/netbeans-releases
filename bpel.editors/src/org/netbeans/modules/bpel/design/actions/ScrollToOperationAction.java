@@ -38,73 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.documentation;
 
-import java.awt.Color;
+package org.netbeans.modules.bpel.design.actions;
+
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.Icon;
-import javax.swing.ToolTipManager;
-
-import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.events.VetoException;
-import org.netbeans.modules.bpel.model.api.support.UniqueId;
-
-import org.netbeans.modules.bpel.design.decoration.components.AbstractGlassPaneButton;
-import static org.netbeans.modules.xml.ui.UI.*;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.bpel.design.DesignView;
+import org.netbeans.modules.bpel.design.model.connections.Connection;
+import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
+import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.openide.util.NbBundle;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.08.15
+ *
+ * @author anjeleevich
  */
-final class DocumentationButton extends AbstractGlassPaneButton {
-
-  public DocumentationButton(final UniqueId id, String text) {
-    super(ICON, text, true, new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        String text = event.getSource().toString().trim();
-//out();
-//out("text: '" + text + "'");
-
-        try {
-          if ( !text.equals(getExtensibleElement(id).getDocumentation().trim())) {
-            getExtensibleElement(id).setDocumentation(text);
-          }
-//out("get: '" + getExtensibleElement(id).getDocumentation() + "'");
-        }
-        catch (VetoException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-    myID = id;
-    addTitle(ICON, TITLE, Color.BLUE);
-    ToolTipManager.sharedInstance().registerComponent(this);
-  }
-
-  @Override
-  public String getToolTipText()
-  {
-    String text = getExtensibleElement(myID).getDocumentation();
-
-    if (text != null) {
-      text = text.trim();
-
-      if (text.length() > MAX_LENGHT) {
-        text = text.substring(0, MAX_LENGHT) + "..."; // NOI18N
-      }
-      return "<html>" + text + "</html>"; // NOI18N
+public class ScrollToOperationAction extends AbstractAction {
+    private DesignView designView;
+    
+    public ScrollToOperationAction(DesignView designView) {
+        super(ACTION_NAME);
+        this.designView = designView;
     }
-    return null;
-  }
-
-  private static ExtensibleElements getExtensibleElement(UniqueId id) {
-    return (ExtensibleElements) id.getModel().getEntity(id);
-  }
-
-  private UniqueId myID;
-
-  private static final int MAX_LENGHT = 60;
-  private static final String TITLE = i18n(DocumentationButton.class, "LBL_Documentation"); // NOI18N
-  private static final Icon ICON = icon(DocumentationButton.class, "documentation"); // NOI18N
+    
+    public void actionPerformed(ActionEvent e) {
+        Pattern pattern = designView.getSelectionModel().getSelectedPattern();
+        if (pattern != null && pattern.getView() 
+                == designView.getProcessView()) 
+        {
+            for (Connection c : pattern.getConnections()) {
+                if (c instanceof MessageConnection) {
+                    designView.scrollToOperation((MessageConnection) c);
+                    break;
+                }
+            }
+        }
+    }
+    
+    public static String ACTION_NAME = NbBundle.getMessage(
+            ScrollToOperationAction.class, "NAME_ScrollToOperation"); // NOI18N
 }

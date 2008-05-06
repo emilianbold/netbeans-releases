@@ -63,6 +63,10 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.ManagerWrapperFactory"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
             </file>
+            <file name="PlatformFactory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.TestPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>            
             <folder name="DeploymentFileNames">
               <folder name="WAR">
                 <file name="META-INF\context.xml"/>
