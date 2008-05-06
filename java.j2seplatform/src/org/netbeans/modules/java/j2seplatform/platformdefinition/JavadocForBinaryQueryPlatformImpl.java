@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
-import com.sun.tools.jdi.ConcreteMethodImpl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
