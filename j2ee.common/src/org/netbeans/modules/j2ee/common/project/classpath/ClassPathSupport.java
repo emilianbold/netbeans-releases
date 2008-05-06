@@ -567,10 +567,6 @@ public final class ClassPathSupport {
             }
         }
         
-        public Object getObject() {
-            return object;
-        }
-
         public boolean canDelete() {
             return getType() != TYPE_CLASSPATH;
         }
