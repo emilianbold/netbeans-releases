@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.groovy.editor.actions;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -62,6 +64,7 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import java.util.Set;
 import java.util.EnumSet;
 import javax.lang.model.element.TypeElement;
+import javax.swing.Icon;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -73,20 +76,24 @@ import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author schmidtm
  */
-public class FixImportsAction extends AbstractAction implements EditorAction {
+public class FixImportsAction extends AbstractAction implements EditorAction, Runnable {
 
     private final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
-    String NAME = NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString");
+    String MENU_NAME = NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString");
+    Document doc = null;
 
     public FixImportsAction() {
         super(NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString"));
-        putValue("PopupMenuText", NAME);
+        putValue("PopupMenuText", MENU_NAME);
         // LOG.setLevel(Level.FINEST);
     }
 
@@ -97,95 +104,89 @@ public class FixImportsAction extends AbstractAction implements EditorAction {
         return true;
     }
 
+
     void actionPerformed(final JTextComponent comp) {
         LOG.log(Level.FINEST, "actionPerformed(final JTextComponent comp)");
 
         assert comp != null;
-        Document doc = comp.getDocument();
-        List<String> importDone = new ArrayList<String>();
+        doc = comp.getDocument();
 
         if (doc != null) {
-            DataObject dob = NbEditorUtilities.getDataObject(doc);
-            if (dob != null) {
-                FileObject fo = dob.getPrimaryFile();
-                Lookup lkp = Lookup.getDefault();
-
-                if (lkp != null && fo != null) {
-                    GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
-                    if (parserManager != null) {
-                        GroovyParserResult result = parserManager.getParsingResultByFileObject(fo);
-
-                        if (result != null) {
-                            
-                            ErrorCollector errorCollector = result.getErrorCollector();
-                            List errList = errorCollector.getErrors();
-                            
-                            if (errList != null) {
-                                for (Object error : errList) {
-                                    if (error instanceof SyntaxErrorMessage) {
-                                        SyntaxException se = ((SyntaxErrorMessage)error).getCause();
-                                        if (se != null) {
-                                            String errorMessage = se.getMessage();
-                                            String missingClass = getMissingClassName(errorMessage);
-                                            
-                                            if (missingClass != null) {
-                                                LOG.log(Level.FINEST, "Missing Class " + missingClass);
-                                                
-                                                List<String> importCandidates = getImportCandidate(fo, missingClass);
-                                                
-                                                if (!importCandidates.isEmpty()) {
-                                                    int firstFreePosition = 0;
-                                                    BaseDocument baseDoc = AstUtilities.getBaseDocument(fo, true);
-
-                                                    firstFreePosition = getImportPosition(baseDoc);
-                                                    
-                                                    if (firstFreePosition != -1) {
-                                                        EditList edits = null;
-                                                        if (baseDoc != null) {
-                                                            edits = new EditList(baseDoc);
-                                                        }
-                                                        
-                                                        LOG.log(Level.FINEST, "Importing here: " + firstFreePosition);
-                                                        
-                                                        if (importCandidates.size() == 1) {
-                                                            LOG.log(Level.FINEST, "Importing class!");
-                                                            LOG.log(Level.FINEST, importCandidates.toString());
-                                                            
-                                                            String fqnName = importCandidates.get(0);
-                                                            
-                                                            if (!importDone.contains(fqnName)) {
-                                                                
-                                                                edits.replace(firstFreePosition, 0,
-                                                                        "import " + fqnName + ";\n", false, 0);
-                                                                
-                                                                edits.apply();
-                                                                
-                                                                importDone.add(fqnName);
-                                                            }
-                                                            
-                                                        } else {
-                                                            LOG.log(Level.FINEST, "Present Chooser between: ");
-                                                            LOG.log(Level.FINEST, importCandidates.toString());
-                                                        }
-                                                    }
-                                                }
-                                                
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
-                    }
-                } else {
-                    LOG.log(Level.FINEST, "Couldn't get global lookup");
+            RequestProcessor.getDefault().post(this);
+        }
+    }
+    
+    GroovyParserResult getParserResultFromGlobalLookup(FileObject fo) {
+        GroovyParserResult result = null;
+        Lookup lkp = Lookup.getDefault();
+        if (lkp != null) {
+            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
+            if (parserManager != null) {
+                result = parserManager.getParsingResultByFileObject(fo);
+                if (result == null) {
+                    LOG.log(Level.FINEST, "Couldn't get GroovyParserResult");
                 }
+            } else {
+                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
+            }
+        } else {
+            LOG.log(Level.FINEST, "Couldn't get global lookup");
+        }
 
+        return result;
+    }
+    
+    
+    
+    public void run() {
+        DataObject dob = NbEditorUtilities.getDataObject(doc);
+        
+        if (dob == null) {
+            LOG.log(Level.FINEST, "Could not get DataObject for document");
+            return;
+        }
+        
+        FileObject fo = dob.getPrimaryFile();
+        GroovyParserResult result = getParserResultFromGlobalLookup(fo);
+
+        if (result == null) {
+            LOG.log(Level.FINEST, "Could not get GroovyParserResult");
+            return;
+        }
+        
+        ErrorCollector errorCollector = result.getErrorCollector();
+        List errList = errorCollector.getErrors();
+        
+        if (errList == null) {
+            LOG.log(Level.FINEST, "Could not get list of errors");
+            return;
+        }
+
+        List<String> missingNames = new ArrayList<String>();
+        
+        for (Object error : errList) {
+            if (error instanceof SyntaxErrorMessage) {
+                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
+                if (se != null) {
+                    String missingClassName = getMissingClassName(se.getMessage());
+
+                    if (missingClassName != null) {
+                        if(!missingNames.contains(missingClassName)){
+                            missingNames.add(missingClassName);
+                        }
+                    }
+                }
             }
         }
 
+        for (String name : missingNames) {
+            List<String> importCandidates = getImportCandidate(fo, name);
+            
+            if (!importCandidates.isEmpty()) {
+                doImport(fo, importCandidates);
+            }
+        }
+        
         return;
     }
 
@@ -273,49 +274,58 @@ public class FixImportsAction extends AbstractAction implements EditorAction {
     int getImportPosition(BaseDocument doc){
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
         
-        int importEnd       = 0;
-        int packageOffset   = 0;
+        // LOG.setLevel(Level.FINEST);
+        
+        int importEnd       = -1;
+        int packageOffset   = -1;
         
         while (ts.moveNext()) {
             Token t = ts.token();
+            int offset = ts.offset();
             
             if(t.id() == GroovyTokenId.LITERAL_import) {
-                int offset = ts.offset();
+                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_import found");
                 importEnd = offset;                
             } 
             else if (t.id() == GroovyTokenId.LITERAL_package){
-                packageOffset = ts.offset();
+                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_package found");
+                packageOffset = offset;
             }
         }
         
         int useOffset = 0;
         
         // sanity check: package *before* import
-        if(packageOffset > importEnd) {
+        if(importEnd != -1 && packageOffset > importEnd) {
+            LOG.log(Level.FINEST, "packageOffset > importEnd");
             return -1;
         }
         
         // nothing set:
-        if(importEnd == 0 && packageOffset == 0){
+        if(importEnd == -1 && packageOffset == -1){
             // place imports in the first line
+            LOG.log(Level.FINEST, "importEnd == -1 && packageOffset == -1");
             return 0;
         
         }
         // only package set:
-        else if(importEnd == 0 && packageOffset != 0){
+        else if(importEnd == -1 && packageOffset != -1){
             // place imports behind package statement
+            LOG.log(Level.FINEST, "importEnd == -1 && packageOffset != -1");
             useOffset = packageOffset;
         }
         
         // only imports set:
-        else if(importEnd != 0 && packageOffset == 0){
+        else if(importEnd != -1 && packageOffset == -1){
             // place imports after the last import statement
+            LOG.log(Level.FINEST, "importEnd != -1 && packageOffset == -1");
             useOffset = importEnd;
         }
         
         // both package & import set:
-        else if(importEnd != 0 && packageOffset != 0){
+        else if(importEnd != -1 && packageOffset != -1){
             // place imports right after the last import statement
+            LOG.log(Level.FINEST, "importEnd != -1 && packageOffset != -1");
             useOffset = importEnd;
             
         }
@@ -332,6 +342,64 @@ public class FixImportsAction extends AbstractAction implements EditorAction {
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);              
 
     }
+
+    private void doImport(FileObject fo, List<String> importCandidates) throws MissingResourceException {
+        int firstFreePosition = 0;
+        BaseDocument baseDoc = AstUtilities.getBaseDocument(fo, true);
+
+        firstFreePosition = getImportPosition(baseDoc);
+
+        if (firstFreePosition != -1) {
+            EditList edits = null;
+            if (baseDoc != null) {
+                edits = new EditList(baseDoc);
+            }
+
+            LOG.log(Level.FINEST, "Importing here: " + firstFreePosition);
+
+            int size = importCandidates.size();
+
+            if (size == 1) {
+                LOG.log(Level.FINEST, "Importing class!");
+                LOG.log(Level.FINEST, importCandidates.toString());
+
+                String fqnName = importCandidates.get(0);
+
+                edits.replace(firstFreePosition, 0, "import " + fqnName + "\n", false, 0);
+                edits.apply();
+   
+            } else {
+
+//                size = 2;
+//
+//                String[] names = {"names1", "names2"};
+//                String[][] variants = new String[size][];
+//                Icon[][] icons = new Icon[size][];
+//                String[] defaults = {"defaults1", "defaults2"};
+//
+//                ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
+//
+//                panel.initPanel(names, variants, icons, defaults, true);
+//
+//                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FixImportsAction.class, "FixImportsDialogTitle")); //NOI18N
+//                Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//
+//                d.setVisible(true);
+//
+//                d.setVisible(false);
+//                d.dispose();
+//
+//                if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+//                    String[] selections = panel.getSelections();
+//                }
+
+
+                LOG.log(Level.FINEST, "Present Chooser between: ");
+                LOG.log(Level.FINEST, importCandidates.toString());
+            }
+        }
+    }
+
     
     
     
