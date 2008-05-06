@@ -42,10 +42,16 @@ package org.netbeans.modules.java.source.parsing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.parser.DocCommentScanner;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CancelAbort;
+import com.sun.tools.javac.util.CancelService;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javadoc.JavadocMemberEnter;
+import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -54,6 +60,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,10 +73,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenChange;
@@ -79,19 +93,24 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
+import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.java.source.usages.SymbolClassReader;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.Task;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -106,6 +125,8 @@ public class JavacParser extends Parser {
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
     //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
+    //No output writer like /dev/null
+    private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
     
     //Max number of dump files
     private static final int MAX_DUMPS = 255;
@@ -303,6 +324,110 @@ public class JavacParser extends Parser {
         return currentPhase;
     }
     
+    JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener, ClassNamesForFileOraculum oraculum) {
+        String sourceLevel = null;
+        if (!this.files.isEmpty()) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Created new JavacTask for: " + this.files);
+            }
+            FileObject file = files.iterator().next();
+            
+            sourceLevel = SourceLevelQuery.getSourceLevel(file);
+            
+            FileObject root = getClasspathInfo().getClassPath(PathKind.SOURCE).findOwnerRoot(file);
+            
+            if (root != null && sourceLevel != null) {
+                try {
+                    RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+            }
+        }
+        if (sourceLevel == null) {
+            sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
+        }
+        JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false, oraculum);
+        Context context = javacTask.getContext();
+        JavacCancelService.preRegister(context, this);
+        JavacFlowListener.preRegister(context);
+        TreeLoader.preRegister(context, getClasspathInfo());
+        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        ErrorHandlingJavadocEnter.preRegister(context);
+        JavadocMemberEnter.preRegister(context);       
+        JavadocEnv.preRegister(context, getClasspathInfo());
+        DocCommentScanner.Factory.preRegister(context);
+        com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
+        return javacTask;
+    }
+    
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
+        final List<String> options = new ArrayList<String>();
+        String lintOptions = CompilerSettings.getCommandLine();
+        
+        if (lintOptions.length() > 0) {
+            options.addAll(Arrays.asList(lintOptions.split(" ")));
+        }
+        if (!backgroundCompilation) {
+            options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
+            options.add("-XDdisableStringFolding"); //NOI18N
+        } else {
+            options.add("-XDbackgroundCompilation");    //NOI18N
+            options.add("-XDcompilePolicy=byfile");     //NOI18N
+        }
+        options.add("-XDide");   // NOI18N, javac runs inside the IDE
+        options.add("-g:");      // NOI18N, Enable some debug info
+        options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
+        options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
+        options.add("-source");  // NOI18N
+        options.add(validateSourceLevel(sourceLevel));
+
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        try {            
+            //The ToolProvider.defaultJavaCompiler will use the context classloader to load the javac implementation
+            //it should be load by the current module's classloader (should delegate to other module's classloaders as necessary)
+            Thread.currentThread().setContextClassLoader(ClasspathInfo.class.getClassLoader());
+            JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
+            JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, cpInfo.getFileManager(), diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
+            Context context = task.getContext();
+            
+            if (backgroundCompilation) {
+                SymbolClassReader.preRegister(context, false);
+            } else {
+                SymbolClassReader.preRegister(context, true);
+            }
+            
+            if (cnih != null) {
+                context.put(ClassNamesForFileOraculum.class, cnih);
+            }
+            return task;
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
+    }
+    
+    private static String validateSourceLevel (String sourceLevel) {        
+        com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
+        if (sourceLevel == null) {
+            //Should never happen but for sure
+            return sources[sources.length-1].name;
+        }
+        for (com.sun.tools.javac.code.Source source : sources) {
+            if (source.name.equals(sourceLevel)) {
+                return sourceLevel;
+            }
+        }
+        SpecificationVersion specVer = new SpecificationVersion (sourceLevel);
+        SpecificationVersion JAVA_12 = new SpecificationVersion ("1.2");   //NOI18N
+        if (JAVA_12.compareTo(specVer)>0) {
+            //Some SourceLevelQueries return 1.1 source level which is invalid, use 1.2
+            return sources[0].name;
+        }
+        else {
+            return sources[sources.length-1].name;
+        }
+    }
+    
     private static void logTime (FileObject source, Phase phase, long time) {
         assert source != null && phase != null;
         String message = phase2Message.get(phase);
@@ -390,6 +515,38 @@ public class JavacParser extends Parser {
             assert jfo instanceof SourceFileObject;
             ((SourceFileObject)jfo).update();
         }        
+    }
+    
+    /**
+     * Implementation of CancelService responsible for stopping
+     * expensive parser operations when the result is not needed any more.
+     */
+    private static class JavacCancelService extends CancelService {
+                       
+        private final JavacParser parser;
+        boolean active;        
+        
+        private JavacCancelService (final JavacParser parser) {
+            this.parser = parser;
+        }
+        
+        public static JavacCancelService instance (final Context context) {
+            final CancelService cancelService = CancelService.instance(context);
+            return (cancelService instanceof JavacCancelService) ? (JavacCancelService) cancelService : null;
+        }
+        
+        static void preRegister(final Context context, final JavacParser parser) {
+            assert context != null;
+            assert parser != null;
+            context.put(cancelServiceKey, new JavacCancelService(parser));
+        }
+        
+        @Override
+        public boolean isCanceled () {
+            final boolean res =  active && parser.canceled.get();
+            return res;
+        }
+               
     }
     
     /**
