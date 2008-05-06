@@ -61,6 +61,8 @@ import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.html.editor.gsf.embedding.CssModel;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -178,10 +180,24 @@ public class CssJspModel extends CssModel {
         //final StringBuffer buff = new StringBuffer(code);
         try {
 
+            long startTime = System.currentTimeMillis();
+            
             parser().errors().clear();
             parser().ReInit(new ASCII_CharStream(new StringReader(buff.toString())));
             SimpleNode root = parser().styleSheet();
+            
+            long endTime = System.currentTimeMillis();
 
+            DataObject od = (DataObject)doc.getProperty(doc.StreamDescriptionProperty);
+            FileObject fo = null;
+            if(od != null) {
+                fo = od.getPrimaryFile();
+            }
+                
+            Logger.getLogger("TIMER").log(Level.FINE, "CSS Virtual Source Parsing",
+                    new Object[] {fo, endTime - startTime});                
+                    
+            
             for (ParseException pe : (List<ParseException>) parser().errors()) {
                 org.netbeans.modules.css.parser.Token lastSuccessToken = pe.currentToken;
                 org.netbeans.modules.css.parser.Token errorToken = lastSuccessToken.next;
@@ -230,8 +246,14 @@ public class CssJspModel extends CssModel {
                 }
             };
 
-            root.visitChildren(visitor);
+            startTime = System.currentTimeMillis();
 
+            root.visitChildren(visitor);
+            
+            endTime = System.currentTimeMillis();
+            Logger.getLogger("TIMER").log(Level.FINE, "CSS Virtual Source Fixing",
+                    new Object[] {fo, endTime - startTime});                
+            
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
