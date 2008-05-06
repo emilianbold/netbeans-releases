@@ -69,11 +69,11 @@ public class BlacklistedClassesViolationException extends java.lang.Exception {
     }
 
     public void printStackTrace(PrintWriter s) {
-        s.println("   Instantiator: " + instantiator);
-        s.println("     Stack trace:");
+        s.println("      Instantiator: " + instantiator);
+        s.println("        Stack trace:");
         final StackTraceElement[] stackTrace = getStackTrace();
         for (int i = 0; i < stackTrace.length; i++) {
-            s.println("           " + stackTrace[i]);
+            s.println("          " + stackTrace[i]);
         }
     }
 }
