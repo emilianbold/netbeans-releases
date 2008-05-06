@@ -79,6 +79,12 @@ public final class TypeUtilities {
      * Substitute all occurrences of a type in 'from' with the corresponding type
      * in 'to' in 'type'. 'from' and 'to' lists have to be of the same length.
      * 
+     * @param type in which the types should be substituted
+     * @param from types to substitute
+     * @param to   substitute to types
+     * @return type corresponding to input 'type' with all references to any type from 'from'
+     *         replaced with a corresponding type from 'to'
+     * @throws IllegalArgumentException if the 'from' and 'to' lists are not of the same length
      * @since 0.36
      */
     public TypeMirror substitute(TypeMirror type, List<? extends TypeMirror> from, List<? extends TypeMirror> to) {

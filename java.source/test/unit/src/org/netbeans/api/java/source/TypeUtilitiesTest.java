@@ -125,6 +125,16 @@ public class TypeUtilitiesTest extends NbTestCase {
                 TypeMirror substituted = info.getTypeUtilities().substitute(juListType, juListType.getTypeArguments(), Collections.singletonList(jlString));
                 
                 assertTrue(info.getTypes().isSameType(juListString, substituted));
+                
+                boolean wasThrown = false;
+                
+                try {
+                    info.getTypeUtilities().substitute(juListType, juListType.getTypeArguments(), Collections.<TypeMirror>emptyList());
+                } catch (IllegalArgumentException ex) {
+                    wasThrown = true;
+                }
+                
+                assertTrue(wasThrown);
             }
         }, true);
         
