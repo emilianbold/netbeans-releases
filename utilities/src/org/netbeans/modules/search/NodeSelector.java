@@ -61,6 +61,8 @@ final class NodeSelector {
     /** */
     private final TreePath[] nodes;
     private final Map<TreePathWrapper,Boolean> map;
+    /** whether some detail node has been put to the {@link #map} */
+    private boolean detailNodeAdded = false;
 
     private TreePath lsfn = null;   //last selected file node
     private TreePath ldn = null;    //last selected detail node not yet stored in the map
@@ -302,44 +304,55 @@ final class NodeSelector {
         log.finest("***");                                              //NOI18N
         log.finest("*** BUILDING RESULT LIST");                         //NOI18N
         List<TreePath> result = new ArrayList<TreePath>(map.size());
-        for (Map.Entry<TreePathWrapper,Boolean> entry : map.entrySet()) {
-            if (entry.getValue() == FALSE) {
-                /*
-                 * file node that is not selected, having exactly one child node
-                 * (detail node) selected
-                 */
-                assert !entry.getKey().isDetail;
+        if (!detailNodeAdded) {
+            log.finest("No detail nodes - simple case");                //NOI18N
+            for (Map.Entry<TreePathWrapper,Boolean> entry : map.entrySet()) {
+                result.add(entry.getKey().treePath);
                 if (finest) {
-                    log.finest("- "                                     //NOI18N
-                               + getFileNodeName(entry.getKey().treePath)
-                               + " (FALSE)");                           //NOI18N
+                    log.finest("+ "                                     //NOI18N
+                               + getFileNodeName(entry.getKey().treePath));
                 }
-                continue;
             }
+        } else {
+            for (Map.Entry<TreePathWrapper,Boolean> entry : map.entrySet()) {
+                if (entry.getValue() == FALSE) {
+                    /*
+                     * file node that is not selected, having exactly one child node
+                     * (detail node) selected
+                     */
+                    assert !entry.getKey().isDetail;
+                    if (finest) {
+                        log.finest("- "                                 //NOI18N
+                                   + getFileNodeName(entry.getKey().treePath)
+                                   + " (FALSE)");                       //NOI18N
+                    }
+                    continue;
+                }
 
-            TreePathWrapper wrapper = entry.getKey();
-            if (!wrapper.isDetail) {
-                assert entry.getValue() == TRUE;
-                /* selected file node */
-                result.add(wrapper.treePath);
-                if (finest) {
-                    log.finest("+ "                                     //NOI18N
-                               + getFileNodeName(wrapper.treePath));
+                TreePathWrapper wrapper = entry.getKey();
+                if (!wrapper.isDetail) {
+                    assert entry.getValue() == TRUE;
+                    /* selected file node */
+                    result.add(wrapper.treePath);
+                    if (finest) {
+                        log.finest("+ "                                 //NOI18N
+                                   + getFileNodeName(wrapper.treePath));
+                    }
+                } else if (map.get(new TreePathWrapper(wrapper.treePath.getParentPath()))
+                           != TRUE) {
+                    /* selected detail node whose parent is not selected */
+                    result.add(wrapper.treePath);
+                    if (finest) {
+                        log.finest("+ "                                 //NOI18N
+                                   + getDetailNodeName(wrapper.treePath, -1));
+                    }
+                } else if (finest) {
+                    log.finest("- "                                     //NOI18N
+                               + getDetailNodeName(wrapper.treePath, -1)
+                               + " - parent ("                          //NOI18N
+                               + getFileNodeName(wrapper.treePath.getParentPath())
+                               + ") selected");                         //NOI18N
                 }
-            } else if (map.get(new TreePathWrapper(wrapper.treePath.getParentPath()))
-                       != TRUE) {
-                /* selected detail node whose parent is not selected */
-                result.add(wrapper.treePath);
-                if (finest) {
-                    log.finest("+ "                                     //NOI18N
-                               + getDetailNodeName(wrapper.treePath, -1));
-                }
-            } else if (finest) {
-                log.finest("- "                                         //NOI18N
-                           + getDetailNodeName(wrapper.treePath, -1)
-                           + " - parent ("                              //NOI18N
-                           + getFileNodeName(wrapper.treePath.getParentPath())
-                           + ") selected");                             //NOI18N
             }
         }
         map.clear();
@@ -379,6 +392,7 @@ final class NodeSelector {
              */
             map.put(new TreePathWrapper(ldfn), FALSE);
             map.put(new TreePathWrapper(ldn), TRUE);
+            detailNodeAdded = true;
             if (log.isLoggable(FINEST)) {
                 log.finest("map.put("                                   //NOI18N
                            + getFileNodeName(ldfn)
