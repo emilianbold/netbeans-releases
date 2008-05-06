@@ -42,13 +42,13 @@ package org.netbeans.modules.parsing.spi;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
- * Task that process result of parsing. 
+ * SchedulerTask that process result of parsing. 
  * {@link org.netbeans.modules.parsing.spi.Parser.Result} is created when 
  * parser is finished.
  *
  * @author Jan Jancura
  */
-public abstract class ParserResultTask<T extends Parser.Result> extends Task {
+public abstract class ParserResultTask<T extends Parser.Result> extends SchedulerTask {
 
     /**
      * Called when parser is finished.

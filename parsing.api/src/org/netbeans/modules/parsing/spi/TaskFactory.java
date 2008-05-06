@@ -57,11 +57,11 @@ import javax.xml.transform.Source;
 public abstract class TaskFactory {
     
     /**
-     * Returns {@link Task}s for given {@link Source}s.
+     * Returns {@link SchedulerTask}s for given {@link Source}s.
      * @param source        A {@link Source}.
-     * @return              {@link Task}s for given {@link Source}s
+     * @return              {@link SchedulerTask}s for given {@link Source}s
      */
-    public abstract Collection<Task> create (Collection<Source> sources);
+    public abstract Collection<SchedulerTask> create (Collection<Source> sources);
 
 }
 

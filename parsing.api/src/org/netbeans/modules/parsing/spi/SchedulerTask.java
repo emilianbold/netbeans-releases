@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.spi;
 
+import org.netbeans.modules.parsing.api.Task;
+
 
 /**
  * Abstract ascendant of all types of SPI tasks ({@link EmbeddingProvider}, 
@@ -47,9 +49,9 @@ package org.netbeans.modules.parsing.spi;
  *
  * @author Jan Jancura
  */
-public abstract class Task {
+public abstract class SchedulerTask extends Task {
 
-    Task () {}
+    SchedulerTask () {}
     
     /**
      * A priority. Less number wins.
@@ -59,11 +61,11 @@ public abstract class Task {
     public abstract int getPriority ();
     
     /**
-     * Returns {@link TaskScheduler} class for this Task. See 
+     * Returns {@link TaskScheduler} class for this SchedulerTask. See 
      * {@link TaskScheduler} documentation for a list of default schedulers, 
      * or your your own implementation.
      * 
-     * @return              {@link TaskScheduler} for this Task.
+     * @return              {@link TaskScheduler} for this SchedulerTask.
      */
     public abstract Class<? extends TaskScheduler> getSchedulerClass ();
     

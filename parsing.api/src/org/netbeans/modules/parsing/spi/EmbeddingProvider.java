@@ -52,7 +52,7 @@ import org.netbeans.modules.parsing.api.Source;
  *
  * @author Jan Jancura
  */
-public abstract class EmbeddingProvider extends Task {
+public abstract class EmbeddingProvider extends SchedulerTask {
     
     
     /**

@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.Task;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -69,44 +69,44 @@ public class Scheduler {
         Lookup.getDefault ().lookupAll (TaskScheduler.class);
     }
     
-    private static Map<TaskScheduler,Map<Source,Collection<Task>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<Task>>> (); 
+    private static Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
     
     public static void schedule (
         TaskScheduler       taskScheduler,
         Collection<Source>  sources
     ) {
         System.out.println("schedule " + taskScheduler + ":" + sources);
-        Map<Source,Collection<Task>> sourceToTasks = tasks.get (taskScheduler);
+        Map<Source,Collection<SchedulerTask>> sourceToTasks = tasks.get (taskScheduler);
         if (sourceToTasks == null) {
-            sourceToTasks = new HashMap<Source,Collection<Task>> ();
+            sourceToTasks = new HashMap<Source,Collection<SchedulerTask>> ();
             tasks.put (taskScheduler, sourceToTasks);
         }
         Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
         for (Source source : sources) {
-            Collection<Task> tasks = sourceToTasks.get (source);
+            Collection<SchedulerTask> tasks = sourceToTasks.get (source);
             if (tasks == null) {
                 tasks = createTasks (source, taskScheduler);
                 sourceToTasks.put (source, tasks);
             }
-            for (Task task : tasks)
+            for (SchedulerTask task : tasks)
                 TaskProcessor.rescheduleTask (task, source);
             oldSources.remove (source);
         }
         for (Source source : oldSources) {
-            Collection<Task> tasks = sourceToTasks.remove (source);
-            for (Task task : tasks)
+            Collection<SchedulerTask> tasks = sourceToTasks.remove (source);
+            for (SchedulerTask task : tasks)
                 TaskProcessor.removePhaseCompletionTask (task, source);
         }
     }
     
-    private static Collection<Task> createTasks (
+    private static Collection<SchedulerTask> createTasks (
         Source              source, 
         TaskScheduler       taskScheduler
     ) {
-        List<Task> tasks = new ArrayList<Task> ();
+        List<SchedulerTask> tasks = new ArrayList<SchedulerTask> ();
         String mimeType = source.getMimeType ();
         Lookup lookup = getLookup (mimeType);
-        for (Task task : lookup.lookupAll (Task.class))
+        for (SchedulerTask task : lookup.lookupAll (SchedulerTask.class))
             if (task.getSchedulerClass () == taskScheduler.getClass ())
                 tasks.add (task);
         return tasks;

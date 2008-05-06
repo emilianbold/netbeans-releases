@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.spi;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Task;
 
 
 /**

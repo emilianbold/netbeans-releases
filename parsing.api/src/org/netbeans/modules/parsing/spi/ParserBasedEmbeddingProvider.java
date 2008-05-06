@@ -52,7 +52,7 @@ import org.netbeans.modules.parsing.api.Source;
  *
  * @author Jan Jancura
  */
-public abstract class ParserBasedEmbeddingProvider<T extends Parser.Result> extends Task {
+public abstract class ParserBasedEmbeddingProvider<T extends Parser.Result> extends SchedulerTask {
     
     /**
      * Returns list of {@link Embedding}s based on parser results.

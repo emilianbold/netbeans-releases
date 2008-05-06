@@ -48,7 +48,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Jan Jancura
  */
-public abstract class UserTask<T extends Parser.Result> {
+public abstract class UserTask<T extends Parser.Result> extends Task {
 
     /**
      * Called when parser is finished.

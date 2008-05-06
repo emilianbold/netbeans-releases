@@ -64,7 +64,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserBasedEmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.Task;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -191,8 +191,8 @@ public class ParserManagerImpl {
 //        private void setTaskFactories (Collection<? extends TaskFactory> taskFactories) {
 //            for (TaskFactory taskFactory : taskFactories) {
 //                for (Parser parser : parsers) {
-//                    Collection<Task> tasks = taskFactory.create (parser, document);
-//                    for (Task task : tasks) {
+//                    Collection<SchedulerTask> tasks = taskFactory.create (parser, document);
+//                    for (SchedulerTask task : tasks) {
 //                        this.tasks.add (new TaskTask (parser, task));
 //                    }
 //                }
@@ -216,9 +216,9 @@ public class ParserManagerImpl {
 //    private static class TaskTask extends ATask {
 //
 //        private Parser      parser;
-//        private Task        task;
+//        private SchedulerTask        task;
 //        
-//        public TaskTask (Parser parser, Task task) {
+//        public TaskTask (Parser parser, SchedulerTask task) {
 //            this.parser = parser;
 //            this.task = task;
 //        }
@@ -345,7 +345,7 @@ public class ParserManagerImpl {
 //    public static void parseEmbedded (
 //        Result              result, 
 //        String              mimeType, 
-//        Task      parserListener
+//        SchedulerTask      parserListener
 //    ) {
 //        
 //    }
@@ -387,7 +387,7 @@ public class ParserManagerImpl {
 //    }
 //    
 //    private static RequestProcessor         rp = new RequestProcessor ("org.netbeans.modules.parsing.impl.ParserManager");
-//    private static RequestProcessor.Task    parsingTask;
+//    private static RequestProcessor.SchedulerTask    parsingTask;
 //    
 //    private static void parseLater () {
 //        if (parsingTask != null) {
@@ -435,7 +435,7 @@ public class ParserManagerImpl {
 //            if (listeners.isEmpty ()) continue;
 //            Iterator<PriorityParserListener> it2 = listeners.iterator ();
 //            while (it2.hasNext ()) {
-//                Task parserListener = it2.next ();
+//                SchedulerTask parserListener = it2.next ();
 //                parserListener.parsed (result, source);
 //            }
 //        }

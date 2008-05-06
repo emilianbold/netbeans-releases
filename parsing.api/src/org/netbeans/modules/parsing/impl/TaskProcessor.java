@@ -68,7 +68,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Task;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -93,11 +93,11 @@ public class TaskProcessor {
     //Tasks which are scheduled (not yet executed) but blocked by expected event (waiting for event)
     private final static Map<Source,Collection<Request>> waitingRequests = new WeakHashMap<Source,Collection<Request>>();    
     //Tasked which should be cleared from requests or finieshedRequests
-    private final static Collection<Task> toRemove = new LinkedList<Task> ();
+    private final static Collection<SchedulerTask> toRemove = new LinkedList<SchedulerTask> ();
     
     //Worker thread factory - single worker thread
     private final static WorkerThreadFactory factory = new WorkerThreadFactory ();
-    //Currently running Task
+    //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
 //    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
     
@@ -225,12 +225,12 @@ public class TaskProcessor {
     }
     
     /** Adds a task to scheduled requests. The tasks will run sequentially.
-     * @see Task for information about implementation requirements 
+     * @see SchedulerTask for information about implementation requirements 
      * @task The task to run.
      * @source The source on which the task operates
      * @throws IOException
      */
-    public static void addPhaseCompletionTask(final Task task, final Source source) throws IOException {
+    public static void addPhaseCompletionTask(final SchedulerTask task, final Source source) throws IOException {
         Parameters.notNull("task", task);   //NOI18N
         Parameters.notNull("source", source);   //NOI18N
         final String taskClassName = task.getClass().getName();
@@ -246,7 +246,7 @@ public class TaskProcessor {
      * Removes a aask from scheduled requests.
      * @param task The task to be removed.
      */
-    public static void removePhaseCompletionTask(final Task task, final Source source) {
+    public static void removePhaseCompletionTask(final SchedulerTask task, final Source source) {
         Parameters.notNull("task", task);
         Parameters.notNull("source", source);
         final String taskClassName = task.getClass().getName();
@@ -275,7 +275,7 @@ public class TaskProcessor {
      * @param task to reschedule
      * @param source to which the task it bound
      */
-    public static void rescheduleTask(final Task task, final Source source) {
+    public static void rescheduleTask(final SchedulerTask task, final Source source) {
         Parameters.notNull("task", task);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
@@ -365,7 +365,7 @@ public class TaskProcessor {
        
     //Private classes
     /**
-     * Task scheduler loop
+     * SchedulerTask scheduler loop
      * Dispatches scheduled tasks from {@link TaskProcessor#requests} and performs
      * them.
      */
@@ -540,7 +540,7 @@ public class TaskProcessor {
         
         static final Request DUMMY = new Request ();
         
-        private final Task task;
+        private final SchedulerTask task;
         private final Source source;
         private final boolean reschedule;
         
@@ -550,7 +550,7 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final Task task, final Source source, final boolean reschedule) {
+        public Request (final SchedulerTask task, final Source source, final boolean reschedule) {
             assert task != null;
             this.task = task;
             this.source = source;
@@ -594,7 +594,7 @@ public class TaskProcessor {
     }
     
     /**
-     * Comparator of {@link Request}s which oreders them using {@link Task#getPriority()}
+     * Comparator of {@link Request}s which oreders them using {@link SchedulerTask#getPriority()}
      */
     //@ThreadSafe
     private static class RequestPriorityComparator implements Comparator<Request> {
@@ -673,7 +673,7 @@ public class TaskProcessor {
         }
         
                 
-        Request getTaskToCancel (final Task task) {
+        Request getTaskToCancel (final SchedulerTask task) {
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (INTERNAL_LOCK) {
