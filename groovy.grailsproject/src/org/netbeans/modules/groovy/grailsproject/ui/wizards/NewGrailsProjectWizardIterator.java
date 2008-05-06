@@ -50,6 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 
 
@@ -60,7 +61,7 @@ import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
 public class NewGrailsProjectWizardIterator implements  WizardDescriptor.InstantiatingIterator,
                                                         WizardDescriptor.ProgressInstantiatingIterator{
 
-    private static final Logger logger = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -88,46 +89,48 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     }
     
    public Set instantiate(ProgressHandle handle) throws IOException {
-        
-            this.handle = handle;
+        this.handle = handle;
 
-            Set<FileObject> resultSet = new HashSet<FileObject>();
-            
-            serverRunning = true;
-            
-            new PublicSwingWorker( null, "create-app " + (String) wiz.getProperty("projectName"), 
-                                    (String) wiz.getProperty("projectFolder"), 
-                                    handle, serverFinished).start();
-            
-            try {
-                serverFinished.await();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                    }
-                   
-            serverRunning = false;
-            File dirF = new File((String) wiz.getProperty("projectFolder"));
+        Set<FileObject> resultSet = new HashSet<FileObject>();
 
-           if (dirF != null) {
-               dirF = FileUtil.normalizeFile(dirF);
-               FileObject dir = FileUtil.toFileObject(dirF);
-               
-               if (dir == null) {
-                   logger.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
-               } else {
-                   resultSet.add(dir);
-                   GrailsProjectSettings.getDefault().setNewProjectCount(baseCount);
-                   
-                   File parentDir = dirF.getParentFile();
-                   
-                   if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
-                       GrailsProjectSettings.getDefault().setLastUsedArtifactFolder(dirF.getParentFile());
-                   }
+        serverRunning = true;
+
+        new PublicSwingWorker( null, "create-app " + (String) wiz.getProperty("projectName"), 
+                                ((File) wiz.getProperty("projectFolder")).getAbsolutePath(), 
+                                handle, serverFinished).start();
+
+        try {
+            serverFinished.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+                }
+
+        serverRunning = false;
+        File dirF = (File) wiz.getProperty("projectFolder");
+
+       if (dirF != null) {
+           dirF = FileUtil.normalizeFile(dirF);
+           FileObject dir = FileUtil.toFileObject(dirF);
+
+           if (dir == null) {
+               LOGGER.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
+           } else {
+               resultSet.add(dir);
+               GrailsProjectSettings.getDefault().setNewProjectCount(baseCount);
+
+               File parentDir = dirF.getParentFile();
+
+               if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
+                   GrailsProjectSettings.getDefault().setLastUsedArtifactFolder(dirF.getParentFile());
                }
            }
+           dirF = (dirF != null) ? dirF.getParentFile() : null;
+           if (dirF != null && dirF.exists()) {
+               ProjectChooser.setProjectsFolder(dirF);
+           }
+       }
 
-            return resultSet;
-
+       return resultSet;
     }
     
     public Set instantiate() throws IOException {
