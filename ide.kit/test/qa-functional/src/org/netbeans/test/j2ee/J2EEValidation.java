@@ -220,7 +220,7 @@ public class J2EEValidation extends JellyTestCase {
             public Object actionProduced(Object obj) {
                 InputStream is = null;
                 try {
-                    URLConnection connection = new URI("http://localhost:8080/"+urlSuffix).toURL().openConnection();
+                    URLConnection connection = new URI("http://localhost:8090/"+urlSuffix).toURL().openConnection();
                     connection.setReadTimeout(Long.valueOf(timeout).intValue());
                     is = connection.getInputStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -247,7 +247,7 @@ public class J2EEValidation extends JellyTestCase {
                 return null;
             }
             public String getDescription() {
-                return("Text \""+text+"\" at http://localhost:8080/"+urlSuffix);
+                return("Text \""+text+"\" at http://localhost:8090/"+urlSuffix);
             }
         };
         Waiter waiter = new Waiter(waitable);

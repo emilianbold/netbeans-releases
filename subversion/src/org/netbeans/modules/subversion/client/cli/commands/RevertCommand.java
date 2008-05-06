@@ -42,7 +42,6 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *

@@ -87,13 +87,13 @@ public final class Controller implements ComponentListener {
   }
 
   public void addListener(Listener listener) {
-    synchronized(myListeners) {
+    synchronized (myListeners) {
       myListeners.put(listener, null);
     }
   }
   
   public void removeListener(Listener listener) {
-    synchronized(myListeners) {
+    synchronized (myListeners) {
       myListeners.remove(listener);
     }
   }
@@ -120,7 +120,8 @@ public final class Controller implements ComponentListener {
     log("TIMER-TRIGGER"); // NOI18N
     log();
 
-    cancelTimer();
+    cancelValidation();
+
     myTimer.schedule(new TimerTask() {
       public void run() {
         doValidation(false, false);
@@ -168,20 +169,23 @@ public final class Controller implements ComponentListener {
     return validation.getValidationResult();
   }
 
-  private synchronized void doValidation(boolean isComplete, boolean isOutput) {
-    cancelTimer();
+  private void doValidation(boolean isComplete, boolean isOutput) {
+    cancelValidation();
 
     List<ResultItem> items;
     ValidationType type;
+    int priority;
 
     if (isComplete) {
-      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
       type = ValidationType.COMPLETE;
+      priority = Thread.MAX_PRIORITY;
     }
     else {
-      Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
       type = ValidationType.PARTIAL;
+      priority = Thread.MIN_PRIORITY;
     }
+    Thread.currentThread().setPriority(priority);
+
     log();
     log("VALIDATION: " + type); // NOI18N
     startTimeln();
@@ -200,23 +204,24 @@ public final class Controller implements ComponentListener {
       }
     }
     endTime("validation"); // NOI18N
+    log("end: " + type); // NOI18N
 
     notifyListeners(items);
   }
 
-  private void cancelTimer() {
+  private void cancelValidation() {
     myTimer.cancel();
     myTimer = new Timer();
+    Validation.stop();
   }
 
   private void notifyListeners(List<ResultItem> items) {
-    myResult = new LinkedList<ResultItem>();
-
-    synchronized (items) {
-      for (ResultItem item : items) {
-        myResult.add(item);
-      }
+    if (items == null) {
+      return;
     }
+    myResult = items;
+    log("+++: Notify listeners"); // NOI18N
+
     synchronized (myListeners) {
       for (Listener listener : myListeners.keySet()) {
         if (listener != null) {

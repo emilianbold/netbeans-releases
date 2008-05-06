@@ -40,10 +40,12 @@
  */
 package org.netbeans.xtest.plugin.ide;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -51,10 +53,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -76,17 +79,40 @@ public class BlacklistedClassesHandler extends Handler {
     private static BlacklistedClassesHandler instance = null;
     private boolean violation = false;
     // TODO: Is it necessary to use synchronizedMap? Should the list be synchronized?
-//    private Map<String, List<Exception>> blacklist = Collections.synchronizedMap(new HashMap<String, List<Exception>>());
     private Map blacklist = Collections.synchronizedMap(new HashMap());
+    private Map whitelistViolators = Collections.synchronizedMap(new HashMap());
+    private Set whitelist = Collections.synchronizedSortedSet(new TreeSet());
+    private boolean whitelistEnabled = false;
+    private boolean generatingWhitelist = false;
+    private String whitelistFileName;
 
     private BlacklistedClassesHandler(String blacklistFileName) {
-        final String[] watched = getWatched(blacklistFileName);
-        for (int i = 0; i < watched.length; i++) {
-            blacklist.put(watched[i], new ArrayList());
-        }
-
+        this(blacklistFileName, null);
+    }
+    
+    private BlacklistedClassesHandler(String blacklistFileName, String whitelistFileName) {
+        this(blacklistFileName, whitelistFileName, false);
+    }
+    
+    private BlacklistedClassesHandler(String blacklistFileName, String whitelistFileName, boolean generateWhitelist) {
+        this.generatingWhitelist = generateWhitelist;
+        this.whitelistFileName = whitelistFileName;
+        
+        loadBlackList(blacklistFileName);
+        loadWhiteList(whitelistFileName);
+        
         Logger.getLogger(BlacklistedClassesHandler.class.getName()).info(
-                "BlacklistedClassesHandler: " + blacklist.size() + " classes loaded.");
+                "BlacklistedClassesHandler: " + blacklist.size() + " classes loaded to black list");
+        if (this.whitelistEnabled) {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).info(
+                    "BlacklistedClassesHandler: " + whitelist.size() + " classes loaded to white list.");
+        } else if (this.generatingWhitelist) {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).info(
+                    "BlacklistedClassesHandler: " + whitelist.size() + " classes loaded to white list. Whitelist is being generated.");
+        } else {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).info(
+                    "BlacklistedClassesHandler: White list disabled");
+        }
     }
 
     public static BlacklistedClassesHandler getBlacklistedClassesHandler() {
@@ -94,10 +120,18 @@ public class BlacklistedClassesHandler extends Handler {
     }
 
     public static synchronized BlacklistedClassesHandler getBlacklistedClassesHandler(String blacklistFileName) {
+        return getBlacklistedClassesHandler(blacklistFileName, null);
+    }
+    
+    public static synchronized BlacklistedClassesHandler getBlacklistedClassesHandler(String blacklistFileName, String whitelistFileName) {
+        return getBlacklistedClassesHandler(blacklistFileName, whitelistFileName, false);
+    }
+    
+    public static synchronized BlacklistedClassesHandler getBlacklistedClassesHandler(String blacklistFileName, String whitelistFileName, boolean generateWhiteList) {
         if (instance != null) {
             throw new Error("BlacklistedClassesHandler shouldn't be initialized twice!");
         }
-        instance = new BlacklistedClassesHandler(blacklistFileName);
+        instance = new BlacklistedClassesHandler(blacklistFileName, whitelistFileName, generateWhiteList);
         return instance;
     }
 
@@ -109,16 +143,35 @@ public class BlacklistedClassesHandler extends Handler {
                     String className = (String) record.getParameters()[1];
                     if (blacklist.containsKey(className)) { //violator
                         Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
-                        System.out.println("BlacklistedClassesHandler violator: " + className);
+                        System.out.println("BlacklistedClassesHandler blacklist violator: " + className);
                         exc.printStackTrace();
                         synchronized (blacklist) {
                             // TODO: Probably we should synchronize by list
                             ((List) blacklist.get(className)).add(exc);
                         }
                         violation = true;
+                    } else if (whitelistEnabled && !whitelist.contains(className)) {
+                        Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
+                        System.out.println("BlacklistedClassesHandler whitelist violator: " + className);
+                        exc.printStackTrace();
+                        synchronized (whitelistViolators) {
+                            // TODO: Probably we should synchronize by list
+                            if (whitelistViolators.containsKey(className)) {
+                                ((List) whitelistViolators.get(className)).add(exc);
+                            } else {
+                                List exceptions = new ArrayList();
+                                exceptions.add(exc);
+                                whitelistViolators.put(className, exceptions);
+                            }
+                        }
+                        violation = true;
+                    } else if (generatingWhitelist) {
+                        whitelist.add(className);
                     }
                 } else if (record.getMessage().equalsIgnoreCase("LIST BLACKLIST VIOLATIONS")) {
                     logViolations();
+                } else if (record.getMessage().equalsIgnoreCase("SAVE WHITELIST")) {
+                    saveWhiteList();
                 }
             }
         } catch (Exception exc) {
@@ -158,36 +211,6 @@ public class BlacklistedClassesHandler extends Handler {
         return !violation;
     }
 
-    private static String[] getWatched(String blacklistFileName) {
-        BufferedReader reader = null;
-        try {
-            if (blacklistFileName != null) {
-                reader = new BufferedReader(new FileReader(new File(blacklistFileName)));
-                ArrayList strings = new ArrayList();
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    line = line.trim();
-                    if (line.length() > 0 && Character.isJavaIdentifierStart(line.charAt(0))) {
-                        strings.add(line);
-                    }
-                }
-                return (String[]) strings.toArray(new String[strings.size()]);
-            }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return new String[0];
-    }
-
     public void logViolations() {
         Logger.getLogger(BlacklistedClassesHandler.class.getName()).warning(listViolations());
     }
@@ -214,26 +237,37 @@ public class BlacklistedClassesHandler extends Handler {
 
     public void listViolations(PrintWriter out, boolean listExceptions) {
         out.println("BlacklistedClassesHandler identified the following violations:");
-        synchronized (blacklist) {
-            int i = 0;
-            final Set keySet = blacklist.keySet();
-            Iterator iter = keySet.iterator();
-            while (iter.hasNext()) {
-                String violator = (String) iter.next();
-                if (((List) blacklist.get(violator)).size() > 0) {
-                    out.println(++i + ". " + violator);
-                    if (listExceptions) {
-                        final List exceptions = (List) blacklist.get(violator);
-                        Iterator iter2 = exceptions.iterator();
-                        while (iter2.hasNext()) {
-                            Exception ex = (Exception) iter2.next();
-                            ex.printStackTrace(out);
+        listViolationsMap("Blacklist violations:", blacklist, out, listExceptions);
+        listViolationsMap("Whitelist violations:", whitelistViolators, out, listExceptions);
+        out.flush();
+    }
+    
+    private void listViolationsMap(String caption, Map map, PrintWriter out, boolean listExceptions) {
+        if (map.size() > 0) {
+            out.println("  " + caption);
+            synchronized (map) {
+                int i = 0;
+                final Set keySet = map.keySet();
+                Iterator iter = keySet.iterator();
+                while (iter.hasNext()) {
+                    String violator = (String) iter.next();
+                    if (((List) map.get(violator)).size() > 0) {
+                        out.println("    " + ++i + ". " + violator);
+                        if (listExceptions) {
+                            final List exceptions = (List) map.get(violator);
+                            Iterator iter2 = exceptions.iterator();
+                            while (iter2.hasNext()) {
+                                Exception ex = (Exception) iter2.next();
+                                ex.printStackTrace(out);
+                            }
                         }
                     }
                 }
-            }
+            }        
+        } else {
+            out.println("  " + caption + " No violations");
         }
-        out.flush();
+        
     }
 
     public void resetViolations() {
@@ -246,5 +280,99 @@ public class BlacklistedClassesHandler extends Handler {
             }
             violation = false;
         }
+    }
+
+    private void loadBlackList(String blacklistFileName) {
+        BufferedReader reader = null;
+        try {
+            if (blacklistFileName != null) {
+                reader = new BufferedReader(new FileReader(new File(blacklistFileName)));
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    line = line.trim();
+                    if (line.length() > 0 && Character.isJavaIdentifierStart(line.charAt(0))) {
+                        blacklist.put(line, new ArrayList());
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void loadWhiteList(String whitelistFileName) {
+        BufferedReader reader = null;
+        try {
+            if (whitelistFileName != null) {
+                reader = new BufferedReader(new FileReader(new File(whitelistFileName)));
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    line = line.trim();
+                    if (line.length() > 0 && Character.isJavaIdentifierStart(line.charAt(0))) {
+                        whitelist.add(line);
+                    }
+                }
+                if (!generatingWhitelist) {
+                    whitelistEnabled = true;
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public void saveWhiteList() {
+        saveWhiteList(whitelistFileName);
+    }
+    
+    public void saveWhiteList(PrintStream out) {
+        saveWhiteList(new PrintWriter(out));
+    }
+    
+    public void saveWhiteList(String filename) {
+        PrintStream ps = null;
+        try {
+            ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(filename)));
+            saveWhiteList(ps);
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (ps != null) {
+                ps.flush();
+                ps.close();
+            }
+        }
+    }
+
+    public void saveWhiteList(PrintWriter out) {
+        synchronized (whitelist) {
+            Iterator it = whitelist.iterator();
+            while (it.hasNext()) {
+                out.println(it.next());
+            }
+        }
+        out.flush();
+    }
+
+    public boolean isGeneratingWhitelist() {
+        return generatingWhitelist;
     }
 }

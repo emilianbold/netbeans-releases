@@ -67,7 +67,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
  */
 public class DefaultPropertyEditor {
 
-    /**
+        /**
      * Concrete implementation of PropertyEditorSupport to provide a list editor widget
      * for use in a bean property sheet.
      */

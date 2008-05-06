@@ -49,6 +49,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -114,7 +115,6 @@ import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -1411,6 +1411,9 @@ public class IDEValidation extends JellyTestCase {
     public void testBlacklistedClassesHandler() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
+        if (bcHandler.isGeneratingWhitelist()) {
+            bcHandler.saveWhiteList(getLog("whitelist.txt"));
+        }
         try {
             assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
         } finally {

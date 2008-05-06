@@ -40,17 +40,27 @@
  */
 package org.netbeans.modules.soa.validation.core;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import java.awt.event.ActionEvent;
+
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.06
  */
-public interface QuickFix {
+public interface QuickFix extends Action {
 
-  boolean canFix();
-  void doFix();
-  String getDescription();
+  String doFix();
 
-  // ------------------------------------------------
-  public abstract class Adapter implements QuickFix {
+  // --------------------------------------------------------------
+  public class Adapter extends AbstractAction implements QuickFix {
+
+    public String doFix() {
+      return null;
+    }
+
+    public void actionPerformed(ActionEvent event) {
+      doFix();
+    }
   }
 }

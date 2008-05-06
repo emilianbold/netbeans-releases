@@ -80,7 +80,6 @@ public final class Validator extends XsltValidator {
 checkReference(callTemplate, callTemplate.getName());
 //todo r
 //addError("FIX_Reference", callTemplate);
-
   }
 
   @Override

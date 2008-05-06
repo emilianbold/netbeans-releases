@@ -79,8 +79,8 @@ final class BasicConfVisualPanel extends JPanel {
 
     private static final long serialVersionUID = -7699370587627049750L;
     
-    private static final String VALID         = "valid";                    // NOI18N
-    private static final String ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    public  static final String VALID         = "valid";                    // NOI18N
+    public  static final String ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
     static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
     private static final String BUNDLE_PROPERTIES 
                                               = "/Bundle.properties";       // NOI18N
@@ -458,11 +458,6 @@ final class BasicConfVisualPanel extends JPanel {
     private javax.swing.JLabel layer;
     private javax.swing.JTextField layerValue;
     // End of variables declaration//GEN-END:variables
-    
-    abstract static class DocumentAdapter implements DocumentListener {
-        public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-        public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
-    }
     
     private boolean isBundleUpdated;
     private boolean listenersAttached;

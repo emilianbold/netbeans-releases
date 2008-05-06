@@ -65,7 +65,7 @@ public class CliValidateBpelProjectDelegate extends Task {
     private String mBuildDependentProjectFilesDirectory;
     private File mSourceDir;
     private File mBuildDir;
-    private Map mBpelFileNamesToFileInBuildDir = new HashMap();
+    private Map myFileNamesToFileInBuildDir = new HashMap();
     private boolean myIsFoundErrors = false;
     private boolean myAllowBuildWithError = false;
     
@@ -150,17 +150,17 @@ public class CliValidateBpelProjectDelegate extends Task {
             final File file = files[i];
             
             if (file.isFile()) {
-                this.mBpelFileNamesToFileInBuildDir.put(Util.getRelativePath(this.mBuildDir, file), file);
+                this.myFileNamesToFileInBuildDir.put(Util.getRelativePath(this.mBuildDir, file), file);
             } else {
                 processBuildDir(file);
             }
         }
     }
     
-    private void validateBPEL(File bpel) throws BuildException {
+    private void validateFile(File file) throws BuildException {
       try {
-        Model model = CliBpelCatalogModel.getDefault().getBPELModel(bpel.toURI());
-        boolean isError = new Controller(model).cliValidate(bpel, myAllowBuildWithError);
+        Model model = CliBpelCatalogModel.getDefault().getBPELModel(file.toURI());
+        boolean isError = new Controller(model).cliValidate(file, myAllowBuildWithError);
 
         if (isError) {
           myIsFoundErrors = true;
@@ -168,18 +168,16 @@ public class CliValidateBpelProjectDelegate extends Task {
       }
       catch (Exception e) {
         throw new BuildException(e);
-//        if ( !myAllowBuildWithError) {
-//        }
       }
     }
 
-    private boolean isModified(File bpel) {
+    private boolean isModified(File file) {
         boolean modified = true;
-        String relativePath = Util.getRelativePath(this.mSourceDir, bpel);
-        File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
+        String relativePath = Util.getRelativePath(this.mSourceDir, file);
+        File fileInBuildDir = (File) this.myFileNamesToFileInBuildDir.get(relativePath);
 
-        if (bpelFileInBuildDir != null) {
-            if (bpelFileInBuildDir.lastModified() == bpel.lastModified()) {
+        if (fileInBuildDir != null) {
+            if (fileInBuildDir.lastModified() == file.lastModified()) {
                 modified = false;
             }
         }
@@ -197,7 +195,7 @@ public class CliValidateBpelProjectDelegate extends Task {
             }
         } else {
             if (isModified(file)) {
-                validateBPEL(file);
+                validateFile(file);
             }
         }
     }

@@ -65,11 +65,15 @@ public class CLITest extends NbTestCase {
         suite.addTestSuite(ImportTest.class);                
         suite.addTestSuite(InfoTest.class);                  
         suite.addTestSuite(ListTest.class);                              
+        suite.addTestSuite(MergeTest.class);                        
         suite.addTestSuite(MkdirTest.class);                        
         suite.addTestSuite(MoveTest.class);                         
         suite.addTestSuite(PropertyTest.class);                                        
+        suite.addTestSuite(RelocateTest.class);                                        
         suite.addTestSuite(RemoveTest.class);                                        
+        suite.addTestSuite(ResolvedTest.class);                                        
         suite.addTestSuite(RevertTest.class);                                                        
+        suite.addTestSuite(SwitchToTest.class);                                        
         suite.addTestSuite(UpdateTest.class);                                        
         
         return suite;

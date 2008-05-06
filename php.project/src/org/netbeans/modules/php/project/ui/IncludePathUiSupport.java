@@ -412,7 +412,7 @@ public final class IncludePathUiSupport {
 
         /** Handles changes in the selection
          */
-        public void valueChanged( ListSelectionEvent e ) {
+        public void valueChanged(ListSelectionEvent e) {
             // addFolder allways enabled
             remove.setEnabled(selectionModel.getMinSelectionIndex() != -1);
             moveUp.setEnabled(IncludePathUiSupport.canMoveUp(selectionModel));

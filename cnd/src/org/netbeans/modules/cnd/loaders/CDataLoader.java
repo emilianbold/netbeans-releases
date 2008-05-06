@@ -68,7 +68,7 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
     protected CDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
         instance = this;
-        createExtentions(cExtensions);
+        //createExtentions(cExtensions);
     }
 
     public static CDataLoader getInstance(){

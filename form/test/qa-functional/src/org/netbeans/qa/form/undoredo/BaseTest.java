@@ -70,6 +70,8 @@ public class BaseTest extends JellyTestCase {
     
     public MainWindowOperator mainWindow;
     public ProjectsTabOperator pto;
+    
+    
     public Node formnode;
     
     ComponentInspectorOperator inspector;
@@ -349,49 +351,17 @@ public class BaseTest extends JellyTestCase {
         log("undo 12");
         undo(12);
 
-        Action saveAction;
-        saveAction = new Action("File|Save", null);
-        saveAction.perform();
+//        Action saveAction;
+//        saveAction = new Action("File|Save", null);
+//        saveAction.perform();
+        
+        editor = new EditorOperator(FILE_NAME);
+        editor.close(false);
+//        ewo = new EditorWindowOperator();
+//        ewo.closeDiscard();
+
     }
     
-    /** Run test.
-     */
-    public void testFormFile() {
-        try {
-            getRef().print(
-                    VisualDevelopmentUtil.readFromFile(
-                    getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form")
-                    );
-        } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
-        }
-        System.out.println("reffile: " + this.getName()+".ref");
-        try {
-            System.out.println("workdir: " + getWorkDir());
-        } catch (Exception e) {
-            System.out.println("e:" + e.getMessage() );
-        }
-        compareReferenceFiles();
-    }
-    
-    /** Run test.
-     */
-    public void testJavaFile() {
-        try {
-            getRef().print(
-                    VisualDevelopmentUtil.readFromFile(
-                    getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".java")
-                    );
-        } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
-        }
-        compareReferenceFiles();
-        
-        ewo = new EditorWindowOperator();
-        ewo.closeDiscard();
-        
-        log("Test finished");
-    }
 
     /** Run test.
      */
@@ -480,9 +450,9 @@ public class BaseTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new BaseTest("testScenario"));
-        //suite.addTest(new BaseTest("testFormFile"));
-        //suite.addTest(new BaseTest("testJavaFile"));
         return suite;
     }
+    
+   
 }
 

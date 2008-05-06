@@ -41,6 +41,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemListener;
@@ -482,7 +483,8 @@ public class JDBCWizardTablePanel extends JPanel {
         		this.initializeColumn();
         	}
         	else
-        		JOptionPane.showMessageDialog(null, "Please select the table to select additional properties", "Column Selection", JOptionPane.WARNING_MESSAGE);
+        		JOptionPane.showMessageDialog(null,NbBundle.getMessage(JDBCWizardTablePanel.class,"MSG_COLUMN_SELECT_ERROR"), 
+				NbBundle.getMessage(JDBCWizardTablePanel.class,"TITLE_COLUMN_SELECT_ERROR"), JOptionPane.WARNING_MESSAGE);
         }	
 
         /**
@@ -522,13 +524,16 @@ public class JDBCWizardTablePanel extends JPanel {
             	}
             });
             
-            this.buttonpanel.add(this.selectallbutton, BorderLayout.LINE_START);
-            this.buttonpanel.add(this.clearallbutton, BorderLayout.WEST);
-            this.buttonpanel.add(this.okbutton, BorderLayout.EAST);
-            this.buttonpanel.add(this.cancelbutton, BorderLayout.LINE_END);
+            this.buttonpanel.setLayout(new FlowLayout());
+            this.buttonpanel.add(this.selectallbutton);
+            this.buttonpanel.add(this.clearallbutton);
+            this.buttonpanel.add(this.okbutton);
+            this.buttonpanel.add(this.cancelbutton);
+
             this.columnDisplayDialog.add(this.buttonpanel, BorderLayout.SOUTH);
             this.centerWindowOnScreen(this.columnDisplayDialog);
-            this.columnDisplayDialog.setSize(new Dimension(400, 300));
+            final Dimension scrnDim = Toolkit.getDefaultToolkit().getScreenSize();
+            this.columnDisplayDialog.setSize(scrnDim.width - 300 , scrnDim.height/2);
             this.columnDisplayDialog.setVisible(true);
          }
 

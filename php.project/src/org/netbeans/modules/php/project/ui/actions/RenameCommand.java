@@ -36,7 +36,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
  */
 public class RenameCommand extends GlobalCommand {
 
-    public RenameCommand(PhpProject project){
+    public RenameCommand(PhpProject project) {
         super(project);
     }
 

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.jdbcwizard.builder.wsdl;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
@@ -26,11 +28,21 @@ import java.util.HashMap;
 
 import java.net.URL;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLWriter;
 import javax.wsdl.xml.WSDLReader;
@@ -904,17 +916,83 @@ public class WSDLGenerator {
             writer.writeWSDL(this.def, sink);
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
-			try{
-            final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
-            final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
-            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
-            writer.writeWSDL(this.def, sink);
-            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
-			} catch (Exception uee){
-				uee.printStackTrace();
-			}
+           if(e instanceof UnsupportedEncodingException){
+               try{ 
+               final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+               final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
+               java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+               final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+               writer.writeWSDL(this.def, sink);
+               this.replaceStringandWrite(outputFileName,"UTF-8", Charset.defaultCharset().toString());
+               WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+               }catch(Exception ex){
+                   ex.printStackTrace();
+               }
+            }
+            if(e instanceof FileNotFoundException){
+                e.printStackTrace();
+            }
+            if(e instanceof IOException){
+                e.printStackTrace();
+            }
+            if(e instanceof UnsupportedCharsetException){ 
+                e.printStackTrace();
+            }
         }
 
     }
+    
+    public static void replaceStringandWrite(String inputfileLocation, String find, String replace){
+        try{
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(inputfileLocation))));
+        
+        ArrayList<String> str = new ArrayList();
+        ArrayList<Integer> numList = new ArrayList();
+        while(br.ready()){
+            str.add(br.readLine());
+        }
+        for(int cnt = 0; cnt < str.size(); cnt++){
+            String temp = str.get(cnt);
+            int index = 0, delindex = 0;
+            for(int count = 0; index != -1; count++){
+                index = temp.indexOf(find);
+                if(index != -1){
+                numList.add(count,index);
+                StringBuffer sb = new StringBuffer(temp);
+                sb.delete(index,index+find.length());
+                delindex++;
+                temp = new String(sb);
+                }
+            }
+            for(int count = 0; (!numList.isEmpty()) & (count < numList.size()); count++){
+                StringBuffer sb = new StringBuffer(temp);
+                sb.insert((numList.get(count) + (count * replace.length())), replace);
+                temp = new String(sb);
+            }
+            numList.clear();
+            str.remove(cnt);
+            str.add(cnt, temp);
+        } 
+        System.out.println("String now" + str);
+      
+       br.close();
+       File file = new File(inputfileLocation);
+        try{
+            file.delete();
+        }catch(SecurityException s){
+            s.printStackTrace();
+        }
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(inputfileLocation))));
+        for(int cnt = 0; cnt < str.size(); cnt ++){
+            bw.write(str.get(cnt));
+            bw.newLine();
+        }
+        bw.close();
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    
 }
