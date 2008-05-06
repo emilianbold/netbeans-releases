@@ -73,17 +73,18 @@ public abstract class AbstractSvnTest extends NbTestCase {
     private SVNUrl repoUrl;
     private File wc;
     private File repoDir;
+    private String repoPath;
         
     public AbstractSvnTest(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
         repoDir = new File(System.getProperty("work.dir") + "/repo");
-        String repopath = repoDir.getAbsolutePath();
-        if(repopath.startsWith("/")) {
-            repopath = repopath.substring(1, repopath.length());
+        repoPath = repoDir.getAbsolutePath();
+        if(repoPath.startsWith("/")) {
+            repoPath = repoPath.substring(1, repoPath.length());
         }
-        repoUrl = new SVNUrl("file:///" + repopath);
+        
         wc = new File(workDir, getName() + "_wc");        
         CmdLineClientAdapterFactory.setup13(null);                                         
     }   
@@ -91,6 +92,8 @@ public abstract class AbstractSvnTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();      
+        
+        repoUrl = new SVNUrl(getRepoURLProtocol() + repoPath);
         
         System.setProperty("netbeans.user", System.getProperty("work.dir") + "/cache");
         cache = Subversion.getInstance().getStatusCache();
@@ -103,7 +106,16 @@ public abstract class AbstractSvnTest extends NbTestCase {
         if(importOnSetup()) svnimportWC();                   
     }
     
-    protected abstract boolean importOnSetup(); 
+    protected boolean importOnSetup() {
+        if(getName().startsWith("testCheckout")) {
+            return false;
+        } 
+        return true;
+    }
+
+    protected String getRepoURLProtocol() {
+        return "file:///";
+    }
     
     @Override
     protected void tearDown() throws Exception {
@@ -116,14 +128,18 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return Level.FINE;
     }
         
-    protected void commit(File folder) throws SVNClientException {
+    protected void commit(File folder, String msg) throws SVNClientException {
         add(folder);
         try {
-            getClient().commit(new File[]{ folder }, "commit", true);
+            getClient().commit(new File[]{ folder }, msg, true);
         } catch (SVNClientException e) {
             fail("commit was supposed to work");
         }    
         //assertStatus(SVNStatusKind.NORMAL, folder);
+    }
+    
+    protected void commit(File folder) throws SVNClientException {
+        commit(folder, "commit");
     }
     
     protected void remove(File file) throws SVNClientException {        
@@ -247,9 +263,9 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected void initRepo(File repoDir) throws MalformedURLException, IOException, InterruptedException, SVNClientException {        
         if(!repoDir.exists()) {
             repoDir.mkdirs();            
-            String[] cmd = {"svnadmin", "create", repoDir.getAbsolutePath()};
+            String[] cmd = new String[] {"svnadmin", "create", repoDir.getAbsolutePath()};
             Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();   
+            p.waitFor();               
         } 
     }      
     
@@ -321,7 +337,11 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected ISVNInfo getInfo(File file) throws SVNClientException {
         return getClient().getInfo(file);
     }
-
+    
+    protected void copy(File file, File copy) throws SVNClientException {
+        getClient().copy(file, copy);
+    }
+    
     protected ISVNDirEntry[] list(SVNUrl url) throws SVNClientException {
         return getClient().getList(url, SVNRevision.HEAD, false);
     }
@@ -367,6 +387,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
 
     protected SVNUrl getTestUrl() {
         return repoUrl.appendPath(getName());
+    }
+    
+    protected SVNUrl getFileUrl(File file) {
+        return getTestUrl().appendPath(getWC().getName()).appendPath(file.getName());
     }
     
 }

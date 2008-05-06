@@ -39,14 +39,19 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
+import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
@@ -71,6 +76,8 @@ import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
+import org.tigris.subversion.svnclientadapter.Annotations;
+import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -86,6 +93,7 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNNotificationHandler;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
+import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -444,12 +452,48 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         super.setIgnoredPatterns(file, l);
     }
 
-    public ISVNAnnotations annotate(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
+        return annotate(new BlameCommand(url, revStart, revEnd), new CatCommand(url, revEnd));
     }
 
-    public ISVNAnnotations annotate(File arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {        
+        BlameCommand blameCommand;
+        ISVNInfo info = getInfoFromWorkingCopy(file);
+        if (info.getSchedule().equals(SVNScheduleKind.ADD) && 
+            info.getCopyUrl() != null) 
+        {
+            blameCommand = new BlameCommand(info.getCopyUrl(), revStart, revEnd);
+        } else {
+            blameCommand = new BlameCommand(file, revStart, revEnd);
+        }
+        return annotate(blameCommand, new CatCommand(file, revEnd));
+    }
+    
+    public ISVNAnnotations annotate(BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException {
+        exec(blameCmd);
+        Annotation[] annotations = blameCmd.getAnnotation();        
+        InputStream is = execBinary(catCmd);
+        
+        Annotations ret = new Annotations();
+        BufferedReader r = new BufferedReader(new InputStreamReader(is)); 
+        try {
+            for (Annotation annotation : annotations) {
+                String line = null;
+                try {
+                    line = r.readLine();
+                } catch (IOException ex) {
+                    // try at least to return the annotations
+                    Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
+                }
+                annotation.setLine(line);
+                ret.addAnnotation(annotation);            
+            }
+        } finally {
+            if (r != null) { 
+                try { r.close(); } catch (IOException e) {} 
+            }
+        }        
+        return ret;
     }
 
     public ISVNProperty[] getProperties(File file) throws SVNClientException {
