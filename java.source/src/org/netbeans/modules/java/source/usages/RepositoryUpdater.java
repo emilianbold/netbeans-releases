@@ -1886,6 +1886,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
             Set<ElementHandle<TypeElement>> added =   isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
+            Set<File>                       removedFiles = isInitialCompilation ? null : new HashSet<File>();
+            Set<File>                       addedFiles   = isInitialCompilation ? null : new HashSet<File>();
             Set<URL> errorBadgesToRefresh = new HashSet<URL>();
             for (File child : children) {
                 if (!child.canRead()) {
@@ -1949,6 +1951,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                         }
                                         if (removed != null) {
                                             removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                            removedFiles.add(toDelete);
                                         }
                                     }
                                 }
@@ -1974,6 +1977,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             sa.delete(className,null);
                             if (removed != null) {
                                 removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                removedFiles.add(toDelete);
                             }
                         }
                     }
@@ -1986,17 +1990,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
                         compiledFiles, compiledFiles != null ? canceled : null, added,
-                        isInitialCompilation ? RepositoryUpdater.this.closed:null, toRecompile, misplacedSource2FQNs));
+                        isInitialCompilation ? RepositoryUpdater.this.closed:null, toRecompile, misplacedSource2FQNs, addedFiles));
             }
             Set<ElementHandle<TypeElement>> _at = null;
             Set<ElementHandle<TypeElement>> _rt = null;
             if (added != null && !RepositoryUpdater.this.closed.get()) {
                 assert removed != null;
+                assert addedFiles != null;
+                assert removedFiles != null;
                 _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
                 _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
                 _at.removeAll(removed);
                 _rt.removeAll(added);
                 added.retainAll(removed);                                                                   //Changed
+                removedFiles.removeAll(addedFiles);
                 if (toRecompile != null) {
                     toRecompile.addAll(RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
                 }
@@ -2029,6 +2036,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                         _rt.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,_rt),
                         added.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,added));
+                uqImpl.classCacheUpdated(classCache, removedFiles, addedFiles);
             }            
         }
         
@@ -2132,6 +2140,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     Set<Pair<String,String>> classNamesToDelete = new HashSet<Pair<String,String>>();
                     final Set<ElementHandle<TypeElement>> added = new HashSet<ElementHandle<TypeElement>>();
                     final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
+                    final Set<File> addedFiles = new HashSet<File>();
+                    final Set<File> removedFiles = new HashSet<File> ();
                     if (files != null) {
                         String sourceName = null;
                         String rsFileBinaryName = null;
@@ -2146,6 +2156,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     classNamesToDelete.add(Pair.<String,String>of(className,null));
                                 }                                
                                 removed.add (ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                removedFiles.add(toDelete);
                             }
                             else if (toDelete.getName().endsWith(FileObjects.RS)) {
                                 //The RS files comes as first in toDelete
@@ -2210,7 +2221,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                             JavaTaskProvider.refresh(fo);
                         }
-                        jt.generate();
+                        for (JavaFileObject generated : jt.generate()) {
+                            if (generated instanceof OutputFileObject) {
+                                addedFiles.add(((OutputFileObject) generated).getFile());
+                            } else {
+                                //XXX: log (presumably should not happen)
+                            }
+                        }
                         Log.instance(jt.getContext()).nerrors = 0;
                         listener.cleanDiagnostics();
                     } else {
@@ -2225,6 +2242,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     _rt.removeAll(added);
                     added.retainAll(removed);                                                                   //Changed
                     
+                    removedFiles.removeAll(addedFiles);
+                    
                     if (toRebuild != null) {
                         toRebuild.addAll(RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
                     }
@@ -2235,6 +2254,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                                 _rt.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,_rt), 
                                 added.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,added));                
+                        uqImpl.classCacheUpdated(classCache, removedFiles, addedFiles);
                     }
                 } catch (OutputFileManager.InvalidSourcePath e) {
                     return ;
@@ -2735,7 +2755,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private static Set<URL> batchCompile (final LinkedList<Pair<JavaFileObject,File>> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa,
         final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added,
-        final AtomicBoolean ideClosed, Set<File> toRecompile, Map<URI, List<String>> misplacedSource2FQNs) throws IOException {
+        final AtomicBoolean ideClosed, Set<File> toRecompile, Map<URI, List<String>> misplacedSource2FQNs, Set<File> addedFiles) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
@@ -2930,7 +2950,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
                             toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURI().toURL(), cpInfo, members));
                         }
-                        jt.generate();
+                        for (JavaFileObject generated : jt.generate()) {
+                            if (generated instanceof OutputFileObject) {
+                                if (addedFiles != null) {
+                                    addedFiles.add(((OutputFileObject) generated).getFile());
+                                }
+                            } else {
+                                //XXX: log (presumably should not happen)
+                            }
+                        }
                         active = null;
                         activeFile = null;
                         activePair = null;
