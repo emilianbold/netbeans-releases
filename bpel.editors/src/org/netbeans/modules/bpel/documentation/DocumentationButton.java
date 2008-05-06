@@ -62,12 +62,12 @@ final class DocumentationButton extends AbstractGlassPaneButton {
   public DocumentationButton(final UniqueId id, String text) {
     super(ICON, text, true, new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        String text = event.getSource().toString();
+        String text = event.getSource().toString().trim();
 //out();
 //out("text: '" + text + "'");
 
         try {
-          if ( !text.equals(getExtensibleElement(id).getDocumentation())) {
+          if ( !text.equals(getExtensibleElement(id).getDocumentation().trim())) {
             getExtensibleElement(id).setDocumentation(text);
           }
 //out("get: '" + getExtensibleElement(id).getDocumentation() + "'");
@@ -88,6 +88,11 @@ final class DocumentationButton extends AbstractGlassPaneButton {
     String text = getExtensibleElement(myID).getDocumentation();
 
     if (text != null) {
+      text = text.trim();
+
+      if (text.length() > MAX_LENGHT) {
+        text = text.substring(0, MAX_LENGHT) + "..."; // NOI18N
+      }
       return "<html>" + text + "</html>"; // NOI18N
     }
     return null;
@@ -99,9 +104,7 @@ final class DocumentationButton extends AbstractGlassPaneButton {
 
   private UniqueId myID;
 
-  private static final String TITLE =
-    i18n(DocumentationButton.class, "LBL_Documentation"); // NOI18N
-
-  private static final Icon ICON =
-    icon(DocumentationButton.class, "documentation"); // NOI18N
+  private static final int MAX_LENGHT = 60;
+  private static final String TITLE = i18n(DocumentationButton.class, "LBL_Documentation"); // NOI18N
+  private static final Icon ICON = icon(DocumentationButton.class, "documentation"); // NOI18N
 }

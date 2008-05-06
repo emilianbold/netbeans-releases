@@ -125,6 +125,11 @@ public class EqualsMethodHint extends AbstractHint {
             return null;
         }
         
+        if (mt.getBody() == null) {
+            //#134255: body may be null
+            return null;
+        }
+        
         try {
             new VisitorImpl(info, param).scan(new TreePath(treePath, mt.getBody()), null);
         } catch (Found f) {

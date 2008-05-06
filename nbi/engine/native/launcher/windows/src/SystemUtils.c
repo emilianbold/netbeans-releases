@@ -39,47 +39,72 @@
 #include <stdlib.h>
 
 #include "SystemUtils.h"
-void getOSVersion(DWORD *id, DWORD *major, DWORD *minor) {
-    OSVERSIONINFO ver;
+
+BOOL IsWow64 = FALSE;
+
+void getOSVersion(DWORD *id, DWORD *major, DWORD *minor, DWORD *productType) {
+    OSVERSIONINFOEX ver;
     ver.dwOSVersionInfoSize = sizeof(ver);
-    GetVersionEx(&ver);
+    GetVersionEx((OSVERSIONINFO *) &ver);
     *id = ver.dwPlatformId;
     *major = ver.dwMajorVersion;
     *minor =  ver.dwMinorVersion;
+    *productType = ver.wProductType;
     return;
 }
 
 DWORD is9x() {
-    DWORD id, major, minor;
-    getOSVersion(& id, & major, & minor);
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
     return (id == VER_PLATFORM_WIN32_WINDOWS) ? 1 : 0;
 }
-
 DWORD isNT() {    
-    DWORD id, major, minor;
-    getOSVersion(& id, & major, & minor);
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
     return (id == VER_PLATFORM_WIN32_NT && major == 4 && minor == 0) ? 1 : 0;
 }
 DWORD is2k() {
-    DWORD id, major, minor;
-    getOSVersion(& id, & major, & minor);
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
     return (id == VER_PLATFORM_WIN32_NT && major == 5 && minor == 0) ? 1 : 0;
 }
 
 DWORD isXP() {
-    DWORD id, major, minor;
-    getOSVersion(& id, & major, & minor);
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
     return (id == VER_PLATFORM_WIN32_NT && major == 5 && minor == 1) ? 1 : 0;
 }
 
 DWORD is2003() {
-    DWORD id, major, minor;
-    getOSVersion(& id, & major, & minor);
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
     return (id == VER_PLATFORM_WIN32_NT && major == 5 && minor == 2) ? 1 : 0;
 }
 DWORD isVista() {
-    DWORD id, major, minor;
-    getOSVersion(& id, & major, & minor);
-    return (id == VER_PLATFORM_WIN32_NT && major == 6) ? 1 : 0;
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
+    return (id == VER_PLATFORM_WIN32_NT && major == 6 && type == VER_NT_WORKSTATION) ? 1 : 0;
 }
 
+DWORD is2008() {
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
+    return (id == VER_PLATFORM_WIN32_NT && major == 6 && type != VER_NT_WORKSTATION) ? 1 : 0;
+}
+typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+LPFN_ISWOW64PROCESS fnIsWow64Process;
+
+void initWow64()
+{
+    IsWow64 = FALSE;
+
+    fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
+  
+    if (NULL != fnIsWow64Process)
+    {
+        if (!fnIsWow64Process(GetCurrentProcess(),&IsWow64))
+        {
+            // handle error
+        }
+    }
+}

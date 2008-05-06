@@ -136,7 +136,12 @@ public final class DocumentationDecorator extends DecorationProvider
     if ( !(entity instanceof ExtensibleElements)) {
       return null;
     }
-    return ((ExtensibleElements) entity).getDocumentation();
+    String documentation = ((ExtensibleElements) entity).getDocumentation();
+
+    if (documentation != null) {
+      documentation = documentation.trim();
+    }
+    return documentation;
   }
 
   private UniqueId mySelectedID;
