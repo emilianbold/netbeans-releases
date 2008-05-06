@@ -270,7 +270,9 @@ final class NodeListener implements MouseListener, KeyListener,
                     if (nbNode != null) {
                         nbNodes.add(nbNode);
                         Action action = getDefaultAction(nbNode);
-                        if (action == null) continue;
+                        if (action == null) {
+                            continue;
+                        }
                         String partName = getMenuItemLabel(action);
                         if ((partName.length() != 0) && labels.add(partName)) {
                             wholeNameBuf.append('/').append(partName);
