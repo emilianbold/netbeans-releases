@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -426,6 +427,11 @@ public class NbModuleSuite {
                     if (!v.find()) {
                         throw new IllegalStateException("Cannot find version:\n" + manifest);
                     }
+                    File jar = jarFromURL(url);
+                    if (jar.getParentFile().getName().equals("lib")) {
+                        // Otherwise will get DuplicateException.
+                        continue;
+                    }
                     String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
@@ -434,7 +440,7 @@ public class NbModuleSuite {
 "    <param name=\"autoload\">false</param>\n" +
 "    <param name=\"eager\">false</param>\n" +
 "    <param name=\"enabled\">true</param>\n" +
-"    <param name=\"jar\">" + extractURL(url) + "</param>\n" +
+"    <param name=\"jar\">" + jar + "</param>\n" +
 "    <param name=\"reloadable\">false</param>\n" +
 "    <param name=\"specversion\">" + v.group(1) + "</param>\n" +
 "</module>\n";
@@ -447,11 +453,11 @@ public class NbModuleSuite {
             }
         }
         
-        private static Pattern MANIFEST = Pattern.compile("jar:file:(.*)!/META-INF/MANIFEST.MF", Pattern.MULTILINE);
-        private static String extractURL(URL u) {
+        private static Pattern MANIFEST = Pattern.compile("jar:(file:.*)!/META-INF/MANIFEST.MF", Pattern.MULTILINE);
+        private static File jarFromURL(URL u) {
             Matcher m = MANIFEST.matcher(u.toExternalForm());
             if (m.matches()) {
-                return m.group(1);
+                return new File(URI.create(m.group(1)));
             } else {
                 throw new IllegalStateException(u.toExternalForm());
             }

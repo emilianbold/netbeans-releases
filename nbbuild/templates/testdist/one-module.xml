@@ -81,6 +81,18 @@ made subject to such option by the copyright holder.
          
      </target>
      <target name="do-test" unless="wrong.classpath">
+        <macrodef name="metaproperty">
+            <attribute name="name"/>
+            <attribute name="value"/>
+            <sequential>
+                <property name="@{name}" value="${@{value}}"/>
+            </sequential>
+        </macrodef>
+        <property name="test.config" value="default"/>
+        <property name="test.config.${test.config}.includes" value="**/*Test.class"/>
+        <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>
+        <property name="test.config.${test.config}.excludes" value=""/>
+        <metaproperty name="test.excludes" value="test.config.${test.config}.excludes"/>
         <junit 
             showoutput="true" fork="true" failureproperty="tests.failed" 
             errorproperty="tests.failed" filtertrace="${test.filter.trace}" 
@@ -88,7 +100,8 @@ made subject to such option by the copyright holder.
         >
             <batchtest todir="${test.results.dir}">
                 <fileset dir="${test.classes.dir}">
-                    <include name="**/*Test.class"/>
+                    <include name="${test.includes}"/>
+                    <exclude name="${test.excludes}"/>
                 </fileset>
             </batchtest>
             <classpath refid="test.cp"/>

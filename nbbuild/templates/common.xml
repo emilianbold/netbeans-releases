@@ -506,14 +506,27 @@ made subject to such option by the copyright holder.
         <compile-test-single test.type="${test.type}"/>
     </target>
 
+    <macrodef name="metaproperty">
+        <attribute name="name"/>
+        <attribute name="value"/>
+        <sequential>
+            <property name="@{name}" value="${@{value}}"/>
+        </sequential>
+    </macrodef>
     <macrodef name="test">
         <attribute name="test.type"/>
         <sequential>
+            <property name="test.config" value="default"/>
+            <property name="test.config.${test.config}.includes" value="**/*Test.class"/>
+            <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>
+            <property name="test.config.${test.config}.excludes" value=""/>
+            <metaproperty name="test.excludes" value="test.config.${test.config}.excludes"/>
             <mkdir dir="${build.test.@{test.type}.results.dir}"/>
             <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.@{test.type}.results.dir}" timeout="${test.timeout}">
                 <batchtest todir="${build.test.@{test.type}.results.dir}">
                     <fileset dir="${build.test.@{test.type}.classes.dir}">
-                        <include name="**/*Test.class"/>
+                        <include name="${test.includes}"/>
+                        <exclude name="${test.excludes}"/>
                     </fileset>
                 </batchtest>
                 <classpath refid="test.@{test.type}.run.cp"/>

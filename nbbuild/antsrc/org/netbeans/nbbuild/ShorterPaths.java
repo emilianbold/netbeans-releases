@@ -198,6 +198,8 @@ public class ShorterPaths extends Task {
                            simplyPath(path,externalLibBuf,outProp);
                        }
                        pw.println(name + "=" + outProp);          
+                    } else if (name.startsWith("test.config")) {
+                        pw.println(name + "=" + properties.get(name));
                     }
                 }
                 pw.println("extra.test.libs=" + externalLibBuf.toString());

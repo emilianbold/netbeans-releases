@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="Test Distribution" default="all" basedir=".">
     <property name="test.required.modules" value=""/>
-    <property name="test.types" value="unit:qa-functional:qa-performance"/>
+    <property name="test.types" value="unit:qa-functional"/>
     <target name="all" description="Run all tests">
         <subant genericantfile="all-tests.xml" buildpath="${test.types}">
             <property name="test.required.modules" value="${test.required.modules}"/>
