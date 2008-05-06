@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,9 @@ package org.netbeans.api.java.source;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
@@ -77,7 +79,6 @@ public class TypeUtilitiesTest extends NbTestCase {
         JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPathSupport.createClassPath(new URL[0]), ClassPathSupport.createClassPath(new URL[0])));
         
         js.runUserActionTask(new Task<CompilationController>() {
-
             public void run(CompilationController info)  {
                 TypeElement jlStringElement = info.getElements().getTypeElement("java.lang.String");
                 TypeMirror jlString = info.getTypes().getDeclaredType(jlStringElement);
@@ -110,4 +111,23 @@ public class TypeUtilitiesTest extends NbTestCase {
         
     }
 
+    public void testSubstitute() throws Exception {
+        JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPathSupport.createClassPath(new URL[0]), ClassPathSupport.createClassPath(new URL[0])));
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController info)  {
+                TypeElement jlStringElement = info.getElements().getTypeElement("java.lang.String");
+                TypeMirror jlString = info.getTypes().getDeclaredType(jlStringElement);
+                TypeElement juListElement = info.getElements().getTypeElement("java.util.List");
+                TypeMirror juListString = info.getTypes().getDeclaredType(juListElement, jlString);
+                
+                DeclaredType juListType = (DeclaredType) juListElement.asType();
+                TypeMirror substituted = info.getTypeUtilities().substitute(juListType, juListType.getTypeArguments(), Collections.singletonList(jlString));
+                
+                assertTrue(info.getTypes().isSameType(juListString, substituted));
+            }
+        }, true);
+        
+    }
+    
 }
