@@ -58,6 +58,16 @@ import static java.util.logging.Level.FINEST;
  */
 final class NodeSelector {
 
+    /** */
+    private final TreePath[] nodes;
+    private final Map<TreePathWrapper,Boolean> map;
+
+    private TreePath lsfn = null;   //last selected file node
+    private TreePath ldn = null;    //last selected detail node not yet stored in the map
+    private TreePath ldfn = null;   //parent of 'ldn'
+
+    private final Logger log = Logger.getLogger(getClass().getName());
+
     /**
      * Selects nodes that are substantial for what will happen when Enter/Return
      * is pressed if the given nodes are selected.
@@ -76,140 +86,151 @@ final class NodeSelector {
      *          with substantial equivalents
      */
     static List<TreePath> selectMainNodes(final TreePath[] selectedNodes,
-                                                  final boolean canHaveDetails) {
-        final Logger log = Logger.getLogger(NodeListener.class.getName()
-                                            + ".selectMainNodes");      //NOI18N
+                                          final boolean canHaveDetails) {
+        final Logger log = Logger.getLogger(NodeSelector.class.getName());
         if (log.isLoggable(FINER)) {
             log.finer("selectMainNodes(canHaveDetails = "               //NOI18N
                       + canHaveDetails + ')');
         }
-        final boolean finest = log.isLoggable(FINEST);
-
-        final TreePath rootNode = findRootNode(selectedNodes[0]);
 
         if (!canHaveDetails) {
-            int rootNodeIndex = -1;
-            for (int i = 0; i < selectedNodes.length; i++) {
-                if (selectedNodes[i] == rootNode) {
-                    rootNodeIndex = i;
-                    break;
-                }
-            }
-
-            if (rootNodeIndex == -1) {
-                return Arrays.asList(selectedNodes);
-            } else {
-                if (rootNodeIndex == 0) {
-                    return Arrays.asList(selectedNodes)
-                                 .subList(1, selectedNodes.length);
-                } else if (rootNodeIndex == selectedNodes.length - 1) {
-                    return Arrays.asList(selectedNodes)
-                                 .subList(0, selectedNodes.length - 1);
-                } else {
-                    List<TreePath> result
-                            = new ArrayList<TreePath>(selectedNodes.length - 1);
-                    for (int i = 0; i < rootNodeIndex; i++) {
-                        result.add(selectedNodes[i]);
-                    }
-                    for (int i = rootNodeIndex + 1; i < selectedNodes.length; i++) {
-                        result.add(selectedNodes[i]);
-                    }
-                    assert result.size() == selectedNodes.length - 1;
-                    return result;
-                }
-            }
-
-            
+            return simpleSelect(selectedNodes);
+        } else {
+            return new NodeSelector(selectedNodes).selectMainNodes();
         }
-                
-        Map<TreePathWrapper,Boolean> map
-                = new LinkedHashMap<TreePathWrapper,Boolean>(
-                          (int) (selectedNodes.length * 1.35 + .5),
-                          0.75f);
+    }
 
-        TreePath lsfn = null;   //last selected file node
-        TreePath ldn = null;    //last selected detail node not yet stored in the map
-        TreePath ldfn = null;   //parent of 'ldn'
+    /**
+     */
+    private static List<TreePath> simpleSelect(TreePath[] selectedNodes) {
+        final TreePath rootNode = findRootNode(selectedNodes[0]);
+        int rootNodeIndex = -1;
+        for (int i = 0; i < selectedNodes.length; i++) {
+            if (selectedNodes[i] == rootNode) {
+                rootNodeIndex = i;
+                break;
+            }
+        }
+
+        if (rootNodeIndex == -1) {
+            return Arrays.asList(selectedNodes);
+        } else {
+            if (rootNodeIndex == 0) {
+                return Arrays.asList(selectedNodes)
+                             .subList(1, selectedNodes.length);
+            } else if (rootNodeIndex == selectedNodes.length - 1) {
+                return Arrays.asList(selectedNodes)
+                             .subList(0, selectedNodes.length - 1);
+            } else {
+                List<TreePath> result
+                        = new ArrayList<TreePath>(selectedNodes.length - 1);
+                for (int i = 0; i < rootNodeIndex; i++) {
+                    result.add(selectedNodes[i]);
+                }
+                for (int i = rootNodeIndex + 1; i < selectedNodes.length; i++) {
+                    result.add(selectedNodes[i]);
+                }
+                assert result.size() == selectedNodes.length - 1;
+                return result;
+            }
+        }
+    }
+
+    /**
+     */
+    private NodeSelector(TreePath[] nodes) {
+        this.nodes = nodes;
+        this.map = new LinkedHashMap<TreePathWrapper,Boolean>(
+                                      (int) (nodes.length * 1.35 + .5),
+                                      0.75f);
+    }
+
+    /**
+     */
+    private List<TreePath> selectMainNodes() {
+        final boolean finest = log.isLoggable(FINEST);
+
+        final TreePath rootNode = findRootNode(nodes[0]);
 
         if (finest) {
             log.finest("Selected nodes:");                              //NOI18N
-            for (TreePath selected : selectedNodes) {
-                if (selected == rootNode) {
+            for (TreePath current : nodes) {
+                if (current == rootNode) {
                     log.finest("* <root>");                             //NOI18N
                     continue;
                 }
-                TreePath parent = selected.getParentPath();
+                TreePath parent = current.getParentPath();
                 assert parent != null;
                 if (parent == rootNode) {
-                    log.finest("* " + getFileNodeName(selected));       //NOI18N
+                    log.finest("* " + getFileNodeName(current));        //NOI18N
                 } else {
-                    log.finest("* " + getDetailNodeName(selected, -1)); //NOI18N
+                    log.finest("* " + getDetailNodeName(current, -1));  //NOI18N
                 }
             }
             log.finest("");                                             //NOI18N
         }
-        for (TreePath selected : selectedNodes) {
-            if (selected == rootNode) {
+        for (TreePath current : nodes) {
+            if (current == rootNode) {
                 log.finest("*** <root> - filtered out");                //NOI18N
                 continue;
             }
 
             assert (ldfn == null) == (ldn == null);
             assert (ldfn == null) || (ldfn == ldn.getParentPath());
-            assert (selected != ldfn) || (selected != lsfn);
+            assert (current != ldfn) || (current != lsfn);
 
-            TreePath parent = selected.getParentPath();
+            TreePath parent = current.getParentPath();
             assert parent != null;
             if (finest) {
                 log.finest("*** " + ((parent == rootNode)               //NOI18N
-                                     ? getFileNodeName(selected)
-                                     : getDetailNodeName(selected, -1)));
+                                     ? getFileNodeName(current)
+                                     : getDetailNodeName(current, -1)));
             }
             if (parent == rootNode) {
                 /* it is a node representing a file */
-                if (selected == lsfn) {
+                if (current == lsfn) {
                     /*
                      * when two or more detail nodes under this node had been
                      * selected, this node became selected, too
                      */
                     if (finest) {
-                        log.finest(getFileNodeName(selected)
+                        log.finest(getFileNodeName(current)
                                    + " has been already selected");     //NOI18N
                     }
                     continue;
                 }
 
-                if ((ldfn != null) && (selected != ldfn)) {
+                if ((ldfn != null) && (current != ldfn)) {
                     /* save information about the last selected detail node */
                     if (finest) {
                         log.finest("handlePendingDetailNode(...)");     //NOI18N
                     }
-                    handlePendingDetailNode(map, ldn, ldfn, log);
+                    handlePendingDetailNode();
                 }
                 if (finest) {
                     log.finest("map.put("                               //NOI18N
-                               + getFileNodeName(selected)
+                               + getFileNodeName(current)
                                + ", TRUE)");                            //NOI18N
-                    log.finest("LSFN = " + getFileNodeName(selected));  //NOI18N
+                    log.finest("LSFN = " + getFileNodeName(current));   //NOI18N
                     log.finest("LDFN = null");                          //NOI18N
                     log.finest("LDN = null");                           //NOI18N
                 }
-                map.put(new TreePathWrapper(selected), TRUE);
-                lsfn = selected;
+                map.put(new TreePathWrapper(current), TRUE);
+                lsfn = current;
                 ldfn = null;
                 ldn = null;
             } else if (parent == lsfn) {    //lsfn may be <null>
                 /* its parent is the most recently selected file node */
                 //do nothing
                 if (finest) {
-                    log.finest(getDetailNodeName(selected)
+                    log.finest(getDetailNodeName(current)
                                + " - its parent is already selected");  //NOI18N
                 }
             } else if (parent == ldfn) {    //ldfn may be <null>
                 /* detail node added to the same parent as the last detail node */
                 map.put(new TreePathWrapper(ldfn), TRUE);
                 if (finest) {
-                    log.finest(getDetailNodeName(selected)
+                    log.finest(getDetailNodeName(current)
                                + " - at least second selected node"
                                + " under the same parent ("             //NOI18N
                                + getFileNodeName(parent)
@@ -234,7 +255,7 @@ final class NodeSelector {
                  */
                 if (finest) {
                     if (map.containsKey(new TreePathWrapper(parent))) {
-                        log.finest(getDetailNodeName(selected)
+                        log.finest(getDetailNodeName(current)
                                    + " - added under a file node ("     //NOI18N
                                    + getFileNodeName(parent)
                                    + ") that is selected but is not"    //NOI18N
@@ -247,31 +268,22 @@ final class NodeSelector {
                     if (finest) {
                         log.finest("handlePendingDetailNode(...)");     //NOI18N
                     }
-                    boolean ldfnSelected
-                            = handlePendingDetailNode(map, ldn, ldfn, log);
-                    if (ldfnSelected) {
-                        lsfn = ldfn;
-                        if (finest) {
-                            log.finest("LSFN = "                        //NOI18N
-                                       + getFileNodeName(ldfn)
-                                       + " /LDFN/");                    //NOI18N
-                        }
-                    }
+                    handlePendingDetailNode();
                 }
                 if (parent == lsfn) {
                     ldfn = null;
                     ldn = null;
                 } else {
                     ldfn = parent;
-                    ldn = selected;
+                    ldn = current;
                 }
                 if (finest) {
                     log.finest("LDFN = "                                //NOI18N
                                + getFileNodeName(parent)
                                + " /parent/");                          //NOI18N
                     log.finest("LDN = "                                 //NOI18N
-                               + getDetailNodeName(selected)
-                               + " /selected/");                        //NOI18N
+                               + getDetailNodeName(current)
+                               + " /current/");                         //NOI18N
                 }
             }
         }
@@ -281,11 +293,7 @@ final class NodeSelector {
                 log.finest("*** END");                                  //NOI18N
                 log.finest("handlePendingDetailNode(...)");             //NOI18N
             }
-            boolean ldfnSelected
-                    = handlePendingDetailNode(map, ldn, ldfn, log);
-            if (ldfnSelected) {
-                lsfn = ldfn;
-            }
+            handlePendingDetailNode();
             ldfn = null;
             ldn = null;
         }
@@ -356,17 +364,11 @@ final class NodeSelector {
      * @return  {@code true} if the parent node ({@code ldfn}) became selected
      *          during the operation, {@code false} otherwise
      */
-    private static boolean handlePendingDetailNode(
-                                    final Map<TreePathWrapper,Boolean> map,
-                                    final TreePath ldn,
-                                    final TreePath ldfn,
-                                    final Logger log) {
-        assert map != null;
+    private void handlePendingDetailNode() {
         assert ldfn != null;
         assert ldn != null;
 
         /* save information about the last selected detail node */
-        boolean updateLsfn = false;
         final Boolean oldValue = map.put(new TreePathWrapper(ldfn), TRUE);
         if (oldValue == null) {
             /*
@@ -398,7 +400,12 @@ final class NodeSelector {
                            + " - membership status changed"             //NOI18N
                            + " (conditional -> permanent)");            //NOI18N
             }
-            updateLsfn = true;  //lsfn = ldfn;
+            lsfn = ldfn;
+            if (log.isLoggable(FINEST)) {
+                log.finest("LSFN = "                                    //NOI18N
+                           + getFileNodeName(ldfn)
+                           + " /LDFN/");                                //NOI18N
+            }
         } else {
             assert (oldValue == TRUE);
             /*
@@ -407,7 +414,6 @@ final class NodeSelector {
              * TRUE changes nothing, which is exactly what we need.
              */
         }
-        return updateLsfn;
     }
 
     /**
