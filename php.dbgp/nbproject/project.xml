@@ -142,7 +142,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.php.rt</friend>
+                <friend>org.netbeans.modules.php.kit</friend>
                 <package>org.netbeans.modules.php.dbgp.api</package>
             </friend-packages>
         </data>
