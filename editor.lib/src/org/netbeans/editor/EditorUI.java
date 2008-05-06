@@ -347,6 +347,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
         String mimeType = Utilities.getMimeType(c);
         this.coloringMap = ColoringMap.get(mimeType);
         this.coloringMap.addPropertyChangeListener(WeakListeners.propertyChange(this, coloringMap));
+
+        // initialize preferences
+        MimePath mimePath = MimePath.parse(mimeType);
+        prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        
+        // initialize rendering hints
+        renderingHints = EditorRenderingHints.get(mimePath);
         
         synchronized (getComponentLock()) {
             this.component = c;
@@ -370,13 +377,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
         }
 
         // Make sure all the things depending on non-null component will be updated
-        MimePath mimePath = MimePath.parse(mimeType);
-        prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
         weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, listener, prefs);
         prefs.addPreferenceChangeListener(weakPrefsListener);
         listener.preferenceChange(null);
-        
-        renderingHints = EditorRenderingHints.get(mimePath);
         
         // fix for issue #16352
         getDefaultColoring().apply(component);

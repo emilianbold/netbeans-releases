@@ -78,10 +78,14 @@ import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -95,7 +99,19 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
     private static final Logger LOG = Logger.getLogger(CodeFoldingSideBar.class.getName());
     
-    protected final JTextComponent component;    
+    protected final JTextComponent component;
+    private volatile AttributeSet attribs;
+    private Lookup.Result<? extends FontColorSettings> fcsLookupResult;
+    private final LookupListener fcsTracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            attribs = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    CodeFoldingSideBar.this.repaint();
+                }
+            });
+        }
+    };
     
     private boolean enabled = false;
     
@@ -174,7 +190,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     
     private void updatePreferredSize() {
         if (enabled) {
-            setPreferredSize(new Dimension(getColoring(component).getFont().getSize(), component.getHeight()));
+            setPreferredSize(new Dimension(getColoring().getFont().getSize(), component.getHeight()));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         }else{
             setPreferredSize(new Dimension(0,0));
@@ -396,7 +412,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     
     protected int getMarkSize(Graphics g){
         if (g != null){
-            FontMetrics fm = g.getFontMetrics(getColoring(component).getFont());
+            FontMetrics fm = g.getFontMetrics(getColoring().getFont());
             if (fm != null){
                 int ret = fm.getAscent() - fm.getDescent();
                 return ret - ret%2;
@@ -411,7 +427,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         Rectangle clip = getVisibleRect();//g.getClipBounds();
         visibleMarks.clear();
         
-        Coloring coloring = getColoring(component);
+        Coloring coloring = getColoring();
         g.setColor(coloring.getBackColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
@@ -633,15 +649,23 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         return accessibleContext;
     }
 
-    private static Coloring getColoring(JTextComponent component) {
-        FontColorSettings fcs = MimeLookup.getLookup(
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(FontColorSettings.class);
-        
-        AttributeSet attribs = fcs.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
+    private Coloring getColoring() {
         if (attribs == null) {
-            attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-        }
-        
+            if (fcsLookupResult == null) {
+                fcsLookupResult = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component))
+                        .lookupResult(FontColorSettings.class);
+                fcsLookupResult.addLookupListener(WeakListeners.create(LookupListener.class, fcsTracker, fcsLookupResult));
+            }
+            
+            FontColorSettings fcs = fcsLookupResult.allInstances().iterator().next();
+            AttributeSet attr = fcs.getFontColors(FontColorNames.CODE_FOLDING_BAR_COLORING);
+            if (attr == null) {
+                attr = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+            } else {
+                attr = AttributesUtilities.createComposite(attr, fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
+            }
+            attribs = attr;
+        }        
         return Coloring.fromAttributeSet(attribs);
     }
     

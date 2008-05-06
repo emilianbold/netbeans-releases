@@ -48,6 +48,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -59,10 +60,15 @@ import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.editor.view.spi.LockView;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * View over collapsed area of the fold.
@@ -80,7 +86,24 @@ import org.netbeans.editor.view.spi.LockView;
     private final Position endPos;
     
     private final String foldDescription;
-
+    
+    private volatile AttributeSet attribs;
+    private Lookup.Result<? extends FontColorSettings> fcsLookupResult;
+    private final LookupListener fcsTracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            attribs = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JTextComponent jtc = CollapsedView.this.getComponent();
+                    if (jtc != null) {
+                        CollapsedView.this.getBaseTextUI().damageRange(
+                            jtc, CollapsedView.this.getStartOffset(), CollapsedView.this.getEndOffset());
+                    }
+                }
+            });
+        }
+    };
+    
     /** Creates a new instance of CollapsedView */
     public CollapsedView(Element elem, Position startPos, Position endPos, String foldDescription) {
         super(elem);
@@ -90,15 +113,24 @@ import org.netbeans.editor.view.spi.LockView;
         this.foldDescription = foldDescription;
     }
 
-    private static Coloring getColoring(JTextComponent component) {
-        FontColorSettings fcs = MimeLookup.getLookup(
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(FontColorSettings.class);
-        
-        AttributeSet attribs = fcs.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
+    private Coloring getColoring() {
         if (attribs == null) {
-            attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-        }
-        
+            if (fcsLookupResult == null) {
+                fcsLookupResult = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(getComponent()))
+                        .lookupResult(FontColorSettings.class);
+                fcsLookupResult.addLookupListener(WeakListeners.create(LookupListener.class, fcsTracker, fcsLookupResult));
+            }
+            
+            FontColorSettings fcs = fcsLookupResult.allInstances().iterator().next();
+            AttributeSet attr = fcs.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
+            if (attr == null) {
+                attr = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+            } else {
+                attr = AttributesUtilities.createComposite(attr, fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
+            }
+            
+            attribs = attr;
+        }        
         return Coloring.fromAttributeSet(attribs);
     }
     
@@ -146,7 +178,7 @@ import org.netbeans.editor.view.spi.LockView;
     private int getCollapsedFoldStringWidth() {
         JTextComponent comp = getComponent();
         if (comp==null) return 0;
-        FontMetrics fm = FontMetricsCache.getFontMetrics(getColoring(comp).getFont(), comp);
+        FontMetrics fm = FontMetricsCache.getFontMetrics(getColoring().getFont(), comp);
         if (fm==null) return 0;
         return fm.stringWidth(foldDescription) + 2 * MARGIN_WIDTH;
     }
@@ -166,7 +198,7 @@ import org.netbeans.editor.view.spi.LockView;
         int width = allocRect.width-1;
         int height = allocRect.height-1;
 
-        Coloring coloring = getColoring(getComponent());
+        Coloring coloring = getColoring();
         
         // draw background
         g.setColor(coloring.getBackColor());
