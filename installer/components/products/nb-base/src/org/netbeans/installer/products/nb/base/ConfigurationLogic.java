@@ -55,6 +55,7 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
@@ -578,6 +579,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return shortcut;
     }
     
+    public RemovalMode getRemovalMode() {
+        return RemovalMode.LIST;
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
