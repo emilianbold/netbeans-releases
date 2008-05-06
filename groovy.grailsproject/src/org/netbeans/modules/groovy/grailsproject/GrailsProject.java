@@ -105,6 +105,7 @@ public final class GrailsProject implements Project {
                 this,  //project spec requires a project be in its own lookup
                 projectState, //allow outside code to mark the project as needing saving
                 new Info(), //Project information implementation
+                new GrailsActionProvider(this),
                 new GrailsSources(projectDir),
                 new GrailsServerState(this, getProjectDirectory().getName()),
                 new GrailsProjectCustomizerProvider(this),

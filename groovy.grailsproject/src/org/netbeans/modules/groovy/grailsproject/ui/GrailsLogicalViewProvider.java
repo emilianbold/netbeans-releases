@@ -65,9 +65,11 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.actions.GrailsServerCommandAction;
 import org.netbeans.modules.groovy.grailsproject.actions.GrailsProjectDeleteAction;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
@@ -79,6 +81,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -260,17 +263,27 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
             
             List<Action> actions = new ArrayList<Action>();
-            
+            actions.add(new GrailsServerCommandAction(project));
+            actions.add(null);            
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null)); // NOI18N
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null)); // NOI18N            
+            actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
-            actions.add(new GrailsServerCommandAction(project));
             actions.add(SystemAction.get(FindAction.class));
+            actions.add(null);
             actions.add(new GrailsProjectDeleteAction(project));
-            actions.add(CommonProjectActions.customizeProjectAction());
+            actions.add(null);
             
             // honor 57874 contact
             addFromLayers(actions, "Projects/Actions"); //NOI18N
+            
+            actions.add(null);
+            actions.add(CommonProjectActions.customizeProjectAction());
             
             return actions.toArray(new Action[actions.size()]);
             
