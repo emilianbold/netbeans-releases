@@ -99,7 +99,6 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
 
         Thread inputThread = null;
         Thread errorThread = null;
-        Thread outputThread = null;
 
         try {
             // FIXME will be repaced with output API
@@ -127,6 +126,7 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }
+                io.getOut().close();
             }
 
             process.waitFor();
@@ -144,9 +144,6 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
             }
             if (errorThread != null) {
                 errorThread.interrupt();
-            }
-            if (outputThread != null) {
-                outputThread.interrupt();
             }
 
             FileUtil.refreshFor(toRefresh);
