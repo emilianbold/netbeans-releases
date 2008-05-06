@@ -58,6 +58,8 @@ made subject to such option by the copyright holder.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/**Test.class"/>
+                <!-- XXX: (Try to) reenable with JRuby 1.1.2+ -->
+                <exclude name="**/GemRunnerTest.class"/>
             </patternset>
         </testset>
     </testbag>
