@@ -405,12 +405,10 @@ public class HudsonConnector implements HudsonXmlApiConstants,
         try {
             URL u = new java.net.URL(instance.getUrl());
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-            
-            // Get string version
             String sVersion = conn.getHeaderField("X-Hudson");
-            
-            // Create a HudsonVersion object
-            v = new HudsonVersionImpl(sVersion);
+            if (sVersion != null) {
+                v = new HudsonVersionImpl(sVersion);
+            }
         } catch (MalformedURLException e) {
             // Nothing
         } catch (IOException e) {
