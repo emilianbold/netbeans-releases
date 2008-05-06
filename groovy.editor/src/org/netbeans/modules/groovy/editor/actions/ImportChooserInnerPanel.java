@@ -53,6 +53,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.InputMap;
@@ -71,32 +75,34 @@ import org.openide.util.NbBundle;
  * Second column also has CellEditor (also a JComboBox).
  *
  * @author  eakle, Martin Roskanin
+ * @author  Matthias Schmidt collectified it.
  */
 public class ImportChooserInnerPanel extends javax.swing.JPanel{
     private JComboBox[] combos;
-    private JCheckBox checkUnusedImports;
     
     public ImportChooserInnerPanel() {
         initComponents();
     }
     
-    public void initPanel(String[] simpleNames, String[][] choices, Icon[][] icons, String[] defaults, boolean removeUnusedImports) {
-        initComponentsMore(simpleNames, choices, icons, defaults, removeUnusedImports);
+    public void initPanel(Map<String,List> multipleCandidates) {
+        initComponentsMore(multipleCandidates);
         setAccessible();
     }
     
-    private void initComponentsMore(String simpleNames[], String choices[][], Icon[][] icons, String defaults[], boolean removeUnusedImports) {
+    private void initComponentsMore(Map<String,List> multipleCandidates) {
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
         jScrollPane1.getVerticalScrollBar().setUnitIncrement( new JLabel("X").getPreferredSize().height );
         jScrollPane1.getVerticalScrollBar().setBlockIncrement( new JLabel("X").getPreferredSize().height*10 );
         
-        if( choices.length > 0 ) {
+        int candidateSize = multipleCandidates.size();
+        
+        if( candidateSize > 0 ) {
         
             int row = 0;
 
-            combos = new JComboBox[choices.length];
+            combos = new JComboBox[candidateSize];
 
             Font monoSpaced = new Font( "Monospaced", Font.PLAIN, new JLabel().getFont().getSize() );
             FocusListener focusListener = new FocusListener() {
@@ -108,16 +114,48 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
                 public void focusLost(FocusEvent arg0) {
                 }
             };
-            for (int i=0; i<choices.length; i++){
-                combos[i] = createComboBox( choices[i], defaults[i], icons[i], monoSpaced, focusListener );
+            
+            int i = 0;
+            
+            for (Iterator it = multipleCandidates.keySet().iterator(); it.hasNext();) {
+                String  name = (String)it.next();
+                
+                List<FixImportsAction.ImportCandidate> importCandidates = multipleCandidates.get(name);
+                
+                int size = importCandidates.size();
+                int iNum = 0;
+                
+                String[] choices = new String[size];
+                Icon[] icons = new Icon[size];        
+                String defaultSelection = null;
+                int maxImportantsLevel = 0;
+                
+                for (FixImportsAction.ImportCandidate importCandidate : importCandidates) {
+                    choices[iNum] = importCandidate.getFqnName();
+                    icons[iNum] = importCandidate.getIcon();
+                    
+                    int level = importCandidate.getImportantsLevel();
+                    
+                    if(level > maxImportantsLevel){
+                        defaultSelection = choices[iNum];
+                        maxImportantsLevel = level;
+                    }
+                    
+                    iNum++;
+                }
+                
+                
+                combos[i] = createComboBox( choices, defaultSelection, 
+                                            icons, monoSpaced, focusListener );
 
-                JLabel lblSimpleName = new JLabel( simpleNames[i] );
+                JLabel lblSimpleName = new JLabel( name );
                 lblSimpleName.setOpaque( false );
                 lblSimpleName.setFont( monoSpaced );
                 lblSimpleName.setLabelFor( combos[i] );
 
                 contentPanel.add( lblSimpleName, new GridBagConstraints(0,row,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(3,5,2,5),0,0) );
                 contentPanel.add( combos[i], new GridBagConstraints(1,row++,1,1,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(3,5,2,5),0,0) );
+                i++;
             }
 
             contentPanel.add( new JLabel(), new GridBagConstraints(2,row,2,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
@@ -132,12 +170,7 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
         // load localized text into widgets:
         lblTitle.setText(getBundleString("FixDupImportStmts_IntroLbl")); //NOI18N
         lblHeader.setText(getBundleString("FixDupImportStmts_Header")); //NOI18N
-        
-        checkUnusedImports = new JCheckBox();
-        Mnemonics.setLocalizedText(checkUnusedImports, getBundleString("FixDupImportStmts_UnusedImports")); //NOI18N
-        bottomPanel.add( checkUnusedImports, BorderLayout.WEST );
-        checkUnusedImports.setEnabled(true);
-        checkUnusedImports.setSelected(removeUnusedImports);
+
     }
     
     private JComboBox createComboBox( String[] choices, String defaultValue, Icon[] icons, Font font, FocusListener listener ) {
@@ -167,20 +200,17 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
     
     private void setAccessible() {
         getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_IntroLbl")); // NOI18N
-	checkUnusedImports.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_checkUnusedImports_a11y")); // NOI18N
     }
     
-    public String[] getSelections() {
-        String[] res = new String[null == combos ? 0 : combos.length];
-        for( int i=0; i<res.length; i++ ) {
-            res[i] = combos[i].getSelectedItem().toString();
+    public List<String> getSelections() {
+        List<String> result = new ArrayList<String>();
+        
+        for( int i=0; i<combos.length; i++ ) {
+            result.add(combos[i].getSelectedItem().toString());
         }
-        return res;
+        return result;
     }
     
-    public boolean getRemoveUnusedImports() {
-        return checkUnusedImports.isSelected();
-    }
     
     /** This method is called from within the constructor to
      * initialize the form.
