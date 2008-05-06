@@ -54,6 +54,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -258,59 +259,49 @@ final class NodeListener implements MouseListener, KeyListener,
         if (pathCount == 1) {               //root node
             //no popup-menu for the root node
         } else if (pathCount == 2) {
+            JPopupMenu popup = null;
             if (tree.getSelectionCount() > 1) {
                 // prepare "best effort" popup menu for multiple selected nodes
-                Node nbNode;
-                Action action;
-                JMenuItem menuItem;
+                StringBuilder wholeNameBuf = new StringBuilder(30);
                 Set<String> labels = new HashSet<String>();
-                for (TreePath tp : tree.getSelectionPaths()) {
-                    nbNode = getNbNode(tp, resultModel);
+                final List<Node> nbNodes = new ArrayList<Node>(paths.length);
+                for (TreePath tp : paths) {
+                    Node nbNode = getNbNode(tp, resultModel);
                     if (nbNode != null) {
-                        action = getDefaultAction(nbNode);
+                        nbNodes.add(nbNode);
+                        Action action = getDefaultAction(nbNode);
                         if (action == null) continue;
-                        menuItem = (action instanceof Presenter.Popup)
-                             ? ((Presenter.Popup) action).getPopupPresenter()
-                             : null;
-                        if ( menuItem != null ) {
-                            labels.add(menuItem.getText());
-                        } else {
-                            labels.add((String) action.getValue(Action.NAME));
+                        String partName = getMenuItemLabel(action);
+                        if ((partName.length() != 0) && labels.add(partName)) {
+                            wholeNameBuf.append('/').append(partName);
                         }
                     }
                 }
-                if (labels.size()>0) {
-                    JPopupMenu popup = new JPopupMenu();
-                    menuItem = new JMenuItem();
-                    String newLabel = "";
-                    for (String label : labels) {
-                        if (newLabel.length()>0) {
-                            newLabel += "/" + label;
-                        } else {
-                            newLabel = label;
-                        }
-                    }
-                    menuItem.setText(newLabel);
-                    menuItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                callResultNodesDefaultActions(e,tree);
-                            }
+                if (labels.isEmpty()) {
+                    //no named popup actions collected
+                    return;
+                }
 
+                JMenuItem menuItem = new JMenuItem(
+                        wholeNameBuf.toString().substring(1)); //strip initial '/'
+                menuItem.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            callResultNodesDefaultActions(nbNodes, e);
                         }
-                    );
-                    popup.add(menuItem);
-                    Point location = getPopupMenuLocation(tree, path, e);
-                    popup.show(tree, location.x, location.y);
-                }
+
+                    }
+                );
+                popup = new JPopupMenu();
+                popup.add(menuItem);
             } else {
                 Node nbNode = getNbNode(path, resultModel);
                 if (nbNode != null) {
-                    JPopupMenu popup = createFileNodePopupMenu(nbNode);
-                    if (popup != null) {
-                        Point location = getPopupMenuLocation(tree, path, e);
-                        popup.show(tree, location.x, location.y);
-                    }
+                    popup = createFileNodePopupMenu(nbNode);
                 }
+            }
+            if (popup != null) {
+                Point location = getPopupMenuLocation(tree, path, e);
+                popup.show(tree, location.x, location.y);
             }
         } else if (pathCount == 3) {        //detail node
             if (tree.getSelectionCount() == 1) {
@@ -330,16 +321,14 @@ final class NodeListener implements MouseListener, KeyListener,
      * Performs default action on all file nodes selected in
      * @param e  ActionEvent performed
      */
-    private void callResultNodesDefaultActions(ActionEvent e, JTree tree) {
-        if ((tree != null) && (tree.getSelectionCount() >= 1)) {
-            Node nbNode;
-            ResultModel resultModel = getResultModel(tree);
-            for (TreePath tp : tree.getSelectionPaths()) {
-                nbNode = getNbNode(tp, resultModel);
-                if ((nbNode != null) && (tp.getPathCount() ==2)) {
-                    callDefaultAction(nbNode, e.getSource(), e.getID(), "click"); // NOI18N
-                }
-            }
+    private void callResultNodesDefaultActions(Collection<Node> nbNodes,
+                                               ActionEvent e) {
+        assert (nbNodes != null) && !nbNodes.isEmpty();
+
+        Object eSource = e.getSource();
+        int eID = e.getID();
+        for (Node nbNode : nbNodes) {
+            callDefaultAction(nbNode, eSource, eID, "click");           //NOI18N
         }
     }
     
@@ -599,9 +588,7 @@ final class NodeListener implements MouseListener, KeyListener,
         
         assert action.isEnabled();
         
-        JMenuItem menuItem = (action instanceof Presenter.Popup)
-                             ? ((Presenter.Popup) action).getPopupPresenter()
-                             : null;
+        JMenuItem menuItem = getJMenuItem(action);
         JPopupMenu popupMenu = new JPopupMenu();
         if (menuItem != null) {
             popupMenu.add(menuItem);
@@ -609,6 +596,19 @@ final class NodeListener implements MouseListener, KeyListener,
             popupMenu.add(action);
         }
         return popupMenu;
+    }
+
+    private static String getMenuItemLabel(Action action) {
+        JMenuItem menuItem = getJMenuItem(action);
+        return (menuItem != null) ? menuItem.getText()
+                                  : (String) action.getValue(Action.NAME);
+
+    }
+
+    private static JMenuItem getJMenuItem(Action action) {
+        return (action instanceof Presenter.Popup)
+               ? ((Presenter.Popup) action).getPopupPresenter()
+               : null;
     }
     
     /**
