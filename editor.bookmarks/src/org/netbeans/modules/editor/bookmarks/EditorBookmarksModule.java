@@ -47,23 +47,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Registry;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.lib.editor.bookmarks.actions.BookmarksKitInstallAction;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.WeakListeners;
 
 /**
  * Module installation class for editor.
@@ -72,13 +68,47 @@ import org.openide.modules.ModuleInstall;
  */
 public class EditorBookmarksModule extends ModuleInstall {
 
+    private static final String DOCUMENT_TRACKER_PROP = "EditorBookmarksModule.DOCUMENT_TRACKER_PROP"; //NOI18N
+    
+    private PropertyChangeListener editorsTracker;
+    private PropertyChangeListener documentTracker;
     private PropertyChangeListener openProjectsListener;
     private static List listeners = new ArrayList(); // List<ChangeListener>
     private PropertyChangeListener annotationTypesListener;
     private List lastOpenProjects;
 
     public void restored () {
-        Settings.addInitializer(new BookmarksSettingsInitializer());
+        editorsTracker = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // event for the editors tracker
+                if (evt.getSource() == EditorRegistry.class) {
+                    if (evt.getPropertyName() == null || EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                        JTextComponent jtc = (JTextComponent) evt.getNewValue();
+                        BookmarkList.get(jtc.getDocument()); // Initialize the bookmark list
+
+                        PropertyChangeListener l = (PropertyChangeListener) jtc.getClientProperty(DOCUMENT_TRACKER_PROP);
+                        if (l == null) {
+                            jtc.putClientProperty(DOCUMENT_TRACKER_PROP, documentTracker);
+                            jtc.addPropertyChangeListener(documentTracker);
+                        }
+                    }
+                    return;
+                }
+                
+                // event for the document tracker
+                if (evt.getSource() instanceof JTextComponent) {
+                    if (evt.getPropertyName() == null || "document".equals(evt.getPropertyName())) { //NOI18N
+                        Document newDoc = (Document)evt.getNewValue();
+                        if (newDoc != null) {
+                            BookmarkList.get(newDoc); // ask for the list to initialize it
+                        }
+                    }
+                    return;
+                }
+            }
+        };
+        documentTracker = WeakListeners.propertyChange(editorsTracker, null);
+        EditorRegistry.addPropertyChangeListener(editorsTracker);
         
         // Start listening on project closing
         openProjectsListener = new PropertyChangeListener() {
@@ -99,7 +129,7 @@ public class EditorBookmarksModule extends ModuleInstall {
         
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
-                final Iterator it = Registry.getDocumentIterator();
+                final Iterator it = EditorRegistry.componentList().iterator();
                 if (!it.hasNext()){
                     return ;
                 }
@@ -112,17 +142,17 @@ public class EditorBookmarksModule extends ModuleInstall {
                             AnnotationType type = AnnotationTypes.getTypes().getType(NbBookmarkImplementation.BOOKMARK_ANNOTATION_TYPE);
                             if (type != null){
                                 AnnotationTypes.getTypes().removePropertyChangeListener(annotationTypesListener);
-                                while(it.hasNext()){
-                                    Document doc = (Document)it.next();
-                                    BookmarkList.get(doc); // Initialize the bookmark list
+                                while(it.hasNext()) {
+                                    JTextComponent jtc = (JTextComponent)it.next();
+                                    BookmarkList.get(jtc.getDocument()); // Initialize the bookmark list
                                 }
                             }
                         }
                     });
                 } else {
                     while(it.hasNext()){
-                        Document doc = (Document)it.next();
-                        BookmarkList.get(doc); // Initialize the bookmark list
+                        JTextComponent jtc = (JTextComponent)it.next();
+                        BookmarkList.get(jtc.getDocument()); // Initialize the bookmark list
                     }
                 }
             }
@@ -147,40 +177,16 @@ public class EditorBookmarksModule extends ModuleInstall {
         // Stop listening on projects closing
         OpenProjects.getDefault().removePropertyChangeListener(openProjectsListener);
         
-        Settings.removeInitializer(BookmarksSettingsInitializer.NAME);
-        Settings.reset();
+        EditorRegistry.removePropertyChangeListener(editorsTracker);
         
         // Save bookmarks for all opened projects with touched bookmarks
         PersistentBookmarks.saveAllProjectBookmarks();
         
-        // notify NbBookmarkManager that the module is uninstalled and BookmarkList can be removed
+        // XXX: notify NbBookmarkManager that the module is uninstalled and BookmarkList can be removed
         // from doc.clientProperty
         fireChange();
     }
 
-    private static final class BookmarksSettingsInitializer extends Settings.AbstractInitializer {
-        
-        static final String NAME = "bookmarks-settings-initializer"; // NOI18N
-        
-        BookmarksSettingsInitializer() {
-            super(NAME);
-        }
-
-        public void updateSettingsMap(Class kitClass, java.util.Map settingsMap) {
-            if (kitClass == BaseKit.class) {
-                SettingsUtil.updateListSetting(settingsMap,
-                        SettingsNames.CUSTOM_ACTION_LIST,
-                        new Object[] { BookmarksKitInstallAction.INSTANCE }
-                );
-                SettingsUtil.updateListSetting(settingsMap,
-                        SettingsNames.KIT_INSTALL_ACTION_NAME_LIST,
-                        new Object[] { BookmarksKitInstallAction.INSTANCE.getValue(Action.NAME) }
-                );
-            }
-        }
-        
-    }
-    
     public static synchronized void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
