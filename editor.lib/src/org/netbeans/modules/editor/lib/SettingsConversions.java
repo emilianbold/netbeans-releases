@@ -160,6 +160,7 @@ public final class SettingsConversions {
         }
     }
     
+    // duplicated in org.netbeans.lib.editor.codetemplates.AbbrevDetection
     public static Object callFactory(Preferences prefs, MimePath mimePath, String settingName, Object defaultValue) {
         String factoryRef = prefs.get(settingName, null);
         
