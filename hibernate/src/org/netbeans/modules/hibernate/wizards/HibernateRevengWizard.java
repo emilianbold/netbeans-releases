@@ -254,12 +254,12 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         // and not like : hibernate.reveng<i>.xml.
         if (wiz instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> configFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
+            ArrayList<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
             String targetName = DEFAULT_REVENG_FILENAME;
-            if (!configFiles.isEmpty() && foundConfigFileInProject(configFiles, DEFAULT_REVENG_FILENAME)) {
-                int configFilesCount = configFiles.size();
+            if (!revengFiles.isEmpty() && foundConfigFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
+                int configFilesCount = revengFiles.size();
                 targetName = "hibernate" + (configFilesCount++) + ".reveng";
-                while (foundConfigFileInProject(configFiles, targetName)) {
+                while (foundConfigFileInProject(revengFiles, targetName)) {
                     targetName = "hibernate" + (configFilesCount++) + ".reveng";
                 }
             }
