@@ -71,6 +71,11 @@ public abstract class Parser {
         
     
     /**
+     * Called by the infrastructure to stop the parser operation.
+     */
+    public abstract void cancel ();
+    
+    /**
      * Registers new listener.
      * 
      * @param changeListener

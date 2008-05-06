@@ -228,9 +228,8 @@ public class TaskProcessor {
      * @see SchedulerTask for information about implementation requirements 
      * @task The task to run.
      * @source The source on which the task operates
-     * @throws IOException
      */
-    public static void addPhaseCompletionTask(final SchedulerTask task, final Source source) throws IOException {
+    public static void addPhaseCompletionTask(final SchedulerTask task, final Source source) {
         Parameters.notNull("task", task);   //NOI18N
         Parameters.notNull("source", source);   //NOI18N
         final String taskClassName = task.getClass().getName();

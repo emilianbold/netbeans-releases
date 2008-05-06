@@ -41,12 +41,13 @@ package org.netbeans.api.java.source;
 
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class JavaParserResult {
+public class JavaParserResult extends Parser.Result {
     
     private final CompilationInfoImpl impl;
     private final JavacParser parser;
@@ -60,6 +61,13 @@ public class JavaParserResult {
         this.impl = impl;
         this.parser = parser;
         this.isCancelable = isCancelable;
+    }
+
+    @Override
+    protected void invalidate() {
+        if (isCancelable) {
+            parser.resultFinished (this, isCancelable);
+        }
     }
 
 }

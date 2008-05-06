@@ -107,6 +107,7 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -159,18 +160,20 @@ public class JavacParser extends Parser {
         
     @Override
     public Result parse(final Source source, final Task task) {
-        Index.cancel.set(canceled);
-        return new JavacResult(source, this);
+        final boolean isCancelable = task instanceof ParserResultTask;
+        if (isCancelable) {
+            Index.cancel.set(canceled);
+        }
+        return new JavacResult(source, this, isCancelable);
     }
     
     @Override
     public void cancel () {
         canceled.set(true);
     }
-    
-    @Override 
-    public void finished (final Source source, final Task task, final Parser.Result result) {
-        if (result.isCancelable) {
+        
+    public void resultFinished (final Parser.Result result, boolean isCancelable) {
+        if (isCancelable) {
             Index.cancel.remove();
         }
     }
