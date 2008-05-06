@@ -99,7 +99,12 @@ public abstract class Parser {
      * Represents result of parsing. Implementation of this class should 
      * provide AST for parsed file, semantic information, etc.
      */
-    public static class Result {
+    public abstract static class Result {
+        
+        /**
+         * This method is called by Parsing API, when tash is finished.
+         */
+        public abstract void invalidate ();
     }
 }
 
