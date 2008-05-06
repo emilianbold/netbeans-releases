@@ -39,7 +39,7 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
         SUCCESS, FAILURE
     }
     
-    private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
+    private final HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
     
     private List<HudsonJobChangeItem> changes = new ArrayList<HudsonJobChangeItem>();
     
