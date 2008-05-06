@@ -61,6 +61,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Source;
@@ -80,19 +81,26 @@ public final class CompilationInfoImpl {
     private CompilationUnitTree compilationUnit;    
     
     private JavacTaskImpl javacTask;
-    private final PositionConverter binding;
     Pair<DocPositionRegion,MethodTree> changedMethod;
+    private final FileObject file;
     final JavaFileObject jfo;    
-    final Source source;        
+    private final Source source;
+    private final JavacParser parser;
     boolean needsRestart;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
         
     
-    CompilationInfoImpl (final Source source, final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
-        assert source != null;        
+    CompilationInfoImpl (final JavacParser parser,
+                         final Source source,
+                         final FileObject file,
+                         final FileObject root,
+                         final JavacTaskImpl javacTask) throws IOException {
+        assert parser != null;
+        assert source != null;
+        this.parser = parser;
         this.source = source;
-        this.binding = binding;
-        this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.javaSource.rootFo, this.binding.getFilter()) : null;
+        assert file == null || root != null;
+        this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file)) : null;
         this.javacTask = javacTask;
     }
     
@@ -197,7 +205,7 @@ public final class CompilationInfoImpl {
      * @return ClasspathInfo
      */
     public ClasspathInfo getClasspathInfo() {
-	return javaSource.getClasspathInfo();
+	return parser.getClasspathInfo();
     }
     
     
@@ -206,7 +214,7 @@ public final class CompilationInfoImpl {
      * @return FileObject
      */
     FileObject getFileObject () {
-        return this.binding != null ? this.binding.getFileObject() : null;
+        return this.file;
     }
     
     /**
@@ -215,17 +223,15 @@ public final class CompilationInfoImpl {
      * exist or has no {@link EditorCookie}.
      * @throws java.io.IOException
      */
-    public Document getDocument() {
-        final PositionConverter binding = this.getPositionConverter();
-        FileObject fo;
-        if (binding == null || (fo=binding.getFileObject()) == null) {
+    public Document getDocument() {        
+        if (this.file == null) {
             return null;
         }
-        if (!fo.isValid()) {
+        if (!this.file.isValid()) {
             return null;
         }
         try {
-            DataObject od = DataObject.find(fo);            
+            DataObject od = DataObject.find(file);            
             EditorCookie ec = od.getCookie(EditorCookie.class);
             if (ec != null) {
                 return  ec.getDocument();
@@ -235,24 +241,12 @@ public final class CompilationInfoImpl {
         } catch (DataObjectNotFoundException e) {
             //may happen when the underlying FileObject has just been deleted
             //should be safe to ignore
-            Logger.getLogger(CompilationInfo.class.getName()).log(Level.FINE, null, e);
+            Logger.getLogger(CompilationInfoImpl.class.getName()).log(Level.FINE, null, e);
             return null;
         }
     }
         
-    
-    /**Return {@link PositionConverter} binding virtual Java source and the real source.
-     * Please note that this method is needed only for clients that need to work
-     * in non-Java files (eg. JSP files) or in dialogs, like code completion.
-     * Most clients do not need to use {@link PositionConverter}.
-     * 
-     * @return PositionConverter binding the virtual Java source and the real source.
-     * @since 0.21
-     */
-    PositionConverter getPositionConverter() {
-        return binding;
-    }        
-                
+                                
     /**
      * Moves the state to required phase. If given state was already reached 
      * the state is not changed. The method will throw exception if a state is 
@@ -280,7 +274,7 @@ public final class CompilationInfoImpl {
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = JavaSource.moveToPhase(phase, this, false);
+            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
@@ -298,7 +292,7 @@ public final class CompilationInfoImpl {
      * Sets changed method
      * @param changedMethod
      */
-    void setChangedMethod (final Pair<JavaSource.DocPositionRegion,MethodTree> changedMethod) {
+    void setChangedMethod (final Pair<DocPositionRegion,MethodTree> changedMethod) {
         this.changedMethod = changedMethod;
     }
     
@@ -318,7 +312,7 @@ public final class CompilationInfoImpl {
      */
     synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
-            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
+            javacTask = parser.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
     }

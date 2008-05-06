@@ -78,7 +78,9 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
+import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
@@ -86,6 +88,7 @@ import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Task;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,9 +100,12 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 public class JavacParser extends Parser {
-    
+    //Timer logger
     private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N
+    //Debug logger
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
+    //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
+    static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
     
     //Max number of dump files
     private static final int MAX_DUMPS = 255;
@@ -115,8 +121,12 @@ public class JavacParser extends Parser {
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
     }
     
+    //Cancelling of parser & index
+    private final AtomicBoolean canceled = new AtomicBoolean();
     //Files processed by this javac
     private final List<FileObject> files;
+    //ClassPaths used by the parser
+    private final ClasspathInfo cpInfo;
     //Incremental parsing support
     private final boolean supportsReparse;
     //Incremental parsing support
@@ -124,11 +134,24 @@ public class JavacParser extends Parser {
     //Incremental parsing support
     private MethodTree changedMethod;
     //Incremental parsing support
-    private final DocListener listener;
-
+    private final DocListener listener;    
+        
     @Override
-    public Result parse(final Source source) {
-        return new JavacResult(source);
+    public Result parse(final Source source, final Task task) {
+        Index.cancel.set(canceled);
+        return new JavacResult(source, this);
+    }
+    
+    @Override
+    public void cancel () {
+        canceled.set(true);
+    }
+    
+    @Override 
+    public void finished (final Source source, final Task task, final Parser.Result result) {
+        if (result.isCancelable) {
+            Index.cancel.remove();
+        }
     }
 
 
@@ -140,6 +163,15 @@ public class JavacParser extends Parser {
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
         //tzezula: No idea what to fire,  when I cannot do anything in this class.
+    }
+    
+    
+    /**
+     * Returns {@link ClasspathInfo} used by this javac
+     * @return the ClasspathInfo
+     */
+    public ClasspathInfo getClasspathInfo () {
+        return this.cpInfo;
     }
                 
     /**
@@ -170,7 +202,7 @@ public class JavacParser extends Parser {
                 return currentPhase;
             }
             if (currentPhase.compareTo(Phase.PARSED)<0 && phase.compareTo(Phase.PARSED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && currentRequest.isCanceled()) {
+                if (cancellable && canceled.getAndSet(false)) {
                     //Keep the currentPhase unchanged, it may happen that an userActionTask
                     //runnig after the phace completion task may still use it.
                     return Phase.MODIFIED;
@@ -206,7 +238,7 @@ public class JavacParser extends Parser {
                 return currentPhase;
             }
             if (currentPhase == Phase.PARSED && phase.compareTo(Phase.ELEMENTS_RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && currentRequest.isCanceled()) {
+                if (cancellable && canceled.getAndSet(false)) {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis();
@@ -220,7 +252,7 @@ public class JavacParser extends Parser {
                 return currentPhase;
             }
             if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && currentRequest.isCanceled()) {
+                if (cancellable && canceled.getAndSet(false)) {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis ();
@@ -344,7 +376,22 @@ public class JavacParser extends Parser {
         }
     }
     
-    //Static helper classes
+    //Helper classes
+    
+    /**
+     * Default implementation of {@link JavaFileObjectProvider} used by {@link JavacParser}
+     */
+    static final class DefaultJavaFileObjectProvider implements JavaFileObjectProvider {
+        public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter) throws IOException {
+            return FileObjects.nbFileObject(fo, root, filter, true);
+        }
+        
+        public void update (final JavaFileObject jfo) throws IOException {
+            assert jfo instanceof SourceFileObject;
+            ((SourceFileObject)jfo).update();
+        }        
+    }
+    
     /**
      * The MBean memory listener
      */
@@ -356,6 +403,9 @@ public class JavacParser extends Parser {
         }        
     }
     
+    /**
+     * Lexer listener used to detect partial reparse
+     */
     private class DocListener implements PropertyChangeListener, TokenHierarchyListener {
         
         private EditorCookie.Observable ec;

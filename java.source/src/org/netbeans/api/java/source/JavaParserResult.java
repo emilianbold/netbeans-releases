@@ -39,6 +39,9 @@
 
 package org.netbeans.api.java.source;
 
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+
 /**
  *
  * @author Tomas Zezula
@@ -46,10 +49,17 @@ package org.netbeans.api.java.source;
 public class JavaParserResult {
     
     private final CompilationInfoImpl impl;
+    private final JavacParser parser;
+    private final boolean isCancelable;
     
-    JavaParserResult (final CompilationInfoImpl impl) {
+    JavaParserResult (final CompilationInfoImpl impl,
+            final JavacParser parser,
+            final boolean isCancelable) {
         assert impl != null;
+        assert parser != null;
         this.impl = impl;
+        this.parser = parser;
+        this.isCancelable = isCancelable;
     }
 
 }
