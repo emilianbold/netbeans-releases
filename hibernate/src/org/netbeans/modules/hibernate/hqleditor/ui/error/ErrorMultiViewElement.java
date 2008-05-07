@@ -47,8 +47,9 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author Vadiraj
+ * Error MV Element.
+ * 
+ * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class ErrorMultiViewElement implements MultiViewElement {
 

@@ -48,8 +48,9 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author Vadiraj
+ * SQL MV element.
+ * 
+ * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class SQLMultiViewElement implements MultiViewElement{
 

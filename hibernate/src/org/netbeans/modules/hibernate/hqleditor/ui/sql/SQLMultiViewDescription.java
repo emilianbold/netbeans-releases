@@ -47,8 +47,9 @@ import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
- *
- * @author Vadiraj
+ * SQL MV Description.
+ * 
+ * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class SQLMultiViewDescription implements MultiViewDescription, Serializable {
 

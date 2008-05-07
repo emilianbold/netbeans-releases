@@ -48,8 +48,9 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author Vadiraj
+ * Result MV Element.
+ * 
+ * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class ResultMultiViewElement implements MultiViewElement {
 

@@ -47,8 +47,9 @@ import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
- *
- * @author Vadiraj
+ * Result MV Description.
+ * 
+ * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class ResultMultiViewDescription implements MultiViewDescription, Serializable {
 

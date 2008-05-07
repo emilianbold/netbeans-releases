@@ -49,8 +49,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- *
- * @author Vadiraj
+ * HQL Editor controller.
+ * 
+ * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HQLEditorController {
 
