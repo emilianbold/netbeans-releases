@@ -234,6 +234,7 @@ public final class RubyPlatformManager {
                     props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
 //                    props.put(Info.RUBY_EXECUTABLE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE));
                     props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
+                    props.put(Info.RUBY_LIB_DIR, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR));
                     String gemHome = p.get(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
                     if (gemHome != null) {
                         props.put(Info.GEM_HOME, gemHome);
@@ -395,6 +396,7 @@ public final class RubyPlatformManager {
         props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE);
 //                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE);
         props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM);
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
         props.remove(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
         props.remove(PLATFORM_PREFIX + idDot + Info.GEM_PATH);
         props.remove(PLATFORM_PREFIX + idDot + Info.GEM_VERSION);
@@ -419,6 +421,9 @@ public final class RubyPlatformManager {
         props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE, info.getReleaseDate());
 //                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE, info.getExecutable());
         props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM, info.getPlatform());
+        if (!info.isRubinius()) {
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR, info.getLibDir());
+        }
         if (info.getGemHome() != null) {
             props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_HOME, info.getGemHome());
             props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_PATH, info.getGemPath());
